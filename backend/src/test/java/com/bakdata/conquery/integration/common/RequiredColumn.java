@@ -19,6 +19,7 @@ public class RequiredColumn {
 	@NotNull
 	private MajorTypeId type;
 	private String sharedDictionary;
+	private String secondaryId;
 
 	public Column toColumn(Table t) {
 		Column col = new Column();
@@ -26,6 +27,7 @@ public class RequiredColumn {
 		col.setType(type);
 		col.setSharedDictionary(sharedDictionary);
 		col.setTable(t);
+		col.setSecondaryId(secondaryId);
 		return col;
 	}
 }

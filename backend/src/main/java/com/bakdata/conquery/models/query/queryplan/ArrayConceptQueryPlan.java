@@ -99,7 +99,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 				continue;
 			}
 
-			SinglelineContainedEntityResult singleLineResult = SinglelineContainedEntityResult.class.cast(result);
+			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult)result;
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
