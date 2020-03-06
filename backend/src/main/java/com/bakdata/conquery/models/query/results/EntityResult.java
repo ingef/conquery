@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public interface EntityResult {
 
-	static ContainedEntityResult of(int entityId, Object[] values) {
+	static SinglelineContainedEntityResult of(int entityId, Object[] values) {
 		return new SinglelineContainedEntityResult(entityId, values);
 	}
 	
