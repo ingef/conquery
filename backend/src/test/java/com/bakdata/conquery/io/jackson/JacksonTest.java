@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.BiMap;
@@ -43,6 +44,27 @@ public class JacksonTest {
 		SerializationTestUtil
 			.forType(new TypeReference<BiMap<String, String>>() {})
 			.test(map);
+	}
+	
+	@Test
+	public void testNonStrictNumbers() throws JSONException, IOException {
+		SerializationTestUtil.forType(Double.class).test(Double.NaN, null);
+		SerializationTestUtil.forType(Double.class).test(Double.NEGATIVE_INFINITY, null);
+		SerializationTestUtil.forType(Double.class).test(Double.POSITIVE_INFINITY, null);
+		SerializationTestUtil.forType(Double.class).test(Double.MAX_VALUE);
+		SerializationTestUtil.forType(Double.class).test(Double.MIN_VALUE);
+		SerializationTestUtil
+			.forType(EntityResult.class)
+			.test(
+				EntityResult.of(4, List.of(
+					new Object[] {0, 1, 2},
+					new Object[] {Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
+				)),
+				EntityResult.of(4, List.of(
+					new Object[] {0, 1, 2},
+					new Object[] {null, null, null}
+				))
+			);
 	}
 
 	@Test
