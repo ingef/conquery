@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.resources.api;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -6,6 +6,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.MeProcessor.FEMeInformation;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import lombok.Setter;
