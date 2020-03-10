@@ -9,8 +9,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -44,7 +44,7 @@ public class RelativeFormQuery extends IQuery {
 	@Min(0)
 	private final int timeCountAfter;
 	@NotNull
-	private final TimeUnit timeUnit;
+	private final DateContextMode timeUnit;
 	
 	@Override
 	public RelativeFormQuery resolve(QueryResolveContext context) {

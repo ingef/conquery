@@ -20,6 +20,10 @@ import lombok.AllArgsConstructor;
 public class AbsExportGenerator {
 	
 	public static AbsoluteFormQuery generate(Namespaces namespaces, AbsoluteMode mode, DateContextMode resolution, boolean alsoCreateCoarserSubdivisions, UserId userId, DatasetId submittedDataset) {
+		return generate(namespaces, mode, resolution.getThisAndCoarserSubdivisions(), userId, submittedDataset);
+	}
+	
+	public static AbsoluteFormQuery generate(Namespaces namespaces, AbsoluteMode mode, List<DateContextMode> resolutions, UserId userId, DatasetId submittedDataset) {
 		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
 	
 		// Apply defaults to user concept
@@ -29,8 +33,7 @@ public class AbsExportGenerator {
 			(ConceptQuery) prerequisite.getQuery(),
 			mode.getDateRange(),
 			createSubQuery(mode.getFeatures()),
-			resolution,
-			alsoCreateCoarserSubdivisions
+			resolutions
 		);
 		
 		return query;

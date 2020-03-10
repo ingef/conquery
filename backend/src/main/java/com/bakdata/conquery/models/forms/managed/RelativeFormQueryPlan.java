@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -36,7 +36,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final IndexPlacement indexPlacement;
 	private final int timeCountBefore;
 	private final int timeCountAfter;
-	private final TimeUnit timeUnit;
+	private final DateContextMode timeUnit;
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
