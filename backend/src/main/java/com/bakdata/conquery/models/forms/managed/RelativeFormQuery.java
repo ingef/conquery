@@ -84,7 +84,9 @@ public class RelativeFormQuery extends IQuery {
 		featureHeader.getInfos().remove(0);
 		outcomeHeader.getInfos().remove(0);
 
-		//index
+		// resolution
+		collector.add(ConqueryConstants.RESOLUTION_INFO);
+		// index
 		collector.add(ConqueryConstants.CONTEXT_INDEX_INFO);
 		// event date
 		collector.add(ConqueryConstants.EVENT_DATE_INFO);

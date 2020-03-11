@@ -2,9 +2,13 @@ package com.bakdata.conquery.apiv1.forms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
+import com.bakdata.conquery.io.HasResourceBundle;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -14,7 +18,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * Enum members.
  *
  */
-public enum DateContextMode {
+public enum DateContextMode implements HasResourceBundle {
 	/**
 	 * For returning contexts with a single {@link CDateRange} for the entire
 	 * {@link FeatureGroup}.
@@ -60,7 +64,8 @@ public enum DateContextMode {
 		}
 	};
 	
-	private DateContextMode() {
+//	This causes a runtime error at the moment. See workaround below.
+//	private DateContextMode() {
 //		List<DateContextMode> list = new ArrayList<>();
 //		DateContextMode current = this;
 //		do {
@@ -69,15 +74,15 @@ public enum DateContextMode {
 //		}while(current != null);
 //		
 //		thisAndCoarserSubdivisions = UnmodifiableList.unmodifiableList(list);
-	}
+//	}
 	
-//	@Getter
 	private List<DateContextMode> thisAndCoarserSubdivisions;
 	
 	/**
 	 * WORKAROUND because the eclipse compiler has bug similar to this one:
 	 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=81454
 	 */
+	@JsonIgnore
 	public List<DateContextMode> getThisAndCoarserSubdivisions(){
 		if (thisAndCoarserSubdivisions != null) {
 			return thisAndCoarserSubdivisions;
@@ -105,5 +110,8 @@ public enum DateContextMode {
 		return index >= 0? modes[index] : null;
 	}
 	
-	
+	@Override
+	public ResourceBundle getBundle(Locale locale) {
+		return ResourceBundle.getBundle(DateContextModeResource.class.getName(), locale);
+	}
 }

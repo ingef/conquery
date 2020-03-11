@@ -55,7 +55,7 @@ public class FormQueryPlan implements QueryPlan {
 		System.arraycopy(values, 0, result, constants, values.length);
 		
 		//add resolution indicator
-		result[0] = dateContext.getSubdivisionMode();	
+		result[0] = dateContext.getSubdivisionMode().toString();	
 		//add index value
 		result[1] = dateContext.getIndex();
 		// add event date

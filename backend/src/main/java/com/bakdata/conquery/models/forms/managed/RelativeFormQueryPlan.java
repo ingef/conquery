@@ -101,22 +101,22 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
 		// copy everything up to including index
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[3] = value[2];
-		System.arraycopy(value, 3, result, 1 + featureLength, value.length - 3);
+		result[4] = value[3];
+		System.arraycopy(value, 4, result, 1 + featureLength, value.length - 4);
 	}
 
 	private void setFeatureValues(Object[] result, Object[] value) {
 		// copy everything up to including index
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[2] = value[2];
-		System.arraycopy(value, 3, result, 4, value.length - 3);
+		result[3] = value[3];
+		System.arraycopy(value, 4, result, 5, value.length - 4);
 	}
 
 	@Override
