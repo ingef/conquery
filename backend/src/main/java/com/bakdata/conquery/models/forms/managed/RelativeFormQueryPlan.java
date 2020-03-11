@@ -37,6 +37,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final int timeCountBefore;
 	private final int timeCountAfter;
 	private final DateContextMode timeUnit;
+	private final List<DateContextMode> resolutions;
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -57,7 +58,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
-			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, true, timeUnit);
+			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
 
 		SubResult featureResult = executeSubQuery(ctx, FeatureGroup.FEATURE, entity, contexts);
 		SubResult outcomeResult = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
@@ -134,7 +135,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			indexPlacement,
 			timeCountBefore,
 			timeCountAfter,
-			timeUnit
+			timeUnit,
+			resolutions
 		);
 		return copy;
 	}

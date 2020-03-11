@@ -87,7 +87,6 @@ public class DateContext {
 		for(DateContextMode mode : subdivisionModes) {
 			// Start counting index form 0 for every subdivision mode
 			int index = 0;
-			mode.subdivideRange(dateRangeMask);
 			for (CDateRange quarterInMask : mode.subdivideRange(dateRangeMask)) {
 				index++;
 				DateContext dc = new DateContext(
@@ -117,43 +116,50 @@ public class DateContext {
 	 * @param timeUnit
 	 * @return
 	 */
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,
-			int outcomeTime, boolean sliced, DateContextMode timeUnit) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<DateContextMode> subdivisionModes) {
 		if (featureTime < 1 || outcomeTime < 1) {
 			throw new IllegalArgumentException("Relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
 		}
-		List<DateContext> dcl = new ArrayList<>();
+		List<DateContext> dcList = new ArrayList<>();
+		
+		LocalDate eventdate = CDate.toLocalDate(event);
 
 		CDateRange featureRange = generateFeatureRange(event, indexPlacement, featureTime, timeUnit);
 		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
 
-		// Adds complete ranges
-		dcl.add(new DateContext(featureRange, FeatureGroup.FEATURE, null, CDate.toLocalDate(event), DateContextMode.COMPLETE));
-		dcl.add(new DateContext(outcomeRange, FeatureGroup.OUTCOME, null, CDate.toLocalDate(event), DateContextMode.COMPLETE));
 
-		if (sliced) {
-			List<CDateRange> featureRanges = null;
-			List<CDateRange> outcomeRanges = null;
-			
-			featureRanges = timeUnit.subdivideRange(featureRange);
-			int numRanges = featureRanges.size();
-			int idx = indexPlacement.equals(IndexPlacement.BEFORE) ? numRanges - 1 : numRanges;
-			for (CDateRange range : featureRanges) {
-				dcl.add(new DateContext(range, FeatureGroup.FEATURE, -idx, CDate.toLocalDate(event), timeUnit));
-				idx--;
+		for(DateContextMode mode : subdivisionModes) {
+			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
+			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
+			for (CDateRange quarterInMask : featureRanges) {
+				DateContext dc = new DateContext(
+					quarterInMask,
+					FeatureGroup.FEATURE,
+					// For now there is no index for complete
+					mode.equals(DateContextMode.COMPLETE)? null : -index,
+					eventdate,
+					mode
+					);
+				index--;
+				dcList.add(dc);
 			}
 
-			outcomeRanges = timeUnit.subdivideRange(outcomeRange);
-			numRanges = outcomeRanges.size();
-			idx = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
-			for (CDateRange range : outcomeRanges) {
-				dcl.add(new DateContext(range, FeatureGroup.OUTCOME, idx, CDate.toLocalDate(event), timeUnit));
-				idx++;
-			}
+			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
+			for (CDateRange quarterInMask : mode.subdivideRange(outcomeRange)) {
+				DateContext dc = new DateContext(
+					quarterInMask,
+					FeatureGroup.OUTCOME,
+					// For now there is no index for complete
+					mode.equals(DateContextMode.COMPLETE)? null : index,
+					eventdate,
+					mode
+					);
+				index++;
+				dcList.add(dc);
+			}			
 		}
-
-		return dcl;
+		return dcList;
 	}
 
 	/**

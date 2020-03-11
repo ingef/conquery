@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -45,6 +46,8 @@ public class RelativeFormQuery extends IQuery {
 	private final int timeCountAfter;
 	@NotNull
 	private final DateContextMode timeUnit;
+	@NotNull
+	private final List<DateContextMode> resolutions;
 	
 	@Override
 	public RelativeFormQuery resolve(QueryResolveContext context) {
@@ -56,7 +59,8 @@ public class RelativeFormQuery extends IQuery {
 			indexPlacement,
 			timeCountBefore,
 			timeCountAfter,
-			timeUnit
+			timeUnit,
+			resolutions
 		);
 	}
 	
@@ -66,7 +70,7 @@ public class RelativeFormQuery extends IQuery {
 			// At the moment we do not use the dates of feature and outcome query
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
 			outcomes.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit);
+			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutions);
 	}
 
 	@Override

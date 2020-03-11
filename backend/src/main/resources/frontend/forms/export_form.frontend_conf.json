@@ -21,6 +21,34 @@
             ]
         },
         {
+            "name": "resolution",
+            "type": "SELECT",
+            "label": {
+                "de": "Stratifizierung Beobachtungszeitraum"
+            },
+            "defaultValue": "COMPLETE_ONLY",
+            "options": [
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum"
+                    },
+                    "value": "COMPLETE_ONLY"
+                },
+                {
+                    "label": {
+                        "de": "Quartale"
+                    },
+                    "value": "QUARTER_WISE"
+                },
+                {
+                    "label": {
+                        "de": "Jahre"
+                    },
+                    "value": "YEAR_WISE"
+                }
+            ]
+        },
+        {
             "name": "timeMode",
             "type": "TABS",
             "defaultValue": "ABSOLUTE",

@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=SubmittedQuery.class)
@@ -31,6 +33,11 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	private ManagedExecutionId queryGroup;
 	@NotNull @Valid @JsonManagedReference
 	private Mode timeMode;
+	
+	@NotNull @NotEmpty
+	private List<DateContextMode> resolution = List.of(DateContextMode.COMPLETE);
+	
+	private boolean alsoCreateCoarserSubdivisions = true;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {

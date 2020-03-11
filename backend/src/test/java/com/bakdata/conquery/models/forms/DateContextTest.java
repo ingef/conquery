@@ -108,7 +108,8 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysBeforeTest() {
-		DateContextMode resolution = DAYS;
+		List<DateContextMode> resolutions = List.of(COMPLETE,DAYS);
+		DateContextMode timeUnit = DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -116,7 +117,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.BEFORE;
 		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, true, resolution);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, resolutions);
 
 		assertThat(contexts).containsExactlyInAnyOrder (
 			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -129,7 +130,8 @@ public class DateContextTest {
 	
 	@Test
 	public void rangeRelDaysBeforeCompleteOnlyTest() {
-		DateContextMode resolution = DAYS;
+		List<DateContextMode> resolutions = List.of(COMPLETE);
+		DateContextMode timeUnit = DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -137,7 +139,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.BEFORE;
 		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, false, resolution);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, resolutions);
 
 		List<DateContext> expectedRanges = Arrays.asList(
 			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -148,7 +150,8 @@ public class DateContextTest {
 	
 	@Test
 	public void rangeRelDaysAfterTest() {
-		DateContextMode resolution = DAYS;
+		List<DateContextMode> resolutions = List.of(COMPLETE,DAYS);
+		DateContextMode timeUnit = DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -156,7 +159,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.AFTER;
 		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, true, resolution);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime,  timeUnit,resolutions);
 
 		assertThat(contexts).containsExactlyInAnyOrder (
 			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -170,7 +173,8 @@ public class DateContextTest {
 	
 	@Test
 	public void rangeRelDaysNeutralTest() {
-		DateContextMode resolution = DAYS;
+		List<DateContextMode> resolutions = List.of(COMPLETE,DAYS);
+		DateContextMode timeUnit = DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -178,7 +182,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.NEUTRAL;
 		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, true, resolution);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, resolutions);
 
 		assertThat(contexts).containsExactlyInAnyOrder (
 			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -192,7 +196,8 @@ public class DateContextTest {
 	
 	@Test
 	public void rangeRelQuarterBeforeTest() {
-		DateContextMode resolution = QUARTERS;
+		List<DateContextMode> resolutions = List.of(COMPLETE,QUARTERS);
+		DateContextMode timeUnit = QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -200,7 +205,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.BEFORE;
 		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, true, resolution);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, resolutions);
 
 		assertThat(contexts).containsExactlyInAnyOrder (
 			new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 6, 30)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -213,7 +218,8 @@ public class DateContextTest {
 	
 	@Test
 	public void rangeRelQuarterAfterTest() {
-		DateContextMode resolution = QUARTERS;
+		List<DateContextMode> resolutions = List.of(COMPLETE,QUARTERS);
+		DateContextMode timeUnit = QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -221,7 +227,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.AFTER;
 		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, true, resolution);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, resolutions);
 
 		assertThat(contexts).containsExactlyInAnyOrder (
 			new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -235,7 +241,8 @@ public class DateContextTest {
 	
 	@Test
 	public void rangeRelQuarterNeutralTest() {
-		DateContextMode resolution = QUARTERS;
+		List<DateContextMode> resolutions = List.of(COMPLETE,QUARTERS);
+		DateContextMode timeUnit = QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -243,7 +250,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.NEUTRAL;
 		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, true, resolution);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, resolutions);
 
 		assertThat(contexts).containsExactlyInAnyOrder (
 			new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
