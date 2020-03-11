@@ -24,7 +24,7 @@ public interface EntityResult {
 		return multilineOf(id, values);
 	}
 	
-	static ContainedEntityResult multilineOf(int entityId, List<Object[]> values) {
+	static MultilineContainedEntityResult multilineOf(int entityId, List<Object[]> values) {
 		return new MultilineContainedEntityResult(entityId, values);
 	}
 	

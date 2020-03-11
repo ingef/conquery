@@ -3,18 +3,15 @@
 	"label": "SECONDARY_ID Test",
 	"expectedCsv": "tests/query/SECONDARY_ID/expected.csv",
 	"query": {
-		"type": "CONCEPT_QUERY",
+		"type": "SECONDARY_ID_QUERY",
 		"secondaryId": "secondary",
-		"root": {
-			"type": "AND",
-			"children": [
-				{
-					"type": "DATE_RESTRICTION",
-					"dateRange": {
-						"min": "2014-02-12",
-						"max": "2014-12-13"
-					},
-					"child": {
+		"query": {
+			"type": "CONCEPT_QUERY",
+			
+			"root": {
+				"type": "AND",
+				"children": [
+					{
 						"ids": [
 							"${dataset}.number"
 						],
@@ -36,8 +33,8 @@
 							}
 						]
 					}
-				}
-			]
+				]
+			}
 		}
 	},
 	"concepts": [

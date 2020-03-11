@@ -59,7 +59,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return clone;
 	}
 	
-	private void checkRequiredTables(WorkerStorage storage) {
+	protected void checkRequiredTables(WorkerStorage storage) {
 		if(requiredTables == null) {
 			synchronized (this) {
 				if(requiredTables == null) {
