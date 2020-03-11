@@ -66,8 +66,13 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		// We look at the first result line to determine the length of the subresult
 		int featureLength = featureResult.getValues().get(0).length;
 		int outcomeLength = outcomeResult.getValues().get(0).length;
-		// Whole result is the concatenation of the subresults. However the sub result includes the date restriction which we drop.
-		int size = featureLength + outcomeLength - 2;
+		
+		/*
+		 *  Whole result is the concatenation of the subresults. The final output format combines resolution info, index and eventdate of both sub queries.
+		 *  The feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... 
+		 *  The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 */
+		int size = featureLength + outcomeLength - 3/*= [RESOLUTION], [INDEX], [EVENTDATE]*/;
 
 		// merge the full (index == null) lines
 		Object[] mergedFull = new Object[size];
@@ -99,16 +104,6 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return new SubResult((MultilineContainedEntityResult) sub.execute(ctx, entity));
 	}
 
-	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
-		// copy everything up to including index
-		for (int i = 0; i < 3; i++) {
-			result[i] = value[i];
-		}
-		// copy daterange
-		result[4] = value[3];
-		System.arraycopy(value, 4, result, 1 + featureLength, value.length - 4);
-	}
-
 	private void setFeatureValues(Object[] result, Object[] value) {
 		// copy everything up to including index
 		for (int i = 0; i < 3; i++) {
@@ -117,6 +112,16 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		// copy daterange
 		result[3] = value[3];
 		System.arraycopy(value, 4, result, 5, value.length - 4);
+	}
+	
+	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
+		// copy everything up to including index
+		for (int i = 0; i < 3; i++) {
+			result[i] = value[i];
+		}
+		// copy daterange
+		result[4] = value[3];
+		System.arraycopy(value, 4, result, 1 + featureLength, value.length - 4);
 	}
 
 	@Override

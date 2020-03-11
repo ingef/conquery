@@ -83,6 +83,9 @@ public class RelativeFormQuery extends IQuery {
 		//remove SpecialDateUnion
 		featureHeader.getInfos().remove(0);
 		outcomeHeader.getInfos().remove(0);
+		//remove resolution info
+		featureHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
+		outcomeHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
 
 		// resolution
 		collector.add(ConqueryConstants.RESOLUTION_INFO);
