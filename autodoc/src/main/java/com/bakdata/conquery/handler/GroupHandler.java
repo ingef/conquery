@@ -403,8 +403,8 @@ public class GroupHandler {
 			}
 			
 			if(Primitives.isWrapperType(cl)) {
-				return Primitives.unwrap(cl).getSimpleName()
-					+ (ctx.isIdOf()?"":" or null");
+				return "`"+Primitives.unwrap(cl).getSimpleName()+"`"
+					+ (ctx.isIdOf()?"":" or `null`");
 			}
 			
 			//default for hidden types
