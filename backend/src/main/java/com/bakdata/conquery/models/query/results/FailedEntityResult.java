@@ -13,7 +13,7 @@ import lombok.Setter;
 
 @Getter @Setter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 @CPSType(id="FAILED", base=EntityResult.class)
-public class FailedEntityResult implements EntityResult {
+public class FailedEntityResult implements SinglelineEntityResult {
 
 	private final int entityId;
 	@NotEmpty
@@ -32,5 +32,10 @@ public class FailedEntityResult implements EntityResult {
 	@Override
 	public FailedEntityResult asFailed() {
 		return this;
+	}
+	
+	@Override @JsonIgnore
+	public Object[] getValues() {
+		throw new IllegalStateException();
 	}
 }

@@ -36,6 +36,11 @@ public class Column extends Labeled<ColumnId> {
 	 * if it is of type string, instead of its own dictionary
 	 */
 	private String sharedDictionary;
+	/**
+	 * if this is set this column counts as the secondary id of the given name for this
+	 * table
+	 */
+	private String secondaryId;
 
 	@Override
 	public ColumnId createId() {
