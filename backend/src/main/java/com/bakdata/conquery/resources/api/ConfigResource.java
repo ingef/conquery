@@ -1,9 +1,10 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.resources.api;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
 

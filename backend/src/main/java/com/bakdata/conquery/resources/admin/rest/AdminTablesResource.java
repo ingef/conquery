@@ -1,6 +1,8 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.*;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.TABLE;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,13 +33,13 @@ import lombok.Setter;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
 @Getter @Setter
-@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+@Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 public class AdminTablesResource extends HAdmin {
 	
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
-	@PathParam(TABLE_NAME)
+	@PathParam(TABLE)
 	protected TableId tableId;
 	protected Table table;
 
