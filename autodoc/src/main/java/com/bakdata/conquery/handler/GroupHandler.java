@@ -1,7 +1,8 @@
 package com.bakdata.conquery.handler;
 
-import static com.bakdata.conquery.Constants.*;
-import static com.bakdata.conquery.Constants.DOC;
+import static com.bakdata.conquery.Constants.AUTH;
+import static com.bakdata.conquery.Constants.CONTEXT;
+import static com.bakdata.conquery.Constants.CPS_TYPE;
 import static com.bakdata.conquery.Constants.ID_OF;
 import static com.bakdata.conquery.Constants.ID_REF;
 import static com.bakdata.conquery.Constants.ID_REF_COL;
@@ -9,6 +10,9 @@ import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
 import static com.bakdata.conquery.Constants.JSON_CREATOR;
 import static com.bakdata.conquery.Constants.JSON_IGNORE;
 import static com.bakdata.conquery.Constants.LIST_OF;
+import static com.bakdata.conquery.Constants.PATH;
+import static com.bakdata.conquery.Constants.PATH_PARAM;
+import static com.bakdata.conquery.Constants.RESTS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -19,11 +23,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.GET;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,11 +34,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.model.Base;
-import com.bakdata.conquery.model.CreateableDoc;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
-import com.bakdata.conquery.util.Doc;
 import com.bakdata.conquery.util.PrettyPrinter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
@@ -46,7 +45,6 @@ import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
 
-import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ArrayTypeSignature;
 import io.github.classgraph.BaseTypeSignature;
 import io.github.classgraph.ClassInfo;
@@ -128,7 +126,18 @@ public class GroupHandler {
 	}
 	
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
-		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo())) {
+		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo(), new Introspection() {
+			
+			@Override
+			public String getExample() {
+				return "";
+			}
+			
+			@Override
+			public String getDescription() {
+				return "";
+			}
+		})) {
 			out.paragraph("Method: "+code(method.getName()));
 			for(var param : method.getParameterInfo()) {
 				if(param.hasAnnotation(PATH_PARAM) || param.hasAnnotation(AUTH) || param.hasAnnotation(CONTEXT)) {
@@ -193,7 +202,8 @@ public class GroupHandler {
 	}
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
-		try(var details = details(name, c)) {
+		var source = ClassIntrospection.from(c); 
+		try(var details = details(name, c, source)) {
 			if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 				out.line("Supported Fields:");
 	
@@ -209,21 +219,20 @@ public class GroupHandler {
 		}
 	}
 	
-	private Closeable details(String name, ClassInfo c) throws IOException {
-		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
+	private Closeable details(String name, ClassInfo c, Introspection source) throws IOException {
 		out.subSubHeading(
 			name
 			//non-ASCII characters and tags do not change the anchor
 			+ "<sup><sub><sup>\u2001"+editLink(c)+"</sup></sub></sup>"
 		);
-		out.paragraph(docAnnotation.description());
+		out.paragraph(source.getDescription());
 		out.paragraph("<details><summary>Details</summary><p>");
 		
 		out.paragraph("Java Type: "+code(c.getName()));
-		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
+		if(!Strings.isNullOrEmpty(source.getExample())) {
 			out.paragraph(
 				"Example:\n\n```jsonc\n"
-				+ PrettyPrinter.print(docAnnotation.example())
+				+ PrettyPrinter.print(source.getExample())
 				+ "\n```"
 			);
 		}
@@ -237,7 +246,8 @@ public class GroupHandler {
 	}
 	
 	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
-		try(var details = details(name, c)) {			
+		var source = ClassIntrospection.from(c); 
+		try(var details = details(name, c, source)) {			
 			Set<String> values = new HashSet<>();
 			for(var cl : group.getOtherClasses()) {
 				if(c.loadClass().isAssignableFrom(cl)) {
@@ -284,15 +294,15 @@ public class GroupHandler {
 			type = printType(ctx, typeSignature);
 		}
 		
-		Doc docAnnotation = getDocAnnotation(field.getAnnotationInfo(DOC));
+		//Doc docAnnotation = getDocAnnotation(field.getAnnotationInfo(DOC));
 
 		out.table(
 			editLink(field.getClassInfo()),
 			name,
 			type,
 			findDefault(currentType, field),
-			StringUtils.isEmpty(docAnnotation.example()) ? "" : code(PrettyPrinter.print(docAnnotation.example())),
-			docAnnotation.description()
+			"",//StringUtils.isEmpty(docAnnotation.example()) ? "" : code(PrettyPrinter.print(docAnnotation.example())),
+			""//docAnnotation.description()
 		);
 	}
 
@@ -319,13 +329,6 @@ public class GroupHandler {
 		catch(Exception e) {
 			return "?";
 		}
-	}
-
-	private Doc getDocAnnotation(AnnotationInfo info) {
-		if(info == null) {
-			return new CreateableDoc("", "");
-		}
-		return (Doc)info.loadClassAndInstantiate();
 	}
 
 	private String editLink(ClassInfo classInfo) {

@@ -48,7 +48,8 @@ Different types of AuthenticationConfig can be used by setting `type` to one of 
 
 
 ### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java)</sup></sub></sup>
-
+Default configuration for the auth system. Sets up all other default components.
+This configuration causes that every request is handled as invoked by the super user.
 
 <details><summary>Details</summary><p>
 
@@ -138,7 +139,7 @@ Supported Fields:
 </p></details>
 
 ### Type CSVConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java)</sup></sub></sup>
-
+Holds the necessary information to configure CSV parsers and writers.
 
 <details><summary>Details</summary><p>
 
@@ -287,7 +288,7 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | directories | list of [PreprocessingDirectories](#Type-PreprocessingDirectories) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | maximumPrintedErrors | `int` | `10` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | threads | `int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | threads | `int` | `8` |  |  | 
 </p></details>
 
 ### Type PreprocessingDirectories<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java)</sup></sub></sup>
@@ -365,8 +366,8 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | allowCoreThreadTimeOut | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | keepAliveTime | `Duration` | `"60 seconds"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | maxThreads | `int` | `2` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | minThreads | `int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | maxThreads | `int` | `8` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | minThreads | `int` | `8` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | shutdownTime | `Duration` | `"1 hour"` |  |  | 
 </p></details>
 

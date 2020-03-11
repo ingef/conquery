@@ -217,7 +217,9 @@ Different types of IQuery can be used by setting `type` to one of the following 
 
 
 ### ARRAY_CONCEPT_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/ArrayConceptQuery.java)</sup></sub></sup>
-
+Query type that combines a set of {@link ConceptQuery}s which are separately evaluated
+and whose results are merged. If a SpecialDateUnion is required, the result will hold
+the union of all dates from the separate queries.
 
 <details><summary>Details</summary><p>
 
@@ -269,7 +271,7 @@ Supported Fields:
 </p></details>
 
 ### BEFORE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/specific/temporal/CQBeforeTemporalQuery.java)</sup></sub></sup>
-
+Creates a query that will contain all entities where {@code preceding} contains events that happened before the events of {@code index}. And the time where this has happened.
 
 <details><summary>Details</summary><p>
 
@@ -280,7 +282,7 @@ No fields can be set for this type.
 </p></details>
 
 ### BEFORE_OR_SAME<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/specific/temporal/CQBeforeOrSameTemporalQuery.java)</sup></sub></sup>
-
+Creates a query that will contain all entities where {@code preceding} contains events that happened on the same day or before the events of {@code index}. And the time where this has happened.
 
 <details><summary>Details</summary><p>
 
@@ -324,7 +326,7 @@ Supported Fields:
 </p></details>
 
 ### DAYS_BEFORE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/specific/temporal/CQDaysBeforeTemporalQuery.java)</sup></sub></sup>
-
+Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} before the events of {@code index}. And the time where this has happened.
 
 <details><summary>Details</summary><p>
 
@@ -335,7 +337,7 @@ No fields can be set for this type.
 </p></details>
 
 ### DAYS_OR_NO_EVENT_BEFORE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/specific/temporal/CQDaysBeforeOrNeverTemporalQuery.java)</sup></sub></sup>
-
+Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} before the events of {@code index}, or no events. And the time where this has happened.
 
 <details><summary>Details</summary><p>
 
@@ -389,7 +391,7 @@ Supported Fields:
 </p></details>
 
 ### SAME<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/specific/temporal/CQSameTemporalQuery.java)</sup></sub></sup>
-
+Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} at the same time as the events of {@code index}. And the time where this has happened.
 
 <details><summary>Details</summary><p>
 
@@ -613,7 +615,7 @@ Supported Fields:
 </p></details>
 
 ### Type FERoot<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/api/description/FERoot.java)</sup></sub></sup>
-
+This class represents the root node of the concepts as it is presented to the front end.
 
 <details><summary>Details</summary><p>
 
@@ -624,7 +626,7 @@ No fields can be set for this type.
 </p></details>
 
 ### Type FEValue<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/api/description/FEValue.java)</sup></sub></sup>
-
+This class represents a values of a SELECT filter.
 
 <details><summary>Details</summary><p>
 
