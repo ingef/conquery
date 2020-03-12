@@ -28,9 +28,12 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.bakdata.conquery.introspection.ClassIntrospection;
+import com.bakdata.conquery.introspection.Introspection;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.model.Base;
@@ -126,18 +129,8 @@ public class GroupHandler {
 	}
 	
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
-		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo(), new Introspection() {
-			
-			@Override
-			public String getExample() {
-				return "";
-			}
-			
-			@Override
-			public String getDescription() {
-				return "";
-			}
-		})) {
+		Introspection introspec = Introspection.from(method.getClassInfo()).findMethod(method);
+		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo(), introspec)) {
 			out.paragraph("Method: "+code(method.getName()));
 			for(var param : method.getParameterInfo()) {
 				if(param.hasAnnotation(PATH_PARAM) || param.hasAnnotation(AUTH) || param.hasAnnotation(CONTEXT)) {
@@ -202,7 +195,7 @@ public class GroupHandler {
 	}
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
-		var source = ClassIntrospection.from(c); 
+		var source = Introspection.from(c); 
 		try(var details = details(name, c, source)) {
 			if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 				out.line("Supported Fields:");
@@ -211,7 +204,6 @@ public class GroupHandler {
 				for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
 					handleField(c, field);
 				}
-				
 			}
 			else {
 				out.paragraph("No fields can be set for this type.");
@@ -223,7 +215,7 @@ public class GroupHandler {
 		out.subSubHeading(
 			name
 			//non-ASCII characters and tags do not change the anchor
-			+ "<sup><sub><sup>\u2001"+editLink(c)+"</sup></sub></sup>"
+			+ "<sup><sub><sup>\u2001"+editLink(source)+"</sup></sub></sup>"
 		);
 		out.paragraph(source.getDescription());
 		out.paragraph("<details><summary>Details</summary><p>");
@@ -246,7 +238,7 @@ public class GroupHandler {
 	}
 	
 	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
-		var source = ClassIntrospection.from(c); 
+		var source = Introspection.from(c); 
 		try(var details = details(name, c, source)) {			
 			Set<String> values = new HashSet<>();
 			for(var cl : group.getOtherClasses()) {
@@ -279,6 +271,7 @@ public class GroupHandler {
 			return;
 		}
 		
+		var introspec = Introspection.from(field.getClassInfo()).findField(field);
 		String name = field.getName();
 		var typeSignature = field.getTypeSignatureOrTypeDescriptor();
 		Ctx ctx = new Ctx().withField(field);
@@ -294,15 +287,13 @@ public class GroupHandler {
 			type = printType(ctx, typeSignature);
 		}
 		
-		//Doc docAnnotation = getDocAnnotation(field.getAnnotationInfo(DOC));
-
 		out.table(
-			editLink(field.getClassInfo()),
+			editLink(introspec),
 			name,
 			type,
 			findDefault(currentType, field),
-			"",//StringUtils.isEmpty(docAnnotation.example()) ? "" : code(PrettyPrinter.print(docAnnotation.example())),
-			""//docAnnotation.description()
+			introspec.getExample(),
+			introspec.getDescription()
 		);
 	}
 
@@ -331,11 +322,14 @@ public class GroupHandler {
 		}
 	}
 
-	private String editLink(ClassInfo classInfo) {
+	private String editLink(Introspection intro) throws IOException {
+		var target = new File("..").getCanonicalFile().toPath().relativize(intro.getFile().getCanonicalFile().toPath());
+		String line = intro.getLine();
 		return "[✎]("
-			+"https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/"
-			+ classInfo.getName().replace('.', '/')
-			+".java)";
+			+ "https://github.com/bakdata/conquery/edit/develop/"
+			+ FilenameUtils.separatorsToUnix(target.toString())
+			+ (line==null?"":"#"+line)
+			+ ")";
 	}
 
 	private String printType(Ctx ctx, TypeSignature type) {
@@ -388,6 +382,15 @@ public class GroupHandler {
 			}
 			
 			//another BaseClass
+			if(content.keySet().stream().map(Base::getBaseClass).anyMatch(c->c.equals(cl))) {
+				return "["+type.toStringWithSimpleNames()+"]("+anchor(baseTitle(cl))+")";
+			}
+			//another contentClass
+			var match=content.values().stream().filter(p->p.getRight().loadClass().equals(cl)).collect(MoreCollectors.toOptional());
+			if(match.isPresent()) {
+				return "["+match.get().getLeft().id()+"]("+anchor(match.get().getLeft().id())+")";
+			}
+			
 			if(content.keySet().stream().map(Base::getBaseClass).anyMatch(c->c.equals(cl))) {
 				return "["+type.toStringWithSimpleNames()+"]("+anchor(baseTitle(cl))+")";
 			}
