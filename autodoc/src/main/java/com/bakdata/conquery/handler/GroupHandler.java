@@ -68,6 +68,7 @@ public class GroupHandler {
 	private final ScanResult scan;
 	private final Group group;
 	private final SimpleWriter out;
+	private final File root;
 	private Multimap<Base, Pair<CPSType, ClassInfo>> content = HashMultimap.create();
 	private List<Pair<String, MethodInfo>> endpoints = new ArrayList<>();
 	
@@ -129,7 +130,7 @@ public class GroupHandler {
 	}
 	
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
-		Introspection introspec = Introspection.from(method.getClassInfo()).findMethod(method);
+		Introspection introspec = Introspection.from(root, method.getClassInfo()).findMethod(method);
 		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo(), introspec)) {
 			out.paragraph("Method: "+code(method.getName()));
 			for(var param : method.getParameterInfo()) {
@@ -195,7 +196,7 @@ public class GroupHandler {
 	}
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
-		var source = Introspection.from(c); 
+		var source = Introspection.from(root, c); 
 		try(var details = details(name, c, source)) {
 			if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 				out.line("Supported Fields:");
@@ -238,7 +239,7 @@ public class GroupHandler {
 	}
 	
 	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
-		var source = Introspection.from(c); 
+		var source = Introspection.from(root, c); 
 		try(var details = details(name, c, source)) {			
 			Set<String> values = new HashSet<>();
 			for(var cl : group.getOtherClasses()) {
@@ -271,7 +272,7 @@ public class GroupHandler {
 			return;
 		}
 		
-		var introspec = Introspection.from(field.getClassInfo()).findField(field);
+		var introspec = Introspection.from(root, field.getClassInfo()).findField(field);
 		String name = field.getName();
 		var typeSignature = field.getTypeSignatureOrTypeDescriptor();
 		Ctx ctx = new Ctx().withField(field);

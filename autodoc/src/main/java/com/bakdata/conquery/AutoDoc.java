@@ -44,7 +44,7 @@ public class AutoDoc {
 			try (var out = new SimpleWriter(
 				Out.file(target).withUTF8().asWriter()
 			)) {
-				new GroupHandler(scan, group, out).handle();
+				new GroupHandler(scan, group, out, docs.getCanonicalFile().getParentFile()).handle();
 			}
 			log.info("Written file {}", target.getCanonicalPath());
 		}

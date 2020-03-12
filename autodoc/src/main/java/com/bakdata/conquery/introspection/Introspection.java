@@ -16,11 +16,11 @@ public interface Introspection {
 	String getExample();
 	File getFile();
 	
-	public static Introspection from(ClassInfo cl) {
-		File f = new File("../backend/src/main/java/"+cl.getName().replace('.', '/')+".java");
+	public static Introspection from(File root, ClassInfo cl) {
+		File f = new File(root, "backend/src/main/java/"+cl.getName().replace('.', '/')+".java");
 		try {
 			if(cl.isInnerClass()) {
-				ClassIntrospection parent = (ClassIntrospection)from(cl.getOuterClasses().get(cl.getOuterClasses().size()-1));
+				ClassIntrospection parent = (ClassIntrospection)from(root, cl.getOuterClasses().get(cl.getOuterClasses().size()-1));
 				return parent.findInnerType(cl.getSimpleName());
 			}
 			
