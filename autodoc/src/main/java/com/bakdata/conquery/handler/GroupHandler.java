@@ -324,7 +324,7 @@ public class GroupHandler {
 	}
 
 	private String editLink(Introspection intro) throws IOException {
-		var target = new File("..").getCanonicalFile().toPath().relativize(intro.getFile().getCanonicalFile().toPath());
+		var target = root.toPath().relativize(intro.getFile().getCanonicalFile().toPath());
 		String line = intro.getLine();
 		return "[✎]("
 			+ "https://github.com/bakdata/conquery/edit/develop/"
