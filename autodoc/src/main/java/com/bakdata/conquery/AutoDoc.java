@@ -18,12 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AutoDoc {
 	
 	public static void main(String[] args) throws IOException {
-		if(args.length == 0) {
-			new AutoDoc().start(new File("../docs/"));
-		}
-		else {
-			new AutoDoc().start(new File(args[0]));
-		}
+		new AutoDoc().start(new File(args.length==0?"../docs/":args[0]));
 	}
 
 	private ScanResult scan;
