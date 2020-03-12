@@ -13,6 +13,7 @@ import {
   selectSuggestions
 } from "../stateSelectors";
 import { createFormSuggestionActions } from "../form-suggestions/actions";
+import { tableIsEditable } from "../../model/table";
 
 export type PropsType = {
   formType: string,
@@ -54,7 +55,7 @@ const mapStateToProps = (state, ownProps) => {
     node &&
     node.tables &&
     (node.tables.length > 1 ||
-      node.tables.some(table => table.filters && table.filters.length > 0));
+      node.tables.some(table => tableIsEditable(table)));
 
   const formState = selectFormState(state, ownProps.formType);
   const suggestions = conceptPosition
