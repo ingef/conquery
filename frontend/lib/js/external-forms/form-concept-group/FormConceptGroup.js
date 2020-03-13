@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
-import { connect, type Dispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import type { FieldProps } from "redux-form";
 
 import { resetAllFiltersInTables } from "../../model/table";
@@ -404,16 +404,21 @@ const DropzoneListItem = styled("div")`
   flex-wrap: wrap;
 `;
 
-const FormConcept = (props: PropsType) => {
+const FormConceptGroup = (props: PropsType) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
+
+  const dispatch = useDispatch();
+
+  const initModal = file => dispatch(initUploadConceptListModal(file));
+  const resetModal = () => dispatch(resetUploadConceptListModal());
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [modalContext, setModalContext] = React.useState({});
 
   const onCloseModal = () => {
     setIsModalOpen(false); // For the Modal "container"
-    props.resetModal(); // For the common UploadConceptListModal
+    resetModal(); // For the common UploadConceptListModal
   };
 
   const onDropFile = async (file, valueIdx, conceptIdx) => {
@@ -422,7 +427,7 @@ const FormConcept = (props: PropsType) => {
     // For the common UploadConceptListModal
     // Wait for file processing before opening the modal
     // => See QueryUploadConceptListModal actions
-    await props.initModal(file);
+    await initModal(file);
 
     setIsModalOpen(true); // For the Modal "container"
   };
@@ -698,12 +703,4 @@ const FormConcept = (props: PropsType) => {
   );
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  initModal: file => dispatch(initUploadConceptListModal(file)),
-  resetModal: () => dispatch(resetUploadConceptListModal())
-});
-
-export default connect(
-  null,
-  mapDispatchToProps
-)(FormConcept);
+export default FormConceptGroup;
