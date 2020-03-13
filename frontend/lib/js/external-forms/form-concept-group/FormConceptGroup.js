@@ -39,6 +39,7 @@ import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-t
 import { FormQueryNodeEditor } from "../form-query-node-editor";
 
 import FormConceptNode from "./FormConceptNode";
+import DraggableFormConceptNode from "./DraggableFormConceptNode";
 
 type PropsType = FieldProps & {
   label: string,
@@ -509,36 +510,38 @@ const FormConceptGroup = (props: PropsType) => {
               }
               items={row.concepts.map((concept, j) =>
                 concept ? (
-                  <FormConceptNode
-                    key={j}
-                    valueIdx={i}
-                    conceptIdx={j}
-                    conceptNode={concept}
-                    name={props.input.name}
-                    hasActiveFilters={nodeHasActiveFilters(concept)}
-                    onFilterClick={() =>
-                      props.input.onChange(
-                        setConceptProperties(props.input.value, i, j, {
-                          isEditing: true
-                        })
-                      )
-                    }
-                    expand={{
-                      onClick: () =>
+                  <DraggableFormConceptNode>
+                    <FormConceptNode
+                      key={j}
+                      valueIdx={i}
+                      conceptIdx={j}
+                      conceptNode={concept}
+                      name={props.input.name}
+                      hasActiveFilters={nodeHasActiveFilters(concept)}
+                      onFilterClick={() =>
                         props.input.onChange(
-                          onToggleIncludeSubnodes(
-                            props.input.value,
-                            i,
-                            j,
-                            !concept.includeSubnodes,
-                            newValue
-                          )
-                        ),
-                      expandable:
-                        !props.isSingle && hasConceptChildren(concept),
-                      active: concept.includeSubnodes
-                    }}
-                  />
+                          setConceptProperties(props.input.value, i, j, {
+                            isEditing: true
+                          })
+                        )
+                      }
+                      expand={{
+                        onClick: () =>
+                          props.input.onChange(
+                            onToggleIncludeSubnodes(
+                              props.input.value,
+                              i,
+                              j,
+                              !concept.includeSubnodes,
+                              newValue
+                            )
+                          ),
+                        expandable:
+                          !props.isSingle && hasConceptChildren(concept),
+                        active: concept.includeSubnodes
+                      }}
+                    />
+                  </DraggableFormConceptNode>
                 ) : (
                   <DropzoneWithFileInput
                     acceptedDropTypes={[CONCEPT_TREE_NODE]}
