@@ -1,6 +1,6 @@
 // @flow
 
-import { SET_MESSAGE } from "./actionTypes";
+import { SET_MESSAGE, RESET_MESSAGE } from "./actionTypes";
 
 export type StateType = {
   messageKey: ?string
@@ -14,6 +14,8 @@ export default (state: StateType = initialState, action: Object): StateType => {
   switch (action.type) {
     case SET_MESSAGE:
       return { ...state, messageKey: action.payload.messageKey };
+    case RESET_MESSAGE:
+      return initialState;
     default:
       return state;
   }
