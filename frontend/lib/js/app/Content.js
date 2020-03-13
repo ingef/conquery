@@ -3,6 +3,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 // Also, set up the drag and drop context
 import { DndProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
@@ -21,16 +22,20 @@ import type { TabT } from "../pane/types";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 
+// ADDING TO react-split-pane STYLES
+// Because otherwise, vertical panes don't expand properly in Safari
+const reactSplitPaneSafariFix = css`
+  .vertical {
+    height: 100%;
+  }
+`;
+
 const Root = styled("div")`
   width: 100%;
   height: 100%;
   position: relative;
 
-  // ADDING TO react-split-pane STYLES
-  // Because otherwise, vertical panes don't expand properly in Safari
-  .vertical {
-    height: 100%;
-  }
+  ${reactSplitPaneSafariFix};
 `;
 
 const PreviewItem = styled("div")`
@@ -43,6 +48,8 @@ const PreviewItem = styled("div")`
   height: ${({ height }) => `${height}px`};
 `;
 
+// The mobile drag preview doesn't seem to be working at the moment
+// Consider upgrading react-dnd BUT somehow try to keep IE11 compatibility
 const generatePreview = (type, item, style) => {
   console.log("PREVIEW RENDERED", item.width, item.height, style);
   return <PreviewItem width={item.width} height={item.height} style={style} />;

@@ -9,7 +9,10 @@ import { resetAllFiltersInTables } from "../../model/table";
 import { compose, includes } from "../../common/helpers/commonHelper";
 import { nodeHasActiveFilters } from "../../model/node";
 
-import { CONCEPT_TREE_NODE } from "../../common/constants/dndTypes";
+import {
+  CONCEPT_TREE_NODE,
+  FORM_CONCEPT_NODE
+} from "../../common/constants/dndTypes";
 import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 
@@ -39,7 +42,6 @@ import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-t
 import { FormQueryNodeEditor } from "../form-query-node-editor";
 
 import FormConceptNode from "./FormConceptNode";
-import DraggableFormConceptNode from "./DraggableFormConceptNode";
 
 type PropsType = FieldProps & {
   label: string,
@@ -399,6 +401,10 @@ const switchFilterMode = (
   ];
 };
 
+const copyConcept = (value, item) => {
+  return JSON.parse(JSON.stringify(item.conceptNode));
+};
+
 const DropzoneListItem = styled("div")`
   display: flex;
   align-items: center;
@@ -465,7 +471,7 @@ const FormConceptGroup = (props: PropsType) => {
       <DropzoneList
         label={props.label}
         dropzoneText={props.attributeDropzoneText}
-        acceptedDropTypes={[CONCEPT_TREE_NODE]}
+        acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
         allowFile={true}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={i => props.input.onChange(removeValue(props.input.value, i))}
@@ -477,6 +483,16 @@ const FormConceptGroup = (props: PropsType) => {
             onDropFile(item.files[0], props.input.value.length);
 
             return;
+          }
+
+          if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+            return props.input.onChange(
+              addConcept(
+                addValue(props.input.value, newValue),
+                props.input.value.length,
+                copyConcept(props.input.value, item)
+              )
+            );
           }
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
@@ -510,41 +526,39 @@ const FormConceptGroup = (props: PropsType) => {
               }
               items={row.concepts.map((concept, j) =>
                 concept ? (
-                  <DraggableFormConceptNode>
-                    <FormConceptNode
-                      key={j}
-                      valueIdx={i}
-                      conceptIdx={j}
-                      conceptNode={concept}
-                      name={props.input.name}
-                      hasActiveFilters={nodeHasActiveFilters(concept)}
-                      onFilterClick={() =>
+                  <FormConceptNode
+                    key={j}
+                    valueIdx={i}
+                    conceptIdx={j}
+                    conceptNode={concept}
+                    name={props.input.name}
+                    hasActiveFilters={nodeHasActiveFilters(concept)}
+                    onFilterClick={() =>
+                      props.input.onChange(
+                        setConceptProperties(props.input.value, i, j, {
+                          isEditing: true
+                        })
+                      )
+                    }
+                    expand={{
+                      onClick: () =>
                         props.input.onChange(
-                          setConceptProperties(props.input.value, i, j, {
-                            isEditing: true
-                          })
-                        )
-                      }
-                      expand={{
-                        onClick: () =>
-                          props.input.onChange(
-                            onToggleIncludeSubnodes(
-                              props.input.value,
-                              i,
-                              j,
-                              !concept.includeSubnodes,
-                              newValue
-                            )
-                          ),
-                        expandable:
-                          !props.isSingle && hasConceptChildren(concept),
-                        active: concept.includeSubnodes
-                      }}
-                    />
-                  </DraggableFormConceptNode>
+                          onToggleIncludeSubnodes(
+                            props.input.value,
+                            i,
+                            j,
+                            !concept.includeSubnodes,
+                            newValue
+                          )
+                        ),
+                      expandable:
+                        !props.isSingle && hasConceptChildren(concept),
+                      active: concept.includeSubnodes
+                    }}
+                  />
                 ) : (
                   <DropzoneWithFileInput
-                    acceptedDropTypes={[CONCEPT_TREE_NODE]}
+                    acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
                     onSelectFile={file => onDropFile(file, i, j)}
                     onDrop={(dropzoneProps, monitor) => {
                       const item = monitor.getItem();
@@ -553,6 +567,17 @@ const FormConceptGroup = (props: PropsType) => {
                         onDropFile(item.files[0], i, j);
 
                         return;
+                      }
+
+                      if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+                        return props.input.onChange(
+                          setConcept(
+                            props.input.value,
+                            i,
+                            j,
+                            copyConcept(props.input.value, item)
+                          )
+                        );
                       }
 
                       if (props.isValidConcept && !props.isValidConcept(item))
