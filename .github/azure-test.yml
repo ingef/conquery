@@ -1,7 +1,9 @@
 trigger:
-- master
-- develop
-
+  pr:
+    branches:
+      include:
+        - '*'
+        
 variables:
 - group: ConqueryConstants
 
