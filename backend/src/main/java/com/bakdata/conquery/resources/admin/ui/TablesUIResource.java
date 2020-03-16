@@ -1,8 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,14 +35,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+@Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 @Getter @Setter @Slf4j
 public class TablesUIResource extends HAdmin {
 	
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
-	@PathParam(TABLE_NAME)
+	@PathParam(TABLE)
 	protected TableId tableId;
 	protected Table table;
 	

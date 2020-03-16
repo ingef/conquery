@@ -1,9 +1,10 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
-import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -21,14 +22,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.QueryProcessor;
+import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
@@ -48,15 +52,12 @@ public class QueryResource {
 	}
 
 	@POST
-	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
+	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 		// Also look into the query and check the datasets
 		authorizeReadDatasets(user, query);
-		// Check reused query
-		for (ManagedExecutionId requiredQueryId : query
-			.collectRequiredQueries()) {
-			authorize(user, requiredQueryId, Ability.READ);
-		}
+		// Do query specific permission checks
+		query.checkPermissions(user);
 
 		return processor.postQuery(
 			dsUtil.getDataset(datasetId),
@@ -82,7 +83,7 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		ManagedQuery query = dsUtil.getManagedQuery(queryId);
+		ManagedExecution query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
 			dsUtil.getDataset(datasetId),

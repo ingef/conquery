@@ -6,7 +6,6 @@ import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.javadoc.JavadocBlockTag;
 import com.github.javaparser.javadoc.description.JavadocDescription;
-
 import io.github.classgraph.FieldInfo;
 import io.github.classgraph.MethodInfo;
 import lombok.Getter;
