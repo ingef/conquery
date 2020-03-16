@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.execution;
 
 import java.time.ZonedDateTime;
 
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.AllArgsConstructor;
@@ -29,7 +29,7 @@ public class ExecutionStatus {
 	private boolean shared;
 	private boolean own;
 	private boolean system;
-	private SubmittedQuery query;
+	private QueryDescription query;
 
 	private ManagedExecutionId id;
 	private ExecutionState status;

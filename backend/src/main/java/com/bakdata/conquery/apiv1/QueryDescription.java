@@ -21,7 +21,7 @@ import lombok.NonNull;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-public interface SubmittedQuery extends Visitable {
+public interface QueryDescription extends Visitable {
 
 	/**
 	 * Transforms the submitted query to an {@link ManagedExecution}.

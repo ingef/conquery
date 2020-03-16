@@ -9,8 +9,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id="RELATIVE_FORM_QUERY", base=SubmittedQuery.class)
+@CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
 @Getter
 @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class RelativeFormQuery extends IQuery {

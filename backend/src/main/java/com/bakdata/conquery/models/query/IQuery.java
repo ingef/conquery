@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -16,7 +16,7 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.MoreCollectors;
 
-public abstract class IQuery implements SubmittedQuery {
+public abstract class IQuery implements QueryDescription {
 
 	public abstract IQuery resolve(QueryResolveContext context);
 	public abstract QueryPlan createQueryPlan(QueryPlanContext context);

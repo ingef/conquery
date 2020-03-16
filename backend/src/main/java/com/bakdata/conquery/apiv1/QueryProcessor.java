@@ -35,7 +35,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ExecutionStatus postQuery(Dataset dataset, SubmittedQuery query, URLBuilder urlb, User user) {
+	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, URLBuilder urlb, User user) {
 		
 		// Initialize checks that need to traverse the query tree
 		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
@@ -78,7 +78,7 @@ public class QueryProcessor {
 		return getStatus(dataset, mq, urlb, user);
 	}
 
-	private void translateToOtherDatasets(Dataset dataset, SubmittedQuery query, User user, ManagedExecution<?> mq) {
+	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
 		IQuery translateable = (IQuery) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : namespaces.getNamespaces()) {

@@ -47,7 +47,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
-
 import io.github.classgraph.ArrayTypeSignature;
 import io.github.classgraph.BaseTypeSignature;
 import io.github.classgraph.ClassInfo;
