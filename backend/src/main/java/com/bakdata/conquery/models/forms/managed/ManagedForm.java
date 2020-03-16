@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
@@ -143,12 +144,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		switch(subQuery.getState()) {
 			case DONE:
 				if(openSubQueries.decrementAndGet() == 0) {
-					finish(storage);
+					finish(storage, ExecutionState.DONE);
 				}
 				break;
 			case FAILED:
 				// Fail the whole execution if a subquery fails
-				fail();
+				fail(storage);
 				break;
 			case CANCELED:
 				// Ideally sub queries can not be canceled by a user, so do nothing

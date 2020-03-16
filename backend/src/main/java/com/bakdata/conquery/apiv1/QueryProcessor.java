@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.bakdata.conquery.util.QueryUtils.SingleReusedChecker;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,6 @@ public class QueryProcessor {
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
 
-
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
@@ -40,9 +41,18 @@ public class QueryProcessor {
 		// Initialize checks that need to traverse the query tree
 		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
 		SingleReusedChecker singleReusedChecker = new QueryUtils.SingleReusedChecker();
+		NamespacedIdCollector namespacedIdCollector = new QueryUtils.NamespacedIdCollector();
+		ExecutionMetrics.QueryMetricsReporter metricsReporter = new ExecutionMetrics.QueryMetricsReporter();
+
 
 		// Chain the checks and apply them to the tree
-		query.visit(externalIdChecker.andThen(singleReusedChecker));
+		query.visit(externalIdChecker.andThen(singleReusedChecker).andThen(namespacedIdCollector).andThen(metricsReporter));
+
+		ExecutionMetrics.reportNamespacedIds(namespacedIdCollector.getIds(), user, storage);
+
+
+		ExecutionMetrics.reportQueryClassUsage(query.getClass());
+
 
 		// Evaluate the checks and take action
 		{

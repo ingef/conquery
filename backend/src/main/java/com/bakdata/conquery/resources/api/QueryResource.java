@@ -44,7 +44,7 @@ public class QueryResource {
 	
 	private QueryProcessor processor;
 	private ResourceUtil dsUtil;
-	
+
 	@Inject
 	public QueryResource(QueryProcessor processor) {
 		this.processor= processor;
