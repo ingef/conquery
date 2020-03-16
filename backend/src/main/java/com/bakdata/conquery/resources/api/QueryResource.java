@@ -23,8 +23,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;

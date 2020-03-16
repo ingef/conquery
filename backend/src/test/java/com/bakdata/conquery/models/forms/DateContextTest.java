@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -14,6 +13,7 @@ import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import org.junit.jupiter.api.Test;
 
 public class DateContextTest {
 

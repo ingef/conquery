@@ -3,25 +3,14 @@ package com.bakdata.conquery.introspection;
 import java.io.File;
 import java.util.Arrays;
 
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.javadoc.JavadocBlockTag;
-import com.github.javaparser.javadoc.description.JavadocDescription;
 import com.google.common.collect.MoreCollectors;
-
 import io.github.classgraph.ArrayTypeSignature;
 import io.github.classgraph.BaseTypeSignature;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ClassRefOrTypeVariableSignature;
 import io.github.classgraph.ClassRefTypeSignature;
 import io.github.classgraph.FieldInfo;
 import io.github.classgraph.MethodInfo;
 import io.github.classgraph.TypeSignature;
-import io.github.classgraph.TypeVariableSignature;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

@@ -34,6 +34,7 @@ import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
+import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -121,13 +122,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		admin = new AdminServlet();
 		admin.register(this, authController);
-		
+
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
 
 		// Register an unprotected servlet for logins on the admin port
 		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
-		
+
+
+		environment.admin().addTask(new QueryCleanupTask(storage));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
