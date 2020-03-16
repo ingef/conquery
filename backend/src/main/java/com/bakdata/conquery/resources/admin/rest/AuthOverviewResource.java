@@ -19,13 +19,20 @@ import com.bakdata.conquery.resources.hierarchies.HAuthOverview;
 public class AuthOverviewResource extends HAuthOverview {
 
 	@GET
+	@Path("csv")
 	public Response getPermissionOverviewAsCSV() {
-		return Response.ok(processor.getPermissionOverviewAsCSV()).build();
+		return Response
+			.ok(processor.getPermissionOverviewAsCSV())
+			.header("Content-Disposition",  "attachment; filename=\"authOverview.csv\"")
+			.build();
 	}
 
 	@GET
-	@Path("group/{"+ GROUP_ID +"}")
+	@Path("csv/group/{"+ GROUP_ID +"}")
 	public Response getPermissionOverviewAsCSV(@PathParam(value = GROUP_ID) GroupId groupId) {
-		return Response.ok(processor.getPermissionOverviewAsCSV(groupId)).build();
+		return Response
+			.ok(processor.getPermissionOverviewAsCSV(groupId))
+			.header("Content-Disposition",  String.format("attachment; filename=\"authOverview_%s.csv\"", groupId.getGroup()))
+			.build();
 	}
 }
