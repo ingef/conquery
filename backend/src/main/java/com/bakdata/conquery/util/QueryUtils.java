@@ -115,6 +115,25 @@ public class QueryUtils {
 		}
 	}
 
+
+	/**
+	 * Find all ReusedQuery in the queries tree, and return their Ids.
+	 *
+	 */
+	public static class AllReusedFinder implements QueryVisitor {
+
+		@Getter
+		final List<CQReusedQuery> reusedElements = new ArrayList<>();
+
+		@Override
+		public void accept(Visitable element) {
+			if (element instanceof CQReusedQuery) {
+				reusedElements.add((CQReusedQuery) element);
+			}
+		}
+
+	}
+
 	/**
 	 * Collects all {@link NamespacedId} references provided by a user from a
 	 * {@link Visitable}.

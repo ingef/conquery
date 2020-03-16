@@ -50,7 +50,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter
 @Setter
@@ -62,8 +61,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	protected DatasetId dataset;
 	protected UUID queryId = UUID.randomUUID();
-	@NotEmpty
-	protected String label = queryId.toString();
+	protected String label;
+
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
@@ -162,7 +161,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		return ExecutionStatus.builder()
-							  .label(label)
+							  .label(label == null ? queryId.toString() : label)
 							  .id(getId())
 							  .query(getSubmitted())
 							  .tags(tags)
@@ -205,12 +204,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	@JsonIgnore
 	public abstract Set<NamespacedId> getUsedNamespacedIds();
-	
-	
+
+
 	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
 
 	public abstract void addResult(@NonNull MasterMetaStorage storage, R result);
-	
+
 	/**
 	 * Initializes the result that is send from a worker to the Master.
 	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
@@ -218,9 +217,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	@JsonIgnore
 	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
-	
+
 	/**
-	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}. 
+	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
 	 */
 	@JsonIgnore
 	public abstract QueryDescription getSubmitted();
