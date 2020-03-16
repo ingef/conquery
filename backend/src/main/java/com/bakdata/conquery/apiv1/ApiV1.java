@@ -5,7 +5,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.models.auth.web.ActiveUsersFilter;
+import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.api.APIResource;

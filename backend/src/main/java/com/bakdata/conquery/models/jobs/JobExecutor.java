@@ -8,10 +8,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.bakdata.conquery.metrics.MetricsUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.SharedMetricRegistries;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -27,7 +25,7 @@ public class JobExecutor extends Thread {
 
 	public JobExecutor(String name) {
 		super(name);
-		SharedMetricRegistries.getDefault().register("jobs." + name + ".queue", (Gauge<Integer>) jobs::size);
+		MetricsUtil.createJobQueueGauge(name, jobs);
 	}
 
 	public void add(Job job) {
@@ -73,9 +71,9 @@ public class JobExecutor extends Thread {
 	public void close() {
 		closed.set(true);
 		Uninterruptibles.joinUninterruptibly(this);
-		SharedMetricRegistries.getDefault().remove("jobs." + getName() + ".queue");
+		MetricsUtil.removeJobQueueSizeGauge(getName());
 	}
-	
+
 	@Override
 	public void run() {
 		ConqueryMDC.setLocation(this.getName());
@@ -89,7 +87,7 @@ public class JobExecutor extends Thread {
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 
-					final Timer.Context time = SharedMetricRegistries.getDefault().timer(MetricRegistry.name(job.getClass(), "execute")).time();
+					final Timer.Context time = MetricsUtil.getJobExecutorTimer(job);
 
 					try {
 						if(job.isCancelled()){
@@ -117,4 +115,5 @@ public class JobExecutor extends Thread {
 			}
 		}
 	}
+
 }

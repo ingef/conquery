@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -20,9 +21,6 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.bakdata.conquery.util.QueryUtils.SingleReusedChecker;
-import com.bakdata.conquery.util.reporting.MetricsUtil;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.SharedMetricRegistries;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,17 +42,16 @@ public class QueryProcessor {
 		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
 		SingleReusedChecker singleReusedChecker = new QueryUtils.SingleReusedChecker();
 		NamespacedIdCollector namespacedIdCollector = new QueryUtils.NamespacedIdCollector();
-		QueryUtils.QueryMetricsReporter metricsReporter = new QueryUtils.QueryMetricsReporter();
+		ExecutionMetrics.QueryMetricsReporter metricsReporter = new ExecutionMetrics.QueryMetricsReporter();
 
 
 		// Chain the checks and apply them to the tree
 		query.visit(externalIdChecker.andThen(singleReusedChecker).andThen(namespacedIdCollector).andThen(metricsReporter));
 
-		MetricsUtil.reportNamespacedIds(namespacedIdCollector.getIds(), user, SharedMetricRegistries.getDefault(), storage);
+		ExecutionMetrics.reportNamespacedIds(namespacedIdCollector.getIds(), user, storage);
 
 
-		// Basic estimation of Query complexity.
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(query.getClass())).inc(); // Count usages of different types of Queries
+		ExecutionMetrics.reportQueryClassUsage(query.getClass());
 
 
 		// Evaluate the checks and take action

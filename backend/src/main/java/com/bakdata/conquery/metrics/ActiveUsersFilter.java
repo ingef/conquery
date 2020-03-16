@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.web;
+package com.bakdata.conquery.metrics;
 
 import java.io.IOException;
 import java.security.Principal;
