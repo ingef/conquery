@@ -109,12 +109,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected void fail(MasterMetaStorage storage) {
-		synchronized (execution) {
-			state = ExecutionState.FAILED;
-			finishTime = LocalDateTime.now();
-			execution.countDown();
-		}
-
 		finish(storage);
 	}
 
@@ -133,6 +127,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			finishTime = LocalDateTime.now();
 			state = ExecutionState.DONE;
 			execution.countDown();
+
 			if(getState() == ExecutionState.DONE) {
 				try {
 					storage.updateExecution(this);
