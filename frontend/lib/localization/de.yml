@@ -203,7 +203,9 @@ externalForms:
     mustBePositiveNumber: "Muss positive Zahl sein"
     isRequired: "Erforderlich"
     invalidDateRange: "Enddatum liegt vor Startdatum"
-
+  default:
+    conceptDropzoneLabel: "Füge ein Konzept oder eine Konzeptliste hinzu"
+    conceptColumnDropzoneLabel: "Füge ein Konzept oder eine Konzeptliste hinzu"
   common:
     relativeToIndex: "Relativ zum Indexdatum"
     timespan: "Zeitraum"
@@ -227,6 +229,9 @@ externalForms:
       last: "LETZTES"
       random: "ZUFÄLLIG"
     edit: "Bearbeiten"
+    concept:
+      expand: "Untergeordnete Attribute einbeziehen / wieder ausschließen."
+    clear: "Formular leeren"
 
 uploadQueryResultsModal:
   headline: "Ergebnisliste hochladen"

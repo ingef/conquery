@@ -7,6 +7,8 @@ import { createConnectedQueryNodeEditor } from "../query-node-editor";
 import type { StateType } from "../app/reducers";
 import type { PropsType } from "../query-node-editor/QueryNodeEditor";
 
+import { tableIsEditable } from "../model/table";
+
 import {
   deselectNode,
   updateNodeLabel,
@@ -32,14 +34,7 @@ const mapStateToProps = (state: StateType) => {
   const node = findNodeBeingEdited(state.queryEditor.query);
 
   const showTables =
-    node &&
-    node.tables &&
-    node.tables.some(
-      table =>
-        (!!table.filters && table.filters.length > 0) ||
-        (!!table.selects && table.selects.length > 0) ||
-        (!!table.dateColumn && table.dateColumn.options.length > 0)
-    );
+    node && !!node.tables && node.tables.some(table => tableIsEditable(table));
 
   return {
     node,

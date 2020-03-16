@@ -68,6 +68,23 @@ export function postQueries(
   });
 }
 
+// Same signature as postQueries, plus a form query transformator
+export function postFormQueries(
+  datasetId: DatasetIdT,
+  query: Object,
+  queryType: string,
+  version: any,
+  formQueryTransformation: Function
+): Promise<PostQueriesResponseT> {
+  // Transform into backend-compatible format
+  const body = transformFormQueryToApi(query, version, formQueryTransformation);
+
+  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/queries`), {
+    method: "POST",
+    body
+  });
+}
+
 export function deleteQuery(
   datasetId: DatasetIdT,
   queryId: QueryIdT
@@ -86,44 +103,6 @@ export function getQuery(
 ): Promise<GetQueryResponseT> {
   return fetchJson(
     getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`)
-  );
-}
-
-// Same signature as postQueries, plus a form query transformator
-export function postFormQueries(
-  datasetId: DatasetIdT,
-  query: Object,
-  queryType: string,
-  version: any,
-  formQueryTransformation: Function
-): Promise<PostQueriesResponseT> {
-  // Transform into backend-compatible format
-  const body = transformFormQueryToApi(query, version, formQueryTransformation);
-
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-queries`), {
-    method: "POST",
-    body
-  });
-}
-
-export function deleteFormQuery(
-  datasetId: DatasetIdT,
-  queryId: QueryIdT
-): Promise<null> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/form-queries/${queryId}`),
-    {
-      method: "DELETE"
-    }
-  );
-}
-
-export function getFormQuery(
-  datasetId: DatasetIdT,
-  queryId: QueryIdT
-): Promise<GetQueryResponseT> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/form-queries/${queryId}`)
   );
 }
 
