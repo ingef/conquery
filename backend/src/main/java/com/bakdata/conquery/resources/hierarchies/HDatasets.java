@@ -1,7 +1,7 @@
 package com.bakdata.conquery.resources.hierarchies;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -18,12 +18,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
 
 @Setter
-@Path("datasets/{" + DATASET_NAME + "}")
+@Path("datasets/{" + DATASET + "}")
 public abstract class HDatasets extends HAuthorized {
 	
 	@Inject
 	protected QueryProcessor processor;
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
 	protected ObjectMapper mapper;

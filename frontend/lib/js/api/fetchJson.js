@@ -9,7 +9,7 @@ type RequestType = {
   headers?: Object
 };
 
-export function fetchJsonUnauthorized(
+export async function fetchJsonUnauthorized(
   url: string,
   request?: RequestType,
   rawBody?: boolean = false
@@ -31,16 +31,25 @@ export function fetchJsonUnauthorized(
         }
       };
 
-  return fetch(url, finalRequest).then(
-    response => {
-      if (response.status >= 200 && response.status < 300)
-        return response.json().catch(e => e);
+  try {
+    const response = await fetch(url, finalRequest);
+
+    if (response.status >= 200 && response.status < 300) {
       // Also handle empty responses
+      return response.json().catch(e => e);
+    } else {
       // Reject other status
-      else return response.json().then(Promise.reject.bind(Promise));
-    },
-    error => Promise.reject(error) // Network or connection failure
-  );
+      try {
+        const parsed = await response.json();
+
+        return Promise.reject({ status: response.status, ...parsed });
+      } catch (e) {
+        return Promise.reject({ status: response.status });
+      }
+    }
+  } catch (e) {
+    return Promise.reject(e); // Network or connection failure
+  }
 }
 
 function fetchJson(
