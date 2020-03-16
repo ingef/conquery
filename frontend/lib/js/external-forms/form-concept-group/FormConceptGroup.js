@@ -2,14 +2,17 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
-import { connect, type Dispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import type { FieldProps } from "redux-form";
 
 import { resetAllFiltersInTables } from "../../model/table";
 import { compose, includes } from "../../common/helpers/commonHelper";
 import { nodeHasActiveFilters } from "../../model/node";
 
-import { CONCEPT_TREE_NODE } from "../../common/constants/dndTypes";
+import {
+  CONCEPT_TREE_NODE,
+  FORM_CONCEPT_NODE
+} from "../../common/constants/dndTypes";
 import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 
@@ -398,22 +401,31 @@ const switchFilterMode = (
   ];
 };
 
+const copyConcept = (value, item) => {
+  return JSON.parse(JSON.stringify(item.conceptNode));
+};
+
 const DropzoneListItem = styled("div")`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 `;
 
-const FormConcept = (props: PropsType) => {
+const FormConceptGroup = (props: PropsType) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
+
+  const dispatch = useDispatch();
+
+  const initModal = file => dispatch(initUploadConceptListModal(file));
+  const resetModal = () => dispatch(resetUploadConceptListModal());
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [modalContext, setModalContext] = React.useState({});
 
   const onCloseModal = () => {
     setIsModalOpen(false); // For the Modal "container"
-    props.resetModal(); // For the common UploadConceptListModal
+    resetModal(); // For the common UploadConceptListModal
   };
 
   const onDropFile = async (file, valueIdx, conceptIdx) => {
@@ -422,7 +434,7 @@ const FormConcept = (props: PropsType) => {
     // For the common UploadConceptListModal
     // Wait for file processing before opening the modal
     // => See QueryUploadConceptListModal actions
-    await props.initModal(file);
+    await initModal(file);
 
     setIsModalOpen(true); // For the Modal "container"
   };
@@ -459,7 +471,7 @@ const FormConcept = (props: PropsType) => {
       <DropzoneList
         label={props.label}
         dropzoneText={props.attributeDropzoneText}
-        acceptedDropTypes={[CONCEPT_TREE_NODE]}
+        acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
         allowFile={true}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={i => props.input.onChange(removeValue(props.input.value, i))}
@@ -471,6 +483,16 @@ const FormConcept = (props: PropsType) => {
             onDropFile(item.files[0], props.input.value.length);
 
             return;
+          }
+
+          if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+            return props.input.onChange(
+              addConcept(
+                addValue(props.input.value, newValue),
+                props.input.value.length,
+                copyConcept(props.input.value, item)
+              )
+            );
           }
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
@@ -536,7 +558,7 @@ const FormConcept = (props: PropsType) => {
                   />
                 ) : (
                   <DropzoneWithFileInput
-                    acceptedDropTypes={[CONCEPT_TREE_NODE]}
+                    acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
                     onSelectFile={file => onDropFile(file, i, j)}
                     onDrop={(dropzoneProps, monitor) => {
                       const item = monitor.getItem();
@@ -545,6 +567,17 @@ const FormConcept = (props: PropsType) => {
                         onDropFile(item.files[0], i, j);
 
                         return;
+                      }
+
+                      if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+                        return props.input.onChange(
+                          setConcept(
+                            props.input.value,
+                            i,
+                            j,
+                            copyConcept(props.input.value, item)
+                          )
+                        );
                       }
 
                       if (props.isValidConcept && !props.isValidConcept(item))
@@ -698,12 +731,4 @@ const FormConcept = (props: PropsType) => {
   );
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  initModal: file => dispatch(initUploadConceptListModal(file)),
-  resetModal: () => dispatch(resetUploadConceptListModal())
-});
-
-export default connect(
-  null,
-  mapDispatchToProps
-)(FormConcept);
+export default FormConceptGroup;

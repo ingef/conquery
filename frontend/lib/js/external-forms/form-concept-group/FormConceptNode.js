@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import { useDrag } from "react-dnd";
 import styled from "@emotion/styled";
 
 import { T } from "../../localization";
@@ -8,6 +9,7 @@ import IconButton from "../../button/IconButton";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
+import { dndTypes } from "../../common/constants";
 
 const Root = styled("div")`
   padding: 5px 10px;
@@ -74,8 +76,21 @@ type PropsT = {
 const FormConceptNode = (props: PropsT) => {
   const rootNodeLabel = getRootNodeLabel(props.conceptNode);
 
+  const [, drag] = useDrag({
+    item: {
+      type: dndTypes.FORM_CONCEPT_NODE
+    },
+    begin: monitor => ({
+      conceptNode: props.conceptNode
+    })
+  });
+
   return (
-    <Root active={props.hasActiveFilters} onClick={props.onFilterClick}>
+    <Root
+      ref={drag}
+      active={props.hasActiveFilters}
+      onClick={props.onFilterClick}
+    >
       <Left>
         {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
         {props.conceptNode && props.conceptNode.label}
