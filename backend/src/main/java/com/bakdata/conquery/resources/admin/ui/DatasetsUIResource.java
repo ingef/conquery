@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,10 +37,10 @@ import lombok.Setter;
 @Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
 @Getter
 @Setter
-@Path("datasets/{" + DATASET_NAME + "}")
+@Path("datasets/{" + DATASET + "}")
 public class DatasetsUIResource extends HAdmin {
 
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
 

@@ -8,13 +8,12 @@ import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class ManagedExecutionId extends AId<ManagedExecution> implements NamespacedId {
+public class ManagedExecutionId extends AId<ManagedExecution<?>> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final UUID execution;
