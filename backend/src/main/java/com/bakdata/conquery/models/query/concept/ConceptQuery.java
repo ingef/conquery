@@ -7,7 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -23,7 +23,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(id = "CONCEPT_QUERY", base = SubmittedQuery.class)
+@CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
 @AllArgsConstructor(onConstructor = @__({@JsonCreator}))
 public class ConceptQuery extends IQuery {
 

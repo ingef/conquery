@@ -3,7 +3,7 @@ package com.bakdata.conquery.apiv1.forms;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
@@ -21,7 +21,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public abstract class Form implements SubmittedQuery {
+public abstract class Form implements QueryDescription {
 
 	public abstract Map<String, List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
 
@@ -41,7 +41,7 @@ public abstract class Form implements SubmittedQuery {
 	
 	@Override
 	public void checkPermissions(@NonNull User user) {
-		SubmittedQuery.super.checkPermissions(user);
+		QueryDescription.super.checkPermissions(user);
 		user.checkPermission(FormPermission.onInstance(Ability.CREATE, this.getClass()));
 	}
 }

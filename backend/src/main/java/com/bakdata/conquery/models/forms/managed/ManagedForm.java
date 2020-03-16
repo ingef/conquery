@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -186,7 +186,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
-	public SubmittedQuery getSubmitted() {
+	public QueryDescription getSubmitted() {
 		return submittedForm;
 	}
 }

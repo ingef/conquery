@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -210,8 +210,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
 	
 	/**
-	 * Returns the {@link SubmittedQuery} that caused this {@link ManagedExecution}. 
+	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}. 
 	 */
 	@JsonIgnore
-	public abstract SubmittedQuery getSubmitted();
+	public abstract QueryDescription getSubmitted();
 }

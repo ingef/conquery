@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -22,20 +22,20 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	public static ManagedExecution<?> runQuery(Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> runQuery(Namespaces namespaces, QueryDescription query, UserId userId, DatasetId submittedDataset) {
 		return execute(namespaces, createExecution(namespaces, query, userId, submittedDataset));
 	}
 	
-	public static ManagedExecution<?> runQuery(Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> runQuery(Namespaces namespaces, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
 		return execute(namespaces, createQuery(namespaces, query, queryId, userId, submittedDataset));
 	}
 	
 
-	public static ManagedExecution<?> createExecution(Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> createExecution(Namespaces namespaces, QueryDescription query, UserId userId, DatasetId submittedDataset) {
 		return createQuery( namespaces, query, UUID.randomUUID(), userId, submittedDataset);
 	}
 
-	public static ManagedExecution<?> createQuery(Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> createQuery(Namespaces namespaces, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution<?> managed = query.toManagedExecution( namespaces, userId, submittedDataset);
 

@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.SubmittedQuery;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -25,7 +25,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-@CPSType(id="EXPORT_FORM", base=SubmittedQuery.class)
+@CPSType(id="EXPORT_FORM", base=QueryDescription.class)
 public class ExportForm extends Form implements NamespacedIdHolding {
 	@NotNull
 	private ManagedExecutionId queryGroup;
