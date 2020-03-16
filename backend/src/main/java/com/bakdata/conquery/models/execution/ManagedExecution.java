@@ -109,7 +109,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected void fail(MasterMetaStorage storage) {
-		finish(storage);
+		finish(storage, ExecutionState.FAILED);
 	}
 
 	public void start() {
@@ -119,22 +119,20 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish(@NonNull MasterMetaStorage storage) {
+	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW)
 			log.error("Query {} was never run.", getId());
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
-			state = ExecutionState.DONE;
 			execution.countDown();
+			setState(executionState);
 
-			if(getState() == ExecutionState.DONE) {
-				try {
-					storage.updateExecution(this);
-				}
-				catch (JSONException e) {
-					log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
-				}
+			try {
+				storage.updateExecution(this);
+			}
+			catch (JSONException e) {
+				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
 			}
 		}
 

@@ -43,6 +43,7 @@ public class ExecuteQuery extends WorkerMessage {
 		} catch (Exception e) {
 			// If one of the plans can not be created (maybe due to a Id that references a non existing concept) fail the whole job.
 			sendFailureToMaster(execution.getInitializedShardResult(null), execution, context, e);
+			return;
 		}
 		// Execute all plans.
 		for(Entry<ManagedExecutionId, QueryPlan> entry : plans) {

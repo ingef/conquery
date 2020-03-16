@@ -88,7 +88,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			executingThreads--;
 			results.addAll(result.getResults());
 			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
-				finish(storage);
+				finish(storage, ExecutionState.DONE);
 			}
 		}
 	}
@@ -104,10 +104,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void finish(@NonNull MasterMetaStorage storage) {
+	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
 		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
 
-		super.finish(storage);
+		super.finish(storage, executionState);
 	}
 
 	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
