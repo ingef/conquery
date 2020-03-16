@@ -25,11 +25,13 @@ import org.mockito.Mockito;
 class QueryCleanupTaskTest {
 
 	private ManagedQuery createManagedQuery() {
-		final ManagedQuery managedQuery = new ManagedQuery();
-		managedQuery.setDataset(new DatasetId("test"));
 		final CQAnd root = new CQAnd();
 		root.setChildren(new ArrayList<>());
-		managedQuery.setQuery(new ConceptQuery(root));
+
+		ConceptQuery query = new ConceptQuery(root);
+
+		final ManagedQuery managedQuery = new ManagedQuery(query, null, new DatasetId("test"));
+
 		managedQuery.setCreationTime(LocalDate.of(2000,12,10).atTime(10, 10));
 
 		executions.add(managedQuery);

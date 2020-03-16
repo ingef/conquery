@@ -1,7 +1,7 @@
 package com.bakdata.conquery.tasks;
 
 import java.io.PrintWriter;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,7 +82,7 @@ public class QueryCleanupTask extends Task {
 					log.trace("{} has no label", execution.getId());
 				}
 
-				if(execution.getCreationTime().until(LocalDate.now(), oldQueriesTime.getUnit().toChronoUnit()) < oldQueriesTime.getQuantity()) {
+				if(execution.getCreationTime().until(LocalDateTime.now(), oldQueriesTime.getUnit().toChronoUnit()) < oldQueriesTime.getQuantity()) {
 					continue;
 				}
 				else {
