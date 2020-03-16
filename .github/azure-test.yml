@@ -1,8 +1,7 @@
-trigger:
-  pr:
-    branches:
-      include:
-        - '*'
+pr:
+  branches:
+    include:
+      - '*'
         
 variables:
 - group: ConqueryConstants
