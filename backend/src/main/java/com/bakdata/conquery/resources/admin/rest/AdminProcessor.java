@@ -517,9 +517,10 @@ public class AdminProcessor {
 	 * Writes the header of the CSV auth overview to the specified writer.
 	 */
 	private static void writeAuthOverviewHeader(CsvWriter writer, List<String> scope) {
-		writer.addValue("User");
-		writer.addValues(scope);
-		writer.writeValuesToRow();
+		List<String> headers = new ArrayList<>();
+		headers.add("User");
+		headers.addAll(scope);
+		writer.writeHeaders(headers);
 	}
 	
 	/**
