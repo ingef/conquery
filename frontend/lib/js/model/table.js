@@ -1,11 +1,17 @@
 // @flow
 
+import type { TableT } from "../api/types";
 import type { TableWithFilterValueType } from "../standard-query-editor/types";
 
 import { isEmpty, compose } from "../common/helpers";
 
 import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
 import { filtersWithDefaults } from "./filter";
+
+export const tableIsEditable = (table: TableT) =>
+  (!!table.filters && table.filters.length > 0) ||
+  (!!table.selects && table.selects.length > 0) ||
+  (!!table.dateColumn && table.dateColumn.options.length > 0);
 
 export const tablesHaveActiveFilter = (tables: TableWithFilterValueType[]) =>
   tables.some(table => tableHasActiveFilters(table));

@@ -1,6 +1,7 @@
 const path = require("path");
 const glob = require("glob");
 const version = require("../../package.json").version;
+const EXPORT_FORM_CONFIG = require("./forms/export-form.json");
 const mockAuthMiddleware = require("./mockAuthMiddleware");
 
 // Taken from:
@@ -208,53 +209,14 @@ module.exports = function(app, port) {
     }
   );
 
-  /*
-    FORM QUERIES (COPIED FROM QUERIES)
-  */
-  app.post(
+  app.get(
     "/api/datasets/:datasetId/form-queries",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
-        res.status(201);
-        res.send(JSON.stringify({ id: 1 }));
+        res.send(JSON.stringify(EXPORT_FORM_CONFIG));
       }, SHORT_DELAY);
-    }
-  );
-
-  app.delete(
-    "/api/datasets/:datasetId/form-queries/:id",
-    mockAuthMiddleware,
-    function response(req, res) {
-      setTimeout(() => {
-        res.setHeader("Content-Type", "application/json");
-        res.send(JSON.stringify({ id: 1 }));
-      }, SHORT_DELAY);
-    }
-  );
-
-  app.get(
-    "/api/datasets/:datasetId/form-queries/:id",
-    mockAuthMiddleware,
-    function response(req, res) {
-      setTimeout(() => {
-        res.setHeader("Content-Type", "application/json");
-
-        const dice = Math.random();
-
-        if (dice > 0.1 && dice <= 0.6)
-          res.send(JSON.stringify({ id: 1, status: "RUNNING" }));
-        else
-          res.send(
-            JSON.stringify({
-              id: 1,
-              status: "DONE",
-              numberOfResults: 5,
-              resultUrl: `/api/results/results.csv`
-            })
-          );
-      }, LONG_DELAY);
     }
   );
 
