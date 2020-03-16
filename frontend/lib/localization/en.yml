@@ -203,7 +203,9 @@ externalForms:
     mustBePositiveNumber: "Must be a positive number"
     isRequired: "Required"
     invalidDateRange: "End date is smaller than start date"
-
+  default:
+    conceptDropzoneLabel: "Add a concept or a concept list"
+    conceptColumnDropzoneLabel: "Add a concept or a concept list"
   common:
     relativeToIndex: "Relative to index date"
     timespan: "Time span"
@@ -227,6 +229,9 @@ externalForms:
       last: "LAST"
       random: "RANDOM"
     edit: "Edit"
+    concept:
+      expand: "Include / exclude sub-attributes"
+    clear: "Clear form"
 
 uploadQueryResultsModal:
   headline: "Upload result list"
@@ -289,3 +294,10 @@ preview:
   min: "Min date"
   max: "Max date"
   span: "Date span"
+
+login:
+  headline: "Queries and Analyses"
+  username: "User name"
+  password: "Password"
+  error: "Login failed. Please check user name and password."
+  submit: "Login"

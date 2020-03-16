@@ -4,9 +4,9 @@ import java.util.Optional;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +27,13 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 	
 	private final MasterMetaStorage storage;
 
+	/**
+	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
+	 */
 	@Override
-	public Optional<User> authenticate(AuthenticationToken token) throws AuthenticationException {
-	
+	public Optional<User> authenticate(AuthenticationToken token) {
 		// Submit the token to Shiro (to all realms that were registered)
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
-		
 		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
@@ -41,6 +42,8 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		
 		if(user != null) {
 			ConqueryMDC.setLocation(user.getId().toString());
+		} else {
+			log.trace("The user id {} could not be map to a user.", userId);
 		}
 		// If the user was present, all further authorization can know be perfomed on the user object
 		return Optional.ofNullable(user);

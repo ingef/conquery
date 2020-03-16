@@ -19,14 +19,15 @@ const Root = styled("div")`
 
 const Input = styled("input")`
   min-width: 170px;
-  padding: 8px 30px 8px 10px;
-  font-size: ${({ theme }) => theme.font.sm};
+  padding: ${({ large }) =>
+    large ? "10px 30px 10px 14px" : "8px 30px 8px 10px"};
+  font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
 const ClearZone = styled(IconButton)`
   position: absolute;
-  top: 0;
+  top: ${({ large }) => (large ? "5px" : "0")};
   right: 10px;
   cursor: pointer;
   height: 36px;
@@ -51,6 +52,7 @@ type PropsType = {
   valueType?: string,
   placeholder?: string,
   value: ?(number | string),
+  large?: boolean,
   inputProps?: InputPropsType,
   currencyConfig?: CurrencyConfigT,
   onChange: (?(number | string)) => void
@@ -98,6 +100,7 @@ const BaseInput = (props: PropsType) => {
           onChange={e => safeOnChange(e.target.value)}
           onKeyPress={e => handleKeyPress(e)}
           value={props.value || ""}
+          large={props.large}
           {...inputProps}
         />
       )}
@@ -106,6 +109,7 @@ const BaseInput = (props: PropsType) => {
           tiny
           icon="times"
           tabIndex="-1"
+          large={props.large}
           title={T.translate("common.clearValue")}
           aria-label={T.translate("common.clearValue")}
           onClick={() => props.onChange(null)}

@@ -1,8 +1,0 @@
-externalForms:
-  exampleForm:
-    headline: "Example form"
-    exampleQuery: "Example Query Field"
-    exampleQueryDropzone: "Add a group from a previous query"
-    exampleConcepts: "Example Concept Field"
-    exampleConceptDropzone: "Add an attribute to the group"
-    exampleAttributeDropzone: "Add an attribute"

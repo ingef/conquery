@@ -1,4 +1,3 @@
-// @flow
 export {
   storeAuthToken,
   deleteStoredAuthToken,
@@ -7,5 +6,5 @@ export {
 
 export { createUnauthorizedErrorMiddleware } from "./middleware";
 
-export { default as Unauthorized } from "./Unauthorized";
+export { default as LoginPage } from "./LoginPage";
 export { default as WithAuthToken } from "./WithAuthToken";
