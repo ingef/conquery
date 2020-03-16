@@ -4,6 +4,9 @@
 	<div class="row">
 		<div class="col">
 		<h2>Auth Overview</h2>
+        <div>
+        <a class="btn btn-primary" href="/admin/${ctx.staticUriElem.AUTH_OVERVIEW_PATH_ELEMENT}/csv" download>Download as CSV</a>
+        </div>
         <table class="table table-striped">
         <thead>
             <tr>
@@ -35,9 +38,4 @@
     </table>
 
 	</div>
-    <script type="application/javascript">
-            $('[data-toggle="tooltip"]').tooltip()
-            $('[data-toggle="popover"]').popover({ trigger: 'hover'})
-            $('.popover-dismiss').popover({ trigger: 'focus'})
-    </script>
 </@layout.layout>
