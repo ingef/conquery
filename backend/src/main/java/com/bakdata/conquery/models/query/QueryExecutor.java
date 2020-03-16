@@ -1,7 +1,14 @@
 package com.bakdata.conquery.models.query;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -13,13 +20,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 @Slf4j
 public class QueryExecutor implements Closeable {
 
@@ -29,39 +29,27 @@ public class QueryExecutor implements Closeable {
 		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
 	}
 
-	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
-		query.start();
+	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
 
-		QueryPlan plan = query.getQuery().createQueryPlan(context);
-		return execute(
-				context.getBlockManager(),
-				new QueryExecutionContext(
-					context.getStorage()
-				),
-				query.getId(),
-				plan,
-				pool
-		);
+		return execute(result, context, entry, pool);
 	}
 
-	public static ShardResult execute(BucketManager bucketManager, QueryExecutionContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
-
-		Collection<Entity> entries = bucketManager.getEntities().values();
+	public static ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry, ListeningExecutorService executor) {
+		ManagedExecutionId executionId = entry.getKey();
+		Collection<Entity> entries = context.getStorage().getBucketManager().getEntities().values();
 
 		if(entries.isEmpty()) {
-			log.warn("entries for query {} are empty", queryId);
+			log.warn("entries for query {} are empty", executionId);
 		}
-		ShardResult result = new ShardResult();
-		result.setQueryId(queryId);
 		
-		List<ListenableFuture<EntityResult>> futures = plan
+		List<ListenableFuture<EntityResult>> futures = entry.getValue()
 			.executeOn(context, entries)
 			.map(executor::submit)
 			.collect(Collectors.toList());
 		
-		result.setFuture(Futures.allAsList(futures));
-		
-		result.getFuture().addListener(result::finish, MoreExecutors.directExecutor());
+		ListenableFuture<List<EntityResult>> future = Futures.allAsList(futures);
+		result.setFuture(future);
+		future.addListener(result::finish, MoreExecutors.directExecutor());
 		return result;
 	}
 
