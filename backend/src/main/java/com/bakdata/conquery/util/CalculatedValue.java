@@ -6,6 +6,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Lazy evaluated Supplier, that also stores if it has been evaluated or not.
+ */
 @RequiredArgsConstructor @ToString(of="value")
 public class CalculatedValue<T> {
 	@NonNull
