@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Path("datasets/{" + DATASET_NAME + "}")
+@Path("datasets/{" + DATASET + "}")
 public class DatasetResource extends HDatasets {
 	
 	@Inject

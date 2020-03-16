@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}/tables/{" + TABLE_NAME + "}/filters/{" + FILTER_NAME + "}")
+@Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}/tables/{" + TABLE + "}/filters/{" + FILTER + "}")
 public class FilterResource extends HFilters {
 	
 	@Inject

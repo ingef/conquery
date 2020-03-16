@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
 
 	private SingletonStore<Namespaces> meta;
-	private IdentifiableStore<ManagedExecution> executions;
+	private IdentifiableStore<ManagedExecution<?>> executions;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
@@ -78,14 +78,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
 
 		executions = StoreInfo.EXECUTIONS
-			.<ManagedExecution>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces).onAdd(value -> {
-				try {
-					value.initExecutable(namespaces.get(value.getDataset()));
-				}
-				catch (Exception e) {
-					log.error("Failed to load execution `{}`", value.getId(), e);
-				}
-			});
+			.<ManagedExecution<?>>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces);
 		authRole = StoreInfo.AUTH_ROLE.identifiable(getRolesEnvironment(), getValidator(), getCentralRegistry());
 
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
@@ -104,18 +97,18 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public ManagedExecution getExecution(ManagedExecutionId id) {
+	public ManagedExecution<?> getExecution(ManagedExecutionId id) {
 		return executions.get(id);
 	}
 
 	@Override
-	public Collection<ManagedExecution> getAllExecutions() {
+	public Collection<ManagedExecution<?>> getAllExecutions() {
 		return executions.getAll();
 	}
 
 	@Override
 	@SneakyThrows(JSONException.class)
-	public void updateExecution(ManagedExecution query) {
+	public void updateExecution(ManagedExecution<?> query) {
 		executions.update(query);
 	}
 

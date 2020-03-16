@@ -1,17 +1,14 @@
 package com.bakdata.conquery.models.identifiable;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.util.Doc;
 import com.google.common.base.CharMatcher;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.validator.constraints.NotEmpty;
 
 
 @Getter @Setter @NoArgsConstructor @EqualsAndHashCode(callSuper=true) @AllArgsConstructor
@@ -19,10 +16,10 @@ public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> e
 	
 	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(IId.JOIN_CHAR).or(CharMatcher.whitespace());
 	
-	@Doc(
-		description="shown in the frontend",
-		example="\"someLabel\""
-	)
+	/**
+	 * shown in the frontend
+	 * @jsonExample "someLabel"
+	 */
 	@NotEmpty @ToString.Include
 	private String label;
 	

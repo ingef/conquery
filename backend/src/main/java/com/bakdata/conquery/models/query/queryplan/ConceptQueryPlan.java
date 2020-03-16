@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.Getter;
 import lombok.Setter;
@@ -118,25 +117,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 			}
 		}
 		
-		/*
-		 * ugly workaround which we should find a fix for,
-		 * because the jackson serializer can't deal with NaN or infinity
-		 */
-		EntityResult result = createResult();
-		if(result instanceof ContainedEntityResult) {
-			result.asContained().streamValues().forEach(row -> {
-				for(int i=0;i<row.length;i++) {
-					if(row[i] instanceof Double) {
-						double v = (Double) row[i];
-						if(Double.isInfinite(v) || Double.isNaN(v)) {
-							row[i] = null;
-						}
-					}
-				}
-			});
-		}
-		
-		return result;
+		return createResult();
 	}
 	
 	@Override
@@ -175,6 +156,4 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		child.collectRequiredTables(requiredTables);
 	}
-	
-	
 }

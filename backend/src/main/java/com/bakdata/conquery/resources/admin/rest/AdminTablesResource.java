@@ -31,13 +31,13 @@ import lombok.Setter;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
 @Getter @Setter
-@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+@Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 public class AdminTablesResource extends HAdmin {
 	
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
-	@PathParam(TABLE_NAME)
+	@PathParam(TABLE)
 	protected TableId tableId;
 	protected Table table;
 
