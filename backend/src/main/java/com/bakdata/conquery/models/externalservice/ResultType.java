@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.externalservice;
 
+
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -43,7 +44,7 @@ public enum ResultType {
 	CATEGORICAL,
 	RESOLUTION {
 		@Override
-		public String print(PrintSettings cfg, @NonNull Object f) {
+		public String print(PrintSettings cfg, Object f) {
 			DateContextMode mode = null;
 			if(!( f instanceof DateContextMode)) {
 				mode = DateContextMode.valueOf(f.toString());
@@ -70,13 +71,6 @@ public enum ResultType {
 			return INTEGER.print(cfg, f);
 		}
 	};
-	
-	
-	
-	
-	
-	
-	
 
 	private static final NumberFormat NUMBER_FORMAT;
 	private static final NumberFormat DECIMAL_FORMAT;
