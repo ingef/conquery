@@ -49,6 +49,8 @@ public class ConqueryConfig extends Configuration {
 	private String[] additionalFormats = ArrayUtils.EMPTY_STRING_ARRAY;
 	@Valid @NotNull
 	private FrontendConfig frontend = new FrontendConfig();
+
+	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
 	
 	@NotNull @Valid
 	private IdMappingConfig idMapping = new NoIdMapping();

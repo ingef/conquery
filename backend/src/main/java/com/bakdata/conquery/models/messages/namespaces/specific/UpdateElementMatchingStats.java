@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -27,14 +26,14 @@ public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 	private final WorkerId source;
 	@ToString.Exclude
 	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
-	
+
 	@Override
 	public void react(Namespace context) throws Exception {
 		for(Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			try {
 				ConceptElementId<?> target = entry.getKey();
 				MatchingStats.Entry value = entry.getValue();
-				
+
 				Concept<?> c = context.getStorage().getConcept(target.findConcept());
 				//if a child node
 				if(target instanceof ConceptTreeChildId) {

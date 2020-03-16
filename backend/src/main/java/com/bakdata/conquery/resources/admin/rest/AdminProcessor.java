@@ -452,17 +452,7 @@ public class AdminProcessor {
 	}
 
 	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) {
-		PermissionOwner<?> owner = null;
-		Role role = null;
-		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-			role = Objects.requireNonNull(storage.getRole(roleId));
-		}
-		if (!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
-		}
-		((RoleOwner) owner).addRole(storage, role);
-		log.trace("Deleted role {} from {}", role, owner);
+		AuthorizationHelper.addRoleTo(getStorage(), ownerId, roleId);
 	}
 
 	public FEAuthOverview getAuthOverview() {

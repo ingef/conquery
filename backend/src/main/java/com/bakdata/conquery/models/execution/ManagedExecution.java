@@ -21,6 +21,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -106,41 +107,54 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
-	protected void fail() {
-		synchronized (execution) {
-			state = ExecutionState.FAILED;
-			finishTime = LocalDateTime.now();
-			execution.countDown();
-		}
+	protected void fail(MasterMetaStorage storage) {
+		finish(storage, ExecutionState.FAILED);
 	}
 
 	public void start() {
+		ExecutionMetrics.getRunningQueriesCounter().inc();
+
 		startTime = LocalDateTime.now();
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish(@NonNull MasterMetaStorage storage) {
+	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW)
 			log.error("Query {} was never run.", getId());
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
-			state = ExecutionState.DONE;
 			execution.countDown();
-			try {
-				storage.updateExecution(this);
-			}
-			catch (JSONException e) {
-				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
+			setState(executionState);
+
+			// No need to persist failed queries. (As they are most likely invalid)
+			if(getState() == ExecutionState.DONE) {
+				try {
+					storage.updateExecution(this);
+				}
+				catch (JSONException e) {
+					log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
+				}
 			}
 		}
+
+		ExecutionMetrics.getRunningQueriesCounter().dec();
+		ExecutionMetrics.getQueryStateCounter(getState()).inc();
+		ExecutionMetrics.getQueriesTimeHistogram().update(getExecutionTime().toMillis());
+
 
 		log.info(
 			"{} {} {} within {}",
 			state,
 			queryId,
 			this.getClass().getSimpleName(),
-			(startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
+			getExecutionTime()
+		);
+	}
+
+	@JsonIgnore
+	public Duration getExecutionTime() {
+		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
