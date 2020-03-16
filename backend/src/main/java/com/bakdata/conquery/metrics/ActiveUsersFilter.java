@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -48,7 +49,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		if(primaryGroup.getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(primaryGroup.getName() + ".active").inc();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.getName(), "active")).inc();
 	}
 
 	public void decrementPrimaryGroupCount(User user) {
@@ -58,7 +59,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		if(primaryGroup.getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(primaryGroup.getName() + ".active").dec();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.getName(), "active")).dec();
 	}
 
 

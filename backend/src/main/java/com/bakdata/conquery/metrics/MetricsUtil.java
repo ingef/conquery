@@ -11,16 +11,16 @@ import com.codahale.metrics.Timer;
 
 public class MetricsUtil {
 
-	public  static Timer.Context getStoreLoadingTimer() {
+	public static Timer.Context getStoreLoadingTimer() {
 		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(ConqueryStorage.class, "loading")).time();
 	}
 
 	public static void createJobQueueGauge(String name, LinkedBlockingDeque<Job> jobs) {
-		SharedMetricRegistries.getDefault().register("jobs." + name + ".queue", (Gauge<Integer>) jobs::size);
+		SharedMetricRegistries.getDefault().register(MetricRegistry.name("jobs", name, "queue"), (Gauge<Integer>) jobs::size);
 	}
 
 	public static void removeJobQueueSizeGauge(String name) {
-		 SharedMetricRegistries.getDefault().remove("jobs." + name + ".queue");
+		SharedMetricRegistries.getDefault().remove(MetricRegistry.name("jobs", name, "queue"));
 	}
 
 	public static Timer.Context getJobExecutorTimer(Job job) {

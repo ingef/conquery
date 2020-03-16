@@ -90,7 +90,7 @@ public class ExecutionMetrics {
 
 			if (element instanceof CQConcept) {
 				((CQConcept) element).getSelects()
-									 .forEach(select -> SharedMetricRegistries.getDefault().counter(MetricRegistry.name(select.getClass(), "usage")).inc());
+									 .forEach(select -> SharedMetricRegistries.getDefault().counter(MetricRegistry.name(select.getClass().getSimpleName(), "usage")).inc());
 
 				for (CQTable table : ((CQConcept) element).getTables()) {
 					table.getFilters().forEach(filter -> {
