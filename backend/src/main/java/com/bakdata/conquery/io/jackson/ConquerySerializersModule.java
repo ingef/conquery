@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.ClassToInstanceMapDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.ConqueryDoubleSerializer;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitSerializer;
 import com.bakdata.conquery.io.jackson.serializer.IdKeyDeserializer;
@@ -54,5 +55,6 @@ public class ConquerySerializersModule extends SimpleModule {
 		for(Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
+		addSerializer(new ConqueryDoubleSerializer());
 	}
 }
