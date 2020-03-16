@@ -1,6 +1,7 @@
 // @flow
 
 import { initTables } from "./transformers";
+import { useSelector } from "react-redux";
 
 const selectFormField = (state, formName, fieldName) => {
   if (
@@ -64,7 +65,7 @@ export const selectActiveFormValues = (state: Object) => {
   const reduxForm = selectReduxForm(state);
   const activeForm = selectActiveForm(state);
 
-  return reduxForm ? reduxForm[activeForm] : {};
+  return reduxForm && activeForm ? reduxForm[activeForm].values : {};
 };
 
 export const selectAvailableForms = (state: Object) =>
@@ -90,4 +91,49 @@ export const selectRunningQuery = (state: Object) => {
   const queryRunner = selectQueryRunner(state);
 
   return queryRunner ? queryRunner.runningQuery : null;
+};
+
+function getVisibleConceptListFields(config, values) {
+  const topLevelFields = config.fields.filter(
+    field => field.type === "CONCEPT_LIST"
+  );
+  const tabFields = config.fields.filter(field => field.type === "TABS");
+
+  const fieldsWithinVisibleTabs = tabFields.reduce((fields, tabField) => {
+    const activeTabName = values[tabField.name];
+    const activeTab = tabField.tabs.find(tab => tab.name === activeTabName);
+
+    const activeTabConceltListFields = activeTab
+      ? getVisibleConceptListFields(activeTab)
+      : [];
+
+    return [...fields, ...activeTabConceltListFields];
+  }, []);
+
+  return [...topLevelFields, ...fieldsWithinVisibleTabs];
+}
+
+export const useVisibleConceptListFields = () => {
+  const config = useSelector(state => selectFormConfig(state));
+  const values = useSelector(state => selectActiveFormValues(state));
+
+  if (!config) return false;
+
+  return getVisibleConceptListFields(config, values);
+};
+
+export const useAllowExtendedCopying = (targetFieldname: string) => {
+  const values = useSelector(state => selectActiveFormValues(state));
+  const otherConceptListFields = useVisibleConceptListFields().filter(
+    field => field.name !== targetFieldname
+  );
+
+  // Need to have min 2 fields to copy from one to another
+  if (otherConceptListFields.length < 1) return false;
+
+  const fieldHasFilledConcept = field =>
+    !!values[field.name] &&
+    values[field.name].some(value => value.concepts.some(concept => !!concept));
+
+  return otherConceptListFields.some(fieldHasFilledConcept);
 };

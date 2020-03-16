@@ -11,8 +11,7 @@ import {
   selectFormConfig,
   selectQueryRunner,
   selectRunningQuery,
-  selectActiveForm,
-  selectActiveFormValues
+  selectActiveForm
 } from "./stateSelectors";
 
 import { QueryRunner } from "../query-runner";
@@ -20,10 +19,9 @@ import { QueryRunner } from "../query-runner";
 const { startExternalFormsQuery, stopExternalFormsQuery } = actions;
 
 const isActiveFormValid = state => {
-  const form = selectActiveFormValues(state);
   const activeForm = selectActiveForm(state);
 
-  if (!form || !activeForm) return false;
+  if (!activeForm) return false;
 
   return (
     !isPristine(activeForm, selectReduxFormState)(state) &&

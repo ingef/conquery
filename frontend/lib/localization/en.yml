@@ -206,6 +206,11 @@ externalForms:
   default:
     conceptDropzoneLabel: "Add a concept or a concept list"
     conceptColumnDropzoneLabel: "Add a concept or a concept list"
+  copyModal:
+    headline: "Copy concepts form another field"
+    selectLabel: "Copy from source"
+    selectAll: "Select all"
+    accept: "Copy"
   common:
     relativeToIndex: "Relative to index date"
     timespan: "Time span"
@@ -231,6 +236,7 @@ externalForms:
     edit: "Edit"
     concept:
       expand: "Include / exclude sub-attributes"
+      copyFrom: "Copy from ..."
     clear: "Clear form"
 
 uploadQueryResultsModal:
