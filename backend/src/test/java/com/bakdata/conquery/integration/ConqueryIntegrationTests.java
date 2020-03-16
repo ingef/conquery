@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -17,13 +16,13 @@ public class ConqueryIntegrationTests extends IntegrationTests {
 	
 	@Override
 	@TestFactory @Tag(TestTags.INTEGRATION_JSON)
-	public List<DynamicNode> jsonTests() throws IOException {
+	public List<DynamicNode> jsonTests() {
 		return super.jsonTests();
 	}
 	
 	@Override
 	@TestFactory @Tag(TestTags.INTEGRATION_PROGRAMMATIC)
-	public Stream<DynamicNode> programmaticTests() throws IOException {
+	public Stream<DynamicNode> programmaticTests() {
 		return super.programmaticTests();
 	}
 }

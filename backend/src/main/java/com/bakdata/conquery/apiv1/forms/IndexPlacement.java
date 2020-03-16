@@ -1,0 +1,18 @@
+package com.bakdata.conquery.apiv1.forms;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor @Getter
+public enum IndexPlacement {
+	BEFORE(FeatureGroup.FEATURE),
+	NEUTRAL(null),
+	AFTER(FeatureGroup.OUTCOME);
+	
+	/**
+	 * The group, the event belongs to.
+	 */
+	private final FeatureGroup group;
+	
+	
+}
