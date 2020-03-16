@@ -276,7 +276,12 @@
 	},
 	{
 		"method": "GET",
-		"path": "/auth-overview",
+		"path": "/auth-overview/csv",
+		"clazz": "AuthOverviewResource"
+	},
+	{
+		"method": "GET",
+		"path": "/auth-overview/csv/group/{groupId}",
 		"clazz": "AuthOverviewResource"
 	}
 ]
