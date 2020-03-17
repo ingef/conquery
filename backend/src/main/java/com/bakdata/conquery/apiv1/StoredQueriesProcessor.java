@@ -1,8 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
 
 import java.util.Collection;
 import java.util.List;

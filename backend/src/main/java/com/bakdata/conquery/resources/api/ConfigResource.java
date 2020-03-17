@@ -7,7 +7,6 @@ import javax.ws.rs.Produces;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
-
 import lombok.RequiredArgsConstructor;
 
 @Path("config")

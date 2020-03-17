@@ -5,11 +5,11 @@ import static com.bakdata.conquery.Constants.GROUPS;
 import java.io.File;
 import java.io.IOException;
 
+
 import com.bakdata.conquery.handler.GroupHandler;
 import com.bakdata.conquery.handler.SimpleWriter;
 import com.bakdata.conquery.model.Group;
 import com.github.powerlibraries.io.Out;
-
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;

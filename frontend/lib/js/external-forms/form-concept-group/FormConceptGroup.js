@@ -2,15 +2,20 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
-import { connect, type Dispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import type { FieldProps } from "redux-form";
+import T from "i18n-react";
 
 import { resetAllFiltersInTables } from "../../model/table";
 import { compose, includes } from "../../common/helpers/commonHelper";
 import { nodeHasActiveFilters } from "../../model/node";
 
-import { CONCEPT_TREE_NODE } from "../../common/constants/dndTypes";
+import {
+  CONCEPT_TREE_NODE,
+  FORM_CONCEPT_NODE
+} from "../../common/constants/dndTypes";
 import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
+import BasicButton from "../../button/BasicButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 
 import {
@@ -39,8 +44,16 @@ import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-t
 import { FormQueryNodeEditor } from "../form-query-node-editor";
 
 import FormConceptNode from "./FormConceptNode";
+import FormConceptCopyModal from "./FormConceptCopyModal";
+import {
+  selectActiveFormValues,
+  selectActiveForm,
+  selectFormConfig,
+  useAllowExtendedCopying
+} from "../stateSelectors";
 
 type PropsType = FieldProps & {
+  fieldName: string,
   label: string,
   datasetId: string,
   onDropFilterFile: Function,
@@ -66,13 +79,12 @@ const onToggleIncludeSubnodes = (
   includeSubnodes,
   newValue
 ) => {
-  const feature = value[valueIdx];
-  const concepts = feature.concepts;
-  const formConcept = concepts[conceptIdx];
-  const concept = getConceptById(formConcept.ids);
+  const element = value[valueIdx];
+  const concept = element.concepts[conceptIdx];
+  const conceptData = getConceptById(concept.ids);
 
   const childIds = [];
-  const elements = concept.children.map(childId => {
+  const elements = conceptData.children.map(childId => {
     const child = getConceptById(childId);
 
     childIds.push(childId);
@@ -84,9 +96,9 @@ const onToggleIncludeSubnodes = (
           ids: [childId],
           label: child.label,
           description: child.description,
-          tables: formConcept.tables,
-          selects: formConcept.selects,
-          tree: formConcept.tree
+          tables: concept.tables,
+          selects: concept.selects,
+          tree: concept.tree
         }
       ]
     };
@@ -94,15 +106,20 @@ const onToggleIncludeSubnodes = (
 
   const nextValue = includeSubnodes
     ? [...value, ...elements]
-    : value.filter(f =>
-        f.concepts.some(c => {
-          return childIds.every(childId => !includes(c.ids, childId));
+    : value.filter(val =>
+        val.concepts.some(cpt => {
+          return childIds.every(childId => !includes(cpt.ids, childId));
         })
       );
 
-  return setConceptProperties(nextValue, valueIdx, conceptIdx, {
-    includeSubnodes
-  });
+  return setConceptProperties(
+    nextValue,
+    nextValue.indexOf(element),
+    conceptIdx,
+    {
+      includeSubnodes
+    }
+  );
 };
 
 const createQueryNodeFromConceptListUploadResult = (
@@ -398,22 +415,38 @@ const switchFilterMode = (
   ];
 };
 
+const copyConcept = item => {
+  return JSON.parse(JSON.stringify(item));
+};
+
 const DropzoneListItem = styled("div")`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 `;
 
-const FormConcept = (props: PropsType) => {
+const SxBasicButton = styled(BasicButton)`
+  margin-left: 10px;
+`;
+
+const FormConceptGroup = (props: PropsType) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
+
+  const [isCopyModalOpen, setIsCopyModalOpen] = React.useState(false);
+  const allowExtendedCopying = useAllowExtendedCopying(props.fieldName);
+
+  const dispatch = useDispatch();
+
+  const initModal = file => dispatch(initUploadConceptListModal(file));
+  const resetModal = () => dispatch(resetUploadConceptListModal());
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [modalContext, setModalContext] = React.useState({});
 
   const onCloseModal = () => {
     setIsModalOpen(false); // For the Modal "container"
-    props.resetModal(); // For the common UploadConceptListModal
+    resetModal(); // For the common UploadConceptListModal
   };
 
   const onDropFile = async (file, valueIdx, conceptIdx) => {
@@ -422,7 +455,7 @@ const FormConcept = (props: PropsType) => {
     // For the common UploadConceptListModal
     // Wait for file processing before opening the modal
     // => See QueryUploadConceptListModal actions
-    await props.initModal(file);
+    await initModal(file);
 
     setIsModalOpen(true); // For the Modal "container"
   };
@@ -454,12 +487,36 @@ const FormConcept = (props: PropsType) => {
     onCloseModal();
   };
 
+  const onAcceptCopyModal = valuesToCopy => {
+    // Deeply copy all values + concepts
+    const nextValue = valuesToCopy.reduce((currentValue, value) => {
+      const newVal = addValue(currentValue, newValue);
+
+      return value.concepts.reduce(
+        (curVal, concept) =>
+          addConcept(newVal, curVal.length, copyConcept(concept)),
+        currentValue
+      );
+    }, props.input.value);
+
+    return props.input.onChange(nextValue);
+  };
+
   return (
     <div>
       <DropzoneList
-        label={props.label}
+        label={
+          <>
+            {props.label}
+            {allowExtendedCopying && (
+              <SxBasicButton tiny onClick={() => setIsCopyModalOpen(true)}>
+                {T.translate("externalForms.common.concept.copyFrom")}
+              </SxBasicButton>
+            )}
+          </>
+        }
         dropzoneText={props.attributeDropzoneText}
-        acceptedDropTypes={[CONCEPT_TREE_NODE]}
+        acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
         allowFile={true}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={i => props.input.onChange(removeValue(props.input.value, i))}
@@ -471,6 +528,16 @@ const FormConcept = (props: PropsType) => {
             onDropFile(item.files[0], props.input.value.length);
 
             return;
+          }
+
+          if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+            return props.input.onChange(
+              addConcept(
+                addValue(props.input.value, newValue),
+                props.input.value.length,
+                copyConcept(item.conceptNode)
+              )
+            );
           }
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
@@ -536,7 +603,7 @@ const FormConcept = (props: PropsType) => {
                   />
                 ) : (
                   <DropzoneWithFileInput
-                    acceptedDropTypes={[CONCEPT_TREE_NODE]}
+                    acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
                     onSelectFile={file => onDropFile(file, i, j)}
                     onDrop={(dropzoneProps, monitor) => {
                       const item = monitor.getItem();
@@ -545,6 +612,17 @@ const FormConcept = (props: PropsType) => {
                         onDropFile(item.files[0], i, j);
 
                         return;
+                      }
+
+                      if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+                        return props.input.onChange(
+                          setConcept(
+                            props.input.value,
+                            i,
+                            j,
+                            copyConcept(item.conceptNode)
+                          )
+                        );
                       }
 
                       if (props.isValidConcept && !props.isValidConcept(item))
@@ -568,6 +646,13 @@ const FormConcept = (props: PropsType) => {
           </DropzoneListItem>
         ))}
       />
+      {isCopyModalOpen && (
+        <FormConceptCopyModal
+          targetFieldname={props.fieldName}
+          onAccept={onAcceptCopyModal}
+          onClose={() => setIsCopyModalOpen(false)}
+        />
+      )}
       {isModalOpen && (
         <UploadConceptListModal
           selectedDatasetId={props.datasetId}
@@ -698,12 +783,4 @@ const FormConcept = (props: PropsType) => {
   );
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  initModal: file => dispatch(initUploadConceptListModal(file)),
-  resetModal: () => dispatch(resetUploadConceptListModal())
-});
-
-export default connect(
-  null,
-  mapDispatchToProps
-)(FormConcept);
+export default FormConceptGroup;

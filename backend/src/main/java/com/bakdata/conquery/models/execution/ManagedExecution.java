@@ -21,6 +21,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -49,7 +50,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter
 @Setter
@@ -61,8 +61,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	protected DatasetId dataset;
 	protected UUID queryId = UUID.randomUUID();
-	@NotEmpty
-	protected String label = queryId.toString();
+	protected String label;
+
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
@@ -107,41 +107,54 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
-	protected void fail() {
-		synchronized (execution) {
-			state = ExecutionState.FAILED;
-			finishTime = LocalDateTime.now();
-			execution.countDown();
-		}
+	protected void fail(MasterMetaStorage storage) {
+		finish(storage, ExecutionState.FAILED);
 	}
 
 	public void start() {
+		ExecutionMetrics.getRunningQueriesCounter().inc();
+
 		startTime = LocalDateTime.now();
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish(@NonNull MasterMetaStorage storage) {
+	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW)
 			log.error("Query {} was never run.", getId());
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
-			state = ExecutionState.DONE;
 			execution.countDown();
-			try {
-				storage.updateExecution(this);
-			}
-			catch (JSONException e) {
-				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
+			setState(executionState);
+
+			// No need to persist failed queries. (As they are most likely invalid)
+			if(getState() == ExecutionState.DONE) {
+				try {
+					storage.updateExecution(this);
+				}
+				catch (JSONException e) {
+					log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
+				}
 			}
 		}
+
+		ExecutionMetrics.getRunningQueriesCounter().dec();
+		ExecutionMetrics.getQueryStateCounter(getState()).inc();
+		ExecutionMetrics.getQueriesTimeHistogram().update(getExecutionTime().toMillis());
+
 
 		log.info(
 			"{} {} {} within {}",
 			state,
 			queryId,
 			this.getClass().getSimpleName(),
-			(startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
+			getExecutionTime()
+		);
+	}
+
+	@JsonIgnore
+	public Duration getExecutionTime() {
+		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
@@ -152,7 +165,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		return ExecutionStatus.builder()
-							  .label(label)
+							  .label(label == null ? queryId.toString() : label)
 							  .id(getId())
 							  .query(getSubmitted())
 							  .tags(tags)
@@ -195,12 +208,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	@JsonIgnore
 	public abstract Set<NamespacedId> getUsedNamespacedIds();
-	
-	
+
+
 	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
 
 	public abstract void addResult(@NonNull MasterMetaStorage storage, R result);
-	
+
 	/**
 	 * Initializes the result that is send from a worker to the Master.
 	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
@@ -208,9 +221,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	@JsonIgnore
 	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
-	
+
 	/**
-	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}. 
+	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
 	 */
 	@JsonIgnore
 	public abstract QueryDescription getSubmitted();

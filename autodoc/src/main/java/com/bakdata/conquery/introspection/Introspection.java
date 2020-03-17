@@ -2,14 +2,12 @@ package com.bakdata.conquery.introspection;
 
 import java.io.File;
 
-import org.slf4j.LoggerFactory;
-
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.FieldInfo;
 import io.github.classgraph.MethodInfo;
+import org.slf4j.LoggerFactory;
 
 public interface Introspection {
 	String getDescription();

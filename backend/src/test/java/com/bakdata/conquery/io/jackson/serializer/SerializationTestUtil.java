@@ -8,8 +8,6 @@ import java.util.List;
 
 import javax.validation.Validator;
 
-import org.assertj.core.api.ObjectAssert;
-
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -22,12 +20,12 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
 import io.dropwizard.jersey.validation.Validators;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.ObjectAssert;
 
 @RequiredArgsConstructor
 @Accessors(chain = true, fluent = true)
