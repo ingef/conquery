@@ -2,6 +2,7 @@ package com.bakdata.conquery.metrics;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Priority;
@@ -43,23 +44,31 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 
 
 	public void incrementPrimaryGroupCount(User user) {
-		final Group primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage);
+		final Optional<Group> primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage);
+		
+		if(primaryGroup.isEmpty()) {
+			return;
+		}
 
 		// Groups with less than three users are not tracked, for privacy reasons.
-		if(primaryGroup.getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
+		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.getName(), "active")).inc();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.get().getName(), "active")).inc();
 	}
 
 	public void decrementPrimaryGroupCount(User user) {
-		final Group primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage);
-
+		final Optional<Group> primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage);
+		
+		if(primaryGroup.isEmpty()) {
+			return;
+		}
+		
 		// Groups with less than three users are not tracked.
-		if(primaryGroup.getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
+		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.getName(), "active")).dec();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.get().getName(), "active")).dec();
 	}
 
 
