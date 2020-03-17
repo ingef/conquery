@@ -89,7 +89,6 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements IoHa
 		environment.lifecycle().manage(jobManager);
 
 		this.validator = environment.getValidator();
-		this.config = config;
 
 		this.maintenanceService = environment
 			.lifecycle()

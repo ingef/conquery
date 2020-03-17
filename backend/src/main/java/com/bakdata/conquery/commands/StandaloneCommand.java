@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -15,11 +14,14 @@ import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +29,11 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 @Slf4j
 @Getter
-public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryConfig> {
+public class StandaloneCommand extends ServerCommand<ConqueryConfig> {
 
 	private final Conquery conquery;
 	private MasterCommand master;
+
 	private final List<SlaveCommand> slaves = new Vector<>();
 
 	public StandaloneCommand(Conquery conquery) {
@@ -39,23 +42,16 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 	}
 
 	// this must be overridden so that
+//	@Override
+//	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+//
+//
+//		bootstrap.run(configuration, environment);
+//		startStandalone(environment, namespace, configuration);
+//	}
+
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
-		final Environment environment = new Environment(
-			bootstrap.getApplication().getName(),
-			bootstrap.getObjectMapper(),
-			bootstrap.getValidatorFactory().getValidator(),
-			bootstrap.getMetricRegistry(),
-			bootstrap.getClassLoader(),
-			bootstrap.getHealthCheckRegistry());
-		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
-		configuration.getServerFactory().configure(environment);
-
-		bootstrap.run(configuration, environment);
-		startStandalone(environment, namespace, configuration);
-	}
-
-	protected void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		// start master
 		ConqueryMDC.setLocation("Master");
 		log.debug("Starting Master");
@@ -63,9 +59,10 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		masterConfig.getStorage().setDirectory(new File(masterConfig.getStorage().getDirectory(), "master"));
 		masterConfig.getStorage().getDirectory().mkdir();
 		conquery.run(masterConfig, environment);
-		
+
+
 		//create thread pool to start multiple slaves at the same time
-		ExecutorService starterPool = Executors.newFixedThreadPool(
+		ListeningExecutorService starterPool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
 			config.getStandalone().getNumberOfSlaves(),
 			new ThreadFactoryBuilder()
 				.setNameFormat("Slave Storage Loader %d")
@@ -74,44 +71,56 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 					log.error(t.getName()+" failed to init storage of slave", e);
 				})
 				.build()
-		);
-		
-		List<Future<SlaveCommand>> tasks = new ArrayList<>();
+		));
 
-		for(int i=0;i<config.getStandalone().getNumberOfSlaves();i++) {
+
+		List<ListenableFuture<SlaveCommand >> tasks = new ArrayList<>();
+
+		for (int i = 0; i < config.getStandalone().getNumberOfSlaves(); i++) {
+
 			final int id = i;
+
 			tasks.add(starterPool.submit(() -> {
+
 				ConqueryMDC.setLocation("Slave " + id);
-				ConqueryConfig clone = Cloner.clone(config);
-				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "slave_" + id));
-				clone.getStorage().getDirectory().mkdir();
+				ConqueryConfig clonedEnv = Cloner.clone(config);
+
+				clonedEnv.getStorage().setDirectory(new File(clonedEnv.getStorage().getDirectory(), "slave_" + id));
+				clonedEnv.getStorage().getDirectory().mkdir();
 
 				// TODO: 05.03.2020 Check if this works in standalone and master/slave
 				final DefaultServerFactory slaveServlet = new DefaultServerFactory();
 				final ConnectorFactory connectorFactory = HttpConnectorFactory.admin();
 				((HttpConnectorFactory) connectorFactory).setPort(0); // Force random allocation to avoid collision.
 				slaveServlet.setAdminConnectors(Collections.singletonList(connectorFactory));
-				clone.setSlaveServlet(slaveServlet);
+				clonedEnv.setSlaveServlet(slaveServlet);
 
 				SlaveCommand sc = new SlaveCommand(conquery);
-				sc.setLabel("slave " + id);
+				sc.setLabel("slave_" + id);
 				this.slaves.add(sc);
-				sc.run(environment, namespace, clone);
+				sc.run(environment, namespace, clonedEnv);
 				return sc;
 			}));
 		}
+
+		// Start master command
+		master = new MasterCommand(conquery);
+		master.run(environment, namespace, config);
+
 		ConqueryMDC.setLocation("Master");
 		log.debug("Waiting for slaves to start");
 		starterPool.shutdown();
 		starterPool.awaitTermination(1, TimeUnit.HOURS);
 		//catch exceptions on tasks
+
+
 		boolean failed = false;
 		for(Future<SlaveCommand> f : tasks) {
 			try {
 				f.get();
 			}
 			catch(ExecutionException e) {
-				log.error("during slave creation", e);
+				log.error("Failed during slave creation", e);
 				failed = true;
 			}
 		}
@@ -122,7 +131,6 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		// starts the Jersey Server
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
-		super.run(environment, namespace, config);
-		master = conquery.getMaster();
+
 	}
 }

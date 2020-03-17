@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.resources.admin.SlaveServlet;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.cli.ServerCommand;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -56,55 +57,16 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	private ConqueryConfig config;
 	private Slave context;
 	private Workers workers = new Workers();
+
 	@Setter
 	private String label = "slave";
 	private ScheduledExecutorService scheduler;
 	private SlaveServlet slaveServlet;
 
+
 	public SlaveCommand(Conquery conquery) {
 		super(conquery,"slave", "Connects this instance as a slave to a running master.");
 	}
-
-//	@Override
-//	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
-//		final Environment environment = new Environment(bootstrap.getApplication().getName(),
-//														bootstrap.getObjectMapper(),
-//														bootstrap.getValidatorFactory().getValidator(),
-//														bootstrap.getMetricRegistry(),
-//														bootstrap.getClassLoader(),
-//														bootstrap.getHealthCheckRegistry());
-//
-//		configuration.getMetricsFactory().configure(environment.lifecycle(),
-//													bootstrap.getMetricRegistry());
-//		configuration.getServerFactory().configure(environment);
-//
-//		bootstrap.run(configuration, environment);
-//
-//		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
-//
-//		try {
-//			run(environment, namespace, configuration);
-//			environment.lifecycle().attach(lifeCycle);
-//			lifeCycle.start();
-//
-//			Runtime.getRuntime().addShutdownHook(new Thread() {
-//				@Override
-//				public void run() {
-//					try {
-//						lifeCycle.stop();
-//					}
-//					catch (Exception e) {
-//						log.error("Interrupted during shutdown", e);
-//					}
-//				}
-//			});
-//		}
-//		catch(Throwable t) {
-//			log.error("Uncaught Exception in "+getName(), t);
-//			lifeCycle.stop();
-//			throw t;
-//		}
-//	}
 
 
 	@Override
@@ -115,6 +77,8 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 		// This allows us to have several Servlet definitions in the same config json while relying on ServerCommand for management.
 		if(isSlaveCommand(namespace)) {
 			this.config.setServerFactory(this.config.getSlaveServlet());
+
+
 		}
 
 		connector = new NioSocketConnector();
@@ -131,8 +95,24 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 				.build();
 		}
 
+
+
 		slaveServlet = new SlaveServlet();
-		slaveServlet.register(this.getConfig(), environment, this.getWorkers()); // TODO: 04.03.2020 save this
+
+		final DropwizardResourceConfig jerseyConfig;
+
+//		if(isSlaveCommand(namespace)){
+//			jerseyConfig = slaveServlet.createServlet(config, environment);
+//		}
+//		else {
+//			jerseyConfig = environment.admin();
+//		}
+
+
+		environment.getAdminContext().
+
+		slaveServlet.register(getWorkers(), environment.admin());
+
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 

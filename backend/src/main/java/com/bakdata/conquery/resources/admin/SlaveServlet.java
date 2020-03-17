@@ -1,5 +1,12 @@
 package com.bakdata.conquery.resources.admin;
 
+import java.io.IOException;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -8,6 +15,7 @@ import com.bakdata.conquery.resources.admin.slave.WorkerAPIResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
+import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,23 +30,27 @@ import org.glassfish.jersey.servlet.ServletContainer;
 @Slf4j
 public class SlaveServlet {
 
-	private DropwizardResourceConfig jerseyConfig;
 
-	public void register(ConqueryConfig config, Environment environment, final Workers workers) {
-		jerseyConfig = new DropwizardResourceConfig(environment.metrics());
-		jerseyConfig.setUrlPattern("/slave");
+	public DropwizardResourceConfig createServlet(ConqueryConfig config, Environment environment) {
 
-		config.getSlaveServlet().configure(environment);
+		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(environment.metrics());
+		jerseyConfig.setUrlPattern("/admin");
 
-		RESTServer.configure(config.getSlaveServlet(), jerseyConfig, config.getApi().isAllowCORSRequests());
+		RESTServer.configure(config.getServerFactory(), jerseyConfig, config.getApi().isAllowCORSRequests());
 
 		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
 
-		environment.admin().addServlet("slave", servletContainerHolder.getContainer()).addMapping("/slave/*");
+		environment.admin().addServlet("admin", servletContainerHolder.getContainer()).addMapping("/admin/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(environment.getObjectMapper()));
 
+		return jerseyConfig;
+	}
+
+	public void register(final Workers workers, AdminEnvironment adminEnvironment) {
+
+		adminEnvironment.addServlet("slave", this);
 
 		// inject required services
 		jerseyConfig.register(new AbstractBinder() {
@@ -49,5 +61,30 @@ public class SlaveServlet {
 		});
 
 		jerseyConfig.register(WorkerAPIResource.class);
+	}
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+
+	}
+
+	@Override
+	public ServletConfig getServletConfig() {
+		return null;
+	}
+
+	@Override
+	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+
+	}
+
+	@Override
+	public String getServletInfo() {
+		return null;
+	}
+
+	@Override
+	public void destroy() {
+
 	}
 }

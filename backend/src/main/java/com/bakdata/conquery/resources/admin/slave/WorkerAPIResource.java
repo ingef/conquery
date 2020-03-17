@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.admin.slave;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.Collection;
 
@@ -25,10 +26,10 @@ import lombok.Setter;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter
 @Setter
-@Path("workers/{" + DATASET_NAME + "}/")
+@Path("workers/{" + DATASET + "}/")
 public class WorkerAPIResource {
 
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	private DatasetId datasetId;
 
 	@Inject
