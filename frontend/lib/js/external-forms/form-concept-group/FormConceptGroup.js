@@ -79,13 +79,12 @@ const onToggleIncludeSubnodes = (
   includeSubnodes,
   newValue
 ) => {
-  const feature = value[valueIdx];
-  const concepts = feature.concepts;
-  const formConcept = concepts[conceptIdx];
-  const concept = getConceptById(formConcept.ids);
+  const element = value[valueIdx];
+  const concept = element.concepts[conceptIdx];
+  const conceptData = getConceptById(concept.ids);
 
   const childIds = [];
-  const elements = concept.children.map(childId => {
+  const elements = conceptData.children.map(childId => {
     const child = getConceptById(childId);
 
     childIds.push(childId);
@@ -97,9 +96,9 @@ const onToggleIncludeSubnodes = (
           ids: [childId],
           label: child.label,
           description: child.description,
-          tables: formConcept.tables,
-          selects: formConcept.selects,
-          tree: formConcept.tree
+          tables: concept.tables,
+          selects: concept.selects,
+          tree: concept.tree
         }
       ]
     };
@@ -107,15 +106,20 @@ const onToggleIncludeSubnodes = (
 
   const nextValue = includeSubnodes
     ? [...value, ...elements]
-    : value.filter(f =>
-        f.concepts.some(c => {
-          return childIds.every(childId => !includes(c.ids, childId));
+    : value.filter(val =>
+        val.concepts.some(cpt => {
+          return childIds.every(childId => !includes(cpt.ids, childId));
         })
       );
 
-  return setConceptProperties(nextValue, valueIdx, conceptIdx, {
-    includeSubnodes
-  });
+  return setConceptProperties(
+    nextValue,
+    nextValue.indexOf(element),
+    conceptIdx,
+    {
+      includeSubnodes
+    }
+  );
 };
 
 const createQueryNodeFromConceptListUploadResult = (
