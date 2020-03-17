@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -41,6 +42,12 @@ public interface QueryDescription extends Visitable {
 
 	
 	Set<ManagedExecutionId> collectRequiredQueries();
+	
+	/**
+	 * Initializes a submitted description using the provided context
+	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
+	 */
+	void resolve(QueryResolveContext context);
 
 	/**
 	 * Check implementation specific permissions.

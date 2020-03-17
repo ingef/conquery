@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -54,6 +55,11 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
 		return Set.of(queryGroup);
+	}
+
+	@Override
+	public void resolve(QueryResolveContext context) {
+		// Nothing to initialize
 	}
 
 }

@@ -41,13 +41,8 @@ public class AbsoluteFormQuery extends IQuery {
 	private final DateContextMode resultMode;
 	
 	@Override
-	public AbsoluteFormQuery resolve(QueryResolveContext context) {
-		return new AbsoluteFormQuery(
-			query.resolve(context),
-			dateRange,
-			features,
-			resultMode
-		);
+	public void resolve(QueryResolveContext context) {
+		query.resolve(context);
 	}
 
 	@Override
