@@ -1,6 +1,6 @@
 // @flow
 
-import React from "react";
+import * as React from "react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
@@ -27,7 +27,7 @@ const StyledIconButton = styled(IconButton)`
 
 type PropsType = {
   className?: string,
-  label?: string,
+  label?: React.ReactNode,
   dropzoneText: string,
   items: any,
   acceptedDropTypes: string[],
