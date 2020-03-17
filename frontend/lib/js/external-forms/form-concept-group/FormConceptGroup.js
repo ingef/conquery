@@ -487,6 +487,21 @@ const FormConceptGroup = (props: PropsType) => {
     onCloseModal();
   };
 
+  const onAcceptCopyModal = valuesToCopy => {
+    // Deeply copy all values + concepts
+    const nextValue = valuesToCopy.reduce((currentValue, value) => {
+      const newVal = addValue(currentValue, newValue);
+
+      return value.concepts.reduce(
+        (curVal, concept) =>
+          addConcept(newVal, curVal.length, copyConcept(concept)),
+        currentValue
+      );
+    }, props.input.value);
+
+    return props.input.onChange(nextValue);
+  };
+
   return (
     <div>
       <DropzoneList
@@ -634,19 +649,7 @@ const FormConceptGroup = (props: PropsType) => {
       {isCopyModalOpen && (
         <FormConceptCopyModal
           targetFieldname={props.fieldName}
-          onAccept={valuesToCopy => {
-            const nextValue = valuesToCopy.reduce((currentValue, value) => {
-              const newVal = addValue(currentValue, newValue);
-
-              return value.concepts.reduce(
-                (curVal, concept) =>
-                  addConcept(newVal, curVal.length, copyConcept(concept)),
-                currentValue
-              );
-            }, props.input.value);
-
-            return props.input.onChange(nextValue);
-          }}
+          onAccept={onAcceptCopyModal}
           onClose={() => setIsCopyModalOpen(false)}
         />
       )}
