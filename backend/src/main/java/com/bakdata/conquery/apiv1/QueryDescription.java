@@ -8,6 +8,7 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -43,6 +44,8 @@ public interface QueryDescription extends Visitable {
 
 	/**
 	 * Check implementation specific permissions.
+	 * Checks if a user is allowed to read the {@link Dataset}s that are descriped in the Query.
+	 * Checks if the user is allowed to use any reused queries in the provided query.
 	 */
 	default void checkPermissions(@NonNull User user) {
 		// Also look into the query and check the datasets
