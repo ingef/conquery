@@ -83,6 +83,10 @@ const FormConceptCopyModal = ({
     key => valuesChecked[key]
   );
 
+  const isAcceptDisabled = Object.keys(valuesChecked).every(
+    key => !valuesChecked[key]
+  );
+
   function idxHasConcepts(idx: number) {
     const values = formValues[selectedOption];
     const concepts = values[idx].concepts.filter(cpt => !!cpt);
@@ -163,7 +167,7 @@ const FormConceptCopyModal = ({
         <BasicButton onClick={onClose}>
           {T.translate("common.cancel")}
         </BasicButton>
-        <PrimaryButton onClick={onSubmit}>
+        <PrimaryButton onClick={onSubmit} disabled={isAcceptDisabled}>
           {T.translate("externalForms.copyModal.accept")}
         </PrimaryButton>
       </Buttons>
