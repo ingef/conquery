@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -150,9 +151,13 @@ public class AuthorizationHelper {
 	 * Find the primary group of the user. All users must have a primary group.
 	 * @implNote Currently this is the first group of a user and should also be the only group.
 	 */
-	public static Group getPrimaryGroup(@NonNull User user, @NonNull MasterMetaStorage storage) {
+	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MasterMetaStorage storage) {
+		List<Group> groups = getGroupsOf(user, storage);
+		if(groups.isEmpty()) {
+			return Optional.empty();
+		}
 		// TODO: 17.02.2020 implement primary flag for user etc.
-		return Objects.requireNonNull(getGroupsOf(user, storage).get(0), () -> String.format("Did not find a group for User[%s]", user.getId()));
+		return Optional.of(groups.get(0));
 	}
 	
 
