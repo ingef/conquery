@@ -7,6 +7,7 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -70,10 +71,10 @@ public class ExecutionMetrics {
 			}
 		}
 
-		final GroupId primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage).getId();
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getId).map(GroupId::toString).orElse("ungrouped");
 
 		for (ConceptId id : reportedIds) {
-			SharedMetricRegistries.getDefault().counter(primaryGroup + ".queries.content." + id.toString()).inc();
+			SharedMetricRegistries.getDefault().counter(primaryGroupName + ".queries.content." + id.toString()).inc();
 		}
 	}
 
