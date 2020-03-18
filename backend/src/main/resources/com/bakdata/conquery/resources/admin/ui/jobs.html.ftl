@@ -51,10 +51,6 @@
 				<h3>Create Demo Job</h3>
 				<input class="btn btn-primary" type="submit"/>
 			</form>
-			<form action="/admin/update-matching-stats" method="post" enctype="multipart/form-data">
-                <h3>Start Update Matching Stats Job</h3>
-                <input class="btn btn-primary" type="submit"/>
-            </form>
 			<script type="text/javascript">
 				setTimeout(function () {
 					location.reload(false);

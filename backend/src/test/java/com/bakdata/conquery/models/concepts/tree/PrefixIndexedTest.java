@@ -7,12 +7,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -32,9 +26,13 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
-
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class PrefixIndexedTest {
@@ -158,8 +156,8 @@ public class PrefixIndexedTest {
 		log.trace("Searching for {}", key);
 
 		ConceptTreeChild reference = indexedConcept.findMostSpecificChild(key, rowMap);
-		ConceptTreeChild cached = indexedConcept.getCache(importId).findMostSpecificChild(type.getId(key), rowMap);
-		ConceptTreeChild cached2 = indexedConcept.getCache(importId).findMostSpecificChild(type.getId(key), rowMap);
+		ConceptTreeChild cached = indexedConcept.getCache(importId).findMostSpecificChild(type.getId(key), type.getElement(type.getId(key)), rowMap);
+		ConceptTreeChild cached2 = indexedConcept.getCache(importId).findMostSpecificChild(type.getId(key), type.getElement(type.getId(key)), rowMap);
 
 		assertThat(reference.getId())
 				.describedAs("%s hierarchical name", key)

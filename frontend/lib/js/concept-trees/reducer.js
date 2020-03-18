@@ -14,14 +14,14 @@ import {
   SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  CHANGE_SEARCH_QUERY,
   TOGGLE_SHOW_MISMATCHES
 } from "./actionTypes";
+
 import { setTree } from "./globalTreeStoreHelper";
 
 export type TreesT = { [treeId: string]: ConceptT };
 
-export type SearchType = {
+export type SearchT = {
   allOpen: boolean,
   showMismatches: boolean,
   loading: boolean,
@@ -36,7 +36,7 @@ export type StateType = {
   loading: boolean,
   version: any,
   trees: TreesT,
-  search: SearchType
+  search: SearchT
 };
 
 const initialSearch = {
@@ -69,13 +69,13 @@ const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
     ...state,
     search: {
       ...state.search,
+      query,
+      result,
+      resultCount,
       allOpen: resultCount < AUTO_UNFOLD_AT,
       showMismatches: resultCount >= AUTO_UNFOLD_AT,
       loading: false,
-      query,
       words: query.split(" "),
-      result: result,
-      resultCount,
       duration: Date.now() - state.search.duration
     }
   };
@@ -195,14 +195,6 @@ const conceptTrees = (
       return {
         ...state,
         search: initialSearch
-      };
-    case CHANGE_SEARCH_QUERY:
-      return {
-        ...state,
-        search: {
-          ...state.search,
-          query: action.payload.query
-        }
       };
     case TOGGLE_SHOW_MISMATCHES:
       return {

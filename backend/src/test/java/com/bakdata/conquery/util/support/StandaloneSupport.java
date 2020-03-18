@@ -12,12 +12,15 @@ import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +42,8 @@ public class StandaloneSupport implements Closeable {
 	private final ConqueryConfig config;
 	@Getter
 	private final AdminProcessor datasetsProcessor;
+	@Getter
+	private final User testUser;
 
 
 	public void waitUntilWorkDone() {
@@ -66,7 +71,7 @@ public class StandaloneSupport implements Closeable {
 		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
 			Conquery.class,
 			config,
-			app -> new TestCommandWrapper(config, new PreprocessorCommand())
+			app -> new TestCommandWrapper(config, new PreprocessorCommand(MoreExecutors.newDirectExecutorService()))
 		);
 		prepro.before();
 		prepro.after();
@@ -74,7 +79,9 @@ public class StandaloneSupport implements Closeable {
 
 	@Override
 	public void close() {
-		testConquery.stop(this);
+		DatasetId dataset = getDataset().getId();
+		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 	}
 
 	public Validator getValidator() {

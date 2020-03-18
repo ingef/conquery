@@ -82,33 +82,32 @@ export default function createQueryRunnerActions(
     return dispatch => {
       dispatch(stopQueryStart());
 
-      const apiMethod = isExternalForm ? api.deleteFormQuery : api.deleteQuery;
-
-      return apiMethod(datasetId, queryId).then(
-        r => dispatch(stopQuerySuccess(r)),
-        e => dispatch(stopQueryError(e))
-      );
+      return api
+        .deleteQuery(datasetId, queryId)
+        .then(
+          r => dispatch(stopQuerySuccess(r)),
+          e => dispatch(stopQueryError(e))
+        );
     };
   };
 
   const queryResultStart = () => ({ type: QUERY_RESULT_START });
   const queryResultReset = () => ({ type: QUERY_RESULT_RESET });
   const queryResultError = err => defaultError(QUERY_RESULT_ERROR, err);
-  const queryResultSuccess = res => defaultSuccess(QUERY_RESULT_SUCCESS, res);
+  const queryResultSuccess = (res, datasetId) =>
+    defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId });
   const queryResult = (datasetId, queryId) => {
     return dispatch => {
       dispatch(queryResultStart());
 
-      const apiMethod = isExternalForm ? api.getFormQuery : api.getQuery;
-
-      return apiMethod(datasetId, queryId).then(
+      return api.getQuery(datasetId, queryId).then(
         r => {
           // Indicate that looking for the result has stopped,
           // but not necessarily succeeded
           dispatch(queryResultReset());
 
           if (r.status === "DONE") {
-            dispatch(queryResultSuccess(r));
+            dispatch(queryResultSuccess(r, datasetId));
 
             // Now there should be a new result that can be queried
             dispatch(loadPreviousQueries(datasetId));

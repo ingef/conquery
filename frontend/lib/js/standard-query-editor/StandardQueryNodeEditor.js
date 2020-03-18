@@ -3,9 +3,11 @@
 import React from "react";
 
 import { createConnectedQueryNodeEditor } from "../query-node-editor";
-import { hasConceptChildren } from "../concept-trees/globalTreeStoreHelper";
 
+import type { StateType } from "../app/reducers";
 import type { PropsType } from "../query-node-editor/QueryNodeEditor";
+
+import { tableIsEditable } from "../model/table";
 
 import {
   deselectNode,
@@ -18,8 +20,6 @@ import {
   resetAllFilters,
   toggleTimestamps,
   loadFilterSuggestions,
-  dropFilterValuesFile,
-  toggleIncludeSubnodes,
   setSelects,
   setTableSelects,
   setDateColumn
@@ -30,20 +30,17 @@ const findNodeBeingEdited = query =>
     .reduce((acc, group) => [...acc, ...group.elements], [])
     .find(element => element.isEditing);
 
-const mapStateToProps = state => {
+const mapStateToProps = (state: StateType) => {
   const node = findNodeBeingEdited(state.queryEditor.query);
 
   const showTables =
-    node &&
-    node.tables &&
-    node.tables.some(table => table.filters && table.filters.length > 0);
+    node && !!node.tables && node.tables.some(table => tableIsEditable(table));
 
   return {
     node,
     editorState: state.queryNodeEditor,
     showTables,
     isExcludeTimestampsPossible: true,
-    canIncludeSubnodes: hasConceptChildren(node),
     currencyConfig: state.startup.config.currency
   };
 };
@@ -67,10 +64,6 @@ const mapDispatchToProps = dispatch => ({
   onToggleTimestamps: () => dispatch(toggleTimestamps(null, null)),
   onLoadFilterSuggestions: (...params) =>
     dispatch(loadFilterSuggestions(...params)),
-  onDropFilterValuesFile: (...params) =>
-    dispatch(dropFilterValuesFile(...params)),
-  onToggleIncludeSubnodes: isIncludeSubNodes =>
-    dispatch(toggleIncludeSubnodes(isIncludeSubNodes)),
   onSetDateColumn: (tableIdx, value) => dispatch(setDateColumn(tableIdx, value))
 });
 

@@ -18,6 +18,7 @@ const Column = styled("div")`
 
 const MaximizedCell = styled(ContentCell)`
   flex-grow: 1;
+  padding-bottom: 30px;
 `;
 
 const TableView = (props: PropsType) => {
@@ -29,88 +30,86 @@ const TableView = (props: PropsType) => {
     onSelectTableSelects,
     onSetDateColumn,
 
-    onDropFilterValuesFile,
     onSetFilterValue,
     onSwitchFilterMode,
     onLoadFilterSuggestions
   } = props;
 
-  const selectedTable = node.tables[editorState.selectedInputTableIdx];
+  const table = node.tables[editorState.selectedInputTableIdx];
+
+  const displaySelects = !!table.selects && table.selects.length > 0;
+  const displayDateColumnOptions =
+    !!table.dateColumn && table.dateColumn.options.length > 0;
+  const displayFilters = !!table.filters && table.filters.length > 0;
 
   return (
     <Column>
-      {selectedTable.selects && (
+      {displaySelects && (
         <ContentCell headline={T.translate("queryNodeEditor.selects")}>
           <TableSelects
-            selects={selectedTable.selects}
+            selects={table.selects}
             onSelectTableSelects={value =>
               onSelectTableSelects(editorState.selectedInputTableIdx, value)
             }
           />
         </ContentCell>
       )}
-      {!!selectedTable.dateColumn &&
-        !!selectedTable.dateColumn.options &&
-        selectedTable.dateColumn.options.length > 0 && (
-          <ContentCell
-            headline={T.translate("queryNodeEditor.selectValidityDate")}
-          >
-            <DateColumnSelect
-              dateColumn={selectedTable.dateColumn}
-              onSelectDateColumn={value =>
-                onSetDateColumn(editorState.selectedInputTableIdx, value)
-              }
-            />
-          </ContentCell>
-        )}
-      <MaximizedCell headline={T.translate("queryNodeEditor.filters")}>
-        <TableFilters
-          key={editorState.selectedInputTableIdx}
-          filters={selectedTable.filters}
-          onSetFilterValue={(filterIdx, value) =>
-            onSetFilterValue(
-              editorState.selectedInputTableIdx,
-              filterIdx,
-              value
-            )
-          }
-          onSwitchFilterMode={(filterIdx, mode) =>
-            onSwitchFilterMode(
-              editorState.selectedInputTableIdx,
-              filterIdx,
-              mode
-            )
-          }
-          onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
-            onLoadFilterSuggestions(
+      {displayDateColumnOptions && (
+        <ContentCell
+          headline={T.translate("queryNodeEditor.selectValidityDate")}
+        >
+          <DateColumnSelect
+            dateColumn={table.dateColumn}
+            onSelectDateColumn={value =>
+              onSetDateColumn(editorState.selectedInputTableIdx, value)
+            }
+          />
+        </ContentCell>
+      )}
+      {displayFilters && (
+        <MaximizedCell headline={T.translate("queryNodeEditor.filters")}>
+          <TableFilters
+            key={editorState.selectedInputTableIdx}
+            filters={table.filters}
+            context={{
               datasetId,
-              editorState.selectedInputTableIdx,
-              selectedTable.id,
-              node.tree,
-              filterIdx,
-              filterId,
-              prefix
-            )
-          }
-          suggestions={
-            props.suggestions &&
-            props.suggestions[editorState.selectedInputTableIdx]
-          }
-          onShowDescription={editorState.onShowDescription}
-          onDropFilterValuesFile={(filterIdx, filterId, file) =>
-            onDropFilterValuesFile(
-              props.datasetId,
-              node.tree,
-              editorState.selectedInputTableIdx,
-              selectedTable.id,
-              filterIdx,
-              filterId,
-              file
-            )
-          }
-          currencyConfig={props.currencyConfig}
-        />
-      </MaximizedCell>
+              treeId: node.tree,
+              tableId: table.id
+            }}
+            onSetFilterValue={(filterIdx, value) =>
+              onSetFilterValue(
+                editorState.selectedInputTableIdx,
+                filterIdx,
+                value
+              )
+            }
+            onSwitchFilterMode={(filterIdx, mode) =>
+              onSwitchFilterMode(
+                editorState.selectedInputTableIdx,
+                filterIdx,
+                mode
+              )
+            }
+            onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
+              onLoadFilterSuggestions(
+                datasetId,
+                node.tree,
+                table.id,
+                filterId,
+                prefix,
+                editorState.selectedInputTableIdx,
+                filterIdx
+              )
+            }
+            suggestions={
+              !!props.suggestions &&
+              props.suggestions[editorState.selectedInputTableIdx]
+            }
+            onShowDescription={editorState.onShowDescription}
+            currencyConfig={props.currencyConfig}
+          />
+        </MaximizedCell>
+      )}
     </Column>
   );
 };

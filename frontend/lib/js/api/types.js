@@ -4,6 +4,8 @@
 // - response type provided by the backend API
 // - partial types that the reponses are built from
 
+import type { Forms } from "./form-types";
+
 export type DatasetIdT = string;
 export type DatasetT = {
   id: DatasetIdT,
@@ -52,10 +54,23 @@ export type RangeFilterT = FilterBaseT & {
 
 export type MultiSelectFilterValueT = (string | number)[];
 export type MultiSelectFilterT = FilterBaseT & {
-  type: "MULTI_SELECT" | "BIG_MULTI_SELECT",
+  type: "MULTI_SELECT",
   unit?: string,
   options: SelectOptionsT,
   defaultValue: ?MultiSelectFilterValueT
+};
+
+export type BigMultiSelectFilterT = MultiSelectFilterT & {
+  type: "BIG_MULTI_SELECT",
+  allowDropFile: boolean,
+  // Not needed in this format:
+  template: {
+    filePath: string, // "/.../import/stable/Referenzen/example.csv",
+    columns: string[],
+    columnValue: string, // Unclear, what that's even needed for
+    value: string,
+    optionValue: string
+  }
 };
 
 export type SelectFilterValueT = string | number;
@@ -72,8 +87,9 @@ export type StringFilterT = FilterBaseT & {
 };
 
 export type DateColumnT = {
-  options: SelectOptionT,
-  defaultValue: ?string
+  options: SelectOptionsT,
+  defaultValue: ?string,
+  value?: string
 };
 
 export type FilterT =
@@ -85,7 +101,7 @@ export type FilterT =
 export type TableIdT = string;
 export type TableT = {
   id: TableIdT,
-  dateColumn: DateColumnT,
+  dateColumn: ?DateColumnT,
   connectorId: string, // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string,
   exclude?: boolean,
@@ -145,6 +161,7 @@ export type FilterConfigT = {
     | RangeFilterValueT
     | SelectFilterValueT
     | MultiSelectFilterValueT
+    | BigMultiSelectFilterValueT
 };
 
 export type TableConfigT = {
@@ -258,7 +275,7 @@ export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
 export type PostConceptResolveResponseT = {
   resolvedConcepts?: string[],
-  unknownConcepts?: string[]
+  unknownCodes?: string[] // TODO: Use "unknownConcepts"
 };
 
 export type PostFilterResolveResponseT = {
@@ -274,7 +291,31 @@ export type PostFilterResolveResponseT = {
 };
 
 export type PostFilterSuggestionsResponseT = {
-  resolvedFilter: {
-    value: string
-  }
+  label: string,
+  value: string,
+  optionValue: ?string,
+  templateValues: string[] // unclear whether that's correct
+}[];
+
+export type GetFormQueriesResponseT = Forms;
+
+export type Permission = {
+  domains: string[],
+  abilities: string[],
+  targets: string[]
+};
+
+export type UserGroup = {
+  groupId: string,
+  label: string
+};
+
+export type GetMeResponseT = {
+  userName: string,
+  permissions: Permission[],
+  groups: UserGroup[]
+};
+
+export type PostLoginResponseT = {
+  access_token: string
 };

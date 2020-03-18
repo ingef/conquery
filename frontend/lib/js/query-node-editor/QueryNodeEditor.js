@@ -5,12 +5,12 @@ import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import T from "i18n-react";
+import Hotkeys from "react-hot-keys";
 
 import { type QueryNodeType } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import TransparentButton from "../button/TransparentButton";
-import useEscPress from "../hooks/useEscPress";
+import BasicButton from "../button/BasicButton";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
@@ -19,7 +19,7 @@ import TableView from "./TableView";
 import { createQueryNodeEditorActions } from "./actions";
 
 const Root = styled("div")`
-  padding: 0 10px;
+  margin: 0 10px;
   left: 0;
   top: 0;
   right: 0;
@@ -46,7 +46,7 @@ const SxWithTooltip = styled(WithTooltip)`
   right: 20px;
 `;
 
-const CloseButton = styled(TransparentButton)`
+const CloseButton = styled(BasicButton)`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
 `;
 
@@ -77,7 +77,6 @@ export type PropsType = {
   onCloseModal: Function,
   onUpdateLabel: Function,
   onDropConcept: Function,
-  onDropFilterValuesFile: Function,
   onRemoveConcept: Function,
   onToggleTable: Function,
   onSetFilterValue: Function,
@@ -87,7 +86,6 @@ export type PropsType = {
   onLoadFilterSuggestions: Function,
   onSelectSelects: Function,
   onSelectTableSelects: Function,
-  onToggleIncludeSubnodes: Function,
   onSetDateColumn: Function
 };
 
@@ -95,11 +93,11 @@ const QueryNodeEditor = (props: PropsType) => {
   const { node, editorState } = props;
 
   function close() {
+    if (!node) return;
+
     props.onCloseModal();
     editorState.onReset();
   }
-
-  useEscPress(close);
 
   if (!node) return null;
 
@@ -111,6 +109,7 @@ const QueryNodeEditor = (props: PropsType) => {
   return (
     <Root>
       <Wrapper>
+        <Hotkeys keyName="escape" onKeyDown={close} />
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
         {!editorState.detailsViewActive && selectedTable != null && (

@@ -1,27 +1,25 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
-
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @CPSType(id="AND", base=CQElement.class)
 public class CQAnd implements CQElement {
@@ -29,7 +27,7 @@ public class CQAnd implements CQElement {
 	private List<CQElement> children;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		QPNode[] aggs = new QPNode[children.size()];
 		for(int i=0;i<aggs.length;i++) {
 			aggs[i] = children.get(i).createQueryPlan(context, plan);
@@ -51,16 +49,17 @@ public class CQAnd implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<SelectDescriptor> select) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		for(CQElement c:children) {
-			c.collectSelects(select);
+			c.collectResultInfos(collector);
 		}
 	}
-
+	
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+	public void visit(Consumer<Visitable> visitor) {
+		CQElement.super.visit(visitor);
 		for(CQElement c:children) {
-			c.collectNamespacedIds(namespacedIds);
+			c.visit(visitor);
 		}
 	}
 }

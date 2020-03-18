@@ -30,7 +30,7 @@ describe("upload concepts dialog", () => {
       };
 
       nock(apiUrl())
-        .post(`/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
+        .post(`/api/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
           concepts: conceptCodes
         })
         .reply(200, { body: apiResponse });
@@ -72,22 +72,21 @@ describe("upload concepts dialog", () => {
       const datasetId = 1;
       const conceptId = 4711;
       const conceptCodes = ["foo", "bar"];
+      const error = {
+        status: 404,
+        message: `There is no concept with the id ${conceptId}`
+      };
 
       nock(apiUrl())
-        .post(`/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
+        .post(`/api/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
           concepts: conceptCodes
         })
-        .reply(404, {
-          code: 404,
-          message: `There is no concept with the id ${conceptId}`
-        });
+        .reply(404, error);
 
       const expectedActions = [
         selectConceptRootNode(conceptId),
         resolveConceptsStart(),
-        resolveConceptsError(
-          new Error(`There is no concept with the id ${conceptId}`)
-        )
+        resolveConceptsError(error)
       ];
       const store = mockStore({});
 

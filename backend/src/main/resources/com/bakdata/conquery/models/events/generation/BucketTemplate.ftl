@@ -4,7 +4,6 @@ package com.bakdata.conquery.models.events.generation;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.io.DeserHelper;
 
 
@@ -38,8 +37,9 @@ import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.io.DeserHelper;
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.util.io.SmallIn;
-import com.bakdata.conquery.util.io.SmallOut;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import java.time.LocalDate;
 
 import java.lang.Integer;
@@ -85,7 +85,7 @@ public class Bucket_${suffix} extends Bucket {
 	}
 	
 	@Override
-	protected boolean has(int event, int columnPosition) {
+	public boolean has(int event, int columnPosition) {
 		switch(columnPosition) {
 	<#list imp.columns as col>
 	<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
@@ -122,8 +122,8 @@ public class Bucket_${suffix} extends Bucket {
 	</#list>
 	
 	@Override
-	public Object getRaw(int event, Column column) {
-		switch(column.getPosition()) {
+	public Object getRaw(int event, int columnPosition) {
+		switch(columnPosition) {
 	<#list types as type>
 	<#list imp.columns as col>
 		<#-- there are no getters for null only columns-->
@@ -134,13 +134,13 @@ public class Bucket_${suffix} extends Bucket {
 	</#list>
 	</#list>
 			default:
-				throw new IllegalArgumentException("Column "+column+" is not valid");
+				throw new IllegalArgumentException("Column Position "+columnPosition+" is not valid");
 		}
 	}
 	
 	@Override
-	public Object getAsObject(int event, Column column) {
-		switch(column.getPosition()) {
+	public Object getAsObject(int event, int columnPosition) {
+		switch(columnPosition) {
 	<#list types as type>
 	<#list imp.columns as col>
 		<#-- there are no getters for null only columns-->
@@ -151,7 +151,7 @@ public class Bucket_${suffix} extends Bucket {
 	</#list>
 	</#list>
 			default:
-				throw new IllegalArgumentException("Column "+column+" is not valid");
+				throw new IllegalArgumentException("ColumnPosition "+columnPosition+" is not valid");
 		}
 	}
 
@@ -251,13 +251,17 @@ public class Bucket_${suffix} extends Bucket {
 	}
 	
 	@Override
-	public void read(SmallIn input) throws IOException {
+	public void read(Input input) throws IOException {
 		int numberOfEvents = input.readInt(true);
 		initFields(numberOfEvents);
+		
+		<#if imp.nullWidth gt 0>
 		int nullBytesLength = input.readInt(true);
 		byte [] nullBytes = input.readBytes(nullBytesLength);
-		
 		nullBits = Bits.asStore(nullBytes, 0, numberOfEvents*${imp.nullWidth});
+		<#else>
+		nullBits = Bits.noBits();
+		</#if>
 		for (int eventId = 0; eventId < numberOfEvents; eventId++) {
 			<#list imp.columns as col>
 			<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
@@ -275,12 +279,14 @@ public class Bucket_${suffix} extends Bucket {
 	}
 	
 	@Override
-	public void writeContent(SmallOut output) throws IOException {
+	public void writeContent(Output output) throws IOException {
 		output.writeInt(getNumberOfEvents(), true);
 		
+		<#if imp.nullWidth gt 0>
 		byte[] nullBitsAsBytes = Bits.asStore(nullBits.toByteArray()).toByteArray();
 		output.writeInt(nullBitsAsBytes.length, true);
 		output.write(nullBitsAsBytes);
+		</#if>
 		
 		for (int event = 0; event < getNumberOfEvents(); event++) {					
 		<#list imp.columns as column>

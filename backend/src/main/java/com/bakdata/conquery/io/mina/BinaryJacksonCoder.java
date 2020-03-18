@@ -7,7 +7,6 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.mina.ChunkReader.ChunkedMessage;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.worker.NamespaceCollection;
@@ -54,7 +53,7 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 		try(EndCheckableInputStream is = message.createInputStream()) {
 			Object obj = reader.readValue(is);
 			if(!is.isAtEnd()) {
-				throw new IllegalStateException("After reading the JSON message "+message.getId()+" -> "+obj+" the buffer has still bytes available");
+				throw new IllegalStateException("After reading the JSON message "+obj+" the buffer has still bytes available");
 			}
 			ValidatorHelper.failOnError(log, validator.validate(obj), "decoding " + obj.getClass().getSimpleName());
 			return (NetworkMessage<?>)obj;

@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileManager;
@@ -69,9 +67,5 @@ public class ClassGenerator {
 				}
 			}
 		}
-	}
-
-	public Map<String, byte[]> getClasses() {
-		return classLoader.getClasses();
 	}
 }

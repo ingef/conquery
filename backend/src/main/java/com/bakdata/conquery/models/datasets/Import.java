@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -16,8 +14,6 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
-import com.bakdata.conquery.models.events.generation.MemClassLoader;
-import com.bakdata.conquery.models.events.generation.MemJavaFileObject;
 import com.bakdata.conquery.models.events.generation.SafeJavaString;
 import com.bakdata.conquery.models.events.generation.SafeName;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
@@ -32,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -49,12 +44,11 @@ public class Import extends NamedImpl<ImportId> {
 	@JsonManagedReference @NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
 	private long numberOfEntries;
-	private Map<String, byte[]> classes;
 	private String suffix;
 	@JsonIgnore
 	private transient BlockFactory blockFactory;
-	
-	
+
+
 	@Override
 	public ImportId createId() {
 		return new ImportId(table, getName());
@@ -70,7 +64,6 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	public void loadExternalInfos(NamespacedStorage storage) {
-		//see #149  primary column?
 		for(ImportColumn col:columns) {
 			col.getType().loadExternalInfos(storage);
 		}
@@ -79,12 +72,7 @@ public class Import extends NamedImpl<ImportId> {
 	@JsonIgnore
 	public synchronized BlockFactory getBlockFactory() {
 		if(blockFactory == null) {
-			if(classes!=null) {
-				loadClasses();
-			}
-			else {
-				generateClasses();
-			}
+			generateClasses();
 		}
 		
 		return blockFactory;
@@ -97,20 +85,6 @@ public class Import extends NamedImpl<ImportId> {
 		return suffix;
 	}
 	
-	private void loadClasses() {
-		try {
-			MemClassLoader loader = new MemClassLoader();
-			for(Entry<String, byte[]> e : classes.entrySet()) {
-				loader.addClassFile(new MemJavaFileObject(e.getKey(), e.getValue()));
-			}
-			blockFactory = (BlockFactory) Class.forName("com.bakdata.conquery.models.events.generation.BlockFactory_"+getSuffix(), true, loader)
-				.getConstructor()
-				.newInstance();
-		} catch (Exception e) {
-			throw new IllegalStateException("Failed to load classes for "+this, e);
-		}
-	}
-
 	private void generateClasses() {
 		String bucketSource = null;
 		String factorySource = null;
@@ -128,7 +102,6 @@ public class Import extends NamedImpl<ImportId> {
 				"BlockFactoryTemplate.ftl"
 			);
 			gen.compile();
-			classes = gen.getClasses();
 			
 			blockFactory = (BlockFactory) gen
 				.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+getSuffix())
@@ -191,4 +164,11 @@ public class Import extends NamedImpl<ImportId> {
 		return imp;
 	}
 	
+	public long estimateMemoryConsumption() {
+		long mem = 0;
+		for(ImportColumn col:columns) {
+			mem+=col.getType().estimateMemoryConsumption();
+		}
+		return mem;
+	}
 }

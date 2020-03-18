@@ -4,9 +4,8 @@ import React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 import T from "i18n-react";
-import { NativeTypes } from "react-dnd-html5-backend";
 
-import Dropzone from "../form-components/Dropzone";
+import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
 
 import { dndTypes } from "../common/constants";
@@ -26,11 +25,10 @@ type PropsType = {
 const DROP_TYPES = [
   dndTypes.CONCEPT_TREE_NODE,
   dndTypes.QUERY_NODE,
-  dndTypes.PREVIOUS_QUERY,
-  NativeTypes.FILE
+  dndTypes.PREVIOUS_QUERY
 ];
 
-const StyledDropzone = styled(Dropzone)`
+const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
   ${({ isInitial }) =>
     isInitial &&
     css`
@@ -102,11 +100,14 @@ const QueryEditorDropzone = ({
   };
 
   return (
-    <StyledDropzone
+    <SxDropzoneWithFileInput
       isAnd={isAnd}
       isInitial={isInitial}
       acceptedDropTypes={DROP_TYPES}
       onDrop={onDrop}
+      onSelectFile={onDropFile}
+      disableClick={isInitial}
+      showFileSelectButton={isInitial}
     >
       {isInitial && (
         <TextInitial>
@@ -126,7 +127,7 @@ const QueryEditorDropzone = ({
         </TextInitial>
       )}
       {!isInitial && <Text>{T.translate("dropzone.dragElementPlease")}</Text>}
-    </StyledDropzone>
+    </SxDropzoneWithFileInput>
   );
 };
 

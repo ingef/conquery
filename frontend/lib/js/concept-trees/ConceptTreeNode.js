@@ -3,18 +3,13 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-import {
-  type ConceptIdT,
-  type InfoT,
-  type DateRangeT,
-  type ConceptT
-} from "../api/types";
+import type { ConceptIdT, InfoT, DateRangeT, ConceptT } from "../api/types";
 
 import { selectsWithDefaults } from "../model/select";
 import { tablesWithDefaults } from "../model/table";
 
-import { type DraggedNodeType } from "../standard-query-editor/types";
-import { type SearchType } from "./reducer";
+import type { DraggedNodeType } from "../standard-query-editor/types";
+import type { SearchT } from "./reducer";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";
@@ -44,7 +39,7 @@ type PropsType = {
   data: TreeNodeData,
   depth: number,
   open: boolean,
-  search?: SearchType,
+  search: SearchT,
   onToggleOpen: () => void
 };
 
@@ -61,11 +56,11 @@ const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
 });
 
 class ConceptTreeNode extends React.Component<PropsType> {
-  _onToggleOpen() {
+  onToggleOpen = () => {
     if (!this.props.data.children) return;
 
     this.props.onToggleOpen();
-  }
+  };
 
   render() {
     const { id, data, depth, open, search } = this.props;
@@ -116,7 +111,7 @@ class ConceptTreeNode extends React.Component<PropsType> {
           open={isOpen}
           depth={depth}
           active={data.active}
-          onTextClick={this._onToggleOpen.bind(this)}
+          onTextClick={this.onToggleOpen}
           search={search}
         />
         {!!data.children && isOpen && (

@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -44,7 +43,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Getter @Setter
 	private int globalToLocalOffset;
 	@JsonIgnore
-	private transient int maxDepth=-1;
+	private transient int maxDepth = -1;
 	@JsonIgnore
 	private List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
 	@JsonIgnore @Getter
@@ -98,6 +97,14 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		Set<ConstraintViolation<ConceptTreeNode>> errors = new HashSet<>();
 		List<ConceptTreeChild> openList = new ArrayList<>();
 		openList.addAll(this.getChildren());
+
+		for (ConceptTreeConnector con : getConnectors()) {
+			if(con.getCondition() == null) {
+				continue;
+			}
+
+			con.getCondition().init(this);
+		}
 
 		for(int i=0;i<openList.size();i++) {
 			ConceptTreeChild ctc = openList.get(i);
@@ -159,6 +166,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 					failed = true;
 					log.error("Value '{}' matches the two nodes {} and {} in the tree {} (row={}))"
 							, stringValue, match.getLabel(), n.getLabel(), n.getConcept().getLabel(), rowMap.getValue());
+					// TODO Why don't we return null here and drop the `failed`-flag?
 				}
 			}
 
@@ -188,8 +196,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			.map(ConceptTreeChild.class::cast);
 	}*/
 
-	public void initializeIdCache(AStringType type, ImportId importId) {
-		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type));
+	public void initializeIdCache(AStringType<?> type, ImportId importId) {
+		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
 	}
 
 	@Override

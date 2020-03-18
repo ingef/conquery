@@ -54,7 +54,7 @@ public class UpdateMatchingStats extends Job {
 				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
 				
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
-					if (concept instanceof TreeConcept) {
+					if (concept instanceof TreeConcept && cBlock.getMostSpecificChildren() != null) {
 						int[] localIds = cBlock.getMostSpecificChildren().get(event);
 						if (localIds != null) {
 							ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
@@ -64,6 +64,11 @@ public class UpdateMatchingStats extends Job {
 									.addEvent(table, bucket, cBlock, event);
 								e = e.getParent();
 							}
+						}
+						else {
+							messages
+								.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
+								.addEvent(table, bucket, cBlock, event);
 						}
 					}
 					else {

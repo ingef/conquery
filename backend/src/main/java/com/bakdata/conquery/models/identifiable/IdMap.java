@@ -1,27 +1,28 @@
 package com.bakdata.conquery.models.identifiable;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.google.common.collect.ForwardingMap;
 
-public class IdMap<ID extends IId<? extends V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID ,V > implements Iterable<V>{
+public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID ,V > implements Iterable<V>{
 
-	private final Map<ID, V> map;
+	private final ConcurrentMap<ID, V> map;
 	
 	public IdMap() {
-		map = new HashMap<ID, V>();
+		map = new ConcurrentHashMap<ID, V>();
 	}
 	
 	public IdMap(Collection<V> collection) {
-		map = new HashMap<>();
+		map = new ConcurrentHashMap<>();
 		for(V value : collection) {
 			map.put(value.getId(), value);
 		}

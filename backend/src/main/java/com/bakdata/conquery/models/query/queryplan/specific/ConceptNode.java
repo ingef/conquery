@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
@@ -39,7 +39,7 @@ public class ConceptNode extends QPChainNode {
 	}
 	
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		tableActive = table.getResolvedConnector().getTable().equals(currentTable);
 		if(tableActive) {
 			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);

@@ -8,14 +8,13 @@ import { loadTree } from "./actions";
 
 import type { StateType } from "../app/reducers";
 
-import { getConceptById } from "./globalTreeStoreHelper";
-import { type TreesT, type SearchType } from "./reducer";
-import { isNodeInSearchResult, getAreTreesAvailable } from "./selectors";
+import type { TreesT, SearchT } from "./reducer";
+import { getAreTreesAvailable } from "./selectors";
 
 import EmptyConceptTreeList from "./EmptyConceptTreeList";
 import ConceptTreesLoading from "./ConceptTreesLoading";
-import ConceptTree from "./ConceptTree";
-import ConceptTreeFolder from "./ConceptTreeFolder";
+import ProgressBar from "./ProgressBar";
+import ConceptTreeListItem from "./ConceptTreeListItem";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -43,8 +42,9 @@ type PropsT = {
   loading: boolean,
   trees: TreesT,
   areTreesAvailable: boolean,
+  areDatasetsPristineOrLoading: boolean,
   activeTab: string,
-  search?: SearchType,
+  search: SearchT,
   onLoadTree: (id: string) => void
 };
 
@@ -54,55 +54,37 @@ const ConceptTreeList = ({
   search,
   activeTab,
   areTreesAvailable,
+  areDatasetsPristineOrLoading,
   onLoadTree
 }: PropsT) => {
+  if (search.loading) return null;
+
+  const anyTreeLoading = Object.keys(trees).some(
+    treeId => trees[treeId].loading
+  );
+
   return (
-    !search.loading && (
-      <Root show={activeTab === "conceptTrees"}>
-        {loading && <ConceptTreesLoading />}
-        {!loading && !areTreesAvailable && <EmptyConceptTreeList />}
-        {Object.keys(trees)
+    <Root show={activeTab === "conceptTrees"}>
+      {loading && <ConceptTreesLoading />}
+      {!loading && !areTreesAvailable && !areDatasetsPristineOrLoading && (
+        <EmptyConceptTreeList />
+      )}
+      {!!anyTreeLoading && <ProgressBar trees={trees} />}
+      {!anyTreeLoading &&
+        Object.keys(trees)
           // Only take those that don't have a parent, they must be root
           // If they don't have a label, they're loading, or in any other broken state
           .filter(treeId => !trees[treeId].parent && trees[treeId].label)
-          .map((treeId, i) => {
-            const tree = trees[treeId];
-            const rootConcept = getConceptById(treeId);
-
-            const render = isNodeInSearchResult(treeId, tree.children, search);
-
-            if (!render) return null;
-
-            const commonProps = {
-              treeId,
-              search,
-              onLoadTree,
-              key: i,
-              depth: 0
-            };
-
-            return tree.detailsAvailable ? (
-              <ConceptTree
-                id={treeId}
-                label={tree.label}
-                description={tree.description}
-                tree={rootConcept}
-                loading={!!tree.loading}
-                error={tree.error}
-                {...commonProps}
-              />
-            ) : (
-              <ConceptTreeFolder
-                trees={trees}
-                tree={tree}
-                active={tree.active}
-                openInitially
-                {...commonProps}
-              />
-            );
-          })}
-      </Root>
-    )
+          .map((treeId, i) => (
+            <ConceptTreeListItem
+              key={i}
+              search={search}
+              onLoadTree={onLoadTree}
+              trees={trees}
+              treeId={treeId}
+            />
+          ))}
+    </Root>
   );
 };
 
@@ -111,6 +93,8 @@ export default connect(
     trees: state.conceptTrees.trees,
     loading: state.conceptTrees.loading,
     areTreesAvailable: getAreTreesAvailable(state),
+    areDatasetsPristineOrLoading:
+      state.datasets.pristine || state.datasets.loading,
     activeTab: state.panes.left.activeTab,
     search: state.conceptTrees.search
   }),

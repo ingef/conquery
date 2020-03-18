@@ -4,7 +4,7 @@ import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import parseCSV from "../../file/parseCSV";
+import { parseCSV } from "../../file/csv";
 
 import PrimaryButton from "../../button/PrimaryButton";
 import IconButton from "../../button/IconButton";
@@ -27,6 +27,7 @@ type PropsT = {
 
 const Row = styled("div")`
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 15px;
 `;
@@ -73,6 +74,7 @@ const SxInputSelect = styled(InputSelect)`
   width: 150px;
   text-align: left;
   display: inline-block;
+  margin-left: 15px;
 `;
 
 export default ({ file, loading, onUpload, onReset }: PropsT) => {
@@ -108,7 +110,8 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
       try {
         setCSVLoading(true);
 
-        const result = await parseCSV(f, d);
+        const parsed = await parseCSV(f, d);
+        const { result } = parsed;
 
         setCSVLoading(false);
 

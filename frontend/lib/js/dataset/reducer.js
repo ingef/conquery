@@ -16,6 +16,7 @@ export type DatasetT = {
 };
 
 export type StateType = {
+  pristine: boolean,
   loading: boolean,
   error: ?string,
   data: DatasetT[],
@@ -23,6 +24,7 @@ export type StateType = {
 };
 
 const initialState: StateType = {
+  pristine: true,
   loading: false,
   error: null,
   data: [],
@@ -62,7 +64,7 @@ const datasets = (
 ): StateType => {
   switch (action.type) {
     case LOAD_DATASETS_START:
-      return { ...state, loading: true };
+      return { ...state, loading: true, pristine: false };
     case LOAD_DATASETS_SUCCESS:
       const { data } = action.payload;
       const selectedDatasetId = data && data.length > 0 ? data[0].id : null;

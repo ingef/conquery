@@ -1,9 +1,10 @@
 // @flow
 
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
+import type { DatasetIdT } from "../../api/types";
 import DeletePreviousQueryModal from "../delete-modal/DeletePreviousQueryModal";
 import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
 import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
@@ -15,6 +16,7 @@ import PreviousQueriesLoading from "./PreviousQueriesLoading";
 
 import { loadPreviousQueries } from "./actions";
 import { selectPreviousQueries } from "./selector";
+import { canUploadResult } from "../../user/selectors";
 
 const Container = styled("div")`
   overflow-y: auto;
@@ -22,46 +24,47 @@ const Container = styled("div")`
   padding: 0 10px;
 `;
 
-class PreviousQueryEditorTab extends React.Component {
-  componentDidMount() {
-    this.props.loadQueries();
-  }
+type PropsT = {
+  datasetId: DatasetIdT
+};
 
-  render() {
-    const { datasetId, queries, loading } = this.props;
-
-    const hasQueries = loading || queries.length !== 0;
-
-    return (
-      <>
-        <PreviousQueriesFilter />
-        <PreviousQueriesSearchBox isMulti />
-        <UploadQueryResults datasetId={datasetId} />
-        <Container>
-          {loading && <PreviousQueriesLoading />}
-          {this.props.queries.length === 0 && !loading && <EmptyList />}
-        </Container>
-        {hasQueries && (
-          <>
-            <PreviousQueries queries={queries} datasetId={datasetId} />
-            <DeletePreviousQueryModal datasetId={datasetId} />
-          </>
-        )}
-      </>
-    );
-  }
-}
-
-export default connect(
-  state => ({
-    queries: selectPreviousQueries(
+const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
+  const queries = useSelector(state =>
+    selectPreviousQueries(
       state.previousQueries.queries,
       state.previousQueriesSearch,
       state.previousQueriesFilter
-    ),
-    loading: state.previousQueries.loading
-  }),
-  (dispatch, ownProps) => ({
-    loadQueries: () => dispatch(loadPreviousQueries(ownProps.datasetId))
-  })
-)(PreviousQueryEditorTab);
+    )
+  );
+  const loading = useSelector(state => state.previousQueries.loading);
+  const hasPermissionToUpload = useSelector(state => canUploadResult(state));
+
+  const dispatch = useDispatch();
+  const loadQueries = () => dispatch(loadPreviousQueries(datasetId));
+
+  const hasQueries = loading || queries.length !== 0;
+
+  useEffect(() => {
+    loadQueries();
+  }, []);
+
+  return (
+    <>
+      <PreviousQueriesFilter />
+      <PreviousQueriesSearchBox />
+      {hasPermissionToUpload && <UploadQueryResults datasetId={datasetId} />}
+      <Container>
+        {loading && <PreviousQueriesLoading />}
+        {queries.length === 0 && !loading && <EmptyList />}
+      </Container>
+      {hasQueries && (
+        <>
+          <PreviousQueries queries={queries} datasetId={datasetId} />
+          <DeletePreviousQueryModal datasetId={datasetId} />
+        </>
+      )}
+    </>
+  );
+};
+
+export default PreviousQueryEditorTab;

@@ -22,22 +22,34 @@ type PropsType = {
   label: React.Node,
   className?: string,
   tinyLabel?: boolean,
+  largeLabel?: boolean,
   fullWidth?: boolean,
   valueChanged?: boolean,
   disabled?: boolean,
   children?: React.Node
 };
 
-const Labeled = (props: PropsType) => {
+const Labeled = ({
+  className,
+  valueChanged,
+  fullWidth,
+  disabled,
+  label,
+  tinyLabel,
+  largeLabel,
+  children
+}: PropsType) => {
   return (
     <Root
-      className={props.className}
-      valueChanged={props.valueChanged}
-      fullWidth={props.fullWidth}
-      disabled={props.disabled}
+      className={className}
+      valueChanged={valueChanged}
+      fullWidth={fullWidth}
+      disabled={disabled}
     >
-      <Label tiny={props.tinyLabel}>{props.label}</Label>
-      {props.children}
+      <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
+        {label}
+      </Label>
+      {children}
     </Root>
   );
 };

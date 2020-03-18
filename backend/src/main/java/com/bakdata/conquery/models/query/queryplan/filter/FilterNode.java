@@ -4,17 +4,19 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxCloneable<FilterNode<FILTER_VALUE>> {
 
-	@Getter
-	protected final FILTER_VALUE filterValue;
+	@Setter @Getter
+	protected FILTER_VALUE filterValue;
 
 	@Override
 	public abstract void collectRequiredTables(Set<TableId> requiredTables);
@@ -29,6 +31,11 @@ public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxClo
 	
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
+	
+	@Override
+	public boolean isOfInterest(Entity entity) {
 		return true;
 	}
 }

@@ -6,7 +6,7 @@ import styled from "@emotion/styled";
 import type { ConceptT, ConceptIdT } from "../api/types";
 
 import { getConceptById } from "./globalTreeStoreHelper";
-import { type SearchType } from "./reducer";
+import type { SearchT } from "./reducer";
 
 import Openable from "./Openable";
 import ConceptTree from "./ConceptTree";
@@ -24,7 +24,7 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search: SearchType,
+  search: SearchT,
   onLoadTree: (id: string) => void
 };
 

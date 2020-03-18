@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 public abstract class IdentifiableImpl<ID extends IId<? extends IdentifiableImpl<? extends ID>>> implements Identifiable<ID> {
@@ -13,6 +14,7 @@ public abstract class IdentifiableImpl<ID extends IId<? extends IdentifiableImpl
 	@JsonIgnore
 	private transient int cachedHash = Integer.MIN_VALUE;
 
+	@ToString.Include
 	@JsonIgnore @Override
 	public ID getId() {
 		if(cachedId == null) {

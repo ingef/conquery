@@ -14,7 +14,6 @@ import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
 public class ValidityDateId extends AId<ValidityDate> implements NamespacedId {
-
 	private final ConnectorId connector;
 	private final String validityDate;
 	

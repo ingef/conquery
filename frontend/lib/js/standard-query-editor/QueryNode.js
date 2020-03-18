@@ -14,6 +14,7 @@ import { isQueryExpandable } from "../model/query";
 
 import QueryNodeActions from "./QueryNodeActions";
 
+import { getRootNodeLabel } from "./helper";
 import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
 
 const Root = styled("div")`
@@ -74,6 +75,15 @@ const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
 `;
 
+const RootNode = styled("p")`
+  margin: 0 0 4px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.font.xs};
+  color: ${({ theme }) => theme.col.blueGrayDark};
+`;
+
 type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
@@ -102,6 +112,8 @@ class QueryNode extends React.Component {
 
     const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
 
+    const rootNodeLabel = getRootNodeLabel(node);
+
     return (
       <Root
         ref={instance => connectDragSource(instance)}
@@ -118,6 +130,7 @@ class QueryNode extends React.Component {
             <StyledErrorMessage message={node.error} />
           ) : (
             <>
+              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
               <Label>{node.label || node.id}</Label>
               {node.description && (!node.ids || node.ids.length === 1) && (
                 <Description>{node.description}</Description>

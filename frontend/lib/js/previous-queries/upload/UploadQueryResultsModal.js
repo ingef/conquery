@@ -3,11 +3,10 @@
 import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import { NativeTypes } from "react-dnd-html5-backend";
 
 import { InfoTooltip } from "../../tooltip";
 
-import Dropzone from "../../form-components/Dropzone";
+import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
 
 import { Modal } from "../../modal";
 import { ErrorMessage } from "../../error-message";
@@ -43,15 +42,10 @@ const SuccessMsg = styled("p")`
   margin: 0;
 `;
 
-const StyledDropzone = styled(Dropzone)`
+const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
   padding: 40px;
   width: 100%;
-  margin: 0 0 20px;
   cursor: pointer;
-`;
-
-const FileInput = styled("input")`
-  display: none;
 `;
 
 type PropsT = {
@@ -62,11 +56,8 @@ type PropsT = {
   onUpload: Function
 };
 
-const DROP_TYPES = [NativeTypes.FILE];
-
 export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
   const [file, setFile] = React.useState(null);
-  const fileInputRef = React.useRef();
 
   function onDrop(_, monitor) {
     const item = monitor.getItem();
@@ -76,18 +67,10 @@ export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
     }
   }
 
-  function onSelectFile(file) {
-    setFile(fileInputRef.current.files[0]);
-  }
-
-  function onOpenFileDialog() {
-    fileInputRef.current.click();
-  }
-
   return (
     <Modal
       onClose={onClose}
-      doneButton
+      closeIcon
       headline={
         <>
           {T.translate("uploadQueryResultsModal.headline")}
@@ -116,18 +99,9 @@ export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
               />
             )}
             {!file && (
-              <StyledDropzone
-                acceptedDropTypes={DROP_TYPES}
-                onDrop={onDrop}
-                onClick={onOpenFileDialog}
-              >
-                <FileInput
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={onSelectFile}
-                />
+              <SxDropzoneWithFileInput onDrop={onDrop} onSelectFile={setFile}>
                 {T.translate("uploadQueryResultsModal.dropzone")}
-              </StyledDropzone>
+              </SxDropzoneWithFileInput>
             )}
             {error && (
               <Error>

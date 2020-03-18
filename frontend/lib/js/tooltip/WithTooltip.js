@@ -1,7 +1,6 @@
 // @flow
 
 import * as React from "react";
-import styled from "@emotion/styled";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
 
@@ -9,10 +8,12 @@ type PropsType = {
   className?: string,
   children: React.Node,
   place?: string,
-  text?: string
+  text?: ?string
 };
 
 const WithTooltip = ({ className, children, place, text }: PropsType) => {
+  if (!text) return children;
+
   return (
     <Tooltip
       className={className}

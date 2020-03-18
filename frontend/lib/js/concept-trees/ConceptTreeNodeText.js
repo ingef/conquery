@@ -117,7 +117,7 @@ export default React.forwardRef(
       hasChildren,
 
       onClick
-    },
+    }: PropsT,
     ref
   ) => (
     <Root ref={ref} className={className} depth={depth}>

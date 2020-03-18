@@ -9,34 +9,35 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
-
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class QueryTranslator {
 
-	public <T extends IQuery> T translate(Namespaces namespaces, T element, DatasetId target) {
+	public <T extends IQuery> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		if(element instanceof ConceptQuery) {
-			CQElement root = translate(namespaces, ((ConceptQuery) element).getRoot(), target);
-			ConceptQuery translated = new ConceptQuery();
-			translated.setRoot(root);
-			return (T)translated;
+			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target);
+			return (T) new ConceptQuery(root);
 		}
-		else {
-			throw new IllegalStateException("Can't translate non ConceptQuery IQueries");
-		}
+		throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
 	}
 	
-	public <T extends CQElement> T translate(Namespaces namespaces, T element, DatasetId target) {
+	public <T extends CQElement> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
+			
+			NamespacedIdCollector collector = new NamespacedIdCollector();
+			
+			element.visit(collector);
 	
-			Pattern[] patterns = element
-				.collectNamespacedIds()
+			Pattern[] patterns = collector.getIds()
 				.stream()
 				.map(NamespacedId::getDataset)
 				.map(DatasetId::toString)
-				.map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=(\\.|\"))"))
+				// ?<= -- non-capturing assertion, to start with "
+				// ?= --  non-capturing assertion to end with [."]
+				.map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=([.\"]))"))
 				.toArray(Pattern[]::new);
 	
 			String replacement = Matcher.quoteReplacement(target.toString());
@@ -49,7 +50,7 @@ public class QueryTranslator {
 				.readValue(value, CQElement.class);
 		}
 		catch(Exception e) {
-			throw new RuntimeException("Failed to translate element "+element+" to dataset "+target);
+			throw new RuntimeException("Failed to translate element "+element+" to dataset "+target, e);
 		}
 	}
 }

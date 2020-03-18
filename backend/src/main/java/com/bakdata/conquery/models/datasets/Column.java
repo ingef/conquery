@@ -25,12 +25,17 @@ public class Column extends Labeled<ColumnId> {
 
 	@JsonBackReference
 	@NotNull
+	@ToString.Exclude
 	private Table table;
 	@NotNull
-	@ToString.Include
 	private MajorTypeId type;
 	@JsonIgnore
 	private int position = UNKNOWN_POSITION;
+	/**
+	 * if set this column should use the given dictionary
+	 * if it is of type string, instead of its own dictionary
+	 */
+	private String sharedDictionary;
 
 	@Override
 	public ColumnId createId() {

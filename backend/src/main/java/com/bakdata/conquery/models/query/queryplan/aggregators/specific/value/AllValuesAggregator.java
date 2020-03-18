@@ -30,7 +30,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 
 	@Override
 	public Set<VALUE> getAggregationResult() {
-		return entries;
+		return entries.isEmpty() ? null : entries;
 	}
 
 	@Override

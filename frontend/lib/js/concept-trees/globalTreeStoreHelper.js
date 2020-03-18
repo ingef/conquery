@@ -1,8 +1,13 @@
 // @flow
 import { includes } from "../common/helpers";
-import type { ConceptT, TableT, ConceptIdT } from "../api/types";
+import type { ConceptT, TableT, SelectorT, ConceptIdT } from "../api/types";
 
 import type { TreesT } from "./reducer";
+
+import { tablesWithDefaults } from "../model/table";
+import { selectsWithDefaults } from "../model/select";
+
+import { findConcepts } from "./search";
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
@@ -76,7 +81,8 @@ export const getConceptsByIdsWithTablesAndSelects = (
 ): ?{
   concepts: (ConceptT & { id: ConceptIdT })[],
   root: ConceptIdT,
-  tables: TableT[]
+  tables: TableT[],
+  selects?: SelectorT[]
 } => {
   const concepts = conceptIds
     .map(id => ({ concept: getConceptById(id), id }))
@@ -95,16 +101,21 @@ export const getConceptsByIdsWithTablesAndSelects = (
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong
-  if (!rootConceptId) return null;
+  if (!rootConceptId) {
+    console.error("No root concept ID found");
+    return null;
+  }
 
   const rootConcept = rootConcepts[rootConceptId];
 
-  const selects = rootConcept.selects ? { selects: rootConcept.selects } : {};
+  const selects = rootConcept.selects
+    ? { selects: selectsWithDefaults(rootConcept.selects) }
+    : {};
 
   return {
     concepts,
     root: rootConceptId,
-    tables: rootConcept.tables,
+    tables: tablesWithDefaults(rootConcept.tables),
     ...selects
   };
 };
@@ -121,94 +132,39 @@ export const hasConceptChildren = (node: ConceptT): boolean => {
   This is async because ... we might want to parallelize this very soon,
   as there are up to 200k concepts that need to be searched.
 */
-export const search = async (query: string) => {
-  const result = Object.keys(window.conceptTrees).reduce(
-    (all, key) => ({
-      ...all,
-      ...findConcepts(key, key, window.conceptTrees[key][key], query, {})
-    }),
-    {}
-  );
-
-  return result;
-};
-
-const doesQueryMatchNode = (node, query) => {
+export const globalSearch = async (trees: TreesT, query: string) => {
   const lowerQuery = query.toLowerCase();
+  // `trees contains concept folders as well,
+  // but they're not saved globally in window.conceptTrees, because they're not many
+  //
+  // We DO want to search in concept folders as well, so we'll
+  // - format them to have the same "nested" structure as a single conceptTree
+  // - we combine both into one object
+  //
+  // TODO: Refactor the state and keep both root trees as well as concept trees in a single format
+  //       Then simply use that here
+  const formattedTrees = Object.keys(trees).reduce((all, key) => {
+    all[key] = { [key]: trees[key] };
 
-  return (
-    node.label.toLowerCase().includes(lowerQuery) ||
-    (node.description && node.description.toLowerCase().includes(lowerQuery)) ||
-    (node.additionalInfos &&
-      node.additionalInfos
-        .map(({ value }) => value)
-        .join("")
-        .toLowerCase()
-        .includes(lowerQuery))
-  );
-};
+    return all;
+  }, {});
+  const combinedTrees = Object.assign({}, formattedTrees, window.conceptTrees);
 
-/*
-  This is a recursive algorithm to search through the trees
-  It counts results and stores the count in "intermediateResult".
-
-  The code might look a little bit "clumsy", but
-  - it's been optimized to _not_ use object spread, because that slowed it down
-  - it's been optimized to have a time complexity of O(n)
-
-  treeId: the root tree id
-  nodeId: the id of the concept node, because node doesn't include it itself
-  node: the current node to check for match,
-    includes all information needed, eg: label, description, additionalInfos and children
-  query: the search query
-  intermediateResult: to avoid building new objects in every iteration, we carry
-    this object through the recursion and define new properties as we go (side effects)
-*/
-const findConcepts = (
-  treeId: string,
-  nodeId: ConceptIdT,
-  node: ConceptT,
-  query: string,
-  intermediateResult: { [ConceptIdT]: number }
-) => {
-  // !node normall shouldn't happen.
-  // It happens when window.conceptTrees doesn't contain a node
-  // that was somewhere specified as a child.
-  // TODO: Stronger contract with API on what shape of data is allowed
-  if (!node) return intermediateResult;
-
-  const isNodeIncluded = doesQueryMatchNode(node, query);
-
-  // Early return if there are no children
-  if (!node.children) {
-    if (isNodeIncluded) {
-      intermediateResult[nodeId] = 1;
-    }
-
-    return intermediateResult;
-  }
-
-  // Count node as 1 already, if it matches
-  let sum = isNodeIncluded ? 1 : 0;
-
-  for (let child of node.children) {
-    const result = findConcepts(
-      treeId,
-      child,
-      window.conceptTrees[treeId][child],
-      query,
-      intermediateResult
+  const result = Object.keys(combinedTrees)
+    .filter(key => !combinedTrees[key].parent)
+    .reduce(
+      (all, key) => ({
+        ...all,
+        ...findConcepts(
+          combinedTrees,
+          key,
+          key,
+          combinedTrees[key][key],
+          lowerQuery
+        )
+      }),
+      {}
     );
 
-    sum += result[child] || 0;
-  }
-
-  if (sum === 0) {
-    // Leave node out from the result, if it doesn't match itself, and no child matches
-    return intermediateResult;
-  } else {
-    intermediateResult[nodeId] = sum;
-
-    return intermediateResult;
-  }
+  return result;
 };

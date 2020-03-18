@@ -1,16 +1,12 @@
 // @flow
 
 import T from "i18n-react";
-import difference from "lodash.difference";
 
-import {
-  getConceptsByIdsWithTablesAndSelects,
-  getConceptById
-} from "../concept-trees/globalTreeStoreHelper";
+import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import type { DateRangeT } from "../api/types";
+import type { DateRangeT, TableT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 import { selectsWithDefaults } from "../model/select";
@@ -27,15 +23,13 @@ import {
   RENAME_PREVIOUS_QUERY_SUCCESS
 } from "../previous-queries/list/actionTypes";
 
-import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
+import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
 
 import {
   INTEGER_RANGE,
   REAL_RANGE,
   MONEY_RANGE
 } from "../form-components/filterTypes";
-
-import type { StateType } from "../query-runner/reducer";
 
 import {
   DROP_AND_NODE,
@@ -61,8 +55,6 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES,
   SET_DATE_COLUMN
 } from "./actionTypes";
 
@@ -73,7 +65,9 @@ import type {
   DraggedQueryType
 } from "./types";
 
-const initialState: StandardQueryType = [];
+export type StandardQueryStateT = StandardQueryType;
+
+const initialState: StandardQueryStateT = [];
 
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
@@ -349,7 +343,9 @@ const setNodeTableSelects = (state, action) => {
     ...table,
     selects: selects.map(select => ({
       ...select,
-      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+      selected:
+        !!value &&
+        !!value.find(selectedValue => selectedValue.value === select.id)
     }))
   };
 
@@ -382,7 +378,9 @@ const setNodeSelects = (state, action) => {
   return setElementProperties(state, andIdx, orIdx, {
     selects: selects.map(select => ({
       ...select,
-      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+      selected:
+        !!value &&
+        !!value.find(selectedValue => selectedValue.value === select.id)
     }))
   });
 };
@@ -462,7 +460,9 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
         ? {
             ...filterModeWithValue,
             value: filterModeWithValue.value.map(val =>
-              filter.options.find(op => op.value === val)
+              !!filter.options
+                ? filter.options.find(op => op.value === val)
+                : val
             )
           }
         : filterModeWithValue;
@@ -486,6 +486,16 @@ const mergeSelects = (savedSelects, conceptOrTable) => {
   });
 };
 
+const mergeDateColumn = (savedTable: TableT, table: TableT) => {
+  if (!table || !table.dateColumn || !savedTable.dateColumn)
+    return savedTable.dateColumn;
+
+  return {
+    ...savedTable.dateColumn,
+    value: table.dateColumn.value
+  };
+};
+
 const mergeTables = (savedTables, concept) => {
   return savedTables
     ? savedTables.map(savedTable => {
@@ -494,12 +504,14 @@ const mergeTables = (savedTables, concept) => {
         const table = concept.tables.find(t => t.id === savedTable.connectorId);
         const filters = mergeFiltersFromSavedConcept(savedTable, table);
         const selects = mergeSelects(savedTable.selects, table);
+        const dateColumn = mergeDateColumn(savedTable, table);
 
         return {
           ...savedTable,
           exclude: !table,
           filters,
-          selects
+          selects,
+          dateColumn
         };
       })
     : [];
@@ -708,7 +720,7 @@ const createQueryNodeFromConceptListUploadResult = (
 };
 
 const insertUploadedConceptList = (state, action) => {
-  const { label, rootConcepts, resolvedConcepts } = action.payload;
+  const { label, rootConcepts, resolvedConcepts, andIdx } = action.payload;
 
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -716,17 +728,15 @@ const insertUploadedConceptList = (state, action) => {
     resolvedConcepts
   );
 
-  // TODO: Re-enable soon
-  // if (parameters.andIdx != null)
-  //   return dropOrNode(state, {
-  //     payload: { item: queryElement, andIdx: parameters.andIdx }
-  //   });
+  if (!queryElement) return state;
 
-  return queryElement
+  return andIdx === null
     ? dropAndNode(state, {
         payload: { item: queryElement }
       })
-    : state;
+    : dropOrNode(state, {
+        payload: { andIdx, item: queryElement }
+      });
 };
 
 const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
@@ -771,72 +781,62 @@ const removeConceptFromNode = (state, action) => {
   });
 };
 
-const setResolvedFilterValues = (state: StateType, action: Object) => {
-  const {
-    tableIdx,
-    filterIdx,
-    data: {
-      resolvedFilter: { value }
-    }
-  } = action.payload;
+// -----------------------------
+// TODO: Figure out, whether we ever want to
+//       include subnodes in the reguar query editor
+//       => If we do, use this method, if we don't remove it
+// -----------------------------
+//
+// const toggleIncludeSubnodes = (state: StateType, action: Object) => {
+//   const { includeSubnodes } = action.payload;
 
-  return setNodeFilterProperties(
-    state,
-    {
-      payload: {
-        tableIdx,
-        filterIdx
-      }
-    },
-    {
-      value
-    }
-  );
-};
+//   const nodePosition = selectEditedNode(state);
 
-const toggleIncludeSubnodes = (state: StateType, action: Object) => {
-  const { includeSubnodes } = action.payload;
+//   if (!nodePosition) return state;
 
-  const nodePosition = selectEditedNode(state);
-  if (!nodePosition) return state;
+//   const { andIdx, orIdx } = nodePosition;
+//   const node = state[andIdx].elements[orIdx];
+//   const concept = getConceptById(node.ids);
 
-  const { andIdx, orIdx } = nodePosition;
+//   const childIds = [];
+//   const elements = concept.children.map(childId => {
+//     const child = getConceptById(childId);
 
-  const node = state[andIdx].elements[orIdx];
+//     childIds.push(childId);
 
-  const concept = getConceptById(node.ids);
+//     return {
+//       ids: [childId],
+//       label: child.label,
+//       description: child.description,
+//       tables: node.tables,
+//       selects: node.selects,
+//       tree: node.tree
+//     };
+//   });
 
-  const childIds = [];
-  const elements = concept.children.map(childId => {
-    const child = getConceptById(childId);
-    childIds.push(childId);
-    return {
-      ids: [childId],
-      label: child.label,
-      tables: node.tables,
-      tree: node.tree
-    };
-  });
+//   const groupProps = {
+//     elements: [
+//       ...state[andIdx].elements.slice(0, orIdx),
+//       {
+//         ...state[andIdx].elements[orIdx],
+//         includeSubnodes
+//       },
+//       ...state[andIdx].elements.slice(orIdx + 1)
+//     ]
+//   };
 
-  const groupProps = {
-    elements: [
-      ...state[andIdx].elements.slice(0, orIdx),
-      {
-        ...state[andIdx].elements[orIdx],
-        includeSubnodes: includeSubnodes
-      },
-      ...state[andIdx].elements.slice(orIdx + 1)
-    ]
-  };
+//   if (includeSubnodes) {
+//     groupProps.elements.push(...elements);
+//   } else {
+//     groupProps.elements = groupProps.elements.filter(element => {
+//       return !(difference(element.ids, childIds).length === 0);
+//     });
+//   }
 
-  if (includeSubnodes) groupProps.elements.push(...elements);
-  else
-    groupProps.elements = groupProps.elements.filter(element => {
-      return !(difference(element.ids, childIds).length === 0);
-    });
+//   return setGroupProperties(state, andIdx, groupProps);
+// };
 
-  return setGroupProperties(state, andIdx, groupProps);
-};
+// -----------------------------
 
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
@@ -872,9 +872,9 @@ const toggleIncludeSubnodes = (state: StateType, action: Object) => {
 //   }
 // ]
 const query = (
-  state: StandardQueryType = initialState,
+  state: StandardQueryStateT = initialState,
   action: Object
-): StandardQueryType => {
+): StandardQueryStateT => {
   switch (action.type) {
     case DROP_AND_NODE:
       return dropAndNode(state, action);
@@ -934,12 +934,8 @@ const query = (
       return loadFilterSuggestionsSuccess(state, action);
     case LOAD_FILTER_SUGGESTIONS_ERROR:
       return loadFilterSuggestionsError(state, action);
-    case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
+    case QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
-    case SET_RESOLVED_FILTER_VALUES:
-      return setResolvedFilterValues(state, action);
-    case TOGGLE_INCLUDE_SUBNODES:
-      return toggleIncludeSubnodes(state, action);
     case SET_DATE_COLUMN:
       return setNodeTableDateColumn(state, action);
     default:

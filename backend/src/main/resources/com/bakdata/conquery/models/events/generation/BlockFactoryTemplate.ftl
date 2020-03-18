@@ -7,11 +7,12 @@ import java.io.IOException;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.io.DeserHelper;
+import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PPColumn;
+import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import java.math.BigDecimal;
 import com.google.common.collect.Range;
 
-import com.bakdata.conquery.util.io.SmallIn;
-import com.bakdata.conquery.util.io.SmallOut;
 import java.time.LocalDate;
 
 import java.lang.Integer;
@@ -116,6 +117,55 @@ public class BlockFactory_${suffix} extends BlockFactory {
 			}
 		}
 		result.setNullBits(bits);
+		return result;
+	}
+	
+	@Override
+	public Bucket_${suffix} adaptValuesFrom(int bucketNumber, Import imp, Bucket source, PreprocessedHeader header) {
+		Bucket_${suffix} result = construct(bucketNumber, imp, source.getOffsets());
+		BitStore nullBits = Bits.store(${imp.nullWidth}*source.getNumberOfEvents());
+		result.initFields(source.getNumberOfEvents());
+		for(int event = 0; event < source.getNumberOfEvents(); event++){
+			<#list imp.columns as col>
+			<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
+			//${col.name} : ${col.type.class.simpleName}
+			<#if col.type.lines == col.type.nullLines>
+			<#-- do nothing, column is null everywhere-->
+			<#else>
+			if(!source.has(event, ${col_index})) {
+			<#if col.type.canStoreNull()> //TODO implement this with t.nullValue?has_content, else throw exception to consolidate concerns of parsing into file.
+				result.<@f.set col/>(event, <@t.nullValue type=col.type/>);	
+			<#else>
+				nullBits.setBit(${imp.nullWidth}*event+${col.nullPosition}, true);
+			</#if>
+			}
+			else {
+			<#if col.type.typeId.name()=="STRING">
+				PPColumn ppColumn = header.getColumns()[${col_index}];
+				if(ppColumn.getTransformer() != null) {
+					${col.type.typeId.primitiveType.name} majorValue = (${col.type.typeId.boxedType.name})source.getAsObject(event, ${col_index});
+					
+					majorValue = ppColumn.getValueMapping().getSource2TargetMap()[majorValue];
+	
+					<#if t.unboxValue??>
+					${col.type.primitiveType.name} value = <@t.unboxValue col.type>ppColumn.getTransformer().transform(majorValue)</@t.unboxValue>;
+					<#else>
+					${col.type.primitiveType.name} value = (${col.type.primitiveType.name})ppColumn.getTransformer().transform(majorValue);
+					</#if>
+					
+					result.<@f.set col/>(event, value);
+				}
+				else {
+					result.<@f.set col/>(event, (${col.type.primitiveType.name})source.getRaw(event, ${col_index}));
+				}
+			<#else>
+				result.<@f.set col/>(event, (${col.type.primitiveType.name})source.getRaw(event, ${col_index}));
+			</#if>
+			}
+			</#if>
+			</#list>
+		}
+		result.setNullBits(nullBits);
 		return result;
 	}
 }

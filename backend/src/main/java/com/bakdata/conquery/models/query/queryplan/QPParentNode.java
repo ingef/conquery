@@ -11,7 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ArrayListMultimap;
@@ -66,7 +66,7 @@ public abstract class QPParentNode extends QPNode {
 	}
 	
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
 		currentTableChildren = childMap.get(currentTable.getId());
 		for(int i=0,size=currentTableChildren.size();i<size;i++) {
@@ -87,6 +87,15 @@ public abstract class QPParentNode extends QPNode {
 		boolean interest = false;
 		for(int i=0,size=currentTableChildren.size();i<size;i++) {
 			interest |= currentTableChildren.get(i).isOfInterest(bucket);
+		}
+		return interest;
+	}
+	
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		boolean interest = false;
+		for(int i=0,size=children.size();i<size;i++) {
+			interest |= children.get(i).isOfInterest(entity);
 		}
 		return interest;
 	}

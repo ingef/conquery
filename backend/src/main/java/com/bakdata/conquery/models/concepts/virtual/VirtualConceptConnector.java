@@ -1,12 +1,7 @@
 package com.bakdata.conquery.models.concepts.virtual;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 

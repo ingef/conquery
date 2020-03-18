@@ -1,8 +1,6 @@
 // @flow
 
 import React from "react";
-import styled from "@emotion/styled";
-import { css } from "@emotion/core";
 import { findDOMNode } from "react-dom";
 import { DragSource } from "react-dnd";
 
@@ -10,9 +8,9 @@ import { AdditionalInfoHoverable } from "../tooltip";
 import { isEmpty } from "../common/helpers";
 import { dndTypes } from "../common/constants";
 
-import { type AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
-import { type DraggedNodeType } from "../standard-query-editor/types";
-import { type SearchType } from "./reducer";
+import type { AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
+import type { DraggedNodeType } from "../standard-query-editor/types";
+import type { SearchT } from "./reducer";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 
@@ -28,7 +26,7 @@ type PropsType = {
   onTextClick?: Function,
   createQueryElement: () => DraggedNodeType,
   connectDragSource: Function,
-  search?: SearchType,
+  search?: SearchT,
   isStructFolder?: boolean
 };
 
@@ -73,9 +71,8 @@ class ConceptTreeNodeTextContainer extends React.Component {
         searchWords={search.words}
         hasChildren={hasChildren}
         isOpen={open}
-        isStructFolder={isStructFolder}
+        isStructFolder={isStructFolder || active === false}
         red={red}
-        depth={depth}
         onClick={onTextClick}
       />
     );

@@ -25,15 +25,16 @@ conceptTreeList:
   showingMismatches: "Showing full trees"
 
 queryRunner:
+  errorDates: "Invalid: all date ranges excluded from time calculation"
   start: "Start Query"
   stop: "Stop Query"
-  stopSuccess: "Query was successfully stopped."
+  stopSuccess: "Query stopped"
   stopError: "Failed to stop the query."
-  startSuccess: "Query was successfully started."
-  endSuccess: "Query finished successfully."
+  startSuccess: "Query started"
+  endSuccess: "Query finished"
   startError: "Failed to start the query."
   resultError: "Could not load the query result."
-  resultCount: "{count} results"
+  resultCount: "results"
   queryFailed: "The query failed."
   queryCanceled: "The query was canceled."
 
@@ -85,12 +86,14 @@ queryNodeEditor:
 
 queryGroupModal:
   explanation: "Set time frame"
-  headlineStart: "Elements:"
+  dateRange: "Date range"
+  headlineStart: "Concepts:"
 
 deletePreviousQueryModal:
   areYouSure: "Should this query be deleted?"
 
 common:
+  back: "Back"
   any: "Any"
   save: "Save"
   edit: "Edit"
@@ -106,6 +109,7 @@ common:
   clearAll: "Clear all"
   clearValue: "Clear value"
   closeEsc: "Close (ESC)"
+  create: "Create"
 
 tooltip:
   headline: "Info"
@@ -122,7 +126,7 @@ reactSelect:
   placeholder: "Choose ..."
   tagPlaceholder: "Tag ..."
   searchPlaceholder: "Search ..."
-  dndPlaceholder: "Choose or drop File ..."
+  dndPlaceholder: "Choose or drop file ..."
   backspaceToRemove: "Press Backspace to remove"
   noResults: "No values found"
   createTag: "Create tag: {label}"
@@ -145,6 +149,11 @@ inputDateRange:
   dateFormat: "MM/dd/yyyy"
   tooltip:
     possiblePattern: "y2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
+
+inputMultiSelect:
+  openFileDialog: "Select file"
+  insertAll: "Insert all"
+  options: "options"
 
 previousQueries:
   loading: "Loading queries"
@@ -194,7 +203,14 @@ externalForms:
     mustBePositiveNumber: "Must be a positive number"
     isRequired: "Required"
     invalidDateRange: "End date is smaller than start date"
-
+  default:
+    conceptDropzoneLabel: "Add a concept or a concept list"
+    conceptColumnDropzoneLabel: "Add a concept or a concept list"
+  copyModal:
+    headline: "Copy concepts form another field"
+    selectLabel: "Copy from source"
+    selectAll: "Select all"
+    accept: "Copy"
   common:
     relativeToIndex: "Relative to index date"
     timespan: "Time span"
@@ -218,6 +234,10 @@ externalForms:
       last: "LAST"
       random: "RANDOM"
     edit: "Edit"
+    concept:
+      expand: "Include / exclude sub-attributes"
+      copyFrom: "Copy from ..."
+    clear: "Clear form"
 
 uploadQueryResultsModal:
   headline: "Upload result list"
@@ -243,16 +263,16 @@ csvColumnPicker:
 
 uploadConceptListModal:
   headline: "Upload concepts"
-  label: "Name of the Concept"
-  selectConceptRootNode: "Choose a Concept Tree root"
+  label: "Name of the concept"
+  selectConceptRootNode: "Choose a concept tree root"
   insertNode: "Insert now"
   result: "Result"
   resolvedCodes:
     1: "1 value resolved."
     _: "{context} values resolved."
   unknownCodes:
-    1: "1 value <strong>not</strong> resolved"
-    _: "{context} values <strong>not</strong> resolved"
+    1: "1 value not resolved"
+    _: "{context} values not resolved"
   error: "An error occurred when resolving the values."
 
 uploadFilterListModal:
@@ -271,3 +291,19 @@ authorization:
 search:
   placeholder: "Search ..."
   resultLabel: "{totalResults} results ({duration} s)"
+
+preview:
+  preview: "Preview"
+  headline: "Results preview"
+  explanation: "Visualizes the CSV file for the results"
+  total: "Total rows"
+  min: "Min date"
+  max: "Max date"
+  span: "Date span"
+
+login:
+  headline: "Queries and Analyses"
+  username: "User name"
+  password: "Password"
+  error: "Login failed. Please check user name and password."
+  submit: "Login"

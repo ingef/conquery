@@ -76,4 +76,15 @@ public abstract class AChainedStringType extends AStringType<Number> {
 	public long estimateTypeSize() {
 		return subType.estimateTypeSize();
 	}
+	
+	@Override
+	public Dictionary getUnderlyingDictionary() {
+		return subType.getUnderlyingDictionary();
+	}
+	
+	@Override
+	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+		subType.adaptUnderlyingDictionary(newDict, newNumberType);
+		this.setPrimitiveType(newNumberType.getPrimitiveType());
+	}
 }

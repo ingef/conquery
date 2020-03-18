@@ -7,24 +7,32 @@ import lombok.ToString;
 public abstract class DefaultIdMappingAccessor implements IdMappingAccessor {
 
 	@Getter
-	private final int[] idsUsed;
+	protected final int[] idsUsed;
 	@Getter
-	private final String[] header;
+	protected final String[] header;
 
-	public DefaultIdMappingAccessor(IdMappingConfig mapping, int[] idsUsed) {
-		this.idsUsed = idsUsed;
-		this.header = new String[idsUsed.length];
-		for(int i=0; i<header.length; i++) {
-			header[i] = mapping.getPrintIdFields()[idsUsed[i]];
+	/**
+	 * Select values from array in order by index.
+	 * @param values The input values to select from
+	 * @param indices The indices of the values to select and the order to select them in.
+	 */
+	public static String[] select(String[] values, int[] indices){
+		String[] out = new String[indices.length];
+
+		for (int index = 0; index < indices.length; index++) {
+			out[index] = values[indices[index]];
 		}
+
+		return out;
+	}
+
+	public DefaultIdMappingAccessor(int[] idsUsed, String[] header) {
+		this.idsUsed = idsUsed;
+		this.header = header;
 	}
 
 	@Override
 	public String[] extract(String[] dataLine) {
-		String[] output = new String[idsUsed.length];
-		for (int i = 0; i < idsUsed.length; i++) {
-			output[i] = dataLine[idsUsed[i]];
-		}
-		return output;
+		return select(dataLine, idsUsed);
 	}
 }

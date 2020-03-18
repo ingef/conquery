@@ -8,9 +8,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.bakdata.conquery.metrics.MetricsUtil;
+import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -20,9 +22,10 @@ public class JobExecutor extends Thread {
 	private final AtomicReference<Job> currentJob = new AtomicReference<>();
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final AtomicBoolean busy = new AtomicBoolean(false);
-	
+
 	public JobExecutor(String name) {
-		super("JobManager Worker "+name);
+		super(name);
+		MetricsUtil.createJobQueueGauge(name, jobs);
 	}
 
 	public void add(Job job) {
@@ -68,10 +71,13 @@ public class JobExecutor extends Thread {
 	public void close() {
 		closed.set(true);
 		Uninterruptibles.joinUninterruptibly(this);
+		MetricsUtil.removeJobQueueSizeGauge(getName());
 	}
-	
+
 	@Override
 	public void run() {
+		ConqueryMDC.setLocation(this.getName());
+
 		while(!closed.get()) {
 			Job job;
 			try {
@@ -80,6 +86,9 @@ public class JobExecutor extends Thread {
 					currentJob.set(job);
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
+
+					final Timer.Context time = MetricsUtil.getJobExecutorTimer(job);
+
 					try {
 						if(job.isCancelled()){
 							log.trace("{} skipping cancelled job {}", this.getName(), job);
@@ -87,11 +96,16 @@ public class JobExecutor extends Thread {
 						}
 
 						log.trace("{} started job {} with Id {}", this.getName(), job, job.getJobId());
+						ConqueryMDC.setLocation(this.getName());
 						job.execute();
-						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						ConqueryMDC.setLocation(this.getName());
+
 					}
 					catch (Throwable e) {
 						log.error("Job "+job+" failed", e);
+					}finally {
+						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						time.stop();
 					}
 				}
 				busy.set(false);
@@ -101,4 +115,5 @@ public class JobExecutor extends Thread {
 			}
 		}
 	}
+
 }
