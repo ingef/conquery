@@ -26,7 +26,7 @@ public abstract class Form implements QueryDescription {
 	public abstract Map<String, List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
 
 	/**
-	 * Executed upon Execution initialization.
+	 * Executed upon Description initialization.
 	 * E.g. Manipulate or add concepts to the form.
 	 * @param namespaces
 	 */
