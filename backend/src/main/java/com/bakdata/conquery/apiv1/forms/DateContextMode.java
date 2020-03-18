@@ -13,17 +13,17 @@ public enum DateContextMode {
 	 * For returning contexts with a single {@link CDateRange} for the entire
 	 * {@link FeatureGroup}.
 	 */
-	COMPLETE_ONLY,
+	COMPLETE,
 
 	/**
 	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 	 * years.
 	 */
-	YEAR_WISE,
+	YEARS,
 
 	/**
 	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 	 * quarters.
 	 */
-	QUARTER_WISE;
+	QUARTERS;
 }
