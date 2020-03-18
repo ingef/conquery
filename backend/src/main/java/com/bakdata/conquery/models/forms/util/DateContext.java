@@ -78,7 +78,7 @@ public class DateContext {
 
 		int index = 0;
 		// Handle years
-		if (resultMode == DateContextMode.YEAR_WISE) {
+		if (resultMode == DateContextMode.YEARS) {
 			List<CDateRange> maskYears = dateRangeMask.getCoveredYears();
 			for (CDateRange yearInMask : maskYears) {
 				dc = new DateContext(
@@ -92,7 +92,7 @@ public class DateContext {
 		}
 
 		// Handle quarters
-		if (resultMode == DateContextMode.QUARTER_WISE) {
+		if (resultMode == DateContextMode.QUARTERS) {
 			List<CDateRange> maskQuarters = dateRangeMask.getCoveredQuarters();
 			for (CDateRange quarterInMask : maskQuarters) {
 				dc = new DateContext(
