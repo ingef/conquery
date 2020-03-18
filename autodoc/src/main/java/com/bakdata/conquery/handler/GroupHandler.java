@@ -26,6 +26,7 @@ import com.bakdata.conquery.util.PrettyPrinter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
@@ -353,6 +354,11 @@ public class GroupHandler {
 					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(0))
 					+ " to "
 					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(1));
+			}
+			if(ClassToInstanceMap.class.isAssignableFrom(cl)) {
+				return "ClassToInstanceMap maps from base class "
+					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(0))
+					+ " to instances of subtypes";
 			}
 			if(Map.class.isAssignableFrom(cl)) {
 				return "map from "
