@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -36,7 +36,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final IndexPlacement indexPlacement;
 	private final int timeCountBefore;
 	private final int timeCountAfter;
-	private final TimeUnit timeUnit;
+	private final DateContextMode timeUnit;
+	private final List<DateContextMode> resolutions;
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -57,7 +58,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
-			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, true, timeUnit);
+			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
 
 		SubResult featureResult = executeSubQuery(ctx, FeatureGroup.FEATURE, entity, contexts);
 		SubResult outcomeResult = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
@@ -66,8 +67,13 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		// We look at the first result line to determine the length of the subresult
 		int featureLength = featureResult.getValues().get(0).length;
 		int outcomeLength = outcomeResult.getValues().get(0).length;
-		// Whole result is the concatenation of the subresults. However the sub result includes the date restriction which we drop.
-		int size = featureLength + outcomeLength - 2;
+		
+		/*
+		 *  Whole result is the concatenation of the subresults. The final output format combines resolution info, index and eventdate of both sub queries.
+		 *  The feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... 
+		 *  The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 */
+		int size = featureLength + outcomeLength - 3/*= [RESOLUTION], [INDEX], [EVENTDATE]*/;
 
 		// merge the full (index == null) lines
 		Object[] mergedFull = new Object[size];
@@ -99,24 +105,24 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return new SubResult((MultilineContainedEntityResult) sub.execute(ctx, entity));
 	}
 
-	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
-		// copy everything up to including index
-		for (int i = 0; i < 2; i++) {
-			result[i] = value[i];
-		}
-		// copy daterange
-		result[3] = value[2];
-		System.arraycopy(value, 3, result, 1 + featureLength, value.length - 3);
-	}
-
 	private void setFeatureValues(Object[] result, Object[] value) {
 		// copy everything up to including index
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[2] = value[2];
-		System.arraycopy(value, 3, result, 4, value.length - 3);
+		result[3] = value[3];
+		System.arraycopy(value, 4, result, 5, value.length - 4);
+	}
+	
+	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
+		// copy everything up to including index
+		for (int i = 0; i < 3; i++) {
+			result[i] = value[i];
+		}
+		// copy daterange
+		result[4] = value[3];
+		System.arraycopy(value, 4, result, 1 + featureLength, value.length - 4);
 	}
 
 	@Override
@@ -129,7 +135,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			indexPlacement,
 			timeCountBefore,
 			timeCountAfter,
-			timeUnit
+			timeUnit,
+			resolutions
 		);
 		return copy;
 	}

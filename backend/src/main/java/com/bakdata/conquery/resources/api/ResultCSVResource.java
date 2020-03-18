@@ -14,12 +14,14 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
@@ -47,7 +49,6 @@ import org.eclipse.jetty.io.EofException;
 @Slf4j
 public class ResultCSVResource {
 
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
 		ResultCSVResource.class, "getAsCsv");
 	private final Namespaces namespaces;
@@ -56,7 +57,7 @@ public class ResultCSVResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public Response getAsCsv(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @HeaderParam("user-agent") String userAgent) {
+	public Response getAsCsv(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @HeaderParam("user-agent") String userAgent, @Context HttpServletRequest request) {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
@@ -66,9 +67,11 @@ public class ResultCSVResource {
 		authorizeDownloadDatasets(user, exec);
 
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
+		
+		PrintSettings settings = new PrintSettings(true, request.getLocale());
 
 		try {
-			Stream<String> csv = QueryToCSVRenderer.toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);
+			Stream<String> csv = QueryToCSVRenderer.toCSV(settings, exec.toResultQuery(), mappingState);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
