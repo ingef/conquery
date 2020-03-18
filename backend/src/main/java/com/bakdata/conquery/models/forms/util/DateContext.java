@@ -132,9 +132,9 @@ public class DateContext {
 		for(DateContextMode mode : subdivisionModes) {
 			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
 			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
-			for (CDateRange quarterInMask : featureRanges) {
+			for (CDateRange subRange : featureRanges) {
 				DateContext dc = new DateContext(
-					quarterInMask,
+					subRange,
 					FeatureGroup.FEATURE,
 					// For now there is no index for complete
 					mode.equals(DateContextMode.COMPLETE)? null : -index,
@@ -146,9 +146,9 @@ public class DateContext {
 			}
 
 			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
-			for (CDateRange quarterInMask : mode.subdivideRange(outcomeRange)) {
+			for (CDateRange subRange : mode.subdivideRange(outcomeRange)) {
 				DateContext dc = new DateContext(
-					quarterInMask,
+					subRange,
 					FeatureGroup.OUTCOME,
 					// For now there is no index for complete
 					mode.equals(DateContextMode.COMPLETE)? null : index,

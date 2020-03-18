@@ -75,19 +75,29 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		 */
 		int size = featureLength + outcomeLength - 3/*= [RESOLUTION], [INDEX], [EVENTDATE]*/;
 
-		// merge the full (index == null) lines
-		Object[] mergedFull = new Object[size];
-		setFeatureValues(mergedFull, featureResult.getValues().get(0));
-		setOutcomeValues(mergedFull, outcomeResult.getValues().get(0), featureLength);
-		values.add(mergedFull);
+		int resultStartIndex = 0;
+		if(contexts.size()>=2
+			&& contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+			&& contexts.get(1).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+			&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup())) {
+			// merge a line for the complete daterange, when two dateContext were generated that don't target the same feature group,
+			// which would be a mistake by the generation
+			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE is the coarsed resolution it must be at the first
+			// to indexes of the list.
+			Object[] mergedFull = new Object[size];
+			setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
+			setOutcomeValues(mergedFull, outcomeResult.getValues().get(resultStartIndex), featureLength);
+			values.add(mergedFull);
+			resultStartIndex++;
+		}
 
 		// append all other lines directly
-		for (int i = 1; i < featureResult.getValues().size(); i++) {
+		for (int i = resultStartIndex; i < featureResult.getValues().size(); i++) {
 			Object[] result = new Object[size];
 			setFeatureValues(result, featureResult.getValues().get(i));
 			values.add(result);
 		}
-		for (int i = 1; i < outcomeResult.getValues().size(); i++) {
+		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
 			Object[] result = new Object[size];
 			setOutcomeValues(result, outcomeResult.getValues().get(i), featureLength);
 			values.add(result);
