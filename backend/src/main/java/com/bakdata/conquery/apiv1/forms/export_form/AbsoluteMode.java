@@ -37,6 +37,6 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTER_WISE, userId, submittedDataset);
+		return AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTERS, userId, submittedDataset);
 	}
 }
