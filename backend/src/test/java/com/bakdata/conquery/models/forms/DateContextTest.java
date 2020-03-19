@@ -33,7 +33,7 @@ public class DateContextTest {
 	@Test
 	public void rangeAbsYearTestWithCoarse() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(COMPLETE, YEARS));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, YEARS.getThisAndCoarserSubdivisions());
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
 			mask,
@@ -64,7 +64,7 @@ public class DateContextTest {
 	@Test
 	public void rangeAbsQuarterTestWithCoarse() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(COMPLETE,YEARS,QUARTERS));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, QUARTERS.getThisAndCoarserSubdivisions());
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
 			// Complete

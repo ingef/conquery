@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.forms.util;
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -67,7 +68,7 @@ public class DateContext {
 	private DateContextMode subdivisionMode;
 
 	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode ... subdivisionMode ) {
-		return generateAbsoluteContexts(dateRangeMask, subdivisionMode);
+		return generateAbsoluteContexts(dateRangeMask, Arrays.asList(subdivisionMode));
 	}
 	
 	/**
