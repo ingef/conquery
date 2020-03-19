@@ -1,14 +1,18 @@
 package com.bakdata.conquery.models.auth;
 
+import java.util.ConcurrentModificationException;
 import java.util.Objects;
+import java.util.Set;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -64,6 +68,27 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 		@Override
 		public Object getCredentials() {
 			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
+		}
+		
+	}
+	
+	/**
+	 * This AuthorizationInfo handles the collection of large amounts of {@link Permission}s by wrapping collections into a view
+	 * instead of running an iterator over them. This also prevents a {@link ConcurrentModificationException} which occurred when 
+	 * Permission were collected
+	 *
+	 */
+	public static class ConqueryAuthorizationInfo extends SimpleAuthorizationInfo {
+		@Override
+		public void addObjectPermission(Permission permission) {
+			throw new UnsupportedOperationException();
+		}
+		
+		public void addObjectPermissions(Set<Permission> permissions) {
+			if (objectPermissions == null) {
+				objectPermissions = permissions;
+			}
+			objectPermissions = Sets.union(objectPermissions, permissions);
 		}
 		
 	}
