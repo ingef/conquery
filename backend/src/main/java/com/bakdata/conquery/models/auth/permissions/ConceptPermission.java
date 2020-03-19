@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 
 @CPSType(id = "QUERY", base = StringPermissionBuilder.class)
 public class ConceptPermission extends StringPermissionBuilder {
@@ -14,16 +14,16 @@ public class ConceptPermission extends StringPermissionBuilder {
 
 	public static final EnumSet<Ability> ALLOWED_ABILITIES = EnumSet.of(
 		Ability.READ
-		);
+	);
 	
 	public static final ConceptPermission INSTANCE = new ConceptPermission();
 	
 	
-	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
+	private ConqueryPermission instancePermission(Ability ability, ConceptId instance) {
 		return instancePermission(ability, instance.toString());
 	}
 
-	private ConqueryPermission instancePermission(Set<Ability> abilities, ManagedExecutionId instance) {
+	private ConqueryPermission instancePermission(Set<Ability> abilities, ConceptId instance) {
 		return instancePermission(abilities, instance.toString());
 	}
 
@@ -38,11 +38,11 @@ public class ConceptPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
-	public static ConqueryPermission onInstance(Ability ability, ManagedExecutionId instance) {
+	public static ConqueryPermission onInstance(Ability ability, ConceptId instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}
 
-	public static ConqueryPermission onInstance(Set<Ability> abilities, ManagedExecutionId instance) {
+	public static ConqueryPermission onInstance(Set<Ability> abilities, ConceptId instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
 }
