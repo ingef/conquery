@@ -144,7 +144,7 @@ public class DateContext {
 					subRange,
 					FeatureGroup.FEATURE,
 					// For now there is no index for complete
-					mode.equals(DateContextMode.COMPLETE)? null : -index,
+					mode.equals(DateContextMode.COMPLETE) ? null : -index,
 					eventdate,
 					mode
 					);

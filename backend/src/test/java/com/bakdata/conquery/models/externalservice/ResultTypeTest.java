@@ -21,7 +21,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class ResultTypeTest {
 	
-	private static final I18n i18n = I18n.INSTANCE; // Needed for initialization of the internationalization in this test
+	static {
+		// Initialization of the internationalization
+		I18n.init();
+	}
+	
 
 	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH);
 	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMAN);
