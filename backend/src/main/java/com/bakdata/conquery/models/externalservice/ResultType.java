@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.externalservice;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -45,19 +43,15 @@ public enum ResultType {
 	RESOLUTION {
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			DateContextMode mode = null;
-			if(!( f instanceof DateContextMode)) {
-				mode = DateContextMode.valueOf(f.toString());
+			if(f instanceof DateContextMode) {
+				return ((DateContextMode)f).toString(cfg.getLocale());
 			}
-			else {
-				mode = (DateContextMode) f;
+			try {
+				// If the object was parsed as a simple string, try to convert it to a DateContextMode to get Internationalization
+				return DateContextMode.valueOf(f.toString()).toString(cfg.getLocale());				
+			} catch (Exception e) {
+				throw new IllegalArgumentException(f+ " is not a valid resolution");
 			}
-			Locale locale = cfg.getLocale();
-			if(locale == null) {
-				locale = Locale.getDefault();
-			}
-			ResourceBundle bundle = mode.getBundle(locale);
-			return bundle.getString(f.toString());
 		}
 	},
 	DATE,

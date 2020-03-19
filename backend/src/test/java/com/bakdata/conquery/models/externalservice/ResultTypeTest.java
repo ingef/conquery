@@ -10,9 +10,9 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
-import com.bakdata.conquery.io.HasResourceBundle;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,6 +20,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class ResultTypeTest {
+	
+	private static final I18n i18n = I18n.INSTANCE; // Needed for initialization of the internationalization in this test
 
 	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH);
 	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMAN);
