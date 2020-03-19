@@ -27,9 +27,7 @@ public class RelExportGenerator {
 		
 		List<DateContextMode> resolutions = null;
 		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
-			if(mode.getForm().getResolution().size() != 1) {
-				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
-			}
+			// Tested by validator that only one resolution is provided
 			resolutions = mode.getForm().getResolution().get(0).getThisAndCoarserSubdivisions();
 		}
 		else {
