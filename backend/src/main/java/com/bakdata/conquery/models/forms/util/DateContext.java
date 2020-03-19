@@ -66,8 +66,8 @@ public class DateContext {
 	@Nullable
 	private DateContextMode subdivisionMode;
 
-	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode subdivisionMode) {
-		return generateAbsoluteContexts(dateRangeMask, List.of(subdivisionMode));
+	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode ... subdivisionMode ) {
+		return generateAbsoluteContexts(dateRangeMask, subdivisionMode);
 	}
 	
 	/**
@@ -131,6 +131,12 @@ public class DateContext {
 
 		for(DateContextMode mode : subdivisionModes) {
 			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
+			/*
+			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
+			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
+			 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
+			 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
+			 */
 			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
 			for (CDateRange subRange : featureRanges) {
 				DateContext dc = new DateContext(
