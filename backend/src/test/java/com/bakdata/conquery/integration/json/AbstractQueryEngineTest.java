@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,Locale.ENGLISH, columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {

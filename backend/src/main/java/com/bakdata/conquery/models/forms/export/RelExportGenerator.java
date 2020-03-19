@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.forms.export;
 
+import java.util.List;
+
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
@@ -22,6 +25,15 @@ public class RelExportGenerator {
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getOutcomes(), namespaces);
 		
+		List<DateContextMode> resolutions = null;
+		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
+			// Tested by validator that only one resolution is provided
+			resolutions = mode.getForm().getResolution().get(0).getThisAndCoarserSubdivisions();
+		}
+		else {
+			resolutions = mode.getForm().getResolution();
+		}
+		
 		RelativeFormQuery query = new RelativeFormQuery(
 			(ConceptQuery) prerequisite.getQuery(),
 			setInfos(
@@ -36,7 +48,8 @@ public class RelExportGenerator {
 			mode.getIndexPlacement(),
 			mode.getTimeCountBefore(),
 			mode.getTimeCountAfter(),
-			mode.getTimeUnit()
+			mode.getTimeUnit(),
+			resolutions
 		);
 		return query;
 	}

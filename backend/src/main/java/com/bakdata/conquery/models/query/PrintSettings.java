@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.concepts.Connector;
@@ -15,6 +16,7 @@ import lombok.ToString;
 public class PrintSettings implements SelectNameExtractor {
 
 	private final boolean prettyPrint;
+	private final Locale locale;
 	
 	@NonNull
 	private Function<SelectResultInfo, String> columnNamer = PrintSettings::defaultColumnName;
