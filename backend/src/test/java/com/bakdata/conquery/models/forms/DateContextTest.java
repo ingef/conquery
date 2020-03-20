@@ -20,7 +20,7 @@ public class DateContextTest {
 	@Test
 	public void rangeAbsCompleteTest() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.COMPLETE_ONLY);
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.COMPLETE);
 
 		DateContext dc = new DateContext(mask);
 		dc.setFeatureGroup(FeatureGroup.OUTCOME);
@@ -30,7 +30,7 @@ public class DateContextTest {
 	@Test
 	public void rangeAbsYearTest() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.YEAR_WISE);
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.YEARS);
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
 			mask,
@@ -46,7 +46,7 @@ public class DateContextTest {
 	@Test
 	public void rangeAbsQuarterTest() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.QUARTER_WISE);
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.QUARTERS);
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
 			mask,
