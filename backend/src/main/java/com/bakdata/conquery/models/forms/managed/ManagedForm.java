@@ -80,7 +80,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	@Override
 	public void initExecutable(@NonNull Namespaces namespaces) {
-		submittedForm.init(namespaces);
 		// init all subqueries
 		subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
@@ -139,7 +138,13 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 */
 	@Override
 	public void addResult(@NonNull MasterMetaStorage storage, FormSharedResult result) {
-		ManagedQuery subQuery = flatSubQueries.get(result.getSubqueryId());
+		ManagedExecutionId subQueryId = result.getSubqueryId();
+		if(subQueryId == null) {
+			// Subquery failed upon query 
+			fail(storage);
+			return;
+		}
+		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
 		subQuery.addResult(storage, result);
 		switch(subQuery.getState()) {
 			case DONE:

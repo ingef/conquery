@@ -16,11 +16,13 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +34,9 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	private ManagedExecutionId queryGroup;
 	@NotNull @Valid @JsonManagedReference
 	private Mode timeMode;
+
+	@JsonIgnore
+	private IQuery prerequisite;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -58,8 +63,10 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void resolve(QueryResolveContext context) {
-		// Nothing to initialize
+	public ExportForm resolve(QueryResolveContext context) {
+		timeMode.resolve(context);
+		prerequisite = (IQuery) Form.resolvePrerequisite(context, queryGroup);
+		return this;
 	}
 
 }

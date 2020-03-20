@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -20,13 +19,11 @@ import lombok.AllArgsConstructor;
 public class AbsExportGenerator {
 	
 	public static AbsoluteFormQuery generate(Namespaces namespaces, AbsoluteMode mode, DateContextMode resolution, UserId userId, DatasetId submittedDataset) {
-		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
-	
 		// Apply defaults to user concept
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
 		
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
-			(ConceptQuery) prerequisite.getQuery(),
+			mode.getForm().getPrerequisite(),
 			mode.getDateRange(),
 			createSubQuery(mode.getFeatures()),
 			resolution
@@ -36,7 +33,9 @@ public class AbsExportGenerator {
 	}
 	
 	public static ArrayConceptQuery createSubQuery(List<CQElement> features) {
-		List<ConceptQuery> cqWraps = features.stream().map(ConceptQuery::new).collect(Collectors.toList());
+		List<ConceptQuery> cqWraps = features.stream()
+			.map(ConceptQuery::new)
+			.collect(Collectors.toList());
 		return new ArrayConceptQuery(cqWraps);
 	}
 }

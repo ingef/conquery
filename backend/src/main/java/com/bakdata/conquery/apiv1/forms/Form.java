@@ -7,10 +7,13 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.worker.Namespaces;
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,15 +27,6 @@ import lombok.Setter;
 public abstract class Form implements QueryDescription {
 
 	public abstract Map<String, List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
-
-	/**
-	 * Executed upon Description initialization.
-	 * E.g. Manipulate or add concepts to the form.
-	 * @param namespaces
-	 */
-	public void init(Namespaces namespaces) {
-		// Do nothing if not necessary
-	}
 	
 	@Override
 	public ManagedForm toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
@@ -43,5 +37,16 @@ public abstract class Form implements QueryDescription {
 	public void checkPermissions(@NonNull User user) {
 		QueryDescription.super.checkPermissions(user);
 		user.checkPermission(FormPermission.onInstance(Ability.CREATE, this.getClass()));
+	}
+	
+
+
+	public static QueryDescription resolvePrerequisite(QueryResolveContext context, ManagedExecutionId prerequisiteId) {
+		// Resolve the prerequisite
+		ManagedExecution<?> prerequisiteExe = context.getNamespaces().getMetaStorage().getExecution(prerequisiteId);
+		if(!(prerequisiteExe instanceof ManagedQuery)) {
+			throw new IllegalArgumentException("The prerequisite query must be of type " + ManagedQuery.class.getName());
+		}
+		return ((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
 	}
 }

@@ -4,6 +4,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -26,6 +27,8 @@ public abstract class Mode implements Visitable {
 	public String[] getAdditionalHeader() {
 		return ArrayUtils.EMPTY_STRING_ARRAY;
 	}
+
+	public abstract void resolve(QueryResolveContext context);
 	
 	public abstract IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
 }

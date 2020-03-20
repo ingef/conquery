@@ -47,7 +47,7 @@ public interface QueryDescription extends Visitable {
 	 * Initializes a submitted description using the provided context
 	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
 	 */
-	void resolve(QueryResolveContext context);
+	QueryDescription resolve(QueryResolveContext context);
 
 	/**
 	 * Check implementation specific permissions.

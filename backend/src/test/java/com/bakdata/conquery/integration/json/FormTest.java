@@ -17,10 +17,8 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -34,6 +32,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -42,7 +41,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -56,9 +54,6 @@ public class FormTest extends ConqueryTestSpec {
 	
 	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
 
-	private static final ListeningExecutorService POOL = ConqueryConfig
-		.getInstance().getQueries().getExecutionPool()
-		.createService("Form Executor %d");
 	
 	/*
 	 * parse form as json first, because it may contain namespaced ids, that can only be resolved after
@@ -101,20 +96,22 @@ public class FormTest extends ConqueryTestSpec {
 		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
 
 		support.waitUntilWorkDone();
+
+		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
-		MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
-		form.init(storage.getNamespaces());
-		log.info("{} FORM INIT", getLabel());
+
 		idMapping = support.getConfig().getIdMapping();
 	}
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
 		Namespaces namespaces = support.getNamespace().getNamespaces();
-		MasterMetaStorage storage = support.getNamespace().getStorage().getMetaStorage();
 		UserId userId = support.getTestUser().getId();
 		DatasetId dataset = support.getNamespace().getDataset().getId();
-
+		
+		log.info("{} FORM INIT", getLabel());
+		form.resolve(new QueryResolveContext(dataset, namespaces));
+		
 		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset);
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
