@@ -2,26 +2,20 @@ package com.bakdata.conquery.integration.tests.deletion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
-import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
-import com.bakdata.conquery.models.preproc.InputFile;
-import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
@@ -29,7 +23,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Test if Imports can be deleted and safely queried.
@@ -160,46 +153,12 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 		conquery.waitUntilWorkDone();
 
-
-		// Load more data under the same name into the same table, with only the deleted import/table
+		// Load the same import into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			final RequiredTable import2Table = Arrays.stream(test.getContent().getTables())
-													 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
-													 .findFirst()
-													 .orElseThrow();
-
-
-			final String path = import2Table.getCsv().getPath();
-
-			//copy csv to tmp folder
-			// Content 2.2 contains an extra entry of a value that hasn't been seen before.
-			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf("/")) + "/" + "content2.2.csv")
-											  .asStream(), new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
-
-			//create import descriptor
-			InputFile inputFile = InputFile.fromName(conquery.getConfig().getPreprocessor().getDirectories()[0], importId.getTag());
-			ImportDescriptor desc = new ImportDescriptor();
-			desc.setInputFile(inputFile);
-			desc.setName(import2Table.getName() + "_import");
-			desc.setTable(import2Table.getName());
-			Input input = new Input();
-			{
-				input.setPrimary(IntegrationUtils.copyOutput(0, import2Table.getPrimaryColumn()));
-				input.setSourceFile(new File(inputFile.getCsvDirectory(), import2Table.getCsv().getName()));
-				input.setOutput(new Output[import2Table.getColumns().length]);
-				for (int i = 0; i < import2Table.getColumns().length; i++) {
-					input.getOutput()[i] = IntegrationUtils.copyOutput(i + 1, import2Table.getColumns()[i]);
-				}
-			}
-			desc.setInputs(new Input[]{input});
-			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
-
-			//preprocess
-			conquery.preprocessTmp();
-
-			//import preprocessedFiles
-			conquery.getDatasetsProcessor().addImport(conquery.getDataset(), inputFile.getPreprocessedFile());
+			IntegrationUtils.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
+																 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
+																 .collect(Collectors.toList()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -217,9 +176,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 					final WorkerStorage workerStorage = worker.getStorage();
 
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(importId)))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-							.filteredOn(bucket -> bucket.getImp().getId().equals(importId))
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.isNotEmpty();
 				}
