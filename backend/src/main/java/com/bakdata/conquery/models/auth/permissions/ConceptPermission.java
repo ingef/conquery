@@ -6,7 +6,7 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 
-@CPSType(id = "QUERY", base = StringPermissionBuilder.class)
+@CPSType(id = "CONCEPT", base = StringPermissionBuilder.class)
 public class ConceptPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "concepts";
