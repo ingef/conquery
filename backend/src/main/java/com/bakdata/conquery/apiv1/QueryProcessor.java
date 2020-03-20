@@ -1,19 +1,27 @@
 package com.bakdata.conquery.apiv1;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -24,6 +32,7 @@ import com.bakdata.conquery.util.QueryUtils.SingleReusedChecker;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.Permission;
 @Slf4j
 @RequiredArgsConstructor
 public class QueryProcessor {
@@ -38,11 +47,22 @@ public class QueryProcessor {
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, URLBuilder urlb, User user) {
 		
+		query = query.resolve(new QueryResolveContext(dataset.getId(), namespaces));
+		
 		// Initialize checks that need to traverse the query tree
 		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
 		SingleReusedChecker singleReusedChecker = new QueryUtils.SingleReusedChecker();
 		NamespacedIdCollector namespacedIdCollector = new QueryUtils.NamespacedIdCollector();
 		ExecutionMetrics.QueryMetricsReporter metricsReporter = new ExecutionMetrics.QueryMetricsReporter();
+		
+		List<Permission> permissions = namespacedIdCollector.getIds().stream()
+			.filter(id -> ConceptId.class.isAssignableFrom(id.getClass()))
+			.map(ConceptId.class::cast)
+			.map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
+			.map(Permission.class::cast)
+			.collect(Collectors.toList());
+		
+		user.checkPermissions(permissions);
 
 
 		// Chain the checks and apply them to the tree
@@ -107,7 +127,6 @@ public class QueryProcessor {
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
 				IQuery translated = QueryTranslator.replaceDataset(namespaces, translateable, targetDataset);
-				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(namespaces, translated, mq.getQueryId(), user.getId(), targetDataset);
 				
 				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}

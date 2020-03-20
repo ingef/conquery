@@ -44,7 +44,8 @@ public interface QueryDescription extends Visitable {
 	Set<ManagedExecutionId> collectRequiredQueries();
 	
 	/**
-	 * Initializes a submitted description using the provided context
+	 * Initializes a submitted description using the provided context.
+	 * All parameters that are set in this phase should be internal or cleanly serializable/deserializable.
 	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
 	 */
 	QueryDescription resolve(QueryResolveContext context);
