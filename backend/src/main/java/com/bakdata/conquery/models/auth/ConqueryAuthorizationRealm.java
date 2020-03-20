@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
 		UserId userId = (UserId) principals.getPrimaryPrincipal();
-		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
 		
 		info.addObjectPermissions(AuthorizationHelper.getEffectiveUserPermissions(userId, storage));
 		
@@ -78,17 +79,42 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	 * Permission were collected
 	 *
 	 */
+	@SuppressWarnings("serial")
 	public static class ConqueryAuthorizationInfo extends SimpleAuthorizationInfo {
+		@Override
+		public void addRole(String role) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addRoles(Collection<String> roles) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addStringPermission(String permission) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addStringPermissions(Collection<String> permissions) {
+			throw new UnsupportedOperationException();
+		}
+		
 		@Override
 		public void addObjectPermission(Permission permission) {
 			throw new UnsupportedOperationException();
 		}
 		
-		public void addObjectPermissions(Set<Permission> permissions) {
-			if (objectPermissions == null) {
-				objectPermissions = permissions;
+		public void addObjectPermissions(Collection<Permission> permissions) {
+			if (!(permissions instanceof Set)) {
+				super.addObjectPermissions(permissions);
 			}
-			objectPermissions = Sets.union(objectPermissions, permissions);
+			if (objectPermissions == null) {
+				objectPermissions = (Set<Permission>) permissions;
+				return;
+			}
+			objectPermissions = Sets.union(objectPermissions, (Set<Permission>)permissions);
 		}
 		
 	}
