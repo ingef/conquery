@@ -120,9 +120,11 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			// Getting the User from AuthorizationConfig
 			standaloneCommand.getMaster().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
 
-		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
 
+
+		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
 		support.waitUntilWorkDone();
+
 		openSupports.add(support);
 		return support;
 	}

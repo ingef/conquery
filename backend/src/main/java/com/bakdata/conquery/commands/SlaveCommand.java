@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -33,7 +34,6 @@ import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.resources.admin.SlaveServlet;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.cli.ServerCommand;
-import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -77,41 +77,28 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 		// This allows us to have several Servlet definitions in the same config json while relying on ServerCommand for management.
 		if(isSlaveCommand(namespace)) {
 			this.config.setServerFactory(this.config.getSlaveServlet());
-
-
 		}
 
 		connector = new NioSocketConnector();
 
 		jobManager = new JobManager(label);
-		synchronized (environment) {
-			environment.lifecycle().manage(jobManager);
-			environment.lifecycle().manage(this);
-			validator = environment.getValidator();
-			
-			scheduler = environment
-				.lifecycle()
-				.scheduledExecutorService("Scheduled Messages")
-				.build();
-		}
 
+		environment.lifecycle().manage(jobManager);
+		environment.lifecycle().manage(this);
+		validator = environment.getValidator();
+
+		scheduler = environment
+			.lifecycle()
+			.scheduledExecutorService("Scheduled Messages")
+			.build();
+
+
+		RESTServer.configure(environment.jersey().getResourceConfig(), getConfig().getServerFactory(), config.getApi().isAllowCORSRequests());
 
 
 		slaveServlet = new SlaveServlet();
 
-		final DropwizardResourceConfig jerseyConfig;
-
-//		if(isSlaveCommand(namespace)){
-//			jerseyConfig = slaveServlet.createServlet(config, environment);
-//		}
-//		else {
-//			jerseyConfig = environment.admin();
-//		}
-
-
-		environment.getAdminContext().
-
-		slaveServlet.register(getWorkers(), environment.admin());
+		slaveServlet.register(this, environment, getConfig());
 
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
@@ -133,13 +120,21 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			}
 		}
 
+
+
 		if(isSlaveCommand(namespace)) {
-			super.run(environment, namespace, this.config);
+			// Start server
+			try {
+				super.run(environment, namespace, getConfig());
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
 	private boolean isSlaveCommand(Namespace namespace) {
-		return namespace.getString("command").equalsIgnoreCase("slave");
+		return namespace.getString("command") != null && namespace.getString("command").equalsIgnoreCase("slave");
 	}
 
 	@Override
@@ -226,6 +221,8 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 				config.getCluster().getMasterURL().getHostAddress(),
 				config.getCluster().getPort()
 		);
+
+
 
 		while(true) {
 			try {

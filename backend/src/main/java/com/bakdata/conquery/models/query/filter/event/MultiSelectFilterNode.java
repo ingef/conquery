@@ -6,6 +6,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 import com.bakdata.conquery.models.types.specific.AStringType;
 
+// TODO: 18.03.2020 rewrite this with IntArraySet as they do the same thing.
+
 /**
  * Event is included when the value in column is one of many selected.
  */

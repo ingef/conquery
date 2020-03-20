@@ -103,11 +103,12 @@ public class StandaloneCommand extends ServerCommand<ConqueryConfig> {
 			}));
 		}
 
+		ConqueryMDC.setLocation("Master");
+
 		// Start master command
 		master = new MasterCommand(conquery);
 		master.run(environment, namespace, config);
 
-		ConqueryMDC.setLocation("Master");
 		log.debug("Waiting for slaves to start");
 		starterPool.shutdown();
 		starterPool.awaitTermination(1, TimeUnit.HOURS);
@@ -128,9 +129,7 @@ public class StandaloneCommand extends ServerCommand<ConqueryConfig> {
 			System.exit(-1);
 		}
 
-		// starts the Jersey Server
-		log.debug("Starting REST Server");
-		ConqueryMDC.setLocation(null);
+
 
 	}
 }

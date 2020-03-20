@@ -19,7 +19,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 @UtilityClass
 public class RESTServer {
 
-	public static void configure(ServerFactory serverFactory, ResourceConfig jersey, boolean allowCORSRequests) {
+	public static void configure(ResourceConfig jersey, ServerFactory serverFactory, boolean allowCORSRequests) {
 		// Bind User class to REST authentication
 		jersey.register(new AuthValueFactoryProvider.Binder<>(User.class));
 		//change exception mapper behavior because of JERSEY-2437

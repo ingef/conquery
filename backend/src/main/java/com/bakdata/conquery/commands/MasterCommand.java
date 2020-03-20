@@ -84,7 +84,7 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements IoHa
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
 
-		RESTServer.configure(config.getServerFactory(), environment.jersey().getResourceConfig(), config.getApi().isAllowCORSRequests());
+		RESTServer.configure(environment.jersey().getResourceConfig(), config.getServerFactory(), config.getApi().isAllowCORSRequests());
 
 		environment.lifecycle().manage(jobManager);
 
@@ -133,7 +133,7 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements IoHa
 		}
 
 		admin = new AdminServlet();
-		admin.register(this, authController);
+		admin.register(this, authController, this.getEnvironment(), this.getConfig());
 
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
