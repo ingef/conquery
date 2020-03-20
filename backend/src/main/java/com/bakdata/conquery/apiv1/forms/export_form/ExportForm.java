@@ -9,8 +9,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -62,14 +61,6 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
 		return Set.of(queryGroup);
-	}
-	
-	@ValidationMethod(message = "Abort Form creation, because coarser subdivision are requested and multiple (or none) resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.")
-	public boolean isValidResolutionSetting() {
-		if(alsoCreateCoarserSubdivisions && resolution.size() != 1) {
-			return false;
-		}
-		return true;
 	}
 
 }
