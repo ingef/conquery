@@ -130,7 +130,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		// copy daterange
 		result[FEATURE_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
-		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, FEATURE_DATE_RANGE + 1, value.length - (DATE_RANGE_SUB_RESULT+1));
+		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, OUTCOME_DATE_RANGE + 1, value.length - (DATE_RANGE_SUB_RESULT+1));
 	}
 	
 	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
