@@ -22,6 +22,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -71,6 +72,9 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
+		
+		// Initialization of internationalization
+		I18n.init();
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 

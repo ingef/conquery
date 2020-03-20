@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -24,10 +24,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @Getter @RequiredArgsConstructor
 public class RelativeFormQueryPlan implements QueryPlan {
+
+	private static final int DATE_RANGE_SUB_RESULT = 3;
+	private static final int EVENTDATE = 2;
+	private static final int FEATURE_DATE_RANGE = 3;
+	private static final int OUTCOME_DATE_RANGE = 4;
 
 	private final ConceptQueryPlan query;
 	private final ArrayConceptQueryPlan featurePlan;
@@ -36,7 +40,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final IndexPlacement indexPlacement;
 	private final int timeCountBefore;
 	private final int timeCountAfter;
-	private final TimeUnit timeUnit;
+	private final DateContextMode timeUnit;
+	private final List<DateContextMode> resolutions;
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -57,7 +62,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
-			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, true, timeUnit);
+			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
 
 		SubResult featureResult = executeSubQuery(ctx, FeatureGroup.FEATURE, entity, contexts);
 		SubResult outcomeResult = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
@@ -66,27 +71,46 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		// We look at the first result line to determine the length of the subresult
 		int featureLength = featureResult.getValues().get(0).length;
 		int outcomeLength = outcomeResult.getValues().get(0).length;
-		// Whole result is the concatenation of the subresults. However the sub result includes the date restriction which we drop.
-		int size = featureLength + outcomeLength - 2;
+		
+		/*
+		 *  Whole result is the concatenation of the subresults. The final output format combines resolution info, index and eventdate of both sub queries.
+		 *  The feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... 
+		 *  The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 */
+		int size = featureLength + outcomeLength - 3/*= [RESOLUTION], [INDEX], [EVENTDATE]*/;
 
-		// merge the full (index == null) lines
-		Object[] mergedFull = new Object[size];
-		setFeatureValues(mergedFull, featureResult.getValues().get(0));
-		setOutcomeValues(mergedFull, outcomeResult.getValues().get(0), featureLength);
-		values.add(mergedFull);
+		int resultStartIndex = 0;
+		if(hasCompleteDateContexts(contexts)) {
+			// merge a line for the complete daterange, when two dateContext were generated that don't target the same feature group,
+			// which would be a mistake by the generation
+			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE is the coarsed resolution it must be at the first
+			// to indexes of the list.
+			Object[] mergedFull = new Object[size];
+			setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
+			setOutcomeValues(mergedFull, outcomeResult.getValues().get(resultStartIndex), featureLength);
+			values.add(mergedFull);
+			resultStartIndex++;
+		}
 
 		// append all other lines directly
-		for (int i = 1; i < featureResult.getValues().size(); i++) {
+		for (int i = resultStartIndex; i < featureResult.getValues().size(); i++) {
 			Object[] result = new Object[size];
 			setFeatureValues(result, featureResult.getValues().get(i));
 			values.add(result);
 		}
-		for (int i = 1; i < outcomeResult.getValues().size(); i++) {
+		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
 			Object[] result = new Object[size];
 			setOutcomeValues(result, outcomeResult.getValues().get(i), featureLength);
 			values.add(result);
 		}
 		return EntityResult.multilineOf(entity.getId(), values);
+	}
+
+	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
+		return contexts.size()>=2
+			&& contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+			&& contexts.get(1).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+			&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
 	}
 
 	private SubResult executeSubQuery(QueryExecutionContext ctx, FeatureGroup featureGroup, Entity entity, List<DateContext> contexts) {
@@ -98,25 +122,25 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		FormQueryPlan sub = new FormQueryPlan(list,subPlan);
 		return new SubResult((MultilineContainedEntityResult) sub.execute(ctx, entity));
 	}
-
-	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
-		// copy everything up to including index
-		for (int i = 0; i < 2; i++) {
-			result[i] = value[i];
-		}
-		// copy daterange
-		result[3] = value[2];
-		System.arraycopy(value, 3, result, 1 + featureLength, value.length - 3);
-	}
-
+	
 	private void setFeatureValues(Object[] result, Object[] value) {
 		// copy everything up to including index
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i <= EVENTDATE; i++) {
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[2] = value[2];
-		System.arraycopy(value, 3, result, 4, value.length - 3);
+		result[FEATURE_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
+		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, OUTCOME_DATE_RANGE + 1, value.length - (DATE_RANGE_SUB_RESULT+1));
+	}
+	
+	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
+		// copy everything up to including index
+		for (int i = 0; i <= EVENTDATE; i++) {
+			result[i] = value[i];
+		}
+		// copy daterange
+		result[OUTCOME_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
+		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, 1 + featureLength, value.length - (DATE_RANGE_SUB_RESULT+1));
 	}
 
 	@Override
@@ -129,7 +153,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			indexPlacement,
 			timeCountBefore,
 			timeCountAfter,
-			timeUnit
+			timeUnit,
+			resolutions
 		);
 		return copy;
 	}
@@ -147,4 +172,5 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			return result.getValues();
 		}
 	}
+
 }

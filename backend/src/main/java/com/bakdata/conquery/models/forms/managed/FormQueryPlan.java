@@ -49,18 +49,20 @@ public class FormQueryPlan implements QueryPlan {
 	}
 	
 	private Object[] addConstants(Object[] values, DateContext dateContext) {
-		int constants = dateContext.getEventDate() == null ? 2 : 3;
+		int constants = dateContext.getEventDate() == null ? 3 : 4;
 		
 		Object[] result = new Object[values.length+constants];
 		System.arraycopy(values, 0, result, constants, values.length);
 		
+		//add resolution indicator
+		result[0] = dateContext.getSubdivisionMode().toString();	
 		//add index value
-		result[0] = dateContext.getIndex();
+		result[1] = dateContext.getIndex();
 		// add event date
 		if(dateContext.getEventDate() != null) {
-			result[1] = dateContext.getEventDate();
+			result[2] = dateContext.getEventDate();
 		}
-		//add date range at [1] or [2]
+		//add date range at [2] or [3]
 		result[constants-1] = dateContext.getDateRange().toString();
 		
 		return result;

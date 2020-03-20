@@ -1,29 +1,115 @@
 package com.bakdata.conquery.apiv1.forms;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import c10n.C10N;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Specifies the smallest time unit that should be used in the resulting
- * {@link DateContext} for grouping.
+ * Specifies the tempporal resolution that should be used in the resulting
+ * {@link DateContext} for grouping. It is important for this class to keep the order of the
+ * Enum members.
  *
  */
+@RequiredArgsConstructor
 public enum DateContextMode {
 	/**
 	 * For returning contexts with a single {@link CDateRange} for the entire
 	 * {@link FeatureGroup}.
 	 */
-	COMPLETE_ONLY,
+	COMPLETE(null){
+		@Override
+		public List<CDateRange> subdivideRange(CDateRange range) {
+			return List.of(range);
+		}
+
+		@Override
+		public String toString(Locale locale) {
+			return C10N.get(DateContextModeC10n.class, locale).complete();
+		}
+	},
 
 	/**
 	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 	 * years.
 	 */
-	YEAR_WISE,
+	YEARS(COMPLETE){
+		@Override
+		public List<CDateRange> subdivideRange(CDateRange range) {
+			return range.getCoveredYears();
+		}
+
+		@Override
+		public String toString(Locale locale) {
+			return C10N.get(DateContextModeC10n.class, locale).year();
+		}
+	},
 
 	/**
 	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 	 * quarters.
 	 */
-	QUARTER_WISE;
+	QUARTERS(YEARS){
+		@Override
+		public List<CDateRange> subdivideRange(CDateRange range) {
+			return range.getCoveredQuarters();
+		}
+		
+
+		@Override
+		public String toString(Locale locale) {
+			return C10N.get(DateContextModeC10n.class, locale).quarter();
+		}
+	},
+	
+	/**
+	 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
+	 * days.
+	 */
+	DAYS(QUARTERS){
+		@Override
+		public List<CDateRange> subdivideRange(CDateRange range) {
+			return range.getCoveredDays();
+		}
+
+		@Override
+		public String toString(Locale locale) {
+			return C10N.get(DateContextModeC10n.class, locale).day();
+		}
+	};
+	
+	@JsonIgnore
+	private final DateContextMode coarser;
+
+
+	private List<DateContextMode> thisAndCoarserSubdivisions;
+
+	
+	@JsonIgnore
+	public List<DateContextMode> getThisAndCoarserSubdivisions(){
+		if (thisAndCoarserSubdivisions != null) {
+			return thisAndCoarserSubdivisions;
+		}
+		List<DateContextMode> thisAndCoarser = new ArrayList<>();
+		if(coarser != null) {
+			thisAndCoarser.addAll(coarser.getThisAndCoarserSubdivisions());
+		}
+		thisAndCoarser.add(this);
+		return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
+		
+	}
+		
+
+	public List<CDateRange> subdivideRange(CDateRange range){
+		throw new UnsupportedOperationException();
+	}
+	public String toString(Locale locale) {
+		throw new UnsupportedOperationException();
+	}
 }

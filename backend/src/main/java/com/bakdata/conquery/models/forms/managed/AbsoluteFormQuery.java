@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -38,7 +39,7 @@ public class AbsoluteFormQuery extends IQuery {
 	@NotNull @Valid
 	private final ArrayConceptQuery features;
 	@NotNull
-	private final DateContextMode resultMode;
+	private final List<DateContextMode> resolutions;
 	
 	@Override
 	public AbsoluteFormQuery resolve(QueryResolveContext context) {
@@ -46,7 +47,7 @@ public class AbsoluteFormQuery extends IQuery {
 			query.resolve(context),
 			dateRange,
 			features,
-			resultMode
+			resolutions
 		);
 	}
 
@@ -54,7 +55,7 @@ public class AbsoluteFormQuery extends IQuery {
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
 			query.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resultMode),
+			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutions ),
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false))
 		);
 	}
@@ -64,8 +65,10 @@ public class AbsoluteFormQuery extends IQuery {
 		features.collectResultInfos(collector);
 		//remove SpecialDateUnion
 		collector.getInfos().remove(0);
-		collector.getInfos().add(0, ConqueryConstants.CONTEXT_INDEX_INFO);
-		collector.getInfos().add(1, ConqueryConstants.DATE_RANGE_INFO);
+
+		collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
+		collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
+		collector.getInfos().add(2, ConqueryConstants.DATE_RANGE_INFO);
 	}
 
 	@Override
