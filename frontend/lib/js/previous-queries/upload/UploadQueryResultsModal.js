@@ -100,7 +100,7 @@ export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
             )}
             {!file && (
               <SxDropzoneWithFileInput onDrop={onDrop} onSelectFile={setFile}>
-                {T.translate("uploadQueryResultsModal.dropzone")}
+                {() => T.translate("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>
             )}
             {error && (

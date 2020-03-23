@@ -34,7 +34,7 @@ export default (props: PropsT) => {
         />
       ) : (
         <Dropzone onDrop={onDrop} acceptedDropTypes={[PREVIOUS_QUERY]}>
-          {props.dropzoneText}
+          {() => props.dropzoneText}
         </Dropzone>
       )}
     </div>

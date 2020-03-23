@@ -15,7 +15,6 @@ import {
   FORM_CONCEPT_NODE
 } from "../../common/constants/dndTypes";
 import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
-import BasicButton from "../../button/BasicButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 
 import {
@@ -51,6 +50,7 @@ import {
   selectFormConfig,
   useAllowExtendedCopying
 } from "../stateSelectors";
+import TransparentButton from "../../button/TransparentButton";
 
 type PropsType = FieldProps & {
   fieldName: string,
@@ -425,7 +425,7 @@ const DropzoneListItem = styled("div")`
   flex-wrap: wrap;
 `;
 
-const SxBasicButton = styled(BasicButton)`
+const SxTransparentButton = styled(TransparentButton)`
   margin-left: 10px;
 `;
 
@@ -509,13 +509,20 @@ const FormConceptGroup = (props: PropsType) => {
           <>
             {props.label}
             {allowExtendedCopying && (
-              <SxBasicButton tiny onClick={() => setIsCopyModalOpen(true)}>
+              <SxTransparentButton
+                tiny
+                onClick={() => setIsCopyModalOpen(true)}
+              >
                 {T.translate("externalForms.common.concept.copyFrom")}
-              </SxBasicButton>
+              </SxTransparentButton>
             )}
           </>
         }
-        dropzoneText={props.attributeDropzoneText}
+        dropzoneChildren={({ isOver, itemType }) =>
+          isOver && itemType === FORM_CONCEPT_NODE
+            ? T.translate("externalForms.common.concept.copying")
+            : props.attributeDropzoneText
+        }
         acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
         allowFile={true}
         disallowMultipleColumns={props.disallowMultipleColumns}
@@ -638,7 +645,11 @@ const FormConceptGroup = (props: PropsType) => {
                       );
                     }}
                   >
-                    {props.conceptDropzoneText}
+                    {({ isOver, itemType }) =>
+                      isOver && itemType === FORM_CONCEPT_NODE
+                        ? T.translate("externalForms.common.concept.copying")
+                        : props.conceptDropzoneText
+                    }
                   </DropzoneWithFileInput>
                 )
               )}

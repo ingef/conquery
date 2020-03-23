@@ -237,6 +237,7 @@ externalForms:
     concept:
       expand: "Untergeordnete Attribute einbeziehen / wieder ausschließen."
       copyFrom: "Kopieren von ..."
+      copying: "Kopieren"
     clear: "Formular leeren"
 
 uploadQueryResultsModal:

@@ -5,15 +5,17 @@ import { type FieldPropsType } from "redux-form";
 
 import { PREVIOUS_QUERY } from "../../common/constants/dndTypes";
 
+import type { ChildArgs } from "../../form-components/Dropzone";
+
 import DropzoneList from "../form-components/DropzoneList";
 import FormQueryResult from "./FormQueryResult";
 
 type PropsT = FieldPropsType & {
-  dropzoneText: string,
+  dropzoneChildren: (args: ChildArgs) => React.ReactNode,
   label: string
 };
 
-export default ({ input, label, dropzoneText }: PropsT) => {
+export default ({ input, label, dropzoneChildren }: PropsT) => {
   const addValue = newItem => {
     input.onChange([...input.value, newItem]);
   };
@@ -29,7 +31,7 @@ export default ({ input, label, dropzoneText }: PropsT) => {
     <DropzoneList
       acceptedDropTypes={[PREVIOUS_QUERY]}
       label={label}
-      dropzoneText={dropzoneText}
+      dropzoneChildren={dropzoneChildren}
       allowFile={false}
       items={input.value.map((concept, i) => (
         <FormQueryResult key={i} queryResult={concept} />

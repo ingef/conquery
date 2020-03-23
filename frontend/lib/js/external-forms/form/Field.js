@@ -121,7 +121,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           component={MultiQueryDropzone}
           props={{
             label: field.label[locale],
-            dropzoneText: field.dropzoneLabel[locale]
+            dropzoneChildren: () => field.dropzoneLabel[locale]
           }}
         />
       );
