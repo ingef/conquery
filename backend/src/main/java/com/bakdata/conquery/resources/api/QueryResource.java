@@ -2,7 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -54,12 +53,7 @@ public class QueryResource {
 	@POST
 	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
 		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
-		
-		authorize(user, datasetId, Ability.READ);
-		// Also look into the query and check the datasets
-		authorizeReadDatasets(user, query);
-		// Do query specific permission checks
-		query.checkPermissions(user);
+
 
 		return processor.postQuery(
 			dsUtil.getDataset(datasetId),
