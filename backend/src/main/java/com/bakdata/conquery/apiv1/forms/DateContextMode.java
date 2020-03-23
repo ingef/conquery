@@ -104,12 +104,8 @@ public enum DateContextMode {
 		return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
 		
 	}
-		
 
-	public List<CDateRange> subdivideRange(CDateRange range){
-		throw new UnsupportedOperationException();
-	}
-	public String toString(Locale locale) {
-		throw new UnsupportedOperationException();
-	}
+	public abstract List<CDateRange> subdivideRange(CDateRange range);
+
+	public abstract String toString(Locale locale);
 }

@@ -41,16 +41,19 @@ public enum ResultType {
 	},
 	CATEGORICAL,
 	RESOLUTION {
+
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if(f instanceof DateContextMode) {
-				return ((DateContextMode)f).toString(cfg.getLocale());
+			if (f instanceof DateContextMode) {
+				return ((DateContextMode) f).toString(cfg.getLocale());
 			}
 			try {
-				// If the object was parsed as a simple string, try to convert it to a DateContextMode to get Internationalization
-				return DateContextMode.valueOf(f.toString()).toString(cfg.getLocale());				
-			} catch (Exception e) {
-				throw new IllegalArgumentException(f+ " is not a valid resolution");
+				// If the object was parsed as a simple string, try to convert it to a
+				// DateContextMode to get Internationalization
+				return DateContextMode.valueOf(f.toString()).toString(cfg.getLocale());
+			}
+			catch (Exception e) {
+				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
 			}
 		}
 	},
