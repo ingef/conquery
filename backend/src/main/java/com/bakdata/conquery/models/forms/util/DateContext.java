@@ -84,20 +84,15 @@ public class DateContext {
 	 */
 	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<DateContextMode> subdivisionModes) {
 		List<DateContext> dcList = new ArrayList<>();
-		
-		for(DateContextMode mode : subdivisionModes) {
+
+		for (DateContextMode mode : subdivisionModes) {
 			// Start counting index form 0 for every subdivision mode
 			int index = 0;
 			for (CDateRange quarterInMask : mode.subdivideRange(dateRangeMask)) {
 				index++;
-				DateContext dc = new DateContext(
-					quarterInMask,
-					FeatureGroup.OUTCOME,
+				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
 					// For now there is no index for complete
-					mode.equals(DateContextMode.COMPLETE)? null : index,
-					null,
-					mode
-					);
+					mode.equals(DateContextMode.COMPLETE) ? null : index, null, mode);
 				dcList.add(dc);
 			}
 		}
