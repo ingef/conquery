@@ -518,7 +518,11 @@ const FormConceptGroup = (props: PropsType) => {
             )}
           </>
         }
-        dropzoneText={props.attributeDropzoneText}
+        dropzoneChildren={({ isOver, itemType }) =>
+          isOver && itemType === FORM_CONCEPT_NODE
+            ? T.translate("externalForms.common.concept.copying")
+            : props.attributeDropzoneText
+        }
         acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
         allowFile={true}
         disallowMultipleColumns={props.disallowMultipleColumns}
@@ -641,7 +645,11 @@ const FormConceptGroup = (props: PropsType) => {
                       );
                     }}
                   >
-                    {props.conceptDropzoneText}
+                    {({ isOver, itemType }) =>
+                      isOver && itemType === FORM_CONCEPT_NODE
+                        ? T.translate("externalForms.common.concept.copying")
+                        : props.conceptDropzoneText
+                    }
                   </DropzoneWithFileInput>
                 )
               )}

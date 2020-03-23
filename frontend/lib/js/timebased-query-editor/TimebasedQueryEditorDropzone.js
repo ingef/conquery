@@ -44,7 +44,7 @@ const TimebasedQueryEditorDropzone = ({
 
   return (
     <StyledDropzone acceptedDropTypes={DROP_TYPES} onDrop={onDrop}>
-      {T.translate("dropzone.dragQuery")}
+      {() => T.translate("dropzone.dragQuery")}
     </StyledDropzone>
   );
 };
