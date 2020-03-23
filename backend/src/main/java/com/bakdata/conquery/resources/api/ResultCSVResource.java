@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
@@ -47,7 +48,6 @@ import org.eclipse.jetty.io.EofException;
 @Slf4j
 public class ResultCSVResource {
 
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
 		ResultCSVResource.class, "getAsCsv");
 	private final Namespaces namespaces;
@@ -66,9 +66,12 @@ public class ResultCSVResource {
 		authorizeDownloadDatasets(user, exec);
 
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
+		
+		// Get the locale extracted by the LocaleFilter
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
 
 		try {
-			Stream<String> csv = QueryToCSVRenderer.toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);
+			Stream<String> csv = QueryToCSVRenderer.toCSV(settings, exec.toResultQuery(), mappingState);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {

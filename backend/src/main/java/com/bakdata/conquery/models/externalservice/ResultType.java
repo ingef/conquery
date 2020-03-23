@@ -1,23 +1,24 @@
 package com.bakdata.conquery.models.externalservice;
 
+
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.MajorTypeId;
-
 import lombok.NonNull;
 
 public enum ResultType {
 	BOOLEAN {
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if(f instanceof Boolean)
+			if(f instanceof Boolean) {
 				return (Boolean)f ? "t" : "f";
-			else
-				return "";
+			}
+			return "";
 		}
 	},
 	INTEGER {
@@ -26,9 +27,7 @@ public enum ResultType {
 			if(cfg.isPrettyPrint()) {
 				return NUMBER_FORMAT.format(((Number)f).longValue());
 			}
-			else {
-				return f.toString();
-			}
+			return f.toString();
 		}
 	},
 	NUMERIC {
@@ -37,12 +36,27 @@ public enum ResultType {
 			if(cfg.isPrettyPrint()) {
 				return DECIMAL_FORMAT.format(f);
 			}
-			else {
-				return f.toString();
-			}
+			return f.toString();
 		}
 	},
 	CATEGORICAL,
+	RESOLUTION {
+
+		@Override
+		public String print(PrintSettings cfg, Object f) {
+			if (f instanceof DateContextMode) {
+				return ((DateContextMode) f).toString(cfg.getLocale());
+			}
+			try {
+				// If the object was parsed as a simple string, try to convert it to a
+				// DateContextMode to get Internationalization
+				return DateContextMode.valueOf(f.toString()).toString(cfg.getLocale());
+			}
+			catch (Exception e) {
+				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
+			}
+		}
+	},
 	DATE,
 	STRING,
 	MONEY {
@@ -51,18 +65,9 @@ public enum ResultType {
 			if(cfg.isPrettyPrint()) {
 				return DECIMAL_FORMAT.format(new BigDecimal(((Number)f).longValue()).movePointLeft(CURRENCY_DIGITS));
 			}
-			else {
-				return INTEGER.print(cfg, f);
-			}
+			return INTEGER.print(cfg, f);
 		}
 	};
-	
-	
-	
-	
-	
-	
-	
 
 	private static final NumberFormat NUMBER_FORMAT;
 	private static final NumberFormat DECIMAL_FORMAT;
@@ -81,9 +86,7 @@ public enum ResultType {
 		if (f == null) {
 			return "";
 		}
-		else {
-			return print(cfg, f);
-		}
+		return print(cfg, f);
 	}
 	
 	public String print(PrintSettings cfg, @NonNull Object f) {

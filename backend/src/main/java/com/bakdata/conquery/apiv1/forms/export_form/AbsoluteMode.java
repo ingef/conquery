@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
@@ -37,6 +36,6 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTERS, userId, submittedDataset);
+		return AbsExportGenerator.generate(namespaces, this, userId, submittedDataset);
 	}
 }

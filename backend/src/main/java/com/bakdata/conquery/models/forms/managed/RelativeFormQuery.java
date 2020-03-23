@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -8,9 +9,9 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -44,7 +45,9 @@ public class RelativeFormQuery extends IQuery {
 	@Min(0)
 	private final int timeCountAfter;
 	@NotNull
-	private final TimeUnit timeUnit;
+	private final DateContextMode timeUnit;
+	@NotNull
+	private final List<DateContextMode> resolutions;
 	
 	@Override
 	public RelativeFormQuery resolve(QueryResolveContext context) {
@@ -56,7 +59,8 @@ public class RelativeFormQuery extends IQuery {
 			indexPlacement,
 			timeCountBefore,
 			timeCountAfter,
-			timeUnit
+			timeUnit,
+			resolutions
 		);
 	}
 	
@@ -66,7 +70,7 @@ public class RelativeFormQuery extends IQuery {
 			// At the moment we do not use the dates of feature and outcome query
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
 			outcomes.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit);
+			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutions);
 	}
 
 	@Override
@@ -83,8 +87,13 @@ public class RelativeFormQuery extends IQuery {
 		//remove SpecialDateUnion
 		featureHeader.getInfos().remove(0);
 		outcomeHeader.getInfos().remove(0);
+		//remove resolution info
+		featureHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
+		outcomeHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
 
-		//index
+		// resolution
+		collector.add(ConqueryConstants.RESOLUTION_INFO);
+		// index
 		collector.add(ConqueryConstants.CONTEXT_INDEX_INFO);
 		// event date
 		collector.add(ConqueryConstants.EVENT_DATE_INFO);
