@@ -29,11 +29,6 @@ public class QueryToCSVRenderer {
 
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
 	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
-	
-	public static Stream<String> toCSV(ManagedQuery query, IdMappingState mappingState) {
-		return toCSV(PRINT_SETTINGS, query, mappingState);
-	}
 	
 	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query, IdMappingState mappingState) {
 		return toCSV(cfg, List.of(query), mappingState);

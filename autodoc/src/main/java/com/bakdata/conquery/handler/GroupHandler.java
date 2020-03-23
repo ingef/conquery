@@ -356,9 +356,9 @@ public class GroupHandler {
 					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(1));
 			}
 			if(ClassToInstanceMap.class.isAssignableFrom(cl)) {
-				return "ClassToInstance map from "
+				return "ClassToInstanceMap maps from base class "
 					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(0))
-					+ " to instances of these classes.";
+					+ " to instances of subtypes";
 			}
 			if(Map.class.isAssignableFrom(cl)) {
 				return "map from "

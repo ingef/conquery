@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -20,9 +21,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -42,7 +41,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -54,11 +52,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @CPSType(id = "FORM_TEST", base = ConqueryTestSpec.class)
 public class FormTest extends ConqueryTestSpec {
 	
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
-
-	private static final ListeningExecutorService POOL = ConqueryConfig
-		.getInstance().getQueries().getExecutionPool()
-		.createService("Form Executor %d");
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true, Locale.ENGLISH);
 	
 	/*
 	 * parse form as json first, because it may contain namespaced ids, that can only be resolved after
@@ -111,7 +105,6 @@ public class FormTest extends ConqueryTestSpec {
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
 		Namespaces namespaces = support.getNamespace().getNamespaces();
-		MasterMetaStorage storage = support.getNamespace().getStorage().getMetaStorage();
 		UserId userId = support.getTestUser().getId();
 		DatasetId dataset = support.getNamespace().getDataset().getId();
 
@@ -155,7 +148,7 @@ public class FormTest extends ConqueryTestSpec {
 		}
 	}
 
-	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
+	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTreeList(
