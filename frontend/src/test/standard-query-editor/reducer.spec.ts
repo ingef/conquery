@@ -1,9 +1,9 @@
 import {
   setFilterValue,
   loadFilterSuggestionsSuccess
-} from "../../lib/js/standard-query-editor/actions";
+} from "../../js/standard-query-editor/actions";
 
-import reducer from "../../lib/js/standard-query-editor/reducer";
+import reducer from "../../js/standard-query-editor/reducer";
 
 const createQueryStateWithOneBigMultiSelect = () => [
   {

@@ -1,9 +1,9 @@
 import { de } from "date-fns/locale";
-// import { enGB } from "date-fns/locale";
+import { enGB } from "date-fns/locale";
 
 import { initializeLocalization } from "./js/localization";
 import translationsDe from "./localization/de.json";
-// import translationsEn from "./localization/en.json";
+import translationsEn from "./localization/en.json";
 
 import conquery from "./js";
 
@@ -15,11 +15,15 @@ import theme from "./app-theme";
 
 import "./app-styles.sass";
 
-// initializeLocalization("en", enGB, translationsEn);
-initializeLocalization("de", de, translationsDe);
-
 const isProduction = process.env.NODE_ENV === "production";
 const disableLogin = !!process.env.REACT_APP_DISABLE_LOGIN;
+const LANG = process.env.REACT_APP_LANG;
+
+if (!LANG || LANG === "de") {
+  initializeLocalization("de", de, translationsDe);
+} else {
+  initializeLocalization("en", enGB, translationsEn);
+}
 
 const MOCK_API_URL = "http://localhost:8001";
 

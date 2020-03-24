@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import thunk from "redux-thunk";
 import configureMockStore from "redux-mock-store";
 import nock from "nock";
@@ -9,9 +8,9 @@ import {
   resolveConceptsStart,
   resolveConceptsSuccess,
   resolveConceptsError
-} from "../../../lib/js/upload-concept-list-modal/actions";
+} from "../../../js/upload-concept-list-modal/actions";
 
-import { apiUrl } from "../../../lib/js/environment";
+import { apiUrl } from "../../../js/environment";
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
@@ -55,14 +54,14 @@ describe("upload concepts dialog", () => {
             completeApiRequest
           ] = store.getActions();
 
-          expect(setConceptRootNode).to.deep.equal(expectedActions[0]);
-          expect(startApiRequest).to.deep.equal(expectedActions[1]);
+          expect(setConceptRootNode).toEqual(expectedActions[0]);
+          expect(startApiRequest).toEqual(expectedActions[1]);
 
-          expect(completeApiRequest.type).to.equal(expectedActions[2].type);
-          expect(completeApiRequest.payload.data).to.deep.equal(
+          expect(completeApiRequest.type).toEqual(expectedActions[2].type);
+          expect(completeApiRequest.payload.data).toEqual(
             expectedActions[2].payload.data
           );
-          expect(completeApiRequest.payload.receivedAt).to.be.a("number");
+          expect(typeof completeApiRequest.payload.receivedAt).toBe("number");
         });
     });
 
@@ -97,7 +96,7 @@ describe("upload concepts dialog", () => {
           )
         )
         .then(() => {
-          expect(store.getActions()).to.deep.equal(expectedActions);
+          expect(store.getActions()).toEqual(expectedActions);
         });
     });
   });

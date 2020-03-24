@@ -26,7 +26,10 @@ export async function fetchJsonUnauthorized(
       };
 
   try {
-    const response = await axios(finalRequest);
+    const response = await axios({
+      ...finalRequest,
+      validateStatus: () => true // Don't ever reject the promise for special status codes
+    });
 
     if (response.status >= 200 && response.status < 300) {
       // Also handle empty responses
