@@ -12,12 +12,6 @@ export default styled(BasicButton)`
   border: none;
 
   &:hover {
-    background-color: ${({ theme }) => `rgba(${theme.col.blueGrayDark}, 0.8)`};
-    border-color: ${({ theme }) => `rgba(${theme.col.blueGrayDark}, 0.8)`};
-  }
-
-  &:disabled {
-    background-color: ${({ theme }) => theme.col.blueGrayDark};
-    border-color: ${({ theme }) => theme.col.blueGrayDark};
+    opacity: 0.9;
   }
 `;

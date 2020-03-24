@@ -1,10 +1,10 @@
 // @flow
 
-import React from "react";
+import * as React from "react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
-import Dropzone from "../../form-components/Dropzone";
+import Dropzone, { type ChildArgs } from "../../form-components/Dropzone";
 import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
 import Label from "../../form-components/Label";
 
@@ -27,8 +27,8 @@ const StyledIconButton = styled(IconButton)`
 
 type PropsType = {
   className?: string,
-  label?: string,
-  dropzoneText: string,
+  label?: React.ReactNode,
+  dropzoneChildren: (args: ChildArgs) => React.ReactNode,
   items: any,
   acceptedDropTypes: string[],
   onDrop: () => void,
@@ -67,7 +67,7 @@ const DropzoneList = (props: PropsType) => {
           onDrop={props.onDrop}
           onSelectFile={props.onDropFile}
         >
-          {props.dropzoneText}
+          {props.dropzoneChildren}
         </DropzoneClass>
       )}
     </div>

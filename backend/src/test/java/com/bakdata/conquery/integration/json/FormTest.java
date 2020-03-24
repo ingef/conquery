@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -20,7 +21,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -52,8 +52,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @CPSType(id = "FORM_TEST", base = ConqueryTestSpec.class)
 public class FormTest extends ConqueryTestSpec {
 	
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
-
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true, Locale.ENGLISH);
 	
 	/*
 	 * parse form as json first, because it may contain namespaced ids, that can only be resolved after
@@ -152,7 +151,7 @@ public class FormTest extends ConqueryTestSpec {
 		}
 	}
 
-	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
+	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTreeList(

@@ -45,7 +45,7 @@ const ConceptDropzone = ({ node, onDropConcept }: PropsType) => {
       onDrop={onDrop}
       target={dropzoneTarget}
     >
-      {T.translate("queryNodeEditor.dropConcept")}
+      {() => T.translate("queryNodeEditor.dropConcept")}
     </StyledDropzone>
   );
 };

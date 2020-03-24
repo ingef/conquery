@@ -6,8 +6,8 @@ import java.util.function.Consumer;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
@@ -26,7 +26,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @CPSType(id="RELATIVE", base=Mode.class)
 public class RelativeMode extends Mode {
 	@NotNull
-	private TimeUnit timeUnit;
+	private DateContextMode timeUnit;
 	@Min(0)
 	private int timeCountBefore;
 	@Min(0)

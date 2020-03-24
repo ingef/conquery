@@ -146,16 +146,21 @@ public class CalculateCBlocksJob extends Job {
 			try {
 				final int event = entry.getEvent();
 
-				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
+				// Events without values are skipped
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				if (!bucket.has(event, connector.getColumn())) {
+					cBlock.getMostSpecificChildren().add(null);
+					continue;
+				}
+
 				int valueIndex = bucket.getString(event, connector.getColumn());
 				final String stringValue = stringType.getElement(valueIndex);
 
-				// Events without values are skipped
-				// Events can also be filtered, allowing a single table to be used by multiple connectors.
-				if (!bucket.has(event, connector.getColumn())
-					|| (connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))
-				) {
+				// Lazy evaluation of map to avoid allocations if possible.
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
+
+
+				if((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))){
 					cBlock.getMostSpecificChildren().add(null);
 					continue;
 				}

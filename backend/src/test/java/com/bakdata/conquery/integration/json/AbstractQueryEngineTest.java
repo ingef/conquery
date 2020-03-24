@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -39,7 +41,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,Locale.ENGLISH, columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
@@ -49,6 +51,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();
 		
 		IQuery query = getQuery();
+
+		log.info("{} QUERY INIT", getLabel());
+		query.resolve(new QueryResolveContext(dataset, namespaces));
 		
 		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, dataset);
 

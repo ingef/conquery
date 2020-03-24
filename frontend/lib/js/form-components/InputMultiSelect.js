@@ -195,7 +195,7 @@ const InputMultiSelect = (props: PropsType) => {
       {!hasTooManyValues && !allowDropFile && Select}
       {!hasTooManyValues && allowDropFile && (
         <SxInputMultiSelectDropzone onDropFile={props.onDropFile}>
-          {Select}
+          {() => Select}
         </SxInputMultiSelectDropzone>
       )}
     </Labeled>

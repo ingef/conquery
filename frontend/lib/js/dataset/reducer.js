@@ -69,7 +69,7 @@ const datasets = (
       const { data } = action.payload;
       const selectedDatasetId = data && data.length > 0 ? data[0].id : null;
 
-      return { ...state, loading: false, data, selectedDatasetId };
+      return { ...state, loading: false, error: null, data, selectedDatasetId };
     case LOAD_DATASETS_ERROR:
       return { ...state, loading: false, error: action.payload.message };
     case SELECT_DATASET:

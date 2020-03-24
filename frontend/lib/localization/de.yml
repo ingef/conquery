@@ -206,6 +206,11 @@ externalForms:
   default:
     conceptDropzoneLabel: "Füge ein Konzept oder eine Konzeptliste hinzu"
     conceptColumnDropzoneLabel: "Füge ein Konzept oder eine Konzeptliste hinzu"
+  copyModal:
+    headline: "Kopieren von Konzepten aus anderem Feld"
+    selectLabel: "Kopieren aus Quelle"
+    selectAll: "Alle auswählen"
+    accept: "Kopieren"
   common:
     relativeToIndex: "Relativ zum Indexdatum"
     timespan: "Zeitraum"
@@ -231,6 +236,8 @@ externalForms:
     edit: "Bearbeiten"
     concept:
       expand: "Untergeordnete Attribute einbeziehen / wieder ausschließen."
+      copyFrom: "Kopieren von ..."
+      copying: "Kopieren"
     clear: "Formular leeren"
 
 uploadQueryResultsModal:

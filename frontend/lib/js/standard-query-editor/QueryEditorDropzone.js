@@ -109,24 +109,30 @@ const QueryEditorDropzone = ({
       disableClick={isInitial}
       showFileSelectButton={isInitial}
     >
-      {isInitial && (
-        <TextInitial>
-          <h2>{T.translate("dropzone.explanation")}</h2>
-          <Row>
-            <ArrowRight icon="arrow-right" />
-            <div>
-              <p>{T.translate("dropzone.drop")}</p>
-              <ul>
-                <li>{T.translate("dropzone.aConcept")}</li>
-                <li>{T.translate("dropzone.aQuery")}</li>
-                <li>{T.translate("dropzone.aConceptList")}</li>
-              </ul>
-              <p>{T.translate("dropzone.intoThisArea")}</p>
-            </div>
-          </Row>
-        </TextInitial>
+      {() => (
+        <>
+          {isInitial && (
+            <TextInitial>
+              <h2>{T.translate("dropzone.explanation")}</h2>
+              <Row>
+                <ArrowRight icon="arrow-right" />
+                <div>
+                  <p>{T.translate("dropzone.drop")}</p>
+                  <ul>
+                    <li>{T.translate("dropzone.aConcept")}</li>
+                    <li>{T.translate("dropzone.aQuery")}</li>
+                    <li>{T.translate("dropzone.aConceptList")}</li>
+                  </ul>
+                  <p>{T.translate("dropzone.intoThisArea")}</p>
+                </div>
+              </Row>
+            </TextInitial>
+          )}
+          {!isInitial && (
+            <Text>{T.translate("dropzone.dragElementPlease")}</Text>
+          )}
+        </>
       )}
-      {!isInitial && <Text>{T.translate("dropzone.dragElementPlease")}</Text>}
     </SxDropzoneWithFileInput>
   );
 };

@@ -121,7 +121,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           component={MultiQueryDropzone}
           props={{
             label: field.label[locale],
-            dropzoneText: field.dropzoneLabel[locale]
+            dropzoneChildren: () => field.dropzoneLabel[locale]
           }}
         />
       );
@@ -189,6 +189,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           name={field.name}
           component={ConceptGroup}
           props={{
+            fieldName: field.name,
             label: field.label[locale],
             conceptDropzoneText: field.conceptDropzoneLabel
               ? field.conceptDropzoneLabel[locale]
