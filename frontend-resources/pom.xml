@@ -96,7 +96,7 @@
 						</goals>
 						<phase>test</phase>
 						<configuration>
-							<arguments>test</arguments>
+							<arguments>test --watchAll=false</arguments>
 						</configuration>
 					</execution>
 				</executions>
