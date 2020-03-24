@@ -1,5 +1,3 @@
-// @flow
-
 import { expect } from "chai";
 import thunk from "redux-thunk";
 import configureMockStore from "redux-mock-store";
