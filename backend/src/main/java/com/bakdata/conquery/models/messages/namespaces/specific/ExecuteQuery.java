@@ -43,7 +43,7 @@ public class ExecuteQuery extends WorkerMessage {
 		try {
 			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();		
 		} catch (Exception e) {
-			log.error("Failed to create query plans for " + execution.getId() + ". Cause: "+ e );
+			log.error("Failed to create query plans for " + execution.getId(), e );
 			// If one of the plans can not be created (maybe due to a Id that references a non existing concept) fail the whole job.
 			sendFailureToMaster(execution.getInitializedShardResult(null), execution, context, e);
 			return;
@@ -55,7 +55,7 @@ public class ExecuteQuery extends WorkerMessage {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 			} catch(Exception e) {
-				log.error(String.format("Error while executing {} (with subquery: {}). Cause:\n{}", execution.getId(), entry.getKey(), e ));
+				log.error(String.format("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey()), e );
 				sendFailureToMaster(result, execution, context, e);
 			}
 		}
