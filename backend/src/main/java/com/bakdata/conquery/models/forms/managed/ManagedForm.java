@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -139,7 +140,18 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 */
 	@Override
 	public void addResult(@NonNull MasterMetaStorage storage, FormSharedResult result) {
-		ManagedQuery subQuery = flatSubQueries.get(result.getSubqueryId());
+		ManagedExecutionId subquery = result.getSubqueryId();
+		if( subquery == null ) {
+			fail(storage);
+			log.warn("Form failed in query plan creation due to: " + result.getResults().stream()
+				.filter(r -> (r instanceof FailedEntityResult))
+				.map(FailedEntityResult.class::cast)
+				.map(FailedEntityResult::getExceptionStackTrace)
+				.reduce("Encountered errors", (a,b) -> String.join("\n", a, b))
+				);
+			return;
+		}
+		ManagedQuery subQuery = flatSubQueries.get(subquery);
 		subQuery.addResult(storage, result);
 		switch(subQuery.getState()) {
 			case DONE:
