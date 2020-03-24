@@ -17,25 +17,12 @@
     "module": "esnext",
     "target": "es5",
     "allowJs": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "isolatedModules": true
   },
-  "include": [
-    "src",
-    "node_modules/**/*/*.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "public",
-    ".cache",
-    ".idea",
-    "src/ignored/*"
-  ]
+  "include": ["src", "node_modules/**/*/*.d.ts", "mock-api/server.ts"],
+  "exclude": ["node_modules", "public", ".cache", ".idea", "src/ignored/*"]
 }
