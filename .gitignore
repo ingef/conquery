@@ -19,6 +19,7 @@ launch.json
 **/.settings
 **/.eclipse-pmd
 **/.vscode
+**/.factorypath
 
 # NetBeans specific
 nbproject/private/
