@@ -1,5 +1,3 @@
-// @flow
-
 import {
   TOGGLE_DISPLAY_TOOLTIP,
   DISPLAY_ADDITIONAL_INFOS,

@@ -1,5 +1,3 @@
-// @flow
-
 import type { Dispatch } from "redux-thunk";
 
 import api from "../api";
@@ -24,11 +22,9 @@ export const loadConfig = () => {
   return (dispatch: Dispatch) => {
     dispatch(loadConfigStart());
 
-    return api
-      .getFrontendConfig()
-      .then(
-        r => dispatch(loadConfigSuccess(r)),
-        e => dispatch(loadConfigError(e))
-      );
+    return api.getFrontendConfig().then(
+      r => dispatch(loadConfigSuccess(r)),
+      e => dispatch(loadConfigError(e))
+    );
   };
 };

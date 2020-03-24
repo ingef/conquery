@@ -1,5 +1,3 @@
-// @flow
-
 export const DROP_AND_NODE = "query-editor/DROP_AND_NODE";
 export const DROP_OR_NODE = "query-editor/DROP_OR_NODE";
 export const DELETE_NODE = "query-editor/DELETE_NODE";

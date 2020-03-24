@@ -1,5 +1,3 @@
-// @flow
-
 export const BEFORE = "BEFORE";
 export const BEFORE_OR_SAME = "BEFORE_OR_SAME";
 export const SAME = "SAME";

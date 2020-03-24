@@ -1,5 +1,3 @@
-// @flow
-
 import { push } from "react-router-redux";
 import { isLoginDisabled } from "../environment";
 

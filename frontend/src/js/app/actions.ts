@@ -1,5 +1,3 @@
-// @flow
-
 // Action structure is compliant with FSA: https://github.com/acdlite/flux-standard-action
 // in case the action returns an object
 //

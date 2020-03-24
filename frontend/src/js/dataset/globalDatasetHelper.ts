@@ -1,5 +1,3 @@
-// @flow
-
 window.datasetId = null;
 
 export function getDatasetId() {

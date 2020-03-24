@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { Dot } from "react-animated-dots";

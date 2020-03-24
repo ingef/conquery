@@ -1,5 +1,3 @@
-// @flow
-
 import { createActionTypes } from "./actionTypes";
 
 const updateFormFilterProperty = (

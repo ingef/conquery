@@ -1,5 +1,3 @@
-// @flow
-
 import { toUpperCaseUnderscore } from "../common/helpers";
 
 export const createActionTypes = (type: string) => {

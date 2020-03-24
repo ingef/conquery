@@ -1,5 +1,3 @@
-// @flow
-
 export const SELECT = "SELECT";
 export const MULTI_SELECT = "MULTI_SELECT";
 export const INTEGER_RANGE = "INTEGER_RANGE";

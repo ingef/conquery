@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
@@ -11,8 +9,8 @@ import Dropzone from "../form-components/Dropzone";
 import { removeTimebasedNode } from "./actions";
 
 type PropsType = {
-  onDropNode: () => void,
-  onRemoveTimebasedNode: () => void
+  onDropNode: () => void;
+  onRemoveTimebasedNode: () => void;
 };
 
 const StyledDropzone = styled(Dropzone)`

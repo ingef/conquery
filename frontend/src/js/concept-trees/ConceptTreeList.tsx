@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
@@ -39,13 +37,13 @@ const Root = styled("div")`
 `;
 
 type PropsT = {
-  loading: boolean,
-  trees: TreesT,
-  areTreesAvailable: boolean,
-  areDatasetsPristineOrLoading: boolean,
-  activeTab: string,
-  search: SearchT,
-  onLoadTree: (id: string) => void
+  loading: boolean;
+  trees: TreesT;
+  areTreesAvailable: boolean;
+  areDatasetsPristineOrLoading: boolean;
+  activeTab: string;
+  search: SearchT;
+  onLoadTree: (id: string) => void;
 };
 
 const ConceptTreeList = ({

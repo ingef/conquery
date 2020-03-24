@@ -1,5 +1,3 @@
-// @flow
-
 // api call GET /databases
 export const LOAD_DATASETS_START = "dataset/LOAD_DATASETS_START";
 export const LOAD_DATASETS_SUCCESS = "dataset/LOAD_DATASETS_SUCCESS";

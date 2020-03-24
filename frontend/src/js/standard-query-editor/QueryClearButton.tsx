@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
@@ -15,8 +13,8 @@ const Root = styled("div")`
 `;
 
 type PropsType = {
-  clearQuery: () => void,
-  isVisible: boolean
+  clearQuery: () => void;
+  isVisible: boolean;
 };
 
 const QueryClearButton = (props: PropsType) => {

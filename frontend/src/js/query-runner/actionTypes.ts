@@ -1,5 +1,3 @@
-// @flow
-
 // QUERY RUNNER
 export const START_TIMEBASED_QUERY_START =
   "query-runners/START_TIMEBASED_QUERY_START";

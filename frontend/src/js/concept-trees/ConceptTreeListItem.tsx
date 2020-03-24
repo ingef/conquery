@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
@@ -14,11 +12,11 @@ import { isNodeInSearchResult } from "./selectors";
 import type { TreesT, SearchT } from "./reducer";
 
 type PropsT = {
-  trees: TreesT,
-  tree: ConceptT,
-  treeId: ConceptIdT,
-  search: SearchT,
-  onLoadTree: (id: string) => void
+  trees: TreesT;
+  tree: ConceptT;
+  treeId: ConceptIdT;
+  search: SearchT;
+  onLoadTree: (id: string) => void;
 };
 
 export default ({ trees, treeId, search, onLoadTree }: PropsT) => {

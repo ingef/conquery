@@ -1,7 +1,4 @@
-// @flow
-
 import React from "react";
-import T from "i18n-react";
 import styled from "@emotion/styled";
 
 import IconButton from "../button/IconButton";
@@ -33,13 +30,13 @@ const Label = styled("span")`
 `;
 
 type PropsT = {
-  table: TableWithFilterValueType,
-  isActive: boolean,
-  isOnlyOneTableIncluded: boolean,
-  blacklistedTables?: string[],
-  whitelistedTables?: string[],
-  onClick: () => void,
-  onToggleTable: (value: boolean) => void
+  table: TableWithFilterValueType;
+  isActive: boolean;
+  isOnlyOneTableIncluded: boolean;
+  blacklistedTables?: string[];
+  whitelistedTables?: string[];
+  onClick: () => void;
+  onToggleTable: (value: boolean) => void;
 };
 
 export default ({

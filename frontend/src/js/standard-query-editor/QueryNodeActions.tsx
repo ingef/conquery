@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
@@ -8,15 +6,15 @@ import WithTooltip from "../tooltip/WithTooltip";
 import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
-  excludeTimestamps?: boolean,
-  isExpandable?: boolean,
-  hasDetails?: boolean,
-  previousQueryLoading?: boolean,
-  error?: string,
-  onDeleteNode: Function,
-  onEditClick: Function,
-  onExpandClick: Function,
-  onToggleTimestamps: Function
+  excludeTimestamps?: boolean;
+  isExpandable?: boolean;
+  hasDetails?: boolean;
+  previousQueryLoading?: boolean;
+  error?: string;
+  onDeleteNode: Function;
+  onEditClick: Function;
+  onExpandClick: Function;
+  onToggleTimestamps: Function;
 };
 
 const Actions = styled("div")`

@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
@@ -12,9 +10,9 @@ import { deletePreviousQuery } from "../list/actions";
 import { deletePreviousQueryModalClose } from "./actions";
 
 type PropsType = {
-  queryId: string | number,
-  onClose: () => void,
-  onDeletePreviousQuery: () => void
+  queryId: string | number;
+  onClose: () => void;
+  onDeletePreviousQuery: () => void;
 };
 
 const Root = styled("div")`

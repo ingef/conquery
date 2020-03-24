@@ -1,6 +1,4 @@
-// @flow
-
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { startup, loadConfig } from "./actions";
@@ -15,5 +13,5 @@ export const useStartup = () => {
     dispatch(loadConfig());
     dispatch(startup());
     dispatch(userStartup());
-  }, []);
+  }, [dispatch]);
 };

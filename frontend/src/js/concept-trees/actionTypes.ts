@@ -1,5 +1,3 @@
-// @flow
-
 // api call GET /concepts
 export const LOAD_TREES_START = "concept-trees/LOAD_TREES_START";
 export const LOAD_TREES_SUCCESS = "concept-trees/LOAD_TREES_SUCCESS";

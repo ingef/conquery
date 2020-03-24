@@ -1,5 +1,3 @@
-// @flow
-
 import {
   format,
   parse,
@@ -69,7 +67,7 @@ const DATE_PATTERN = {
 };
 
 function handleRaw(what, value, displayDateFormat) {
-  const denseFormat = displayDateFormat.replace(/[-\/\.]/g, "");
+  const denseFormat = displayDateFormat.replace(/[-/.]/g, "");
   // Assuming the format consists of 2 M, 2 d, and 2 y
 
   const dIdx = denseFormat.indexOf("d");

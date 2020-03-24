@@ -1,5 +1,3 @@
-// @flow
-
 import type { ConceptIdT } from "../api/types";
 import type { SearchT } from "./reducer";
 

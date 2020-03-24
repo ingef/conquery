@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import { useDrag } from "react-dnd";
 import styled from "@emotion/styled";
@@ -57,17 +55,17 @@ const RootNode = styled("p")`
 `;
 
 type PropsT = {
-  valueIdx: number,
-  conceptIdx: number,
-  conceptNode: Object,
-  name: string,
-  onFilterClick: Function,
-  hasActiveFilters: boolean,
+  valueIdx: number;
+  conceptIdx: number;
+  conceptNode: Object;
+  name: string;
+  onFilterClick: Function;
+  hasActiveFilters: boolean;
   expand?: {
-    onClick: Function,
-    expandable: boolean,
-    active: boolean
-  }
+    onClick: Function;
+    expandable: boolean;
+    active: boolean;
+  };
 };
 
 // TODO: Refactor, add a TooltipButton in conquery and use that.

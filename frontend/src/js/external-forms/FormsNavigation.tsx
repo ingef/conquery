@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
@@ -13,10 +11,10 @@ import { selectActiveForm, selectAvailableForms } from "./stateSelectors";
 import type { Forms as FormsType } from "./config-types";
 
 type PropsType = {
-  availableForms: FormsType,
-  activeForm: string,
-  onItemClick: Function,
-  onClearForm: Function
+  availableForms: FormsType;
+  activeForm: string;
+  onItemClick: Function;
+  onClearForm: Function;
 };
 
 const Root = styled("div")`
@@ -69,7 +67,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onItemClick: form => dispatch(setExternalForm(form))
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(FormsNavigation);
+export default connect(mapStateToProps, mapDispatchToProps)(FormsNavigation);

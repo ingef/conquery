@@ -1,5 +1,3 @@
-// @flow
-
 import T from "i18n-react";
 
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
@@ -149,9 +147,9 @@ const dropAndNode = (
   state,
   action: {
     payload: {
-      item: DraggedNodeType | DraggedQueryType,
-      dateRange?: DateRangeT
-    }
+      item: DraggedNodeType | DraggedQueryType;
+      dateRange?: DateRangeT;
+    };
   }
 ) => {
   const group = state[state.length - 1];
@@ -177,9 +175,9 @@ const dropOrNode = (
   state,
   action: {
     payload: {
-      item: DraggedNodeType | DraggedQueryType,
-      andIdx: number
-    }
+      item: DraggedNodeType | DraggedQueryType;
+      andIdx: number;
+    };
   }
 ) => {
   const { item, andIdx } = action.payload;
@@ -207,7 +205,7 @@ const dropOrNode = (
 // Delete a single Node (concept inside a group)
 const deleteNode = (
   state,
-  action: { payload: { andIdx: number, orIdx: number } }
+  action: { payload: { andIdx: number; orIdx: number } }
 ) => {
   const { andIdx, orIdx } = action.payload;
 

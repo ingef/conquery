@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
@@ -8,12 +6,12 @@ import clickOutside from "react-onclickoutside";
 import PrimaryButton from "../button/PrimaryButton";
 
 type PropsType = {
-  className?: string,
-  text: string,
-  loading: boolean,
-  selectTextOnMount: boolean,
-  onSubmit: Function,
-  onCancel: Function
+  className?: string;
+  text: string;
+  loading: boolean;
+  selectTextOnMount: boolean;
+  onSubmit: Function;
+  onCancel: Function;
 };
 
 const Input = styled("input")`

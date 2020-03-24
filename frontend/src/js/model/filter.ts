@@ -1,5 +1,3 @@
-// @flow
-
 import { MULTI_SELECT, BIG_MULTI_SELECT } from "../form-components/filterTypes";
 
 const filterWithDefaults = filter => {

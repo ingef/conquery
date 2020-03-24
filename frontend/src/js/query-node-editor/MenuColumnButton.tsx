@@ -1,5 +1,3 @@
-// @flow
-
 import styled from "@emotion/styled";
 
 import BasicButton from "../button/BasicButton";

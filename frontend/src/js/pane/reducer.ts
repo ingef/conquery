@@ -1,21 +1,19 @@
-// @flow
-
 import { CLICK_PANE_TAB } from "./actionTypes";
 
 export type TabType = {
-  label: string,
-  key: string
+  label: string;
+  key: string;
 };
 
 export type StateType = {
   left: {
-    activeTab: "conceptTrees" | "previousQueries",
-    tabs: TabType[]
-  },
+    activeTab: "conceptTrees" | "previousQueries";
+    tabs: TabType[];
+  };
   right: {
-    activeTab: string,
-    tabs: TabType[]
-  }
+    activeTab: string;
+    tabs: TabType[];
+  };
 };
 
 export const buildPanesReducer = tabs => {

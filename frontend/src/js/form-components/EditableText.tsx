@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 
@@ -8,13 +6,13 @@ import EditableTextForm from "./EditableTextForm";
 import IconButton from "../button/IconButton";
 
 type PropsType = {
-  className?: string,
-  loading: boolean,
-  editing: boolean,
-  text: string,
-  selectTextOnMount: boolean,
-  onSubmit: () => void,
-  onToggleEdit: () => void
+  className?: string;
+  loading: boolean;
+  editing: boolean;
+  text: string;
+  selectTextOnMount: boolean;
+  onSubmit: () => void;
+  onToggleEdit: () => void;
 };
 
 const StyledIconButton = styled(IconButton)`

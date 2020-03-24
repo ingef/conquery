@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import { findDOMNode } from "react-dom";
 import T from "i18n-react";
@@ -43,16 +41,16 @@ const StyledVerticalToggleButton = styled(VerticalToggleButton)`
 `;
 
 type PropsType = {
-  node: Object,
-  position: "left" | "right",
-  isIndexResult: boolean,
-  onRemove: Function,
-  onSetTimebasedNodeTimestamp: Function,
-  onSetTimebasedIndexResult: Function,
-  conditionIdx: number,
-  resultIdx: number,
-  connectDragSource: Function,
-  isIndexResultDisabled: boolean
+  node: Object;
+  position: "left" | "right";
+  isIndexResult: boolean;
+  onRemove: Function;
+  onSetTimebasedNodeTimestamp: Function;
+  onSetTimebasedIndexResult: Function;
+  conditionIdx: number;
+  resultIdx: number;
+  connectDragSource: Function;
+  isIndexResultDisabled: boolean;
 };
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
@@ -63,10 +61,10 @@ class TimebasedNode extends React.Component {
     const {
       node,
       connectDragSource,
-      isIndexResult,
-      isIndexResultDisabled,
+      // isIndexResult,
+      // isIndexResultDisabled,
       onRemove,
-      onSetTimebasedIndexResult,
+      // onSetTimebasedIndexResult,
       onSetTimebasedNodeTimestamp
     } = this.props;
 
@@ -160,8 +158,10 @@ function collect(connect, monitor) {
   };
 }
 
-const DraggableTimebasedNode = DragSource(TIMEBASED_NODE, nodeSource, collect)(
-  TimebasedNode
-);
+const DraggableTimebasedNode = DragSource(
+  TIMEBASED_NODE,
+  nodeSource,
+  collect
+)(TimebasedNode);
 
 export default DraggableTimebasedNode;

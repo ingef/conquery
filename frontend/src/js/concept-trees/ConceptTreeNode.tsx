@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 
@@ -23,24 +21,24 @@ const Root = styled("div")`
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
 type TreeNodeData = {
-  label: string,
-  description: string,
-  active: boolean,
-  matchingEntries: number,
-  dateRange: DateRangeT,
-  additionalInfos: InfoT[],
-  children: ConceptIdT[],
+  label: string;
+  description: string;
+  active: boolean;
+  matchingEntries: number;
+  dateRange: DateRangeT;
+  additionalInfos: InfoT[];
+  children: ConceptIdT[];
 
-  tree: ConceptIdT
+  tree: ConceptIdT;
 };
 
 type PropsType = {
-  id: ConceptIdT,
-  data: TreeNodeData,
-  depth: number,
-  open: boolean,
-  search: SearchT,
-  onToggleOpen: () => void
+  id: ConceptIdT;
+  data: TreeNodeData;
+  depth: number;
+  open: boolean;
+  search: SearchT;
+  onToggleOpen: () => void;
 };
 
 const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({

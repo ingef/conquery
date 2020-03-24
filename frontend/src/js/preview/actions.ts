@@ -1,5 +1,3 @@
-// @flow
-
 import { loadCSV } from "../file/csv";
 
 import {

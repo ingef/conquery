@@ -1,15 +1,13 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 type PropsType = {
-  className?: string,
-  label: string,
-  unit?: string,
-  tooltip?: string,
-  disabled?: boolean
+  className?: string;
+  label: string;
+  unit?: string;
+  tooltip?: string;
+  disabled?: boolean;
 };
 
 const InputRangeHeader = styled("p")`

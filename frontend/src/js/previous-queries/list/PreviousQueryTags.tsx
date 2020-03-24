@@ -1,5 +1,3 @@
-// @flow
-
 import { connect } from "react-redux";
 
 import Tags from "../../tags/Tags";
@@ -13,7 +11,7 @@ const tagContainsAnySearch = (tag, searches) => {
 };
 
 type PropsType = {
-  tags?: string[]
+  tags?: string[];
 };
 
 const mapStateToProps = (state, ownProps: PropsType) => ({
@@ -27,7 +25,4 @@ const mapDispatchToProps = (dispatch: any) => ({
   onClickTag: tag => dispatch(addTagToPreviousQueriesSearch(tag))
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Tags);
+export default connect(mapStateToProps, mapDispatchToProps)(Tags);

@@ -1,5 +1,3 @@
-// @flow
-
 import { initTables } from "./transformers";
 import { useSelector } from "react-redux";
 

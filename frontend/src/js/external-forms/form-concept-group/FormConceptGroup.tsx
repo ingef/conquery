@@ -1,8 +1,6 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import type { FieldProps } from "redux-form";
 import T from "i18n-react";
 
@@ -44,26 +42,21 @@ import { FormQueryNodeEditor } from "../form-query-node-editor";
 
 import FormConceptNode from "./FormConceptNode";
 import FormConceptCopyModal from "./FormConceptCopyModal";
-import {
-  selectActiveFormValues,
-  selectActiveForm,
-  selectFormConfig,
-  useAllowExtendedCopying
-} from "../stateSelectors";
+import { useAllowExtendedCopying } from "../stateSelectors";
 import TransparentButton from "../../button/TransparentButton";
 
 type PropsType = FieldProps & {
-  fieldName: string,
-  label: string,
-  datasetId: string,
-  onDropFilterFile: Function,
-  newValue?: Object,
-  isSingle?: boolean,
-  disallowMultipleColumns?: boolean,
-  blacklistedTables?: string[],
-  whitelistedTables?: string[],
-  defaults: ConceptListDefaultsType,
-  isValidConcept?: Function
+  fieldName: string;
+  label: string;
+  datasetId: string;
+  onDropFilterFile: Function;
+  newValue?: Object;
+  isSingle?: boolean;
+  disallowMultipleColumns?: boolean;
+  blacklistedTables?: string[];
+  whitelistedTables?: string[];
+  defaults: ConceptListDefaultsType;
+  isValidConcept?: Function;
 };
 
 const addValue = (value, newValue) => [...value, newValue];

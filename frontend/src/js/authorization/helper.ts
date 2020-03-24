@@ -1,5 +1,3 @@
-// @flow
-
 // We need to put localStorage into an own constant to type annotate it.
 const localStorage: Storage = window.localStorage;
 

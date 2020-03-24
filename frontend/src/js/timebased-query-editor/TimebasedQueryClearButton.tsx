@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
@@ -14,8 +12,8 @@ const Root = styled("div")`
 `;
 
 type PropsType = {
-  clearQuery: () => void,
-  isEnabled: boolean
+  clearQuery: () => void;
+  isEnabled: boolean;
 };
 
 const TimebasedQueryClearButton = (props: PropsType) => {

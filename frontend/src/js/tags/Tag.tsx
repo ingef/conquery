@@ -1,14 +1,12 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 
 type PropsType = {
-  children?: React.Node,
-  className?: string,
-  isSelected: boolean,
-  onClick: () => void
+  children?: React.Node;
+  className?: string;
+  isSelected: boolean;
+  onClick: () => void;
 };
 
 const Root = styled("p")`

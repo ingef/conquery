@@ -1,5 +1,3 @@
-// @flow
-
 import { combineReducers } from "redux";
 
 import { OPEN_UPLOAD_MODAL, CLOSE_UPLOAD_MODAL } from "./actionTypes";

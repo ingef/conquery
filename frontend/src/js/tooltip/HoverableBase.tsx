@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 
@@ -8,9 +6,9 @@ const Root = styled("div")`
 `;
 
 type PropsType = {
-  className?: string,
-  onDisplayAdditionalInfos: Function,
-  onToggleAdditionalInfos: Function
+  className?: string;
+  onDisplayAdditionalInfos: Function;
+  onToggleAdditionalInfos: Function;
 };
 
 const HoverableBase = (Component: any) =>

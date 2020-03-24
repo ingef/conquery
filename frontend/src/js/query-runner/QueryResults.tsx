@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import { connect } from "react-redux";
 import styled from "@emotion/styled";
@@ -40,10 +38,10 @@ const Bold = styled("span")`
 `;
 
 type PropsType = {
-  datasetId: string,
-  resultCount: number,
-  resultUrl: string,
-  userCanDownloadResult: Boolean
+  datasetId: string;
+  resultCount: number;
+  resultUrl: string;
+  userCanDownloadResult: Boolean;
 };
 
 const QueryResults = (props: PropsType) => {

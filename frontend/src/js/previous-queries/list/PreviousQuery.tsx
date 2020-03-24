@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import { findDOMNode } from "react-dom";
 import styled from "@emotion/styled";
@@ -133,25 +131,25 @@ const StyledWithTooltip = styled(WithTooltip)`
 `;
 
 type PropsType = {
-  userCanDownloadResults: boolean,
+  userCanDownloadResults: boolean;
   query: {
-    id: number | string,
-    label: string,
-    loading: boolean,
-    numberOfResults: number,
-    createdAt: string,
-    tags: string[],
-    own: boolean,
-    shared: boolean
-  },
-  onRenamePreviousQuery: () => void,
-  onToggleEditPreviousQueryLabel: () => void,
-  onToggleEditPreviousQueryTags: () => void,
-  onToggleSharePreviousQuery: () => void,
-  onRetagPreviousQuery: () => void,
-  onDeletePreviousQuery: () => void,
-  connectDragSource: () => void,
-  availableTags: string[]
+    id: number | string;
+    label: string;
+    loading: boolean;
+    numberOfResults: number;
+    createdAt: string;
+    tags: string[];
+    own: boolean;
+    shared: boolean;
+  };
+  onRenamePreviousQuery: () => void;
+  onToggleEditPreviousQueryLabel: () => void;
+  onToggleEditPreviousQueryTags: () => void;
+  onToggleSharePreviousQuery: () => void;
+  onRetagPreviousQuery: () => void;
+  onDeletePreviousQuery: () => void;
+  connectDragSource: () => void;
+  availableTags: string[];
 };
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530

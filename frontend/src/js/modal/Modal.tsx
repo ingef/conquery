@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
@@ -51,8 +49,8 @@ const Headline = styled("h3")`
 
 // https://github.com/Pomax/react-onclickoutside
 type ContentPropsT = {
-  children?: React.Node,
-  onClose: () => void
+  children?: React.Node;
+  onClose: () => void;
 };
 
 const ModalContentComponent = ({ children, onClose }: ContentPropsT) => {
@@ -67,13 +65,13 @@ const ModalContent = onClickOutside(ModalContentComponent, {
 // -----------------------------------------------
 
 type PropsT = {
-  children?: React.Node,
-  className?: string,
-  headline?: React.Node,
-  doneButton?: boolean,
-  closeIcon?: boolean,
-  tabIndex?: number,
-  onClose: () => void
+  children?: React.Node;
+  className?: string;
+  headline?: React.Node;
+  doneButton?: boolean;
+  closeIcon?: boolean;
+  tabIndex?: number;
+  onClose: () => void;
 };
 
 // A modal with three ways to close it

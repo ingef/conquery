@@ -1,5 +1,3 @@
-// @flow
-
 import { createQueryNodeEditorReducer } from "../../query-node-editor/reducer";
 import { toUpperCaseUnderscore } from "../../common/helpers";
 

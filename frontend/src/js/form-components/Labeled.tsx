@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
@@ -19,14 +17,14 @@ const Root = styled("label")`
 `;
 
 type PropsType = {
-  label: React.Node,
-  className?: string,
-  tinyLabel?: boolean,
-  largeLabel?: boolean,
-  fullWidth?: boolean,
-  valueChanged?: boolean,
-  disabled?: boolean,
-  children?: React.Node
+  label: React.Node;
+  className?: string;
+  tinyLabel?: boolean;
+  largeLabel?: boolean;
+  fullWidth?: boolean;
+  valueChanged?: boolean;
+  disabled?: boolean;
+  children?: React.Node;
 };
 
 const Labeled = ({

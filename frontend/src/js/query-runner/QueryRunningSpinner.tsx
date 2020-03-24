@@ -1,11 +1,9 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/core";
 
 type PropsType = {
-  isQueryRunning: boolean
+  isQueryRunning: boolean;
 };
 
 const spin = keyframes`

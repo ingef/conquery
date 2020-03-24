@@ -1,11 +1,9 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 
 type PropsType = {
-  className?: string,
-  message: string
+  className?: string;
+  message: string;
 };
 
 const Root = styled("p")`

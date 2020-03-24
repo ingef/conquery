@@ -1,5 +1,3 @@
-// @flow
-
 import api from "../api";
 
 import { defaultSuccess, defaultError } from "../common/actions";
@@ -82,12 +80,10 @@ export default function createQueryRunnerActions(
     return dispatch => {
       dispatch(stopQueryStart());
 
-      return api
-        .deleteQuery(datasetId, queryId)
-        .then(
-          r => dispatch(stopQuerySuccess(r)),
-          e => dispatch(stopQueryError(e))
-        );
+      return api.deleteQuery(datasetId, queryId).then(
+        r => dispatch(stopQuerySuccess(r)),
+        e => dispatch(stopQueryError(e))
+      );
     };
   };
 

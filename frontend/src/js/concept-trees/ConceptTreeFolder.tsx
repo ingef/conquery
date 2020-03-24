@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 
@@ -17,15 +15,15 @@ const Root = styled("div")`
 `;
 
 type PropsType = {
-  depth: number,
-  trees: Object,
-  tree: ConceptT,
-  treeId: ConceptIdT,
-  active: boolean,
-  open?: boolean,
-  onToggleOpen?: Function,
-  search: SearchT,
-  onLoadTree: (id: string) => void
+  depth: number;
+  trees: Object;
+  tree: ConceptT;
+  treeId: ConceptIdT;
+  active: boolean;
+  open?: boolean;
+  onToggleOpen?: Function;
+  search: SearchT;
+  onLoadTree: (id: string) => void;
 };
 
 const sumMatchingEntries = (children, initSum) => {

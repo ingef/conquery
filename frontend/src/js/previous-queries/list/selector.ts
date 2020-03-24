@@ -1,5 +1,3 @@
-// @flow
-
 const queryHasTag = (query, searchTerm) => {
   return (
     !!query.tags &&

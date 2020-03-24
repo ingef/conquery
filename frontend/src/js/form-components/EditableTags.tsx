@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 
@@ -8,14 +6,14 @@ import EditableTagsForm from "./EditableTagsForm";
 import IconButton from "../button/IconButton";
 
 type PropsType = {
-  className: string,
-  tags?: string[],
-  editing: boolean,
-  loading: boolean,
-  tagComponent?: React.Node,
-  onSubmit: () => void,
-  onToggleEdit: () => void,
-  availableTags: string[]
+  className: string;
+  tags?: string[];
+  editing: boolean;
+  loading: boolean;
+  tagComponent?: React.Node;
+  onSubmit: () => void;
+  onToggleEdit: () => void;
+  availableTags: string[];
 };
 
 const EditableTagsDisplay = styled("div")`

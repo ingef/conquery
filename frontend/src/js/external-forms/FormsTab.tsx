@@ -16,32 +16,32 @@ import { tabDescription } from ".";
 const FormsTab = (props: TabPropsType) => {
   const store = useStore();
 
-  async function loadForms() {
-    const configuredForms = await getForms(props.selectedDatasetId);
-
-    const forms = configuredForms.reduce((all, form) => {
-      all[form.type] = form;
-
-      return all;
-    }, {});
-
-    const externalFormsReducer = buildExternalFormsReducer(forms);
-
-    const tabs = [
-      StandardQueryEditorTab,
-      TimebasedQueryEditorTab,
-      {
-        ...tabDescription,
-        reducer: externalFormsReducer
-      }
-    ];
-
-    updateReducers(store, tabs);
-  }
-
   React.useEffect(() => {
+    async function loadForms() {
+      const configuredForms = await getForms(props.selectedDatasetId);
+
+      const forms = configuredForms.reduce((all, form) => {
+        all[form.type] = form;
+
+        return all;
+      }, {});
+
+      const externalFormsReducer = buildExternalFormsReducer(forms);
+
+      const tabs = [
+        StandardQueryEditorTab,
+        TimebasedQueryEditorTab,
+        {
+          ...tabDescription,
+          reducer: externalFormsReducer
+        }
+      ];
+
+      updateReducers(store, tabs);
+    }
+
     loadForms();
-  }, []);
+  }, [store, props.selectedDatasetId]);
 
   return (
     <>

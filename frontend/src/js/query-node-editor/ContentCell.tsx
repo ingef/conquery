@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 
@@ -21,9 +19,9 @@ const Headline = styled("h5")`
 `;
 
 type PropsType = {
-  className?: string,
-  children?: React.Node,
-  headline?: string
+  className?: string;
+  children?: React.Node;
+  headline?: string;
 };
 
 export default ({ className, headline, children }: PropsType) => (

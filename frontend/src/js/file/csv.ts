@@ -1,5 +1,3 @@
-// @flow
-
 import Papa from "papaparse";
 
 export function parseCSV(file: File, delimiter?: string) {

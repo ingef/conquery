@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
@@ -11,8 +9,8 @@ import { selectFormConfig } from "./stateSelectors";
 import type { Form as FormType } from "./config-types";
 
 type PropsType = {
-  formConfig: FormType,
-  datasetId: DatasetIdT
+  formConfig: FormType;
+  datasetId: DatasetIdT;
 };
 
 const Root = styled("div")`

@@ -1,5 +1,3 @@
-// @flow
-
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 
 import type { QueryNodeType } from "./types";

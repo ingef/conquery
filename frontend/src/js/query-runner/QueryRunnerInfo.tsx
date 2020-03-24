@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
@@ -14,8 +12,8 @@ const Status = styled("p")`
 `;
 
 type PropsType = {
-  className?: string,
-  queryRunner: StateType
+  className?: string;
+  queryRunner: StateType;
 };
 
 const getMessage = (queryRunner: StateType) => {

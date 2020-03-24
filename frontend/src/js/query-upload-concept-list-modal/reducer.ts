@@ -1,10 +1,8 @@
-// @flow
-
 import { MODAL_OPEN, MODAL_CLOSE } from "./actionTypes";
 
 type StateT = {
-  isOpen: boolean,
-  andIdx: number
+  isOpen: boolean;
+  andIdx: number;
 };
 
 const initialState: StateT = {

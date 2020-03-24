@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import { Field as RxFormField } from "redux-form";
@@ -44,12 +42,12 @@ const SxInputSelect = styled(InputSelect)`
 `;
 
 type PropsType = {
-  formType: string,
-  field: FormFieldType,
-  getFieldValue: (fieldName: string) => any,
-  locale: string,
-  availableDatasets: SelectOptionsType,
-  selectedDatasetId: DatasetIdT
+  formType: string;
+  field: FormFieldType;
+  getFieldValue: (fieldName: string) => any;
+  locale: string;
+  availableDatasets: SelectOptionsType;
+  selectedDatasetId: DatasetIdT;
 };
 
 const Field = ({ field, ...commonProps }: PropsType) => {

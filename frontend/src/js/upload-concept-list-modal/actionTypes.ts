@@ -1,5 +1,3 @@
-// @flow
-
 export const SELECT_CONCEPT_ROOT_NODE =
   "upload-concept-list-modal/SELECT_CONCEPT_ROOT_NODE";
 

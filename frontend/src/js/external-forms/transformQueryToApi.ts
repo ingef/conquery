@@ -1,5 +1,3 @@
-// @flow
-
 import { transformElementsToApi } from "../api/apiHelper";
 
 import type { Form as FormType } from "./config-types";

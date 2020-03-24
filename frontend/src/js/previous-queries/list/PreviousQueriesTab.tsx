@@ -1,5 +1,3 @@
-// @flow
-
 import React, { useEffect } from "react";
 import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,7 +23,7 @@ const Container = styled("div")`
 `;
 
 type PropsT = {
-  datasetId: DatasetIdT
+  datasetId: DatasetIdT;
 };
 
 const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
@@ -40,13 +38,14 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   const hasPermissionToUpload = useSelector(state => canUploadResult(state));
 
   const dispatch = useDispatch();
-  const loadQueries = () => dispatch(loadPreviousQueries(datasetId));
 
   const hasQueries = loading || queries.length !== 0;
 
   useEffect(() => {
+    const loadQueries = () => dispatch(loadPreviousQueries(datasetId));
+
     loadQueries();
-  }, []);
+  }, [dispatch, datasetId]);
 
   return (
     <>

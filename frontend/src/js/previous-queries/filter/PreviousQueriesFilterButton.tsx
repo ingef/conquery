@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
@@ -8,10 +6,10 @@ import classnames from "classnames";
 import { setPreviousQueriesFilter } from "./actions";
 
 type PropsType = {
-  value: string,
-  text: string,
-  selectedFilter: string,
-  setFilter: Function
+  value: string;
+  text: string;
+  selectedFilter: string;
+  setFilter: Function;
 };
 
 const PreviousQueriesFilterButton = (props: PropsType) => {

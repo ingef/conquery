@@ -1,5 +1,3 @@
-// @flow
-
 import { OPEN_UPLOAD_MODAL, CLOSE_UPLOAD_MODAL } from "./actionTypes";
 
 export const openUploadModal = () => ({

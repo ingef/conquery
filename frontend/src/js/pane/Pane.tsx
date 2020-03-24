@@ -1,13 +1,11 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import PaneTabNavigation from "./PaneTabNavigation";
 
 type PropsType = {
-  right?: boolean,
-  left?: boolean,
-  children?: React.Node
+  right?: boolean;
+  left?: boolean;
+  children?: React.Node;
 };
 
 const Root = styled("div")`

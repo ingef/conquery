@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
@@ -23,8 +21,8 @@ import type { StateT as PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
 
 type PropsT = {
-  preview: PreviewStateT,
-  onClose: () => void
+  preview: PreviewStateT;
+  onClose: () => void;
 };
 
 const Preview = styled("div")`

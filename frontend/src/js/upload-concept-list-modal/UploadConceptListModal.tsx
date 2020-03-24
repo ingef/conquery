@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
@@ -58,23 +56,23 @@ const SxPrimaryButton = styled(PrimaryButton)`
 `;
 
 type PropsType = {
-  loading: boolean,
-  filename: string,
-  availableConceptRootNodes: Object[],
-  selectedConceptRootNode: Object,
-  selectedDatasetId: DatasetIdT,
-  conceptCodesFromFile: string[],
-  resolved: Object,
-  rootConcepts: TreesT,
-  resolvedItemsCount: number,
-  unresolvedItemsCount: number,
-  error: Object,
-  onSelectConceptRootNode: Function,
+  loading: boolean;
+  filename: string;
+  availableConceptRootNodes: Object[];
+  selectedConceptRootNode: Object;
+  selectedDatasetId: DatasetIdT;
+  conceptCodesFromFile: string[];
+  resolved: Object;
+  rootConcepts: TreesT;
+  resolvedItemsCount: number;
+  unresolvedItemsCount: number;
+  error: Object;
+  onSelectConceptRootNode: Function;
 
   // This really comes from outside container, and depends on the context
   // in which this modal is opened. (query editor / statistic form field)
-  onAccept: Function,
-  onClose: Function
+  onAccept: Function;
+  onClose: Function;
 };
 
 const UploadConceptListModal = (props: PropsType) => {

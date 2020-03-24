@@ -1,5 +1,3 @@
-// @flow
-
 import FormsTab from "./FormsTab";
 
 export const tabDescription = {

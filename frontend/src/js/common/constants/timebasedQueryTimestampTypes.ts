@@ -1,5 +1,3 @@
-// @flow
-
 export const EARLIEST = "EARLIEST";
 export const LATEST = "LATEST";
 export const RANDOM = "RANDOM";

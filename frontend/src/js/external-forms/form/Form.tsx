@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import { reduxForm, formValueSelector } from "redux-form";
 import { connect } from "react-redux";
@@ -96,14 +94,14 @@ function getErrorForField(field: FormFieldType, value: any) {
 }
 
 type ConfiguredFormPropsType = {
-  config: FormType
+  config: FormType;
 };
 
 type PropsType = {
-  onSubmit: Function,
-  getFieldValue: (fieldName: string) => any,
-  availableDatasets: SelectOptionsT,
-  selectedDatasetId: DatasetIdT
+  onSubmit: Function;
+  getFieldValue: (fieldName: string) => any;
+  availableDatasets: SelectOptionsT;
+  selectedDatasetId: DatasetIdT;
 };
 
 // This is the generic form component that receives a form config

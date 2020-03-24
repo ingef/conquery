@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
@@ -41,9 +39,9 @@ const Headline = styled("h2")`
 `;
 
 type PropsType = {
-  onClickTab: Function,
-  activeTab: string,
-  tabs: TabType[]
+  onClickTab: Function;
+  activeTab: string;
+  tabs: TabType[];
 };
 
 const TabNavigation = (props: PropsType) => {

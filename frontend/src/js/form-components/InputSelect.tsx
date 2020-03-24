@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import T from "i18n-react";
 import type { FieldPropsType } from "redux-form";
@@ -12,13 +10,13 @@ import type { SelectOptionsT } from "../api/types";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 type PropsType = FieldPropsType & {
-  className?: string,
-  label?: string,
-  options: SelectOptionsT,
-  disabled?: boolean,
-  small?: boolean,
-  selectProps?: Object,
-  tooltip?: string
+  className?: string;
+  label?: string;
+  options: SelectOptionsT;
+  disabled?: boolean;
+  small?: boolean;
+  selectProps?: Object;
+  tooltip?: string;
 };
 
 const InputSelect = ({

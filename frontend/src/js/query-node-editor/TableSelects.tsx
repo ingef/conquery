@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 
 import type { SelectedSelectorType } from "./types";
@@ -9,9 +7,9 @@ import { sortSelects } from "../model/select";
 import InputMultiSelect from "../form-components/InputMultiSelect";
 
 type PropsType = {
-  selects: SelectedSelectorType[],
-  onSelectTableSelects: () => void,
-  excludeTable: boolean
+  selects: SelectedSelectorType[];
+  onSelectTableSelects: () => void;
+  excludeTable: boolean;
 };
 
 const TableSelects = ({

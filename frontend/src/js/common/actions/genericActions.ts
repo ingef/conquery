@@ -1,8 +1,6 @@
-// @flow
-
 type ErrorObject = {
-  message: string,
-  status: string
+  message: string;
+  status: string;
 };
 
 export const defaultError = (

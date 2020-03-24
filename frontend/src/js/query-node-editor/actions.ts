@@ -1,5 +1,3 @@
-// @flow
-
 import { createActionTypes } from "./actionTypes";
 
 export const createQueryNodeEditorActions = (type: string): Object => {

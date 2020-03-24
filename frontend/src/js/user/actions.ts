@@ -1,5 +1,3 @@
-// @flow
-
 import type { Dispatch } from "redux-thunk";
 
 import api from "../api";
@@ -17,8 +15,9 @@ export const loadMe = () => {
   return (dispatch: Dispatch) => {
     dispatch(loadMeStart());
 
-    return api
-      .getMe()
-      .then(r => dispatch(loadMeSuccess(r)), e => dispatch(loadMeError(e)));
+    return api.getMe().then(
+      r => dispatch(loadMeSuccess(r)),
+      e => dispatch(loadMeError(e))
+    );
   };
 };

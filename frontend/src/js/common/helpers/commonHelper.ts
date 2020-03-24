@@ -1,5 +1,3 @@
-// @flow
-
 export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 
 export const flatmap = (ar: [], map: Function) => concat(ar.map(map));

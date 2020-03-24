@@ -1,14 +1,11 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
 import { connect } from "react-redux";
 import IconButton from "../button/IconButton";
 import { toggleDisplayTooltip } from "./actions";
 
 type PropsType = {
-  toggleDisplayTooltip: () => void
+  toggleDisplayTooltip: () => void;
 };
 
 const Root = styled("div")`
@@ -42,7 +39,4 @@ const mapDispatchToProps = dispatch => ({
   toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip())
 });
 
-export default connect(
-  () => ({}),
-  mapDispatchToProps
-)(ActivateTooltip);
+export default connect(() => ({}), mapDispatchToProps)(ActivateTooltip);

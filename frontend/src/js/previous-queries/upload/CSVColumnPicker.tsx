@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
@@ -14,15 +12,15 @@ import ReactSelect from "../../form-components/ReactSelect";
 import InputSelect from "../../form-components/InputSelect";
 
 type ExternalQueryT = {
-  format: string[],
-  values: string[][]
+  format: string[];
+  values: string[][];
 };
 
 type PropsT = {
-  file: File,
-  loading: boolean,
-  onReset: () => void,
-  onUpload: (query: ExternalQueryT) => void
+  file: File;
+  loading: boolean;
+  onReset: () => void;
+  onUpload: (query: ExternalQueryT) => void;
 };
 
 const Row = styled("div")`

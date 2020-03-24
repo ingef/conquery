@@ -1,14 +1,12 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
 
 type PropsType = {
-  queryResult?: Object,
-  className?: string,
-  onDelete?: Function
+  queryResult?: Object;
+  className?: string;
+  onDelete?: Function;
 };
 
 const Root = styled("div")`

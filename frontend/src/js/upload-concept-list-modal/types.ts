@@ -1,21 +1,19 @@
-// @flow
-
 import type { ConceptIdT } from "../api/types";
 
 // TODO Merge this with actual API type
 export type UploadConceptListModalResultType = {
-  label: string,
-  rootConcepts: any,
+  label: string;
+  rootConcepts: any;
   resolutionResult: {
-    conceptList?: string[],
+    conceptList?: string[];
     filter?: {
-      filterId: string,
-      tableId: string,
+      filterId: string;
+      tableId: string;
       value: {
-        label: string,
-        value: string
-      }[]
-    },
-    selectedRoot: ConceptIdT
-  }
+        label: string;
+        value: string;
+      }[];
+    };
+    selectedRoot: ConceptIdT;
+  };
 };

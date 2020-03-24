@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
@@ -10,10 +8,10 @@ import type { TabType } from "./reducer";
 import TabNavigation from "./TabNavigation";
 
 type PropsType = {
-  tabs: TabType[],
-  paneType: "left" | "right",
-  activeTab: string,
-  clickPaneTab: Function
+  tabs: TabType[];
+  paneType: "left" | "right";
+  activeTab: string;
+  clickPaneTab: Function;
 };
 
 const PaneTabNavigation = (props: PropsType) => {
@@ -35,7 +33,4 @@ const mapDispatchToProps = (dispatch: Dispatch, ownProps) => ({
   clickPaneTab: tab => dispatch(clickPaneTab(ownProps.paneType, tab))
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(PaneTabNavigation);
+export default connect(mapStateToProps, mapDispatchToProps)(PaneTabNavigation);

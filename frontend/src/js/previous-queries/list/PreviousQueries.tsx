@@ -1,5 +1,3 @@
-// @flow
-
 import React, { Component } from "react";
 import styled from "@emotion/styled";
 import ReactList from "react-list";
@@ -7,8 +5,8 @@ import ReactList from "react-list";
 import PreviousQuery from "./PreviousQuery";
 
 type PropsType = {
-  datasetId: string,
-  queries: []
+  datasetId: string;
+  queries: [];
 };
 
 const Root = styled("div")`

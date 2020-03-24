@@ -1,5 +1,3 @@
-// @flow
-
 import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 import { tablesHaveActiveFilter } from "./table";

@@ -1,5 +1,3 @@
-// @flow
-
 import type { TableT } from "../api/types";
 import type { TableWithFilterValueType } from "../standard-query-editor/types";
 

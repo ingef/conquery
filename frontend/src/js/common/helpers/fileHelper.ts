@@ -1,5 +1,3 @@
-// @flow
-
 export const readFileAsText = (file: File) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();

@@ -1,16 +1,14 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import BasicButton from "./BasicButton";
 import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
-  children?: React.Node,
-  iconProps?: Object,
-  active?: boolean,
-  large?: boolean,
-  icon: string
+  children?: React.Node;
+  iconProps?: Object;
+  active?: boolean;
+  large?: boolean;
+  icon: string;
 };
 
 const StyledFaIcon = styled(FaIcon)`

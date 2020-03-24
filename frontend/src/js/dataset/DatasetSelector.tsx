@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
@@ -19,11 +17,11 @@ const Root = styled("div")`
 `;
 
 type PropsType = {
-  selectedDatasetId: String,
-  datasets: DatasetType[],
-  error: string,
-  loadDatasets: Function,
-  selectDataset: Function
+  selectedDatasetId: String;
+  datasets: DatasetType[];
+  error: string;
+  loadDatasets: Function;
+  selectDataset: Function;
 };
 
 const DatasetSelector = (props: PropsType) => {

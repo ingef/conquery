@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 
 import { getStoredAuthToken } from "../authorization/helper";
@@ -7,10 +5,10 @@ import { getStoredAuthToken } from "../authorization/helper";
 import IconButton from "./IconButton";
 
 type PropsType = {
-  url: string,
-  className?: string,
-  children?: React.Node,
-  ending: string
+  url: string;
+  className?: string;
+  children?: React.Node;
+  ending: string;
 };
 
 function getIcon(ending: string) {

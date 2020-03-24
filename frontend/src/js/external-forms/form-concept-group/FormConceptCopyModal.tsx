@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
@@ -40,9 +38,9 @@ const SxInputCheckbox = styled(InputCheckbox)`
 `;
 
 type PropsT = {
-  targetFieldname: string,
-  onAccept: (selectedNodes: Object[]) => void,
-  onClose: () => void
+  targetFieldname: string;
+  onAccept: (selectedNodes: Object[]) => void;
+  onClose: () => void;
 };
 
 const FormConceptCopyModal = ({
@@ -68,7 +66,7 @@ const FormConceptCopyModal = ({
   );
 
   const [valuesChecked, setValuesChecked] = React.useState<{
-    [key: number]: boolean
+    [key: number]: boolean;
   }>({});
 
   React.useEffect(() => {

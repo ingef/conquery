@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
@@ -53,35 +51,37 @@ const collect = (connect, monitor) => ({
   canDrop: monitor.canDrop()
 });
 
-export default DropTarget([NativeTypes.FILE], target, collect)(
-  ({ onDropFile, children, isOver, canDrop, connectDropTarget }) => {
-    const fileInputRef = React.useRef(null);
+export default DropTarget(
+  [NativeTypes.FILE],
+  target,
+  collect
+)(({ onDropFile, children, isOver, canDrop, connectDropTarget }) => {
+  const fileInputRef = React.useRef(null);
 
-    function onOpenFileDialog() {
-      fileInputRef.current.click();
-    }
-
-    return (
-      <Root>
-        <InnerZone
-          connectDropTarget={connectDropTarget}
-          canDrop={canDrop}
-          isOver={isOver}
-        >
-          {children}
-        </InnerZone>
-        <TopRight onClick={onOpenFileDialog}>
-          {T.translate("inputMultiSelect.openFileDialog")}
-          <FileInput
-            ref={fileInputRef}
-            type="file"
-            onChange={e => {
-              onDropFile(e.target.files[0]);
-              fileInputRef.current.value = null;
-            }}
-          />
-        </TopRight>
-      </Root>
-    );
+  function onOpenFileDialog() {
+    fileInputRef.current.click();
   }
-);
+
+  return (
+    <Root>
+      <InnerZone
+        connectDropTarget={connectDropTarget}
+        canDrop={canDrop}
+        isOver={isOver}
+      >
+        {children}
+      </InnerZone>
+      <TopRight onClick={onOpenFileDialog}>
+        {T.translate("inputMultiSelect.openFileDialog")}
+        <FileInput
+          ref={fileInputRef}
+          type="file"
+          onChange={e => {
+            onDropFile(e.target.files[0]);
+            fileInputRef.current.value = null;
+          }}
+        />
+      </TopRight>
+    </Root>
+  );
+});

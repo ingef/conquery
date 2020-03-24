@@ -1,5 +1,3 @@
-// @flow
-
 import { flatmap } from "../common/helpers/commonHelper";
 
 import type { FormField as FormFieldType } from "./config-types";

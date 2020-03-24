@@ -1,5 +1,3 @@
-// @flow
-
 import React from "react";
 import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
@@ -137,12 +135,12 @@ const StyledIconButton = styled(IconButton)`
 `;
 
 type PropsType = {
-  additionalInfos: AdditionalInfosType,
-  displayTooltip: boolean,
-  toggleAdditionalInfos: boolean,
-  onToggleDisplayTooltip: Function,
-  onToggleAdditionalInfos: Function,
-  search: SearchT
+  additionalInfos: AdditionalInfosType;
+  displayTooltip: boolean;
+  toggleAdditionalInfos: boolean;
+  onToggleDisplayTooltip: Function;
+  onToggleAdditionalInfos: Function;
+  search: SearchT;
 };
 
 const Tooltip = (props: PropsType) => {
@@ -245,7 +243,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onToggleAdditionalInfos: () => dispatch(toggleInfos())
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Tooltip);
+export default connect(mapStateToProps, mapDispatchToProps)(Tooltip);

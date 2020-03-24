@@ -1,15 +1,13 @@
-// @flow
-
 import * as React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 import ReactList from "react-list";
 
 type PropsType = {
-  items: React.Node[],
-  maxVisibleItems?: number,
-  fullWidth?: boolean,
-  minWidth?: boolean
+  items: React.Node[];
+  maxVisibleItems?: number;
+  fullWidth?: boolean;
+  minWidth?: boolean;
 };
 
 const Root = styled("div")`
