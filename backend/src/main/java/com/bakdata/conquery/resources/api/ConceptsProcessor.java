@@ -64,9 +64,9 @@ public class ConceptsProcessor {
 			}
 		});
 		
-	public FERoot getRoot(NamespaceStorage storage) {
+	public FERoot getRoot(NamespaceStorage storage, User user) {
 
-		return FrontEndConceptBuilder.createRoot(storage);
+		return FrontEndConceptBuilder.createRoot(storage, user);
 	}
 	
 	public FEList getNode(Concept<?> concept) {
