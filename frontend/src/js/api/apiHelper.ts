@@ -32,7 +32,9 @@ export const transformFilterValueToApi = (filter: any) => {
   return value;
 };
 
-export const transformSelectsToApi = (selects?: SelectedSelectorType[] | null) => {
+export const transformSelectsToApi = (
+  selects?: SelectedSelectorType[] | null
+) => {
   if (!selects) return [];
 
   return selects
@@ -72,44 +74,44 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
     });
 };
 
-export const transformElementsToApi = conceptGroup =>
+export const transformElementsToApi = (conceptGroup: any) =>
   conceptGroup.map(createConcept);
 
-const transformStandardQueryToApi = query =>
+const transformStandardQueryToApi = (query: any) =>
   createConceptQuery(createAnd(createQueryConcepts(query)));
 
-const createConceptQuery = root => ({
+const createConceptQuery = (root: any) => ({
   type: "CONCEPT_QUERY",
   root
 });
 
-const createAnd = children => ({
+const createAnd = (children: any) => ({
   type: "AND",
   children
 });
 
-const createNegation = group => ({
+const createNegation = (group: any) => ({
   type: "NEGATION",
   child: group
 });
 
-const createDateRestriction = (dateRange, concept) => ({
+const createDateRestriction = (dateRange: any, concept: any) => ({
   type: "DATE_RESTRICTION",
   dateRange: dateRange,
   child: concept
 });
 
-const createSavedQuery = conceptId => ({
+const createSavedQuery = (conceptId: any) => ({
   type: "SAVED_QUERY",
   query: conceptId
 });
 
-const createQueryConcept = concept =>
+const createQueryConcept = (concept: any) =>
   concept.isPreviousQuery
     ? createSavedQuery(concept.id)
     : createConcept(concept);
 
-const createConcept = concept => ({
+const createConcept = (concept: any) => ({
   type: "CONCEPT",
   ids: concept.ids,
   label: concept.label,
@@ -118,8 +120,8 @@ const createConcept = concept => ({
   selects: transformSelectsToApi(concept.selects)
 });
 
-const createQueryConcepts = query => {
-  return query.map(group => {
+const createQueryConcepts = (query: any) => {
+  return query.map((group: any) => {
     const concepts = group.elements.map(createQueryConcept);
     const orConcept = { type: "OR", children: [...concepts] };
 
@@ -132,7 +134,7 @@ const createQueryConcepts = query => {
 };
 
 // TODO: Use, once feature is complete
-const getDays = condition => {
+const getDays = (condition: any) => {
   switch (condition.operator) {
     case DAYS_BEFORE:
       return {
@@ -150,10 +152,10 @@ const getDays = condition => {
   }
 };
 
-const transformTimebasedQueryToApi = query =>
+const transformTimebasedQueryToApi = (query: any) =>
   createConceptQuery(
     createAnd(
-      query.conditions.map(condition => {
+      query.conditions.map((condition: any) => {
         const days = getDays(condition);
 
         return {
@@ -172,7 +174,7 @@ const transformTimebasedQueryToApi = query =>
     )
   );
 
-const transformExternalQueryToApi = query =>
+const transformExternalQueryToApi = (query: any) =>
   createConceptQuery(createExternal(query));
 
 const createExternal = (query: any) => {

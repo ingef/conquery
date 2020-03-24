@@ -15,7 +15,8 @@
     "eject": "react-scripts eject",
     "heroku-postbuild": "yarn run build",
     "lint": "eslint --ext .ts --ext .tsx src/",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "serve": "ts-node mock-api/server"
   },
   "homepage": "/app/static",
   "dependencies": {

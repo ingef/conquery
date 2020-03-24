@@ -1,6 +1,6 @@
 const path = require("path");
 const glob = require("glob");
-const version = require("../../package.json").version;
+const version = require("../package.json").version;
 const EXPORT_FORM_CONFIG = require("./forms/export-form.json");
 const mockAuthMiddleware = require("./mockAuthMiddleware");
 
@@ -25,7 +25,7 @@ const SHORT_DELAY = 300;
 const NO_DELAY = 10;
 
 // Simulate API
-module.exports = function(app, port) {
+module.exports = function (app, port) {
   /*
     QUERIES
   */
@@ -295,7 +295,7 @@ module.exports = function(app, port) {
   /*
     VERSION
   */
-  app.get("/api/version", function(req, res) {
+  app.get("/api/version", function (req, res) {
     res.setHeader("Content-Type", "application/json");
 
     res.send({
