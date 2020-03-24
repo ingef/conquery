@@ -92,7 +92,9 @@ export default function createQueryRunnerReducer(type: string): Function {
         return {
           ...state,
           stopQuery: {},
-          startQuery: { error: action.payload.message }
+          startQuery: {
+            error: action.payload.message || action.payload.status
+          }
         };
 
       // To cancel a query
@@ -110,7 +112,7 @@ export default function createQueryRunnerReducer(type: string): Function {
         return {
           ...state,
           startQuery: {},
-          stopQuery: { error: action.payload.message }
+          stopQuery: { error: action.payload.message || action.payload.status }
         };
 
       // To check for query results
