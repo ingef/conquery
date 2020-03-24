@@ -9,18 +9,21 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +31,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
-public class ExportForm extends Form implements NamespacedIdHolding {
+public class ExportForm implements Form, NamespacedIdHolding {
 	@NotNull
 	private ManagedExecutionId queryGroup;
 	@NotNull @Valid @JsonManagedReference
@@ -38,6 +41,9 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	private List<DateContextMode> resolution = List.of(DateContextMode.COMPLETE);
 	
 	private boolean alsoCreateCoarserSubdivisions = true;
+
+	@JsonIgnore
+	private IQuery prerequisite;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -61,6 +67,13 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
 		return Set.of(queryGroup);
+	}
+
+	@Override
+	public ExportForm resolve(QueryResolveContext context) {
+		timeMode.resolve(context);
+		prerequisite = (IQuery) Form.resolvePrerequisite(context, queryGroup);
+		return this;
 	}
 
 }

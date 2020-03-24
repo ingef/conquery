@@ -210,6 +210,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public abstract Set<NamespacedId> getUsedNamespacedIds();
 
 
+	/**
+	 * Creates a mapping from subexecutions. Their id is mapped to their {@link QueryPlan}.
+	 */
 	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
 
 	public abstract void addResult(@NonNull MasterMetaStorage storage, R result);
