@@ -1,24 +1,21 @@
 package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -30,9 +27,7 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils;
-import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
-import com.bakdata.conquery.util.QueryUtils.SingleReusedChecker;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
@@ -54,47 +49,39 @@ public class QueryProcessor {
 	 * intended dataset.
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, URLBuilder urlb, User user) {
+		authorize(user, dataset.getId(), Ability.READ);
 		
+		// Initialize the query
 		query = query.resolve(new QueryResolveContext(dataset.getId(), namespaces));
 		
+		// This maps works as long as we have query visitors that are not configured in anyway.
+		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
+		// For the future a better data structure might be desired that also regards similar QueryVisitors of different configuration
 		ClassToInstanceMap<QueryVisitor> visitors = MutableClassToInstanceMap.create();
 		query.addVisitors(visitors);
+		
+		// Initialize checks that need to traverse the query tree
 		visitors.putInstance(QueryUtils.ExternalIdChecker.class, new QueryUtils.ExternalIdChecker());
 		visitors.putInstance(QueryUtils.SingleReusedChecker.class, new QueryUtils.SingleReusedChecker());
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter());
 		
-		authorize(user, dataset.getId(), Ability.READ);
-		// Also look into the query and check the datasets
-		authorizeReadDatasets(user, query);
-		// Do query specific permission checks
-//		query.checkPermissions(user);
 		
-		// Initialize checks that need to traverse the query tree
-		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
-		SingleReusedChecker singleReusedChecker = new QueryUtils.SingleReusedChecker();
-		NamespacedIdCollector namespacedIdCollector = new QueryUtils.NamespacedIdCollector();
-		ExecutionMetrics.QueryMetricsReporter metricsReporter = new ExecutionMetrics.QueryMetricsReporter();
-		
-		List<Permission> permissions = namespacedIdCollector.getIds().stream()
-			.filter(id -> ConceptId.class.isAssignableFrom(id.getClass()))
-			.map(ConceptId.class::cast)
-			.map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
-			.map(Permission.class::cast)
-			.collect(Collectors.toList());
-		
-		user.checkPermissions(permissions);
-		
+		// Chain all Consumers
 		Consumer<Visitable> consumerChain = NOOP;
-
 		for(QueryVisitor visitor : visitors.values()) {
 			consumerChain = consumerChain.andThen(visitor);
 		}
 
-		// Chain the checks and apply them to the tree
+		// Apply consumers to the query tree
 		query.visit(consumerChain);
 
-		ExecutionMetrics.reportNamespacedIds(namespacedIdCollector.getIds(), user, storage);
+		
+		Set<Permission> permissions = new HashSet<>();
+		query.collectPermissions(visitors, permissions);
+		user.checkPermissions(permissions);
+
+		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), user, storage);
 
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass());
@@ -103,7 +90,7 @@ public class QueryProcessor {
 		// Evaluate the checks and take action
 		{
 			// If this is only a re-executing query, execute the underlying query instead.
-			final ManagedExecutionId executionId = singleReusedChecker.getOnlyReused();
+			final ManagedExecutionId executionId = visitors.getInstance(QueryUtils.SingleReusedChecker.class).getOnlyReused();
 
 			if (executionId != null) {
 				log.info("Re-executing Query {}", executionId);
@@ -115,7 +102,7 @@ public class QueryProcessor {
 			}
 			
 			// Check if the query contains parts that require to resolve external ids. If so the user must have the preserve_id permission on the dataset.
-			if(externalIdChecker.resolvesExternalIds()) {
+			if(visitors.getInstance(QueryUtils.ExternalIdChecker.class).resolvesExternalIds()) {
 				user.checkPermission(DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId()));
 			}
 		}

@@ -1,17 +1,14 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
-
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -61,16 +58,17 @@ public interface QueryDescription extends Visitable {
 	QueryDescription resolve(QueryResolveContext context);
 	
 	default void addVisitors(@NonNull ClassToInstanceMap<QueryVisitor> visitors) {
+		// Register visitors for permission checks
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
 		visitors.putInstance(QueryUtils.ExternalIdChecker.class, new QueryUtils.ExternalIdChecker());
 	}
 
 	/**
 	 * Check implementation specific permissions.
-	 * Checks if a user is allowed to read the {@link Dataset}s that are descriped in the Query.
+	 * Checks if a user is allowed to read the {@link Dataset}s that are described in the query.
 	 * Checks if the user is allowed to use any reused queries in the provided query.
 	 */
-	default void collectPermissions(@NonNull User user,@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions) {
+	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions) {
 		// Generate DatasetPermissions
 		visitors.getInstance(QueryUtils.NamespacedIdCollector.class).getIds().stream()
 			.map(NamespacedId::getDataset)
@@ -87,12 +85,9 @@ public interface QueryDescription extends Visitable {
 			.distinct()
 			.collect(Collectors.toCollection(() -> requiredPermissions));
 		
-		visit(new QueryUtils.NamespacedIdCollector());
-		// Also look into the query and check the datasets
-		authorizeReadDatasets(user, this);
-		// Check reused query
+		// Generate permissions for reused queries
 		for (ManagedExecutionId requiredQueryId : collectRequiredQueries()) {
-			authorize(user, requiredQueryId, Ability.READ);
+			requiredPermissions.add(QueryPermission.onInstance(Ability.READ, requiredQueryId));
 		}
 	}
 }
