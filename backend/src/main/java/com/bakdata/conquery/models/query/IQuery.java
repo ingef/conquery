@@ -18,10 +18,12 @@ import com.google.common.collect.MoreCollectors;
 
 public abstract class IQuery implements QueryDescription {
 
-	public abstract IQuery resolve(QueryResolveContext context);
 	public abstract QueryPlan createQueryPlan(QueryPlanContext context);
 	
 	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
+	
+	@Override
+	public abstract IQuery resolve(QueryResolveContext context);
 	
 	public Set<ManagedExecutionId> collectRequiredQueries() {
 		HashSet<ManagedExecutionId> set = new HashSet<>();
@@ -39,13 +41,7 @@ public abstract class IQuery implements QueryDescription {
 	
 	@Override
 	public ManagedQuery toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		DatasetId dataset = IQuery.getDataset(this, submittedDataset);
-		IQuery query = this.resolve(new QueryResolveContext(
-			namespaces.getMetaStorage(),
-			namespaces.get(dataset)
-			));
-		ManagedQuery managed = new ManagedQuery(query,userId, dataset);
-		return managed;
+		return new ManagedQuery(this,userId, submittedDataset);
 	}
 
 	/**

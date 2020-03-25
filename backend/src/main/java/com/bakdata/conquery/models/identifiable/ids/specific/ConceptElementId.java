@@ -22,11 +22,10 @@ public abstract class ConceptElementId<T extends ConceptElement<?>> extends AId<
 			if(parts.remaining() == 2) {
 				return ConceptId.Parser.INSTANCE.parse(parts);
 			}
-			else {
-				String childName = parts.next();
-				ConceptElementId<?> parent = ConceptElementId.Parser.INSTANCE.parse(parts);
-				return new ConceptTreeChildId(parent, childName);
-			}
+			String childName = parts.next();
+			ConceptElementId<?> parent = ConceptElementId.Parser.INSTANCE.parse(parts);
+			return new ConceptTreeChildId(parent, childName);
+			
 		}
 	}
 }

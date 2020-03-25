@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -33,7 +32,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private static final int FEATURE_DATE_RANGE = 3;
 	private static final int OUTCOME_DATE_RANGE = 4;
 
-	private final ConceptQueryPlan query;
+	private final QueryPlan query;
 	private final ArrayConceptQueryPlan featurePlan;
 	private final ArrayConceptQueryPlan outcomePlan;
 	private final TemporalSampler indexSelector;

@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -16,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Getter @RequiredArgsConstructor
 public class AbsoluteFormQueryPlan implements QueryPlan {
 
-	private final ConceptQueryPlan query;
+	private final QueryPlan query;
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
 	
