@@ -163,26 +163,37 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
+	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+		status.setLabel(label == null ? queryId.toString() : label);
+		status.setId(getId());
+		status.setTags(tags);
+		status.setShared(shared);
+		status.setOwn(getOwner().equals(user.getId()));
+		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
+		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
+		status.setStatus(state);
+		status.setOwner(Optional.ofNullable(owner).orElse(null));
+		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
+		status.setResultUrl(
+			isReadyToDownload(url, user)
+				? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
+					.to(ResultCSVResource.GET_CSV_PATH).get()
+				: null);
+	}
+
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		return ExecutionStatus.builder()
-							  .label(label == null ? queryId.toString() : label)
-							  .id(getId())
-							  .query(getSubmitted())
-							  .tags(tags)
-							  .shared(shared)
-							  .own(getOwner().equals(user.getId()))
-							  .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-							  .requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
-							  .owner(Optional.ofNullable(owner).orElse(null))
-							  .ownerName(
-									  Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel)
-											  .orElse(null))
-							  .resultUrl(
-									  isReadyToDownload(url, user)
-									  ? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-										   .to(ResultCSVResource.GET_CSV_PATH).get()
-									  : null)
-							  .build();
+		ExecutionStatus status = new ExecutionStatus();
+		setStatusBase(storage, url, user, status);
+		return status;
+		
+		
+	}
+	
+	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+		ExecutionStatus.WithQuery status = new ExecutionStatus.WithQuery();
+		status.setQuery(getSubmitted());
+		setStatusBase(storage, url, user, status);
+		return status;
 	}
 
 	public boolean isReadyToDownload(URLBuilder url, User user) {
@@ -194,10 +205,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
 		return url != null && state != ExecutionState.NEW && isPermittedDownload;
-	}
-
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, User user) {
-		return buildStatus(storage, null, user);
 	}
 
 	public abstract Collection<ManagedQuery> toResultQuery();
