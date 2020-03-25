@@ -81,7 +81,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		}
 	}
 	
-	private static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MasterMetaStorage storage ) {
+	public static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MasterMetaStorage storage ) {
 		ExecutionStatus status = processor.postQuery(dataset, query, null, user);
 		Objects.requireNonNull(storage.getExecution(status.getId()), "Execution was not found in storage, even though it was startet")
 			.awaitDone(2, TimeUnit.MINUTES);
