@@ -1,8 +1,8 @@
 package com.bakdata.conquery.integration.json;
 
-import javax.validation.Validator;
-
 import java.io.IOException;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -22,15 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 public class JsonIntegrationTest extends IntegrationTest.Simple {
 	
 	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.readerFor(ConqueryTestSpec.class);
-	
+	public static final Validator VALIDATOR = Validators.newValidator();
 	private final JsonNode node;
 	
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		ConqueryTestSpec test = readJson(conquery.getDataset().getId(), Jackson.MAPPER.writeValueAsString(node));
 
-		Validator validator = Validators.newValidator();
-		ValidatorHelper.failOnError(log, validator.validate(test));
+		ValidatorHelper.failOnError(log, VALIDATOR.validate(test));
 
 		test.importRequiredData(conquery);
 

@@ -129,6 +129,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
+			// Set execution state before acting on the latch to prevent a race condition
+			// Not sure if also the storage needs an update first
 			setState(executionState);
 			execution.countDown();
 

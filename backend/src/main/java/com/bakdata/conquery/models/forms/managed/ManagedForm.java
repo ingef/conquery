@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -37,6 +38,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.glassfish.hk2.api.MultiException;
 
 /**
  * Internal runtime representation of a form query.
@@ -128,13 +130,19 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 */
 	@Override
 	public void addResult(@NonNull MasterMetaStorage storage, FormSharedResult result) {
-		ManagedExecutionId subQueryId = result.getSubqueryId();
-		if(subQueryId == null) {
-			// Subquery failed upon query 
+		ManagedExecutionId subquery = result.getSubqueryId();
+		if (subquery == null) {
 			fail(storage);
+			log.warn(
+				"Form failed in query plan creation. ",
+				new MultiException(result.getResults().stream()
+					.filter(r -> (r instanceof FailedEntityResult))
+					.map(FailedEntityResult.class::cast)
+					.map(FailedEntityResult::getThrowable)
+					.collect(Collectors.toList())));
 			return;
 		}
-		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
+		ManagedQuery subQuery = flatSubQueries.get(subquery);
 		subQuery.addResult(storage, result);
 		switch(subQuery.getState()) {
 			case DONE:
