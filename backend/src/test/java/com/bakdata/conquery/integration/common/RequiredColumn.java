@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class RequiredColumn {
 	@NotNull
 	private MajorTypeId type;
 	private String sharedDictionary;
-	private String secondaryId;
+	private SecondaryId secondaryId;
 
 	public Column toColumn(Table t) {
 		Column col = new Column();

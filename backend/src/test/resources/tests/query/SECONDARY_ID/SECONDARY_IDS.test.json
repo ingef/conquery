@@ -30,6 +30,19 @@
 										}
 									}
 								]
+							},
+							{
+								"id": "${dataset}.number.number_connector2",
+								"filters": [
+									{
+										"filter": "${dataset}.number.number_connector2.value",
+										"type": "REAL_RANGE",
+										"value": {
+											"min": 1,
+											"max": 1
+										}
+									}
+								]
 							}
 						]
 					}
@@ -55,6 +68,20 @@
 						"column": "vers_stamm.value",
 						"type": "NUMBER"
 					}
+				},
+				{
+					"label": "number_connector2",
+					"table": "vers_stamm2",
+					"validityDates": {
+						"label": "datum",
+						"column": "vers_stamm.datum"
+					},
+					"filter": {
+						"label": "value",
+						"description": "xy",
+						"column": "vers_stamm.value",
+						"type": "NUMBER"
+					}
 				}
 			]
 		}
@@ -64,6 +91,29 @@
 			{
 				"csv": "tests/query/SECONDARY_ID/content.csv",
 				"name": "vers_stamm",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},				
+				"columns": [
+					{
+						"name": "sid",
+						"type": "STRING",
+						"secondaryId": "secondary"
+					},
+					{
+						"name": "value",
+						"type": "REAL"
+					},
+					{
+						"name": "datum",
+						"type": "DATE_RANGE"
+					}
+				]
+			},
+			{
+				"csv": "tests/query/SECONDARY_ID/content2.csv",
+				"name": "vers_stamm2",
 				"primaryColumn": {
 					"name": "pid",
 					"type": "STRING"

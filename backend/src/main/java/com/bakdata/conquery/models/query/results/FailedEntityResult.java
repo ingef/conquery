@@ -36,6 +36,6 @@ public class FailedEntityResult implements SinglelineEntityResult {
 	
 	@Override @JsonIgnore
 	public Object[] getValues() {
-		throw new IllegalStateException();
+		throw new IllegalStateException("A FAILED result has no values.");
 	}
 }

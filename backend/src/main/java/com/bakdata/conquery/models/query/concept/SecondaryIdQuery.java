@@ -10,6 +10,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -34,7 +35,7 @@ public class SecondaryIdQuery implements IQuery {
 	@NotNull @NonNull
 	protected ConceptQuery query;
 	@NotNull @NonNull
-	protected String secondaryId;
+	protected SecondaryId secondaryId;
 
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -54,7 +55,7 @@ public class SecondaryIdQuery implements IQuery {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		collector.add( new SimpleResultInfo(secondaryId, ResultType.STRING));
+		collector.add( new SimpleResultInfo(secondaryId.getName(), ResultType.STRING));
 		query.collectResultInfos(collector);
 	}
 

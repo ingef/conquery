@@ -19,6 +19,6 @@ public enum NotContainedEntityResult implements EntityResult, SinglelineEntityRe
 
 	@Override @JsonIgnore
 	public Object[] getValues() {
-		throw new IllegalStateException();
+		throw new IllegalStateException("A NOT_CONTAINED result has no values.");
 	}
 }

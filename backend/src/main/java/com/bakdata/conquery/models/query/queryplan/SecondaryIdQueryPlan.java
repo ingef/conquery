@@ -9,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -21,15 +22,22 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+/**
+ * This class is able to execute a typical ConceptQueryPlan, but will create
+ * one result per distinct value in a secondaryId Column.
+ */
 @RequiredArgsConstructor
 @Getter @Setter
 public class SecondaryIdQueryPlan implements QueryPlan {
 
 	private final ConceptQueryPlan query;
-	private final String secondaryId;
+	private final SecondaryId secondaryId;
 	private Column currentSecondaryIdColumn;
 	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
 	
+	/**
+	 * selects the right column for the given secondaryId from a table
+	 */
 	private Column findSecondaryIdColumn(Table table) {
 		for(var col:table.getColumns()) {
 			if(secondaryId.equals(col.getSecondaryId())) {
@@ -40,6 +48,10 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		throw new IllegalStateException("Table "+table+" should not appear in a query about secondary id "+secondaryId);
 	}
 
+	/**
+	 * if a new distinct secondaryId was found we create a new clone of the ConceptQueryPlan
+	 * and bring it up to speed
+	 */
 	private ConceptQueryPlan createChild(Object key, QueryExecutionContext currentContext, Bucket currentBucket) {
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
 		plan.init(query.getEntity());
@@ -49,6 +61,11 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		return plan;
 	}
 	
+	/**
+	 * This is the same execution as a typical ConceptQueryPlan. The difference
+	 * is that this method will create a new cloned child for each distinct
+	 * secondaryId it encounters during iteration.
+	 */
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		query.checkRequiredTables(ctx.getStorage());
@@ -59,20 +76,23 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 		for(Table currentTable : query.getRequiredTables()) {
 			currentSecondaryIdColumn = findSecondaryIdColumn(currentTable);
-			query.nextTable(ctx, currentTable);
+			nextTable(ctx, currentTable);
 			for(Bucket bucket : entity.getBucket(currentTable.getId())) {
 				int localEntity = bucket.toLocal(entity.getId());
-				var secondaryIdType = (AStringType<?>)currentSecondaryIdColumn.getTypeFor(bucket);
-				query.nextBlock(bucket);
+				AStringType<?> secondaryIdType = (AStringType<?>)currentSecondaryIdColumn.getTypeFor(bucket);
+				nextBlock(bucket);
 				if(bucket.containsLocalEntity(localEntity)) {
-					if(query.isOfInterest(bucket)) {
+					if(isOfInterest(bucket)) {
 						int start = bucket.getFirstEventOfLocal(localEntity);
 						int end = bucket.getLastEventOfLocal(localEntity);
 						for(int event = start; event < end ; event++) {
-							String key = secondaryIdType.getElement(bucket.getString(event, currentSecondaryIdColumn));
-							childPerKey
-								.computeIfAbsent(key, k->this.createChild(k, ctx, bucket))
-								.nextEvent(bucket, event);
+							//we ignore events with no value in the secondaryIdColumn
+							if(bucket.has(event, currentSecondaryIdColumn)) {
+								String key = secondaryIdType.getElement(bucket.getString(event, currentSecondaryIdColumn));
+								childPerKey
+									.computeIfAbsent(key, k->this.createChild(k, ctx, bucket))
+									.nextEvent(bucket, event);
+							}
 						}
 					}
 				}
@@ -90,6 +110,27 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 			return EntityResult.notContained();
 		}
 		return EntityResult.multilineOf(entity.getId(), result);
+	}
+
+	private boolean isOfInterest(Bucket bucket) {
+		for(ConceptQueryPlan c:childPerKey.values()) {
+			c.isOfInterest(bucket);
+		}
+		return query.isOfInterest(bucket);
+	}
+
+	private void nextBlock(Bucket bucket) {
+		query.nextBlock(bucket);
+		for(ConceptQueryPlan c:childPerKey.values()) {
+			c.nextBlock(bucket);
+		}
+	}
+
+	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		query.nextTable(ctx, currentTable);
+		for(ConceptQueryPlan c:childPerKey.values()) {
+			c.nextTable(ctx, currentTable);
+		}
 	}
 
 	@Override
