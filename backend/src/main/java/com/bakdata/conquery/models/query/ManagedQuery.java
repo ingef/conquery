@@ -120,8 +120,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus status = super.buildStatus(storage, url, user);
+	protected ExecutionStatus buildStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+		super.buildStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
 		return status;
 	}
