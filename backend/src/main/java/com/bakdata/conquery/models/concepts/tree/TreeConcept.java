@@ -200,6 +200,10 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
 	}
 
+	public void removeImportCache(ImportId imp) {
+		caches.remove(imp);
+	}
+
 	@Override
 	public int countElements() {
 		return 1 + allChildren.size();
