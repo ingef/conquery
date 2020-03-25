@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -42,12 +43,12 @@ public interface Form extends QueryDescription {
 	/**
 	 * Utility function for forms that usually have at least one query as a prerequisite.
 	 */
-	public static QueryDescription resolvePrerequisite(QueryResolveContext context, ManagedExecutionId prerequisiteId) {
+	public static IQuery resolvePrerequisite(QueryResolveContext context, ManagedExecutionId prerequisiteId) {
 		// Resolve the prerequisite
 		ManagedExecution<?> prerequisiteExe = context.getNamespaces().getMetaStorage().getExecution(prerequisiteId);
 		if(!(prerequisiteExe instanceof ManagedQuery)) {
 			throw new IllegalArgumentException("The prerequisite query must be of type " + ManagedQuery.class.getName());
 		}
-		return ((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
+		return (IQuery)((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
 	}
 }
