@@ -8,7 +8,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -62,11 +61,9 @@ public interface QueryDescription extends Visitable {
 	}
 
 	/**
-	 * Check implementation specific permissions.
-	 * Checks if a user is allowed to read the {@link Dataset}s that are described in the query.
-	 * Checks if the user is allowed to use any reused queries in the provided query.
+	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions) {
+	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset) {
 		// Generate DatasetPermissions
 		visitors.getInstance(QueryUtils.NamespacedIdCollector.class).getIds().stream()
 			.map(NamespacedId::getDataset)
@@ -80,6 +77,11 @@ public interface QueryDescription extends Visitable {
 		// Generate permissions for reused queries
 		for (ManagedExecutionId requiredQueryId : collectRequiredQueries()) {
 			requiredPermissions.add(QueryPermission.onInstance(Ability.READ, requiredQueryId));
+		}
+		
+		// Check if the query contains parts that require to resolve external IDs. If so the user must have the preserve_id permission on the dataset.
+		if(visitors.getInstance(QueryUtils.ExternalIdChecker.class).resolvesExternalIds()) {
+			requiredPermissions.add(DatasetPermission.onInstance(Ability.PRESERVE_ID, submittedDataset));
 		}
 	}
 }

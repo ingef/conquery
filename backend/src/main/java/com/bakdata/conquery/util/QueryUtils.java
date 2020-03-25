@@ -13,9 +13,11 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -34,12 +36,12 @@ public class QueryUtils {
 	 */
 	public static class ExternalIdChecker implements QueryVisitor {
 
-		private final List<CQExternal> elements = new ArrayList<>();
+		private final List<CQElement> elements = new ArrayList<>();
 
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof CQExternal) {
-				elements.add((CQExternal) element);
+			if (element instanceof CQExternal || element instanceof CQExternalResolved) {
+				elements.add((CQElement) element);
 			}
 		}
 

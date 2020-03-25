@@ -61,7 +61,6 @@ public class QueryProcessor {
 		query.addVisitors(visitors);
 		
 		// Initialize checks that need to traverse the query tree
-		visitors.putInstance(QueryUtils.ExternalIdChecker.class, new QueryUtils.ExternalIdChecker());
 		visitors.putInstance(QueryUtils.SingleReusedChecker.class, new QueryUtils.SingleReusedChecker());
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter());
@@ -78,7 +77,7 @@ public class QueryProcessor {
 
 		
 		Set<Permission> permissions = new HashSet<>();
-		query.collectPermissions(visitors, permissions);
+		query.collectPermissions(visitors, permissions, dataset.getId());
 		user.checkPermissions(permissions);
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), user, storage);
@@ -100,11 +99,7 @@ public class QueryProcessor {
 
 				return getStatus(dataset, mq, urlb, user);
 			}
-			
-			// Check if the query contains parts that require to resolve external ids. If so the user must have the preserve_id permission on the dataset.
-			if(visitors.getInstance(QueryUtils.ExternalIdChecker.class).resolvesExternalIds()) {
-				user.checkPermission(DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId()));
-			}
+
 		}
 		
 		// Run the query on behalf of the user

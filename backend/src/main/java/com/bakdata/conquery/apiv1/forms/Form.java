@@ -34,8 +34,8 @@ public interface Form extends QueryDescription {
 	}
 		
 	@Override
-	public default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions) {
-		QueryDescription.super.collectPermissions(visitors, requiredPermissions);
+	public default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset) {
+		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset);
 		// Check if user is allowed to create this form
 		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, this.getClass()));
 	}
