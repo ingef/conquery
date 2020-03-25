@@ -163,7 +163,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected ExecutionStatus buildStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : label);
 		status.setId(getId());
 		status.setTags(tags);
@@ -179,12 +179,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
 					.to(ResultCSVResource.GET_CSV_PATH).get()
 				: null);
-		return status;
 	}
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		ExecutionStatus status = new ExecutionStatus();
-		return buildStatusBase(storage, url, user, status);
+		setStatusBase(storage, url, user, status);
+		return status;
 		
 		
 	}
@@ -192,7 +192,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		ExecutionStatus.WithQuery status = new ExecutionStatus.WithQuery();
 		status.setQuery(getSubmitted());
-		return buildStatusBase(storage, url, user, status);
+		setStatusBase(storage, url, user, status);
+		return status;
 	}
 
 	public boolean isReadyToDownload(URLBuilder url, User user) {

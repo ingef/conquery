@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -163,6 +164,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	
 	@Data
 	@CPSType(id = "FORM_SHARD_RESULT", base = ShardResult.class)
+	@EqualsAndHashCode(callSuper = true)
 	public static class FormSharedResult extends ShardResult {
 		private ManagedExecutionId subqueryId;
 	}
