@@ -1,9 +1,9 @@
 package com.bakdata.conquery;
 
-import javax.tools.ToolProvider;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+
+import javax.tools.ToolProvider;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
@@ -66,7 +66,7 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void initialize(Bootstrap<?> bootstrap) {
 				// Allow overriding of config from environment variables.
-				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
 			}
 		});
 		//register frontend
