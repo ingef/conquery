@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectReaderInjector;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectReaderModifier;
-
 import lombok.RequiredArgsConstructor;
 
 public class PathParamInjector implements ContainerRequestFilter {
@@ -36,8 +35,8 @@ public class PathParamInjector implements ContainerRequestFilter {
 
 		@Override
 		public MutableInjectableValues inject(MutableInjectableValues values) {
-			if(pathParams.containsKey(ResourceConstants.DATASET_NAME)) {
-				values.add(DatasetId.class, DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET_NAME)));
+			if(pathParams.containsKey(ResourceConstants.DATASET)) {
+				values.add(DatasetId.class, DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET)));
 			}
 			return values;
 		}

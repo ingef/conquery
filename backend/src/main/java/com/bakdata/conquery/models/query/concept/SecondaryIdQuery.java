@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -27,9 +27,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(id = "SECONDARY_ID_QUERY", base = IQuery.class)
+@CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
 @RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
-public class SecondaryIdQuery implements IQuery {
+public class SecondaryIdQuery extends IQuery {
 
 	@Valid
 	@NotNull @NonNull

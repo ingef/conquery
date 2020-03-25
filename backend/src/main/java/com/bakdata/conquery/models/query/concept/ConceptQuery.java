@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -16,20 +17,18 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
-@RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
-public class ConceptQuery implements IQuery {
+@CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
+@AllArgsConstructor(onConstructor = @__({@JsonCreator}))
+public class ConceptQuery extends IQuery {
 
 	@Valid
-	@NotNull @NonNull
+	@NotNull
 	protected CQElement root;
 
 	@Override

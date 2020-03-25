@@ -1,11 +1,11 @@
 // @flow
 
-import * as React from "react";
+import React, { useRef } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { NativeTypes } from "react-dnd-html5-backend";
 
-import Dropzone from "./Dropzone";
+import Dropzone, { type ChildArgs } from "./Dropzone";
 
 const FileInput = styled("input")`
   display: none;
@@ -36,11 +36,11 @@ const TopRight = styled("p")`
 `;
 
 type PropsT = {
-  children: React.Node,
+  children: (args: ChildArgs) => React.ReactNode,
   acceptedDropTypes?: string[],
   onSelectFile: File => void,
-  disableClick: boolean,
-  showFileSelectButton: boolean
+  disableClick?: boolean,
+  showFileSelectButton?: boolean
 };
 
 /*
@@ -52,14 +52,14 @@ type PropsT = {
   => The "onDrop"-prop needs to handle the file drop itself, though!
 */
 export default ({
-  children,
   onSelectFile,
   acceptedDropTypes,
   disableClick,
   showFileSelectButton,
+  children,
   ...props
 }: PropsT) => {
-  const fileInputRef = React.useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const dropTypes = [...(acceptedDropTypes || []), NativeTypes.FILE];
 
@@ -77,21 +77,25 @@ export default ({
       }}
       {...props}
     >
-      {showFileSelectButton && (
-        <TopRight onClick={onOpenFileDialog}>
-          {T.translate("inputMultiSelect.openFileDialog")}
-        </TopRight>
-      )}
-      <FileInput
-        ref={fileInputRef}
-        type="file"
-        onChange={e => {
-          onSelectFile(e.target.files[0]);
+      {(args: ChildArgs) => (
+        <>
+          {showFileSelectButton && (
+            <TopRight onClick={onOpenFileDialog}>
+              {T.translate("inputMultiSelect.openFileDialog")}
+            </TopRight>
+          )}
+          <FileInput
+            ref={fileInputRef}
+            type="file"
+            onChange={e => {
+              onSelectFile(e.target.files[0]);
 
-          fileInputRef.current.value = null;
-        }}
-      />
-      {children}
+              fileInputRef.current.value = null;
+            }}
+          />
+          {children(args)}
+        </>
+      )}
     </SxDropzone>
   );
 };

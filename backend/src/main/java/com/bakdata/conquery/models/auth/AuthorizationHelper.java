@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -145,6 +146,19 @@ public class AuthorizationHelper {
 		}
 		return userGroups;
 	}
+
+	/**
+	 * Find the primary group of the user. All users must have a primary group.
+	 * @implNote Currently this is the first group of a user and should also be the only group.
+	 */
+	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MasterMetaStorage storage) {
+		List<Group> groups = getGroupsOf(user, storage);
+		if(groups.isEmpty()) {
+			return Optional.empty();
+		}
+		// TODO: 17.02.2020 implement primary flag for user etc.
+		return Optional.of(groups.get(0));
+	}
 	
 
 	
@@ -270,7 +284,7 @@ public class AuthorizationHelper {
 	 * Checks if an execution is allowed to be downloaded by a user.
 	 * This checks all used {@link DatasetId}s for the {@link Ability.DOWNLOAD} on the user.
 	 */
-	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution exec) {
+	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
 		List<Permission> perms = exec.getUsedNamespacedIds().stream()
 			.map(NamespacedId::getDataset)
 			.distinct()

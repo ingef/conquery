@@ -24,12 +24,19 @@ const Root = styled("div")`
       : theme.col.gray};
 `;
 
+export type ChildArgs = {
+  isOver: boolean,
+  canDrop: boolean,
+  itemType: String
+};
+
 type InnerZonePropsType = {
   className?: string,
-  children?: string,
+  children?: (args: ChildArgs) => React.ReactNode,
   connectDropTarget: Function,
   isOver: boolean,
   canDrop: boolean,
+  itemType: string,
   onClick: () => void
 };
 
@@ -39,6 +46,7 @@ export const InnerZone = ({
   onClick,
   isOver,
   canDrop,
+  itemType,
   connectDropTarget
 }: InnerZonePropsType) => {
   return (
@@ -49,13 +57,14 @@ export const InnerZone = ({
       className={className}
       onClick={onClick}
     >
-      {children}
+      {children({ isOver, canDrop, itemType })}
     </Root>
   );
 };
 
 type PropsType = {
   acceptedDropTypes: string[],
+  children?: (args: ChildArgs) => React.ReactNode,
   onDrop: (Object, Object) => void,
   target?: Object
 };
@@ -63,7 +72,8 @@ type PropsType = {
 const collect = (connect, monitor) => ({
   connectDropTarget: connect.dropTarget(),
   isOver: monitor.isOver(),
-  canDrop: monitor.canDrop()
+  canDrop: monitor.canDrop(),
+  itemType: monitor.getItemType()
 });
 
 const Dropzone = ({

@@ -88,9 +88,12 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 			uid = requestContext.getUriInfo().getQueryParameters().getFirst(UID_QUERY_STRING_PARAMETER);
 		}
 
+
 		UserId userId = null;
 
 		if (StringUtils.isNotEmpty(uid)) {
+			uid = uid.replaceFirst("^Bearer ", "");
+      
 			try {
 				userId = UserId.Parser.INSTANCE.parse(uid);		
 				return new DevelopmentToken(userId, uid);		
