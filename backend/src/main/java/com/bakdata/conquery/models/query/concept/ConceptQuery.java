@@ -59,6 +59,4 @@ public class ConceptQuery extends IQuery {
 	public void visit(Consumer<Visitable> visitor) {
 		root.visit(visitor);
 	}
-	
-
 }

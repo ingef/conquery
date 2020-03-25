@@ -7,6 +7,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
@@ -27,7 +28,7 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 	
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		ConqueryTestSpec test = readJson(conquery.getDataset().getId(), Jackson.MAPPER.writeValueAsString(node));
+		ConqueryTestSpec test = readJson(conquery.getDataset(), Jackson.MAPPER.writeValueAsString(node));
 
 		ValidatorHelper.failOnError(log, VALIDATOR.validate(test));
 
@@ -46,12 +47,20 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 	}
 	
 	public static ConqueryTestSpec readJson(DatasetId dataset, String json) throws IOException {
+		return readJson(dataset, json, TEST_SPEC_READER);
+	}
+	
+	public static ConqueryTestSpec readJson(Dataset dataset, String json) throws IOException {
+		return readJson(dataset.getId(), json, dataset.injectInto(TEST_SPEC_READER));
+	}
+	
+	private static ConqueryTestSpec readJson(DatasetId dataset, String json, ObjectReader jsonReader) throws IOException {
 		json = StringUtils.replace(
 			json,
 			"${dataset}",
 			dataset.toString()
 		);
 		
-		return TEST_SPEC_READER.readValue(json);
+		return jsonReader.readValue(json);
 	}
 }
