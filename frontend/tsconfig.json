@@ -23,6 +23,6 @@
     "noUnusedParameters": true,
     "isolatedModules": true
   },
-  "include": ["src", "node_modules/**/*/*.d.ts", "mock-api/server.ts"],
+  "include": ["src", "node_modules/**/*/*.d.ts"],
   "exclude": ["node_modules", "public", ".cache", ".idea", "src/ignored/*"]
 }
