@@ -4,7 +4,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -41,6 +43,8 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
+import com.bakdata.conquery.util.QueryUtils;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -50,6 +54,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.shiro.authz.Permission;
 
 @Getter
 @Setter
@@ -124,8 +129,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
-			execution.countDown();
 			setState(executionState);
+			execution.countDown();
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if(getState() == ExecutionState.DONE) {
@@ -190,8 +195,17 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+		QueryDescription query = getSubmitted();
+		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
+		query.visit(namespacesIdCollector);
+		List<Permission> permissions = new ArrayList<>();
+		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
+		
+		boolean canExpand = user.isPermittedAll(permissions);
+		
 		ExecutionStatus.WithQuery status = new ExecutionStatus.WithQuery();
-		status.setQuery(getSubmitted());
+		status.setCanExpand(canExpand);
+		status.setQuery(canExpand ? getSubmitted() : null);
 		setStatusBase(storage, url, user, status);
 		return status;
 	}

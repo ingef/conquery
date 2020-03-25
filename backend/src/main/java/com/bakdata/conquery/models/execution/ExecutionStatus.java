@@ -37,6 +37,13 @@ public class ExecutionStatus {
 	@NoArgsConstructor
 	@EqualsAndHashCode(callSuper = true)
 	public static class WithQuery extends ExecutionStatus {
+		/**
+		 * Indicates if the concepts that are included in the query description can be accesed by the user.
+		 */
+		boolean canExpand;
+		/**
+		 * Is set to the query description if the user can expand all included concepts.
+		 */
 		private QueryDescription query;
 		
 	}
