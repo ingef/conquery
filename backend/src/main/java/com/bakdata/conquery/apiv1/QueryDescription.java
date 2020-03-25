@@ -6,14 +6,12 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -77,13 +75,7 @@ public interface QueryDescription extends Visitable {
 			.collect(Collectors.toCollection(() -> requiredPermissions));
 		
 		// Generate ConceptPermissions
-		visitors.getInstance(QueryUtils.NamespacedIdCollector.class).getIds().stream()
-			.filter(id -> ConceptId.class.isAssignableFrom(id.getClass()))
-			.map(ConceptId.class::cast)
-			.map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
-			.map(Permission.class::cast)
-			.distinct()
-			.collect(Collectors.toCollection(() -> requiredPermissions));
+		QueryUtils.generateConceptReadPermissions(visitors.getInstance(QueryUtils.NamespacedIdCollector.class), requiredPermissions);
 		
 		// Generate permissions for reused queries
 		for (ManagedExecutionId requiredQueryId : collectRequiredQueries()) {
