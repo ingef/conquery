@@ -10,14 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -94,14 +91,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		super.start();
 	}
 	
-	@Override
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus status = super.buildStatus(storage, url, user);
-		// Send null here, because no usable value can be reported to the user for a form
-		status.setNumberOfResults(null);
-		return status;
-	}
-
 	@Override
 	public Collection<ManagedQuery> toResultQuery() {
 		if(subQueries.size() == 1) {
