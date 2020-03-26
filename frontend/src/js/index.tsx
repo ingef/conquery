@@ -4,6 +4,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { ThemeProvider } from "emotion-theming";
 import { createBrowserHistory } from "history";
+import { ThemeT } from "app-theme";
 
 import "./app/actions"; //  To initialize parameterized actions
 import { makeStore } from "./store";
@@ -20,7 +21,7 @@ let browserHistory;
 const initialState = {};
 
 // Render the App including Hot Module Replacement
-const renderRoot = (tabs: Object, theme) => {
+const renderRoot = (tabs: Object, theme: ThemeT) => {
   browserHistory =
     browserHistory ||
     createBrowserHistory({
@@ -39,7 +40,7 @@ const renderRoot = (tabs: Object, theme) => {
 export default function conquery(
   environment: Environment,
   tabs: Object,
-  theme: Object // React-Emotion theme, will at some point completely replace sass
+  theme: ThemeT // React-Emotion theme, will at some point completely replace sass
 ) {
   initializeEnvironment(environment);
   renderRoot(tabs, theme);

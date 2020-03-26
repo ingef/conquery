@@ -1,10 +1,12 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
 import { reset } from "redux-form";
 
 import { T } from "../localization";
 import IconButton from "../button/IconButton";
+import { useDispatch, useSelector } from "react-redux";
+import { selectActiveForm } from "./stateSelectors";
+import { StateT } from "../app/reducers";
 
 const Root = styled("div")`
   display: flex;
@@ -14,26 +16,25 @@ const Root = styled("div")`
   width: 100%;
 `;
 
-const Headline = styled("h3")`
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const FormsHeader: React.FC = () => {
+  const activeForm = useSelector<StateT>(state => selectActiveForm(state));
 
-export default connect(
-  state => ({
-    activeForm: state.externalForms.activeForm
-  }),
-  dispatch => ({ onClear: form => dispatch(reset(form)) })
-)(({ headline, onClear, activeForm }) => (
-  <Root>
-    <Headline>{headline}</Headline>
-    <IconButton
-      frame
-      regular
-      icon="trash-alt"
-      onClick={() => onClear(activeForm)}
-      title={T.translate("externalForms.common.clear")}
-    >
-      {T.translate("externalForms.common.clear")}
-    </IconButton>
-  </Root>
-));
+  const dispatch = useDispatch();
+  const onClear = form => dispatch(reset(form));
+
+  return (
+    <Root>
+      <IconButton
+        frame
+        regular
+        icon="trash-alt"
+        onClick={() => onClear(activeForm)}
+        title={T.translate("externalForms.common.clear")}
+      >
+        {T.translate("externalForms.common.clear")}
+      </IconButton>
+    </Root>
+  );
+};
+
+export default FormsHeader;

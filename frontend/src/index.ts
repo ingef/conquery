@@ -11,7 +11,7 @@ import StandardQueryEditorTab from "./js/standard-query-editor";
 import TimebasedQueryEditorTab from "./js/timebased-query-editor";
 import FormsTab from "./js/external-forms";
 
-import theme from "./app-theme";
+import { theme } from "./app-theme";
 
 import "./app-styles.sass";
 

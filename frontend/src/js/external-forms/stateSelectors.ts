@@ -1,5 +1,7 @@
 import { initTables } from "./transformers";
 import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+import { FormContextStateT } from "./reducer";
 
 const selectFormField = (state, formName, fieldName) => {
   if (
@@ -44,7 +46,11 @@ export const selectEditedConcept = (
   return initTables(blacklistedTables, whitelistedTables)(concept);
 };
 
-export const selectSuggestions = (state, fieldName, { andIdx, orIdx }) => {
+export const selectSuggestions = (
+  state: FormContextStateT,
+  fieldName: string,
+  { andIdx, orIdx }: { andIdx: number; orIdx: number }
+) => {
   return (
     state.suggestions &&
     state.suggestions[fieldName] &&
@@ -53,39 +59,39 @@ export const selectSuggestions = (state, fieldName, { andIdx, orIdx }) => {
   );
 };
 
-export const selectFormState = (state: Object, formType: string) =>
-  state.externalForms ? state.externalForms[formType] : null;
+export const selectFormContextState = (state: StateT, formType: string) =>
+  state.externalForms ? state.externalForms.formsContext[formType] : null;
 
-export const selectReduxForm = (state: Object) =>
+export const selectReduxForm = (state: StateT) =>
   state.externalForms ? state.externalForms.reduxForm : null;
 
-export const selectActiveFormValues = (state: Object) => {
+export const selectActiveFormValues = (state: StateT) => {
   const reduxForm = selectReduxForm(state);
   const activeForm = selectActiveForm(state);
 
   return reduxForm && activeForm ? reduxForm[activeForm].values : {};
 };
 
-export const selectAvailableForms = (state: Object) =>
+export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : [];
 
-export const selectActiveForm = (state: Object) =>
+export const selectActiveForm = (state: StateT) =>
   state.externalForms ? state.externalForms.activeForm : null;
 
-export const selectFormConfig = (state: Object) => {
+export const selectFormConfig = (state: StateT) => {
   const availableForms = selectAvailableForms(state);
   const activeForm = selectActiveForm(state);
 
   return activeForm ? availableForms[activeForm] : null;
 };
 
-export const selectReduxFormState = (state: Object) =>
+export const selectReduxFormState = (state: StateT) =>
   state.externalForms ? state.externalForms.reduxForm : null;
 
-export const selectQueryRunner = (state: Object) =>
+export const selectQueryRunner = (state: StateT) =>
   state.externalForms ? state.externalForms.queryRunner : null;
 
-export const selectRunningQuery = (state: Object) => {
+export const selectRunningQuery = (state: StateT) => {
   const queryRunner = selectQueryRunner(state);
 
   return queryRunner ? queryRunner.runningQuery : null;

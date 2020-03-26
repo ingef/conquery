@@ -14,15 +14,15 @@ export type QueryRunnerStateT = {
   startQuery: APICallType;
   stopQuery: APICallType;
   queryResult:
-    | APICallType & {
+    | (APICallType & {
         datasetId?: string;
         resultCount?: number;
         resultUrl?: string;
-      }
+      })
     | null;
 };
 
-export default function createQueryRunnerReducer(type: string): Function {
+export default function createQueryRunnerReducer(type: string) {
   const initialState: QueryRunnerStateT = {
     runningQuery: null,
     queryRunning: false,

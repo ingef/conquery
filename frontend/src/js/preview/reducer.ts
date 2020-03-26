@@ -5,17 +5,20 @@ import {
   LOAD_CSV_ERROR
 } from "./actionTypes";
 
-export type StateT = {
+export type PreviewStateT = {
   csv: string[][] | null;
   isLoading: boolean;
 };
 
-const initialState: StateT = {
+const initialState: PreviewStateT = {
   csv: null,
   isLoading: false
 };
 
-export default (state: StateT = initialState, action: Object): StateT => {
+export default (
+  state: PreviewStateT = initialState,
+  action: Object
+): PreviewStateT => {
   switch (action.type) {
     case LOAD_CSV_START:
       return {

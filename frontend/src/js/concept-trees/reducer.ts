@@ -20,21 +20,21 @@ import { setTree } from "./globalTreeStoreHelper";
 export type TreesT = { [treeId: string]: ConceptT };
 
 export type SearchT = {
-  allOpen: boolean,
-  showMismatches: boolean,
-  loading: boolean,
-  query: string,
-  words: string[] | null,
-  result: null | { [key: ConceptIdT]: number },
-  resultCount: number,
-  duration: number
+  allOpen: boolean;
+  showMismatches: boolean;
+  loading: boolean;
+  query: string;
+  words: string[] | null;
+  result: null | { [key: ConceptIdT]: number };
+  resultCount: number;
+  duration: number;
 };
 
-export type StateType = {
-  loading: boolean,
-  version: any,
-  trees: TreesT,
-  search: SearchT
+export type ConceptTreesStateT = {
+  loading: boolean;
+  version: any;
+  trees: TreesT;
+  search: SearchT;
 };
 
 const initialSearch = {
@@ -48,14 +48,17 @@ const initialSearch = {
   duration: 0
 };
 
-const initialState: StateType = {
+const initialState: ConceptTreesStateT = {
   loading: false,
   version: null,
   trees: {},
   search: initialSearch
 };
 
-const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
+const setSearchTreesSuccess = (
+  state: ConceptTreesStateT,
+  action: Object
+): ConceptTreesStateT => {
   const { query, result } = action.payload;
 
   // only create keys array once, then cache,
@@ -79,7 +82,10 @@ const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
   };
 };
 
-const setSearchTreesStart = (state: StateType, action: Object): StateType => {
+const setSearchTreesStart = (
+  state: ConceptTreesStateT,
+  action: Object
+): ConceptTreesStateT => {
   const { query } = action.payload;
 
   return {
@@ -97,10 +103,10 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
 };
 
 const updateTree = (
-  state: StateType,
+  state: ConceptTreesStateT,
   action: Object,
   attributes: Object
-): StateType => {
+): ConceptTreesStateT => {
   return {
     ...state,
     trees: {
@@ -113,11 +119,17 @@ const updateTree = (
   };
 };
 
-const setTreeLoading = (state: StateType, action: Object): StateType => {
+const setTreeLoading = (
+  state: ConceptTreesStateT,
+  action: Object
+): ConceptTreesStateT => {
   return updateTree(state, action, { loading: true });
 };
 
-const setTreeSuccess = (state: StateType, action: Object): StateType => {
+const setTreeSuccess = (
+  state: ConceptTreesStateT,
+  action: Object
+): ConceptTreesStateT => {
   // Side effect in a reducer.
   // Globally store the huge (1-5 MB) trees for read only
   // - keeps the redux store free from huge data
@@ -131,14 +143,20 @@ const setTreeSuccess = (state: StateType, action: Object): StateType => {
   return newState;
 };
 
-const setTreeError = (state: StateType, action: Object): StateType => {
+const setTreeError = (
+  state: ConceptTreesStateT,
+  action: Object
+): ConceptTreesStateT => {
   return updateTree(state, action, {
     loading: false,
     error: action.payload.message
   });
 };
 
-const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
+const setLoadTreesSuccess = (
+  state: ConceptTreesStateT,
+  action: Object
+): ConceptTreesStateT => {
   const { concepts, version } = action.payload.data;
 
   // Assign default select filter values
@@ -156,9 +174,9 @@ const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
 };
 
 const conceptTrees = (
-  state: StateType = initialState,
+  state: ConceptTreesStateT = initialState,
   action: Object
-): StateType => {
+): ConceptTreesStateT => {
   switch (action.type) {
     // All trees
     case LOAD_TREES_START:

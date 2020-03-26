@@ -5,7 +5,7 @@ export type TabType = {
   key: string;
 };
 
-export type StateType = {
+export type PanesStateT = {
   left: {
     activeTab: "conceptTrees" | "previousQueries";
     tabs: TabType[];
@@ -17,7 +17,7 @@ export type StateType = {
 };
 
 export const buildPanesReducer = tabs => {
-  const initialState: StateType = {
+  const initialState: PanesStateT = {
     left: {
       activeTab: "conceptTrees",
       tabs: [
@@ -31,7 +31,7 @@ export const buildPanesReducer = tabs => {
     }
   };
 
-  return (state: StateType = initialState, action: Object): StateType => {
+  return (state: PanesStateT = initialState, action: Object): PanesStateT => {
     switch (action.type) {
       case CLICK_PANE_TAB:
         const { paneType, tab } = action.payload;

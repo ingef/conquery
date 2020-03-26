@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "@emotion/styled";
+import styled from "app-theme";
 import T from "i18n-react";
 import type { TabType } from "./reducer";
 
@@ -10,7 +10,7 @@ const Root = styled("div")`
   background-color: white;
 `;
 
-const Headline = styled("h2")`
+const Headline = styled("h2")<{ active: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
   margin-bottom: 0;
   margin-top: 5px;

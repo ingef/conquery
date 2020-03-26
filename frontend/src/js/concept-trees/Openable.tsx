@@ -4,13 +4,13 @@ type PropsType = {
   openInitially?: boolean;
 };
 
-type StateType = {
+type OpenableStateT = {
   open: boolean;
 };
 
 const Openable = (Component: any) => {
-  class EnhancedComponent extends React.Component<PropsType, StateType> {
-    state: StateType;
+  class EnhancedComponent extends React.Component<PropsType, OpenableStateT> {
+    state: OpenableStateT;
 
     constructor(props: PropsType) {
       super(props);

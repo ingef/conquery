@@ -4,28 +4,28 @@ import { createConnectedQueryNodeEditor } from "../../query-node-editor/QueryNod
 import { toUpperCaseUnderscore } from "../../common/helpers";
 
 import {
-  selectFormState,
   selectReduxFormState,
   selectEditedConceptPosition,
   selectEditedConcept,
-  selectSuggestions
+  selectSuggestions,
+  selectFormContextState
 } from "../stateSelectors";
 import { createFormSuggestionActions } from "../form-suggestions/actions";
 import { tableIsEditable } from "../../model/table";
 
 export type PropsType = {
-  formType: string,
-  fieldName: string,
-  blacklistedTables?: string[],
-  whitelistedTables?: string[],
-  datasetId: number,
-  onCloseModal: Function,
-  onUpdateLabel: Function,
-  onToggleTable: Function,
-  onDropConcept: Function,
-  onSetFilterValue: Function,
-  onSwitchFilterMode: Function,
-  onResetAllFilters: Function
+  formType: string;
+  fieldName: string;
+  blacklistedTables?: string[];
+  whitelistedTables?: string[];
+  datasetId: number;
+  onCloseModal: Function;
+  onUpdateLabel: Function;
+  onToggleTable: Function;
+  onDropConcept: Function;
+  onSetFilterValue: Function;
+  onSwitchFilterMode: Function;
+  onResetAllFilters: Function;
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -55,7 +55,7 @@ const mapStateToProps = (state, ownProps) => {
     (node.tables.length > 1 ||
       node.tables.some(table => tableIsEditable(table)));
 
-  const formState = selectFormState(state, ownProps.formType);
+  const formState = selectFormContextState(state, ownProps.formType);
   const suggestions = conceptPosition
     ? selectSuggestions(formState, ownProps.fieldName, conceptPosition)
     : null;

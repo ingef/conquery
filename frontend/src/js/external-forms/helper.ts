@@ -2,7 +2,7 @@ import { flatmap } from "../common/helpers/commonHelper";
 
 import type { FormField as FormFieldType } from "./config-types";
 
-export function collectAllFields(fields: FormFieldType[]) {
+export function collectAllFields(fields: FormFieldType[]): FormFieldType[] {
   return flatmap(fields, field => {
     if (field.type === "TABS") {
       return [field].concat(
