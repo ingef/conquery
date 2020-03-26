@@ -202,6 +202,9 @@
   },
   "externalForms": {
     "forms": "Forms",
+    "config": {
+      "save": "Save configuration"
+    },
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",

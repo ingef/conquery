@@ -5,14 +5,14 @@ import clickOutside from "react-onclickoutside";
 
 import PrimaryButton from "../button/PrimaryButton";
 
-type PropsType = {
+interface PropsType {
   className?: string;
   text: string;
   loading: boolean;
-  selectTextOnMount: boolean;
-  onSubmit: Function;
-  onCancel: Function;
-};
+  selectTextOnMount?: boolean;
+  onSubmit: (text: string) => void;
+  onCancel: () => void;
+}
 
 const Input = styled("input")`
   height: 30px;
