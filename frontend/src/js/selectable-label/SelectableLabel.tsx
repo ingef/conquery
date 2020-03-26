@@ -1,12 +1,12 @@
 import React from "react";
 import { connect } from "react-redux";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 type PropsType = {
-  className?: string,
-  label: string,
-  isSelected: boolean
+  className?: string;
+  label: string;
+  isSelected: boolean;
 };
 
 const Label = styled("span")`

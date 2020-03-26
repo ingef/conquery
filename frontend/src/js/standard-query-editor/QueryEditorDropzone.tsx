@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import T from "i18n-react";
 
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
@@ -13,11 +13,11 @@ import type { DraggedNodeType, DraggedQueryType } from "./types";
 type DraggedFileType = Object;
 
 type PropsType = {
-  isInitial?: boolean,
-  isAnd?: boolean,
-  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void,
-  onDropFile: (file: DraggedFileType) => void,
-  onLoadPreviousQuery: (id: QueryIdT) => void
+  isInitial?: boolean;
+  isAnd?: boolean;
+  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropFile: (file: DraggedFileType) => void;
+  onLoadPreviousQuery: (id: QueryIdT) => void;
 };
 
 const DROP_TYPES = [

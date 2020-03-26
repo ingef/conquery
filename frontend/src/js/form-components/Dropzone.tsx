@@ -25,19 +25,19 @@ const Root = styled("div")`
 `;
 
 export type ChildArgs = {
-  isOver: boolean,
-  canDrop: boolean,
-  itemType: String
+  isOver: boolean;
+  canDrop: boolean;
+  itemType: String;
 };
 
 type InnerZonePropsType = {
-  className?: string,
-  children?: (args: ChildArgs) => React.ReactNode,
-  connectDropTarget: Function,
-  isOver: boolean,
-  canDrop: boolean,
-  itemType: string,
-  onClick: () => void
+  className?: string;
+  children?: (args: ChildArgs) => React.ReactNode;
+  connectDropTarget: Function;
+  isOver: boolean;
+  canDrop: boolean;
+  itemType: string;
+  onClick: () => void;
 };
 
 export const InnerZone = ({
@@ -63,10 +63,10 @@ export const InnerZone = ({
 };
 
 type PropsType = {
-  acceptedDropTypes: string[],
-  children?: (args: ChildArgs) => React.ReactNode,
-  onDrop: (Object, Object) => void,
-  target?: Object
+  acceptedDropTypes: string[];
+  children?: (args: ChildArgs) => React.ReactNode;
+  onDrop: (Object, Object) => void;
+  target?: Object;
 };
 
 const collect = (connect, monitor) => ({
@@ -84,9 +84,11 @@ const Dropzone = ({
 }: PropsType) => {
   const dropzoneTarget = { drop: onDrop, ...target };
 
-  const FinalZone = DropTarget(acceptedDropTypes, dropzoneTarget, collect)(
-    InnerZone
-  );
+  const FinalZone = DropTarget(
+    acceptedDropTypes,
+    dropzoneTarget,
+    collect
+  )(InnerZone);
 
   return <FinalZone {...restProps} />;
 };

@@ -49,8 +49,8 @@ const Checkmark = styled("div")`
 `;
 
 type PropsType = FieldPropsType & {
-  label: string,
-  className?: string
+  label: string;
+  className?: string;
 };
 
 const InputCheckbox = (props: PropsType) => (

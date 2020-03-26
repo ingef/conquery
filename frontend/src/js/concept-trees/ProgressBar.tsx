@@ -37,7 +37,7 @@ const BarProgress = styled("div")`
 `;
 
 type PropsT = {
-  trees: TreesT
+  trees: TreesT;
 };
 
 export default ({ trees }: PropsT) => {

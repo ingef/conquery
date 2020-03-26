@@ -1,7 +1,7 @@
 import * as React from "react";
 import BasicButton from "./BasicButton";
 import FaIcon, { IconStyleProps } from "../icon/FaIcon";
-import styled from "app-theme";
+import styled from "@emotion/styled";
 
 const StyledFaIcon = styled(FaIcon)`
   color: ${({ theme, active, red }) =>

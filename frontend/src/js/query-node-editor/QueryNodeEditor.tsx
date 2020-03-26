@@ -48,42 +48,42 @@ const CloseButton = styled(BasicButton)`
 `;
 
 type QueryNodeEditorState = {
-  detailsViewActive: boolean,
-  selectedInputTableIdx: number,
-  selectedInput: number,
-  editingLabel: boolean,
+  detailsViewActive: boolean;
+  selectedInputTableIdx: number;
+  selectedInput: number;
+  editingLabel: boolean;
 
-  onSelectDetailsView: Function,
-  onSelectInputTableView: Function,
-  onShowDescription: Function,
-  onToggleEditLabel: Function,
-  onReset: Function
+  onSelectDetailsView: Function;
+  onSelectInputTableView: Function;
+  onShowDescription: Function;
+  onToggleEditLabel: Function;
+  onReset: Function;
 };
 
 export type PropsType = {
-  name: string,
-  editorState: QueryNodeEditorState,
-  node: QueryNodeType,
-  showTables: boolean,
-  isExcludeTimestampsPossible: boolean,
-  datasetId: number,
-  suggestions: Object | null,
-  whitelistedTables?: string[],
-  blacklistedTables?: string[],
+  name: string;
+  editorState: QueryNodeEditorState;
+  node: QueryNodeType;
+  showTables: boolean;
+  isExcludeTimestampsPossible: boolean;
+  datasetId: number;
+  suggestions: Object | null;
+  whitelistedTables?: string[];
+  blacklistedTables?: string[];
 
-  onCloseModal: Function,
-  onUpdateLabel: Function,
-  onDropConcept: Function,
-  onRemoveConcept: Function,
-  onToggleTable: Function,
-  onSetFilterValue: Function,
-  onResetAllFilters: Function,
-  onToggleTimestamps: Function,
-  onSwitchFilterMode: Function,
-  onLoadFilterSuggestions: Function,
-  onSelectSelects: Function,
-  onSelectTableSelects: Function,
-  onSetDateColumn: Function
+  onCloseModal: Function;
+  onUpdateLabel: Function;
+  onDropConcept: Function;
+  onRemoveConcept: Function;
+  onToggleTable: Function;
+  onSetFilterValue: Function;
+  onResetAllFilters: Function;
+  onToggleTimestamps: Function;
+  onSwitchFilterMode: Function;
+  onLoadFilterSuggestions: Function;
+  onSelectSelects: Function;
+  onSelectTableSelects: Function;
+  onSetDateColumn: Function;
 };
 
 const QueryNodeEditor = (props: PropsType) => {

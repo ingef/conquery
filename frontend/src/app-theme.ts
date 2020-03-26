@@ -77,4 +77,4 @@ export const theme: ThemeT = {
   transitionTime: "0.1s"
 };
 
-export default styled as CreateStyled<ThemeT>;
+export default styled;

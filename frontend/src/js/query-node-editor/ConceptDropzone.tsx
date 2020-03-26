@@ -13,8 +13,8 @@ const StyledDropzone = styled(Dropzone)`
 const DROP_TYPES = [CONCEPT_TREE_NODE];
 
 type PropsType = {
-  node: QueryNodeType,
-  onDropConcept: (concept: QueryNodeType) => void
+  node: QueryNodeType;
+  onDropConcept: (concept: QueryNodeType) => void;
 };
 
 const ConceptDropzone = ({ node, onDropConcept }: PropsType) => {

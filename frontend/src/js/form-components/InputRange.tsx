@@ -26,29 +26,29 @@ const StyledInputText = styled(InputText)`
 `;
 
 type PropsType = FieldPropsType & {
-  inputType: string,
-  valueType?: string,
-  label: string,
-  unit?: string,
+  inputType: string;
+  valueType?: string;
+  label: string;
+  unit?: string;
   limits?: {
-    min?: number,
-    max?: number
-  },
-  disabled: boolean,
-  mode: "range" | "exact",
-  stepSize?: number,
-  placeholder: string,
-  onSwitchMode: Function,
-  tooltip?: string,
-  pattern?: string,
+    min?: number;
+    max?: number;
+  };
+  disabled: boolean;
+  mode: "range" | "exact";
+  stepSize?: number;
+  placeholder: string;
+  onSwitchMode: Function;
+  tooltip?: string;
+  pattern?: string;
   input: {
     value: {
-      exact?: number,
-      min?: number,
-      max?: number
-    } | null
-  },
-  currencyConfig?: CurrencyConfigT
+      exact?: number;
+      min?: number;
+      max?: number;
+    } | null;
+  };
+  currencyConfig?: CurrencyConfigT;
 };
 
 function getMinMaxExact(value) {

@@ -27,22 +27,22 @@ import type {
 } from "../api/types";
 
 export type FiltersContextT = {
-  datasetId: DatasetIdT,
-  treeId: ConceptIdT,
-  tableId: TableIdT
+  datasetId: DatasetIdT;
+  treeId: ConceptIdT;
+  tableId: TableIdT;
 };
 
 type PropsType = {
-  context: FiltersContextT,
-  filters: FilterWithValueType[] | null,
-  className?: string,
-  excludeTable: boolean,
-  onSwitchFilterMode: Function,
-  onSetFilterValue: Function,
-  onLoadFilterSuggestions: Function,
-  onShowDescription: Function,
-  suggestions: Object | null,
-  currencyConfig: CurrencyConfigT
+  context: FiltersContextT;
+  filters: FilterWithValueType[] | null;
+  className?: string;
+  excludeTable: boolean;
+  onSwitchFilterMode: Function;
+  onSetFilterValue: Function;
+  onLoadFilterSuggestions: Function;
+  onShowDescription: Function;
+  suggestions: Object | null;
+  currencyConfig: CurrencyConfigT;
 };
 
 const Row = styled("div")`

@@ -9,7 +9,7 @@ import Query from "./Query";
 import StandardQueryNodeEditor from "./StandardQueryNodeEditor";
 
 type PropsType = {
-  selectedDatasetId: DatasetIdT
+  selectedDatasetId: DatasetIdT;
 };
 
 const Root = styled("div")`

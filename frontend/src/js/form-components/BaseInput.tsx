@@ -38,22 +38,22 @@ const ClearZone = styled(IconButton)`
 `;
 
 type InputPropsType = {
-  pattern?: string,
-  step?: number,
-  min?: number,
-  max?: number
+  pattern?: string;
+  step?: number;
+  min?: number;
+  max?: number;
 };
 
 type PropsType = {
-  className?: string,
-  inputType: string,
-  valueType?: string,
-  placeholder?: string,
-  value: number | string | null,
-  large?: boolean,
-  inputProps?: InputPropsType,
-  currencyConfig?: CurrencyConfigT,
-  onChange: (val: null | number | string) => void
+  className?: string;
+  inputType: string;
+  valueType?: string;
+  placeholder?: string;
+  value: number | string | null;
+  large?: boolean;
+  inputProps?: InputPropsType;
+  currencyConfig?: CurrencyConfigT;
+  onChange: (val: null | number | string) => void;
 };
 
 const BaseInput = (props: PropsType) => {

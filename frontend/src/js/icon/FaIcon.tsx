@@ -1,6 +1,6 @@
 import React from "react";
 import isPropValid from "@emotion/is-prop-valid";
-import styled from "app-theme";
+import styled from "@emotion/styled";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";

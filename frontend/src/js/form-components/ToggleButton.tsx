@@ -38,12 +38,12 @@ const Option = styled("span")`
 `;
 
 type OptionsType = {
-  label: string,
-  value: string
+  label: string;
+  value: string;
 };
 
 type PropsType = FieldPropsType & {
-  options: OptionsType[]
+  options: OptionsType[];
 };
 
 const ToggleButton = (props: PropsType) => {

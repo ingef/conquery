@@ -83,15 +83,15 @@ const RootNode = styled("p")`
 `;
 
 type PropsType = {
-  node: QueryNodeType,
-  onDeleteNode: Function,
-  onEditClick: Function,
-  onToggleTimestamps: Function,
-  onExpandClick: Function,
-  connectDragSource: Function,
-  andIdx: number,
-  orIdx: number,
-  connectDragSource: ConnectDragSource
+  node: QueryNodeType;
+  onDeleteNode: Function;
+  onEditClick: Function;
+  onToggleTimestamps: Function;
+  onExpandClick: Function;
+  connectDragSource: Function;
+  andIdx: number;
+  orIdx: number;
+  connectDragSource: ConnectDragSource;
 };
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530

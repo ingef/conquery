@@ -11,15 +11,15 @@ import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
 
 type PropsType = {
-  id: ConceptIdT,
-  tree: ConceptT | null,
-  treeId: ConceptIdT,
-  label: string,
-  description: string | null,
-  depth: number,
-  loading: boolean,
-  error: string | null,
-  search?: SearchT
+  id: ConceptIdT;
+  tree: ConceptT | null;
+  treeId: ConceptIdT;
+  label: string;
+  description: string | null;
+  depth: number;
+  loading: boolean;
+  error: string | null;
+  search?: SearchT;
 };
 
 const LoadingTree = styled("p")`
