@@ -1,15 +1,7 @@
 import * as React from "react";
-import styled from "@emotion/styled";
 import BasicButton from "./BasicButton";
-import FaIcon from "../icon/FaIcon";
-
-type PropsType = {
-  children?: React.Node;
-  iconProps?: Object;
-  active?: boolean;
-  large?: boolean;
-  icon: string;
-};
+import FaIcon, { IconStyleProps } from "../icon/FaIcon";
+import styled from "app-theme";
 
 const StyledFaIcon = styled(FaIcon)`
   color: ${({ theme, active, red }) =>
@@ -41,28 +33,35 @@ const StyledTransparentButton = styled(BasicButton)`
   }
 `;
 
+interface PropsT {
+  iconProps?: IconStyleProps;
+  active?: boolean;
+  large?: boolean;
+  icon: string;
+  regular?: boolean;
+  red?: boolean;
+  left?: boolean;
+}
+
 // A button that is prefixed by an icon
-const IconButton = ({
+const IconButton: React.FC<PropsT> = ({
   icon,
   active,
   red,
   large,
   regular,
-  tight,
   left,
   children,
   iconProps,
   ...restProps
-}: PropsType) => (
+}) => (
   <StyledTransparentButton active={active} {...restProps}>
     <StyledFaIcon
       main
       left={left}
-      hasChildren={!!children}
       regular={regular}
       large={large}
       active={active}
-      tight={tight}
       red={red}
       icon={icon}
       {...iconProps}

@@ -6,7 +6,7 @@ import { T } from "../localization";
 import IconButton from "../button/IconButton";
 import { useDispatch, useSelector } from "react-redux";
 import { selectActiveForm } from "./stateSelectors";
-import { StateT } from "../app/reducers";
+import { StateT } from "app-types";
 
 const Root = styled("div")`
   display: flex;
@@ -17,10 +17,16 @@ const Root = styled("div")`
 `;
 
 const FormsHeader: React.FC = () => {
-  const activeForm = useSelector<StateT>(state => selectActiveForm(state));
+  const activeForm = useSelector<StateT, string | null>(state =>
+    selectActiveForm(state)
+  );
 
   const dispatch = useDispatch();
-  const onClear = form => dispatch(reset(form));
+  const onClear = (form: string | null) => {
+    if (form) {
+      dispatch(reset(form));
+    }
+  };
 
   return (
     <Root>
