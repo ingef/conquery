@@ -34,6 +34,8 @@ const environment = {
     : "/",
   apiUrl: !!process.env.REACT_APP_API_URL
     ? process.env.REACT_APP_API_URL
+    : isProduction
+    ? ""
     : MOCK_API_URL,
   disableLogin
 };
