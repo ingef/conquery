@@ -11,7 +11,7 @@ import { StateT } from "app-types";
 const Root = styled("div")`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   width: 100%;
 `;

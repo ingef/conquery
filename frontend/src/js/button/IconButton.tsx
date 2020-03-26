@@ -48,6 +48,7 @@ interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
   tight?: boolean;
   red?: boolean;
   left?: boolean;
+  frame?: boolean;
   onClick: () => void;
 }
 
