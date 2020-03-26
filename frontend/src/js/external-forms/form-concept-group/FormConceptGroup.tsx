@@ -98,7 +98,12 @@ const onToggleIncludeSubnodes = (
   });
 
   const nextValue = includeSubnodes
-    ? [...value, ...elements]
+    ? [
+        ...value.slice(0, valueIdx + 1),
+        // Insert right after the element
+        ...elements,
+        ...value.slice(valueIdx + 1)
+      ]
     : value.filter(val =>
         val.concepts.some(cpt => {
           return childIds.every(childId => !includes(cpt.ids, childId));
