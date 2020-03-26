@@ -1,9 +1,15 @@
 import * as React from "react";
 import BasicButton from "./BasicButton";
-import FaIcon, { IconStyleProps } from "../icon/FaIcon";
+import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 import styled from "@emotion/styled";
 
-const StyledFaIcon = styled(FaIcon)`
+interface StyledFaIconProps extends FaIconPropsT {
+  tight?: boolean;
+  red?: boolean;
+  hasChildren: boolean;
+}
+
+const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
   color: ${({ theme, active, red }) =>
     red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
@@ -33,14 +39,16 @@ const StyledTransparentButton = styled(BasicButton)`
   }
 `;
 
-interface PropsT {
+interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
   iconProps?: IconStyleProps;
   active?: boolean;
   large?: boolean;
   icon: string;
   regular?: boolean;
+  tight?: boolean;
   red?: boolean;
   left?: boolean;
+  onClick: () => void;
 }
 
 // A button that is prefixed by an icon
@@ -52,6 +60,7 @@ const IconButton: React.FC<PropsT> = ({
   regular,
   left,
   children,
+  tight,
   iconProps,
   ...restProps
 }) => (
@@ -64,6 +73,8 @@ const IconButton: React.FC<PropsT> = ({
       active={active}
       red={red}
       icon={icon}
+      hasChildren={!!children}
+      tight={tight}
       {...iconProps}
     />
     {children}

@@ -22,13 +22,13 @@ export interface IconStyleProps {
   large?: boolean;
 }
 
-interface PropsT extends IconStyleProps {
+export interface FaIconPropsT extends IconStyleProps {
   icon: string;
   className?: string;
   regular?: boolean;
 }
 
-const shouldForwardProp = (prop: keyof PropsT) =>
+const shouldForwardProp = (prop: keyof FaIconPropsT) =>
   isPropValid(prop) || prop === "icon" || prop === "className";
 
 export const Icon = styled(FontAwesomeIcon, { shouldForwardProp })<
@@ -55,7 +55,7 @@ export const Icon = styled(FontAwesomeIcon, { shouldForwardProp })<
   width: initial !important;
 `;
 
-const FaIcon: React.FC<PropsT> = ({
+const FaIcon: React.FC<FaIconPropsT> = ({
   icon,
   regular,
   className,

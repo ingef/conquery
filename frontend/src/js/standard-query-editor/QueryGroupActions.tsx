@@ -57,6 +57,8 @@ const QueryGroupActions = (props: PropsType) => {
     <Actions>
       <div>
         <RedIconButton
+          red
+          tight
           active={props.excludeActive}
           icon="ban"
           onClick={props.onExcludeClick}
@@ -66,6 +68,7 @@ const QueryGroupActions = (props: PropsType) => {
         <StyledIconButton
           active={props.dateActive}
           regular
+          tight
           icon="calendar"
           onClick={props.onDateClick}
         >
