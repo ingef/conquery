@@ -154,7 +154,7 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements IoHa
 			super.run(environment, namespace, configuration);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 

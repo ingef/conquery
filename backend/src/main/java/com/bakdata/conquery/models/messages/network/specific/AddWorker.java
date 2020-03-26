@@ -29,7 +29,7 @@ public class AddWorker extends SlaveMessage.Slow {
 	
 	@Override
 	public void react(Slave context) throws Exception {
-		log.info("creating a new worker for {}", dataset);
+		log.info("Creating new worker for Dataset[{}]", dataset);
 		ConqueryConfig config = context.getConfig();
 		File dir = createWorkerName(context);
 		WorkerInformation info = new WorkerInformation();

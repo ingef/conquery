@@ -14,16 +14,21 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="UPDATE_SLAVE_IDENTITY", base=NetworkMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter
+@Slf4j
 public class RegisterWorker extends MasterMessage {
 
 	private WorkerInformation info;
 	
 	@Override
 	public void react(Master context) throws Exception {
+		log.info("Received new Worker[{}] for Dataset[{}]", info.getId(), info.getDataset());
+
 		SlaveInformation slave = getSlave(context);
+
 		Wait
 			.builder()
 			.attempts(6)

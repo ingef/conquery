@@ -87,7 +87,7 @@ public class JobExecutor extends Thread {
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 
-					final Timer.Context time = MetricsUtil.getJobExecutorTimer(job);
+					final Timer.Context time = MetricsUtil.getJobExecutorTimer(getName(), job);
 
 					try {
 						if(job.isCancelled()){

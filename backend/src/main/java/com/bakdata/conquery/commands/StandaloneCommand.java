@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -74,6 +75,9 @@ public class StandaloneCommand extends ServerCommand<ConqueryConfig> {
 		));
 
 
+		// Start master command
+		master = new MasterCommand(conquery);
+
 		List<ListenableFuture<SlaveCommand >> tasks = new ArrayList<>();
 
 		for (int i = 0; i < config.getStandalone().getNumberOfSlaves(); i++) {
@@ -89,25 +93,25 @@ public class StandaloneCommand extends ServerCommand<ConqueryConfig> {
 				clonedEnv.getStorage().getDirectory().mkdir();
 
 				// TODO: 05.03.2020 Check if this works in standalone and master/slave
-				final DefaultServerFactory slaveServlet = new DefaultServerFactory();
-				final ConnectorFactory connectorFactory = HttpConnectorFactory.admin();
-				((HttpConnectorFactory) connectorFactory).setPort(0); // Force random allocation to avoid collision.
-				slaveServlet.setAdminConnectors(Collections.singletonList(connectorFactory));
-				clonedEnv.setSlaveServlet(slaveServlet);
+//				final DefaultServerFactory slaveServlet = new DefaultServerFactory();
+//				final ConnectorFactory connectorFactory = HttpConnectorFactory.admin();
+//				((HttpConnectorFactory) connectorFactory).setPort(0); // Force random allocation to avoid collision.
+//				slaveServlet.setAdminConnectors(Collections.singletonList(connectorFactory));
+//				clonedEnv.setSlaveServlet(slaveServlet);
 
 				SlaveCommand sc = new SlaveCommand(conquery);
 				sc.setLabel("slave_" + id);
 				this.slaves.add(sc);
 				sc.run(environment, namespace, clonedEnv);
+
+//				Wait.builder().attempts(20).stepTime(1000).build().until(sc::getContext);
+
 				return sc;
 			}));
 		}
 
 		ConqueryMDC.setLocation("Master");
 
-		// Start master command
-		master = new MasterCommand(conquery);
-		master.run(environment, namespace, config);
 
 		log.debug("Waiting for slaves to start");
 		starterPool.shutdown();
@@ -118,18 +122,20 @@ public class StandaloneCommand extends ServerCommand<ConqueryConfig> {
 		boolean failed = false;
 		for(Future<SlaveCommand> f : tasks) {
 			try {
-				f.get();
+				var value = f.get();
+				log.info("{}", value);
 			}
 			catch(ExecutionException e) {
 				log.error("Failed during slave creation", e);
 				failed = true;
 			}
 		}
+
+
 		if(failed) {
 			System.exit(-1);
 		}
 
-
-
+		master.run(environment, namespace, config);
 	}
 }

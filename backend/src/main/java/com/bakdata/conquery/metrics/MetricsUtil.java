@@ -23,7 +23,7 @@ public class MetricsUtil {
 		SharedMetricRegistries.getDefault().remove(MetricRegistry.name("jobs", name, "queue"));
 	}
 
-	public static Timer.Context getJobExecutorTimer(Job job) {
-		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(job.getClass(), "execute")).time();
+	public static Timer.Context getJobExecutorTimer(String name, Job job) {
+		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(job.getClass(),name, "execute")).time();
 	}
 }

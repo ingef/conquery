@@ -53,13 +53,13 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 			IntegrationUtils.importTables(conquery, test.getContent());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 		}
 
 		final int nImports = namespace.getStorage().getAllImports().size();
@@ -108,7 +108,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.getDatasetsProcessor().deleteImport(importId);
 
 			Thread.sleep(100);
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 		}
 
@@ -151,7 +151,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
 		}
 
-		conquery.waitUntilWorkDone();
+		conquery.testConquery.waitUntilWorkDone();
 
 		// Load the same import into the same table, with only the deleted import/table
 		{
@@ -159,7 +159,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			IntegrationUtils.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
 																 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
 																 .collect(Collectors.toList()), conquery.getDataset());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 		}
 
 		// State after reimport.
@@ -191,11 +191,14 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
+			testConquery.shutdown(conquery);
 
 			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 			testConquery.getDropwizard().after();
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
+
+			testConquery.waitUntilWorkDone();
 
 			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
 			log.info("Checking state after re-start");

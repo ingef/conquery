@@ -36,7 +36,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		FilterSearch
 			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
 
-		conquery.waitUntilWorkDone();
+		conquery.testConquery.waitUntilWorkDone();
 
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();

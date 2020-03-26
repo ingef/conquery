@@ -1,30 +1,35 @@
 package com.bakdata.conquery.util.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.Client;
 
+import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -99,7 +104,15 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
 		Namespace ns = namespaces.get(datasetId);
 
+		assertThat(standaloneCommand.getSlaves()).allMatch(SlaveCommand::isWasStarted, "Slave was not started");
+
 		assertThat(namespaces.getSlaves()).hasSize(2);
+//		assertThat((Map<WorkerId, WorkerInformation>) namespaces.getWorkers()).hasSize(0);
+
+
+		waitUntilWorkDone();
+
+
 
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
@@ -120,10 +133,10 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			// Getting the User from AuthorizationConfig
 			standaloneCommand.getMaster().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
 
+		waitUntilWorkDone();
 
+		assertDoesNotThrow(() -> Wait.builder().attempts(500).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size()), String.format("Expecting each slave to have one worker. But only got %d", ns.getNamespaces().getWorkers().size()));
 
-		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
-		support.waitUntilWorkDone();
 
 		openSupports.add(support);
 		return support;
@@ -135,24 +148,14 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 
 		DatasetId dataset = support.getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new SlaveMessage() {
-			@Override
-			public void react(NetworkMessageContext.Slave context) throws Exception {
-				context.getWorkers().getWorkers().values().stream()
-					   .filter(worker -> worker.getInfo().getDataset().equals(dataset))
-					   .forEach(worker -> {
-						   try {
-							   worker.getStorage().close();
-						   } catch (IOException e) {
-							   log.error("Failed closing down worker", e);
-						   }
-					   });
 
-			}
-		}));
 		try {
-			standaloneCommand.getMaster().getStorage().close();
-		} catch (IOException e) {
+			for (SlaveCommand slave : standaloneCommand.getSlaves()) {
+				slave.stop();
+			}
+
+			standaloneCommand.getMaster().stop();
+		} catch (Exception e) {
 			log.error("",e);
 		}
 	}
@@ -211,6 +214,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		// start server
 		dropwizard.before();
 
+		Wait.builder().attempts(30).stepTime(1000).build()
+			.until(() -> standaloneCommand.getSlaves().stream().allMatch(sc -> sc.getContext() != null));
+
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
 			.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
@@ -237,4 +243,26 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			it.remove();
 		}
 	}
+
+	public void waitUntilWorkDone() {
+		log.info("Waiting for jobs to finish");
+		boolean busy;
+		//sample 10 times from the job queues to make sure we are done with everything
+		long started = System.nanoTime();
+		for(int i=0;i<10;i++) {
+			do {
+				busy = false;
+				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
+				for (SlaveCommand slave : standaloneCommand.getSlaves())
+					busy |= slave.getJobManager().isSlowWorkerBusy();
+				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+				if(Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
+					log.warn("waiting for done work for a long time");
+					started = System.nanoTime();
+				}
+			} while(busy);
+		}
+		log.info("all jobs finished");
+	}
+
 }

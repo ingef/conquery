@@ -125,7 +125,7 @@ public class IntegrationUtils {
 
 		//wait only if we actually did anything
 		if (!content.getPreviousQueryResults().isEmpty()) {
-			support.waitUntilWorkDone();
+			support.testConquery.waitUntilWorkDone();
 		}
 	}
 

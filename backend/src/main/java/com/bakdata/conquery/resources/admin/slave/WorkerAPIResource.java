@@ -43,7 +43,7 @@ public class WorkerAPIResource {
 
 	@GET
 	@Path("concepts")
-	public Collection<? extends Concept<?>> getConcepts() {
+	public Collection<? extends Concept> getConcepts() {
 		return workers.getDatasetWorker(datasetId).getStorage().getAllConcepts();
 	}
 }

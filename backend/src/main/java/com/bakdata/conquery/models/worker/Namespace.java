@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -20,6 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.set.SynchronizedSet;
 
 
 /**
@@ -40,7 +42,7 @@ public class Namespace {
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
 	 */
-	private Set<WorkerInformation> workers = new HashSet<>();
+	private Set<WorkerInformation> workers = SynchronizedSet.decorate(new HashSet<>());
 
 	/**
 	 * Map storing the buckets each Worker has been assigned.
@@ -101,12 +103,12 @@ public class Namespace {
 		smallest.getIncludedBuckets().add(bucket);
 	}
 
+	private final AtomicLong workersSeen = new AtomicLong();
+
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedSlave(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
-
-		Set<WorkerInformation> l = new HashSet<>(workers);
-		l.add(info);
-		workers = l;
+		workersSeen.incrementAndGet();
+		workers.add(info);
 	}
 
 	@JsonIgnore

@@ -32,7 +32,11 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.resources.admin.SlaveServlet;
+import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.google.common.base.Strings;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -42,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -68,9 +73,17 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 		super(conquery,"slave", "Connects this instance as a slave to a running master.");
 	}
 
+	private boolean wasStarted; // STOPSHIP: 26.03.2020 this is just for debugging purposes
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+		log.info("Starting up SlaveCommand[{}]", getLabel());
+
+		if(wasStarted){
+			log.error("Slave[{}] was already started.", this);
+		}
+		wasStarted = true;
+
 		this.config = config;
 
 		// If we are a slave, we start our own server, for which we need a different server config.
@@ -120,8 +133,6 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			}
 		}
 
-
-
 		if(isSlaveCommand(namespace)) {
 			// Start server
 			try {
@@ -134,7 +145,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	}
 
 	private boolean isSlaveCommand(Namespace namespace) {
-		return namespace.getString("command") != null && namespace.getString("command").equalsIgnoreCase("slave");
+		return "slave".equalsIgnoreCase(namespace.getString("command"));
 	}
 
 	@Override
@@ -212,40 +223,40 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	
 	@Override
 	public void start() throws Exception {
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
-		connector.setHandler(this);
-		connector.getSessionConfig().setAll(config.getCluster().getMina());
-		
-		InetSocketAddress address = new InetSocketAddress(
-				config.getCluster().getMasterURL().getHostAddress(),
-				config.getCluster().getPort()
-		);
+		// This is a workaround because Master and SlaveCommand are started from the same thread when run from StandaloneCommand. Since Slave polls actively for master it will block Master from opening its own connection.
+		new Thread(() -> {
+			BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
+			connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+			connector.setHandler(this);
+			connector.getSessionConfig().setAll(config.getCluster().getMina());
 
+			InetSocketAddress address = new InetSocketAddress(
+					config.getCluster().getMasterURL().getHostAddress(),
+					config.getCluster().getPort()
+			);
 
+			while (true) {
+				try {
+					log.info("Trying to connect to {}", address);
 
-		while(true) {
-			try {
-				log.info("Trying to connect to {}", address);
+					// Try opening a connection (Note: This fails immediately instead of waiting a minute to try and connect)
+					ConnectFuture future = connector.connect(address);
 
-				// Try opening a connection (Note: This fails immediately instead of waiting a minute to try and connect)
-				ConnectFuture future = connector.connect(address);
+					future.awaitUninterruptibly();
 
-				future.awaitUninterruptibly();
+					if (future.isConnected()) {
+						break;
+					}
 
-				if(future.isConnected()){
-					break;
+					future.cancel();
+
+					Uninterruptibles.sleepUninterruptibly(30, TimeUnit.SECONDS);
 				}
-
-				future.cancel();
-				// Sleep thirty seconds then retry.
-				TimeUnit.SECONDS.sleep(30);
-
+				catch (RuntimeIoException e) {
+					log.warn("Failed to connect to " + address, e);
+				}
 			}
-			catch(RuntimeIoException e) {
-				log.warn("Failed to connect to "+address, e);
-			}
-		}
+		}).start();
 	}
 
 	@Override

@@ -53,7 +53,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		FilterSearch
 				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
 
-		conquery.waitUntilWorkDone();
+		conquery.testConquery.waitUntilWorkDone();
 		
 		VirtualConcept concept = (VirtualConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 		VirtualConceptConnector connector = concept.getConnectors().iterator().next();

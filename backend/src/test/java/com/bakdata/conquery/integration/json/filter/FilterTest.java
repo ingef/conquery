@@ -88,10 +88,10 @@ public class FilterTest extends AbstractQueryEngineTest {
 		content = parseSubTree(support, rawContent, RequiredData.class);
 
 		importTables(support);
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 
 		importConcepts(support);
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 		
 		query = parseQuery(support);
 

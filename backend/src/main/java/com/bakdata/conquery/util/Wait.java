@@ -7,7 +7,9 @@ import java.util.function.Supplier;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Builder
 public class Wait {
 
@@ -23,6 +25,7 @@ public class Wait {
 			if(attempts != -1 && attempt >= attempts) {
 				throw new RuntimeException("Failed while waiting after "+attempt+" attempts");
 			}
+			log.debug("Wait attempt[{}]", attempt);
 			Uninterruptibles.sleepUninterruptibly(stepTime, stepUnit);
 			attempt++;
 		}

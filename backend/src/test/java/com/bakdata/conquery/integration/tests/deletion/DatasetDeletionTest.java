@@ -53,13 +53,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 			IntegrationUtils.importTables(conquery, test.getContent());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 		}
 
 
@@ -110,18 +110,18 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.map(Concept::getId)
 					.forEach(conquery.getDatasetsProcessor()::deleteConcept);
 
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			conquery.getNamespace().getDataset().getTables().stream()
 					.map(Table::getId)
 					.forEach(conquery.getDatasetsProcessor()::deleteTable);
 
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			// Finally delete dataset
 			conquery.getDatasetsProcessor().deleteDataset(dataset);
 
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			assertThat(storage.getCentralRegistry().getOptional(dataset)).isEmpty();
 		}
@@ -176,7 +176,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		// We have to do some weird trix with StandaloneSupport to open it with another Dataset
 		{
 			final Dataset newDataset = conquery.getDatasetsProcessor().addDataset(dataset.getName());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			final StandaloneSupport conquery2 =
 					new StandaloneSupport(
@@ -201,13 +201,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			assertThat(newDataset.getTables().values()).isNotEmpty();
 
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 			IntegrationUtils.importTableContents(conquery2, Arrays.asList(test.getContent().getTables()), newDataset);
 
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			IntegrationUtils.importConcepts(conquery2, test.getRawConcepts());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			assertThat(conquery2.getDatasetsProcessor().getNamespaces().get(dataset))
 					.describedAs("Dataset after re-import.")
@@ -231,10 +231,14 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
+			testConquery.shutdown(conquery);
+
 			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 			testConquery.getDropwizard().after();
+
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
+
 			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
 
 			log.info("Checking state after re-start");
