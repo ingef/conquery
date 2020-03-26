@@ -9,3 +9,42 @@ declare namespace NodeJS {
     PORT?: string;
   }
 }
+
+declare module "@emotion/react" {
+  export interface Theme {
+    col: {
+      bg: string;
+      bgAlt: string;
+      black: string;
+      gray: string;
+      grayMediumLight: string;
+      grayLight: string;
+      grayVeryLight: string;
+      graySuperLight: string;
+      red: string;
+      blueGrayDark: string;
+      blueGray: string;
+      blueGrayLight: string;
+      blueGrayVeryLight: string;
+      green: string;
+      orange: string;
+    };
+    img: {
+      logo: string;
+      logoWidth: string;
+      logoBackgroundSize: string;
+      spinner: string;
+    };
+    font: {
+      huge: string;
+      lg: string;
+      md: string;
+      sm: string;
+      xs: string;
+      tiny: string;
+    };
+    maxWidth: string;
+    borderRadius: string;
+    transitionTime: string;
+  }
+}

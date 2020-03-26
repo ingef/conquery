@@ -1,46 +1,10 @@
-import styled, { CreateStyled } from "@emotion/styled";
+import type { Theme } from "@emotion/react";
+import styled from "@emotion/styled";
 
 import logo from "./images/conquery-logo.png";
 import spinner from "./images/spinner.png";
 
-export interface ThemeT {
-  col: {
-    bg: string;
-    bgAlt: string;
-    black: string;
-    gray: string;
-    grayMediumLight: string;
-    grayLight: string;
-    grayVeryLight: string;
-    graySuperLight: string;
-    red: string;
-    blueGrayDark: string;
-    blueGray: string;
-    blueGrayLight: string;
-    blueGrayVeryLight: string;
-    green: string;
-    orange: string;
-  };
-  img: {
-    logo: string;
-    logoWidth: string;
-    logoBackgroundSize: string;
-    spinner: string;
-  };
-  font: {
-    huge: string;
-    lg: string;
-    md: string;
-    sm: string;
-    xs: string;
-    tiny: string;
-  };
-  maxWidth: string;
-  borderRadius: string;
-  transitionTime: string;
-}
-
-export const theme: ThemeT = {
+export const theme: Theme = {
   col: {
     bg: "#f9f9f9",
     bgAlt: "#f3f6f4",
