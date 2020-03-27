@@ -28,7 +28,11 @@ public class ConqueryConfig extends Configuration {
 	
 	@Getter
 	private static ConqueryConfig instance = new ConqueryConfig();
-	
+
+	@Valid
+	@NotNull
+	private ServerFactory slaveServer = new DefaultServerFactory();
+
 	@Valid @NotNull
 	private ClusterConfig cluster = new ClusterConfig();
 	@Valid @NotNull

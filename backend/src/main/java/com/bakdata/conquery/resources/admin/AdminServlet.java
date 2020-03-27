@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
@@ -63,11 +64,11 @@ public class AdminServlet {
 	private AdminProcessor adminProcessor;
 	private DropwizardResourceConfig jerseyConfig;
 
-	public void register(MasterCommand masterCommand, AuthorizationController controller) {
+	public void register(MasterCommand masterCommand, AuthorizationController controller, ConqueryConfig config) {
 		jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 
-		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);
+		RESTServer.configure(config, jerseyConfig);
 
 		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
@@ -81,7 +82,7 @@ public class AdminServlet {
 		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(freemarker)));
 
 		adminProcessor = new AdminProcessor(
-			masterCommand.getConfig(),
+			config,
 			masterCommand.getStorage(),
 			masterCommand.getNamespaces(),
 			masterCommand.getJobManager(),

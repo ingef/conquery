@@ -1,14 +1,12 @@
 package com.bakdata.conquery.commands;
 
-import org.eclipse.jetty.util.component.ContainerLifeCycle;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
-
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 @Slf4j
 public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> {
@@ -36,13 +34,15 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 		configuration.getServerFactory().configure(environment);
 
 		bootstrap.run(configuration, environment);
-		
+
+		//TODO why are we managing our own lifecycle etc?
+
 		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
 		try {
 			run(environment, namespace, configuration);
 			environment.lifecycle().attach(lifeCycle);
 			lifeCycle.start();
-			
+
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				@Override
 				public void run() {

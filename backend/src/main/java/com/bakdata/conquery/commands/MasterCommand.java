@@ -8,6 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
@@ -37,23 +38,27 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.service.IoHandler;
+import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 @Slf4j
 @Getter
-public class MasterCommand extends IoHandlerAdapter implements Managed {
+public class MasterCommand extends ServerCommand<ConqueryConfig> implements Managed, IoHandler {
 
 	private IoAcceptor acceptor;
 	private MasterMetaStorage storage;
 	private JobManager jobManager;
 	private Validator validator;
+	@Deprecated(forRemoval = true)  // TODO: 27.03.2020 we should avoid maintaining multiple ConqueryConfigs even if they're likely thse same.
 	private ConqueryConfig config;
 	private AdminServlet admin;
 	private AuthorizationController authController;
@@ -61,39 +66,45 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
-	private Environment environment;
+	private Environment environment; // TODO: 27.03.2020 inline this/provide as parameter. It's not a component needed for storage
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
-	public void run(ConqueryConfig config, Environment environment) {
+	public MasterCommand(Conquery conquery) {
+		super(conquery, "server", "Start the master Server.");
+	}
+
+	@Override
+	protected void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig configuration) throws Exception {
+
+
 		//inject namespaces into the objectmapper
-		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
-			.add(NamespaceCollection.class, namespaces);
+		((MutableInjectableValues) environment.getObjectMapper().getInjectableValues())
+				.add(NamespaceCollection.class, namespaces);
 
 
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
-		
+
 		// Initialization of internationalization
 		I18n.init();
 
-		RESTServer.configure(config, environment.jersey().getResourceConfig());
+		RESTServer.configure(configuration, environment.jersey().getResourceConfig());
 
 		environment.lifecycle().manage(jobManager);
 
 		this.validator = environment.getValidator();
-		this.config = config;
 
 		this.maintenanceService = environment
-			.lifecycle()
-			.scheduledExecutorService("Maintenance Service")
-			.build();
-		
+										  .lifecycle()
+										  .scheduledExecutorService("Maintenance Service")
+										  .build();
+
 		environment.lifecycle().manage(this);
 
 		log.info("Started meta storage");
-		for (File directory : config.getStorage().getDirectory().listFiles()) {
+		for (File directory : configuration.getStorage().getDirectory().listFiles()) {
 			if (directory.getName().startsWith("dataset_")) {
-				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
+				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, configuration.getStorage(), directory);
 				if (datasetStorage != null) {
 					Namespace ns = new Namespace(datasetStorage);
 					ns.initMaintenance(maintenanceService);
@@ -101,16 +112,16 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				}
 			}
 		}
-		
-		
-		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
+
+
+		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), configuration.getStorage());
 		this.storage.loadData();
 		namespaces.setMetaStorage(this.storage);
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
-		
-		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
+
+		authController = new AuthorizationController(configuration.getAuthorization(), configuration.getAuthentication(), storage);
 		authController.init();
 		environment.lifecycle().manage(authController);
 
@@ -120,19 +131,20 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
 				provider.registerResources(this);
 				providers.add(provider);
-			} catch (Exception e) {
-				log.error("Failed to register Resource {}",resourceProvider, e);
+			}
+			catch (Exception e) {
+				log.error("Failed to register Resource {}", resourceProvider, e);
 			}
 		}
 
 		admin = new AdminServlet();
-		admin.register(this, authController);
+		admin.register(this, authController, configuration);
 
 		// Register an unprotected servlet for logins on the app port
-		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), configuration, environment.servlets(), environment.getObjectMapper());
 
 		// Register an unprotected servlet for logins on the admin port
-		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
+		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), configuration, environment.admin(), environment.getObjectMapper());
 
 
 		environment.admin().addTask(new QueryCleanupTask(storage));
@@ -140,11 +152,18 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+
+		super.run(environment, namespace, configuration);
+	}
+
+	@Override
+	public void sessionCreated(IoSession session) throws Exception {
+
 	}
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
+		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
@@ -152,6 +171,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	public void sessionClosed(IoSession session) throws Exception {
 		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
+	}
+
+	@Override
+	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
+
 	}
 
 	@Override
@@ -167,21 +191,38 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			MasterMessage mrm = (MasterMessage) message;
 			log.trace("Master received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master(
-				jobManager,
-				new NetworkSession(session),
-				namespaces
+					jobManager,
+					new NetworkSession(session),
+					namespaces
 			));
 
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
-			} else {
+			}
+			else {
 				jobManager.addFastJob(job);
 			}
-		} else {
+		}
+		else {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
 		}
+	}
+
+	@Override
+	public void messageSent(IoSession session, Object message) throws Exception {
+
+	}
+
+	@Override
+	public void inputClosed(IoSession session) throws Exception {
+
+	}
+
+	@Override
+	public void event(IoSession session, FilterEvent event) throws Exception {
+
 	}
 
 	@Override
@@ -191,8 +232,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(namespaces, validator);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		acceptor.setHandler(this);
-		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
-		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
+		acceptor.getSessionConfig().setAll(ConqueryConfig.getInstance().getCluster().getMina());
+		acceptor.bind(new InetSocketAddress(ConqueryConfig.getInstance().getCluster().getPort()));
 		log.info("Started master @ {}", acceptor.getLocalAddress());
 	}
 
@@ -200,13 +241,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	public void stop() throws Exception {
 		try {
 			acceptor.dispose();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
 		for (Namespace namespace : namespaces.getNamespaces()) {
 			try {
 				namespace.getStorage().close();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error(namespace + " could not be closed", e);
 			}
 
@@ -214,14 +257,16 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error(provider + " could not be closed", e);
 			}
 
 		}
 		try {
 			storage.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error(storage + " could not be closed", e);
 		}
 	}

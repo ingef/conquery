@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -82,7 +81,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "slave_" + id));
 				clone.getStorage().getDirectory().mkdir();
 
-				SlaveCommand sc = new SlaveCommand();
+				SlaveCommand sc = new SlaveCommand(getConquery());
 				sc.setLabel("slave " + id);
 				this.slaves.add(sc);
 				sc.run(environment, namespace, clone);

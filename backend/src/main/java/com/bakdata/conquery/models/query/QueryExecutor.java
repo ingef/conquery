@@ -26,6 +26,7 @@ public class QueryExecutor implements Closeable {
 	private final ListeningExecutorService pool;
 	
 	public QueryExecutor(ConqueryConfig config) {
+		// TODO: 27.03.2020 the config is not needed here
 		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
 	}
 

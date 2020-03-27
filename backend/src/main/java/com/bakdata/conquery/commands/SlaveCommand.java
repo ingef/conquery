@@ -1,13 +1,15 @@
 package com.bakdata.conquery.commands;
 
-import javax.validation.Validator;
-
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.Validator;
+
+import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -30,6 +32,8 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.google.common.util.concurrent.Uninterruptibles;
+import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -45,28 +49,35 @@ import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 @Slf4j @Getter
-public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed {
+public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHandler, Managed {
 
 	private NioSocketConnector connector;
 	private JobManager jobManager;
 	private Validator validator;
-	private ConqueryConfig config;
 	private Slave context;
 	private Workers workers = new Workers();
 	@Setter
 	private String label = "slave";
 	private ScheduledExecutorService scheduler;
 
-	public SlaveCommand() {
-		super("slave", "Connects this instance as a slave to a running master.");
+	public SlaveCommand(Conquery conquery) {
+		super(conquery, "slave", "Connects this instance as a slave to a running master.");
 	}
 	
+	private boolean isSlaveCommand(Namespace namespace){
+		return "slave".equalsIgnoreCase(namespace.getString("command"));
+	}
+
 
 	@Override
-	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		connector = new NioSocketConnector();
+	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
-		jobManager = new JobManager(label);
+		if(isSlaveCommand(namespace)) {
+			configuration.setServerFactory(configuration.getSlaveServer());
+			RESTServer.configure(configuration, environment.jersey().getResourceConfig());
+		}
+
+		jobManager = new JobManager(getLabel());
 		synchronized (environment) {
 			environment.lifecycle().manage(jobManager);
 			environment.lifecycle().manage(this);
@@ -80,24 +91,24 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
-
-		this.config = config;
-		
-		File storageDir = config.getStorage().getDirectory();
+		File storageDir = configuration.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles()) {
 			if(directory.getName().startsWith("worker_")) {
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
+				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, configuration.getStorage(), directory);
 				if(workerStorage != null) {
 					Worker worker = new Worker(
 						workerStorage.getWorker(),
 						jobManager,
 						workerStorage,
-						new QueryExecutor(config)
+						new QueryExecutor(configuration)
 					);
 					workers.add(worker);
 				}
 			}
 		}
+
+
+		super.run(environment,namespace, configuration);
 	}
 	
 	@Override
@@ -133,7 +144,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, config, validator);
+		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, ConqueryConfig.getInstance(), validator);
 		log.info("Connected to master @ {}", session.getRemoteAddress());
 
 		// Authenticate with Master
@@ -176,37 +187,44 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	@Override
 	public void start() throws Exception {
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
+
+		connector = new NioSocketConnector();
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		connector.setHandler(this);
-		connector.getSessionConfig().setAll(config.getCluster().getMina());
-		
+		connector.getSessionConfig().setAll(ConqueryConfig.getInstance().getCluster().getMina());
+
 		InetSocketAddress address = new InetSocketAddress(
-				config.getCluster().getMasterURL().getHostAddress(),
-				config.getCluster().getPort()
+				ConqueryConfig.getInstance().getCluster().getMasterURL().getHostAddress(),
+				ConqueryConfig.getInstance().getCluster().getPort()
 		);
 
-		while(true) {
-			try {
-				log.info("Trying to connect to {}", address);
+		new Thread(){
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						log.info("Trying to connect to {}", address);
 
-				// Try opening a connection (Note: This fails immediately instead of waiting a minute to try and connect)
-				ConnectFuture future = connector.connect(address);
+						// Try opening a connection (Note: This fails immediately instead of waiting a minute to try and connect)
+						ConnectFuture future = connector.connect(address);
 
-				future.awaitUninterruptibly();
+						future.awaitUninterruptibly();
 
-				if(future.isConnected()){
-					break;
+						if(future.isConnected()){
+							break;
+						}
+
+						future.cancel();
+						// Sleep thirty seconds then retry.
+						Uninterruptibles.sleepUninterruptibly(30, TimeUnit.SECONDS);
+					}
+					catch(RuntimeIoException e) {
+						log.warn("Failed to connect to "+address, e);
+					}
 				}
 
-				future.cancel();
-				// Sleep thirty seconds then retry.
-				TimeUnit.SECONDS.sleep(30);
-
 			}
-			catch(RuntimeIoException e) {
-				log.warn("Failed to connect to "+address, e);
-			}
-		}
+		}.start();
 	}
 
 	@Override

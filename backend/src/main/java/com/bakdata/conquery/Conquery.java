@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.UrlRewriteBundle;
 import io.dropwizard.Application;
 import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.cli.CheckCommand;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -50,10 +51,6 @@ public class Conquery extends Application<ConqueryConfig> {
 		//main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
-		bootstrap.addCommand(new SlaveCommand());
-		bootstrap.addCommand(new PreprocessorCommand());
-		bootstrap.addCommand(new CollectEntitiesCommand());
-		bootstrap.addCommand(new StandaloneCommand(this));
 
 		//do some setup in other classes after initialization but before running a command
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
@@ -71,6 +68,23 @@ public class Conquery extends Application<ConqueryConfig> {
 		});
 		//register frontend
 		registerFrontend(bootstrap);
+	}
+
+	@Override
+	protected void addDefaultCommands(Bootstrap<ConqueryConfig> bootstrap) {
+		bootstrap.addCommand(new MasterCommand(this));
+		bootstrap.addCommand(new CheckCommand<>(this));
+
+		bootstrap.addCommand(new PreprocessorCommand());
+		bootstrap.addCommand(new CollectEntitiesCommand());
+
+		bootstrap.addCommand(new StandaloneCommand(this));
+		bootstrap.addCommand(new SlaveCommand(this));
+	}
+
+	@Override
+	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
+
 	}
 
 	protected void registerFrontend(Bootstrap<ConqueryConfig> bootstrap) {
@@ -104,12 +118,6 @@ public class Conquery extends Application<ConqueryConfig> {
 	@Override
 	protected Level bootstrapLogLevel() {
 		return Level.INFO;
-	}
-
-	@Override
-	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		master = new MasterCommand();
-		master.run(configuration, environment);
 	}
 
 
