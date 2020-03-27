@@ -36,6 +36,7 @@ import {
 
 import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
+import { PreviousQueryT } from "./reducer";
 
 const nodeSource = {
   beginDrag(props, monitor, component): DraggedQueryType {
@@ -132,16 +133,7 @@ const StyledWithTooltip = styled(WithTooltip)`
 
 type PropsType = {
   userCanDownloadResults: boolean;
-  query: {
-    id: number | string;
-    label: string;
-    loading: boolean;
-    numberOfResults: number;
-    createdAt: string;
-    tags: string[];
-    own: boolean;
-    shared: boolean;
-  };
+  query: PreviousQueryT;
   onRenamePreviousQuery: () => void;
   onToggleEditPreviousQueryLabel: () => void;
   onToggleEditPreviousQueryTags: () => void;

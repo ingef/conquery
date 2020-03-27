@@ -12,9 +12,15 @@ import type { TabT } from "../pane/types";
 import startup, { StartupStateT } from "../startup/reducer";
 import { buildPanesReducer, PanesStateT } from "../pane/reducer";
 import queryGroupModal from "../query-group-modal/reducer";
-import previousQueries from "../previous-queries/list/reducer";
-import previousQueriesSearch from "../previous-queries/search/reducer";
-import previousQueriesFilter from "../previous-queries/filter/reducer";
+import previousQueries, {
+  PreviousQueriesStateT
+} from "../previous-queries/list/reducer";
+import previousQueriesSearch, {
+  PreviousQueriesSearchStateT
+} from "../previous-queries/search/reducer";
+import previousQueriesFilter, {
+  PreviousQueriesFilterStateT
+} from "../previous-queries/filter/reducer";
 import uploadQueryResults from "../previous-queries/upload/reducer";
 import deletePreviousQueryModal from "../previous-queries/delete-modal/reducer";
 import snackMessage from "../snack-message/reducer";
@@ -38,6 +44,9 @@ export type StateT = {
   user: UserStateT;
   queryEditor: StandardQueryEditorStateT;
   startup: StartupStateT;
+  previousQueries: PreviousQueriesStateT;
+  previousQueriesSearch: PreviousQueriesSearchStateT;
+  previousQueriesFilter: PreviousQueriesFilterStateT;
 };
 
 const buildAppReducer = (tabs: TabT[]) => {

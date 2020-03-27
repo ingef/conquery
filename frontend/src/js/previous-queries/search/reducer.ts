@@ -3,11 +3,14 @@ import {
   ADD_TAG_TO_PREVIOUS_QUERIES_SEARCH
 } from "./actionTypes";
 
-type StateT = string[];
+export type PreviousQueriesSearchStateT = string[];
 
-const initialState: StateT = [];
+const initialState: PreviousQueriesSearchStateT = [];
 
-const previousQueriesSearch = (state: StateT = initialState, action) => {
+const previousQueriesSearch = (
+  state: PreviousQueriesSearchStateT = initialState,
+  action: Object
+): PreviousQueriesSearchStateT => {
   switch (action.type) {
     case UPDATE_PREVIOUS_QUERIES_SEARCH:
       return action.payload.values;

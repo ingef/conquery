@@ -9,12 +9,14 @@ import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
 import PreviousQueries from "./PreviousQueries";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
-import EmptyList from "./EmptyList";
-import PreviousQueriesLoading from "./PreviousQueriesLoading";
-
 import { loadPreviousQueries } from "./actions";
 import { selectPreviousQueries } from "./selector";
 import { canUploadResult } from "../../user/selectors";
+import { T } from "js/localization";
+import EmptyList from "js/list/EmptyList";
+import Loading from "js/list/Loading";
+import { StateT } from "app-types";
+import { PreviousQueryT } from "./reducer";
 
 const Container = styled("div")`
   overflow-y: auto;
@@ -27,15 +29,19 @@ type PropsT = {
 };
 
 const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
-  const queries = useSelector(state =>
+  const queries = useSelector<StateT, PreviousQueryT[]>(state =>
     selectPreviousQueries(
       state.previousQueries.queries,
       state.previousQueriesSearch,
       state.previousQueriesFilter
     )
   );
-  const loading = useSelector(state => state.previousQueries.loading);
-  const hasPermissionToUpload = useSelector(state => canUploadResult(state));
+  const loading = useSelector<StateT, boolean>(
+    state => state.previousQueries.loading
+  );
+  const hasPermissionToUpload = useSelector<StateT, boolean>(state =>
+    canUploadResult(state)
+  );
 
   const dispatch = useDispatch();
 
@@ -53,8 +59,14 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
       <PreviousQueriesSearchBox />
       {hasPermissionToUpload && <UploadQueryResults datasetId={datasetId} />}
       <Container>
-        {loading && <PreviousQueriesLoading />}
-        {queries.length === 0 && !loading && <EmptyList />}
+        {loading && (
+          <Loading message={T.translate("previousQueries.loading")} />
+        )}
+        {queries.length === 0 && !loading && (
+          <EmptyList
+            emptyMessage={T.translate("previousQueries.noQueriesFound")}
+          />
+        )}
       </Container>
       {hasQueries && (
         <>
