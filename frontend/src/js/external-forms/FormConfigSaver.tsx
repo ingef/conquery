@@ -13,6 +13,7 @@ import { postFormConfig, patchFormConfig } from "js/api/api";
 import Label from "js/form-components/Label";
 import { setMessage } from "js/snack-message/actions";
 import IconButton from "js/button/IconButton";
+import { usePrevious } from "js/common/helpers/usePrevious";
 
 interface PropsT {
   datasetId: string;
@@ -44,6 +45,10 @@ const DirtyFlag = styled("div")`
   margin: 4px 4px 0;
 `;
 
+const hasChanged = (a: any, b: any) => {
+  return JSON.stringify(a) !== JSON.stringify(b);
+};
+
 const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   const dispatch = useDispatch();
   const [editing, setEditing] = useState<boolean>(false);
@@ -56,6 +61,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   const formValues = useSelector<StateT>(state =>
     selectActiveFormValues(state)
   );
+  const previousFormValues = usePrevious(formValues);
   const activeFormName = useSelector<StateT, string>(state =>
     selectActiveFormName(state)
   );
@@ -77,11 +83,19 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
     setFormConfigId(null);
   }, [configName]);
 
+  useEffect(() => {
+    if (hasChanged(previousFormValues, formValues)) {
+      setIsDirty(true);
+    }
+  }, [formValues, previousFormValues]);
+
   async function onSubmit() {
     setIsLoading(true);
     try {
       if (formConfigId) {
         await patchFormConfig(datasetId, formConfigId, configName, formValues);
+
+        setIsDirty(false);
       } else {
         const result = await postFormConfig(datasetId, configName, formValues);
 
