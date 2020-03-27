@@ -19,6 +19,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -72,7 +73,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
-		if(isSlaveCommand(namespace)) {
+		if (isSlaveCommand(namespace)) {
 			configuration.setServerFactory(configuration.getSlaveServer());
 			RESTServer.configure(configuration, environment.jersey().getResourceConfig());
 		}
@@ -82,33 +83,34 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			environment.lifecycle().manage(jobManager);
 			environment.lifecycle().manage(this);
 			validator = environment.getValidator();
-			
+
 			scheduler = environment
-				.lifecycle()
-				.scheduledExecutorService("Scheduled Messages")
-				.build();
+								.lifecycle()
+								.scheduledExecutorService("Scheduled Messages")
+								.build();
 		}
-		
+
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 		File storageDir = configuration.getStorage().getDirectory();
-		for(File directory : storageDir.listFiles()) {
-			if(directory.getName().startsWith("worker_")) {
+		for (File directory : storageDir.listFiles()) {
+			if (directory.getName().startsWith("worker_")) {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, configuration.getStorage(), directory);
-				if(workerStorage != null) {
+				if (workerStorage != null) {
 					Worker worker = new Worker(
-						workerStorage.getWorker(),
-						jobManager,
-						workerStorage,
-						new QueryExecutor(configuration)
+							workerStorage.getWorker(),
+							jobManager,
+							workerStorage,
+							new QueryExecutor(configuration)
 					);
 					workers.add(worker);
 				}
 			}
 		}
 
-
-		super.run(environment,namespace, configuration);
+		if (isSlaveCommand(namespace)) {
+			super.run(environment, namespace, configuration);
+		}
 	}
 	
 	@Override
@@ -186,45 +188,43 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	
 	@Override
 	public void start() throws Exception {
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
+		getJobManager().addSlowJob(new SimpleJob("Connect to Master",() -> {
+			BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
 
-		connector = new NioSocketConnector();
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
-		connector.setHandler(this);
-		connector.getSessionConfig().setAll(ConqueryConfig.getInstance().getCluster().getMina());
+			connector = new NioSocketConnector();
+			connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+			connector.setHandler(this);
+			connector.getSessionConfig().setAll(ConqueryConfig.getInstance().getCluster().getMina());
 
-		InetSocketAddress address = new InetSocketAddress(
-				ConqueryConfig.getInstance().getCluster().getMasterURL().getHostAddress(),
-				ConqueryConfig.getInstance().getCluster().getPort()
-		);
+			InetSocketAddress address = new InetSocketAddress(
+					ConqueryConfig.getInstance().getCluster().getMasterURL().getHostAddress(),
+					ConqueryConfig.getInstance().getCluster().getPort()
+			);
 
-		new Thread(){
-			@Override
-			public void run() {
-				while(true) {
-					try {
-						log.info("Trying to connect to {}", address);
+			while(true) {
 
-						// Try opening a connection (Note: This fails immediately instead of waiting a minute to try and connect)
-						ConnectFuture future = connector.connect(address);
+				try {
+					log.info("Trying to connect to Master[{}]", address);
 
-						future.awaitUninterruptibly();
+					// Try opening a connection (Note: This fails immediately instead of waiting a minute to try and connect)
+					ConnectFuture future = connector.connect(address);
 
-						if(future.isConnected()){
-							break;
-						}
+					future.awaitUninterruptibly();
 
-						future.cancel();
-						// Sleep thirty seconds then retry.
-						Uninterruptibles.sleepUninterruptibly(30, TimeUnit.SECONDS);
+					if(future.isConnected()){
+						break;
 					}
-					catch(RuntimeIoException e) {
-						log.warn("Failed to connect to "+address, e);
-					}
+
+					future.cancel();
+					// Sleep thirty seconds then retry.
+					Uninterruptibles.sleepUninterruptibly(30, TimeUnit.SECONDS);
 				}
-
+				catch(RuntimeIoException e) {
+					log.warn("Failed to connect to "+address, e);
+				}
 			}
-		}.start();
+
+		}));
 	}
 
 	@Override

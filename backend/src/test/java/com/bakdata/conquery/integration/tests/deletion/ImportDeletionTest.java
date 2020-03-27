@@ -231,6 +231,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
+		testConquery.shutdown(conquery);
+
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
 

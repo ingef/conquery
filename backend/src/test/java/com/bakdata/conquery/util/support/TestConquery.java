@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.Client;
 
@@ -17,9 +18,8 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.messages.network.specific.ShutdownWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
@@ -96,8 +96,12 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
+
+		Wait.builder().stepTime(1).stepUnit(TimeUnit.SECONDS).attempts(20).build().until(() -> standaloneCommand.getSlaves().size() == 2);
+
 		Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
 		Namespace ns = namespaces.get(datasetId);
+
 
 		assertThat(namespaces.getSlaves()).hasSize(2);
 
@@ -118,11 +122,12 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			localCfg,
 			standaloneCommand.getMaster().getAdmin().getAdminProcessor(),
 			// Getting the User from AuthorizationConfig
-			standaloneCommand.getMaster().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
+			ConqueryConfig.getInstance().getAuthorization().getInitialUsers().get(0).getUser());
+
+		support.waitUntilWorkDone();
 
 		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
 
-		support.waitUntilWorkDone();
 		openSupports.add(support);
 		return support;
 	}
@@ -131,23 +136,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	public synchronized void shutdown(StandaloneSupport support) {
 		log.info("Tearing down dataset");
 
+		support.getNamespace().sendToAll(new ShutdownWorker());
 
-		DatasetId dataset = support.getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new SlaveMessage() {
-			@Override
-			public void react(NetworkMessageContext.Slave context) throws Exception {
-				context.getWorkers().getWorkers().values().stream()
-					   .filter(worker -> worker.getInfo().getDataset().equals(dataset))
-					   .forEach(worker -> {
-						   try {
-							   worker.getStorage().close();
-						   } catch (IOException e) {
-							   log.error("Failed closing down worker", e);
-						   }
-					   });
-
-			}
-		}));
 		try {
 			standaloneCommand.getMaster().getStorage().close();
 		} catch (IOException e) {
@@ -225,6 +215,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 	@Override
 	public void afterEach(ExtensionContext context) throws Exception {
+
 		for (Iterator<StandaloneSupport> it = openSupports.iterator(); it.hasNext(); ) {
 			StandaloneSupport openSupport = it.next();
 

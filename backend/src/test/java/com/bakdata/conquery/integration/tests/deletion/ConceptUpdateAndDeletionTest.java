@@ -205,6 +205,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
+		testConquery.shutdown(conquery);
+
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
 			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
