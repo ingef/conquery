@@ -1,5 +1,7 @@
 /// <reference types="react-scripts" />
 
+import "@emotion/react";
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: "development" | "production";

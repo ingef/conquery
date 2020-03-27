@@ -1,6 +1,6 @@
 import { apiUrl } from "../environment";
 
-import type { DatasetIdT, QueryIdT } from "./types";
+import type { DatasetIdT, QueryIdT, PostFormConfigsResponseT } from "./types";
 import type {
   ConceptIdT,
   GetFrontendConfigResponseT,
@@ -216,4 +216,40 @@ export function postLogin(
       password
     }
   });
+}
+
+export function postFormConfig(
+  datasetId: DatasetIdT,
+  configName: string,
+  values: {
+    [fieldName: string]: any;
+  }
+): Promise<PostFormConfigsResponseT> {
+  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-configs`), {
+    method: "POST",
+    data: {
+      name: configName,
+      values
+    }
+  });
+}
+
+export function patchFormConfig(
+  datasetId: DatasetIdT,
+  formConfigId: string,
+  configName: string,
+  values: {
+    [fieldName: string]: any;
+  }
+): Promise<PostFormConfigsResponseT> {
+  return fetchJson(
+    getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
+    {
+      method: "PATCH",
+      data: {
+        name: configName,
+        values
+      }
+    }
+  );
 }

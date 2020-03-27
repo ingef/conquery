@@ -203,7 +203,9 @@
   "externalForms": {
     "forms": "Forms",
     "config": {
-      "save": "Save configuration"
+      "headline": "Form configuration",
+      "save": "Save",
+      "saveError": "Could not save form configuration"
     },
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",

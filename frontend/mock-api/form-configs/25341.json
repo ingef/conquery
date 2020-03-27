@@ -1,0 +1,18 @@
+{
+  "id": "25341",
+  "label": "Beispiel-config",
+  "formType": "EXPORT_FORM",
+  "tags": ["fun", "interesting", "research"],
+  "values": {
+    "queryGroup": null,
+    "timeMode": "ABSOLUTE",
+    "dateRange": { "min": null, "max": null },
+    "features": [],
+    "timeUnit": "QUARTERS",
+    "timeCountBefore": 1,
+    "timeCountAfter": 1,
+    "indexSelector": "FIRST",
+    "indexPlacement": "BEFORE",
+    "outcomes": []
+  }
+}

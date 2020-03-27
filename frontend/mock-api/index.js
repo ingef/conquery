@@ -381,4 +381,92 @@ module.exports = function (app, port) {
       groups: []
     });
   });
+
+  app.post(
+    "/api/datasets/:datasetId/form-configs",
+    mockAuthMiddleware,
+    function response(req, res) {
+      setTimeout(() => {
+        res.setHeader("Content-Type", "application/json");
+        res.status(201);
+        res.send(
+          JSON.stringify({
+            id: 56000 + Math.floor(Math.random() * 200)
+          })
+        );
+      }, LONG_DELAY);
+    }
+  );
+  app.get(
+    "/api/datasets/:datasetId/form-configs",
+    mockAuthMiddleware,
+    function response(req, res) {
+      res.setHeader("Content-Type", "application/json");
+
+      setTimeout(() => {
+        const configs = [];
+        const possibleTags = [
+          "research",
+          "fun",
+          "test",
+          "group 1",
+          "important",
+          "jk",
+          "interesting"
+        ];
+
+        for (var i = 55600; i < 85600; i++) {
+          const notExecuted = Math.random() < 0.1;
+
+          configs.push({
+            id: i,
+            label: Math.random() > 0.7 ? "Saved Config" : null,
+            numberOfResults: notExecuted
+              ? null
+              : Math.floor(Math.random() * 500000),
+            tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
+            createdAt: new Date(
+              Date.now() - Math.floor(Math.random() * 10000000)
+            ).toISOString(),
+            own: Math.random() < 0.1,
+            shared: Math.random() < 0.8,
+            ownerName: "System"
+          });
+        }
+
+        res.send(JSON.stringify(configs));
+      }, LONG_DELAY);
+    }
+  );
+
+  app.get(
+    "/api/datasets/:datasetId/form-configs/:id",
+    mockAuthMiddleware,
+    function response(req, res) {
+      setTimeout(() => {
+        res.sendFile(path.join(__dirname, "./form-configs/25341.json"));
+      }, LONG_DELAY);
+    }
+  );
+
+  app.patch(
+    "/api/datasets/:datasetId/form-configs/:id",
+    mockAuthMiddleware,
+    function response(req, res) {
+      setTimeout(() => {
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).end();
+      }, SHORT_DELAY);
+    }
+  );
+
+  app.delete(
+    "/api/datasets/:datasetId/form-configs/:id",
+    mockAuthMiddleware,
+    function response(req, res) {
+      setTimeout(() => {
+        res.status(204).end();
+      }, LONG_DELAY);
+    }
+  );
 };

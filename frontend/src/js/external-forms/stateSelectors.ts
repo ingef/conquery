@@ -2,6 +2,8 @@ import { initTables } from "./transformers";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
 import { FormContextStateT } from "./reducer";
+import { getLocale } from "js/localization";
+import { Form } from "js/api/form-types";
 
 const selectFormField = (state, formName, fieldName) => {
   if (
@@ -69,7 +71,9 @@ export const selectActiveFormValues = (state: StateT) => {
   const reduxForm = selectReduxForm(state);
   const activeForm = selectActiveForm(state);
 
-  return reduxForm && activeForm ? reduxForm[activeForm].values : {};
+  return reduxForm && activeForm && !!reduxForm[activeForm]
+    ? reduxForm[activeForm].values
+    : {};
 };
 
 export const selectAvailableForms = (state: StateT) =>
@@ -78,11 +82,18 @@ export const selectAvailableForms = (state: StateT) =>
 export const selectActiveForm = (state: StateT) =>
   state.externalForms ? state.externalForms.activeForm : null;
 
-export const selectFormConfig = (state: StateT) => {
+export const selectFormConfig = (state: StateT): Form | null => {
   const availableForms = selectAvailableForms(state);
   const activeForm = selectActiveForm(state);
 
-  return activeForm ? availableForms[activeForm] : null;
+  return (activeForm && availableForms[activeForm]) || null;
+};
+
+export const selectActiveFormName = (state: StateT): string => {
+  const formConfig = selectFormConfig(state);
+  const locale = getLocale();
+
+  return (formConfig && formConfig.title[locale]) || "";
 };
 
 export const selectReduxFormState = (state: StateT) =>

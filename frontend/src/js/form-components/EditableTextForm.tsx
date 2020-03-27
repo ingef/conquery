@@ -21,6 +21,16 @@ const Input = styled("input")`
   margin-bottom: 3px;
 `;
 
+const Form = styled("form")`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const SxPrimaryButton = styled(PrimaryButton)`
+  margin-bottom: 3px;
+`;
+
 class EditableTextForm extends React.Component {
   props: PropsType;
 
@@ -45,15 +55,15 @@ class EditableTextForm extends React.Component {
 
   render() {
     return (
-      <form
+      <Form
         className={this.props.className}
         onSubmit={this._onSubmit.bind(this)}
       >
         <Input type="text" ref="input" placeholder={this.props.text} />
-        <PrimaryButton type="submit" small disabled={this.props.loading}>
+        <SxPrimaryButton type="submit" small disabled={this.props.loading}>
           {T.translate("common.save")}
-        </PrimaryButton>
-      </form>
+        </SxPrimaryButton>
+      </Form>
     );
   }
 }
