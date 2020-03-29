@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -31,18 +33,18 @@ import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
-import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.specific.TableRequiringAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
@@ -68,8 +70,6 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
-
-		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
 
 		Concept<?> concept = concepts[0].getConcept();
 
@@ -98,11 +98,11 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 			List<AggregatorNode<?>> aggregators = new ArrayList<>();
 			//add aggregators
 
-			aggregators.addAll(conceptAggregators);
+			aggregators.addAll(createConceptAggregators(plan, selects));
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
-				aggregators.add(new SpecialDateUnionAggregatorNode(
+				aggregators.add(new TableRequiringAggregatorNode(
 					table.getResolvedConnector().getTable().getId(),
 					plan.getSpecialDateUnion()
 				));
