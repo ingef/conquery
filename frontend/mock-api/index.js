@@ -1,5 +1,4 @@
 const path = require("path");
-const glob = require("glob");
 const version = require("../package.json").version;
 const EXPORT_FORM_CONFIG = require("./forms/export-form.json");
 const mockAuthMiddleware = require("./mockAuthMiddleware");

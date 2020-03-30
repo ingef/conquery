@@ -12,13 +12,13 @@ import type { DraggedNodeType, DraggedQueryType } from "./types";
 
 type DraggedFileType = Object;
 
-type PropsType = {
-  isInitial?: boolean,
-  isAnd?: boolean,
-  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void,
-  onDropFile: (file: DraggedFileType) => void,
-  onLoadPreviousQuery: (id: QueryIdT) => void
-};
+interface PropsT {
+  isInitial?: boolean;
+  isAnd?: boolean;
+  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropFile: (file: DraggedFileType) => void;
+  onLoadPreviousQuery: (id: QueryIdT) => void;
+}
 
 const DROP_TYPES = [
   dndTypes.CONCEPT_TREE_NODE,
@@ -78,13 +78,13 @@ const Row = styled("div")`
   align-items: center;
 `;
 
-const QueryEditorDropzone = ({
+const QueryEditorDropzone: React.FC<PropsT> = ({
   isAnd,
   isInitial,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode
-}: PropsType) => {
+}) => {
   const onDrop = (props, monitor) => {
     const item = monitor.getItem();
 
