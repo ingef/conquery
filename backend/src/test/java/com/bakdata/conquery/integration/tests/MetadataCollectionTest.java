@@ -39,7 +39,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 			});
 		}
 		
-		conquery.waitUntilWorkDone();
+		conquery.testConquery.waitUntilWorkDone();
 		
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 

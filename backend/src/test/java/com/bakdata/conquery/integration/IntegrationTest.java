@@ -32,6 +32,7 @@ public interface IntegrationTest {
 		@Override
 		public void execute() throws Throwable {
 			ConqueryMDC.setLocation(name);
+			testConquery.waitUntilWorkDone();
 			log.info("STARTING integration test {}", name);
 			try {
 				test.execute(name, testConquery);

@@ -40,7 +40,7 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 			});
 		}
 		
-		conquery.waitUntilWorkDone();
+		conquery.testConquery.waitUntilWorkDone();
 
 		test.executeTest(conquery);
 	}

@@ -60,13 +60,13 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 			IntegrationUtils.importTables(conquery, test.getContent());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 		}
 
 		final int nImports = namespace.getStorage().getAllImports().size();
@@ -115,7 +115,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.getDatasetsProcessor().deleteImport(importId);
 
 			Thread.sleep(100);
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 
 		}
 
@@ -158,7 +158,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
 		}
 
-		conquery.waitUntilWorkDone();
+		conquery.testConquery.waitUntilWorkDone();
 
 
 		// Load more data under the same name into the same table, with only the deleted import/table
@@ -200,7 +200,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			//import preprocessedFiles
 			conquery.getDatasetsProcessor().addImport(conquery.getDataset(), inputFile.getPreprocessedFile());
-			conquery.waitUntilWorkDone();
+			conquery.testConquery.waitUntilWorkDone();
 		}
 
 		// State after reimport.
@@ -241,10 +241,9 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
-			log.info("Checking state after re-start");
+			try (StandaloneSupport conquery2 = testConquery.openDataset(dataset)) {
+				log.info("Checking state after re-start");
 
-			{
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
 
 				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {

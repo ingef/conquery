@@ -8,12 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @CPSType(id = "SHUTDOWN_WORKER", base = NamespacedMessage.class)
-public class ShutdownWorker extends WorkerMessage {
-
-	@Override
-	public boolean isSlowMessage() {
-		return true;
-	}
+public class ShutdownWorker extends WorkerMessage.Slow {
 
 	@Override
 	public void react(Worker context) throws Exception {

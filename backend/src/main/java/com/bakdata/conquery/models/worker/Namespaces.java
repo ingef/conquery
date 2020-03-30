@@ -51,7 +51,9 @@ public class Namespaces extends NamespaceCollection {
 		if(removed != null) {
 			metaStorage.getCentralRegistry().remove(id);
 
-			workers.keySet().removeIf(w->w.getDataset().equals(id));
+			if(!workers.keySet().removeIf(w -> w.getDataset().equals(id))) {
+				log.error("Did not find any workers to remove for Dataset[{}]", id);
+			}
 			try {
 				// remove all associated data.
 				removed.getStorage().remove();

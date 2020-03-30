@@ -82,19 +82,19 @@ public class FormTest extends ConqueryTestSpec {
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 
 		LoadingUtil.importTables(support, content);
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 		log.info("{} IMPORT TABLES", getLabel());
 
 		importConcepts(support);
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
 		LoadingUtil.importTableContents(support, content);
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
 		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
 
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 		form = parseForm(support);
 		MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
 		form.init(storage.getNamespaces());

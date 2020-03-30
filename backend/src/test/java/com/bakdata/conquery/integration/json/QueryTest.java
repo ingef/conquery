@@ -51,14 +51,14 @@ public class QueryTest extends AbstractQueryEngineTest {
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
 		IntegrationUtils.importTables(support, content);
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 
 		IntegrationUtils.importConcepts(support, rawConcepts);
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 		query = IntegrationUtils.parseQuery(support, rawQuery);
 
 		IntegrationUtils.importTableContents(support, Arrays.asList(content.getTables()), support.getDataset());
-		support.waitUntilWorkDone();
+		support.testConquery.waitUntilWorkDone();
 		IntegrationUtils.importIdMapping(support, content);
 		IntegrationUtils.importPreviousQueries(support, content);
 	}

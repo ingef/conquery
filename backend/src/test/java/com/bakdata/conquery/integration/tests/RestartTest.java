@@ -58,100 +58,102 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		);
 
 
-		StandaloneSupport conquery = testConquery.getSupport(name);
-		dataset = conquery.getDataset().getId();
+		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
+			dataset = conquery.getDataset().getId();
 
-		test = JsonIntegrationTest.readJson(dataset, testJson);
-		ValidatorHelper.failOnError(log, validator.validate(test));
+			test = JsonIntegrationTest.readJson(dataset, testJson);
+			ValidatorHelper.failOnError(log, validator.validate(test));
 
-		test.importRequiredData(conquery);
+			test.importRequiredData(conquery);
 
-		test.executeTest(conquery);
+			test.executeTest(conquery);
 
-		// IDMapping Testing
-		NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
+			// IDMapping Testing
+			NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
 
-		namespaceStorage.updateIdMapping(persistentIdMap);
+			namespaceStorage.updateIdMapping(persistentIdMap);
 
-		{// Auth testing (deletion and permission grant)
-			// build constellation
-			adminProcessor.addUser(user);
-			adminProcessor.addUser(userToDelete);
-			adminProcessor.addRole(role);
-			adminProcessor.addRole(roleToDelete);
-			adminProcessor.addGroup(group);
-			adminProcessor.addGroup(groupToDelete);
+			{// Auth testing (deletion and permission grant)
+				// build constellation
+				adminProcessor.addUser(user);
+				adminProcessor.addUser(userToDelete);
+				adminProcessor.addRole(role);
+				adminProcessor.addRole(roleToDelete);
+				adminProcessor.addGroup(group);
+				adminProcessor.addGroup(groupToDelete);
 
-			adminProcessor.addRoleTo(user.getId(), role.getId());
-			adminProcessor.addRoleTo(user.getId(), roleToDelete.getId());
-			adminProcessor.addRoleTo(userToDelete.getId(), role.getId());
-			adminProcessor.addRoleTo(userToDelete.getId(), roleToDelete.getId());
+				adminProcessor.addRoleTo(user.getId(), role.getId());
+				adminProcessor.addRoleTo(user.getId(), roleToDelete.getId());
+				adminProcessor.addRoleTo(userToDelete.getId(), role.getId());
+				adminProcessor.addRoleTo(userToDelete.getId(), roleToDelete.getId());
 
-			adminProcessor.addRoleTo(group.getId(), role.getId());
-			adminProcessor.addRoleTo(group.getId(), roleToDelete.getId());
-			adminProcessor.addRoleTo(groupToDelete.getId(), role.getId());
-			adminProcessor.addRoleTo(groupToDelete.getId(), roleToDelete.getId());
+				adminProcessor.addRoleTo(group.getId(), role.getId());
+				adminProcessor.addRoleTo(group.getId(), roleToDelete.getId());
+				adminProcessor.addRoleTo(groupToDelete.getId(), role.getId());
+				adminProcessor.addRoleTo(groupToDelete.getId(), roleToDelete.getId());
 
-			adminProcessor.addUserToGroup(group.getId(), user.getId());
-			adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
-			adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
-			adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
+				adminProcessor.addUserToGroup(group.getId(), user.getId());
+				adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
+				adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
+				adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
 
-			// Adding Permissions
-			adminProcessor.createPermission(user.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
-			adminProcessor.createPermission(userToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
+				// Adding Permissions
+				adminProcessor.createPermission(user.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
+				adminProcessor.createPermission(userToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
 
-			adminProcessor.createPermission(role.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
-			adminProcessor.createPermission(roleToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
+				adminProcessor.createPermission(role.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
+				adminProcessor.createPermission(roleToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
 
-			adminProcessor.createPermission(group.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
-			adminProcessor.createPermission(groupToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
+				adminProcessor.createPermission(group.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
+				adminProcessor.createPermission(groupToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
 
-			// Delete entities
-			adminProcessor.deleteUser(userToDelete.getId());
-			adminProcessor.deleteRole(roleToDelete.getId());
-			adminProcessor.deleteGroup(groupToDelete.getId());
+				// Delete entities
+				adminProcessor.deleteUser(userToDelete.getId());
+				adminProcessor.deleteRole(roleToDelete.getId());
+				adminProcessor.deleteGroup(groupToDelete.getId());
+			}
+
+			testConquery.shutdown(conquery);
+
+			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
+			testConquery.getDropwizard().after();
+			//restart
+			testConquery.beforeAll(testConquery.getBeforeAllContext());
+
+			try (final StandaloneSupport support = testConquery.openDataset(dataset)) {
+
+				test.executeTest(support);
+
+				MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+
+				{// Auth actual tests
+					User userStored = storage.getUser(user.getId());
+					assertThat(userStored).isEqualTo(user);
+					assertThat(storage.getRole(role.getId())).isEqualTo(role);
+					assertThat(storage.getGroup(group.getId())).isEqualTo(group);
+
+					assertThat(storage.getUser(userToDelete.getId())).as("deleted user should stay deleted").isNull();
+					assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
+					assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
+
+					assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")))).isTrue();
+					assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")))).isFalse(); // Was never permitted
+					assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")))).isTrue();
+					assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")))).isFalse(); // Was permitted by deleted role
+					assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")))).isTrue();
+					assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")))).isFalse(); // Was permitted by deleted group
+
+				}
+
+				PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
+																	  .getMaster()
+																	  .getNamespaces()
+																	  .get(dataset)
+																	  .getStorage()
+																	  .getIdMapping();
+				assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
+			}
 		}
-
-		testConquery.shutdown(conquery);
-
-		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-		testConquery.getDropwizard().after();
-		//restart
-		testConquery.beforeAll(testConquery.getBeforeAllContext());
-
-		final StandaloneSupport support = testConquery.openDataset(dataset);
-
-		test.executeTest(support);
-
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
-
-		{// Auth actual tests
-			User userStored = storage.getUser(user.getId());
-			assertThat(userStored).isEqualTo(user);
-			assertThat(storage.getRole(role.getId())).isEqualTo(role);
-			assertThat(storage.getGroup(group.getId())).isEqualTo(group);
-
-			assertThat(storage.getUser(userToDelete.getId())).as("deleted user should stay deleted").isNull();
-			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
-			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
-
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")))).isTrue();
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")))).isFalse(); // Was never permitted
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")))).isTrue();
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")))).isFalse(); // Was permitted by deleted role
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")))).isTrue();
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")))).isFalse(); // Was permitted by deleted group
-
-		}
-
-		PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
-															  .getMaster()
-															  .getNamespaces()
-															  .get(dataset)
-															  .getStorage()
-															  .getIdMapping();
-		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 	}
 }
 

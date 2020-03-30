@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.Client;
 
+import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
@@ -25,6 +27,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -96,12 +99,13 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
-
-		Wait.builder().stepTime(1).stepUnit(TimeUnit.SECONDS).attempts(20).build().until(() -> standaloneCommand.getSlaves().size() == 2);
-
 		Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
+
+		Wait.builder().stepTime(1).stepUnit(TimeUnit.SECONDS).attempts(20).build().until(() -> namespaces.getSlaves().size() == 2);
+
 		Namespace ns = namespaces.get(datasetId);
 
+		waitUntilWorkDone();
 
 		assertThat(namespaces.getSlaves()).hasSize(2);
 
@@ -124,7 +128,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			// Getting the User from AuthorizationConfig
 			ConqueryConfig.getInstance().getAuthorization().getInitialUsers().get(0).getUser());
 
-		support.waitUntilWorkDone();
+		waitUntilWorkDone();
 
 		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
 
@@ -225,5 +229,27 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 			it.remove();
 		}
+	}
+
+	public void waitUntilWorkDone() {
+		log.info("Waiting for jobs to finish");
+		boolean busy;
+		//sample 10 times from the job queues to make sure we are done with everything
+		long started = System.nanoTime();
+		for(int i=0;i<10;i++) {
+			do {
+				busy = false;
+				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
+				for (SlaveCommand slave : standaloneCommand.getSlaves())
+					busy |= slave.getJobManager().isSlowWorkerBusy();
+				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+				if(Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
+					log.warn("waiting for done work for a long time");
+					started = System.nanoTime();
+				}
+			} while(busy);
+		}
+
+		log.info("all jobs finished");
 	}
 }
