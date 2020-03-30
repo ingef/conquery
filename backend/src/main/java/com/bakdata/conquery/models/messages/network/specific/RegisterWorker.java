@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Master
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.Wait;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +34,13 @@ public class RegisterWorker extends MasterMessage {
 		if(slave == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
 		}
+
+		if(context.getNamespaces().get(info.getDataset()) == null){
+			throw new IllegalStateException("Could not find the Dataset[" + info.getDataset() + "] to register worker " + info.getId());
+		}
+
 		info.setConnectedSlave(slave);
+
 		context.getNamespaces().register(slave, info);
 	}
 

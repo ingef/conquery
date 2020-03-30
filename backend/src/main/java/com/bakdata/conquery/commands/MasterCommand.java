@@ -58,7 +58,6 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 	private MasterMetaStorage storage;
 	private JobManager jobManager;
 	private Validator validator;
-	@Deprecated(forRemoval = true)  // TODO: 27.03.2020 we should avoid maintaining multiple ConqueryConfigs even if they're likely thse same.
 	private ConqueryConfig config;
 	private AdminServlet admin;
 	private AuthorizationController authController;
@@ -76,6 +75,7 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 	@Override
 	protected void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig configuration) throws Exception {
 
+		this.config = configuration;
 
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues) environment.getObjectMapper().getInjectableValues())
@@ -232,8 +232,8 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(namespaces, validator);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		acceptor.setHandler(this);
-		acceptor.getSessionConfig().setAll(ConqueryConfig.getInstance().getCluster().getMina());
-		acceptor.bind(new InetSocketAddress(ConqueryConfig.getInstance().getCluster().getPort()));
+		acceptor.getSessionConfig().setAll(getConfig().getCluster().getMina());
+		acceptor.bind(new InetSocketAddress(getConfig().getCluster().getPort()));
 		log.info("Started master @ {}", acceptor.getLocalAddress());
 	}
 

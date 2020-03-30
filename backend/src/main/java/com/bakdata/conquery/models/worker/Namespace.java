@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -40,7 +40,7 @@ public class Namespace {
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
 	 */
-	private Set<WorkerInformation> workers = new HashSet<>();
+	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
 
 	/**
 	 * Map storing the buckets each Worker has been assigned.
@@ -59,11 +59,11 @@ public class Namespace {
 	}
 
 	public void checkConnections() {
-		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w -> w.getConnectedSlave() != null);
+		final List<WorkerInformation> disconnected = workers.stream().filter(worker -> worker.getConnectedSlave() == null).collect(Collectors.toList());
 
-		if (!l.isEmpty()) {
-			throw new IllegalStateException("Not all known slaves are connected. Missing " + l);
+
+		if (!disconnected.isEmpty()) {
+			throw new IllegalStateException("Not all known slaves are connected. Missing " + disconnected);
 		}
 	}
 
@@ -104,9 +104,7 @@ public class Namespace {
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedSlave(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
-		Set<WorkerInformation> l = new HashSet<>(workers);
-		l.add(info);
-		workers = l;
+		workers.add(info);
 	}
 
 	@JsonIgnore

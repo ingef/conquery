@@ -26,12 +26,21 @@ public class Workers extends NamespaceCollection {
 
 	public void add(Worker worker) {
 		nextWorker.incrementAndGet();
+
+		if(dataset2Worker.containsKey(worker.getInfo().getDataset())){
+			throw new IllegalStateException(String.format("Multiple Workers for the same Dataset[%s]", worker.getInfo().getDataset()));
+		}
+
 		workers.put(worker.getInfo().getId(), worker);
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
 	}
 
 	public Worker getWorker(WorkerId worker) {
 		return Objects.requireNonNull(workers.get(worker));
+	}
+
+	public Worker getWorkerForDataset(DatasetId datasetId) {
+		return dataset2Worker.get(datasetId);
 	}
 
 	@Override

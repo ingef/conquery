@@ -131,6 +131,11 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		waitUntilWorkDone();
 
 		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
+		Wait.builder()
+			.attempts(100)
+			.stepTime(50)
+			.build()
+			.until(() -> standaloneCommand.getSlaves().stream().allMatch(sc -> sc.getWorkers().getWorkerForDataset(datasetId) != null));
 
 		openSupports.add(support);
 		return support;

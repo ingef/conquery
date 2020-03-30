@@ -8,8 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -26,10 +24,19 @@ import lombok.extern.slf4j.Slf4j;
 public class Namespaces extends NamespaceCollection {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
-	@NotNull
-	@Getter
-	@Setter
-	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
+
+	public IdMap<WorkerId, WorkerInformation> getWorkers() {
+		IdMap<WorkerId, WorkerInformation> out =  new IdMap<>();
+
+		for (Namespace namespace : datasets.values()) {
+			for (WorkerInformation ns : namespace.getWorkers()) {
+				out.add(ns);
+			}
+		}
+
+		return out;
+	}
+
 	@Getter
 	@JsonIgnore
 	private transient ConcurrentMap<SocketAddress, SlaveInformation> slaves = new ConcurrentHashMap<>();
@@ -51,9 +58,6 @@ public class Namespaces extends NamespaceCollection {
 		if(removed != null) {
 			metaStorage.getCentralRegistry().remove(id);
 
-			if(!workers.keySet().removeIf(w -> w.getDataset().equals(id))) {
-				log.error("Did not find any workers to remove for Dataset[{}]", id);
-			}
 			try {
 				// remove all associated data.
 				removed.getStorage().remove();
@@ -79,14 +83,16 @@ public class Namespaces extends NamespaceCollection {
 	}
 
 	public synchronized void register(SlaveInformation slave, WorkerInformation info) {
-		WorkerInformation old = workers.getOptional(info.getId()).orElse(null);
+
+		final WorkerInformation old = get(info.getDataset()).getWorkers().get(info.getId());
+
 		if (old != null) {
 			old.setIncludedBuckets(info.getIncludedBuckets());
 			old.setConnectedSlave(slave);
 		}
 		else {
 			info.setConnectedSlave(slave);
-			workers.add(info);
+			getWorkers().add(info);
 		}
 
 		Namespace ns = datasets.get(info.getDataset());

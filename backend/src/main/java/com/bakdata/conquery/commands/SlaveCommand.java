@@ -61,6 +61,8 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	private String label = "slave";
 	private ScheduledExecutorService scheduler;
 
+	private ConqueryConfig config;
+
 	public SlaveCommand(Conquery conquery) {
 		super(conquery, "slave", "Connects this instance as a slave to a running master.");
 	}
@@ -72,6 +74,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
+		this.config = configuration;
 
 		if (isSlaveCommand(namespace)) {
 			configuration.setServerFactory(configuration.getSlaveServer());
@@ -146,7 +149,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, ConqueryConfig.getInstance(), validator);
+		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, getConfig(), validator);
 		log.info("Connected to master @ {}", session.getRemoteAddress());
 
 		// Authenticate with Master
@@ -194,11 +197,11 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			connector = new NioSocketConnector();
 			connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 			connector.setHandler(this);
-			connector.getSessionConfig().setAll(ConqueryConfig.getInstance().getCluster().getMina());
+			connector.getSessionConfig().setAll(getConfig().getCluster().getMina());
 
 			InetSocketAddress address = new InetSocketAddress(
-					ConqueryConfig.getInstance().getCluster().getMasterURL().getHostAddress(),
-					ConqueryConfig.getInstance().getCluster().getPort()
+					getConfig().getCluster().getMasterURL().getHostAddress(),
+					getConfig().getCluster().getPort()
 			);
 
 			while(true) {
@@ -212,6 +215,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 					future.awaitUninterruptibly();
 
 					if(future.isConnected()){
+						log.info("Connected to Master.");
 						break;
 					}
 
