@@ -36,6 +36,8 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.server.SimpleServerFactory;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
@@ -62,6 +64,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	private ScheduledExecutorService scheduler;
 
 	private ConqueryConfig config;
+	private SlaveServlet slaveServlet;
 
 	public SlaveCommand(Conquery conquery) {
 		super(conquery, "slave", "Connects this instance as a slave to a running master.");
@@ -76,8 +79,18 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 		this.config = configuration;
 
+		// If we are a SlaveCommand (not Standalone), we host our own backend server.
 		if (isSlaveCommand(namespace)) {
 			configuration.setServerFactory(configuration.getSlaveServer());
+
+			// Dropwizard's way of disabling the frontend server.
+			if (configuration.getServerFactory() instanceof SimpleServerFactory) {
+				((SimpleServerFactory) configuration.getServerFactory()).setConnector(null);
+			}
+			else if (configuration.getServerFactory() instanceof DefaultServerFactory) {
+				((DefaultServerFactory) configuration.getServerFactory()).getApplicationConnectors().clear();
+			}
+
 			RESTServer.configure(configuration, environment.jersey().getResourceConfig());
 		}
 
@@ -112,7 +125,8 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			}
 		}
 
-		new SlaveServlet().register(getLabel(), environment, getConfig(), getWorkers());
+		slaveServlet = new SlaveServlet();
+		slaveServlet.register(getLabel(), environment, getConfig(), getWorkers());
 
 		if (isSlaveCommand(namespace)) {
 			super.run(environment, namespace, configuration);

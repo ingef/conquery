@@ -18,9 +18,9 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces({ExtraMimeTypes.JSON_STRING})
-@Path("workers/{" + ResourceConstants.DATASET + "}")
+@Path("workers")
 @RequiredArgsConstructor
 @Getter
 public class WorkerAPI {
@@ -28,14 +28,15 @@ public class WorkerAPI {
 	private final Workers workers;
 
 	@GET
+	@Path("/")
 	public Response getWorkers() {
 		return Response.ok().entity(workers.getWorkers().keySet()).build();
 	}
 
 	@GET
-	@Path("tables")
+	@Path("{" + ResourceConstants.DATASET + "}/" + "tables")
 	public Response getTables(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
-		if(workers.getWorkerForDataset(datasetId) == null){
+		if (workers.getWorkerForDataset(datasetId) == null) {
 			return Response.status(404).build();
 		}
 
@@ -45,9 +46,9 @@ public class WorkerAPI {
 	}
 
 	@GET
-	@Path("concepts")
+	@Path("{" + ResourceConstants.DATASET + "}/" + "concepts")
 	public Response getConcepts(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
-		if(workers.getWorkerForDataset(datasetId) == null){
+		if (workers.getWorkerForDataset(datasetId) == null) {
 			return Response.status(404).build();
 		}
 
@@ -57,9 +58,9 @@ public class WorkerAPI {
 	}
 
 	@GET
-	@Path("imports")
+	@Path("{" + ResourceConstants.DATASET + "}/" + "imports")
 	public Response getImports(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
-		if(workers.getWorkerForDataset(datasetId) == null){
+		if (workers.getWorkerForDataset(datasetId) == null) {
 			return Response.status(404).build();
 		}
 
@@ -69,9 +70,9 @@ public class WorkerAPI {
 	}
 
 	@GET
-	@Path("buckets")
+	@Path("{" + ResourceConstants.DATASET + "}/" + "buckets")
 	public Response getBuckets(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
-		if(workers.getWorkerForDataset(datasetId) == null){
+		if (workers.getWorkerForDataset(datasetId) == null) {
 			return Response.status(404).build();
 		}
 
