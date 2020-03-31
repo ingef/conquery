@@ -7,6 +7,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -28,6 +30,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.util.ResourceUtil;
@@ -75,17 +78,17 @@ public class QueryResource {
 			URLBuilder.fromRequest(req));
 	}
 
-//	@GET
-//	@Path("{" + QUERY + "}")
-//	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
-//		authorize(user, datasetId, Ability.READ);
-//		authorize(user, queryId, Ability.READ);
-//		ManagedExecution query = dsUtil.getManagedQuery(queryId);
-//		query.awaitDone(10, TimeUnit.SECONDS);
-//		return processor.getStatus(
-//			dsUtil.getDataset(datasetId),
-//			query,
-//			URLBuilder.fromRequest(req),
-//			user);
-//	}
+	@GET
+	@Path("{" + QUERY + "}")
+	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.READ);
+		ManagedExecution query = dsUtil.getManagedQuery(queryId);
+		query.awaitDone(10, TimeUnit.SECONDS);
+		return processor.getStatus(
+			dsUtil.getDataset(datasetId),
+			query,
+			URLBuilder.fromRequest(req),
+			user);
+	}
 }

@@ -82,7 +82,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 				clone.getStorage().getDirectory().mkdir();
 
 				SlaveCommand sc = new SlaveCommand(getConquery());
-				sc.setLabel("slave " + id);
+				sc.setLabel("slave_" + id);
 				this.slaves.add(sc);
 				sc.run(environment, namespace, clone);
 				return sc;

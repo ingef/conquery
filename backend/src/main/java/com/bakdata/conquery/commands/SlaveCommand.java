@@ -81,6 +81,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			RESTServer.configure(configuration, environment.jersey().getResourceConfig());
 		}
 
+
 		jobManager = new JobManager(getLabel());
 		synchronized (environment) {
 			environment.lifecycle().manage(jobManager);
@@ -110,6 +111,8 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 				}
 			}
 		}
+
+		new SlaveServlet().register(getLabel(), environment, getConfig(), getWorkers());
 
 		if (isSlaveCommand(namespace)) {
 			super.run(environment, namespace, configuration);
