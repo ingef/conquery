@@ -26,7 +26,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Getter @Setter
 public class ConqueryConfig extends Configuration {
 	
-	@Getter
+	@Getter @Deprecated(forRemoval = true) // TODO: 31.03.2020 This causes issues in Standalone mode and makes for badly testable code.
 	private static ConqueryConfig instance = new ConqueryConfig();
 
 	@Valid
