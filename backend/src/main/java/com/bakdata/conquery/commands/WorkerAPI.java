@@ -1,17 +1,15 @@
 package com.bakdata.conquery.commands;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -29,13 +27,25 @@ public class WorkerAPI {
 
 	@GET
 	@Path("tables")
-	public List<Table> getTables(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
-		return new ArrayList<>(workers.getWorkerForDataset(datasetId).getStorage().getDataset().getTables().values());
+	public Response getTables(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
+		if(workers.getWorkerForDataset(datasetId) == null){
+			return Response.status(404).build();
+		}
+
+		return Response.ok()
+					   .entity(new ArrayList<>(workers.getWorkerForDataset(datasetId).getStorage().getDataset().getTables().values()))
+					   .build();
 	}
 
 	@GET
 	@Path("concepts")
-	public List<? extends Concept<?>> getConcepts(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
-		return new ArrayList<>(workers.getWorkerForDataset(datasetId).getStorage().getAllConcepts());
+	public Response getConcepts(@PathParam(ResourceConstants.DATASET) DatasetId datasetId) {
+		if(workers.getWorkerForDataset(datasetId) == null){
+			return Response.status(404).build();
+		}
+
+		return Response.ok()
+					   .entity(new ArrayList<>(workers.getWorkerForDataset(datasetId).getStorage().getAllConcepts()))
+					   .build();
 	}
 }
