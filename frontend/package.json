@@ -34,7 +34,6 @@
     "date-fns": "^2.0.0-beta.2",
     "emotion-theming": "^10.0.27",
     "es6-promise": "^4.2.6",
-    "glob": "^7.1.3",
     "history": "^4.9.0",
     "i18n-react": "^0.7.0",
     "less": "^3.9.0",
