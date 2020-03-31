@@ -208,6 +208,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	
 	@Override
 	public void start() throws Exception {
+		// Submit this step asynchronously, as in Standalone Master and Slave are started from the same Thread.
 		getJobManager().addSlowJob(new SimpleJob("Connect to Master",() -> {
 			BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
 
