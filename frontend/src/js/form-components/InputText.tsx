@@ -8,7 +8,7 @@ import Labeled from "./Labeled";
 
 import type { CurrencyConfigT } from "../api/types";
 
-type PropsType = FieldPropsType & {
+interface PropsT extends FieldPropsType {
   label: string;
   inputType?: string;
   valueType?: string;
@@ -19,9 +19,9 @@ type PropsType = FieldPropsType & {
   inputProps?: Object;
   currencyConfig?: CurrencyConfigT;
   fullWidth?: boolean;
-};
+}
 
-const InputText = (props: PropsType) => {
+const InputText: React.FC<PropsT> = props => {
   return (
     <Labeled
       className={props.className}
