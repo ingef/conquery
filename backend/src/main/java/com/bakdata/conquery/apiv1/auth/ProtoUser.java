@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -25,8 +26,7 @@ public class ProtoUser {
 
 	private String label;
 	@NotEmpty
-	@Builder.Default
-	private String name = "DefaultUserName";
+	private final String name;
 
 	/**
 	 * String permissions in the form of
@@ -43,6 +43,7 @@ public class ProtoUser {
 	 */
 	@Builder.Default
 	@NotNull
+	@Valid
 	private List<CredentialType> credentials = Collections.emptyList();
 	
 	@JsonIgnore

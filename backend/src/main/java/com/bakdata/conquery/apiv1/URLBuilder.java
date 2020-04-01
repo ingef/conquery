@@ -1,6 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.API;
+import static com.bakdata.conquery.resources.ResourceConstants.API;
 
 import java.util.HashMap;
 import java.util.Map;

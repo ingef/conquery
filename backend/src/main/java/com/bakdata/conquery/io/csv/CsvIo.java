@@ -49,7 +49,10 @@ public class CsvIo {
 	 * @return True if it was gzipped.
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public static boolean isGZipped(File file) throws IOException {
-		return Files.probeContentType(file.toPath()).contains("gzip");
+	public static boolean isGZipped(@NonNull File file) throws IOException {
+		String contentType = Files.probeContentType(file.toPath());
+		if(contentType != null && contentType.contains("gzip"))
+			return true;
+		return false;
 	}
 }

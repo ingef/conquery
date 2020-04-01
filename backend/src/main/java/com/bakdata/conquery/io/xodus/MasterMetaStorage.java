@@ -15,10 +15,10 @@ import com.bakdata.conquery.models.worker.Namespaces;
 
 public interface MasterMetaStorage extends ConqueryStorage {
 
-	void addExecution(ManagedExecution query) throws JSONException;
+	void addExecution(ManagedExecution<?> query);
 	ManagedExecution getExecution(ManagedExecutionId id);
-	Collection<ManagedExecution> getAllExecutions();
-	void updateExecution(ManagedExecution query) throws JSONException;
+	Collection<ManagedExecution<?>> getAllExecutions();
+	void updateExecution(ManagedExecution<?> query) throws JSONException;
 	void removeExecution(ManagedExecutionId id);
 	
 	/**

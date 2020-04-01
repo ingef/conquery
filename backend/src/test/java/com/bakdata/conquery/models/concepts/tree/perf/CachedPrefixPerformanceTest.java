@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
-
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -83,7 +82,7 @@ public class CachedPrefixPerformanceTest extends AbstractSearchPerformanceTest<I
 
 	@Override
 	public void newSearch(Integer key) throws ConceptConfigurationException {
-		cache.findMostSpecificChild(key, rowMap);
+		cache.findMostSpecificChild(key, type.getElement(key), rowMap);
 	}
 }
 

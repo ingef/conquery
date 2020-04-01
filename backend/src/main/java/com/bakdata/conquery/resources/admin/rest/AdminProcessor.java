@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
@@ -87,6 +86,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.shiro.authz.Permission;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -267,12 +267,12 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private List<Pair<FEPermission, String>> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
+	private List<Pair<FEPermission, String>> wrapInFEPermission(Collection<Permission> permissions) {
 		List<Pair<FEPermission, String>> fePermissions = new ArrayList<>();
 
-		for (ConqueryPermission permission : permissions) {
-			if (permission instanceof WildcardPermission) {
-				fePermissions.add(Pair.of(FEPermission.from(permission), permission.toString()));
+		for (Permission permission : permissions) {
+			if (permission instanceof ConqueryPermission) {
+				fePermissions.add(Pair.of(FEPermission.from((ConqueryPermission)permission), permission.toString()));
 
 			}
 			else {
@@ -452,17 +452,7 @@ public class AdminProcessor {
 	}
 
 	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) {
-		PermissionOwner<?> owner = null;
-		Role role = null;
-		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-			role = Objects.requireNonNull(storage.getRole(roleId));
-		}
-		if (!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
-		}
-		((RoleOwner) owner).addRole(storage, role);
-		log.trace("Deleted role {} from {}", role, owner);
+		AuthorizationHelper.addRoleTo(getStorage(), ownerId, roleId);
 	}
 
 	public FEAuthOverview getAuthOverview() {
@@ -479,29 +469,65 @@ public class AdminProcessor {
 		return FEAuthOverview.builder().overview(overview).build();
 	}
 
+	/**
+	 * Renders the permission overview for all users in form of a CSV.
+	 */
 	public String getPermissionOverviewAsCSV() {
+		return getPermissionOverviewAsCSV(storage.getAllUsers());
+	}
+
+
+	/**
+	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
+	 */
+	public String getPermissionOverviewAsCSV(GroupId groupId) {
+		Group group = Objects.requireNonNull(storage.getGroup(groupId), "The group was not found");
+		return getPermissionOverviewAsCSV(group.getMembers());
+	}
+	
+	/**
+	 * Renders the permission overview for certian {@link User} in form of a CSV.
+	 */
+	public String getPermissionOverviewAsCSV(Collection<User> users) {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = CsvIo.createWriter(sWriter);
 		List<String> scope = ConqueryConfig.getInstance()
 			.getAuthorization()
 			.getOverviewScope();
 		// Header
-		writer.addValue("User");
-		writer.addValues(scope);
-		writer.writeValuesToRow();
+		writeAuthOverviewHeader(writer, scope);
 		// Body
-		for (User user : storage.getAllUsers()) {
-			Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
-
-			writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
-			for(String domain : scope) {				
-				writer.addValue(permissions.get(domain).stream()
-					.map(Object::toString)
-					.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
-			}
-			writer.writeValuesToRow();
+		for (User user : users) {
+			writeAuthOverviewUser(writer, scope, user, storage);
 		}
 		return sWriter.toString();
+	}
+	
+	/**
+	 * Writes the header of the CSV auth overview to the specified writer.
+	 */
+	private static void writeAuthOverviewHeader(CsvWriter writer, List<String> scope) {
+		List<String> headers = new ArrayList<>();
+		headers.add("User");
+		headers.addAll(scope);
+		writer.writeHeaders(headers);
+	}
+	
+	/**
+	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer. 
+	 */
+	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MasterMetaStorage storage) {
+		// Print the user in the first column
+		writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
+
+		// Print the permission per domain in the remaining columns
+		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
+		for(String domain : scope) {				
+			writer.addValue(permissions.get(domain).stream()
+				.map(Object::toString)
+				.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
+		}
+		writer.writeValuesToRow();
 	}
 
 	public void deleteImport(ImportId importId) {

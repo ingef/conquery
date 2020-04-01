@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.net.SocketAddress;
@@ -125,8 +125,8 @@ public class AdminUIResource extends HAdmin {
 		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getNamespaces().getAllDatasets());
 	}
 
-	@POST @Path("/update-matching-stats/{"+ DATASET_NAME +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public void updateMatchingStats(@Auth User user, @PathParam(DATASET_NAME)DatasetId datasetId) throws JSONException {
+	@POST @Path("/update-matching-stats/{"+ DATASET +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)DatasetId datasetId) throws JSONException {
 
 		Namespace ns = processor.getNamespaces().get(datasetId);
 		ns.sendToAll(new UpdateMatchingStatsMessage());

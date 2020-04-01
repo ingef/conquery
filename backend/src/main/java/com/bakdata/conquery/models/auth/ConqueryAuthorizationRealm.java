@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.Objects;
-import java.util.Set;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -40,7 +39,7 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 		UserId userId = (UserId) principals.getPrimaryPrincipal();
 		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 		
-		info.addObjectPermissions(Set.copyOf(AuthorizationHelper.getEffectiveUserPermissions(userId, storage)));
+		info.addObjectPermissions(AuthorizationHelper.getEffectiveUserPermissions(userId, storage));
 		
 		return info;
 	}

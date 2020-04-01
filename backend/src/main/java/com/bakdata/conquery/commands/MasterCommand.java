@@ -1,7 +1,6 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +22,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -36,6 +35,7 @@ import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
+import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -64,13 +64,17 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
-	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
+	public void run(ConqueryConfig config, Environment environment) {
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
 			.add(NamespaceCollection.class, namespaces);
-			
+
+
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
+		
+		// Initialization of internationalization
+		I18n.init();
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
@@ -123,13 +127,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		admin = new AdminServlet();
 		admin.register(this, authController);
-		
+
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
 
 		// Register an unprotected servlet for logins on the admin port
 		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
-		
+
+
+		environment.admin().addTask(new QueryCleanupTask(storage));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);

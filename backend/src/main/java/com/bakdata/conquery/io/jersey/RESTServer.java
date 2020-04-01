@@ -1,21 +1,20 @@
 package com.bakdata.conquery.io.jersey;
 
-import org.glassfish.jersey.server.ResourceConfig;
-
 import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import io.dropwizard.server.DefaultServerFactory;
 import lombok.experimental.UtilityClass;
+import org.glassfish.jersey.server.ResourceConfig;
 
 @UtilityClass
 public class RESTServer {
@@ -27,6 +26,7 @@ public class RESTServer {
 		//https://github.com/eclipse-ee4j/jersey/issues/2709
 		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
 		// Register custom mapper
+		jersey.register(new AuthenticationExceptionMapper());
 		jersey.register(new AuthorizationExceptionMapper());
 		jersey.register(JsonValidationExceptionMapper.class);
 		// default Dropwizard's exception mappers
@@ -39,6 +39,7 @@ public class RESTServer {
 		}
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);
+		jersey.register(LocaleFilter.class);
 		
 		jersey.register(new PathParamInjector());
 	}

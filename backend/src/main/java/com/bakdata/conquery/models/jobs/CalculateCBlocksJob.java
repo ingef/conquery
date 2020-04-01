@@ -113,6 +113,9 @@ public class CalculateCBlocksJob extends Job {
 		return new CBlock(info.getBucket().getId(), connector.getId());
 	}
 
+	/**
+	 * No CBlocks for VirtualConcepts
+	 */
 	private void calculateCBlock(CBlock cBlock, VirtualConceptConnector connector, CalculationInformation info) {}
 
 	private void calculateCBlock(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
@@ -130,6 +133,7 @@ public class CalculateCBlocksJob extends Job {
 
 		final ImportId importId = info.getImp().getId();
 
+		// Create index and insert into Tree.
 		TreeChildPrefixIndex.putIndexInto(treeConcept);
 
 		treeConcept.initializeIdCache(stringType, importId);
@@ -141,28 +145,39 @@ public class CalculateCBlocksJob extends Job {
 		for (BucketEntry entry : bucket.entries()) {
 			try {
 				final int event = entry.getEvent();
-				if (bucket.has(event, connector.getColumn())) {
-					int valueIndex = bucket.getString(event, connector.getColumn());
 
-					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-						() -> bucket.calculateMap(event, info.getImp()));
+				// Events without values are skipped
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				if (!bucket.has(event, connector.getColumn())) {
+					cBlock.getMostSpecificChildren().add(null);
+					continue;
+				}
 
-					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
+				int valueIndex = bucket.getString(event, connector.getColumn());
+				final String stringValue = stringType.getElement(valueIndex);
 
-					if (child != null) {
-						cBlock.getMostSpecificChildren().add(child.getPrefix());
-						ConceptTreeNode<?> it = child;
-						while (it != null) {
-							cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
-							it = it.getParent();
-						}
-					}
-					else {
-						// see #174 improve handling by copying the relevant things from the old project
-						cBlock.getMostSpecificChildren().add(null);
+				// Lazy evaluation of map to avoid allocations if possible.
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
+
+
+				if((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))){
+					cBlock.getMostSpecificChildren().add(null);
+					continue;
+				}
+
+				ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+
+				// Add all Concepts and their path to the root to the CBlock
+				if (child != null) {
+					cBlock.getMostSpecificChildren().add(child.getPrefix());
+					ConceptTreeNode<?> it = child;
+					while (it != null) {
+						cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
+						it = it.getParent();
 					}
 				}
 				else {
+					// see #174 improve handling by copying the relevant things from the old project
 					cBlock.getMostSpecificChildren().add(null);
 				}
 			}

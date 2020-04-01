@@ -22,7 +22,7 @@ public class QueryUtils {
 
 	/**
 	 * Checks if the query requires to resolve external ids.
-	 * 
+	 *
 	 * @return True if a {@link CQExternal} is found.
 	 */
 	public static class ExternalIdChecker implements QueryVisitor {
@@ -46,7 +46,7 @@ public class QueryUtils {
 	 * Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
 	 *
 	 * @return Null if not only a single {@link CQReusedQuery} was found beside
-	 *         {@link CQAnd} / {@link CQOr}.
+	 * {@link CQAnd} / {@link CQOr}.
 	 */
 	public static class SingleReusedChecker implements QueryVisitor {
 
@@ -69,6 +69,25 @@ public class QueryUtils {
 		public ManagedExecutionId getOnlyReused() {
 			return (reusedElements.size() == 1 && !containsOthersElements) ? reusedElements.get(0).getQuery() : null;
 		}
+	}
+
+
+	/**
+	 * Find all ReusedQuery in the queries tree, and return their Ids.
+	 *
+	 */
+	public static class AllReusedFinder implements QueryVisitor {
+
+		@Getter
+		final List<CQReusedQuery> reusedElements = new ArrayList<>();
+
+		@Override
+		public void accept(Visitable element) {
+			if (element instanceof CQReusedQuery) {
+				reusedElements.add((CQReusedQuery) element);
+			}
+		}
+
 	}
 
 	/**

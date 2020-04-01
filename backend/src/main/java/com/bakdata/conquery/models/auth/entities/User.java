@@ -95,7 +95,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 
 	public Set<Role> getRoles(){
-		return Set.copyOf(roles);
+		return Collections.unmodifiableSet(roles);
 	}
 	
 	@Override

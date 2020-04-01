@@ -98,6 +98,14 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		List<ConceptTreeChild> openList = new ArrayList<>();
 		openList.addAll(this.getChildren());
 
+		for (ConceptTreeConnector con : getConnectors()) {
+			if(con.getCondition() == null) {
+				continue;
+			}
+
+			con.getCondition().init(this);
+		}
+
 		for(int i=0;i<openList.size();i++) {
 			ConceptTreeChild ctc = openList.get(i);
 			
@@ -188,8 +196,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			.map(ConceptTreeChild.class::cast);
 	}*/
 
-	public void initializeIdCache(AStringType type, ImportId importId) {
-		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type));
+	public void initializeIdCache(AStringType<?> type, ImportId importId) {
+		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
+	}
+
+	public void removeImportCache(ImportId imp) {
+		caches.remove(imp);
 	}
 
 	@Override

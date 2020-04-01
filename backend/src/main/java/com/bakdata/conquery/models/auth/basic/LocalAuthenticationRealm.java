@@ -76,6 +76,9 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
+	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the MasterCommand)
+	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the slaves, so this is a problem.
+	private static final File STORE_DIR = ConqueryConfig.getInstance().getStorage().getDirectory();
 	private int jwtDuration; // Hours
 
 	private final XodusConfig passwordStoreConfig;
@@ -136,7 +139,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	protected void onInit() {
 		super.onInit();
 		// Open/create the database/store
-		File passwordStoreFile = new File(ConqueryConfig.getInstance().getStorage().getDirectory(), storeName);
+		File passwordStoreFile = new File(STORE_DIR, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
 		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"));
 	}
@@ -210,6 +213,9 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	 * @return The password credential.
 	 */
 	private static Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
+		if(credentials == null) {
+			return Optional.empty();
+		}
 		return credentials.stream()
 			.filter(PasswordCredential.class::isInstance)
 			.map(PasswordCredential.class::cast)

@@ -7,6 +7,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -296,6 +297,13 @@ public class BucketManager {
 			}
 
 			removeBucket(bucketId);
+		}
+
+		for (Concept<?> concept : concepts.values()) {
+			if(!(concept instanceof TreeConcept))
+				continue;
+
+			((TreeConcept) concept).removeImportCache(imp);
 		}
 	}
 

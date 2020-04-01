@@ -16,13 +16,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
  * Metadata for connection of {@link Bucket} and {@link Concept}
+ *
+ * Pre-computed assignment of {@link TreeConcept}.
  */
 @Getter @Setter @NoArgsConstructor
 @JsonDeserialize(using = CBlockDeserializer.class)

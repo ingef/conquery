@@ -76,7 +76,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public Set<User> getMembers() {
-		return Set.copyOf(members);
+		return Collections.unmodifiableSet(members);
 	}
 
 	public void addRole(MasterMetaStorage storage, Role role) {
@@ -94,7 +94,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public Set<Role> getRoles() {
-		return Set.copyOf(roles);
+		return Collections.unmodifiableSet(roles);
 	}
 
 }

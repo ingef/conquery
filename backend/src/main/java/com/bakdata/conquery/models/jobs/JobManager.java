@@ -12,11 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 public class JobManager implements Managed {
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
-	
-	
+
+
 	public JobManager(String labelSuffix) {
-		slowExecutor = new JobExecutor("slow "+labelSuffix);
-		fastExecutor = new JobExecutor("fast "+labelSuffix);
+		slowExecutor = new JobExecutor("Job Manager slow " + labelSuffix);
+		fastExecutor = new JobExecutor("Job Manager lfast " + labelSuffix);
 	}
 
 	public void addSlowJob(Job job) {
@@ -54,7 +54,7 @@ public class JobManager implements Managed {
 				.collect(Collectors.toList())
 		);
 	}
-	
+
 	public boolean isSlowWorkerBusy() {
 		return slowExecutor.isBusy();
 	}

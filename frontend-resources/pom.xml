@@ -23,7 +23,7 @@
 	<build>
 		<resources>
 			<resource>
-				<directory>${workingDirectory}/app/dist/</directory>
+				<directory>${workingDirectory}/build/</directory>
 				<targetPath>frontend/app/static/</targetPath>
 				<excludes>
 					<exclude>**/stats.json</exclude>
@@ -86,7 +86,7 @@
 						<phase>generate-resources</phase>
 
 						<configuration>
-							<arguments>build-ci</arguments>
+							<arguments>build</arguments>
 						</configuration>
 					</execution>
 					<execution>
@@ -96,7 +96,7 @@
 						</goals>
 						<phase>test</phase>
 						<configuration>
-							<arguments>test</arguments>
+							<arguments>test --watchAll=false</arguments>
 						</configuration>
 					</execution>
 				</executions>

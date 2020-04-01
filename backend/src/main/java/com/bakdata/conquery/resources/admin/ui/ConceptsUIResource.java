@@ -1,7 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,13 +28,13 @@ import lombok.Setter;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
 @Getter @Setter
-@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
+@Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
 public class ConceptsUIResource extends HAdmin {
 
-	@PathParam(CONCEPT_NAME)
+	@PathParam(CONCEPT)
 	protected ConceptId conceptId;
 	protected Concept<?> concept;
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
 

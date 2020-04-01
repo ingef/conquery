@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.auth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -32,6 +33,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
@@ -144,6 +146,19 @@ public class AuthorizationHelper {
 		}
 		return userGroups;
 	}
+
+	/**
+	 * Find the primary group of the user. All users must have a primary group.
+	 * @implNote Currently this is the first group of a user and should also be the only group.
+	 */
+	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MasterMetaStorage storage) {
+		List<Group> groups = getGroupsOf(user, storage);
+		if(groups.isEmpty()) {
+			return Optional.empty();
+		}
+		// TODO: 17.02.2020 implement primary flag for user etc.
+		return Optional.of(groups.get(0));
+	}
 	
 
 	
@@ -152,25 +167,49 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId, MasterMetaStorage storage) {
+	public static Set<Permission> getEffectiveUserPermissions(UserId userId, MasterMetaStorage storage) {
 		User user = Objects.requireNonNull(
 			storage.getUser(userId),
 			() -> String.format("User with id %s was not found", userId));
-		Set<ConqueryPermission> permissions = new HashSet<>(user.getPermissions());
+		Set<Permission> userPermissions = user.getPermissions();
+		Set<Permission> tmpView = userPermissions;
 		for (Role role : user.getRoles()) {
-			permissions.addAll(role.getPermissions());
+			// In order to avoid copying, we build a 'tree' of Sets as a SetView, 
+			tmpView = Sets.union(tmpView, role.getPermissions());
+			
 		}
 		
 		for (Group group : storage.getAllGroups()) {
 			if(group.containsMember(user)) {
-				// Get Permissions of the group
-				permissions.addAll(group.getPermissions());
-				// And all of all roles a group holds
-				group.getRoles().forEach(r -> permissions.addAll(r.getPermissions()));
+				// Get effective permissions of the group
+				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group.getId(), storage));
 			}
 		}
-		return permissions;
+		return tmpView;
 	}
+	
+	/**
+	 * Returns a list of the effective permissions. These are the permissions of the owner and
+	 * the permission of the roles it inherits.
+	 * @param groupId
+	 * @param storage
+	 * @return
+	 */
+	public static Set<Permission> getEffectiveGroupPermissions(GroupId groupId, MasterMetaStorage storage) {
+		Group group = Objects.requireNonNull(
+			storage.getGroup(groupId),
+			() -> String.format("User with id %s was not found", groupId));
+
+		Set<Permission> groupPermissions = group.getPermissions();
+		Set<Permission> tmpView = groupPermissions;
+		for (Role role : group.getRoles()) {
+			Set<Permission> currentView = Sets.union(tmpView, role.getPermissions());
+			tmpView = currentView;
+		}
+		
+		return tmpView;
+	}
+	
 	
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
@@ -178,13 +217,14 @@ public class AuthorizationHelper {
 	 * @return Owned and inherited permissions.
 	 */
 	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(UserId userId, List<String> domainSpecifier, MasterMetaStorage storage) {
-		Set<ConqueryPermission> permissions = getEffectiveUserPermissions(userId, storage);
+		Set<Permission> permissions = getEffectiveUserPermissions(userId, storage);
 		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
-		for(ConqueryPermission perm : permissions) {
-			Set<String> domains = perm.getDomains();
-			if(!Collections.disjoint(domainSpecifier, perm.getDomains())) {
+		for(Permission perm : permissions) {
+			ConqueryPermission cPerm = (ConqueryPermission) perm;
+			Set<String> domains = cPerm.getDomains();
+			if(!Collections.disjoint(domainSpecifier, cPerm.getDomains())) {
 				for(String domain : domains) {
-					mappedPerms.put(domain, perm);
+					mappedPerms.put(domain, cPerm);
 				}
 			}
 		}
@@ -244,7 +284,7 @@ public class AuthorizationHelper {
 	 * Checks if an execution is allowed to be downloaded by a user.
 	 * This checks all used {@link DatasetId}s for the {@link Ability.DOWNLOAD} on the user.
 	 */
-	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution exec) {
+	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
 		List<Permission> perms = exec.getUsedNamespacedIds().stream()
 			.map(NamespacedId::getDataset)
 			.distinct()

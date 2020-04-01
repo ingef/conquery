@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 
@@ -79,14 +80,20 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 		// Check the Authorization header for a String which can be parsed as a UserId
 		String uid = requestContext.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-		if (uid == null) {
+		if (uid != null) {
+			uid = uid.replaceFirst("^Bearer ", "");
+		}
+		else {
 			// Check also the query parameter "access_token" for a UserId
 			uid = requestContext.getUriInfo().getQueryParameters().getFirst(UID_QUERY_STRING_PARAMETER);
 		}
 
+
 		UserId userId = null;
 
-		if (uid != null) {
+		if (StringUtils.isNotEmpty(uid)) {
+			uid = uid.replaceFirst("^Bearer ", "");
+      
 			try {
 				userId = UserId.Parser.INSTANCE.parse(uid);		
 				return new DevelopmentToken(userId, uid);		

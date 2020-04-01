@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.concepts.tree;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.conditions.OrCondition;
@@ -13,7 +15,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.BytesTTMap;
 import com.bakdata.conquery.util.dict.ValueNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -47,7 +48,7 @@ public class TreeChildPrefixIndex {
 				;
 	}
 
-	public static void putIndexInto(ConceptTreeNode root) {
+	public static void putIndexInto(ConceptTreeNode<?> root) {
 		if(root.getChildIndex() != null) {
 			return;
 		}
@@ -62,30 +63,33 @@ public class TreeChildPrefixIndex {
 
 			TreeChildPrefixIndex index = new TreeChildPrefixIndex();
 
-			List<ConceptTreeChild> treeChildrenOrig = new ArrayList<>();
-			treeChildrenOrig.addAll(root.getChildren());
-
 			// collect all prefix children that are itself children of prefix nodes
 			Map<String, ConceptTreeChild> gatheredPrefixChildren = new HashMap<>();
 
-			for (int i = 0; i < treeChildrenOrig.size(); i++) {
-				ConceptTreeChild child = treeChildrenOrig.get(i);
+			Queue<ConceptTreeChild> treeChildrenOrig = new ArrayDeque<>(root.getChildren());
+			ConceptTreeChild child;
+
+			// Iterate over all children that can be reached deterministically with prefixes
+			while ((child = treeChildrenOrig.poll()) != null) {
 				CTCondition condition = child.getCondition();
 
-				if(isPrefixMaintainigCondition(condition)) {
-					treeChildrenOrig.addAll(child.getChildren());
-
-					if (condition instanceof PrefixCondition) {
-						for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
-							// We are interested in the most specific child, therefore the deepest.
-							gatheredPrefixChildren.merge(prefix, child,
-								(newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild
-							);
-						}
-					}
-				}
-				else {
+				// If the Condition is not deterministic wrt to prefixes, we will not build an index over it, but start a new one from there.
+				if (!isPrefixMaintainigCondition(condition)) {
 					putIndexInto(child);
+					continue;
+				}
+
+				treeChildrenOrig.addAll(child.getChildren());
+
+				if (!(condition instanceof PrefixCondition)) {
+					continue;
+				}
+
+				for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
+					// We are interested in the most specific child, therefore the deepest.
+					gatheredPrefixChildren.merge(prefix, child,
+						(newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild
+					);
 				}
 			}
 
@@ -95,8 +99,9 @@ public class TreeChildPrefixIndex {
 			for (Map.Entry<String, ConceptTreeChild> entry : gatheredPrefixChildren.entrySet()) {
 				String k = entry.getKey();
 				ConceptTreeChild value = entry.getValue();
-				if (index.valueToChildIndex.put(k.getBytes(), gatheredChildren.size()) != -1)
+				if (index.valueToChildIndex.put(k.getBytes(), gatheredChildren.size()) != -1) {
 					log.error("Duplicate Prefix '{}' in '{}' of '{}'", k, value, root);
+				}
 
 				gatheredChildren.add(value);
 			}

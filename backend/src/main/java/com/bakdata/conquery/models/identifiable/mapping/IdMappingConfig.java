@@ -62,7 +62,7 @@ public abstract class IdMappingConfig {
 	 * Is called once before a mapping is used before a query result is created to
 	 * allow the mapping to have state information.
 	 */
-	public IdMappingState initToExternal(User user, ManagedExecution execution) {
+	public IdMappingState initToExternal(User user, ManagedExecution<?> execution) {
 		// This mapping does not need a per-query state, so we return an immutable empty map.
 		return null;
 	}

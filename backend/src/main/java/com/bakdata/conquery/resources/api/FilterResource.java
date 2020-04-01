@@ -1,9 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.FILTER_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.List;
 
@@ -18,21 +15,19 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HFilters;
-
 import lombok.Data;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}/tables/{" + TABLE_NAME + "}/filters/{" + FILTER_NAME + "}")
+@Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}/tables/{" + TABLE + "}/filters/{" + FILTER + "}")
 public class FilterResource extends HFilters {
 	
 	@Inject

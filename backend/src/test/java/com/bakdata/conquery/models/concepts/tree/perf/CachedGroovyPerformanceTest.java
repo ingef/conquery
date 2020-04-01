@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.RandomUtils;
-
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -16,8 +14,8 @@ import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 
 @Slf4j
 public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<Integer> {
@@ -81,7 +79,7 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 
 	@Override
 	public void newSearch(Integer key) throws ConceptConfigurationException {
-		cache.findMostSpecificChild(key,  new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8,19 ))));
+		cache.findMostSpecificChild(key, type.getElement(key), new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8, 19 ))));
 	}
 
 }

@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Priority;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.realm.Realm;
 
@@ -34,6 +37,7 @@ import org.apache.shiro.realm.Realm;
 @Slf4j
 @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@Priority(Priorities.AUTHENTICATION)
 public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	private final AuthorizationController controller;
@@ -58,21 +62,34 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 		}
 
-		List<AuthenticationToken> failedTokens = new ArrayList<>();
+		int failedTokens = 0; 
 
 		// The authentication process
 		for (AuthenticationToken token : tokens) {
-			// Submit the token to dropwizard which forwards it to Shiro
-			if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
-				failedTokens.add(token);
-				continue;
+			try {				
+				// Submit the token to dropwizard which forwards it to Shiro
+				if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
+					// This is the dropwizard way to indicate that authentication failed
+					failedTokens++;
+					// Continue with next token
+					continue;
+				}
+				// Success an extracted token could be authenticated
+				log.trace("Authentication was successfull for token type {}", token.getClass().getName());
+				return;
+			} catch (AuthenticationException e) {
+				// This is the shiro way to indicate that authentication failed
+				if(tokens.size() > 1) {
+					failedTokens++; 
+					log.trace("Token authentication failed:",e);
+					// If there is more than one token try the other ones too
+					continue;
+				}
+				throw e;
 			}
-			// Success an extracted token could be authenticated
-			log.trace("Authentication was successfull for token type {}", token.getClass().getName());
-			return;
 		}
-		log.warn("Non of the configured realms was able to successfully authenticate the following token(s).");
-		log.trace("The failing tokens were: {}", failedTokens);
+		log.warn("Non of the configured realms was able to successfully authenticate the extracted token(s).");
+		log.trace("The {} tokens failed.", failedTokens);
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
 
