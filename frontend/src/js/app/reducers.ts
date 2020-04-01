@@ -33,6 +33,9 @@ import uploadConceptListModal, {
 import { createQueryNodeEditorReducer } from "../query-node-editor/reducer";
 
 import type { StandardQueryEditorStateT } from "../standard-query-editor";
+import formConfigs, {
+  FormConfigsStateT
+} from "../external-forms/form-configs/reducer";
 
 // TODO: Introduce more StateTypes gradually
 export type StateT = {
@@ -47,6 +50,7 @@ export type StateT = {
   previousQueries: PreviousQueriesStateT;
   previousQueriesSearch: PreviousQueriesSearchStateT;
   previousQueriesFilter: PreviousQueriesFilterStateT;
+  formConfigs: FormConfigsStateT;
 };
 
 const buildAppReducer = (tabs: TabT[]) => {
@@ -68,6 +72,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     preview,
     queryUploadConceptListModal,
     user,
+    formConfigs,
     ...tabs.reduce((all, tab) => {
       all[tab.key] = tab.reducer;
       return all;

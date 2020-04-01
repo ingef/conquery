@@ -1,7 +1,7 @@
-type ErrorObject = {
+interface ErrorObject {
   message: string;
   status: string;
-};
+}
 
 export const defaultError = (
   type: string,

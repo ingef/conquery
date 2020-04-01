@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
 
@@ -7,13 +7,17 @@ import Pane from "../pane/Pane";
 import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
 import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
+import FormConfigsTab from "js/external-forms/form-configs/FormConfigsTab";
+import { StateT } from "./reducers";
 
-type PropsType = {
-  activeTab: string;
-  selectedDatasetId: DatasetIdT | null;
-};
+const LeftPane = () => {
+  const activeTab = useSelector<StateT, string>(
+    state => state.panes.left.activeTab
+  );
+  const selectedDatasetId = useSelector<StateT, DatasetIdT | null>(
+    state => state.datasets.selectedDatasetId
+  );
 
-const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
   return (
     <Pane left>
       {activeTab === "conceptTrees" && (
@@ -23,11 +27,11 @@ const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
       {activeTab === "previousQueries" && (
         <PreviousQueriesTab datasetId={selectedDatasetId} />
       )}
+      {activeTab === "formConfigs" && (
+        <FormConfigsTab datasetId={selectedDatasetId} />
+      )}
     </Pane>
   );
 };
 
-export default connect(state => ({
-  activeTab: state.panes.left.activeTab,
-  selectedDatasetId: state.datasets.selectedDatasetId
-}))(LeftPane);
+export default LeftPane;

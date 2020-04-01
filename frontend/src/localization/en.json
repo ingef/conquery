@@ -3,7 +3,8 @@
   "headline": "Queries and Analyses",
   "leftPane": {
     "conceptTrees": "Concepts",
-    "previousQueries": "Queries"
+    "previousQueries": "Queries",
+    "formConfigs": "Form configurations"
   },
   "rightPane": {
     "queryEditor": "Group Editor",
@@ -109,7 +110,10 @@
     "clearAll": "Clear all",
     "clearValue": "Clear value",
     "closeEsc": "Close (ESC)",
-    "create": "Create"
+    "create": "Create",
+    "addTag": "Add Tag",
+    "share": "Share",
+    "shared": "Shared"
   },
   "tooltip": {
     "headline": "Info",
@@ -166,10 +170,6 @@
   },
   "previousQuery": {
     "notExecuted": "Not executed yet",
-    "addTag": "Add Tag",
-    "share": "Share",
-    "shared": "Shared",
-    "delete": "Delete",
     "downloadResults": "Download results",
     "loadError": "Could not load query",
     "renameError": "Could not rename query",
@@ -327,5 +327,17 @@
     "password": "Password",
     "error": "Login failed. Please check user name and password.",
     "submit": "Login"
+  },
+  "formConfigs": {
+    "loading": "Loading form configurations",
+    "error": "Could not load form configurations.",
+    "noneFound": "No form configurations found"
+  },
+  "formConfig": {
+    "loadError": "Could not load form configuration",
+    "renameError": "Could not rename form configuration",
+    "retagError": "Could not save tags",
+    "shareError": "Could not share form configuration",
+    "deleteError": "Could not delete form configuration"
   }
 }

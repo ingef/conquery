@@ -15,7 +15,8 @@ import type {
   PostFilterSuggestionsResponseT,
   GetFormQueriesResponseT,
   GetMeResponseT,
-  PostLoginResponseT
+  PostLoginResponseT,
+  GetFormConfigsResponseT
 } from "./types";
 
 import fetchJson, { fetchJsonUnauthorized } from "./fetchJson";
@@ -220,24 +221,19 @@ export function postLogin(
 
 export function postFormConfig(
   datasetId: DatasetIdT,
-  configName: string,
   values: {
     [fieldName: string]: any;
   }
 ): Promise<PostFormConfigsResponseT> {
   return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-configs`), {
     method: "POST",
-    data: {
-      name: configName,
-      values
-    }
+    data: values
   });
 }
 
 export function patchFormConfig(
   datasetId: DatasetIdT,
   formConfigId: string,
-  configName: string,
   values: {
     [fieldName: string]: any;
   }
@@ -246,10 +242,25 @@ export function patchFormConfig(
     getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
     {
       method: "PATCH",
-      data: {
-        name: configName,
-        values
-      }
+      data: values
+    }
+  );
+}
+
+export function getFormConfigs(
+  datasetId: DatasetIdT
+): Promise<GetFormConfigsResponseT> {
+  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-configs`));
+}
+
+export function deleteFormConfig(
+  datasetId: DatasetIdT,
+  formConfigId: string
+): Promise<null> {
+  return fetchJson(
+    getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
+    {
+      method: "DELETE"
     }
   );
 }

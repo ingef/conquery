@@ -1,20 +1,20 @@
 import { CLICK_PANE_TAB } from "./actionTypes";
 
-export type TabType = {
+export interface TabType {
   label: string;
   key: string;
-};
+}
 
-export type PanesStateT = {
+export interface PanesStateT {
   left: {
-    activeTab: "conceptTrees" | "previousQueries";
+    activeTab: "conceptTrees" | "previousQueries" | "formConfigs";
     tabs: TabType[];
   };
   right: {
     activeTab: string;
     tabs: TabType[];
   };
-};
+}
 
 export const buildPanesReducer = tabs => {
   const initialState: PanesStateT = {
@@ -22,7 +22,8 @@ export const buildPanesReducer = tabs => {
       activeTab: "conceptTrees",
       tabs: [
         { label: "leftPane.conceptTrees", key: "conceptTrees" },
-        { label: "leftPane.previousQueries", key: "previousQueries" }
+        { label: "leftPane.previousQueries", key: "previousQueries" },
+        { label: "leftPane.formConfigs", key: "formConfigs" }
       ]
     },
     right: {

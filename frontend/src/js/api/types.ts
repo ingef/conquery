@@ -3,6 +3,7 @@
 // - partial types that the reponses are built from
 
 import type { Forms } from "./form-types";
+import { FormConfigT } from "js/external-forms/form-configs/reducer";
 
 export type DatasetIdT = string;
 export type DatasetT = {
@@ -243,7 +244,7 @@ export interface GetQueryResponseDoneT {
   resultUrl: string;
 }
 
-export type GetQueryResponse =
+export type GetQueryResponseT =
   | GetQueryResponseDoneT
   | {
       status: "FAILED" | "CANCELED";
@@ -320,3 +321,5 @@ export interface PostLoginResponseT {
 export interface PostFormConfigsResponseT {
   id: string;
 }
+
+export type GetFormConfigsResponseT = FormConfigT[];

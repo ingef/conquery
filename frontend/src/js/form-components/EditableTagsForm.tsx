@@ -10,7 +10,7 @@ type PropsType = {
   className?: string;
   tags?: string[];
   loading: boolean;
-  onSubmit: () => void;
+  onSubmit: (tags: string[]) => void;
   onCancel: () => void;
   availableTags?: string[];
 };

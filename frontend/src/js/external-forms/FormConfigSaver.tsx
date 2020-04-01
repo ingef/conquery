@@ -55,9 +55,10 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   const [formConfigId, setFormConfigId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const hasActiveForm = useSelector<StateT, boolean>(
-    state => !!selectActiveForm(state)
+  const activeFormType = useSelector<StateT, string | null>(state =>
+    selectActiveForm(state)
   );
+  const hasActiveForm = !!activeFormType;
   const formValues = useSelector<StateT>(state =>
     selectActiveFormValues(state)
   );
@@ -93,11 +94,18 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
     setIsLoading(true);
     try {
       if (formConfigId) {
-        await patchFormConfig(datasetId, formConfigId, configName, formValues);
+        await patchFormConfig(datasetId, formConfigId, {
+          name: configName,
+          values: formValues
+        });
 
         setIsDirty(false);
       } else {
-        const result = await postFormConfig(datasetId, configName, formValues);
+        const result = await postFormConfig(datasetId, {
+          name: configName,
+          formType: activeFormType,
+          values: formValues
+        });
 
         setFormConfigId(result.id);
         setIsDirty(false);

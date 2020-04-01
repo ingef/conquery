@@ -8,6 +8,9 @@ const Root = styled("div")`
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   padding: 0 20px;
   background-color: white;
+  display: flex;
+  overflow: hidden:
+  align-items: flex-start;
 `;
 
 const Headline = styled("h2")<{ active: boolean }>`
@@ -18,11 +21,11 @@ const Headline = styled("h2")<{ active: boolean }>`
   letter-spacing: 1px;
   line-height: 38px;
   text-transform: uppercase;
+  flex-shrink: 0;
 
   transition: color ${({ theme }) => theme.transitionTime},
     border-bottom ${({ theme }) => theme.transitionTime};
   cursor: pointer;
-  display: inline-block;
   margin-right: 15px;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.gray};
@@ -38,13 +41,13 @@ const Headline = styled("h2")<{ active: boolean }>`
   }
 `;
 
-type PropsType = {
-  onClickTab: Function;
+interface PropsT {
+  onClickTab: (tab: string) => void;
   activeTab: string;
   tabs: TabType[];
-};
+}
 
-const TabNavigation = (props: PropsType) => {
+const TabNavigation: React.FC<PropsT> = props => {
   return (
     <Root>
       {Object.values(props.tabs).map(({ label, key }) => (

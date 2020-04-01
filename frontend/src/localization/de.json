@@ -3,7 +3,8 @@
   "headline": "Anfragen und Analyse",
   "leftPane": {
     "conceptTrees": "Konzeptbäume",
-    "previousQueries": "Anfragen"
+    "previousQueries": "Anfragen",
+    "formConfigs": "Formular-Konfigurationen"
   },
   "rightPane": {
     "queryEditor": "Editor",
@@ -109,7 +110,10 @@
     "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen",
     "closeEsc": "Schließen (ESC)",
-    "create": "Erstellen"
+    "create": "Erstellen",
+    "addTag": "Schlagwort hinzufügen",
+    "share": "Freigeben",
+    "shared": "Freigegeben"
   },
   "tooltip": {
     "headline": "Info",
@@ -166,10 +170,6 @@
   },
   "previousQuery": {
     "notExecuted": "Noch nicht ausgeführt",
-    "addTag": "Schlagwort hinzufügen",
-    "share": "Freigeben",
-    "shared": "Freigegeben",
-    "delete": "Löschen",
     "downloadResults": "Ergebnisse herunterladen",
     "loadError": "Konnte Anfrage nicht laden",
     "renameError": "Konnte Anfrage nicht umbenennen",
@@ -327,5 +327,17 @@
     "password": "Passwort",
     "error": "Einloggen fehlgeschlagen. Bitte die Eingabe überprüfen.",
     "submit": "Starten"
+  },
+  "formConfigs": {
+    "loading": "Lade Formular-Konfigurationen",
+    "error": "Konnte Formular-Konfigurationen nicht laden",
+    "noneFound": "Keine Formular-Konfigurationen gefunden"
+  },
+  "formConfig": {
+    "loadError": "Konnte Konfiguration nicht laden",
+    "renameError": "Konnte Konfiguration nicht umbenennen",
+    "retagError": "Konnte Schlagwörter nicht speichern",
+    "shareError": "Konnte Konfiguration nicht freigeben",
+    "deleteError": "Konnte Konfiguration nicht löschen"
   }
 }
