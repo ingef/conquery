@@ -55,12 +55,12 @@ import org.glassfish.hk2.api.MultiException;
 @ToString
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
-public class ManagedForm extends ManagedExecution<FormSharedResult> {
+public class ManagedForm<F extends Form> extends ManagedExecution<FormSharedResult> {
 	
 	/**
 	 * The form that was submitted through the api.
 	 */
-	private Form submittedForm;
+	private F submittedForm;
 	
 	/**
 	 * Mapping of a result table name to a set of queries.
@@ -78,7 +78,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@JsonIgnore
 	private transient AtomicInteger openSubQueries;
 	
-	public ManagedForm(Form submittedForm, UserId owner, DatasetId submittedDataset ) {
+	public ManagedForm(F submittedForm , UserId owner, DatasetId submittedDataset) {
 		super(owner, submittedDataset);
 		this.submittedForm = submittedForm;
 	}
@@ -207,5 +207,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
 		return ResultCSVResource.resultAsStreamingOutput(new ResultGenerationContext(this, mappingState, settings, charset, lineSeparator));
+	}
+	
+	public static <F extends Form> ManagedForm<?> from(F form , UserId userId, DatasetId submittedDataset){
+		return new ManagedForm<F>(form, userId, submittedDataset);
 	}
 }

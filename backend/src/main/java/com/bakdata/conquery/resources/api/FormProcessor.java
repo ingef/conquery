@@ -32,9 +32,10 @@ public class FormProcessor {
 
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
-	private static final Map<Class<? extends Form>, JsonNode> FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
+	private static final Map<String, JsonNode> FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
 
-	private static Map<Class<? extends Form>, JsonNode> generateFEFormConfigMap() {
+	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
+		// Gather form implementations first
 		Map<String, Class<? extends Form>> forms = new HashMap<>();
 		for( Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(Form.class.getName()).loadClasses()) {
 			if(Modifier.isAbstract(subclass.getModifiers())){
@@ -47,13 +48,20 @@ public class FormProcessor {
 			}
 			forms.put(anno.id(), (Class<? extends Form>) subclass);
 		}
+		return forms;
+	}
+	
+	private static Map<String, JsonNode> generateFEFormConfigMap() {
+		final String infoFormat = "\t%-20s %-50s %-20s\n";
+		StringBuilder info = new StringBuilder(String.format("\n"+infoFormat, "Form Type", "Frontend Config", "Backend Class"));
 		
-		Map<Class<? extends Form>, JsonNode> result = new HashMap<>();
+		Map<String, Class<? extends Form>> forms = findBackendMappingClasses();
+		
+		Map<String, JsonNode> result = new HashMap<>();
 		ResourceList frontendConfigs = CPSTypeIdResolver.SCAN_RESULT
 			.getResourcesMatchingPattern(Pattern.compile(".*\\.frontend_conf\\.json"));
 		ObjectReader reader = io.dropwizard.jackson.Jackson.newObjectMapper().reader();
-		final String infoFormat = "\t%-20s %-50s %-20s\n";
-		StringBuilder info = new StringBuilder(String.format(infoFormat, "Form Type", "Frontend Config", "Backend Class"));
+		
 		for (Resource config : frontendConfigs) {
 			JsonNode configTree;
 			try {
@@ -62,26 +70,38 @@ public class FormProcessor {
 			catch (IOException e) {
 				throw new IllegalArgumentException(String.format("Could not parse the frontend config: %s", config.getPath()), e);
 			}
-			String formType = configTree.get("type").asText();
-			Class<? extends Form> formClass = forms.get(formType);
-			if(formClass == null) {
-				throw new IllegalStateException(String.format("Found frontend config for form %s but could not find an corresponding backend implementation.", formType));
+			String typeIdentifier = null;
+			JsonNode type = configTree.get("type");
+			if(validTypeId(type)) {
+				typeIdentifier = type.asText();
 			}
-			JsonNode prev = result.put(formClass, configTree);
+			if(!forms.containsKey(typeIdentifier)) {
+				log.warn("Frontend form config {} (type = {}) does not map to a backend class.", config, type);
+				continue;
+			}
+			JsonNode subtype = configTree.get("subType");
+			if(validTypeId(subtype)) {
+				typeIdentifier = subtype.asText();
+			}
+			JsonNode prev = result.put(typeIdentifier, configTree);
 			if(prev != null ) {				
-				throw new IllegalStateException(String.format("Could not map %s to form %s because there was already a mapping:\n%s", config.getPathRelativeToClasspathElement(), formType, prev));
+				throw new IllegalStateException(String.format("Could not map %s to form %s because there was already a mapping:\n%s", config.getPathRelativeToClasspathElement(), typeIdentifier, prev));
 			}
-			info.append(String.format(infoFormat, formType, config.getPath(), formClass));
+			Class<? extends Form> formClass = forms.get(type.asText());
+			info.append(String.format(infoFormat, typeIdentifier, config.getPath(), formClass));
 		}
-		log.info("Found form config mapping for form:\n{}", info.toString());
-		
+		log.info(info.toString());
 		return result;
+	}
+	
+	private static boolean validTypeId(JsonNode node) {
+		return node != null && node.isTextual() && !node.asText().isEmpty();
 	}
 
 	public Collection<JsonNode> getFormsForUser(User user) {
 		List<JsonNode> allowedForms = new ArrayList<>();
 		
-		for(Entry<Class<? extends Form>, JsonNode> formMapping : FRONTEND_FORM_CONFIGS.entrySet()) {			
+		for(Entry<String, JsonNode> formMapping : FRONTEND_FORM_CONFIGS.entrySet()) {			
 			if (user.isPermitted(FormPermission.onInstance(Ability.CREATE, formMapping.getKey()))) {
 				allowedForms.add(formMapping.getValue());
 			}

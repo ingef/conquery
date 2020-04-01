@@ -56,7 +56,7 @@ public class QueryCleanupTask extends Task {
 					((ManagedQuery) execution).getQuery().visit(reusedChecker);
 				}
 				else if (execution instanceof ManagedForm) {
-					((ManagedForm) execution).getFlatSubQueries().values()
+					((ManagedForm<?>) execution).getFlatSubQueries().values()
 											 .forEach(q -> q.getQuery().visit(reusedChecker));
 				}
 
