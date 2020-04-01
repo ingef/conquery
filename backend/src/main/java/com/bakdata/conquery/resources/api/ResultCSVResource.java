@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
+import com.bakdata.conquery.models.query.ResultGenerationContext;
 import com.bakdata.conquery.models.worker.Namespaces;
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
@@ -69,40 +70,46 @@ public class ResultCSVResource {
 		
 		// Get the locale extracted by the LocaleFilter
 		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
+		Charset charset = determineCharset(userAgent);
 
 		try {
-			Stream<String> csv = QueryToCSVRenderer.toCSV(settings, exec.toResultQuery(), mappingState);
-
-			log.info("Querying results for {}", queryId);
-			StreamingOutput out = new StreamingOutput() {
-
-				@Override
-				public void write(OutputStream os) throws WebApplicationException {
-					try (BufferedWriter writer = new BufferedWriter(
-						new OutputStreamWriter(
-							os,
-							determineCharset(userAgent)))) {
-						Iterator<String> it = csv.iterator();
-						while (it.hasNext()) {
-							writer.write(it.next());
-							writer.write(config.getCsv().getLineSeparator());
-						}
-						writer.flush();
-					}
-					catch (EofException e) {
-						log.info("User canceled download of {}", queryId);
-					}
-					catch (Exception e) {
-						throw new WebApplicationException("Failed to load result " + queryId, e);
-					}
-				}
-			};
+			StreamingOutput out = exec.getResult(mappingState, settings, charset, config.getCsv().getLineSeparator());
 
 			return Response.ok(out).build();
 		}
 		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
 		}
+	}
+
+	public static StreamingOutput resultAsStreamingOutput(ResultGenerationContext context) {
+		Stream<String> csv = QueryToCSVRenderer.toCSV(context.getSettings(), context.getExecution().toResultQuery(), context.getMappingState());
+
+		log.info("Querying results for {}", context.getExecution().getId());
+		StreamingOutput out = new StreamingOutput() {
+
+			@Override
+			public void write(OutputStream os) throws WebApplicationException {
+				try (BufferedWriter writer = new BufferedWriter(
+					new OutputStreamWriter(
+						os,
+						context.getCharset()))) {
+					Iterator<String> it = csv.iterator();
+					while (it.hasNext()) {
+						writer.write(it.next());
+						writer.write(context.getLineSeparator());
+					}
+					writer.flush();
+				}
+				catch (EofException e) {
+					log.info("User canceled download of {}", context.getExecution().getId());
+				}
+				catch (Exception e) {
+					throw new WebApplicationException("Failed to load result " + context.getExecution().getId(), e);
+				}
+			}
+		};
+		return out;
 	}
 
 	private Charset determineCharset(String userAgent) {
