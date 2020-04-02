@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import com.bakdata.conquery.commands.SlaveCommand;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.network.specific.ShutdownWorker;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -215,6 +217,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
+
+
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					assertThat(slave.getWorkers().getWorkers().values())
 							.filteredOn(w -> w.getInfo().getDataset().equals(dataset))
@@ -229,7 +233,17 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			}
 
 			testConquery.waitUntilWorkDone();
-			testConquery.shutdown(conquery);
+
+
+			// Manually shutdown the new namespace as the old one was deleted.
+			log.info("Tearing down dataset");
+			namespace.sendToAll(new ShutdownWorker());
+			try {
+				conquery.getStandaloneCommand().getMaster().getStorage().close();
+			} catch (IOException e) {
+				log.error("", e);
+			}
+
 
 			// Finally, restart conquery and assert again, that the data is correct.
 			{

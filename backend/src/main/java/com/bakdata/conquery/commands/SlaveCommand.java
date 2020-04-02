@@ -77,21 +77,21 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
-		this.config = configuration;
+		config = configuration;
 
 		// If we are a SlaveCommand (not Standalone), we host our own backend server.
 		if (isSlaveCommand(namespace)) {
-			configuration.setServerFactory(configuration.getSlaveServer());
+			getConfig().setServerFactory(getConfig().getSlaveServer());
 
 			// Dropwizard's way of disabling the frontend server.
-			if (configuration.getServerFactory() instanceof SimpleServerFactory) {
-				((SimpleServerFactory) configuration.getServerFactory()).setConnector(null);
+			if (getConfig().getServerFactory() instanceof SimpleServerFactory) {
+				((SimpleServerFactory) getConfig().getServerFactory()).setConnector(null);
 			}
-			else if (configuration.getServerFactory() instanceof DefaultServerFactory) {
-				((DefaultServerFactory) configuration.getServerFactory()).getApplicationConnectors().clear();
+			else if (getConfig().getServerFactory() instanceof DefaultServerFactory) {
+				((DefaultServerFactory) getConfig().getServerFactory()).getApplicationConnectors().clear();
 			}
 
-			RESTServer.configure(configuration, environment.jersey().getResourceConfig());
+			RESTServer.configure(getConfig(), environment.jersey().getResourceConfig());
 		}
 
 
@@ -109,16 +109,16 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
-		File storageDir = configuration.getStorage().getDirectory();
+		File storageDir = getConfig().getStorage().getDirectory();
 		for (File directory : storageDir.listFiles()) {
 			if (directory.getName().startsWith("worker_")) {
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, configuration.getStorage(), directory);
+				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, getConfig().getStorage(), directory);
 				if (workerStorage != null) {
 					Worker worker = new Worker(
 							workerStorage.getWorker(),
 							jobManager,
 							workerStorage,
-							new QueryExecutor(configuration)
+							new QueryExecutor(getConfig())
 					);
 					workers.add(worker);
 				}
@@ -129,7 +129,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 		slaveServlet.register(getLabel(), environment, getConfig(), getWorkers());
 
 		if (isSlaveCommand(namespace)) {
-			super.run(environment, namespace, configuration);
+			super.run(environment, namespace, getConfig());
 		}
 	}
 	
@@ -251,20 +251,24 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 
 	@Override
 	public void stop() throws Exception {
-		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
-			try {
-				w.close();
+		getJobManager().addSlowJob(new SimpleJob("Shutdown to Slave",() -> {
+
+			for (Worker w : new ArrayList<>(workers.getWorkers().values())) {
+				try {
+					w.close();
+				}
+				catch (Exception e) {
+					log.error(w + " could not be closed", e);
+				}
 			}
-			catch(Exception e) {
-				log.error(w+" could not be closed", e);
+			//after the close command was send
+			if (context != null) {
+				context.awaitClose();
 			}
-		}
-		//after the close command was send
-		if(context != null) {
-			context.awaitClose();
-		}
-		log.info("Connection was closed by master");
-		connector.dispose();
+			log.info("Connection was closed by master");
+			connector.dispose();
+
+		}));
 	}
 	private void reportJobManagerStatus() {
 		try {
