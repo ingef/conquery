@@ -1,6 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
 
 import java.util.Collection;
 import java.util.List;
@@ -163,7 +165,7 @@ public class StoredQueriesProcessor {
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatus(storage, user);
+		return query.buildStatusWithSource(storage, null, user);
 	}
 
 	public void shareQuery(User user, ManagedQuery query, Collection<GroupId> groupIds, Boolean shared) throws JSONException {

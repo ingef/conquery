@@ -4,15 +4,18 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
+import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.ResultInfoDecorator;
+import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.google.common.collect.ImmutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
@@ -21,9 +24,6 @@ import lombok.AllArgsConstructor;
 public class RelExportGenerator {
 	
 	public static RelativeFormQuery generate(Namespaces namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
-		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
-		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
-		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getOutcomes(), namespaces);
 		
 		List<DateContextMode> resolutions = null;
 		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
@@ -35,25 +35,30 @@ public class RelExportGenerator {
 		else {
 			resolutions = mode.getForm().getResolution();
 		}
-		
-		RelativeFormQuery query = new RelativeFormQuery(
-			(ConceptQuery) prerequisite.getQuery(),
+
+		return generate(mode.getForm().getPrerequisite(), mode.getFeatures(), mode.getOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutions, namespaces);
+	}
+	
+	public static RelativeFormQuery generate(IQuery query, List<CQElement> features, List<CQElement> outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContextMode timeUnit, List<DateContextMode> resolutions, Namespaces namespaces) {
+		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
+		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(outcomes, namespaces);
+
+		return new RelativeFormQuery(
+			query, 
 			setInfos(
-				AbsExportGenerator.createSubQuery(mode.getFeatures()),
+				AbsExportGenerator.createSubQuery(features),
 				FeatureGroup.FEATURE
 			),
 			setInfos(
-				AbsExportGenerator.createSubQuery(mode.getOutcomes()),
+				AbsExportGenerator.createSubQuery(outcomes),
 				FeatureGroup.OUTCOME
 			),
-			mode.getIndexSelector(),
-			mode.getIndexPlacement(),
-			mode.getTimeCountBefore(),
-			mode.getTimeCountAfter(),
-			mode.getTimeUnit(),
-			resolutions
-		);
-		return query;
+			indexSelector, 
+			indexPlacement, 
+			timeCountBefore, 
+			timeCountAfter, 
+			timeUnit, 
+			resolutions);
 	}
 	
 	/**
