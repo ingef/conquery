@@ -20,6 +20,8 @@ import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils;
+import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
@@ -54,6 +56,11 @@ public interface QueryDescription extends Visitable {
 	 */
 	QueryDescription resolve(QueryResolveContext context);
 	
+	/**
+	 * Allows the implementation to add visitors that traverse the QueryTree.
+	 * All visitors are concatenated so only a single traverse needs to be done.  
+	 * @param visitors The structure to which new visitors need to be added.
+	 */
 	default void addVisitors(@NonNull ClassToInstanceMap<QueryVisitor> visitors) {
 		// Register visitors for permission checks
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
@@ -64,15 +71,20 @@ public interface QueryDescription extends Visitable {
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
 	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset) {
+		NamespacedIdCollector nsIdCollector = QueryUtils.getVisitor(visitors, QueryUtils.NamespacedIdCollector.class);
+		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, QueryUtils.ExternalIdChecker.class);
+		if(nsIdCollector == null) {
+			throw new IllegalStateException();
+		}
 		// Generate DatasetPermissions
-		visitors.getInstance(QueryUtils.NamespacedIdCollector.class).getIds().stream()
+		nsIdCollector.getIds().stream()
 			.map(NamespacedId::getDataset)
 			.distinct()
 			.map(dId -> DatasetPermission.onInstance(Ability.READ, dId))
 			.collect(Collectors.toCollection(() -> requiredPermissions));
 		
 		// Generate ConceptPermissions
-		QueryUtils.generateConceptReadPermissions(visitors.getInstance(QueryUtils.NamespacedIdCollector.class), requiredPermissions);
+		QueryUtils.generateConceptReadPermissions(nsIdCollector, requiredPermissions);
 		
 		// Generate permissions for reused queries
 		for (ManagedExecutionId requiredQueryId : collectRequiredQueries()) {
@@ -80,8 +92,9 @@ public interface QueryDescription extends Visitable {
 		}
 		
 		// Check if the query contains parts that require to resolve external IDs. If so the user must have the preserve_id permission on the dataset.
-		if(visitors.getInstance(QueryUtils.ExternalIdChecker.class).resolvesExternalIds()) {
+		if(externalIdChecker.resolvesExternalIds()) {
 			requiredPermissions.add(DatasetPermission.onInstance(Ability.PRESERVE_ID, submittedDataset));
 		}
 	}
+
 }
