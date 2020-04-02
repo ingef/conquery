@@ -151,9 +151,7 @@ public class ImportJob extends Job {
 					child.setMax(primaryMapping.getNumberOfNewIds());
 
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
-						buffer.reset();
 						Bucket bucket = factory.create(allIdsImp, Collections.singletonList(new Object[0]));
-						bucket.writeContent(buffer);
 
 						//copy content into ImportBucket
 						int bucketNumber = Entity.getBucket(entityId, bucketSize);
@@ -163,8 +161,8 @@ public class ImportJob extends Job {
 
 						impBucket.getIncludedEntities().add(entityId);
 
-						allIdsBytes.computeIfAbsent(bucketNumber, i -> new ArrayList<>())
-								   .add(buffer.toBytes());
+						allIdsBytes.computeIfAbsent(bucketNumber, ArrayList::new).add(null);
+
 
 						child.report(1);
 					}
