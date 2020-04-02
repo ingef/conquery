@@ -45,8 +45,6 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -188,10 +186,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
 		status.setResultUrl(
 			isReadyToDownload(url, user)
-				? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-					.to(ResultCSVResource.GET_CSV_PATH).get()
+				? getDownloadLink(url)
 				: null);
 	}
+
+	protected abstract String getDownloadLink(URLBuilder url);
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		ExecutionStatus status = new ExecutionStatus();

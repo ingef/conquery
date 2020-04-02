@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -35,6 +36,7 @@ import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -211,5 +213,13 @@ public class ManagedForm<F extends Form> extends ManagedExecution<FormSharedResu
 	
 	public static <F extends Form> ManagedForm<?> from(F form , UserId userId, DatasetId submittedDataset){
 		return new ManagedForm<F>(form, userId, submittedDataset);
+	}
+
+
+
+	@Override
+	protected String getDownloadLink(URLBuilder url) {
+		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
+			.to(ResultCSVResource.GET_CSV_PATH).get();
 	}
 }
