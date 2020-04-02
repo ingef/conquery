@@ -14,7 +14,7 @@ export type FormField = Field | Tabs;
 
 export type Form = {
   type: string, // Sent to backend API
-  subType: string, // Sent to backend API
+  subType: string, // Sent to backend API for forms that are proxied
   title: TranslatableString, // Displayed
   headline: TranslatableString, // Displayed
   fields: FormField[]

@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import javax.tools.ToolProvider;
+import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
@@ -12,6 +13,7 @@ import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.UrlRewriteBundle;
 import io.dropwizard.Application;
@@ -54,6 +56,8 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
+		
+		((MutableInjectableValues)bootstrap.getObjectMapper().getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
 
 		//do some setup in other classes after initialization but before running a command
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
