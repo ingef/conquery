@@ -10,9 +10,8 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -35,17 +34,16 @@ public class AbsExportGenerator {
 		else {
 			resolutions = mode.getForm().getResolution();
 		}
-		return generate(namespaces, resolutions, userId, submittedDataset, mode.getFeatures(), mode.getForm().getQueryGroup(), mode.getDateRange());
+		return generate(namespaces, resolutions, userId, submittedDataset, mode.getFeatures(), mode.getForm().getPrerequisite(), mode.getDateRange());
 	}
 	
-	public static AbsoluteFormQuery generate(Namespaces namespaces, List<DateContextMode> resolutions, UserId userId, DatasetId submittedDataset, List<CQElement> features, ManagedExecutionId queryGroup, Range<LocalDate> dateRange) {
-		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(queryGroup);
-	
+	public static AbsoluteFormQuery generate(Namespaces namespaces, List<DateContextMode> resolutions, UserId userId, DatasetId submittedDataset, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange) {
+		
 		// Apply defaults to user concept
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
 		
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
-			(ConceptQuery) prerequisite.getQuery(),
+			queryGroup,
 			dateRange,
 			createSubQuery(features),
 			resolutions
@@ -55,7 +53,9 @@ public class AbsExportGenerator {
 	}
 	
 	public static ArrayConceptQuery createSubQuery(List<CQElement> features) {
-		List<ConceptQuery> cqWraps = features.stream().map(ConceptQuery::new).collect(Collectors.toList());
+		List<ConceptQuery> cqWraps = features.stream()
+			.map(ConceptQuery::new)
+			.collect(Collectors.toList());
 		return new ArrayConceptQuery(cqWraps);
 	}
 }

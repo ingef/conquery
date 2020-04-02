@@ -15,6 +15,9 @@ import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.api.description.FEValidityDate;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -28,6 +31,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.shiro.authz.Permission;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -36,15 +40,37 @@ import org.apache.commons.lang3.ArrayUtils;
 @Slf4j
 public class FrontEndConceptBuilder {
 
-	public static FERoot createRoot(NamespaceStorage storage) {
+	public static FERoot createRoot(NamespaceStorage storage, User user) {
 
 		FERoot root = new FERoot();
 		Map<IId<?>, FENode> roots = root.getConcepts();
-		//add all real roots
-		for (Concept<?> c : storage.getAllConcepts()) {
-			if(!c.isHidden()) {
-				roots.put(c.getId(), createCTRoot(c, storage.getStructure()));
+		
+		List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
+		// Remove any hidden concepts
+		allConcepts.removeIf(Concept::isHidden);
+		
+		if(allConcepts.isEmpty()) {
+			log.warn("There are displayable concepts in dataset {}", storage.getDataset().getId());
+		}
+		
+		List<Permission> permissions = new ArrayList<>(allConcepts.size());
+		for (Concept<?> concept : allConcepts) {
+			// Collect all permission first, instead of submitting one by one to Shiro.
+			permissions.add(ConceptPermission.onInstance(Ability.READ, concept.getId()));
+		}
+		
+		// Submit all permissions to Shiro
+		boolean[] isPermitted = user.isPermitted(permissions);
+		
+		for (int i = 0; i<allConcepts.size(); i++) {
+			if(isPermitted[i]) {
+				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));				
 			}
+		}
+		if(roots.isEmpty()) {
+			log.warn("No concepts could be collected for {} on dataset {}. The user is possibly lacking the permission to use them.", user.getId(), storage.getDataset().getId());
+		} else {
+			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), user.getId(), storage.getDataset().getId());
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
