@@ -49,6 +49,10 @@ public class FrontEndConceptBuilder {
 		// Remove any hidden concepts
 		allConcepts.removeIf(Concept::isHidden);
 		
+		if(allConcepts.isEmpty()) {
+			log.warn("There are displayable concepts in dataset {}", storage.getDataset().getId());
+		}
+		
 		List<Permission> permissions = new ArrayList<>(allConcepts.size());
 		for (Concept<?> concept : allConcepts) {
 			// Collect all permission first, instead of submitting one by one to Shiro.
@@ -62,6 +66,11 @@ public class FrontEndConceptBuilder {
 			if(isPermitted[i]) {
 				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));				
 			}
+		}
+		if(roots.isEmpty()) {
+			log.warn("No concepts could be collected for {} on dataset {}. The user is possibly lacking the permission to use them.", user.getId(), storage.getDataset().getId());
+		} else {
+			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), user.getId(), storage.getDataset().getId());
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
