@@ -152,6 +152,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		} catch (IOException e) {
 			log.error("",e);
 		}
+
+		waitUntilWorkDone();
 	}
 
 	protected ConqueryConfig getConfig() throws Exception {

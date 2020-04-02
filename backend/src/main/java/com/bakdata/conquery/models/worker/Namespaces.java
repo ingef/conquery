@@ -2,7 +2,9 @@ package com.bakdata.conquery.models.worker;
 
 import java.net.SocketAddress;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,7 +27,7 @@ public class Namespaces extends NamespaceCollection {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 
-	public IdMap<WorkerId, WorkerInformation> getWorkers() {
+	public Map<WorkerId, WorkerInformation> getWorkers() {
 		IdMap<WorkerId, WorkerInformation> out =  new IdMap<>();
 
 		for (Namespace namespace : datasets.values()) {
@@ -34,7 +36,7 @@ public class Namespaces extends NamespaceCollection {
 			}
 		}
 
-		return out;
+		return Collections.unmodifiableMap(out);
 	}
 
 	@Getter
@@ -92,7 +94,6 @@ public class Namespaces extends NamespaceCollection {
 		}
 		else {
 			info.setConnectedSlave(slave);
-			getWorkers().add(info);
 		}
 
 		Namespace ns = datasets.get(info.getDataset());

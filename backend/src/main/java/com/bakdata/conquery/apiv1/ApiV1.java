@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.api.APIResource;
@@ -50,11 +49,11 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(master.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(new ResultCSVResource(namespaces, ConqueryConfig.getInstance()));
+		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
 		environment.register(new StoredQueriesResource(namespaces));
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(CORSResponseFilter.class);
-		environment.register(new ConfigResource(ConqueryConfig.getInstance()));
+		environment.register(new ConfigResource(master.getConfig()));
 
 		environment.register(APIResource.class);
 		environment.register(ConceptResource.class);

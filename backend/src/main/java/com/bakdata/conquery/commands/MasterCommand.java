@@ -240,7 +240,7 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 	@Override
 	public void stop() throws Exception {
 		try {
-			acceptor.dispose();
+			acceptor.dispose(true);
 		}
 		catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);

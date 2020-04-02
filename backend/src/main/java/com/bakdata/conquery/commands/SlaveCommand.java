@@ -158,7 +158,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		setLocation(session);
-		log.error("cought exception", cause);
+		log.error("caught exception", cause);
 	}
 	
 	@Override
@@ -265,8 +265,10 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			if (context != null) {
 				context.awaitClose();
 			}
+
 			log.info("Connection was closed by master");
-			connector.dispose();
+
+			connector.dispose(true);
 
 		}));
 	}

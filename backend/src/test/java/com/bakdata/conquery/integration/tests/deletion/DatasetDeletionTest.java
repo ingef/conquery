@@ -218,7 +218,6 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
 
-
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					assertThat(slave.getWorkers().getWorkers().values())
 							.filteredOn(w -> w.getInfo().getDataset().equals(dataset))
@@ -240,9 +239,12 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			namespace.sendToAll(new ShutdownWorker());
 			try {
 				conquery.getStandaloneCommand().getMaster().getStorage().close();
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				log.error("", e);
 			}
+
+			testConquery.waitUntilWorkDone();
 
 
 			// Finally, restart conquery and assert again, that the data is correct.
