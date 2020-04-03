@@ -1,14 +1,19 @@
 package com.bakdata.conquery.models.auth;
 
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Objects;
+import java.util.Set;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -37,7 +42,7 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
 		UserId userId = (UserId) principals.getPrimaryPrincipal();
-		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
 		
 		info.addObjectPermissions(AuthorizationHelper.getEffectiveUserPermissions(userId, storage));
 		
@@ -64,6 +69,52 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 		@Override
 		public Object getCredentials() {
 			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
+		}
+		
+	}
+	
+	/**
+	 * This AuthorizationInfo handles the collection of large amounts of {@link Permission}s by wrapping collections into a view
+	 * instead of running an iterator over them. This also prevents a {@link ConcurrentModificationException} which occurred when 
+	 * Permission were collected
+	 */
+	@SuppressWarnings("serial")
+	public static class ConqueryAuthorizationInfo extends SimpleAuthorizationInfo {
+		@Override
+		public void addRole(String role) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addRoles(Collection<String> roles) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addStringPermission(String permission) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addStringPermissions(Collection<String> permissions) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addObjectPermission(Permission permission) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void addObjectPermissions(Collection<Permission> permissions) {
+			if (!(permissions instanceof Set)) {
+				super.addObjectPermissions(permissions);
+			}
+			if (objectPermissions == null) {
+				objectPermissions = (Set<Permission>) permissions;
+				return;
+			}
+			objectPermissions = Sets.union(objectPermissions, (Set<Permission>)permissions);
 		}
 		
 	}
