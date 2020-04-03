@@ -241,10 +241,12 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 	public void stop() throws Exception {
 		try {
 			acceptor.dispose(true);
+			acceptor = null;
 		}
 		catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
+
 		for (Namespace namespace : namespaces.getNamespaces()) {
 			try {
 				namespace.getStorage().close();

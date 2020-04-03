@@ -212,6 +212,9 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	public void start() throws Exception {
 		// Submit this step asynchronously, as in Standalone Master and Slave are started from the same Thread.
 		getJobManager().addSlowJob(new SimpleJob("Connect to Master",() -> {
+			log.info("Starting up connector");
+
+
 			BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
 
 			connector = new NioSocketConnector();
@@ -256,6 +259,7 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 		log.info("Connection was closed by master");
 
 		connector.dispose(true);
+		connector = null;
 
 		for (Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
