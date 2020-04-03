@@ -190,7 +190,7 @@ public class TestLoggingFactory implements LoggingFactory {
 
 	private Logger configureLoggers() {
 		final Logger root = loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-//		loggerContext.reset();
+		loggerContext.reset();
 
 		final LevelChangePropagator propagator = new LevelChangePropagator();
 		propagator.setContext(loggerContext);
