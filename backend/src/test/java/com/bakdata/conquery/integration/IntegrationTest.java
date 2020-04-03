@@ -42,9 +42,12 @@ public interface IntegrationTest {
 				log.info("FAILED integration test "+name, e);
 				throw e;
 			}
-			testConquery.waitUntilWorkDone();
 			ConqueryMDC.setLocation(name);
 			log.info("SUCCESS integration test {}", name);
+			testConquery.waitUntilWorkDone();
+
+			testConquery.afterEach(null);
+
 		}
 	}
 }

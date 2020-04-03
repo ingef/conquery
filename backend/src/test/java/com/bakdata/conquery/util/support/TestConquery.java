@@ -131,6 +131,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		waitUntilWorkDone();
 
 		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
+
 		Wait.builder()
 			.attempts(100)
 			.stepTime(50)
@@ -230,8 +231,10 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		for (Iterator<StandaloneSupport> it = openSupports.iterator(); it.hasNext(); ) {
 			StandaloneSupport openSupport = it.next();
 
-			log.info("Tearing down dataset");
 			DatasetId dataset = openSupport.getDataset().getId();
+
+			log.info("Tearing down dataset {}", dataset);
+
 			standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
 			standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 			it.remove();
