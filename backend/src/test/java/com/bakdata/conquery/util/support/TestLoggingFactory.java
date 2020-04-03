@@ -14,15 +14,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.logback.InstrumentedAppender;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.Lists;
-
 import ch.qos.logback.classic.AsyncAppender;
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.jmx.JMXConfigurator;
@@ -30,6 +22,12 @@ import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.util.StatusPrinter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.logback.InstrumentedAppender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
 import io.dropwizard.logging.ConsoleAppenderFactory;
 import io.dropwizard.logging.LoggingFactory;
 import io.dropwizard.logging.LoggingUtil;
@@ -192,7 +190,7 @@ public class TestLoggingFactory implements LoggingFactory {
 
 	private Logger configureLoggers() {
 		final Logger root = loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-		loggerContext.reset();
+//		loggerContext.reset();
 
 		final LevelChangePropagator propagator = new LevelChangePropagator();
 		propagator.setContext(loggerContext);
@@ -200,9 +198,7 @@ public class TestLoggingFactory implements LoggingFactory {
 
 		loggerContext.addListener(propagator);
 
-		root.setLevel(Level.WARN);
-
-		loggerContext.getLogger("com.bakdata").setLevel(Level.INFO);
+//		root.setLevel(Level.DEBUG);
 
 		return root;
 	}
