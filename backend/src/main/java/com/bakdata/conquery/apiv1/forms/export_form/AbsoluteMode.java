@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -37,5 +38,11 @@ public class AbsoluteMode extends Mode {
 	@Override
 	public IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
 		return AbsExportGenerator.generate(namespaces, this, userId, submittedDataset);
+	}
+
+	@Override
+	public void resolve(QueryResolveContext context) {
+		// Resolve all
+		features.replaceAll(e -> e.resolve(context));
 	}
 }

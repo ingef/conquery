@@ -55,7 +55,6 @@ public class ShardResult {
 	}
 
 	public synchronized void send(MessageSender<NamespaceMessage> session) {
-		finish();
 		session.send(new CollectQueryResult(this));
 	}
 }

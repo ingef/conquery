@@ -2,7 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -28,11 +27,11 @@ import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
@@ -52,12 +51,9 @@ public class QueryResource {
 	}
 
 	@POST
-	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) throws JSONException {
-		authorize(user, datasetId, Ability.READ);
-		// Also look into the query and check the datasets
-		authorizeReadDatasets(user, query);
-		// Do query specific permission checks
-		query.checkPermissions(user);
+	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
+		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
+
 
 		return processor.postQuery(
 			dsUtil.getDataset(datasetId),

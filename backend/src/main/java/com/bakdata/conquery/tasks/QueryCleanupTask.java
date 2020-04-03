@@ -63,31 +63,23 @@ public class QueryCleanupTask extends Task {
 				if (execution.isShared()) {
 					continue;
 				}
-				else {
-					log.trace("{} is not shared", execution.getId());
-				}
+				log.trace("{} is not shared", execution.getId());
 
 
 				if (ArrayUtils.isNotEmpty(execution.getTags())) {
 					continue;
 				}
-				else {
-					log.trace("{} has no tags", execution.getId());
-				}
+				log.trace("{} has no tags", execution.getId());
 
 				if (execution.getLabel() != null) {
 					continue;
 				}
-				else {
-					log.trace("{} has no label", execution.getId());
-				}
+				log.trace("{} has no label", execution.getId());
 
 				if(execution.getCreationTime().until(LocalDateTime.now(), oldQueriesTime.getUnit().toChronoUnit()) < oldQueriesTime.getQuantity()) {
 					continue;
 				}
-				else {
-					log.trace("{} is not older than {}.", execution.getId(), oldQueriesTime);
-				}
+				log.trace("{} is not older than {}.", execution.getId(), oldQueriesTime);
 
 				toDelete.add(execution.getId());
 			}
