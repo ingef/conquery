@@ -25,6 +25,6 @@ public class DatasetResource extends HDatasets {
 	@GET
 	@Path("concepts")
 	public FERoot getRoot() {
-		return processor.getRoot(namespace.getStorage());
+		return processor.getRoot(namespace.getStorage(), user);
 	}
 }

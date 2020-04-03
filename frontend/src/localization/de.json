@@ -288,7 +288,8 @@
       "1": "1 Wert nicht aufgelöst",
       "_": "{context} Werte nicht aufgelöst"
     },
-    "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten."
+    "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
+    "nothingResolved": "Kein Konzept konnte aufgelöst werden."
   },
   "uploadFilterListModal": {
     "headline": "Filter-Werte aus Liste einfügen"

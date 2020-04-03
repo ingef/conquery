@@ -30,7 +30,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *            A storage where the permission are added for persistence.
 	 * @param permission
 	 *            The permission to add.
-	 * @return Returns the added Permission (Might change when the permissions are aggregated)
+	 * @return Returns the added Permission
 	 */
 	public Set<ConqueryPermission> addPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) {
 		HashSet<ConqueryPermission> addedPermissions = new HashSet<>();
