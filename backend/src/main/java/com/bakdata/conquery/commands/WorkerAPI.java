@@ -29,7 +29,6 @@ public class WorkerAPI {
 	private final Workers workers;
 
 	@GET
-	@Path("/")
 	public Response listWorkers() {
 		return Response.ok().entity(workers.getWorkers().keySet()).build();
 	}
