@@ -251,26 +251,24 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 
 	@Override
 	public void stop() throws Exception {
-		getJobManager().addSlowJob(new SimpleJob("Shutdown to Slave",() -> {
+		log.info("Connection was closed by master");
 
-			for (Worker w : new ArrayList<>(workers.getWorkers().values())) {
-				try {
-					w.close();
-				}
-				catch (Exception e) {
-					log.error(w + " could not be closed", e);
-				}
+		connector.dispose(true);
+
+		for (Worker w : new ArrayList<>(workers.getWorkers().values())) {
+			try {
+				w.close();
 			}
-			//after the close command was send
-			if (context != null) {
-				context.awaitClose();
+			catch (Exception e) {
+				log.error(w + " could not be closed", e);
 			}
+		}
+		//after the close command was send
+		if (context != null) {
+			context.awaitClose();
+		}
 
-			log.info("Connection was closed by master");
-
-			connector.dispose(true);
-
-		}));
+		jobManager.stop();
 	}
 	private void reportJobManagerStatus() {
 		try {

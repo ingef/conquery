@@ -40,7 +40,7 @@ public class JobManager implements Managed {
 	}
 
 	@Override
-	public void stop() throws Exception {
+	public void stop() {
 		fastExecutor.close();
 		slowExecutor.close();
 	}

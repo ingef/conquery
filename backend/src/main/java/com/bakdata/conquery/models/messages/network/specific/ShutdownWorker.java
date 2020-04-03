@@ -13,6 +13,6 @@ public class ShutdownWorker extends WorkerMessage.Slow {
 	@Override
 	public void react(Worker context) throws Exception {
 		log.info("Trying to shut down {}", context);
-		context.getQueryExecutor().close();
+		context.close();
 	}
 }

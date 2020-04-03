@@ -15,14 +15,12 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.resources.ResourceConstants;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces({ExtraMimeTypes.JSON_STRING})
 @Path("workers")
 @RequiredArgsConstructor
-@Getter
 public class WorkerAPI {
 
 	private final Workers workers;
