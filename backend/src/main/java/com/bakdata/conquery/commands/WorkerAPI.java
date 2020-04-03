@@ -15,6 +15,8 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.resources.ResourceConstants;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -23,11 +25,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkerAPI {
 
+	@Getter(AccessLevel.NONE)
 	private final Workers workers;
 
 	@GET
 	@Path("/")
-	public Response getWorkers() {
+	public Response listWorkers() {
 		return Response.ok().entity(workers.getWorkers().keySet()).build();
 	}
 

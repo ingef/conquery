@@ -24,7 +24,6 @@ public class RegisterWorker extends MasterMessage {
 	
 	@Override
 	public void react(Master context) throws Exception {
-		SlaveInformation slave = getSlave(context);
 		Wait
 			.builder()
 			.attempts(6)
@@ -32,7 +31,9 @@ public class RegisterWorker extends MasterMessage {
 			.stepUnit(TimeUnit.SECONDS)
 			.build()
 			.until(()->getSlave(context));
-		
+
+		SlaveInformation slave = getSlave(context);
+
 		if(slave == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
 		}
@@ -41,7 +42,7 @@ public class RegisterWorker extends MasterMessage {
 			throw new IllegalStateException("Could not find the Dataset[" + info.getDataset() + "] to register worker " + info.getId());
 		}
 
-		log.info("Received new {} for {}", info, slave);
+		log.info("Received new {} for {}", info, slave.getRemoteAddress());
 
 		info.setConnectedSlave(slave);
 
