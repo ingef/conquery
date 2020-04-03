@@ -13,9 +13,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="UPDATE_SLAVE_IDENTITY", base=NetworkMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter
+@Slf4j
 public class RegisterWorker extends MasterMessage {
 
 	private WorkerInformation info;
@@ -38,6 +40,8 @@ public class RegisterWorker extends MasterMessage {
 		if(context.getNamespaces().get(info.getDataset()) == null){
 			throw new IllegalStateException("Could not find the Dataset[" + info.getDataset() + "] to register worker " + info.getId());
 		}
+
+		log.info("Received new {} for {}", info, slave);
 
 		info.setConnectedSlave(slave);
 
