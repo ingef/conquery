@@ -196,7 +196,9 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	public void messageSent(IoSession session, Object message) throws Exception {}
 
 	@Override
-	public void inputClosed(IoSession session) throws Exception {}
+	public void inputClosed(IoSession session) throws Exception {
+		session.closeNow();
+	}
 	
 	@Override
 	public void event(IoSession session, FilterEvent event) throws Exception {}
