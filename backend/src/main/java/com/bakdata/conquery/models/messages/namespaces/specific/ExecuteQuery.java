@@ -36,6 +36,7 @@ public class ExecuteQuery extends WorkerMessage {
 
 	@Override
 	public void react(Worker context) throws Exception {
+		log.info("Started {} {}", execution.getClass().getSimpleName(), execution.getId());
 		Set<Entry<ManagedExecutionId, QueryPlan>> plans = null;
 		// Generate query plans for this execution. For ManagedQueries this is only one plan.
 		// For ManagedForms there might be multiple plans, which originate from ManagedQueries.
