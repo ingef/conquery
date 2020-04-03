@@ -3,10 +3,15 @@ package com.bakdata.conquery.tasks;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -19,6 +24,7 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.shiro.authz.Permission;
 
 /**
  * Dropwizard Task deleting queries that are not used anymore. Defined as:
@@ -98,6 +104,65 @@ public class QueryCleanupTask extends Task {
 				log.debug("Deleting now unused Execution `{}`", managedExecutionId);
 				storage.removeExecution(managedExecutionId);
 			}
+			
+			// Iterate over all PermissionOwners
+			
+			log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
+			log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
+			log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
 		}
+	}
+
+	/**
+	 * Deletes permission that reference non-existing executions.
+	 * @return The number of deleted permissions.
+	 */
+	public static int deleteQueryPermissionsWithMissingRef(MasterMetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
+		int countDeleted = 0;
+		// Do the loop-di-loop
+		for(PermissionOwner<?> owner : owners) {
+			for (Permission permission : owner.getPermissions()) {
+				if(!(permission instanceof WildcardPermission)) {
+					log.info("Encountered the permission type {} that is not handled by this routine. Permission was: {}", permission.getClass(), permission);
+					continue;
+				}
+				WildcardPermission wpermission = (WildcardPermission) permission;
+				if(!wpermission.getDomains().contains(QueryPermission.DOMAIN)) {
+					// Skip Permissions that do not reference an Execution/Query
+					continue;
+				}
+
+				// Simple deletion, when there is only one reference to an execution (standard)
+				if(wpermission.getInstances().size() == 1) {
+					ManagedExecutionId mId = ManagedExecutionId.Parser.INSTANCE.parse(wpermission.getInstances().iterator().next());
+					if (storage.getExecution(mId) != null) {
+						// Execution exists -- it is a valid reference
+						continue;
+					}
+					owner.removePermission(storage, wpermission);
+					countDeleted++;
+					continue;
+				}
+				
+				// Handle multiple references to instances (untypical)
+				Set<String> validRef = new HashSet<>();
+				for(String sId : wpermission.getInstances()) {
+					ManagedExecutionId mId = ManagedExecutionId.Parser.INSTANCE.parse(sId);
+					if (storage.getExecution(mId) != null) {
+						// Execution exists -- it is a valid reference
+						validRef.add(mId.toString());
+					}
+				}
+				// Create a new Permission that only contains valid references
+				WildcardPermission reducedPermission = new WildcardPermission(List.of(wpermission.getDomains(),  wpermission.getAbilities(), validRef),wpermission.getCreationTime());
+				owner.addPermission(storage, reducedPermission);
+				
+				// Delete the old permission that containes both valid and invalid references
+				owner.removePermission(storage, wpermission);
+				countDeleted++;
+				
+			}
+		}
+		return countDeleted;
 	}
 }
