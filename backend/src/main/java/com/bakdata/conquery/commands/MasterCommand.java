@@ -217,7 +217,7 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 
 	@Override
 	public void inputClosed(IoSession session) throws Exception {
-
+		session.closeNow();
 	}
 
 	@Override
@@ -239,9 +239,12 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 
 	@Override
 	public void stop() throws Exception {
+		log.info("Shutting down master.");
+
 		try {
 			acceptor.dispose(true);
 			acceptor = null;
+			log.debug("Acceptor closed.");
 		}
 		catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
