@@ -74,7 +74,7 @@ public class FrontEndConceptBuilder {
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
-			roots.put(sn.getId(), createStructureNode(sn, storage));
+			roots.put(sn.getId(), createStructureNode(sn, roots));
 		}
 		return root;
 	}
@@ -129,11 +129,11 @@ public class FrontEndConceptBuilder {
 		return n;
 	}
 
-	private static FENode createStructureNode(StructureNode cn, NamespaceStorage storage) {
+	private static FENode createStructureNode(StructureNode cn, Map<IId<?>, FENode> roots) {
 		List<ConceptId> unstructured = new ArrayList<>();
 		for(ConceptId id : cn.getContainedRoots()) {
-			if(!storage.hasConcept(id)) {
-				log.warn("Concept from structure node can not be found: {}", id);
+			if(!roots.containsKey(id)) {
+				log.trace("Concept from structure node can not be found: {}", id);
 				continue;
 			}
 			unstructured.add(id);
