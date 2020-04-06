@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.ws.rs.client.Client;
 
@@ -32,6 +33,7 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -210,6 +212,20 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 		// start server
 		dropwizard.before();
+
+		final ReentrantLock reentrantLock = new ReentrantLock();
+		reentrantLock.lock();
+
+
+		dropwizard.addListener(new DropwizardTestSupport.ServiceListener<ConqueryConfig>() {
+			@Override
+			public void onRun(ConqueryConfig configuration, Environment environment, DropwizardTestSupport<ConqueryConfig> rule) throws Exception {
+				reentrantLock.unlock();
+			}
+		});
+
+
+		reentrantLock.lock();
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
