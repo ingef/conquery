@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.ws.rs.client.Client;
 
@@ -32,6 +32,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -39,6 +40,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.server.Server;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -204,34 +206,44 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			.map(ConfigOverride.class::cast)
 			.ifPresent(co -> co.override(config));
 
+		final Semaphore lock = new Semaphore(1);
+		lock.acquire();
+
 		// define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(TestBootstrappingConquery.class, config, app -> {
-			standaloneCommand = new StandaloneCommand((TestBootstrappingConquery) app);
+			standaloneCommand = new StandaloneCommand((TestBootstrappingConquery) app){
+				@Override
+				public void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig configuration) throws Exception {
+					environment.lifecycle().addServerLifecycleListener(new ServerLifecycleListener() {
+						@Override
+						public void serverStarted(Server server) {
+							log.info("Server is up!");
+							lock.release();
+							// STOPSHIP: 06.04.2020 this is a workaround to test and hook into the proper lifecycles of conquery.
+						}
+					});
+
+					super.run(environment, namespace, configuration);
+				}
+			};
 			return new TestCommandWrapper(config, standaloneCommand);
 		});
+
+
+
 
 		// start server
 		dropwizard.before();
 
-		final ReentrantLock reentrantLock = new ReentrantLock();
-		reentrantLock.lock();
-
-
-		dropwizard.addListener(new DropwizardTestSupport.ServiceListener<ConqueryConfig>() {
-			@Override
-			public void onRun(ConqueryConfig configuration, Environment environment, DropwizardTestSupport<ConqueryConfig> rule) throws Exception {
-				reentrantLock.unlock();
-			}
-		});
-
-
-		reentrantLock.lock();
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
-			.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
-			.withProperty(ClientProperties.READ_TIMEOUT, 10000)
-			.build("test client");
+						 .withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
+						 .withProperty(ClientProperties.READ_TIMEOUT, 10000)
+						 .build("test client");
+
+		lock.acquire();
+		log.info("Wakeup received. Continuing startup.");
 	}
 
 	@Override

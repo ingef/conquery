@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.cli.EnvironmentCommand;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 @Slf4j
 @Getter
-public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryConfig> {
+public class StandaloneCommand extends EnvironmentCommand<ConqueryConfig> {
 
 	private final Conquery conquery;
 	private MasterCommand master;
@@ -35,23 +35,23 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 	}
 
 	// this must be overridden so that
-	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
-		final Environment environment = new Environment(
-			bootstrap.getApplication().getName(),
-			bootstrap.getObjectMapper(),
-			bootstrap.getValidatorFactory().getValidator(),
-			bootstrap.getMetricRegistry(),
-			bootstrap.getClassLoader(),
-			bootstrap.getHealthCheckRegistry());
-		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
-		configuration.getServerFactory().configure(environment);
+//	@Override
+//	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+//		final Environment environment = new Environment(
+//			bootstrap.getApplication().getName(),
+//			bootstrap.getObjectMapper(),
+//			bootstrap.getValidatorFactory().getValidator(),
+//			bootstrap.getMetricRegistry(),
+//			bootstrap.getClassLoader(),
+//			bootstrap.getHealthCheckRegistry());
+//		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
+//		configuration.getServerFactory().configure(environment);
+//
+//		bootstrap.run(configuration, environment);
+//		startStandalone(environment, namespace, configuration);
+//	}
 
-		bootstrap.run(configuration, environment);
-		startStandalone(environment, namespace, configuration);
-	}
-
-	protected void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+	public void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		// start master
 		ConqueryMDC.setLocation("Master");
 		log.debug("Starting Master");

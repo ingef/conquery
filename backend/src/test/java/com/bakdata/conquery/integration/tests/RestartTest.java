@@ -120,6 +120,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
 
+
 			try (final StandaloneSupport support = testConquery.openDataset(dataset)) {
 
 				test.executeTest(support);

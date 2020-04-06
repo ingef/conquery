@@ -3,18 +3,16 @@ package com.bakdata.conquery.integration.tests;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.databind.ObjectReader;
-
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
  * The following functions are adapted from dropwizards
@@ -102,7 +100,7 @@ public class EndpointTestHelper {
 		List<Class<?>> allResourcesClasses = new ArrayList<>();
 		List<EndPoint> resources = new ArrayList<>();
 		for (Class<?> clazz : classes) {
-			if (!clazz.isInterface() && Resource.from(clazz) != null) {
+			if (!clazz.isInterface() && Resource.from(clazz, true) != null) {
 				allResourcesClasses.add(clazz);
 			}
 		}

@@ -15,6 +15,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import ch.qos.logback.classic.AsyncAppender;
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.jmx.JMXConfigurator;
@@ -198,7 +199,7 @@ public class TestLoggingFactory implements LoggingFactory {
 
 		loggerContext.addListener(propagator);
 
-//		root.setLevel(Level.DEBUG);
+		root.setLevel(Level.TRACE);
 
 		return root;
 	}
