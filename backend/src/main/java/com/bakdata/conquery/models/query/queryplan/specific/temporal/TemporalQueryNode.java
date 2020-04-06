@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
 
 /**
@@ -137,10 +136,10 @@ public class TemporalQueryNode extends QPNode {
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 
-		OptionalInt sampledPreceding = getReference().getSampler().sample(precedingDurations);
+		OptionalInt sampledPreceding = getPreceding().getSampler().sample(precedingDurations);
 
 		if (matcher.isContained(sampledReference, sampledPreceding)) {
-			dateUnion.merge(precedingDurations);
+			dateUnion.merge(referenceDurations);
 			return true;
 		}
 
