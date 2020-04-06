@@ -80,7 +80,10 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.fetchContainedEntityResult()
 				.flatMap(ContainedEntityResult::streamValues)
 		)
-		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
+		.as("Should have same size as result infos")
+		.allSatisfy(v->
+			assertThat(v).hasSameSizeAs(resultInfos.getInfos())
+		);
 
 		List<String> actual = QueryToCSVRenderer
 			.toCSV(
