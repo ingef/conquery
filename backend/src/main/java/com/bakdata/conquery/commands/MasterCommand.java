@@ -146,6 +146,8 @@ public class MasterCommand extends ServerCommand<ConqueryConfig> implements Mana
 		// Register an unprotected servlet for logins on the admin port
 		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), configuration, environment.admin(), environment.getObjectMapper());
 
+		environment.servlets().setBaseResource(this.getClass().getResource("/urlrewrite.xml").toExternalForm().replaceFirst("urlrewrite.xml",""));
+
 
 		environment.admin().addTask(new QueryCleanupTask(storage));
 

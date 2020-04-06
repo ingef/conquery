@@ -2,13 +2,11 @@ package com.bakdata.conquery.util;
 
 import javax.servlet.FilterRegistration;
 
-import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
-
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
 
 /**
  * The URL rewriting (in a Dropwizard application) to allow for use of React
@@ -17,7 +15,7 @@ import io.dropwizard.setup.Environment;
  */
 public class UrlRewriteBundle implements ConfiguredBundle<ConqueryConfig> {
 
-	public static final String DEFAULT_CONF_PATH = "urlrewrite.xml";
+	public static final String DEFAULT_CONF_PATH = "/urlrewrite.xml";
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
