@@ -95,18 +95,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 				}
 			}
 
-			List<AggregatorNode<?>> aggregators = new ArrayList<>();
-			//add aggregators
-
-			aggregators.addAll(createConceptAggregators(plan, selects));
-			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
-
-			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
-				aggregators.add(new TableRequiringAggregatorNode(
-					table.getResolvedConnector().getTable().getId(),
-					plan.getSpecialDateUnion()
-				));
-			}
+			QPNode aggregators = context.getResultFormat().createAggregators(context, plan, this, table);
 
 			tableNodes.add(
 				new ConceptNode(
@@ -137,31 +126,18 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	}
 
 	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return
-				ids
-					.stream()
-					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-					.toArray(ConceptElement[]::new);
+		return	ids
+			.stream()
+			.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+			.toArray(ConceptElement[]::new);
 	}
 
-	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<AggregatorNode<?>> aggregators) {
-		QPNode result = AndNode.of(aggregators);
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, QPNode aggregators) {
+		QPNode result = aggregators;
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);
 		}
 		return result;
-	}
-
-	private static List<AggregatorNode<?>> createConceptAggregators(ConceptQueryPlan plan, List<Select> select) {
-
-		List<AggregatorNode<?>> nodes = new ArrayList<>();
-
-		for (Select s : select) {
-			AggregatorNode<?> agg = new AggregatorNode<>(s.createAggregator());
-			plan.addAggregator(agg.getAggregator());
-			nodes.add(agg);
-		}
-		return nodes;
 	}
 
 	private Column selectValidityDateColumn(CQTable t) {
