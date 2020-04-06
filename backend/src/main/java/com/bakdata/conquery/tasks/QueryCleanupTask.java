@@ -123,7 +123,7 @@ public class QueryCleanupTask extends Task {
 		for(PermissionOwner<?> owner : owners) {
 			for (Permission permission : owner.getPermissions()) {
 				if(!(permission instanceof WildcardPermission)) {
-					log.info("Encountered the permission type {} that is not handled by this routine. Permission was: {}", permission.getClass(), permission);
+					log.warn("Encountered the permission type {} that is not handled by this routine. Permission was: {}", permission.getClass(), permission);
 					continue;
 				}
 				WildcardPermission wpermission = (WildcardPermission) permission;
@@ -131,20 +131,8 @@ public class QueryCleanupTask extends Task {
 					// Skip Permissions that do not reference an Execution/Query
 					continue;
 				}
-
-				// Simple deletion, when there is only one reference to an execution (standard)
-				if(wpermission.getInstances().size() == 1) {
-					ManagedExecutionId mId = ManagedExecutionId.Parser.INSTANCE.parse(wpermission.getInstances().iterator().next());
-					if (storage.getExecution(mId) != null) {
-						// Execution exists -- it is a valid reference
-						continue;
-					}
-					owner.removePermission(storage, wpermission);
-					countDeleted++;
-					continue;
-				}
 				
-				// Handle multiple references to instances (untypical)
+				// Handle multiple references to instances
 				Set<String> validRef = new HashSet<>();
 				for(String sId : wpermission.getInstances()) {
 					ManagedExecutionId mId = ManagedExecutionId.Parser.INSTANCE.parse(sId);
@@ -153,9 +141,20 @@ public class QueryCleanupTask extends Task {
 						validRef.add(mId.toString());
 					}
 				}
-				// Create a new Permission that only contains valid references
-				WildcardPermission reducedPermission = new WildcardPermission(List.of(wpermission.getDomains(),  wpermission.getAbilities(), validRef),wpermission.getCreationTime());
-				owner.addPermission(storage, reducedPermission);
+				if(validRef.size() > 0) {
+					if (wpermission.getInstances().size() == validRef.size()) {
+						// All are valid, nothing changed proceed with the next permission
+						continue;
+					}
+					// Create a new Permission that only contains valid references
+					WildcardPermission reducedPermission = new WildcardPermission(
+						List.of(
+							wpermission.getDomains(),  
+							wpermission.getAbilities(), 
+							validRef),
+						wpermission.getCreationTime());
+					owner.addPermission(storage, reducedPermission);					
+				}
 				
 				// Delete the old permission that containes both valid and invalid references
 				owner.removePermission(storage, wpermission);
