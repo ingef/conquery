@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEList;
@@ -74,7 +76,12 @@ public class FrontEndConceptBuilder {
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
-			roots.put(sn.getId(), createStructureNode(sn, roots));
+			FENode node = createStructureNode(sn, roots);
+			if(node == null) {
+				log.trace("Did not create a structure node entry for {}. Contained no concepts.", sn.getId());
+				continue;
+			}
+			roots.put(sn.getId(), node);
 		}
 		return root;
 	}
@@ -129,6 +136,7 @@ public class FrontEndConceptBuilder {
 		return n;
 	}
 
+	@Nullable
 	private static FENode createStructureNode(StructureNode cn, Map<IId<?>, FENode> roots) {
 		List<ConceptId> unstructured = new ArrayList<>();
 		for(ConceptId id : cn.getContainedRoots()) {
@@ -137,6 +145,10 @@ public class FrontEndConceptBuilder {
 				continue;
 			}
 			unstructured.add(id);
+		}
+		
+		if(unstructured.isEmpty()) {
+			return null;
 		}
 		
 		return FENode.builder()
