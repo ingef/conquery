@@ -65,26 +65,26 @@ public class QueryCleanupTask extends Task {
 				if (execution.isShared()) {
 					continue;
 				}
-				log.info("{} is not shared", execution.getId());
+				log.debug("{} is not shared", execution.getId());
 
 
 				if (ArrayUtils.isNotEmpty(execution.getTags())) {
 					continue;
 				}
-				log.info("{} has no tags", execution.getId());
+				log.debug("{} has no tags", execution.getId());
 
 				if (execution.getLabel() != null) {
 					continue;
+				}else {
+					log.debug("{} has no label", execution.getId());
 				}
-				log.info("{} has no label", execution.getId());
-
 
 
 				if(execution.getCreationTime().until(LocalDateTime.now(), oldQueriesDuration.getUnit().toChronoUnit()) <= oldQueriesDuration.getQuantity()) {
 					continue;
 				}
 				else {
-					log.info("{} is not older than {}.", execution.getId(), oldQueriesDuration);
+					log.debug("{} is not older than {}.", execution.getId(), oldQueriesDuration);
 				}
 
 				toDelete.add(execution.getId());
@@ -93,7 +93,7 @@ public class QueryCleanupTask extends Task {
 			// remove all queries referenced in reused queries.
 			for (CQReusedQuery reusedElement : reusedChecker.getReusedElements()) {
 				if (toDelete.remove(reusedElement.getQuery())) {
-					log.info("{} is reused", reusedElement.getQuery());
+					log.debug("{} is reused", reusedElement.getQuery());
 				}
 			}
 
@@ -103,7 +103,7 @@ public class QueryCleanupTask extends Task {
 			}
 
 			for (ManagedExecutionId managedExecutionId : toDelete) {
-				log.debug("Deleting now unused Execution `{}`", managedExecutionId);
+				log.info("Deleting Execution[{}]", managedExecutionId);
 				storage.removeExecution(managedExecutionId);
 			}
 		}
