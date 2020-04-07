@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEList;
@@ -74,7 +76,12 @@ public class FrontEndConceptBuilder {
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
-			roots.put(sn.getId(), createStructureNode(sn, storage));
+			FENode node = createStructureNode(sn, roots);
+			if(node == null) {
+				log.trace("Did not create a structure node entry for {}. Contained no concepts.", sn.getId());
+				continue;
+			}
+			roots.put(sn.getId(), node);
 		}
 		return root;
 	}
@@ -129,14 +136,19 @@ public class FrontEndConceptBuilder {
 		return n;
 	}
 
-	private static FENode createStructureNode(StructureNode cn, NamespaceStorage storage) {
+	@Nullable
+	private static FENode createStructureNode(StructureNode cn, Map<IId<?>, FENode> roots) {
 		List<ConceptId> unstructured = new ArrayList<>();
 		for(ConceptId id : cn.getContainedRoots()) {
-			if(!storage.hasConcept(id)) {
-				log.warn("Concept from structure node can not be found: {}", id);
+			if(!roots.containsKey(id)) {
+				log.trace("Concept from structure node can not be found: {}", id);
 				continue;
 			}
 			unstructured.add(id);
+		}
+		
+		if(unstructured.isEmpty()) {
+			return null;
 		}
 		
 		return FENode.builder()
