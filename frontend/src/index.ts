@@ -1,11 +1,11 @@
 import { de } from "date-fns/locale";
 import { enGB } from "date-fns/locale";
 
+import conquery from "./js";
+
 import { initializeLocalization } from "./js/localization";
 import translationsDe from "./localization/de.json";
 import translationsEn from "./localization/en.json";
-
-import conquery from "./js";
 
 import StandardQueryEditorTab from "./js/standard-query-editor";
 import TimebasedQueryEditorTab from "./js/timebased-query-editor";
@@ -37,7 +37,7 @@ const environment = {
     : isProduction
     ? ""
     : MOCK_API_URL,
-  disableLogin
+  disableLogin,
 };
 
 const tabs = [StandardQueryEditorTab, TimebasedQueryEditorTab, FormsTab];
