@@ -12,7 +12,6 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -21,7 +20,6 @@ import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
-import io.dropwizard.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
@@ -37,17 +35,18 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 public class QueryCleanupTask extends Task {
 
-	MasterMetaStorage storage;
+	private final MasterMetaStorage storage;
+	private java.time.Duration queryExpiration;
 
-	public QueryCleanupTask(MasterMetaStorage storage) {
-		super("query-cleanup");
+	public QueryCleanupTask(MasterMetaStorage storage, java.time.Duration queryExpiration) {
+		super("cleanup");
 		this.storage = storage;
+		this.queryExpiration = queryExpiration;
 	}
 
 	@Override
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
 
-		final Duration oldQueriesTime = ConqueryConfig.getInstance().getQueries().getOldQueriesTime();
 
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
@@ -69,23 +68,26 @@ public class QueryCleanupTask extends Task {
 				if (execution.isShared()) {
 					continue;
 				}
-				log.trace("{} is not shared", execution.getId());
+				log.debug("{} is not shared", execution.getId());
 
 
 				if (ArrayUtils.isNotEmpty(execution.getTags())) {
 					continue;
 				}
-				log.trace("{} has no tags", execution.getId());
+				log.debug("{} has no tags", execution.getId());
 
 				if (execution.getLabel() != null) {
 					continue;
 				}
-				log.trace("{} has no label", execution.getId());
+				log.debug("{} has no label", execution.getId());
 
-				if(execution.getCreationTime().until(LocalDateTime.now(), oldQueriesTime.getUnit().toChronoUnit()) < oldQueriesTime.getQuantity()) {
+
+				if (LocalDateTime.now().minus(queryExpiration).isBefore(execution.getCreationTime())) {
 					continue;
 				}
-				log.trace("{} is not older than {}.", execution.getId(), oldQueriesTime);
+				else {
+					log.debug("{} is not older than {}.", execution.getId(), queryExpiration);
+				}
 
 				toDelete.add(execution.getId());
 			}
@@ -101,7 +103,7 @@ public class QueryCleanupTask extends Task {
 			}
 
 			for (ManagedExecutionId managedExecutionId : toDelete) {
-				log.debug("Deleting now unused Execution `{}`", managedExecutionId);
+				log.debug("Deleting Execution[{}]", managedExecutionId);
 				storage.removeExecution(managedExecutionId);
 			}
 			
