@@ -1,6 +1,7 @@
 package com.bakdata.conquery.tasks;
 
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,9 +37,9 @@ import org.apache.shiro.authz.Permission;
 public class QueryCleanupTask extends Task {
 
 	private final MasterMetaStorage storage;
-	private java.time.Duration queryExpiration;
+	private Duration queryExpiration;
 
-	public QueryCleanupTask(MasterMetaStorage storage, java.time.Duration queryExpiration) {
+	public QueryCleanupTask(MasterMetaStorage storage, Duration queryExpiration) {
 		super("cleanup");
 		this.storage = storage;
 		this.queryExpiration = queryExpiration;
