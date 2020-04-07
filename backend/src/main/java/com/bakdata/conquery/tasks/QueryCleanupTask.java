@@ -3,11 +3,10 @@ package com.bakdata.conquery.tasks;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -31,25 +30,28 @@ import org.apache.commons.lang3.ArrayUtils;
 @Slf4j
 public class QueryCleanupTask extends Task {
 
-	MasterMetaStorage storage;
+	private final MasterMetaStorage storage;
+	private Duration oldQueriesDuration;
 
-	public QueryCleanupTask(MasterMetaStorage storage) {
-		super("query-cleanup");
+	public QueryCleanupTask(MasterMetaStorage storage, Duration oldQueriesTime) {
+		super("cleanup");
 		this.storage = storage;
+		this.oldQueriesDuration = oldQueriesTime;
 	}
 
 	@Override
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
-
-		final Duration oldQueriesTime = ConqueryConfig.getInstance().getQueries().getOldQueriesTime();
-
+		log.info("Starting Cleanup Task.");
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
 			final QueryUtils.AllReusedFinder reusedChecker = new QueryUtils.AllReusedFinder();
 			List<ManagedExecutionId> toDelete = new ArrayList<>();
 
-			for (ManagedExecution<?> execution : storage.getAllExecutions()) {
+			final Collection<ManagedExecution<?>> allExecutions = storage.getAllExecutions();
+			log.info("Found {} executions in storage.", allExecutions.size());
+
+			for (ManagedExecution<?> execution : allExecutions) {
 
 				// Gather all referenced queries via reused checker.
 				if (execution instanceof ManagedQuery) {
@@ -63,32 +65,38 @@ public class QueryCleanupTask extends Task {
 				if (execution.isShared()) {
 					continue;
 				}
-				log.trace("{} is not shared", execution.getId());
+				log.info("{} is not shared", execution.getId());
 
 
 				if (ArrayUtils.isNotEmpty(execution.getTags())) {
 					continue;
 				}
-				log.trace("{} has no tags", execution.getId());
+				log.info("{} has no tags", execution.getId());
 
 				if (execution.getLabel() != null) {
 					continue;
 				}
-				log.trace("{} has no label", execution.getId());
+				log.info("{} has no label", execution.getId());
 
-				if(execution.getCreationTime().until(LocalDateTime.now(), oldQueriesTime.getUnit().toChronoUnit()) < oldQueriesTime.getQuantity()) {
+
+
+				if(execution.getCreationTime().until(LocalDateTime.now(), oldQueriesDuration.getUnit().toChronoUnit()) <= oldQueriesDuration.getQuantity()) {
 					continue;
 				}
-				log.trace("{} is not older than {}.", execution.getId(), oldQueriesTime);
+				else {
+					log.info("{} is not older than {}.", execution.getId(), oldQueriesDuration);
+				}
 
 				toDelete.add(execution.getId());
 			}
 
 			// remove all queries referenced in reused queries.
-			toDelete.removeAll(
-					reusedChecker.getReusedElements().stream()
-								 .map(CQReusedQuery::getQuery)
-								 .collect(Collectors.toList()));
+			for (CQReusedQuery reusedElement : reusedChecker.getReusedElements()) {
+				if (toDelete.remove(reusedElement.getQuery())) {
+					log.info("{} is reused", reusedElement.getQuery());
+				}
+			}
+
 
 			if (toDelete.isEmpty()) {
 				break;

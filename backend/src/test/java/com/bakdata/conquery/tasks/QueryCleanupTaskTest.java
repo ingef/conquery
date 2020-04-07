@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +17,14 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
+import io.dropwizard.util.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class QueryCleanupTaskTest {
+
+	private final Duration oldQueriesTime = Duration.days(30);
 
 	private ManagedQuery createManagedQuery() {
 		final CQAnd root = new CQAnd();
@@ -32,7 +34,7 @@ class QueryCleanupTaskTest {
 
 		final ManagedQuery managedQuery = new ManagedQuery(query, null, new DatasetId("test"));
 
-		managedQuery.setCreationTime(LocalDate.of(2000,12,10).atTime(10, 10));
+		managedQuery.setCreationTime(LocalDateTime.now().minusDays(oldQueriesTime.toDays() + 1));
 
 		executions.add(managedQuery);
 
@@ -71,7 +73,7 @@ class QueryCleanupTaskTest {
 
 		createManagedQuery();
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).isEmpty();
 	}
@@ -84,7 +86,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setLabel("test");
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).containsExactlyInAnyOrder(managedQuery);
 	}
@@ -98,7 +100,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).isEmpty();
 	}
@@ -115,7 +117,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).containsExactlyInAnyOrder(managedQuery, managedQueryReused);
 	}
@@ -131,7 +133,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).containsExactlyInAnyOrder(managedQueryReused);
 	}
@@ -147,7 +149,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).containsExactlyInAnyOrder(managedQueryReused, managedQuery);
 	}
@@ -164,7 +166,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).containsExactlyInAnyOrder(managedQueryReused);
 	}
@@ -180,7 +182,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock).execute(null,null);
+		new QueryCleanupTask(storageMock, oldQueriesTime).execute(null, null);
 
 		assertThat(executions).containsExactlyInAnyOrder(managedQueryReused);
 	}

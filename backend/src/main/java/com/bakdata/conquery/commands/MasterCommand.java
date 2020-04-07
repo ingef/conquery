@@ -135,7 +135,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 
 
-		environment.admin().addTask(new QueryCleanupTask(storage));
+		environment.admin().addTask(new QueryCleanupTask(storage, getConfig().getQueries().getOldQueriesTime()));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
