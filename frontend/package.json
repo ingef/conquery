@@ -35,7 +35,7 @@
     "emotion-theming": "^10.0.27",
     "history": "^4.9.0",
     "i18n-react": "^0.7.0",
-    "less": "^3.9.0",
+    "less": "^3.11.1",
     "lodash.difference": "^4.5.0",
     "mustache": "^2.3.0",
     "node-sass": "^4.12.0",
