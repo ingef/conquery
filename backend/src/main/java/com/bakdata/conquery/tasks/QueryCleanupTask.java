@@ -36,10 +36,13 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 public class QueryCleanupTask extends Task {
 
-	private final MasterMetaStorage storage;
-	private Duration queryExpiration;
+    public static final String EXPIRATION_PARAM = "expiration";
 
-	public QueryCleanupTask(MasterMetaStorage storage, Duration queryExpiration) {
+
+    private final MasterMetaStorage storage;
+    private Duration queryExpiration;
+
+    public QueryCleanupTask(MasterMetaStorage storage, Duration queryExpiration) {
 		super("cleanup");
 		this.storage = storage;
 		this.queryExpiration = queryExpiration;
@@ -48,7 +51,21 @@ public class QueryCleanupTask extends Task {
 	@Override
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
 
+	    Duration queryExpiration = this.queryExpiration;
 
+	    if(parameters.containsKey(EXPIRATION_PARAM)) {
+	        if(parameters.get(EXPIRATION_PARAM).size() > 1){
+	            log.warn("Will not respect more than one expiration time. Have `{}`",parameters.get(EXPIRATION_PARAM));
+            }
+
+            queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).asList().get(0));
+        }
+
+	    if(queryExpiration == null){
+	        throw new IllegalArgumentException("Query Expiration may not be null");
+        }
+
+	    log.info("Starting deletion of queries older than {} of {}", queryExpiration, storage.getAllExecutions().size());
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
