@@ -83,5 +83,30 @@
         "method": "GET",
         "path": "/datasets/{dataset}/form-queries",
         "clazz": "FormResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{dataset}/form-configs",
+        "clazz": "FormConfigResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/form-configs",
+        "clazz": "FormConfigResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/form-configs/{form-config}",
+        "clazz": "FormConfigResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/datasets/{dataset}/form-configs/{form-config}",
+        "clazz": "FormConfigResource"
+    },
+    {
+        "method": "PATCH",
+        "path": "/datasets/{dataset}/form-configs/{form-config}",
+        "clazz": "FormConfigResource"
     }
 ]
