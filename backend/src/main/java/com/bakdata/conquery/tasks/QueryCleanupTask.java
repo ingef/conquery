@@ -1,6 +1,7 @@
 package com.bakdata.conquery.tasks;
 
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,7 +13,6 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
-import io.dropwizard.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
@@ -37,18 +36,36 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 public class QueryCleanupTask extends Task {
 
-	MasterMetaStorage storage;
+    public static final String EXPIRATION_PARAM = "expiration";
 
-	public QueryCleanupTask(MasterMetaStorage storage) {
-		super("query-cleanup");
+
+    private final MasterMetaStorage storage;
+    private Duration queryExpiration;
+
+    public QueryCleanupTask(MasterMetaStorage storage, Duration queryExpiration) {
+		super("cleanup");
 		this.storage = storage;
+		this.queryExpiration = queryExpiration;
 	}
 
 	@Override
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
 
-		final Duration oldQueriesTime = ConqueryConfig.getInstance().getQueries().getOldQueriesTime();
+	    Duration queryExpiration = this.queryExpiration;
 
+	    if(parameters.containsKey(EXPIRATION_PARAM)) {
+	        if(parameters.get(EXPIRATION_PARAM).size() > 1){
+	            log.warn("Will not respect more than one expiration time. Have `{}`",parameters.get(EXPIRATION_PARAM));
+            }
+
+            queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).asList().get(0));
+        }
+
+	    if(queryExpiration == null){
+	        throw new IllegalArgumentException("Query Expiration may not be null");
+        }
+
+	    log.info("Starting deletion of queries older than {} of {}", queryExpiration, storage.getAllExecutions().size());
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
@@ -69,23 +86,24 @@ public class QueryCleanupTask extends Task {
 				if (execution.isShared()) {
 					continue;
 				}
-				log.trace("{} is not shared", execution.getId());
+				log.debug("{} is not shared", execution.getId());
 
 
 				if (ArrayUtils.isNotEmpty(execution.getTags())) {
 					continue;
 				}
-				log.trace("{} has no tags", execution.getId());
+				log.debug("{} has no tags", execution.getId());
 
 				if (execution.getLabel() != null) {
 					continue;
 				}
-				log.trace("{} has no label", execution.getId());
+				log.debug("{} has no label", execution.getId());
 
-				if(execution.getCreationTime().until(LocalDateTime.now(), oldQueriesTime.getUnit().toChronoUnit()) < oldQueriesTime.getQuantity()) {
+
+				if (LocalDateTime.now().minus(queryExpiration).isBefore(execution.getCreationTime())) {
 					continue;
 				}
-				log.trace("{} is not older than {}.", execution.getId(), oldQueriesTime);
+				log.debug("{} is not older than {}.", execution.getId(), queryExpiration);
 
 				toDelete.add(execution.getId());
 			}
@@ -101,16 +119,16 @@ public class QueryCleanupTask extends Task {
 			}
 
 			for (ManagedExecutionId managedExecutionId : toDelete) {
-				log.debug("Deleting now unused Execution `{}`", managedExecutionId);
+				log.debug("Deleting Execution[{}]", managedExecutionId);
 				storage.removeExecution(managedExecutionId);
 			}
 			
-			// Iterate over all PermissionOwners
-			
-			log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
-			log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
-			log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
 		}
+		// Iterate over all PermissionOwners
+		
+		log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
+		log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
+		log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
 	}
 
 	/**
