@@ -14,6 +14,7 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConfigResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.api.FilterResource;
+import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
@@ -36,6 +37,7 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(master.getStorage())).to(MeProcessor.class);
 				bind(new QueryProcessor(namespaces, master.getStorage())).to(QueryProcessor.class);
+				bind(new FormConfigProcessor(master.getStorage())).to(FormConfigProcessor.class);
 			}
 		});
 
@@ -54,6 +56,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(CORSResponseFilter.class);
 		environment.register(new ConfigResource(master.getConfig()));
+		environment.register(FormConfigResource.class);
 
 		environment.register(APIResource.class);
 		environment.register(ConceptResource.class);
