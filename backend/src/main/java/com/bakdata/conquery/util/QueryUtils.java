@@ -11,14 +11,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Shareable;
+import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -31,6 +35,7 @@ import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.bakdata.conquery.resources.api.StoredQueriesResource.QueryPatch;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.Getter;
 import lombok.NonNull;
@@ -41,6 +46,13 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @UtilityClass
 public class QueryUtils {
+	
+	/**
+	 * Provides a starting operator for consumer chains, that does nothing.
+	 */
+	public static <T> Consumer<T> getNoOpEntryPoint() {
+		return (whatever) -> {};
+	}
 	
 	/**
 	 * Gets the specified visitor from the map. If none was found an exception is raised.
@@ -147,46 +159,55 @@ public class QueryUtils {
 			.distinct()
 			.collect(Collectors.toCollection(() -> collectPermissions));
 	}
+
+	
+	public static <INST extends Taggable & Shareable & Labelable & Identifiable<?>> void patchIdentifialble(MasterMetaStorage storage, User user, INST instance, QueryPatch patch, Function<Ability,ConqueryPermission> permissionCreator) {
+		
+		Consumer<QueryPatch> patchConsumerChain = QueryUtils.getNoOpEntryPoint();
+		
+		if(patch.getTags() != null && user.isPermitted(permissionCreator.apply(Ability.TAG))) {
+			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
+		}
+		if(patch.getLabel() != null && user.isPermitted(permissionCreator.apply(Ability.LABEL))) {
+			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
+		}
+		if(patch.getShared() != null && user.isPermitted(permissionCreator.apply(Ability.SHARE))) {
+			List<Group> groups;
+			if(patch.getGroups() != null) {
+				groups = patch.getGroups().stream().map(id -> storage.getGroup(id)).collect(Collectors.toList());
+			}
+			else {				
+				groups = AuthorizationHelper.getGroupsOf(user, storage);
+			}
+			for(Group group : groups) {
+				patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user, group, (c) -> permissionCreator.apply(Ability.READ)));
+
+			}
+		}
+		patchConsumerChain.accept(patch);
+	}
 	
 	/**
-	 * (Un)Shares a query with a specific group.
-	 * @throws JSONException 
+	 * (Un)Shares a query with a specific group. Set or unsets the shared flag.
+	 * Does persist this change made to the {@link Shareable}. 
 	 */
-	public static <S extends Identifiable<?> & Shareable> void shareWithGroup(
+	public static <S extends Identifiable<?> & Shareable, O extends PermissionOwner<? extends IId<O>>> void shareWithOther(
 		MasterMetaStorage storage,
 		User user,
 		S shareable,
-		Consumer<S> valueStorer,
-		Function<S, Boolean> permissionChecker,
 		Function<S, ConqueryPermission> instancePermissionCreator,
-		Group shareGroup,
+		O other,
 		boolean shared) {
 		
-		updateInstance(shareable, user, valueStorer, permissionChecker, (instance) -> {
-			ConqueryPermission executionPermission = instancePermissionCreator.apply(instance);
-			if (shared) {
-				shareGroup.addPermission(storage, executionPermission);
-				log.trace("User {} shares query {}. Adding permission {} to group {}.", user, instance, instance.getId(), executionPermission, shareGroup);
-			}
-			else {
-				shareGroup.removePermission(storage, executionPermission);
-				log.trace("User {} unshares query {}. Removing permission {} from group {}.", user, instance, instance.getId(), executionPermission, shareGroup);
-			}
-			instance.setShared(shared);
-		});
-	}
-	
-
-	public static <T> void updateInstance(
-		T instance,  User user,
-		Consumer<T> valueStorer,
-		Function<T, Boolean> permissionChecker,
-		Consumer<T> updater) {
-		
-		if(!permissionChecker.apply(instance)) {
-			return;
+		ConqueryPermission sharePermission = instancePermissionCreator.apply(shareable);
+		if (shared) {
+			other.addPermission(storage, sharePermission);
+			log.trace("User {} shares query {}. Adding permission {} to group {}.", user, shareable, shareable.getId(), sharePermission, other);
 		}
-		updater.accept(instance);
-		valueStorer.accept(instance);
+		else {
+			other.removePermission(storage, sharePermission);
+			log.trace("User {} unshares query {}. Removing permission {} from group {}.", user, shareable, shareable.getId(), sharePermission, other);
+		}
+		shareable.setShared(shared);
 	}
 }

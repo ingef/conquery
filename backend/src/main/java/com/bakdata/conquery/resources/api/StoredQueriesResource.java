@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import lombok.Builder;
 import lombok.Data;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
@@ -100,6 +101,7 @@ public class StoredQueriesResource {
 	}
 
 	@Data
+	@Builder
 	public static class QueryPatch {
 
 		private String[] tags;

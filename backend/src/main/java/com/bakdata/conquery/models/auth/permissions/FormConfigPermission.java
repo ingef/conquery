@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 @CPSType(id = "FORM_CONFIG", base = StringPermissionBuilder.class)
 public class FormConfigPermission extends StringPermissionBuilder {
 
-	public static final String DOMAIN = "formConfig";
+	public static final String DOMAIN = "form-config";
 	
 
 	public static final EnumSet<Ability> ALLOWED_ABILITIES = AbilitySets.FORM_CONFIG_CREATOR;

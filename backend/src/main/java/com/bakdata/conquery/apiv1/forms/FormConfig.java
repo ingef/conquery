@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Shareable;
@@ -17,13 +17,15 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryTranslator;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -32,6 +34,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Slf4j
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@EqualsAndHashCode(callSuper = false)
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
 
 	@NotEmpty
@@ -41,10 +46,15 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
-	@NotNull
+	@NotNull @EqualsAndHashCode.Exclude
 	private JsonNode values;
-	@InternalOnly
 	protected UserId owner;
+	
+	
+	public FormConfig(String formType, JsonNode values) {
+		this.formType = formType;
+		this.values = values;
+	}
 
 	@Override
 	public FormConfigId createId() {
@@ -55,9 +65,9 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(Namespaces namespaces, User user) {
+	public FormConfigOverviewRepresentation overview(MasterMetaStorage storage, User user) {
 		@NonNull
-		String ownerName = Optional.ofNullable(namespaces.getMetaStorage().getUser(owner)).map(User::getLabel).orElse(null);
+		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder().id(getId()).formType(formType).label(label).tags(tags).ownerName(ownerName)
 			.own(owner.equals(user.getId())).shared(shared)
@@ -72,11 +82,11 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * {@link Form}, for conversion. If that is not possible the untranslated values
 	 * are output.
 	 */
-	public FormConfigFullRepresentation tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper, User user) {
+	public FormConfigFullRepresentation tryTranslateToDataset(MasterMetaStorage storage, DatasetId target, ObjectMapper mapper, User user) {
 		JsonNode finalRep = values;
 		try {
 			Form intemediateRep = mapper.readerFor(Form.class).readValue(values.traverse());
-			Form translatedRep = QueryTranslator.replaceDataset(namespaces, intemediateRep, target);
+			Form translatedRep = QueryTranslator.replaceDataset(storage.getNamespaces(), intemediateRep, target);
 			finalRep = mapper.valueToTree(translatedRep);
 		}
 		catch (IOException e) {
@@ -84,7 +94,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		}
 
 		@NonNull
-		String ownerName = Optional.ofNullable(namespaces.getMetaStorage().getUser(owner)).map(User::getLabel).orElse(null);
+		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 
 		return FormConfigFullRepresentation.builder().id(getId()).formType(formType).label(label).tags(tags).ownerName(ownerName)
 			.own(owner.equals(user.getId())).shared(shared)
@@ -98,6 +108,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 */
 	@Getter
 	@SuperBuilder
+	@ToString
+	@EqualsAndHashCode(callSuper = false)
 	public static class FormConfigOverviewRepresentation {
 
 		private FormConfigId id;
@@ -118,6 +130,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 */
 	@Getter
 	@SuperBuilder
+	@ToString(callSuper = true)
+	@EqualsAndHashCode(callSuper = true)
 	public static class FormConfigFullRepresentation extends FormConfigOverviewRepresentation {
 
 		private JsonNode values;

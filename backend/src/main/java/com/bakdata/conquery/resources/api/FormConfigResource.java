@@ -1,16 +1,20 @@
 package com.bakdata.conquery.resources.api;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.FORM_CONFIG;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FormConfigProcessor;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
@@ -22,10 +26,10 @@ import com.bakdata.conquery.resources.api.StoredQueriesResource.QueryPatch;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import io.dropwizard.jersey.PATCH;
 
-@Path("form-configs")
 @Consumes(ExtraMimeTypes.JSON_STRING)
 @Produces(ExtraMimeTypes.JSON_STRING)
-public class FormConfigResource extends HDatasets{
+@Path("datasets/{" + DATASET + "}/form-configs")
+public class FormConfigResource extends HDatasets {
 	
 	FormConfigProcessor processor;
 	
@@ -35,7 +39,7 @@ public class FormConfigResource extends HDatasets{
 	}
 	
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@QueryParam("formType") String formType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@QueryParam("formType") Optional<String> formType) {
 		return processor.getConfigsByFormType(user, formType);
 	}
 
@@ -48,8 +52,14 @@ public class FormConfigResource extends HDatasets{
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
 	public FormConfigFullRepresentation patchConfig(@PathParam(FORM_CONFIG) FormConfigId formId, QueryPatch patch ) {
-		return processor.patchConfig(user, formId, patch);
+		return processor.patchConfig(user, datasetId, formId, patch);
 	}
 	
+	@DELETE
+	@Path("{" + FORM_CONFIG + "}")
+	public Response patchConfig(@PathParam(FORM_CONFIG) FormConfigId formId) {
+		processor.deleteConfig(user, formId);
+		return Response.ok().build();
+	}
 	
 }
