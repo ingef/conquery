@@ -160,7 +160,17 @@ public class QueryUtils {
 			.collect(Collectors.toCollection(() -> collectPermissions));
 	}
 
-	
+	/**
+	 * Patches the given {@link Identifiable} by checking if the user holds the necessary Permission for that operation.
+	 * Hence the patched instance must have a corresponding {@link Permission}-type.
+	 * Tagging and Labeling only alters the state of the instance while sharing also alters the state of {@link Group}s.
+	 * @param <INST>	Type of the instance that is patched
+	 * @param storage	Storage that persists the instance and also auth information.
+	 * @param user		The user on whose behalf the patch is executed
+	 * @param instance	The instance to patch
+	 * @param patch		The patch that is applied to the instance
+	 * @param permissionCreator	A function that produces a {@link Permission} that targets the given instance (e.g QueryPermission, FormConfigPermission).
+	 */
 	public static <INST extends Taggable & Shareable & Labelable & Identifiable<?>> void patchIdentifialble(MasterMetaStorage storage, User user, INST instance, QueryPatch patch, Function<Ability,ConqueryPermission> permissionCreator) {
 		
 		Consumer<QueryPatch> patchConsumerChain = QueryUtils.getNoOpEntryPoint();
