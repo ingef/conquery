@@ -6,10 +6,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.Shareable;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -26,8 +35,10 @@ import com.google.common.collect.ClassToInstanceMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
+@Slf4j
 @UtilityClass
 public class QueryUtils {
 	
@@ -135,5 +146,47 @@ public class QueryUtils {
 			.map(Permission.class::cast)
 			.distinct()
 			.collect(Collectors.toCollection(() -> collectPermissions));
+	}
+	
+	/**
+	 * (Un)Shares a query with a specific group.
+	 * @throws JSONException 
+	 */
+	public static <S extends Identifiable<?> & Shareable> void shareWithGroup(
+		MasterMetaStorage storage,
+		User user,
+		S shareable,
+		Consumer<S> valueStorer,
+		Function<S, Boolean> permissionChecker,
+		Function<S, ConqueryPermission> instancePermissionCreator,
+		Group shareGroup,
+		boolean shared) {
+		
+		updateInstance(shareable, user, valueStorer, permissionChecker, (instance) -> {
+			ConqueryPermission executionPermission = instancePermissionCreator.apply(instance);
+			if (shared) {
+				shareGroup.addPermission(storage, executionPermission);
+				log.trace("User {} shares query {}. Adding permission {} to group {}.", user, instance, instance.getId(), executionPermission, shareGroup);
+			}
+			else {
+				shareGroup.removePermission(storage, executionPermission);
+				log.trace("User {} unshares query {}. Removing permission {} from group {}.", user, instance, instance.getId(), executionPermission, shareGroup);
+			}
+			instance.setShared(shared);
+		});
+	}
+	
+
+	public static <T> void updateInstance(
+		T instance,  User user,
+		Consumer<T> valueStorer,
+		Function<T, Boolean> permissionChecker,
+		Consumer<T> updater) {
+		
+		if(!permissionChecker.apply(instance)) {
+			return;
+		}
+		updater.accept(instance);
+		valueStorer.accept(instance);
 	}
 }

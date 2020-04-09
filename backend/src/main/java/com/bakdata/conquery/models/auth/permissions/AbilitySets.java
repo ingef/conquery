@@ -8,7 +8,18 @@ import com.bakdata.conquery.io.cps.CPSBase;
 public class AbilitySets {
 
 	public static final EnumSet<Ability> QUERY_EXECUTOR = EnumSet.of(Ability.READ, Ability.CANCEL);
-	public static final EnumSet<Ability> QUERY_CREATOR = EnumSet
-		.of(Ability.READ, Ability.DELETE, Ability.SHARE, Ability.TAG, Ability.CANCEL, Ability.LABEL);
+	public static final EnumSet<Ability> QUERY_CREATOR = EnumSet.of(
+		Ability.READ, 
+		Ability.DELETE, 
+		Ability.SHARE, 
+		Ability.TAG, 
+		Ability.CANCEL, 
+		Ability.LABEL);
+	public static final EnumSet<Ability> FORM_CONFIG_CREATOR = EnumSet.of(
+		Ability.READ,
+		Ability.DELETE,
+		Ability.SHARE,
+		Ability.TAG,
+		Ability.LABEL);
 	public static final EnumSet<Ability> DATASET_CREATOR = EnumSet.of(Ability.READ, Ability.DOWNLOAD, Ability.PRESERVE_ID);
 }

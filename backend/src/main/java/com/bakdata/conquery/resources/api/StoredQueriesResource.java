@@ -4,7 +4,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,7 +105,7 @@ public class StoredQueriesResource {
 		private String[] tags;
 		private String label;
 		private Boolean shared;
-		private Collection<GroupId> groups;
+		private List<GroupId> groups;
 	}
 
 	@DELETE
