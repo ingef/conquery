@@ -4,7 +4,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +35,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import lombok.Builder;
 import lombok.Data;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
@@ -101,12 +101,13 @@ public class StoredQueriesResource {
 	}
 
 	@Data
+	@Builder
 	public static class QueryPatch {
 
 		private String[] tags;
 		private String label;
 		private Boolean shared;
-		private Collection<GroupId> groups;
+		private List<GroupId> groups;
 	}
 
 	@DELETE
