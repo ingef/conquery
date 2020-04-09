@@ -86,9 +86,7 @@ public class QueryCleanupTask extends Task {
 				if (LocalDateTime.now().minus(queryExpiration).isBefore(execution.getCreationTime())) {
 					continue;
 				}
-				else {
-					log.debug("{} is not older than {}.", execution.getId(), queryExpiration);
-				}
+				log.debug("{} is not older than {}.", execution.getId(), queryExpiration);
 
 				toDelete.add(execution.getId());
 			}
@@ -108,12 +106,12 @@ public class QueryCleanupTask extends Task {
 				storage.removeExecution(managedExecutionId);
 			}
 			
-			// Iterate over all PermissionOwners
-			
-			log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
-			log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
-			log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
 		}
+		// Iterate over all PermissionOwners
+		
+		log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
+		log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
+		log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
 	}
 
 	/**
