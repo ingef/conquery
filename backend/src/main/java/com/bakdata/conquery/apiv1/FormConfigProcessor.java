@@ -20,8 +20,6 @@ import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.resources.api.StoredQueriesResource.QueryPatch;
-import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.Getter;
@@ -63,10 +61,10 @@ public class FormConfigProcessor {
 		return config.getId();
 	}
 
-	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, QueryPatch patch) {
+	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, MetaDataPatch patch) {
 		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
 		
-		QueryUtils.patchIdentifialble(storage, user, config, patch, FormConfigPermission::onInstance);
+		MetaDataPatch.patchIdentifialble(storage, user, config, patch, FormConfigPermission::onInstance);
 		
 		storage.updateFormConfig(config);
 		

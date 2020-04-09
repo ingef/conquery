@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.execution;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -10,7 +11,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.resources.api.StoredQueriesResource.QueryPatch;
 import com.bakdata.conquery.util.QueryUtils;
 
 public interface Shareable {
@@ -20,7 +20,7 @@ public interface Shareable {
 	void setShared(boolean shared);
 	
 	
-	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable, O extends PermissionOwner<? extends IId<O>>> Consumer<QueryPatch> sharer(MasterMetaStorage storage, User user, O other, BiFunction<Ability, ID , ConqueryPermission> sharedPermissionCreator) {
+	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable, O extends PermissionOwner<? extends IId<O>>> Consumer<MetaDataPatch> sharer(MasterMetaStorage storage, User user, O other, BiFunction<Ability, ID , ConqueryPermission> sharedPermissionCreator) {
 		if(!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();

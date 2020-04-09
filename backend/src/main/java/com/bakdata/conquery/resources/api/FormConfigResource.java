@@ -17,12 +17,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FormConfigProcessor;
+import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.resources.api.StoredQueriesResource.QueryPatch;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import io.dropwizard.jersey.PATCH;
 
@@ -51,7 +51,7 @@ public class FormConfigResource extends HDatasets {
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@PathParam(FORM_CONFIG) FormConfigId formId, QueryPatch patch ) {
+	public FormConfigFullRepresentation patchConfig(@PathParam(FORM_CONFIG) FormConfigId formId, MetaDataPatch patch ) {
 		return processor.patchConfig(user, datasetId, formId, patch);
 	}
 	

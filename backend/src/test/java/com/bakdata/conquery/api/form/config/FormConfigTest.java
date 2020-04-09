@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.resources.api.StoredQueriesResource.QueryPatch;
+import com.bakdata.conquery.resources.api.StoredQueriesResource.MetaDataPatch;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.map.HashedMap;
@@ -279,7 +279,7 @@ public class FormConfigTest {
 			 user,
 			 new DatasetId("testDataset"),
 			 formConfig.getId(), 
-			 QueryPatch.builder()
+			 MetaDataPatch.builder()
 				 .label("newTestLabel")
 				 .tags(new String[] {"tag1", "tag2"})
 				 .shared(true)

@@ -19,21 +19,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
-import lombok.Builder;
-import lombok.Data;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -70,22 +68,13 @@ public class StoredQueriesResource extends HDatasets{
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, QueryPatch patch) {
+	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) {
 		
 		processor.patchQuery(user, queryId, patch);
 		
 		return getQueryWithSource(user, datasetId, queryId);
 	}
 
-	@Data
-	@Builder
-	public static class QueryPatch {
-
-		private String[] tags;
-		private String label;
-		private Boolean shared;
-		private List<GroupId> groups;
-	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")

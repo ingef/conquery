@@ -160,7 +160,7 @@ public class Constants {
 			.otherClass(FERoot.class)
 			.otherClass(FEValue.class)
 			.otherClass(FilterResource.FilterValues.class)
-			.otherClass(StoredQueriesResource.QueryPatch.class)
+			.otherClass(StoredQueriesResource.MetaDataPatch.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(ConceptsProcessor.ResolvedFilterResult.class)
 			.otherClass(FilterResource.StringContainer.class)

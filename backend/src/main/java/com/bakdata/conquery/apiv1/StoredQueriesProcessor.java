@@ -19,8 +19,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.resources.api.StoredQueriesResource.QueryPatch;
-import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,10 +70,10 @@ public class StoredQueriesProcessor {
 		return query.buildStatusWithSource(storage, null, user);
 	}
 
-	public void patchQuery(User user, ManagedExecutionId executionId, QueryPatch patch) {
+	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) {
 		ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId), String.format("Could not find form config %s", executionId));
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
-		QueryUtils.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
+		MetaDataPatch.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
 		
 		// Patch this query in other datasets
 		List<Dataset> remainingDatasets = namespaces.getAllDatasets(() -> new ArrayList<>());
@@ -87,7 +85,7 @@ public class StoredQueriesProcessor {
 				continue;
 			}
 			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			QueryUtils.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
+			MetaDataPatch.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
 		}
 	}
 
