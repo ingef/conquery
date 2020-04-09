@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.execution;
 
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -19,13 +20,13 @@ public interface Shareable {
 	void setShared(boolean shared);
 	
 	
-	default  <S extends Identifiable<?> & Shareable, O extends PermissionOwner<? extends IId<O>>> Consumer<QueryPatch> sharer(MasterMetaStorage storage, User user, O other, Function<S,ConqueryPermission> sharedPermissionCreator) {
+	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable, O extends PermissionOwner<? extends IId<O>>> Consumer<QueryPatch> sharer(MasterMetaStorage storage, User user, O other, BiFunction<Ability, ID , ConqueryPermission> sharedPermissionCreator) {
 		if(!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();
 		}
 		return (patch) -> {
-			QueryUtils.shareWithOther(
+			shareWithOther(
 				storage,
 				user,
 				(S) this,
@@ -34,5 +35,30 @@ public interface Shareable {
 				patch.getShared());
 		};
 		
+	}
+
+	
+	/**
+	 * (Un)Shares a query with a specific group. Set or unsets the shared flag.
+	 * Does persist this change made to the {@link Shareable}. 
+	 */
+	public static <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable, O extends PermissionOwner<? extends IId<O>>> void shareWithOther(
+		MasterMetaStorage storage,
+		User user,
+		S shareable,
+		BiFunction<Ability,ID, ConqueryPermission> sharedPermissionCreator,
+		O other,
+		boolean shared) {
+		
+		ConqueryPermission sharePermission = sharedPermissionCreator.apply(Ability.SHARE, shareable.getId());
+		if (shared) {
+			other.addPermission(storage, sharePermission);
+			log.trace("User {} shares query {}. Adding permission {} to group {}.", user, shareable, shareable.getId(), sharePermission, other);
+		}
+		else {
+			other.removePermission(storage, sharePermission);
+			log.trace("User {} unshares query {}. Removing permission {} from group {}.", user, shareable, shareable.getId(), sharePermission, other);
+		}
+		shareable.setShared(shared);
 	}
 }

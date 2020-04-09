@@ -66,7 +66,7 @@ public class FormConfigProcessor {
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, QueryPatch patch) {
 		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
 		
-		QueryUtils.patchIdentifialble(storage, user, config, patch, (ability) -> FormConfigPermission.onInstance(ability, config.getId()));
+		QueryUtils.patchIdentifialble(storage, user, config, patch, FormConfigPermission::onInstance);
 		
 		storage.updateFormConfig(config);
 		

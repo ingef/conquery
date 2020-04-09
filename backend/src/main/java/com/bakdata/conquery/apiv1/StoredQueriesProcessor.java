@@ -75,7 +75,7 @@ public class StoredQueriesProcessor {
 	public void patchQuery(User user, ManagedExecutionId executionId, QueryPatch patch) {
 		ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId), String.format("Could not find form config %s", executionId));
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
-		QueryUtils.patchIdentifialble(storage, user, execution, patch,  (ability) -> QueryPermission.onInstance(ability, executionId));
+		QueryUtils.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
 		
 		// Patch this query in other datasets
 		List<Dataset> remainingDatasets = namespaces.getAllDatasets(() -> new ArrayList<>());
@@ -87,7 +87,7 @@ public class StoredQueriesProcessor {
 				continue;
 			}
 			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			QueryUtils.patchIdentifialble(storage, user, execution, patch,  (ability) -> QueryPermission.onInstance(ability, executionId));
+			QueryUtils.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
 		}
 	}
 
