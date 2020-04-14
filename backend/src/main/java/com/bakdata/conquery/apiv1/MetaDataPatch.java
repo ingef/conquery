@@ -4,10 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -56,17 +54,7 @@ public class MetaDataPatch {
 			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
 		}
 		if(patch.getShared() != null && user.isPermitted(permissionCreator.apply(Ability.SHARE.asSet(), instance.getId()))) {
-			List<Group> groups;
-			if(patch.getGroups() != null) {
-				groups = patch.getGroups().stream().map(id -> storage.getGroup(id)).collect(Collectors.toList());
-			}
-			else {				
-				groups = AuthorizationHelper.getGroupsOf(user, storage);
-			}
-			for(Group group : groups) {
-				patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user, group, permissionCreator));
-
-			}
+			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user, permissionCreator));
 		}
 		patchConsumerChain.accept(patch);
 	}
