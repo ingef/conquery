@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -37,7 +36,7 @@ import io.dropwizard.jersey.PATCH;
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
 
-public class StoredQueriesResource extends HDatasets{
+public class StoredQueriesResource {
 
 	private final StoredQueriesProcessor processor;
 	private final ResourceUtil dsUtil;
@@ -57,6 +56,7 @@ public class StoredQueriesResource extends HDatasets{
 	@Path("{" + QUERY + "}")
 	public ExecutionStatus getQueryWithSource(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
 		Dataset dataset = dsUtil.getDataset(datasetId);
+		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
 		ExecutionStatus status = processor.getQueryWithSource(dataset, queryId, user);
@@ -69,17 +69,16 @@ public class StoredQueriesResource extends HDatasets{
 	@PATCH
 	@Path("{" + QUERY + "}")
 	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) {
-		
+		authorize(user, datasetId, Ability.READ);
 		processor.patchQuery(user, queryId, patch);
 		
 		return getQueryWithSource(user, datasetId, queryId);
 	}
 
-
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
-
+		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.DELETE);
 
 		processor.deleteQuery(dsUtil.getDataset(datasetId), dsUtil.getManagedQuery(queryId));

@@ -24,42 +24,47 @@ import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.resources.hierarchies.HDatasets;
+import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 
 @Consumes(ExtraMimeTypes.JSON_STRING)
 @Produces(ExtraMimeTypes.JSON_STRING)
 @Path("datasets/{" + DATASET + "}/form-configs")
-public class FormConfigResource extends HDatasets {
+public class FormConfigResource {
 	
-	FormConfigProcessor processor;
+	private FormConfigProcessor processor;
+	
+	@PathParam(DATASET)
+	private DatasetId datasetId;
 	
 	@POST
-	public Response postConfig(FormConfig config) {
+	public Response postConfig(@Auth User user, FormConfig config) {
 		return Response.ok(new PostResponse(processor.addConfig(user, config))).status(Status.CREATED).build();
 	}
 	
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@QueryParam("formType") Optional<String> formType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth User user, @QueryParam("formType") Optional<String> formType) {
 		return processor.getConfigsByFormType(user, formType);
 	}
 
 	@GET
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation getConfig(@PathParam(FORM_CONFIG) FormConfigId formId) {
+	public FormConfigFullRepresentation getConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId) {
 		return processor.getConfig(datasetId, user, formId);
 	}
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@PathParam(FORM_CONFIG) FormConfigId formId, MetaDataPatch patch ) {
+	public FormConfigFullRepresentation patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId, MetaDataPatch patch ) {
 		return processor.patchConfig(user, datasetId, formId, patch);
 	}
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response patchConfig(@PathParam(FORM_CONFIG) FormConfigId formId) {
+	public Response patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId) {
 		processor.deleteConfig(user, formId);
 		return Response.ok().build();
 	}
