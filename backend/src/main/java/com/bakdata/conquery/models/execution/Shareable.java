@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.execution;
 
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.MetaDataPatch;
+import com.bakdata.conquery.apiv1.MetaDataPatch.PermissionCreator;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -20,7 +20,7 @@ public interface Shareable {
 	void setShared(boolean shared);
 	
 	
-	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable, O extends PermissionOwner<? extends IId<O>>> Consumer<MetaDataPatch> sharer(MasterMetaStorage storage, User user, O other, BiFunction<Ability, ID , ConqueryPermission> sharedPermissionCreator) {
+	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable, O extends PermissionOwner<? extends IId<O>>> Consumer<MetaDataPatch> sharer(MasterMetaStorage storage, User user, O other, PermissionCreator<ID> sharedPermissionCreator) {
 		if(!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();
@@ -46,11 +46,11 @@ public interface Shareable {
 		MasterMetaStorage storage,
 		User user,
 		S shareable,
-		BiFunction<Ability,ID, ConqueryPermission> sharedPermissionCreator,
+		PermissionCreator<ID> sharedPermissionCreator,
 		O other,
 		boolean shared) {
 		
-		ConqueryPermission sharePermission = sharedPermissionCreator.apply(Ability.SHARE, shareable.getId());
+		ConqueryPermission sharePermission = sharedPermissionCreator.apply(AbilitySets.FORM_CONFIG_SHAREHOLDER, shareable.getId());
 		if (shared) {
 			other.addPermission(storage, sharePermission);
 			log.trace("User {} shares query {}. Adding permission {} to group {}.", user, shareable, shareable.getId(), sharePermission, other);

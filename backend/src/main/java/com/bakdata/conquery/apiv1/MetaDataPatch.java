@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -44,17 +45,17 @@ public class MetaDataPatch {
 	 * @param patch		The patch that is applied to the instance
 	 * @param permissionCreator	A function that produces a {@link Permission} that targets the given instance (e.g QueryPermission, FormConfigPermission).
 	 */
-	public static <ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID>> void patchIdentifialble(MasterMetaStorage storage, User user, INST instance, MetaDataPatch patch, BiFunction<Ability, ID,ConqueryPermission> permissionCreator) {
+	public static <ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID>> void patchIdentifialble(MasterMetaStorage storage, User user, INST instance, MetaDataPatch patch, PermissionCreator<ID> permissionCreator) {
 		
 		Consumer<MetaDataPatch> patchConsumerChain = QueryUtils.getNoOpEntryPoint();
 		
-		if(patch.getTags() != null && user.isPermitted(permissionCreator.apply(Ability.TAG, instance.getId()))) {
+		if(patch.getTags() != null && user.isPermitted(permissionCreator.apply(Ability.TAG.asSet(), instance.getId()))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
-		if(patch.getLabel() != null && user.isPermitted(permissionCreator.apply(Ability.LABEL, instance.getId()))) {
+		if(patch.getLabel() != null && user.isPermitted(permissionCreator.apply(Ability.LABEL.asSet(), instance.getId()))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
 		}
-		if(patch.getShared() != null && user.isPermitted(permissionCreator.apply(Ability.SHARE, instance.getId()))) {
+		if(patch.getShared() != null && user.isPermitted(permissionCreator.apply(Ability.SHARE.asSet(), instance.getId()))) {
 			List<Group> groups;
 			if(patch.getGroups() != null) {
 				groups = patch.getGroups().stream().map(id -> storage.getGroup(id)).collect(Collectors.toList());
@@ -68,5 +69,11 @@ public class MetaDataPatch {
 			}
 		}
 		patchConsumerChain.accept(patch);
+	}
+
+	
+	@FunctionalInterface
+	public interface PermissionCreator<ID extends IId<?>> extends BiFunction<Set<Ability>,ID, ConqueryPermission> {
+		
 	}
 }

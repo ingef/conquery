@@ -275,7 +275,7 @@ public class FormConfigTest {
 		configs.put(formConfig.getId(),formConfig);
 		
 		// EXECUTE
-		 FormConfigFullRepresentation response = processor.patchConfig(
+		processor.patchConfig(
 			 user,
 			 new DatasetId("testDataset"),
 			 formConfig.getId(), 
@@ -295,8 +295,8 @@ public class FormConfigTest {
 		
 		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "label","shared","tags");
 
-		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(Ability.READ, formConfig.getId()));
-		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(Ability.READ, formConfig.getId()));
+		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
+		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
 	}
 
 }
