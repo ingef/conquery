@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DateFormats {
 
+
 	/**
 	 * All available formats for parsing.
 	 */
@@ -42,7 +43,6 @@ public class DateFormats {
 	 */
 	private static final LoadingCache<String, LocalDate> DATE_CACHE = CacheBuilder.newBuilder()
 																				  .weakKeys().weakValues()
-																				  // TODO: 07.01.2020 fk: Tweak this number?
 																				  .concurrencyLevel(10)
 																				  .initialCapacity(64000)
 																				  .build(CacheLoader.from(DateFormats::tryParse));
@@ -55,7 +55,13 @@ public class DateFormats {
 			return null;
 		}
 
-		return DATE_CACHE.getUnchecked(value);
+		final LocalDate out = DATE_CACHE.getUnchecked(value);
+
+		if(out.equals(ERROR_DATE)) {
+			throw new IllegalArgumentException(String.format("Failed to parse `%s` as LocalDate.", value));
+		}
+
+		return out;
 	}
 
 	/**
