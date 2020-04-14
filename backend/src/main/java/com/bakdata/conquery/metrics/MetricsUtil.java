@@ -12,18 +12,18 @@ import com.codahale.metrics.Timer;
 public class MetricsUtil {
 
 	public static Timer.Context getStoreLoadingTimer() {
-		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(ConqueryStorage.class, "loading")).time();
+		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name( "jobs", "time", ConqueryStorage.class.getSimpleName())).time();
 	}
 
 	public static void createJobQueueGauge(String name, LinkedBlockingDeque<Job> jobs) {
-		SharedMetricRegistries.getDefault().register(MetricRegistry.name("jobs", name, "queue"), (Gauge<Integer>) jobs::size);
+		SharedMetricRegistries.getDefault().register(MetricRegistry.name("jobs", "queue", name), (Gauge<Integer>) jobs::size);
 	}
 
 	public static void removeJobQueueSizeGauge(String name) {
-		SharedMetricRegistries.getDefault().remove(MetricRegistry.name("jobs", name, "queue"));
+		SharedMetricRegistries.getDefault().remove(MetricRegistry.name("jobs",  "queue", name));
 	}
 
 	public static Timer.Context getJobExecutorTimer(Job job) {
-		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(job.getClass(), "execute")).time();
+		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name("jobs", "time", job.getClass().getSimpleName())).time();
 	}
 }

@@ -54,7 +54,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.get().getName(), "active")).inc();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name("users", primaryGroup.get().getName(), "active")).inc();
 	}
 
 	public void decrementPrimaryGroupCount(User user) {
@@ -68,7 +68,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.get().getName(), "active")).dec();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name("users", primaryGroup.get().getName(), "active")).dec();
 	}
 
 

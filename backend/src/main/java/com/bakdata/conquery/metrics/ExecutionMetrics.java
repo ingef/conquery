@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.codahale.metrics.Counter;
@@ -30,19 +32,19 @@ import lombok.NonNull;
 
 public class ExecutionMetrics {
 	public static Counter getRunningQueriesCounter() {
-		return SharedMetricRegistries.getDefault().counter("queries.running");
+		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", "running"));
 	}
 
 	public static Histogram getQueriesTimeHistogram() {
-		return SharedMetricRegistries.getDefault().histogram("queries.time");
+		return SharedMetricRegistries.getDefault().histogram(MetricRegistry.name("queries", "runtime"));
 	}
 
 	public static Counter getQueryStateCounter(ExecutionState state) {
-		return SharedMetricRegistries.getDefault().counter("queries.state." + state);
+		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", "state", state.toString()));
 	}
 
-	public static void reportQueryClassUsage(Class<? extends QueryDescription> aClass) {
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(aClass)).inc(); // Count usages of different types of Queries
+	public static void reportQueryClassUsage(Class<? extends QueryDescription> clazz) {
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", "classes", clazz.getSimpleName())).inc(); // Count usages of different types of Queries
 	}
 
 	/**
@@ -71,10 +73,11 @@ public class ExecutionMetrics {
 			}
 		}
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getId).map(GroupId::toString).orElse("ungrouped");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getId).map(GroupId::toString).orElse("none");
 
 		for (ConceptId id : reportedIds) {
-			SharedMetricRegistries.getDefault().counter(primaryGroupName + ".queries.content." + id.toString()).inc();
+
+			SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", "concepts", id.toStringWithoutDataset(), primaryGroupName)).inc();
 		}
 	}
 
@@ -86,32 +89,37 @@ public class ExecutionMetrics {
 		@Override
 		public void accept(Visitable element) {
 			if (element instanceof CQElement) {
-				SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", element.getClass().getSimpleName(), "usage")).inc();
+				SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", "classes",  element.getClass().getSimpleName())).inc();
 			}
 
 			if (element instanceof CQConcept) {
-				((CQConcept) element).getSelects()
-									 .forEach(select -> SharedMetricRegistries.getDefault().counter(MetricRegistry.name(select.getClass().getSimpleName(), "usage")).inc());
+				for (Select select : ((CQConcept) element).getSelects()) {
+					SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", "classes", select.getClass().getSimpleName())).inc();
 
+					SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", "selects", select.getId().toStringWithoutDataset())).inc();
+				}
+
+				// Report classes and ids used of filters and selects
 				for (CQTable table : ((CQConcept) element).getTables()) {
-					table.getFilters().forEach(filter -> {
-						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name("queries", "concept", "class", filter.getFilter().getClass().getSimpleName(), "usage"))
-											  .inc();
-						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name("query", "concept", "filter", filter.getFilter().getId().toStringWithoutDataset(), "usage"))
-											  .inc();
-					});
 
-					table.getSelects().forEach(select -> {
+					for (FilterValue<?> filter : table.getFilters()) {
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name("queries", "concept","class", select.getClass().getSimpleName(), "usage"))
+											  .counter(MetricRegistry.name("queries", "classes", filter.getFilter().getClass().getSimpleName()))
+											  .inc();
+						SharedMetricRegistries.getDefault()
+											  .counter(MetricRegistry.name("queries", "filters", filter.getFilter().getId().toStringWithoutDataset()))
+											  .inc();
+					}
+
+					for (Select select : table.getSelects()) {
+						SharedMetricRegistries.getDefault()
+											  .counter(MetricRegistry.name("queries", "classes", select.getClass().getSimpleName()))
 											  .inc();
 
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name("queries", "concept", "select", select.getId().toString(), ".usage"))
+											  .counter(MetricRegistry.name("queries", "selects", select.getId().toStringWithoutDataset()))
 											  .inc();
-					});
+					}
 				}
 			}
 		}
