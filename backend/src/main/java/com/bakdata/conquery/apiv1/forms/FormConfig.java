@@ -41,8 +41,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@NotEmpty
 	private String formType;
-	private UUID formId = UUID.randomUUID();
-	private String label = formId.toString();
+	private UUID formId;
+	private String label;
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
@@ -58,6 +58,10 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
+		if(formId == null) {			
+			formId = UUID.randomUUID();
+			label = formId.toString();
+		}
 		return new FormConfigId(formType, formId);
 	}
 
