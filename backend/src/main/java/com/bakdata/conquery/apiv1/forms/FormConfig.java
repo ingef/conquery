@@ -46,7 +46,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
-	@NotNull @EqualsAndHashCode.Exclude
+	@NotNull
 	private JsonNode values;
 	protected UserId owner;
 	
