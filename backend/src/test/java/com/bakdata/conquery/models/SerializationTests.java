@@ -5,7 +5,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import com.bakdata.conquery.apiv1.FormConfigProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
+import com.bakdata.conquery.apiv1.forms.FormConfig;
+import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -26,7 +31,10 @@ import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 public class SerializationTests {
@@ -166,5 +174,23 @@ public class SerializationTests {
 		SerializationTestUtil.forType(PersistentIdMap.class)
 			.test(IdMapSerialisationTest.createTestPersistentMap());
 
+	}
+	
+	@Test
+	public void formConfig() throws JSONException, IOException {
+
+		ExportForm form = new ExportForm();
+		AbsoluteMode mode = new AbsoluteMode();
+		form.setTimeMode(mode);
+		mode.setForm(form);
+		mode.setFeatures(List.of(new CQConcept()));
+
+		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
+		JsonNode values = mapper.valueToTree(form);
+		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
+		
+		SerializationTestUtil
+			.forType(FormConfig.class)
+			.test(formConfig);
 	}
 }
