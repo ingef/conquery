@@ -76,17 +76,17 @@ public class Preprocessed {
 		try (OutputStream out = outFile.writeHeader()) {
 			int hash = descriptor.calculateValidityHash();
 
-			PreprocessedHeader header = PreprocessedHeader.builder()
-					.name(descriptor.getName())
-					.table(descriptor.getTable())
-					.rows(rows)
-					.eventRange(eventRange)
-					.primaryColumn(primaryColumn)
-					.columns(columns)
-					.groups(writtenGroups)
-					.validityHash(hash)
-					.suffix(imp.getSuffix())
-					.build();
+			PreprocessedHeader header = new PreprocessedHeader(
+					descriptor.getName(),
+					descriptor.getTable(),
+					imp.getSuffix(),
+					rows,
+					writtenGroups,
+					eventRange,
+					primaryColumn,
+					columns,
+					hash
+			);
 
 			try {
 				Jackson.BINARY_MAPPER.writeValue(out, header);
