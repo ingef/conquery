@@ -22,6 +22,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -96,4 +98,9 @@ public class FormConfigProcessor {
 		}
 	}
 
+	@Data
+	@AllArgsConstructor
+	public static class PostResponse {
+		private FormConfigId id;
+	}
 }

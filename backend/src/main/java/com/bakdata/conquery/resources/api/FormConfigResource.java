@@ -15,8 +15,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FormConfigProcessor;
+import com.bakdata.conquery.apiv1.FormConfigProcessor.PostResponse;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
@@ -34,8 +36,8 @@ public class FormConfigResource extends HDatasets {
 	FormConfigProcessor processor;
 	
 	@POST
-	public FormConfigId postConfig(FormConfig config) {
-		return processor.addConfig(user, config);
+	public Response postConfig(FormConfig config) {
+		return Response.ok(new PostResponse(processor.addConfig(user, config))).status(Status.CREATED).build();
 	}
 	
 	@GET
