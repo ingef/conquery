@@ -18,6 +18,10 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.NonNull;
 
+/**
+ * Interface for classes that are able to be patched with an {@link MetaDataPatch}.
+ * Allows sharing of implementations among groups of a given user.
+ */
 public interface Shareable {
 	static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Shareable.class);
 	
