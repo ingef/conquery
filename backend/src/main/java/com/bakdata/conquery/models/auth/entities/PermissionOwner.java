@@ -8,6 +8,8 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
@@ -21,7 +23,16 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> {
 
-	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
+	
+	private final Set<ConqueryPermission> permissions = new HashSet<>();
+	
+	/** 
+	 * Helper members to ensure that permissions are only modified using the add/remove methods and the storage is consistent.
+	 */
+	@JsonIgnore
+	private final Set<Permission> unmodifiablePermissions = Collections.unmodifiableSet(permissions);
+	@JsonIgnore
+	private final Set<Permission> synchronizedUnmodifiablePermissions = Collections.synchronizedSet(unmodifiablePermissions);
 
 	/**
 	 * Adds permissions to the user and persistent to the storage.
@@ -41,17 +52,21 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 
 	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) {
-		if (permissions.add(permission)) {
-			updateStorage(storage);
-			log.trace("Added permission {} to owner {}", permission, getId());
+		synchronized (synchronizedUnmodifiablePermissions) {			
+			if (permissions.add(permission)) {
+				updateStorage(storage);
+				log.trace("Added permission {} to owner {}", permission, getId());
+			}
 		}
 		return permission;
 	}
 
 	public void removePermission(MasterMetaStorage storage, Permission delPermission) {
-		if (permissions.remove(delPermission)) {
-			this.updateStorage(storage);
-			log.trace("Removed permission {} from owner {}", delPermission, getId());
+		synchronized (synchronizedUnmodifiablePermissions) {			
+			if (permissions.remove(delPermission)) {
+				this.updateStorage(storage);
+				log.trace("Removed permission {} from owner {}", delPermission, getId());
+			}
 		}
 	}
 
@@ -60,15 +75,31 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * 
 	 * @return A set of the permissions hold by the owner.
 	 */
-	public Set<Permission> getPermissions(){
+	public Set<Permission> getPermissions() {
 		// HashSet uses internally an iterator for copying, so we need to synchronize this
-		return Collections.unmodifiableSet(permissions);
+		return synchronizedUnmodifiablePermissions;
+	}
+	
+	/**
+	 * Custom property setter for permissions so that the existing Hashset is not replaced by Jackson and
+	 * the references held by the members {@link PemissionOwner#unmodifiablePermissions} and {@link PermissionOwner#synchronizedUnmodifiablePermissions}
+	 * are still valid.
+	 * @param permissions
+	 */
+	@JsonProperty
+	private void setPermissions(Set<ConqueryPermission> permissions) {
+		synchronized (synchronizedUnmodifiablePermissions) {			
+			this.permissions.clear();
+			this.permissions.addAll(permissions);
+		}
 	}
 
 	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) {
-		permissions.clear();
-		permissions.addAll(permissionsNew);
-		updateStorage(storage);
+		synchronized (synchronizedUnmodifiablePermissions) {			
+			permissions.clear();
+			permissions.addAll(permissionsNew);
+			updateStorage(storage);
+		}
 	}
 
 	/**
