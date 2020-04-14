@@ -30,6 +30,8 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
@@ -131,6 +133,9 @@ public class Preprocessor {
 
 		long lineId = 0;
 
+		// Gather exception classes to get better overview of what kind of errors are happening.
+		Multiset<Class<? extends Throwable>> exceptions = HashMultiset.create();
+
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
 				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
@@ -166,7 +171,6 @@ public class Preprocessor {
 						outputs.add(op.createForHeaders(headerMap));
 					}
 
-
 					String[] row;
 
 					// Read all CSV lines, apply Output transformations and add the to preprocessed.
@@ -187,19 +191,18 @@ public class Preprocessor {
 						}
 						catch (OutputDescription.OutputException e) {
 
+							exceptions.add(e.getCause().getClass());
+
 							long errors = errorCounter.getAndIncrement();
 
-							log.warn("Failed to parse `{}` from line: {} content: {}. Errors={}", e.getSource().getDescription(), lineId, Arrays.toString(row), errors, e.getCause());
-
-//
-//							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-//								log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, Arrays.toString(row), e.getCause());
-//							}
-//							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-//								log.warn("More erroneous lines occurred. Only the first "
-//										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
-//										 + " were printed.");
-//							}
+							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+								log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
+							}
+							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+								log.warn("More erroneous lines occurred. Only the first "
+										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
+										 + " were printed.");
+							}
 						}
 						finally {
 							//report progress
@@ -264,8 +267,14 @@ public class Preprocessor {
 			result.write(outFile);
 		}
 
-		if (errorCounter.get() > 0 && log.isWarnEnabled()) {
+		if (errorCounter.get() > 0) {
 			log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errorCounter.get(), lineId);
+		}
+
+		if (log.isWarnEnabled()){
+			for (Multiset.Entry<Class<? extends Throwable>> entry : exceptions.entrySet()) {
+				log.warn("Got {} `{}`", entry.getCount(), entry.getElement().getSimpleName());
+			}
 		}
 
 		//if successful move the tmp file to the target location
