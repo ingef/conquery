@@ -86,15 +86,15 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 		IntegrationUtils.importTableContents(support, Arrays.asList(content.getTables()), support.getDataset());
 		support.waitUntilWorkDone();
-		importIdMapping(support);
+		importIdMapping(support, content.getIdMapping());
 		importPreviousQueries(support);
 	}
 
-	public void importIdMapping(StandaloneSupport support) throws JSONException, IOException {
-		if(content.getIdMapping() == null) {
+	public static void importIdMapping(StandaloneSupport support, ResourceFile idMapping) throws JSONException, IOException {
+		if(idMapping == null) {
 			return;
 		}
-		try(InputStream in = content.getIdMapping().stream()) {
+		try(InputStream in = idMapping.stream()) {
 			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
 		}
 	}
