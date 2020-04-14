@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -133,53 +134,59 @@ public class QueryCleanupTask extends Task {
 
 	/**
 	 * Deletes permission that reference non-existing executions.
+	 * 
 	 * @return The number of deleted permissions.
 	 */
 	public static int deleteQueryPermissionsWithMissingRef(MasterMetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
 		int countDeleted = 0;
 		// Do the loop-di-loop
-		for(PermissionOwner<?> owner : owners) {
+		for (PermissionOwner<?> owner : owners) {
 			Set<Permission> permissions = owner.getPermissions();
 			synchronized (permissions) {
-				for (Permission permission : permissions) {
-					if(!(permission instanceof WildcardPermission)) {
-						log.warn("Encountered the permission type {} that is not handled by this routine. Permission was: {}", permission.getClass(), permission);
+				/*
+				 * Directly use an Iterator here because the iterator of an for(elem:collection)
+				 * loop does not consider that the collections grows or in our case shrinks.
+				 */
+				Iterator<Permission> it = permissions.iterator();
+				while (it.hasNext()) {
+					Permission permission = it.next();
+					if (!(permission instanceof WildcardPermission)) {
+						log.warn(
+							"Encountered the permission type {} that is not handled by this routine. Permission was: {}",
+							permission.getClass(),
+							permission);
 						continue;
 					}
 					WildcardPermission wpermission = (WildcardPermission) permission;
-					if(!wpermission.getDomains().contains(QueryPermission.DOMAIN)) {
+					if (!wpermission.getDomains().contains(QueryPermission.DOMAIN)) {
 						// Skip Permissions that do not reference an Execution/Query
 						continue;
 					}
-					
+
 					// Handle multiple references to instances
 					Set<String> validRef = new HashSet<>();
-					for(String sId : wpermission.getInstances()) {
+					for (String sId : wpermission.getInstances()) {
 						ManagedExecutionId mId = ManagedExecutionId.Parser.INSTANCE.parse(sId);
 						if (storage.getExecution(mId) != null) {
 							// Execution exists -- it is a valid reference
 							validRef.add(mId.toString());
 						}
 					}
-					if(validRef.size() > 0) {
+					if (validRef.size() > 0) {
 						if (wpermission.getInstances().size() == validRef.size()) {
 							// All are valid, nothing changed proceed with the next permission
 							continue;
 						}
 						// Create a new Permission that only contains valid references
 						WildcardPermission reducedPermission = new WildcardPermission(
-							List.of(
-								wpermission.getDomains(),  
-								wpermission.getAbilities(), 
-								validRef),
-							wpermission.getCreationTime());
-						owner.addPermission(storage, reducedPermission);					
+							List.of(wpermission.getDomains(), wpermission.getAbilities(), validRef), wpermission.getCreationTime());
+						owner.addPermission(storage, reducedPermission);
 					}
-					
+
 					// Delete the old permission that containes both valid and invalid references
 					owner.removePermission(storage, wpermission);
 					countDeleted++;
-					
+
 				}
 			}
 		}
