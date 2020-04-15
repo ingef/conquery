@@ -70,7 +70,6 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * actual form field values.
 	 */
 	public FormConfigOverviewRepresentation overview(MasterMetaStorage storage, User user) {
-		@NonNull
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()

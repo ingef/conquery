@@ -9,9 +9,10 @@ import com.bakdata.conquery.apiv1.MetaDataPatch;
  * Lets the implementing class set the label if the label in the patch is not {@code null}.
  */
 public interface Labelable {
+	String getLabel();
 	void setLabel(String label);
 	
-	default Consumer<MetaDataPatch> labeler() {
+	default Consumer<Labelable> labeler() {
 		return (patch) -> {
 			if (patch != null && patch.getLabel() != null) {
 				setLabel(patch.getLabel());

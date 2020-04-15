@@ -10,10 +10,10 @@ import com.bakdata.conquery.apiv1.MetaDataPatch;
  * patch is not {@code null}.
  */
 public interface Taggable {
-
+	String[] getTags();
 	void setTags(String[] tags);
 
-	default Consumer<MetaDataPatch> tagger() {
+	default Consumer<Taggable> tagger() {
 		return (patch) -> {
 			if (patch != null && patch.getTags() != null) {
 				setTags(patch.getTags());

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -15,21 +16,26 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Interface for classes that are able to be patched with an {@link MetaDataPatch}.
  * Allows sharing of implementations among groups of a given user.
  */
-public interface Shareable {
-	static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Shareable.class);
+public interface  Shareable {
+	static final Logger log = LoggerFactory.getLogger(Shareable.class);
 	
-	boolean isShared();
+	/**
+	 * Sets the flag that indicated if an instance is shared among groups.
+	 */
 	void setShared(boolean shared);
 	
 	
-	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable> Consumer<MetaDataPatch> sharer(
+	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable> Consumer<ShareInformation> sharer(
 		MasterMetaStorage storage,
 		User user,
 		PermissionCreator<ID> sharedPermissionCreator) {
@@ -38,7 +44,7 @@ public interface Shareable {
 			return QueryUtils.getNoOpEntryPoint();
 		}
 		return (patch) -> {
-			if(patch != null && patch.getShared()) {
+			if(patch != null && patch.getShared() != null) {
 				List<Group> groups;
 				if(patch.getGroups() != null) {
 					// Resolve the provided groups
@@ -62,7 +68,6 @@ public interface Shareable {
 		
 	}
 
-	
 	/**
 	 * (Un)Shares a query with a specific group. Set or unsets the shared flag.
 	 * Does persist this change made to the {@link Shareable}. 
@@ -78,12 +83,35 @@ public interface Shareable {
 		ConqueryPermission sharePermission = sharedPermissionCreator.apply(AbilitySets.FORM_CONFIG_SHAREHOLDER, shareable.getId());
 		if (shared) {
 			other.addPermission(storage, sharePermission);
-			log.trace("User {} shares query {}. Adding permission {} to group {}.", user, shareable, shareable.getId(), sharePermission, other);
+			log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, other);
+			shareable.setShared(shared);
 		}
 		else {
 			other.removePermission(storage, sharePermission);
-			log.trace("User {} unshares query {}. Removing permission {} from group {}.", user, shareable, shareable.getId(), sharePermission, other);
+			log.trace("User {} unshares instance {} ({}). Removing permission {} from owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, other);
+			// Update shared flag
+			boolean stillShared = false;
+			List<GroupId> stillSharedGroups = new ArrayList<>();
+			for (Group group : storage.getAllGroups()) {
+				if (group.getPermissions().contains(sharePermission)) {
+					stillShared = true;
+					stillSharedGroups.add(group.getId());
+				}
+			}
+			
+			if(stillShared) {
+				log.trace("After removing a share from instance {} ({}) it is still shared with the following groups: {}", shareable.getClass().getSimpleName(), shareable.getId(), stillSharedGroups);
+			}
+			else {
+				log.trace("After removing a share from instance {} ({}) it is not shared anymore", shareable.getClass().getSimpleName(), shareable.getId());
+			}
+			
+			shareable.setShared(stillShared);
 		}
-		shareable.setShared(shared);
+	}
+	
+	public interface ShareInformation {
+		Boolean getShared();
+		List<GroupId> getGroups();
 	}
 }

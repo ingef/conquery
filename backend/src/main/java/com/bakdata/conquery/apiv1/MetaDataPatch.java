@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Shareable;
+import com.bakdata.conquery.models.execution.Shareable.ShareInformation;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -23,7 +24,7 @@ import org.apache.shiro.authz.Permission;
 
 @Data
 @Builder
-public class MetaDataPatch {
+public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 
 	private String[] tags;
 	private String label;

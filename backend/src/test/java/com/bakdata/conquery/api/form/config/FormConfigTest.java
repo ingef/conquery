@@ -274,7 +274,7 @@ public class FormConfigTest {
 		user.addPermission(storageMock, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
 		configs.put(formConfig.getId(),formConfig);
 		
-		// EXECUTE
+		// EXECUTE PART 1
 		processor.patchConfig(
 			 user,
 			 new DatasetId("testDataset"),
@@ -287,15 +287,36 @@ public class FormConfigTest {
 			 	.build()
 			 );
 		
-		// CHECK
+		// CHECK PART 1
 		FormConfig patchedFormExpected = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
 		patchedFormExpected.setTags(new String[] {"tag1", "tag2"});
 		
-		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "label","shared","tags");
+		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "formType", "label","shared","tags");
 
 		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
+		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
+		
+		
+		
+		// EXECUTE PART 2 (Unshare)
+		processor.patchConfig(
+			 user,
+			 new DatasetId("testDataset"),
+			 formConfig.getId(), 
+			 MetaDataPatch.builder()
+				 .shared(false)
+				 .groups(List.of(group1.getId(), group2.getId()))
+			 	.build()
+			 );
+		
+		// CHECK PART 2
+		patchedFormExpected.setShared(false);
+		
+		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "formType","label","shared","tags");
+
+		assertThat(groups.get(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
 		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
 	}
 

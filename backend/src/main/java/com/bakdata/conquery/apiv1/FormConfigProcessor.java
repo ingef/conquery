@@ -18,8 +18,10 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.AllArgsConstructor;
@@ -30,6 +32,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.shiro.authz.Permission;
 import org.jetbrains.annotations.TestOnly;
 
+/**
+ * Holds the logic that serves the endpoints defined in {@link FormConfigResource}.
+ */
 @RequiredArgsConstructor
 public class FormConfigProcessor {
 	
@@ -37,6 +42,12 @@ public class FormConfigProcessor {
 	@Getter(onMethod = @__({@TestOnly}))
 	private final static ObjectMapper MAPPER = Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
 	
+	/**
+	 * Return an overview of all form config available to the user. The selection can be reduced by setting a specific formType.
+	 * The provided overview does not contain the configured values for the form, just the meta data.
+	 * @param user The user vor which the overview is created.
+	 * @param formType Optional form type to filter the overview to that specific type.
+	 **/
 	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull Optional<String> formType){
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
 			.filter(c -> user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
@@ -47,13 +58,20 @@ public class FormConfigProcessor {
 		return stream.map(c -> c.overview(storage, user));	
 	}
 
-	public  FormConfigFullRepresentation getConfig(DatasetId datasetId, User user, FormConfigId formId) {
+	/**
+	 * Returns the full configuration of a configuration (meta data + configured values).
+	 * It also tried to convert all {@link NamespacedId}s into the given dataset, so that the frontend can resolve them.
+	 */
+	public FormConfigFullRepresentation getConfig(DatasetId datasetId, User user, FormConfigId formId) {
 		user.checkPermission(FormConfigPermission.onInstance(Ability.READ, formId));
 		FormConfigFullRepresentation config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId))
 			.tryTranslateToDataset(storage, datasetId, MAPPER, user);
 		return config;
 	}
 
+	/**
+	 * Adds a formular configuration to the storage and grants the user the rights to manage/patch it. 
+	 */
 	public FormConfigId addConfig(User user, FormConfig config) {
 		config.setOwner(user.getId());
 		storage.updateFormConfig(config);
@@ -63,6 +81,9 @@ public class FormConfigProcessor {
 		return config.getId();
 	}
 
+	/**
+	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
+	 */
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, MetaDataPatch patch) {
 		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
 		
@@ -73,6 +94,9 @@ public class FormConfigProcessor {
 		return config.tryTranslateToDataset(storage, target, MAPPER, user);
 	}
 
+	/**
+	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
+	 */
 	public void deleteConfig(User user, FormConfigId formId) {
 		user.checkPermission(FormConfigPermission.onInstance(Ability.DELETE, formId));
 		storage.removeFormConfig(formId);
@@ -98,6 +122,9 @@ public class FormConfigProcessor {
 		}
 	}
 
+	/**
+	 * Simple container so that the frontend receives an JSON object instead of a string.
+	 */
 	@Data
 	@AllArgsConstructor
 	public static class PostResponse {
