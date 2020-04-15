@@ -86,7 +86,7 @@ public class FormConfigProcessor {
 				continue;
 			}
 			
-			if(wpermission.getInstances().size()>1) {
+			if(!wpermission.getInstances().isEmpty()) {
 				// Create new permission if it was a composite permission
 				Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
 				instancesCleared.remove(formId.toString());
