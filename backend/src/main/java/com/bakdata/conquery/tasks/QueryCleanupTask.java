@@ -167,7 +167,7 @@ public class QueryCleanupTask extends Task {
 						validRef.add(mId.toString());
 					}
 				}
-				if (validRef.size() > 0) {
+				if (!validRef.isEmpty()) {
 					if (wpermission.getInstances().size() == validRef.size()) {
 						// All are valid, nothing changed proceed with the next permission
 						continue;
