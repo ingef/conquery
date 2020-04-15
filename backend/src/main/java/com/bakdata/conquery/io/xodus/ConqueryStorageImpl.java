@@ -8,7 +8,7 @@ import java.util.List;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
-import com.bakdata.conquery.metrics.MetricsUtil;
+import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.util.functions.Collector;
@@ -46,7 +46,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		createStores(stores::add);
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 
-		try (final Timer.Context timer = MetricsUtil.getStoreLoadingTimer()) {
+		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
 			Stopwatch all = Stopwatch.createStarted();
 			for (KeyIncludingStore<?, ?> store : stores) {
 				store.loadData();
