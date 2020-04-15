@@ -2,6 +2,7 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -135,7 +136,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 
 
-		environment.admin().addTask(new QueryCleanupTask(storage));
+		environment.admin().addTask(
+				new QueryCleanupTask(storage, Duration.of(
+						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getQuantity(),
+						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getUnit().toChronoUnit()
+				)));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);

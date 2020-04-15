@@ -80,7 +80,6 @@ public class QueryProcessor {
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), user, storage);
 
-
 		ExecutionMetrics.reportQueryClassUsage(query.getClass());
 
 
