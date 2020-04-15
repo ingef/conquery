@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -26,10 +27,19 @@ import com.google.common.collect.ClassToInstanceMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
+@Slf4j
 @UtilityClass
 public class QueryUtils {
+	
+	/**
+	 * Provides a starting operator for consumer chains, that does nothing.
+	 */
+	public static <T> Consumer<T> getNoOpEntryPoint() {
+		return (whatever) -> {};
+	}
 	
 	/**
 	 * Gets the specified visitor from the map. If none was found an exception is raised.
