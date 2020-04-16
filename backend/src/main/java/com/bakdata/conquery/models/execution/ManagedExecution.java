@@ -65,8 +65,7 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-@NoArgsConstructor
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
 
 	protected DatasetId dataset;
 	protected UUID queryId = UUID.randomUUID();

@@ -27,7 +27,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	
 
 	/**
-	 * Adds permissions to the user and persistent to the storage.
+	 * Adds permissions to the owner object and to the persistent storage.
 	 *
 	 * @param storage
 	 *            A storage where the permission are added for persistence.
@@ -49,6 +49,21 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			log.trace("Added permission {} to owner {}", permission, getId());
 		}
 		return permission;
+	}
+	
+	/**
+	 * Removes permissions from the owner object and from the persistent storage.
+	 *
+	 * @param storage
+	 *            A storage where the permission are added for persistence.
+	 * @param permission
+	 *            The permission to add.
+	 * @return Returns the added Permission
+	 */
+	public void removePermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) {
+		for (ConqueryPermission permission : permissions) {
+			removePermission(storage, permission);
+		}
 	}
 
 	public void removePermission(MasterMetaStorage storage, Permission delPermission) {
