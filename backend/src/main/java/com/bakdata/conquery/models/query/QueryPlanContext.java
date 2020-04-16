@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.query.concept.ConceptQueryResultFormat;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,8 @@ public class QueryPlanContext {
 
 	private boolean generateSpecialDateUnion = true;
 	private CDateRange dateRestriction = CDateRange.all();
+	/** optional variable deciding how selects are used to generate results **/
+	private ConceptQueryResultFormat resultFormat = ConceptQueryResultFormat.WIDE;
 
 	public DatasetId getDataset() {
 		return worker.getStorage().getDataset().getId();
