@@ -278,8 +278,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/ExportForm.java#L37) | timeMode | `Mode` | `null` |  |  | 
 </p></details>
 
-### LONG_FORMAT_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/LongFormatQuery.java#L28)</sup></sub></sup>
-
+### LONG_FORMAT_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/LongFormatQuery.java#L28-L31)</sup></sub></sup>
+A LONG_FORMAT_QUERY creates a long format result for every value of every event matching the given filters. It ignores selects completely.
 
 <details><summary>Details</summary><p>
 
@@ -289,7 +289,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/LongFormatQuery.java#L34) | query | `IQuery` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/LongFormatQuery.java#L38) | query | `IQuery` | ? |  |  | 
 </p></details>
 
 ### RELATIVE_FORM_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L28)</sup></sub></sup>
