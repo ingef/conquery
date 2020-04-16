@@ -8,9 +8,12 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.LongFormAggregator.Entry;
 
 import lombok.AccessLevel;
@@ -26,6 +29,7 @@ public class LongFormAggregator implements Aggregator<List<Entry>> {
 	@Setter(AccessLevel.PROTECTED)
 	private boolean triggered = false;
 	private List<Entry> results = new ArrayList<>();
+	private boolean prettyPrint;
 	
 	@Override
 	public LongFormAggregator doClone(CloneContext ctx) {
@@ -53,12 +57,22 @@ public class LongFormAggregator implements Aggregator<List<Entry>> {
 	}
 
 	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		prettyPrint = ctx.isPrettyPrint();
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
 		for(int i=0;i<requiredTable.getColumns().length;i++) {
 			if(bucket.has(event, i)) {
+				CType type = requiredTable.getColumns()[i].getTypeFor(bucket);
+				
+				
 				results.add(new Entry(
 					requiredTable.getColumns()[i].getId().toStringWithoutDataset(),
-					requiredTable.getColumns()[i].getTypeFor(bucket).createPrintValue(bucket.getRaw(event, i))
+					//depending on context use pretty printing or script value
+					prettyPrint?type.createPrintValue(bucket.getRaw(event, i)):type.createScriptValue(bucket.getRaw(event, i))
 				));
 			}
 		}
