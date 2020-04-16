@@ -21,6 +21,7 @@ public class QueryPlanContext {
 
 	private boolean generateSpecialDateUnion = true;
 	private CDateRange dateRestriction = CDateRange.all();
+	/** optional variable deciding how selects are used to generate results **/
 	private ConceptQueryResultFormat resultFormat = ConceptQueryResultFormat.WIDE;
 
 	public DatasetId getDataset() {

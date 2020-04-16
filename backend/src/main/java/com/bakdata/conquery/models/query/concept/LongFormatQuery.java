@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.LongFormatQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,6 +24,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+
+/**
+ * A LONG_FORMAT_QUERY creates a long format result for every value of every event
+ * matching the given filters. It ignores selects completely.
+ */
 @Getter
 @Setter
 @CPSType(id = "LONG_FORMAT_QUERY", base = QueryDescription.class)

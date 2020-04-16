@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.util.ArrayList;
+
 import java.util.List;
 
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -14,7 +15,9 @@ import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.queryplan.specific.TableRequiringAggregatorNode;
 import com.google.common.collect.Lists;
 
+/** different modes how selects are used to generate results **/
 public enum ConceptQueryResultFormat {
+	/** The classical way. Every select creates a column in the result set. **/
 	WIDE {
 		@Override
 		public QPNode createAggregators(QueryPlanContext context, ConceptQueryPlan plan, CQConcept concept, CQTable table) {
@@ -36,6 +39,9 @@ public enum ConceptQueryResultFormat {
 			return AndNode.of(aggregators);
 		}
 	},
+	/** This special ResultFormat will store a list of long format results for every entity. To use this it is necessary to use
+	 *  a LONG_FORMAT_QUERY. 
+	 **/
 	LONG {
 		@Override
 		public QPNode createAggregators(QueryPlanContext context, ConceptQueryPlan plan, CQConcept concept, CQTable table) {
