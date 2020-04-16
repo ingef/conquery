@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -7,20 +8,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ExecutionStatus.WithQuery;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -29,6 +37,8 @@ import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -61,6 +71,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private transient int executingThreads;
+	@JsonIgnore
+	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
@@ -121,8 +133,41 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	
 	@Override
 	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
+	}
+	
+	@Override
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithQuery status) {
+		if(columnDescriptions == null) {
+			columnDescriptions = generateColumnDescriptions();
+		}
+		super.setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		status.setColumnDescriptions(columnDescriptions);
+	}
+
+	/**
+	 * Generates a description of each column that will appear in the resulting csv.
+	 */
+	private List<ColumnDescriptor> generateColumnDescriptions() {
+		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+		// First add the id columns to the descriptor list. The are the first columns
+		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
+			columnDescriptions.add(ColumnDescriptor.builder()
+				.label(header)
+				// set no type for the ID columns
+				.build());
+		}
+		// Then all columns that originate from selects
+		columnDescriptions.addAll(
+			collectResultInfos(new PrintSettings(true, I18n.LOCALE.get())).getInfos().stream()
+				.map(i -> ColumnDescriptor.builder()
+					.label(i.getName())
+					.type(i.getType())
+					.build())
+				.collect(Collectors.toList()));
+		return columnDescriptions;
 	}
 	
 	@Override
@@ -161,5 +206,16 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public QueryDescription getSubmitted() {
 		return query;
+	}
+
+	@Override
+	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
+		return ResultCSVResource.resultAsStreamingOutput(new ResultGenerationContext(this, mappingState, settings, charset, lineSeparator));
+	}
+	
+	@Override
+	protected String getDownloadLink(URLBuilder url) {
+		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
+			.to(ResultCSVResource.GET_CSV_PATH).get();
 	}
 }

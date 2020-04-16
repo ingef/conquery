@@ -20,6 +20,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -51,15 +53,18 @@ public class QueryResource {
 	}
 
 	@POST
-	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
+	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
 		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
 
 
-		return processor.postQuery(
+		return Response.ok(
+			processor.postQuery(
 			dsUtil.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
-			user);
+			user))
+			.status(Status.CREATED)
+			.build();
 	}
 
 	@DELETE
