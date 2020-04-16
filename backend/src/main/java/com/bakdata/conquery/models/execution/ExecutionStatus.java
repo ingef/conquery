@@ -10,11 +10,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 
 @NoArgsConstructor
 @ToString
 @AllArgsConstructor
 @Data
+@FieldNameConstants
 public class ExecutionStatus {
 
 	private String[] tags;
