@@ -23,7 +23,7 @@ public class QueryTranslator {
 		throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
 	}
 	
-	public <T extends CQElement> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
+	public <T extends Visitable> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
 			
@@ -47,7 +47,7 @@ public class QueryTranslator {
 	
 			return (T)namespaces
 				.injectInto(Jackson.MAPPER.copy())
-				.readValue(value, CQElement.class);
+				.readValue(value, element.getClass());
 		}
 		catch(Exception e) {
 			throw new RuntimeException("Failed to translate element "+element+" to dataset "+target, e);
