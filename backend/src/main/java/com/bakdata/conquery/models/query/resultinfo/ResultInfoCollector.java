@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.models.query.PrintSettings;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +22,7 @@ public class ResultInfoCollector {
 	}
 	
 	public void add(SelectResultInfo info) {
-		String name = info.getName(settings);
+		String name = info.getName();
 		AtomicInteger occurence = ocurrenceCounter.computeIfAbsent(name, str -> new AtomicInteger(0));
 		info.setPostfix(occurence.getAndIncrement());
 		infos.add(info);
