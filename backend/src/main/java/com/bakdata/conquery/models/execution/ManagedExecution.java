@@ -64,6 +64,7 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @Slf4j
 @CPSBase
+@NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
 
