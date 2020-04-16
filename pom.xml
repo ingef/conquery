@@ -11,7 +11,7 @@
 	
 	<properties>
 		<java.required>11</java.required>
-		<lombok.version>1.18.10</lombok.version>
+		<lombok.version>1.18.12</lombok.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>${java.required}</maven.compiler.source>
 		<maven.compiler.target>${java.required}</maven.compiler.target>
@@ -42,7 +42,7 @@
 		<dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.5.2</version>
+            <version>5.6.2</version>
             <scope>test</scope>
         </dependency>
 	</dependencies>
@@ -111,7 +111,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.0.0</version>
+						<version>3.1.0</version>
 						<inherited>false</inherited>
 						<executions>
 							<execution>

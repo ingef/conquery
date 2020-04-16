@@ -3,8 +3,6 @@ package com.bakdata.conquery.util.support;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.ws.rs.client.Client;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,13 +11,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.ws.rs.client.Client;
+
 import com.bakdata.conquery.commands.StandaloneCommand;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
-import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
@@ -120,7 +116,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			ns.getStorage().getDataset(),
 			localTmpDir,
 			localCfg,
-			standaloneCommand.getMaster().getAdmin().getAdminProcessor());
+			standaloneCommand.getMaster().getAdmin().getAdminProcessor(),
+			// Getting the User from AuthorizationConfig
+			standaloneCommand.getMaster().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
 
 		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
 
@@ -216,16 +214,6 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
 			.withProperty(ClientProperties.READ_TIMEOUT, 10000)
 			.build("test client");
-
-
-		// SuperUser
-		registerSuperUser();
-	}
-
-	private void registerSuperUser() throws JSONException {
-		MasterMetaStorage storage = standaloneCommand.getMaster().getStorage();
-		storage.updateUser(DevAuthConfig.USER);
-		DevAuthConfig.USER.addPermission(storage, SuperPermission.onDomain());
 	}
 
 	@Override

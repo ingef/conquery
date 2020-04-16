@@ -1,5 +1,17 @@
 package com.bakdata.conquery.models.concepts.tree;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
@@ -20,17 +32,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -97,6 +98,14 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		List<ConceptTreeChild> openList = new ArrayList<>();
 		openList.addAll(this.getChildren());
 
+		for (ConceptTreeConnector con : getConnectors()) {
+			if(con.getCondition() == null) {
+				continue;
+			}
+
+			con.getCondition().init(this);
+		}
+
 		for(int i=0;i<openList.size();i++) {
 			ConceptTreeChild ctc = openList.get(i);
 			
@@ -157,6 +166,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 					failed = true;
 					log.error("Value '{}' matches the two nodes {} and {} in the tree {} (row={}))"
 							, stringValue, match.getLabel(), n.getLabel(), n.getConcept().getLabel(), rowMap.getValue());
+					// TODO Why don't we return null here and drop the `failed`-flag?
 				}
 			}
 
@@ -186,8 +196,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			.map(ConceptTreeChild.class::cast);
 	}*/
 
-	public void initializeIdCache(AStringType type, ImportId importId) {
-		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type));
+	public void initializeIdCache(AStringType<?> type, ImportId importId) {
+		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
+	}
+
+	public void removeImportCache(ImportId imp) {
+		caches.remove(imp);
 	}
 
 	@Override

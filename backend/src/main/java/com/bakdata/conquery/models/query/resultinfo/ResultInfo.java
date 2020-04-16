@@ -3,7 +3,6 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
@@ -16,8 +15,6 @@ import lombok.ToString;
 @Getter @Setter @ToString
 @RequiredArgsConstructor
 public abstract class ResultInfo {
-	
-	private final PrintSettings settings;
 
 	/**
 	 * Calculated same name index for this column. If 0, the postfix can be omitted.

@@ -1,8 +1,8 @@
 name-template: '$NEXT_PATCH_VERSION'
 tag-template: 'v$NEXT_PATCH_VERSION'
 branches:
-  - 'master'
   - 'develop'
+  - 'release/*'
 categories:
   - title: '⚙️ Dependencies'
     label: 'dependencies'

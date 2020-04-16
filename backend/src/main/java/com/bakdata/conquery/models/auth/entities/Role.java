@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth.entities;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,7 +25,7 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 	
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected void updateStorage(MasterMetaStorage storage) {
 		storage.updateRole(this);
 		
 	}

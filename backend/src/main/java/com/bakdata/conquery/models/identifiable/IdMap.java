@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.google.common.collect.ForwardingMap;
 
-public class IdMap<ID extends IId<? extends V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID ,V > implements Iterable<V>{
+public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID ,V > implements Iterable<V>{
 
 	private final ConcurrentMap<ID, V> map;
 	

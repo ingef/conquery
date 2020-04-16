@@ -2,7 +2,6 @@ package com.bakdata.conquery.integration;
 
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -38,36 +37,31 @@ public class IntegrationTests {
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
 
-	public List<DynamicNode> jsonTests() throws IOException {
-		final String testRoot = Objects.requireNonNullElse(
-			System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
-			defaultTestRoot
-		);
-		
+	public List<DynamicNode> jsonTests() {
+		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
+
 		ResourceTree tree = new ResourceTree(null, null);
 		tree.addAll(
 			CPSTypeIdResolver.SCAN_RESULT
 				.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$"))
 		);
 		
-		//collect tests from directory
+		// collect tests from directory
 		if (tree.getChildren().isEmpty()) {
 			log.warn("Could not find tests in {}", testRoot);
 			return Collections.emptyList();
 		}
-		else {
-			final ResourceTree reduced = tree.reduce();
+		final ResourceTree reduced = tree.reduce();
 
-			if (reduced.getChildren().isEmpty()) {
-				return Collections.singletonList(collectTests(reduced));
-			}
-			else {
-				return reduced.getChildren().values().stream().map(this::collectTests).collect(Collectors.toList());
-			}
+		if (reduced.getChildren().isEmpty()) {
+			return Collections.singletonList(collectTests(reduced));
 		}
+		return reduced.getChildren().values().stream()
+			.map(this::collectTests)
+			.collect(Collectors.toList());
 	}
 	
-	public Stream<DynamicNode> programmaticTests() throws IOException {
+	public Stream<DynamicNode> programmaticTests() {
 		List<Class<?>> programmatic = CPSTypeIdResolver
 			.SCAN_RESULT
 			.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())

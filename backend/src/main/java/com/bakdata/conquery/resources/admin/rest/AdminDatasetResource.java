@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,10 +52,10 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter
 @Setter
-@Path("datasets/{" + DATASET_NAME + "}")
+@Path("datasets/{" + DATASET + "}")
 public class AdminDatasetResource extends HAdmin {
 
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
 

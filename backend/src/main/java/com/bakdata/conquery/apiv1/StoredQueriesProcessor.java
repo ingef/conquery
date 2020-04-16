@@ -46,7 +46,7 @@ public class StoredQueriesProcessor {
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
-		Collection<ManagedExecution> allQueries = storage.getAllExecutions();
+		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return allQueries
 			.stream()
@@ -58,6 +58,7 @@ public class StoredQueriesProcessor {
 				try {
 					return Stream.of(
 						mq.buildStatus(
+							storage,
 							URLBuilder.fromRequest(req),
 							user));
 				}
@@ -68,7 +69,7 @@ public class StoredQueriesProcessor {
 			});
 	}
 
-	public void deleteQuery(Dataset dataset, ManagedExecution query) {
+	public void deleteQuery(Dataset dataset, ManagedExecution<?> query) {
 		storage.removeExecution(query.getId());
 	}
 
@@ -100,6 +101,7 @@ public class StoredQueriesProcessor {
 
 	/**
 	 * (Un)Shares a query with a specific group.
+	 * @throws JSONException 
 	 */
 	public void shareWithGroup(User user, ManagedQuery query, Group shareGroup, boolean shared) throws JSONException {
 		updateQueryVersions(user, query, Ability.SHARE, q -> {
@@ -119,26 +121,15 @@ public class StoredQueriesProcessor {
 							shareGroup.getId(),
 							userGroups));
 			}
-			try {
-				if (shared) {
-					addPermission(shareGroup, queryPermission, storage);
-					log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, shareGroup);
-				}
-				else {
-					removePermission(shareGroup, queryPermission, storage);
-					log
-						.trace(
-							"User {} unshares query {}. Removing permission {} from group {}.",
-							user,
-							q.getId(),
-							queryPermission,
-							shareGroup);
-				}
-				q.setShared(shared);
+			if (shared) {
+				addPermission(shareGroup, queryPermission, storage);
+				log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, shareGroup);
 			}
-			catch (JSONException e) {
-				log.error("Failed to set shared status for query " + query, e);
+			else {
+				removePermission(shareGroup, queryPermission, storage);
+				log.trace("User {} unshares query {}. Removing permission {} from group {}.", user, q.getId(), queryPermission, shareGroup);
 			}
+			q.setShared(shared);
 
 		});
 	}
@@ -170,11 +161,11 @@ public class StoredQueriesProcessor {
 	}
 
 	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId, User user) {
-		ManagedExecution query = storage.getExecution(queryId);
+		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatus(user);
+		return query.buildStatusWithSource(storage, null, user);
 	}
 
 	public void shareQuery(User user, ManagedQuery query, Collection<GroupId> groupIds, Boolean shared) throws JSONException {

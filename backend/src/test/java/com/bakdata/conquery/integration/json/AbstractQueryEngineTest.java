@@ -5,22 +5,28 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -35,13 +41,21 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,"columnInfo.getSelect().getId().toStringWithoutDataset()");
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,Locale.ENGLISH, columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
+		Namespaces namespaces = standaloneSupport.getNamespace().getNamespaces();
+		MasterMetaStorage storage = standaloneSupport.getNamespace().getStorage().getMetaStorage();
+		UserId userId = standaloneSupport.getTestUser().getId();
+		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();
+		
 		IQuery query = getQuery();
 
-		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
+		log.info("{} QUERY INIT", getLabel());
+		query.resolve(new QueryResolveContext(dataset, namespaces));
+		
+		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, dataset);
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while(managed.getState()!=ExecutionState.DONE && managed.getState()!=ExecutionState.FAILED) {
@@ -55,7 +69,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.stream()
 				.filter(EntityResult::isFailed)
 				.map(FailedEntityResult.class::cast)
-				.forEach(r->log.error("Failure in query {}: {}", managed.getId(), r.getExceptionStackTrace()));
+				.forEach(r->log.error("Failure in query " + managed.getId(), r.getThrowable()));
 			fail("Query failed (see above)");
 		}
 		
@@ -66,14 +80,17 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.fetchContainedEntityResult()
 				.flatMap(ContainedEntityResult::streamValues)
 		)
-		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
+		.as("Should have same size as result infos")
+		.allSatisfy(v->
+			assertThat(v).hasSameSizeAs(resultInfos.getInfos())
+		);
 
-		List<String> actual = new QueryToCSVRenderer()
+		List<String> actual = QueryToCSVRenderer
 			.toCSV(
 				PRINT_SETTINGS,
 				managed,
 				standaloneSupport.getConfig().getIdMapping()
-					.initToExternal(DevAuthConfig.USER, managed))
+					.initToExternal(standaloneSupport.getTestUser(), managed))
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

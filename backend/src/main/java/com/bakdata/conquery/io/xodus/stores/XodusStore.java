@@ -1,5 +1,11 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.ByteIterable;
@@ -8,12 +14,6 @@ import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 
 @Slf4j
 public class XodusStore implements Closeable {
@@ -28,8 +28,8 @@ public class XodusStore implements Closeable {
 		);
 	}
 	
-	public void add(ByteIterable key, ByteIterable value) {
-		environment.executeInTransaction(t -> store.add(t, key, value));
+	public boolean add(ByteIterable key, ByteIterable value) {
+		return environment.computeInTransaction(t -> store.add(t, key, value));
 	}
 
 	public ByteIterable get(ByteIterable key) {
@@ -67,12 +67,12 @@ public class XodusStore implements Closeable {
 		}
 	}
 
-	public void update(ByteIterable key, ByteIterable value) {
-		environment.executeInTransaction(t -> store.put(t, key, value));
+	public boolean update(ByteIterable key, ByteIterable value) {
+		return environment.computeInTransaction(t -> store.put(t, key, value));
 	}
 	
-	public void remove(ByteIterable key) {
-		environment.executeInTransaction(t -> store.delete(t, key));
+	public boolean remove(ByteIterable key) {
+		return environment.computeInTransaction(t -> store.delete(t, key));
 	}
 
 	@Override

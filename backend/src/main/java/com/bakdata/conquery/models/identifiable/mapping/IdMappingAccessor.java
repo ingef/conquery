@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.identifiable.mapping;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-
 public interface IdMappingAccessor {
 
 	String[] getHeader();
@@ -32,21 +30,20 @@ public interface IdMappingAccessor {
 	 *
 	 * @param csvHeader
 	 *            Array of the header Strings.
-	 * @param storage
-	 *            The Namespace Storage to use.
+	 * @param idMapping
 	 * @return The IdAccessor.
 	 */
-	default IdAccessor getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
+	default IdAccessor getApplicationMapping(String[] csvHeader, final PersistentIdMap idMapping) {
 		int[] applicationMapping = new int[csvHeader.length];
 		Arrays.fill(applicationMapping, -1);
 		for (int indexInHeader = 0; indexInHeader < csvHeader.length; indexInHeader++) {
 			String csvHeaderField = csvHeader[indexInHeader];
-			int indexInCsvHeader = findIndexfromMappingHeader(csvHeaderField);
+			int indexInCsvHeader = findIndexFromMappingHeader(csvHeaderField);
 			if (indexInCsvHeader != -1) {
 				applicationMapping[indexInHeader] = indexInCsvHeader;
 			}
 		}
-		return new IdAccessorImpl(this, applicationMapping, storage);
+		return new IdAccessorImpl(this, applicationMapping, idMapping);
 	}
 	
 	/**
@@ -54,7 +51,7 @@ public interface IdMappingAccessor {
 	 * @param csvHeaderField The header field in the CSV that is machted to the predefined required headers.
 	 * @return The index of the predefined header that matched best.
 	 */
-	int findIndexfromMappingHeader(String csvHeaderField);
+	int findIndexFromMappingHeader(String csvHeaderField);
 
 	/**
 	 * Extracts the Id information from a CSV line using this accessor

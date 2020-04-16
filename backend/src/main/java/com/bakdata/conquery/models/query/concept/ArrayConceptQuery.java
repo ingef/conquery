@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -23,11 +25,19 @@ import lombok.Setter;
  * and whose results are merged. If a SpecialDateUnion is required, the result will hold
  * the union of all dates from the separate queries.
  */
+@NoArgsConstructor
 @Getter
 @Setter
-@CPSType(id = "ARRAY_CONCEPT_QUERY", base = IQuery.class)
-public class ArrayConceptQuery implements IQuery {
+@CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
+public class ArrayConceptQuery extends IQuery {
 	private List<ConceptQuery> childQueries = new ArrayList<>();
+	
+	public ArrayConceptQuery( List<ConceptQuery> queries) {
+		if(queries == null || queries.isEmpty()) {
+			throw new IllegalArgumentException("No sub queries provided.");
+		}
+		this.childQueries = queries;
+	}
 
 	@Override
 	public ArrayConceptQuery resolve(QueryResolveContext context) {
@@ -53,7 +63,7 @@ public class ArrayConceptQuery implements IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		childQueries.forEach(q -> q.collectResultInfos(collector));
-		SimpleResultInfo dateInfo = ConqueryConstants.DATES_INFO.apply(collector.getSettings());
+		SimpleResultInfo dateInfo = ConqueryConstants.DATES_INFO;
 		// Remove DateInfo from each childQuery
 		collector.getInfos().removeAll(List.of(dateInfo));
 		// Add one DateInfo for the whole Query
@@ -64,5 +74,4 @@ public class ArrayConceptQuery implements IQuery {
 	public void visit(Consumer<Visitable> visitor) {
 		childQueries.forEach(q -> q.visit(visitor));
 	}
-
 }

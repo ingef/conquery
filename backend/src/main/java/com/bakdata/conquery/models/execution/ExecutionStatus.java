@@ -3,23 +3,20 @@ package com.bakdata.conquery.models.execution;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
-import com.bakdata.conquery.models.query.IQuery;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @ToString
 @AllArgsConstructor
-@Builder
+@Data
 public class ExecutionStatus {
 
 	private String[] tags;
@@ -31,13 +28,30 @@ public class ExecutionStatus {
 	private boolean shared;
 	private boolean own;
 	private boolean system;
-	private IQuery query;
-	private List<ColumnDescriptor> columnDescriptions;
 
 	private ManagedExecutionId id;
 	private ExecutionState status;
-	private String message;
 	private Long numberOfResults;
 	private Long requiredTime;
 	private String resultUrl;
+
+	@Data
+	@NoArgsConstructor
+	@EqualsAndHashCode(callSuper = true)
+	public static class WithQuery extends ExecutionStatus {
+		/**
+		 * Indicates if the concepts that are included in the query description can be accesed by the user.
+		 */
+		boolean canExpand;
+		/**
+		 * Is set to the query description if the user can expand all included concepts.
+		 */
+		private QueryDescription query;
+		
+		/**
+		 * Holds a description for each column, present in the result.
+		 */
+		private List<ColumnDescriptor> columnDescriptions;
+		
+	}
 }

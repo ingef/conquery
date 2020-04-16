@@ -11,7 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.query.QueryManager;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
@@ -35,7 +35,7 @@ public class Namespace {
 	@JsonIgnore
 	private transient NamespaceStorage storage;
 	@JsonIgnore
-	private transient QueryManager queryManager;
+	private transient ExecutionManager queryManager;
 
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
@@ -52,7 +52,7 @@ public class Namespace {
 
 	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
-		this.queryManager = new QueryManager(this);
+		this.queryManager = new ExecutionManager(this);
 	}
 
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {

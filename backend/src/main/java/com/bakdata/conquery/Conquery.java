@@ -1,9 +1,9 @@
 package com.bakdata.conquery;
 
-import javax.tools.ToolProvider;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+
+import javax.tools.ToolProvider;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
@@ -42,12 +42,12 @@ public class Conquery extends Application<ConqueryConfig> {
 	@Override
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		Jackson.configure(bootstrap.getObjectMapper());
-		//check for java compiler, needed for the class generation
+		// check for java compiler, needed for the class generation
 		if (ToolProvider.getSystemJavaCompiler() == null) {
 			throw new IllegalStateException("Conquery requires to be run on either a JDK or a ServerJRE");
 		}
 
-		//main config file is json
+		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
 		bootstrap.addCommand(new SlaveCommand());
@@ -55,7 +55,8 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
 
-		//do some setup in other classes after initialization but before running a command
+		// do some setup in other classes after initialization but before running a
+		// command
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
 
 			@Override
@@ -66,10 +67,11 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void initialize(Bootstrap<?> bootstrap) {
 				// Allow overriding of config from environment variables.
-				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+						bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
 			}
 		});
-		//register frontend
+		// register frontend
 		registerFrontend(bootstrap);
 	}
 
@@ -79,20 +81,9 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 				String uriPath = "/app/";
-				String language = configuration.getLocale().getFrontend().getLanguage();
-				environment.servlets().addServlet(
-					"app",
-					new AssetServlet(
-						"/frontend/app/",
-						uriPath,
-						String.format(
-								"static/index.%s.html",
-								StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())
-						),
-						StandardCharsets.UTF_8
-					)
-				)
-				.addMapping(uriPath + '*');
+				environment.servlets()
+						.addServlet("app", new AssetServlet("/frontend/app/", uriPath, "static/index.html", StandardCharsets.UTF_8))
+						.addMapping(uriPath + '*');
 			}
 
 			@Override
@@ -111,7 +102,6 @@ public class Conquery extends Application<ConqueryConfig> {
 		master = new MasterCommand();
 		master.run(configuration, environment);
 	}
-
 
 	public static void main(String... args) throws Exception {
 		new Conquery().run(args);

@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -53,6 +52,9 @@ public abstract class IdMappingConfig {
 		return ArrayUtils.subarray(getHeader(), 1, getHeaderSize());
 	}
 
+	/**
+	 * Header of the Mapping-CSV file.
+	 */
 	@JsonIgnore
 	public abstract String[] getHeader();
 
@@ -60,7 +62,7 @@ public abstract class IdMappingConfig {
 	 * Is called once before a mapping is used before a query result is created to
 	 * allow the mapping to have state information.
 	 */
-	public IdMappingState initToExternal(User user, ManagedExecution execution) {
+	public IdMappingState initToExternal(User user, ManagedExecution<?> execution) {
 		// This mapping does not need a per-query state, so we return an immutable empty map.
 		return null;
 	}
@@ -81,11 +83,11 @@ public abstract class IdMappingConfig {
 	}
 
 	@NonNull
-	public IdAccessor mappingFromCsvHeader(String[] csvHeader, NamespaceStorage namespaceStorage) {
+	public IdAccessor mappingFromCsvHeader(String[] csvHeader, PersistentIdMap idMapping) {
 		for (IdMappingAccessor accessor : getIdAccessors()) {
 			if (accessor.canBeApplied(Arrays.asList(csvHeader))) {
 				log.info("Using accessor (with required headers {}) to extract mapping from CSV with the header containing the ID columns: {}", accessor.getHeader(), csvHeader);
-				return accessor.getApplicationMapping(csvHeader, namespaceStorage);
+				return accessor.getApplicationMapping(csvHeader, idMapping);
 			}
 		}
 		log.info("Using the default accessor implementation.");

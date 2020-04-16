@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.identifiable.ids;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -14,6 +12,8 @@ import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 @JsonDeserialize(using=IdDeserializer.class)
 public interface IId<TYPE> {
@@ -38,6 +38,7 @@ public interface IId<TYPE> {
 	interface Parser<ID extends IId<?>> {
 		
 		static String[] split(String id) {
+			Objects.requireNonNull(id, "An empty id was provided for parsing.");
 			String[] parts = StringUtils.split(id, IId.JOIN_CHAR);
 			for(int i = 0; i < parts.length; ++i){
 				parts[i] = ConqueryEscape.unescape(parts[i]);

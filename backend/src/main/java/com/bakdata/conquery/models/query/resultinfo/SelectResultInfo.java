@@ -9,8 +9,10 @@ import lombok.NonNull;
 
 @Getter
 public class SelectResultInfo extends ResultInfo {
+	PrintSettings settings; 
+	
 	public SelectResultInfo(PrintSettings settings, Select select, CQConcept cqConcept) {
-		super(settings);
+		this.settings = settings;
 		this.select = select;
 		this.cqConcept = cqConcept;
 	}
@@ -22,7 +24,7 @@ public class SelectResultInfo extends ResultInfo {
 
 	@Override
 	public String getName() {
-		return getSettings().columnName(this);
+		return settings.columnName(this);
 	}
 
 	@Override
