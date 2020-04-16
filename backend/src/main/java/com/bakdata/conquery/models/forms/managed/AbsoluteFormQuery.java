@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -33,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class AbsoluteFormQuery extends IQuery {
 
 	@NotNull @Valid
-	private final ConceptQuery query;
+	private final IQuery query;
 	@NotNull @Valid
 	private final Range<LocalDate> dateRange;
 	@NotNull @Valid
@@ -43,12 +42,8 @@ public class AbsoluteFormQuery extends IQuery {
 	
 	@Override
 	public AbsoluteFormQuery resolve(QueryResolveContext context) {
-		return new AbsoluteFormQuery(
-			query.resolve(context),
-			dateRange,
-			features,
-			resolutions
-		);
+		query.resolve(context);
+		return this;
 	}
 
 	@Override
