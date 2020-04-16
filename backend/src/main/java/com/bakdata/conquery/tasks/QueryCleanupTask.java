@@ -153,7 +153,7 @@ public class QueryCleanupTask extends Task {
 					continue;
 				}
 				WildcardPermission wpermission = (WildcardPermission) permission;
-				if (!wpermission.getDomains().contains(QueryPermission.DOMAIN)) {
+				if(!wpermission.getDomains().contains(QueryPermission.DOMAIN.toLowerCase())) {
 					// Skip Permissions that do not reference an Execution/Query
 					continue;
 				}
