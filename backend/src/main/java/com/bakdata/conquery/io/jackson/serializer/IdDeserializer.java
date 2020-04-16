@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -25,6 +26,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 
 	private Class<ID> idClass;
 	private Parser<ID> idParser;
+	private boolean checkForInjectedPrefix;
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -32,14 +34,14 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
 			String text = parser.getText();
 			try {
-				//check if there was a dataset injected and if it is already a prefix
-				Dataset dataset = (Dataset) ctxt.findInjectableValue(Dataset.class.getName(), null, null);
-				if(dataset != null) {
-					return idParser.parsePrefixed(dataset.getName(), text);
+				if(checkForInjectedPrefix) {
+					//check if there was a dataset injected and if it is already a prefix
+					Dataset dataset = (Dataset) ctxt.findInjectableValue(Dataset.class.getName(), null, null);
+					if(dataset != null) {
+						return idParser.parsePrefixed(dataset.getName(), text);
+					}
 				}
-				else {
-					return idParser.parse(text);
-				}
+				return idParser.parse(text);
 			} catch(Exception e) {
 				throw new IllegalArgumentException("Could not parse an "+idClass.getSimpleName()+" from "+text, e);
 			}
@@ -67,6 +69,11 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 		Class<IId<?>> idClass = (Class<IId<?>>) type.getRawClass();
 		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class)idClass);
 		
-		return new IdDeserializer(idClass, parser);
+		return new IdDeserializer(
+			idClass,
+			parser,
+			//we only need to check for the dataset prefix if the id requires it
+			NamespacedId.class.isAssignableFrom(idClass)
+		);
 	}
 }

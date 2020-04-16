@@ -77,7 +77,6 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	 * This AuthorizationInfo handles the collection of large amounts of {@link Permission}s by wrapping collections into a view
 	 * instead of running an iterator over them. This also prevents a {@link ConcurrentModificationException} which occurred when 
 	 * Permission were collected
-	 *
 	 */
 	@SuppressWarnings("serial")
 	public static class ConqueryAuthorizationInfo extends SimpleAuthorizationInfo {
@@ -106,6 +105,7 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 			throw new UnsupportedOperationException();
 		}
 		
+		@Override
 		public void addObjectPermissions(Collection<Permission> permissions) {
 			if (!(permissions instanceof Set)) {
 				super.addObjectPermissions(permissions);
