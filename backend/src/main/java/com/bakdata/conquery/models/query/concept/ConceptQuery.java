@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -22,9 +23,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
+@CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
 @AllArgsConstructor(onConstructor = @__({@JsonCreator}))
-public class ConceptQuery implements IQuery, Visitable {
+public class ConceptQuery extends IQuery {
 
 	@Valid
 	@NotNull

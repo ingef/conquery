@@ -1,8 +1,0 @@
-externalForms:
-  exampleForm:
-    headline: "Beispielformular"
-    exampleQuery: "Beispiel-Abfragefeld"
-    exampleQueryDropzone: "Füge eine Gruppe aus einer früheren Anfrage hinzu"
-    exampleConcepts: "Beispiel-Konzeptfeld"
-    exampleConceptDropzone: "Füge ein Attribut zur Gruppe hinzu"
-    exampleAttributeDropzone: "Füge ein Attribut hinzu"

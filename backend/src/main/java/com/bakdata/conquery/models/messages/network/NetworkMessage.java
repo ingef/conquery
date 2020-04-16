@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.messages.Message;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +16,7 @@ public abstract class NetworkMessage<CTX extends NetworkMessageContext<?>> imple
 
 	@Getter @Setter @NotNull
 	private UUID messageId = UUID.randomUUID();
-	
+
 	public abstract void react(CTX context) throws Exception;
 	
 	@Override

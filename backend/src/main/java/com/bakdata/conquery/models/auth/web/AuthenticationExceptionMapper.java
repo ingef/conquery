@@ -4,7 +4,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
-import io.dropwizard.jersey.errors.ErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 
@@ -19,7 +18,7 @@ public class AuthenticationExceptionMapper implements ExceptionMapper<Authentica
 		log.warn("Shiro failed to authenticate the request. See the following trace:", exception);
 		return Response.status(Response.Status.UNAUTHORIZED)
 			.type(MediaType.APPLICATION_JSON_TYPE)
-			.entity(new ErrorMessage(Response.Status.UNAUTHORIZED.getStatusCode(), "Your error has been logged"))
+			.entity("An authentication error occured. The error has been logged")
 			.build();
 	}
 

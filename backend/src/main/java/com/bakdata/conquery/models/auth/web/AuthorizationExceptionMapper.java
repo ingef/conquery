@@ -4,7 +4,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
-import io.dropwizard.jersey.errors.ErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.AuthorizationException;
 
@@ -19,9 +18,9 @@ public class AuthorizationExceptionMapper implements ExceptionMapper<Authorizati
 	@Override
 	public Response toResponse(AuthorizationException exception) {
 		log.warn("Shiro failed to authorize the request. See the following trace:", exception);
-		return Response.status(Response.Status.UNAUTHORIZED)
+		return Response.status(Response.Status.FORBIDDEN)
 			.type(MediaType.APPLICATION_JSON_TYPE)
-			.entity(new ErrorMessage(Response.Status.FORBIDDEN.getStatusCode(), "Your error has been logged"))
+			.entity("Not sufficient permissions to perform action: " + exception.getMessage())
 			.build();
 	}
 

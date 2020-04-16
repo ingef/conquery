@@ -1,7 +1,7 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -25,13 +25,13 @@ import lombok.Setter;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
 @Getter @Setter
-@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
+@Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
 public class AdminConceptsResource extends HAdmin {
 	
-	@PathParam(DATASET_NAME)
+	@PathParam(DATASET)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
-	@PathParam(CONCEPT_NAME)
+	@PathParam(CONCEPT)
 	protected ConceptId conceptId;
 	protected Concept<?> concept;
 

@@ -16,12 +16,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.apiv1.ConfigResource;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.IdLabel;
-import com.bakdata.conquery.apiv1.QueryResource;
-import com.bakdata.conquery.apiv1.ResultCSVResource;
-import com.bakdata.conquery.apiv1.StoredQueriesResource;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
@@ -66,7 +63,6 @@ import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
@@ -74,9 +70,12 @@ import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.resources.api.APIResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
+import com.bakdata.conquery.resources.api.ConfigResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.api.FilterResource;
-import com.bakdata.conquery.util.Doc;
+import com.bakdata.conquery.resources.api.QueryResource;
+import com.bakdata.conquery.resources.api.ResultCSVResource;
+import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -149,7 +148,7 @@ public class Constants {
 			.resource(QueryResource.class)
 			.resource(ResultCSVResource.class)
 			.resource(StoredQueriesResource.class)
-			.base(new Base(IQuery.class, ""))
+			.base(new Base(QueryDescription.class, ""))
 			.base(new Base(CQElement.class, ""))
 			.base(new Base(FilterValue.class, ""))
 			.hide(CQExternalResolved.class)
@@ -172,8 +171,7 @@ public class Constants {
 			.otherClass(CQTable.ValidityDateColumn.class)
 			.build()
 	};
-	
-	public static final String DOC = Doc.class.getName();
+
 	public static final String JSON_CREATOR = JsonCreator.class.getName();
 	public static final String CPS_TYPE = CPSType.class.getName();
 	public static final Set<String> ID_REF = Set.of(NsIdRef.class.getName(), MetaIdRef.class.getName());

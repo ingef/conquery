@@ -1,17 +1,17 @@
 [
 	{
 		"method": "DELETE",
-		"path": "/datasets/{datasetName}/tables/{tableName}",
+		"path": "/datasets/{dataset}/tables/{table}",
 		"clazz": "AdminTablesResource"
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}/tables/{tableName}/imports",
+		"path": "/datasets/{dataset}/tables/{table}/imports",
 		"clazz": "AdminTablesResource"
 	},
 	{
 		"method": "DELETE",
-		"path": "/datasets/{datasetName}/tables/{tableName}/imports/{importId}",
+		"path": "/datasets/{dataset}/tables/{table}/imports/{importId}",
 		"clazz": "AdminTablesResource"
 	},
 	{
@@ -21,52 +21,52 @@
 	},
 	{
 		"method": "DELETE",
-		"path": "/datasets/{datasetName}",
+		"path": "/datasets/{dataset}",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}/concepts",
+		"path": "/datasets/{dataset}/concepts",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}/tables",
+		"path": "/datasets/{dataset}/tables",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "DELETE",
-		"path": "/datasets/{datasetName}/concepts/{conceptName}",
+		"path": "/datasets/{dataset}/concepts/{concept}",
 		"clazz": "AdminConceptsResource"
 	},
 	{
 		"method": "POST",
-		"path": "/datasets/{datasetName}/concepts",
+		"path": "/datasets/{dataset}/concepts",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "POST",
-		"path": "/datasets/{datasetName}/mapping",
+		"path": "/datasets/{dataset}/mapping",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "POST",
-		"path": "/datasets/{datasetName}/imports",
+		"path": "/datasets/{dataset}/imports",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "POST",
-		"path": "/datasets/{datasetName}/tables",
+		"path": "/datasets/{dataset}/tables",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "POST",
-		"path": "/datasets/{datasetName}/structure",
+		"path": "/datasets/{dataset}/structure",
 		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "POST",
-		"path": "/datasets/{datasetName}/label",
+		"path": "/datasets/{dataset}/label",
 		"clazz": "AdminDatasetResource"
 	},
 	{
@@ -181,7 +181,7 @@
 	},
 	{
 		"method": "POST",
-		"path": "/update-matching-stats/{datasetName}",
+		"path": "/update-matching-stats/{dataset}",
 		"clazz": "AdminUIResource"
 	},
 	{
@@ -216,17 +216,17 @@
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}/concepts/{conceptName}",
+		"path": "/datasets/{dataset}/concepts/{concept}",
 		"clazz": "ConceptsUIResource"
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}",
+		"path": "/datasets/{dataset}",
 		"clazz": "DatasetsUIResource"
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}/mapping",
+		"path": "/datasets/{dataset}/mapping",
 		"clazz": "DatasetsUIResource"
 	},
 	{
@@ -251,12 +251,12 @@
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}/tables/{tableName}",
+		"path": "/datasets/{dataset}/tables/{table}",
 		"clazz": "TablesUIResource"
 	},
 	{
 		"method": "GET",
-		"path": "/datasets/{datasetName}/tables/{tableName}/import/{importId}",
+		"path": "/datasets/{dataset}/tables/{table}/import/{importId}",
 		"clazz": "TablesUIResource"
 	},
 	{
@@ -276,7 +276,12 @@
 	},
 	{
 		"method": "GET",
-		"path": "/auth-overview",
+		"path": "/auth-overview/csv",
+		"clazz": "AuthOverviewResource"
+	},
+	{
+		"method": "GET",
+		"path": "/auth-overview/csv/group/{groupId}",
 		"clazz": "AuthOverviewResource"
 	}
 ]

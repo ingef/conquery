@@ -9,7 +9,6 @@ import com.bakdata.conquery.handler.GroupHandler;
 import com.bakdata.conquery.handler.SimpleWriter;
 import com.bakdata.conquery.model.Group;
 import com.github.powerlibraries.io.Out;
-
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AutoDoc {
 	
 	public static void main(String[] args) throws IOException {
-		if(args.length == 0) {
-			new AutoDoc().start(new File("../docs/"));
-		}
-		else {
-			new AutoDoc().start(new File(args[0]));
-		}
+		new AutoDoc().start(new File(args.length==0?"../docs/":args[0]));
 	}
 
 	private ScanResult scan;
@@ -49,7 +43,7 @@ public class AutoDoc {
 			try (var out = new SimpleWriter(
 				Out.file(target).withUTF8().asWriter()
 			)) {
-				new GroupHandler(scan, group, out).handle();
+				new GroupHandler(scan, group, out, docs.getCanonicalFile().getParentFile()).handle();
 			}
 			log.info("Written file {}", target.getCanonicalPath());
 		}

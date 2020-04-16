@@ -1,0 +1,48 @@
+{
+	"type": "TREE",
+	"name": "geschlecht",
+	"label": "Geschlecht",
+	"hidden": false,
+	"connectors": {
+		"name": "geschlecht",
+		"label": "Geschlecht",
+		"validityDates": [
+			{
+				"name": "versichertenzeit",
+				"label": "Versichertenzeit",
+				"column": "vers_stamm.date"
+			},
+			{
+				"name": "erster_tag",
+				"label": "Erster Tag",
+				"column": "vers_stamm.date_start"
+			},
+			{
+				"name": "letzter_tag",
+				"label": "Letzter Tag",
+				"column": "vers_stamm.date_end"
+			}
+		],
+		"column": "vers_stamm.geschlecht",
+		"filters": {
+			"type": "SELECT",
+			"name": "geschlecht",
+			"label": "Geschlecht",
+			"column": "vers_stamm.geschlecht",
+			"labels": {
+				"1": "Weiblich",
+				"2": "Männlich"
+			}
+		},
+		"selects": [
+			{
+				"type": "FIRST",
+				"column": "vers_stamm.geschlecht",
+				"name": "geschlecht_select",
+				"label": "Ausgabe Geschlecht",
+				"description": "Automatisch erzeugter Zusatzwert.",
+				"default": true
+			}
+		]
+	}
+}

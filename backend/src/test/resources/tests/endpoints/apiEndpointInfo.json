@@ -56,27 +56,32 @@
     },
     {
         "method": "GET",
-        "path": "/datasets/{datasetName}/concepts/{conceptName}",
+        "path": "/datasets/{dataset}/concepts/{concept}",
         "clazz": "ConceptResource"
     },
     {
         "method": "POST",
-        "path": "/datasets/{datasetName}/concepts/{conceptName}/resolve",
+        "path": "/datasets/{dataset}/concepts/{concept}/resolve",
         "clazz": "ConceptResource"
     },
     {
         "method": "GET",
-        "path": "/datasets/{datasetName}/concepts",
+        "path": "/datasets/{dataset}/concepts",
         "clazz": "DatasetResource"
     },
     {
         "method": "POST",
-        "path": "/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/resolve",
+        "path": "/datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/resolve",
         "clazz": "FilterResource"
     },
     {
         "method": "POST",
-        "path": "/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/autocomplete",
+        "path": "/datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/autocomplete",
         "clazz": "FilterResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/form-queries",
+        "clazz": "FormResource"
     }
 ]

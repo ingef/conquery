@@ -8,9 +8,11 @@ import java.util.List;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
+import com.bakdata.conquery.metrics.MetricsUtil;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.util.functions.Collector;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -43,11 +45,15 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	public void loadData() {
 		createStores(stores::add);
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
-		Stopwatch all = Stopwatch.createStarted();
-		for(KeyIncludingStore<?, ?> store : stores) {
-			store.loadData();
+
+		try (final Timer.Context timer = MetricsUtil.getStoreLoadingTimer()) {
+			Stopwatch all = Stopwatch.createStarted();
+			for (KeyIncludingStore<?, ?> store : stores) {
+				store.loadData();
+			}
+			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
 		}
-		log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
+
 	}
 
 	@Override

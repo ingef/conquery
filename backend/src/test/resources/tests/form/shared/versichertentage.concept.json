@@ -1,0 +1,48 @@
+{
+    "type": "TREE",
+    "name": "versichertentage",
+    "label": "Versichertentage",
+    "hidden": false,
+    "connectors": [
+      {
+        "name": "versichertentage",
+        "label": "Versichertentage",
+        "validityDates": [
+          {
+            "name": "datum",
+            "label": "Datum",
+            "column": "vers_tage_range.date"
+          }
+        ],
+        "selects": [
+          {
+            "type": "DATE_UNION",
+            "column": "vers_tage_range.date",
+            "name": "versichertentage_periods",
+            "label": "Ausgabe Versichertenzeiträume",
+            "description": "Gibt die Versichertentage als Zeiträume aus."
+          },
+          {
+            "type": "DURATION_SUM",
+            "column": "vers_tage_range.date",
+            "name": "versichertentage_select",
+            "label": "Ausgabe Versichertentage",
+            "description": "Automatisch erzeugter Zusatzwert.",
+            "default": true
+          }
+        ],
+        "filters": [
+          {
+            "type": "DURATION_SUM",
+            "name": "versichertentage",
+            "label": "Versichertentage",
+            "unit": "Tage",
+            "description": "Versichertentage",
+            "column": "vers_tage_range.date"
+          }
+        ],
+        "column": "vers_tage_range.date"
+      }
+    ]
+  }
+  

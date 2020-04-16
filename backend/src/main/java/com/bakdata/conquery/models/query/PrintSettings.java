@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.concepts.Connector;
@@ -15,6 +16,7 @@ import lombok.ToString;
 public class PrintSettings implements SelectNameExtractor {
 
 	private final boolean prettyPrint;
+	private final Locale locale;
 	
 	@NonNull
 	private Function<SelectResultInfo, String> columnNamer = PrintSettings::defaultColumnName;
@@ -39,11 +41,11 @@ public class PrintSettings implements SelectNameExtractor {
 		String conceptLabel = columnInfo.getSelect().getHolder().findConcept().getLabel();
 		
 		sb.append(conceptLabel);
-		sb.append(' ');
-		if (!cqLabel.equalsIgnoreCase(conceptLabel)) {
+		sb.append(" - ");
+		if (cqLabel != null && !cqLabel.equalsIgnoreCase(conceptLabel)) {
 			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
-			sb.append(' ');
+			sb.append(" - ");
 		}
 		if (columnInfo.getSelect().getHolder() instanceof Connector && columnInfo.getSelect().getHolder().findConcept().getConnectors().size() > 1) {
 			// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector

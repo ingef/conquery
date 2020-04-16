@@ -43,7 +43,7 @@ public class AdminResource extends HAdmin {
 		Dataset dataset = processor.addDataset(name);
 
 		return Response
-					   .seeOther(UriBuilder.fromPath("/admin/").path(DatasetsUIResource.class).resolveTemplate(ResourceConstants.DATASET_NAME, name).build())
+					   .seeOther(UriBuilder.fromPath("/admin/").path(DatasetsUIResource.class).resolveTemplate(ResourceConstants.DATASET, name).build())
 					   .build();
 	}
 

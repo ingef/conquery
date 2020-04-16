@@ -24,15 +24,20 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -93,6 +98,10 @@ public class IntegrationUtils {
 	}
 
 	public static void importPreviousQueries(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
+		Namespaces namespaces = support.getNamespace().getNamespaces();
+		UserId userId = support.getTestUser().getId();
+		DatasetId dataset = support.getNamespace().getDataset().getId();
+
 		// Load previous query results if available
 		int id = 1;
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
@@ -108,9 +117,9 @@ public class IntegrationUtils {
 
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(String[][]::new);
 
-			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data));
+			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data)).resolve(new QueryResolveContext(dataset, support.getNamespace().getNamespaces()));
 
-			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(query, queryId, support.getTestUser());
+			ManagedExecution<?> managed = ExecutionManager.runQuery( namespaces, query, queryId, userId, dataset);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {
