@@ -12,6 +12,7 @@ public class ResourceConstants {
 	public static final String TABLE	=	"table";
 	public static final String FILTER	=	"filter";
 	public static final String QUERY	=	"query";
+	public static final String FORM_CONFIG	=	"form-config";
 	public static final String FILENAME	=	"filename";
 	public static final String API		=	"api";
 	public static final String IMPORT_ID = "importId";
