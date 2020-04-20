@@ -70,7 +70,7 @@ import org.apache.shiro.authz.Permission;
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
 
 	protected DatasetId dataset;
-	protected UUID queryId = UUID.randomUUID();
+	protected UUID queryId;
 	protected String label;
 
 	protected LocalDateTime creationTime = LocalDateTime.now();
@@ -115,6 +115,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@Override
 	public ManagedExecutionId createId() {
+		if(queryId == null) {
+			queryId = UUID.randomUUID();
+		}
 		return new ManagedExecutionId(dataset, queryId);
 	}
 

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,6 +13,7 @@ import lombok.Getter;
 public class ColumnDescriptor {
 
 	private String label;
-	private ResultType type;
+	private String type;
+	private SelectId selectId;
 
 }

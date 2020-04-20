@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -31,6 +32,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
@@ -70,6 +72,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
+	private transient int involvedWorkers;
+	@JsonIgnore
 	private transient int executingThreads;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
@@ -84,9 +88,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public void initExecutable(@NonNull Namespaces namespaces) {
 		this.namespace = namespaces.get(getDataset());
-		this.executingThreads = namespace.getWorkers().size();
+		this.involvedWorkers = namespace.getWorkers().size();
 	}
-
+	
 	@Override
 	public void addResult(@NonNull MasterMetaStorage storage, ShardResult result) {
 		for (EntityResult er : result.getResults()) {
@@ -108,6 +112,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public void start() {
 		super.start();
+		synchronized (getExecution()) {
+			executingThreads = involvedWorkers;
+		}
+		
 
 		if(results != null)
 			results.clear();
@@ -143,19 +151,24 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		if(columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions();
 		}
+		// Set flag if user can expand the query and in that case also the query
 		super.setAdditionalFieldsForStatusWithSource(storage, url, user, status);
-		status.setColumnDescriptions(columnDescriptions);
+		if(status.isCanExpand()) {
+			// If the user can expand the query (can use all included concepts), also set the column description
+			status.setColumnDescriptions(columnDescriptions);
+		}
 	}
 
 	/**
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
-	private List<ColumnDescriptor> generateColumnDescriptions() {
+	public List<ColumnDescriptor> generateColumnDescriptions() {
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 		// First add the id columns to the descriptor list. The are the first columns
 		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 				.label(header)
+				.type(ConqueryConstants.ID_TYPE)
 				// set no type for the ID columns
 				.build());
 		}
@@ -164,7 +177,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			collectResultInfos(new PrintSettings(true, I18n.LOCALE.get())).getInfos().stream()
 				.map(i -> ColumnDescriptor.builder()
 					.label(i.getName())
-					.type(i.getType())
+					.type(i.getType().toString())
+					.selectId(i instanceof SelectResultInfo ? ((SelectResultInfo)i).getSelect().getId() : null)
 					.build())
 				.collect(Collectors.toList()));
 		return columnDescriptions;

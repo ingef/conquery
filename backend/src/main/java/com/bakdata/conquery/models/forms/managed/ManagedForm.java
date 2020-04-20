@@ -18,7 +18,9 @@ import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ExecutionStatus.WithQuery;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -96,11 +98,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
 		flatSubQueries.values().forEach(mq -> mq.initExecutable(namespaces));
-		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
 	}
 	
 	@Override
 	public void start() {
+		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
 	}
@@ -212,6 +214,28 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
 		return ResultCSVResource.resultAsStreamingOutput(new ResultGenerationContext(this, mappingState, settings, charset, lineSeparator));
+	}
+	
+	@Override
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithQuery status) {
+		super.setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		// Set the ColumnDescription if the Form only consits of a single subquery
+		if(subQueries == null) {
+			// If subqueries was not set the Execution was not initialized
+			this.initExecutable(storage.getNamespaces());
+		}
+		if(subQueries.size() != 1) {
+			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.", subQueries.size(),
+				this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName());
+			return;
+		}
+		List<ManagedQuery> subQuery = subQueries.entrySet().iterator().next().getValue();
+		if(subQuery.isEmpty()) {
+			log.trace("The {} ({} from Form {}) does not have any subqueries after initialization. Not creating ", this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName());
+			return;
+		}
+		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions());
+		
 	}
 
 
