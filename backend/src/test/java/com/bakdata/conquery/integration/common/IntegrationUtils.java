@@ -117,7 +117,8 @@ public class IntegrationUtils {
 
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(String[][]::new);
 
-			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data)).resolve(new QueryResolveContext(dataset, support.getNamespace().getNamespaces()));
+			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data))
+										 .resolve(new QueryResolveContext(dataset, support.getNamespace().getNamespaces()));
 
 			ManagedExecution<?> managed = ExecutionManager.runQuery( namespaces, query, queryId, userId, dataset);
 			managed.awaitDone(1, TimeUnit.DAYS);
