@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -11,17 +12,13 @@ import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.preproc.InputFile;
-import com.bakdata.conquery.models.preproc.TableImportDescriptor;
-import com.bakdata.conquery.models.preproc.TableInputDescriptor;
-import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
@@ -179,30 +176,13 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf("/")) + "/" + "content2.2.csv")
 											  .asStream(), new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
 
-			//create import descriptor
-			InputFile inputFile = InputFile.fromName(conquery.getConfig().getPreprocessor().getDirectories()[0], import2Table.getCsv().getName().replaceFirst("\\.csv", ""), importId.getTag());
-
-			TableImportDescriptor desc = new TableImportDescriptor();
-			desc.setInputFile(inputFile);
-			desc.setName(import2Table.getName() + "_import");
-			desc.setTable(import2Table.getName());
-			TableInputDescriptor input = new TableInputDescriptor();
-			{
-				input.setPrimary(IntegrationUtils.copyOutput(import2Table.getPrimaryColumn()));
-				input.setSourceFile(new File(inputFile.getCsvDirectory(), import2Table.getCsv().getName()));
-				input.setOutput(new OutputDescription[import2Table.getColumns().length]);
-				for (int i = 0; i < import2Table.getColumns().length; i++) {
-					input.getOutput()[i] = IntegrationUtils.copyOutput(import2Table.getColumns()[i]);
-				}
-			}
-			desc.setInputs(new TableInputDescriptor[]{input});
-			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 
 			//preprocess
 			conquery.preprocessTmp();
 
 			//import preprocessedFiles
-			conquery.getDatasetsProcessor().addImport(conquery.getDataset(), inputFile.getPreprocessedFile());
+
+			conquery.getDatasetsProcessor().addImport(conquery.getDataset(), Preprocessor.getTaggedVersion(new File(conquery.getTmpDir(), import2Table.getCsv().getName().substring(0, import2Table.getCsv().getName().lastIndexOf('.')) + EXTENSION_PREPROCESSED), null));
 			conquery.waitUntilWorkDone();
 		}
 
