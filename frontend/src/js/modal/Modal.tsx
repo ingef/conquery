@@ -54,7 +54,7 @@ interface ContentPropsT {
 
 const ModalContentComponent: React.FC<ContentPropsT> = ({
   children,
-  onClose
+  onClose,
 }) => {
   ModalContentComponent.handleClickOutside = onClose;
 
@@ -62,7 +62,7 @@ const ModalContentComponent: React.FC<ContentPropsT> = ({
 };
 
 const ModalContent = onClickOutside(ModalContentComponent, {
-  handleClickOutside: () => ModalContentComponent.handleClickOutside
+  handleClickOutside: () => ModalContentComponent.handleClickOutside,
 });
 // -----------------------------------------------
 
@@ -79,15 +79,15 @@ type PropsT = {
 // - a button
 // - click outside
 // - press esc
-const Modal = ({
+const Modal: React.FC<PropsT> = ({
   className,
   children,
   headline,
   tabIndex,
   doneButton,
   closeIcon,
-  onClose
-}: PropsT) => {
+  onClose,
+}) => {
   return (
     <Root className={className}>
       <Hotkeys keyName="escape" onKeyDown={onClose} />

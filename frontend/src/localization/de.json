@@ -339,5 +339,8 @@
     "retagError": "Konnte Schlagwörter nicht speichern",
     "shareError": "Konnte Konfiguration nicht freigeben",
     "deleteError": "Konnte Konfiguration nicht löschen"
+  },
+  "deleteFormConfigModal": {
+    "areYouSure": "Diese Konfiguration wirklich löschen?"
   }
 }

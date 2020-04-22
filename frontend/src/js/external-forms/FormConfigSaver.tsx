@@ -7,7 +7,7 @@ import { StateT } from "app-types";
 import {
   selectActiveFormValues,
   selectActiveFormName,
-  selectActiveForm
+  selectActiveForm,
 } from "./stateSelectors";
 import { postFormConfig, patchFormConfig } from "js/api/api";
 import Label from "js/form-components/Label";
@@ -30,6 +30,7 @@ const Root = styled("div")`
 
 const SxEditableText = styled(EditableText)<{ editing: boolean }>`
   margin: ${({ editing }) => (editing ? "" : "5px 0 0px 8px")};
+  font-weight: 700;
 `;
 
 const Row = styled("div")`
@@ -55,15 +56,15 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   const [formConfigId, setFormConfigId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const activeFormType = useSelector<StateT, string | null>(state =>
+  const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveForm(state)
   );
   const hasActiveForm = !!activeFormType;
-  const formValues = useSelector<StateT>(state =>
+  const formValues = useSelector<StateT>((state) =>
     selectActiveFormValues(state)
   );
   const previousFormValues = usePrevious(formValues);
-  const activeFormName = useSelector<StateT, string>(state =>
+  const activeFormName = useSelector<StateT, string>((state) =>
     selectActiveFormName(state)
   );
 
@@ -96,7 +97,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
       if (formConfigId) {
         await patchFormConfig(datasetId, formConfigId, {
           name: configName,
-          values: formValues
+          values: formValues,
         });
 
         setIsDirty(false);
@@ -104,7 +105,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
         const result = await postFormConfig(datasetId, {
           name: configName,
           formType: activeFormType,
-          values: formValues
+          values: formValues,
         });
 
         setFormConfigId(result.id);

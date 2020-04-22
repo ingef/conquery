@@ -17,6 +17,7 @@ interface PropsT {
 }
 
 const StyledIconButton = styled(IconButton)`
+  margin-top: 1px;
   margin-right: ${({ large }) => (large ? "10px" : "5px")};
   padding: 2px 0;
 `;
@@ -28,7 +29,7 @@ const Text = styled("p")`
   align-items: flex-start;
 `;
 
-const EditableText: React.FC<PropsT> = props => {
+const EditableText: React.FC<PropsT> = (props) => {
   return props.editing ? (
     <EditableTextForm
       className={props.className}

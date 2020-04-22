@@ -2,9 +2,8 @@ import "./browserShimsAndPolyfills";
 
 import React from "react";
 import ReactDOM from "react-dom";
-import { ThemeProvider } from "@emotion/react";
+import { ThemeProvider, Theme } from "@emotion/react";
 import { createBrowserHistory } from "history";
-import { ThemeT } from "app-theme";
 
 import "./app/actions"; //  To initialize parameterized actions
 import { makeStore } from "./store";
@@ -21,11 +20,11 @@ let browserHistory;
 const initialState = {};
 
 // Render the App including Hot Module Replacement
-const renderRoot = (tabs: Object, theme: ThemeT) => {
+const renderRoot = (tabs: Object, theme: Theme) => {
   browserHistory =
     browserHistory ||
     createBrowserHistory({
-      basename: basename()
+      basename: basename(),
     });
   store = store || makeStore(initialState, browserHistory, tabs);
 
@@ -40,7 +39,7 @@ const renderRoot = (tabs: Object, theme: ThemeT) => {
 export default function conquery(
   environment: Environment,
   tabs: Object,
-  theme: ThemeT // React-Emotion theme, will at some point completely replace sass
+  theme: Theme // React-Emotion theme, will at some point completely replace sass
 ) {
   initializeEnvironment(environment);
   renderRoot(tabs, theme);

@@ -104,11 +104,16 @@ const StyledWithTooltip = styled(WithTooltip)`
 interface PropsT {
   datasetId: DatasetIdT;
   config: FormConfigT;
+  onIndicateDeletion: () => void;
 }
 
-const FormConfig: React.FC<PropsT> = ({ datasetId, config }) => {
+const FormConfig: React.FC<PropsT> = ({
+  datasetId,
+  config,
+  onIndicateDeletion,
+}) => {
   const availableTags = useSelector<StateT, string[]>(
-    state => state.formConfigs.tags
+    (state) => state.formConfigs.tags
   );
 
   const createdAt = formatDateDistance(
@@ -127,27 +132,37 @@ const FormConfig: React.FC<PropsT> = ({ datasetId, config }) => {
 
   const dispatch = useDispatch();
 
-  const onSetSharedFormConfig = async (shared: boolean) => {
+  const onPatchFormConfig = async (
+    attributes: {
+      shared?: boolean;
+      label?: string;
+      tags?: string[];
+    },
+    errorMessageKey: string
+  ) => {
     setIsLoading(true);
     try {
-      await patchFormConfig(datasetId, config.id, { shared });
+      await patchFormConfig(datasetId, config.id, attributes);
 
-      dispatch(patchFormConfigSuccess(config.id, { shared }));
+      dispatch(patchFormConfigSuccess(config.id, attributes));
     } catch (e) {
-      dispatch(setMessage("formConfig.shareError"));
+      dispatch(setMessage(errorMessageKey));
     }
     setIsLoading(false);
   };
 
-  const onRenameFormConfig = (label: string) => {
-    dispatch(renameFormConfig(datasetId, config.id, label));
+  const onSetSharedFormConfig = (shared: boolean) => {
+    onPatchFormConfig({ shared }, "formConfig.shareError");
+  };
+
+  const onRenameFormConfig = async (label: string) => {
+    await onPatchFormConfig({ label }, "formConfig.renameError");
+
+    setIsEditingLabel(false);
   };
 
   const onRetagFormConfig = (tags: string[]) => {
-    dispatch(retagFormConfig(datasetId, config.id, tags));
-  };
-  const onDeleteFormConfig = () => {
-    dispatch(deleteFormConfigModalOpen(config.id));
+    onPatchFormConfig({ tags }, "formConfig.retagError");
   };
 
   const [collectedProps, drag] = useDrag({
@@ -157,14 +172,14 @@ const FormConfig: React.FC<PropsT> = ({ datasetId, config }) => {
       height: 100,
       type: FORM_CONFIG,
       id: config.id,
-      label: config.label
+      label: config.label,
     },
-    isDragging: monitor => monitor.isDragging()
+    isDragging: (monitor) => monitor.isDragging(),
   });
 
   return (
     <Root
-      ref={instance => {
+      ref={(instance) => {
         if (isNotEditing) drag(instance);
       }}
       own={!!config.own}
@@ -207,7 +222,7 @@ const FormConfig: React.FC<PropsT> = ({ datasetId, config }) => {
             ) : (
               config.own && (
                 <StyledWithTooltip text={T.translate("common.delete")}>
-                  <IconButton icon="times" bare onClick={onDeleteFormConfig} />
+                  <IconButton icon="times" bare onClick={onIndicateDeletion} />
                 </StyledWithTooltip>
               )
             )}
@@ -242,7 +257,6 @@ const FormConfig: React.FC<PropsT> = ({ datasetId, config }) => {
       ) : (
         <FormConfigTags tags={config.tags} />
       )}
-      {!!config.error && <StyledErrorMessage message={config.error} />}
     </Root>
   );
 };
