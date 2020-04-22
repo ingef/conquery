@@ -204,6 +204,22 @@ public class Preprocessor {
 										 + " were printed.");
 							}
 						}
+						catch (Exception e) {
+							// TODO: 22.04.2020 consolidate the above with this.
+
+							exceptions.add(e.getClass());
+
+							long errors = errorCounter.getAndIncrement();
+
+							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+								log.warn("Failed to parse `{}` from line: {} content: {}", lineId, row, e);
+							}
+							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+								log.warn("More erroneous lines occurred. Only the first "
+										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
+										 + " were printed.");
+							}
+						}
 						finally {
 							//report progress
 							totalProgress.addCurrentValue(countingIn.getCount() - progress);
