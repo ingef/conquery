@@ -235,6 +235,16 @@ public class Preprocessor {
 				}
 			}
 
+			if (errorCounter.get() > 0) {
+				log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errorCounter.get(), lineId);
+			}
+
+			if (log.isWarnEnabled()){
+				for (Multiset.Entry<Class<? extends Throwable>> entry : exceptions.entrySet()) {
+					log.warn("Got {} `{}`", entry.getCount(), entry.getElement().getSimpleName());
+				}
+			}
+
 			//find the optimal subtypes
 			{
 				log.info("finding optimal column types");
@@ -283,15 +293,7 @@ public class Preprocessor {
 			result.write(outFile);
 		}
 
-		if (errorCounter.get() > 0) {
-			log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errorCounter.get(), lineId);
-		}
 
-		if (log.isWarnEnabled()){
-			for (Multiset.Entry<Class<? extends Throwable>> entry : exceptions.entrySet()) {
-				log.warn("Got {} `{}`", entry.getCount(), entry.getElement().getSimpleName());
-			}
-		}
 
 		//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, preprocessedFile);
