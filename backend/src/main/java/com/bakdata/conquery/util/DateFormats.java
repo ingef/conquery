@@ -42,7 +42,7 @@ public class DateFormats {
 	 * Parsed values cache.
 	 */
 	private static final LoadingCache<String, LocalDate> DATE_CACHE = CacheBuilder.newBuilder()
-																				  .weakKeys().weakValues()
+																				  .softValues()
 																				  .concurrencyLevel(10)
 																				  .initialCapacity(64000)
 																				  .build(CacheLoader.from(DateFormats::tryParse));
