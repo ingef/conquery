@@ -71,7 +71,8 @@ public class DateRangeParser extends Parser<CDateRange> {
 				type
 			);
 		}
-		if (maxValue - minValue < PackedUnsigned1616.MAX_VALUE) {
+		// min or max can be Integer.MIN/MAX_VALUE when this happens, the left expression overflows causing it to be true when it is not.
+		if ((long) maxValue - (long) minValue < (long) PackedUnsigned1616.MAX_VALUE) {
 			DateRangeTypePacked type = new DateRangeTypePacked();
 			type.setMinValue(minValue);
 			type.setMaxValue(maxValue);
