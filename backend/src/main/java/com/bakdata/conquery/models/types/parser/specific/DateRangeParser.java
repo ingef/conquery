@@ -69,23 +69,23 @@ public class DateRangeParser extends Parser<CDateRange> {
 				type
 			);
 		}
-		if(maxValue - minValue <PackedUnsigned1616.MAX_VALUE) {
+		if (maxValue - minValue < PackedUnsigned1616.MAX_VALUE) {
 			DateRangeTypePacked type = new DateRangeTypePacked();
 			type.setMinValue(minValue);
 			type.setMaxValue(maxValue);
 			return new Decision<>(
-				new Transformer<CDateRange, Integer>() {
-					@Override
-					public Integer transform(CDateRange value) {
-						CDateRange v = (CDateRange) value;
-						if(v.getMaxValue()>Integer.MAX_VALUE || v.getMinValue()<Integer.MIN_VALUE) {
-							throw new IllegalArgumentException(value+" is out of range");
+					new Transformer<CDateRange, Integer>() {
+						@Override
+						public Integer transform(CDateRange value) {
+							CDateRange v = (CDateRange) value;
+							if (v.getMaxValue() > Integer.MAX_VALUE || v.getMinValue() < Integer.MIN_VALUE) {
+								throw new IllegalArgumentException(value + " is out of range");
+							}
+							return PackedUnsigned1616.pack(v.getMinValue() - minValue, v.getMaxValue() - minValue);
 						}
-						return PackedUnsigned1616.pack(v.getMinValue()-minValue, v.getMaxValue()-minValue);
-					}
-				},
-				type
-			);	
+					},
+					type
+			);
 		}
 		
 		return new Decision<>(
