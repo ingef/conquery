@@ -14,8 +14,10 @@ import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.PackedUnsigned1616;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+@Slf4j
 public class DateRangeParser extends Parser<CDateRange> {
 
 	private boolean onlyQuarters = true;
@@ -73,6 +75,9 @@ public class DateRangeParser extends Parser<CDateRange> {
 			DateRangeTypePacked type = new DateRangeTypePacked();
 			type.setMinValue(minValue);
 			type.setMaxValue(maxValue);
+
+			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
+
 			return new Decision<>(
 					new Transformer<CDateRange, Integer>() {
 						@Override
