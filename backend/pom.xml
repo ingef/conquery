@@ -222,5 +222,17 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-metrics-graphite</artifactId>
         </dependency>
+		<dependency>
+		    <groupId>com.nimbusds</groupId>
+		    <artifactId>oauth2-oidc-sdk</artifactId>
+		    <version>7.4</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.keycloak</groupId>
+		    <artifactId>keycloak-authz-client</artifactId>
+		    <version>9.0.3</version>
+		</dependency>
+
+
 	</dependencies>
 </project>
