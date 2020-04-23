@@ -8,14 +8,14 @@ import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.apiv1.auth.JwtWrapper;
 import com.bakdata.conquery.apiv1.auth.UsernamePasswordToken;
-import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
+import com.bakdata.conquery.models.auth.basic.UsernamePasswordChecker;
 import lombok.AllArgsConstructor;
 
 @Path("/")
 @AllArgsConstructor
 public class TokenResource {
 
-	private final LocalAuthenticationRealm realm;
+	private final UsernamePasswordChecker realm;
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
