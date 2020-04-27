@@ -1,7 +1,6 @@
 package com.bakdata.conquery;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 
 import javax.tools.ToolProvider;
 
@@ -25,7 +24,6 @@ import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -61,7 +59,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				configuration.initialize();
 			}
 
 			@Override

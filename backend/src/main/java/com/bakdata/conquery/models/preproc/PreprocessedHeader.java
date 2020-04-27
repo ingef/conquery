@@ -3,21 +3,23 @@ package com.bakdata.conquery.models.preproc;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Data @NoArgsConstructor @AllArgsConstructor
 public class PreprocessedHeader {
-	private int validityHash;
 	private String name;
 	private String table;
+	private String suffix;
+
 	private long rows;
 	private long groups;
 	private CDateRange eventRange;
 	private PPColumn primaryColumn;
 	private PPColumn[] columns;
-	private String suffix;
+
+	private int validityHash;
+
 
 	/**
 	 * Verify that the supplied table matches the preprocessed' data in shape.

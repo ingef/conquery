@@ -1,60 +1,64 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
 
-import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.util.DateFormats;
+import com.google.common.base.Strings;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import lombok.Data;
+import lombok.ToString;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+/**
+ * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
+ */
+@Data
+@ToString(of = {"startColumn", "endColumn"})
+@CPSType(id = "DATE_RANGE", base = OutputDescription.class)
+public class DateRangeOutput extends OutputDescription {
 
-@Slf4j @Getter @Setter @CPSType(id="DATE_RANGE", base=Output.class)
-public class DateRangeOutput extends Output {
-	
 	private static final long serialVersionUID = 1L;
-	
-	@Min(0)
-	private int startColumn = -1;
-	@Min(0)
-	private int endColumn = -1;
-	
+
+	@NotNull
+	private String startColumn, endColumn;
+
+	/**
+	 * Parse null values as open date-range if true.
+	 */
+	public boolean allowOpen = false;
+
 	@Override
-	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException {
-		if(row[startColumn]==null) {
-			if(row[endColumn]==null) {
-				return NULL;
-			}
-			else {
-				LocalDate end = DateFormats.instance().parseToLocalDate(row[endColumn]);
-				
-				throw new ParsingException("No start date at "+startColumn+" while there is an end date at "+endColumn);
-			}
-		}
-		else {
-			LocalDate start = DateFormats.instance().parseToLocalDate(row[startColumn]);
-			if(row[endColumn]==null) {
-				throw new ParsingException("No end date at "+endColumn+" while there is a start date at "+startColumn);
-			}
-			else {
-				LocalDate end = DateFormats.instance().parseToLocalDate(row[endColumn]);
-				
-				if(end.isBefore(start)) {
-					throw new ParsingException("date range start "+start+" is after end "+end);
+	public Output createForHeaders(Object2IntArrayMap<String> headers) {
+		assertRequiredHeaders(headers, startColumn, endColumn);
+
+		final int startIndex = headers.getInt(startColumn);
+		final int endIndex = headers.getInt(endColumn);
+
+		return new Output() {
+			@Override
+			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+
+
+				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
+					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
-				else {
-					return Collections.singletonList(CDateRange.of(start, end));
+
+				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
+					return null;
 				}
+
+				LocalDate start = DateFormats.parseToLocalDate(row[startIndex]);
+				LocalDate end = DateFormats.parseToLocalDate(row[endIndex]);
+
+				return CDateRange.of(start, end);
 			}
-		}
+		};
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -320,6 +320,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return The years as date ranges, from the first date in range to the last in ascending order.
 	 */
 	public List<CDateRange> getCoveredYears() {
+		if(isOpen()){
+			// TODO: 22.04.2020 throw exceptiopn?
+			return Collections.emptyList();
+		}
+
 		int startYear = this.getMin().getYear();
 		int endYear = this.getMax().getYear();
 
@@ -352,6 +357,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredQuarters() {
+		if(isOpen()){
+			// TODO: 22.04.2020 throw exceptiopn?
+			return Collections.emptyList();
+		}
+
 		List<CDateRange> ranges = new ArrayList<>();
 		
 		// First quarter begins with this range
@@ -385,6 +395,10 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredDays() {
+		if(isOpen()){
+			// TODO: 22.04.2020 throw exception?
+			return Collections.emptyList();
+		}
 
 		List<CDateRange> ranges = new ArrayList<>();
 		for(int i = this.getMinValue(); i <= this.getMaxValue(); i++) {
@@ -399,6 +413,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	public boolean isSingleQuarter() {
+		if(isOpen()){
+			return false;
+		}
+
+
 		int quarterStart = CDate.ofLocalDate(QuarterUtils.getFirstDayOfQuarter(getMinValue()));
 		return getMinValue() == quarterStart && getMaxValue() == CQuarter.getLastDay(quarterStart);
 	}

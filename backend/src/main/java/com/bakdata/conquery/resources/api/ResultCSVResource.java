@@ -66,22 +66,22 @@ public class ResultCSVResource {
 		authorizeDownloadDatasets(user, exec);
 
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
-		
+
 		// Get the locale extracted by the LocaleFilter
 		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
 
 		try {
 			Stream<String> csv = QueryToCSVRenderer.toCSV(settings, exec.toResultQuery(), mappingState);
+			final Charset charset = determineCharset(userAgent);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
-
 				@Override
 				public void write(OutputStream os) throws WebApplicationException {
-					try (BufferedWriter writer = new BufferedWriter(
-						new OutputStreamWriter(
+					try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
 							os,
-							determineCharset(userAgent)))) {
+							charset
+						))) {
 						Iterator<String> it = csv.iterator();
 						while (it.hasNext()) {
 							writer.write(it.next());

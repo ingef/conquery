@@ -192,19 +192,19 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
 		return status;
-		
-		
+
+
 	}
-	
+
 	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
 		List<Permission> permissions = new ArrayList<>();
 		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
-		
+
 		boolean canExpand = user.isPermittedAll(permissions);
-		
+
 		ExecutionStatus.WithQuery status = new ExecutionStatus.WithQuery();
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);

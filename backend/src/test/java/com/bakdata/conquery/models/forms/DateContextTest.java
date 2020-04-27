@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.forms;
-import static com.bakdata.conquery.apiv1.forms.DateContextMode.COMPLETE;
-import static com.bakdata.conquery.apiv1.forms.DateContextMode.DAYS;
-import static com.bakdata.conquery.apiv1.forms.DateContextMode.QUARTERS;
-import static com.bakdata.conquery.apiv1.forms.DateContextMode.YEARS;
+
+import static com.bakdata.conquery.apiv1.forms.DateContextMode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;

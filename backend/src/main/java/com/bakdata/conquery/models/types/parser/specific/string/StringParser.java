@@ -1,16 +1,16 @@
 package com.bakdata.conquery.models.types.parser.specific.string;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -29,17 +29,17 @@ import com.bakdata.conquery.models.types.specific.StringTypeSuffix;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j @Getter
 public class StringParser extends Parser<Integer> {
 
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
 	private VarIntParser indexType = new VarIntParser(); 
-	private LinkedHashMap<String, Integer> strings = new LinkedHashMap<>();
+	private Map<String, Integer> strings = Collections.synchronizedMap(new LinkedHashMap<>());
 	private List<byte[]> decoded;
 	private Encoding encoding;
 	private String prefix = null;
@@ -94,8 +94,8 @@ public class StringParser extends Parser<Integer> {
 		//remove prefix and suffix
 		if(!StringUtils.isEmpty(prefix) || !StringUtils.isEmpty(suffix)) {
 			log.debug("Reduced strings by the '{}' prefix and '{}' suffix", prefix, suffix);
-			LinkedHashMap<String, Integer> oldStrings = strings;
-			strings = new LinkedHashMap<>(oldStrings.size());
+			Map<String, Integer> oldStrings = strings;
+			strings = Collections.synchronizedMap(new LinkedHashMap<>(oldStrings.size()));
 			for(Entry<String, Integer> e : oldStrings.entrySet()) {
 				strings.put(
 					e.getKey().substring(
