@@ -17,7 +17,6 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.CType;
@@ -93,7 +92,7 @@ public class Preprocessor {
 			return file;
 		}
 
-		return new File(file.getParentFile(), file.getName().replaceFirst("\\.", String.format(".%s.", tag)));
+		return new File(file.getParentFile(), file.getName().replace("\\.(?=csv(\\.gz)?)", String.format(".%s.", tag)));
 	}
 
 
@@ -102,7 +101,7 @@ public class Preprocessor {
 	 *
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link CType}.
 	 */
-	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress) throws IOException, JSONException, ParsingException {
+	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress) throws IOException {
 
 
 		//create temporary folders and check for correct permissions
