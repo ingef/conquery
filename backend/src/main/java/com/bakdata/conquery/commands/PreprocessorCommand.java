@@ -15,7 +15,6 @@ import javax.validation.Validator;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
@@ -120,7 +119,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 	}
 
-	public static List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag) throws IOException, JSONException {
+	public static List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag) throws IOException {
 		List<TableImportDescriptor> out = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
 

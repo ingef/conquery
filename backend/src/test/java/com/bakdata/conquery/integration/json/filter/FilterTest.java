@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -43,7 +42,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 
 @Slf4j @Getter @Setter
@@ -96,8 +94,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 	private void importTableContents(StandaloneSupport support) throws IOException, JSONException {
-
-		ConqueryConfig.getInstance().setAdditionalFormats(ArrayUtils.EMPTY_STRING_ARRAY);
 
 		List<File> preprocessedFiles = new ArrayList<>();
 
