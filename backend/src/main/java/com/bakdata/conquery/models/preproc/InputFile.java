@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
-import static com.bakdata.conquery.ConqueryConstants.EXTENSION_DESCRIPTION;
-import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static com.bakdata.conquery.ConqueryConstants.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +34,10 @@ public class InputFile implements Serializable {
 			TableImportDescriptor descriptor = Jackson.MAPPER.readerFor(TableImportDescriptor.class).readValue(in);
 
 			for (TableInputDescriptor inputDescriptor : descriptor.getInputs()) {
-				inputDescriptor.setSourceFile(Preprocessor.getTaggedVersion(csvDirectory.toPath().resolve(inputDescriptor.getSourceFile().toPath()).toFile(), tag, "csv\\.gz"));
+				// TODO: 27.04.2020 Not optimal to be bound to csv.gz
+				inputDescriptor.setSourceFile(Preprocessor.getTaggedVersion(csvDirectory.toPath()
+																						.resolve(inputDescriptor.getSourceFile().toPath())
+																						.toFile(), tag, INPUT_FILE_EXTENSION));
 			}
 
 			if (validator != null) {
