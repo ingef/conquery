@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
@@ -21,10 +22,12 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> {
 
+	
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
+	
 
 	/**
-	 * Adds permissions to the user and persistent to the storage.
+	 * Adds permissions to the owner object and to the persistent storage.
 	 *
 	 * @param storage
 	 *            A storage where the permission are added for persistence.
@@ -47,6 +50,21 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		}
 		return permission;
 	}
+	
+	/**
+	 * Removes permissions from the owner object and from the persistent storage.
+	 *
+	 * @param storage
+	 *            A storage where the permission are added for persistence.
+	 * @param permission
+	 *            The permission to add.
+	 * @return Returns the added Permission
+	 */
+	public void removePermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) {
+		for (ConqueryPermission permission : permissions) {
+			removePermission(storage, permission);
+		}
+	}
 
 	public void removePermission(MasterMetaStorage storage, Permission delPermission) {
 		if (permissions.remove(delPermission)) {
@@ -56,13 +74,32 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 
 	/**
-	 * Return as immutable copy of the permissions hold by the owner.
+	 * Returns a copy of the permissions hold by the owner.
+	 * Changes to the returned collection are not persisted and do not alter the
+	 * permissions owned.
 	 * 
 	 * @return A set of the permissions hold by the owner.
 	 */
-	public Set<Permission> getPermissions(){
+	public Set<Permission> getPermissions() {
 		// HashSet uses internally an iterator for copying, so we need to synchronize this
-		return Collections.unmodifiableSet(permissions);
+		synchronized (permissions) {
+			if (permissions.isEmpty()) {
+				return Collections.emptySet();
+			}
+			return new HashSet<>(permissions);
+		}
+	}
+	
+	/**
+	 * Custom property setter for permissions so that the existing Hashset is not replaced by Jackson and
+	 * the references held by the members {@link PemissionOwner#unmodifiablePermissions} and {@link PermissionOwner#synchronizedUnmodifiablePermissions}
+	 * are still valid.
+	 * @param permissions
+	 */
+	@JsonProperty
+	private void setPermissions(Set<ConqueryPermission> permissions) {
+		this.permissions.clear();
+		this.permissions.addAll(permissions);
 	}
 
 	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) {

@@ -79,7 +79,7 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		ManagedExecution query = dsUtil.getManagedQuery(queryId);
+		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
 			dsUtil.getDataset(datasetId),

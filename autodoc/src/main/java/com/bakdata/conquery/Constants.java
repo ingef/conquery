@@ -18,7 +18,11 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.IdLabel;
+import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.forms.FormConfig;
+import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
+import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
@@ -160,7 +164,7 @@ public class Constants {
 			.otherClass(FERoot.class)
 			.otherClass(FEValue.class)
 			.otherClass(FilterResource.FilterValues.class)
-			.otherClass(StoredQueriesResource.QueryPatch.class)
+			.otherClass(MetaDataPatch.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(ConceptsProcessor.ResolvedFilterResult.class)
 			.otherClass(FilterResource.StringContainer.class)
@@ -169,6 +173,9 @@ public class Constants {
 			.otherClass(ConceptResource.ConceptCodeList.class)
 			.otherClass(CQTable.class)
 			.otherClass(CQTable.ValidityDateColumn.class)
+			.otherClass(FormConfig.class)
+			.otherClass(FormConfigOverviewRepresentation.class)
+			.otherClass(FormConfigFullRepresentation.class)
 			.build()
 	};
 

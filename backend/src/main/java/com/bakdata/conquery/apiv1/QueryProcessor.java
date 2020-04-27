@@ -41,8 +41,6 @@ public class QueryProcessor {
 	@Getter
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
-	
-	private static final Consumer<Visitable> NOOP = whatever -> {};
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -67,7 +65,7 @@ public class QueryProcessor {
 		
 		
 		// Chain all Consumers
-		Consumer<Visitable> consumerChain = NOOP;
+		Consumer<Visitable> consumerChain = QueryUtils.getNoOpEntryPoint();
 		for(QueryVisitor visitor : visitors.values()) {
 			consumerChain = consumerChain.andThen(visitor);
 		}
@@ -81,7 +79,6 @@ public class QueryProcessor {
 		user.checkPermissions(permissions);
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), user, storage);
-
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass());
 

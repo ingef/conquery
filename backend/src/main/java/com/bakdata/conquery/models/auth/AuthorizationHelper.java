@@ -168,19 +168,17 @@ public class AuthorizationHelper {
 	 * @return Owned and inherited permissions.
 	 */
 	public static Set<Permission> getEffectiveUserPermissions(UserId userId, MasterMetaStorage storage) {
-		User user = Objects.requireNonNull(
-			storage.getUser(userId),
-			() -> String.format("User with id %s was not found", userId));
+		User user = Objects.requireNonNull(storage.getUser(userId), () -> String.format("User with id %s was not found", userId));
 		Set<Permission> userPermissions = user.getPermissions();
 		Set<Permission> tmpView = userPermissions;
 		for (Role role : user.getRoles()) {
-			// In order to avoid copying, we build a 'tree' of Sets as a SetView, 
+			// In order to avoid copying, we build a 'tree' of Sets as a SetView,
 			tmpView = Sets.union(tmpView, role.getPermissions());
-			
+
 		}
-		
+
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(user)) {
+			if (group.containsMember(user)) {
 				// Get effective permissions of the group
 				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group.getId(), storage));
 			}
