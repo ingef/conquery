@@ -1,21 +1,17 @@
 package com.bakdata.conquery.integration.json;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.common.IntegrationUtils;
-import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
-import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -63,25 +59,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 		IntegrationUtils.importTableContents(support, Arrays.asList(content.getTables()), support.getDataset());
 		support.waitUntilWorkDone();
-		importIdMapping(support, content.getIdMapping());
+		IntegrationUtils.importIdMapping(support, content.getIdMapping());
 		IntegrationUtils.importPreviousQueries(support, content);
 	}
-
-	public static void importIdMapping(StandaloneSupport support, ResourceFile idMapping) throws JSONException, IOException {
-		if(idMapping == null) {
-			return;
-		}
-		try(InputStream in = idMapping.stream()) {
-			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
-		}
-	}
-
-	public static OutputDescription copyOutput(RequiredColumn column) {
-		CopyOutput out = new CopyOutput();
-		out.setInputColumn(column.getName());
-		out.setInputType(column.getType());
-		out.setName(column.getName());
-		return out;
-	}
-
 }

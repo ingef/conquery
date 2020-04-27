@@ -69,8 +69,8 @@ public abstract class OutputDescription implements Serializable {
 
 	@Data
 	public static class OutputException extends Exception {
-		private final Output source;
-		public OutputException(Output source, Exception cause){
+		private final OutputDescription source;
+		public OutputException(OutputDescription source, Exception cause){
 			super(cause);
 			this.source = source;
 		}

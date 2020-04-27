@@ -30,12 +30,11 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -134,7 +133,9 @@ public class Preprocessor {
 		long lineId = 0;
 
 		// Gather exception classes to get better overview of what kind of errors are happening.
-		Multiset<Class<? extends Throwable>> exceptions = HashMultiset.create();
+		Object2IntMap<Class<? extends Throwable>> exceptions = new Object2IntArrayMap<>();
+		exceptions.defaultReturnValue(0);
+
 
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
@@ -190,8 +191,7 @@ public class Preprocessor {
 
 						}
 						catch (OutputDescription.OutputException e) {
-
-							exceptions.add(e.getCause().getClass());
+							exceptions.computeInt(e.getCause().getClass(), (key, value) -> value + 1);
 
 							long errors = errorCounter.getAndIncrement();
 
@@ -203,16 +203,16 @@ public class Preprocessor {
 										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
 										 + " were printed.");
 							}
+
 						}
 						catch (Exception e) {
-							// TODO: 22.04.2020 consolidate the above with this.
 
-							exceptions.add(e.getClass());
+							exceptions.computeInt(e.getClass(), (key, value) -> value + 1);
 
 							long errors = errorCounter.getAndIncrement();
 
 							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-								log.warn("Failed to parse `{}` from line: {} content: {}", lineId, row, e);
+								log.warn("Failed to parse line: {} content: {}", lineId, row, e);
 							}
 							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("More erroneous lines occurred. Only the first "
@@ -239,10 +239,8 @@ public class Preprocessor {
 				log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errorCounter.get(), lineId);
 			}
 
-			if (log.isWarnEnabled()){
-				for (Multiset.Entry<Class<? extends Throwable>> entry : exceptions.entrySet()) {
-					log.warn("Got {} `{}`", entry.getCount(), entry.getElement().getSimpleName());
-				}
+			if (log.isWarnEnabled()) {
+				exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 			}
 
 			//find the optimal subtypes
@@ -293,8 +291,6 @@ public class Preprocessor {
 			result.write(outFile);
 		}
 
-
-
 		//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, preprocessedFile);
 		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
@@ -325,7 +321,7 @@ public class Preprocessor {
 
 				outRow[index] = result;
 			}catch (Exception e){
-				throw new OutputDescription.OutputException(out, e);
+				throw new OutputDescription.OutputException(out.getDescription(), e);
 			}
 		}
 		return outRow;

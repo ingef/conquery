@@ -9,12 +9,12 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
@@ -114,11 +114,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 			desc.setTable(rTable.getName());
 			TableInputDescriptor input = new TableInputDescriptor();
 			{
-				input.setPrimary(QueryTest.copyOutput(rTable.getPrimaryColumn()));
+				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
 				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = QueryTest.copyOutput(rTable.getColumns()[i]);
+					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
 				}
 			}
 			desc.setInputs(new TableInputDescriptor[]{input});

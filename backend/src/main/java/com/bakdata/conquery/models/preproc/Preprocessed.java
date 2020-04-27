@@ -59,6 +59,10 @@ public class Preprocessed {
 	}
 
 	public void write(HCFile outFile) throws IOException {
+		if(!outFile.isWrite()){
+			throw new IllegalArgumentException("outfile was opened in read-only mode.");
+		}
+
 		// Write content to file
 		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 

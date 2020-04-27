@@ -87,12 +87,12 @@ public class IntegrationUtils {
 	}
 
 
-	public static void importIdMapping(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
-		if (content.getIdMapping() == null) {
+	public static void importIdMapping(StandaloneSupport support, ResourceFile idMapping) throws JSONException, IOException {
+		if (idMapping == null) {
 			return;
 		}
 
-		try (InputStream in = content.getIdMapping().stream()) {
+		try (InputStream in = idMapping.stream()) {
 			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
 		}
 	}
