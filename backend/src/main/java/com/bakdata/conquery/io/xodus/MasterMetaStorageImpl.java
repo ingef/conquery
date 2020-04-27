@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -39,6 +41,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution<?>> executions;
+	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
@@ -48,6 +51,9 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	@Getter
 	private final Environment executionsEnvironment;
+
+	@Getter
+	private final Environment formConfigEnvironment;
 
 	@Getter
 	private final Environment usersEnvironment;
@@ -62,6 +68,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		super(validator, config, new File(config.getDirectory(), "meta"));
 
 		executionsEnvironment = Environments.newInstance(new File(config.getDirectory(), "executions"), config.getXodus().createConfig());
+
+		formConfigEnvironment = Environments.newInstance(new File(config.getDirectory(), "formConfigs"), config.getXodus().createConfig());
 
 		usersEnvironment = Environments.newInstance(new File(config.getDirectory(), "users"), config.getXodus().createConfig());
 
@@ -197,10 +205,32 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	public void updateGroup(Group group) {
 		authGroup.update(group);
 	}
+
+	@Override
+	public FormConfig getFormConfig(FormConfigId id) {
+		return formConfigs.get(id);
+	}
+
+	@Override
+	public Collection<FormConfig> getAllFormConfigs() {
+		return formConfigs.getAll();
+	}
+
+	@Override
+	public void removeFormConfig(FormConfigId id) {
+		formConfigs.remove(id);
+	}
+
+	@Override
+	@SneakyThrows
+	public void updateFormConfig(FormConfig formConfig) {
+		formConfigs.update(formConfig);
+	}
 	
 	@Override
 	public void close() throws IOException {
 		getExecutionsEnvironment().close();
+		getFormConfigEnvironment().close();
 		getGroupsEnvironment().close();
 		getUsersEnvironment().close();
 		getRolesEnvironment().close();

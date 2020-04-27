@@ -30,6 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ActiveUsersFilter implements ContainerRequestFilter {
 
+	private static final String USERS = "users";
+	private static final String ACTIVE = "active";
+
 	private final MasterMetaStorage storage;
 
 	/**
@@ -39,8 +42,6 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 														   .expireAfterAccess(ConqueryConfig.getInstance().getMetricsConfig().getUserActiveHours(), TimeUnit.HOURS)
 															.removalListener(notification -> decrementPrimaryGroupCount((User) notification.getKey()))
 															.build();
-
-
 
 
 	public void incrementPrimaryGroupCount(User user) {
@@ -54,7 +55,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.get().getName(), "active")).inc();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(USERS, primaryGroup.get().getName(), ACTIVE)).inc();
 	}
 
 	public void decrementPrimaryGroupCount(User user) {
@@ -68,7 +69,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
 			return;
 
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(primaryGroup.get().getName(), "active")).dec();
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(USERS, primaryGroup.get().getName(), ACTIVE)).dec();
 	}
 
 

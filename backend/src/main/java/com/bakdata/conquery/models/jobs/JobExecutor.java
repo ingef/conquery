@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.bakdata.conquery.metrics.MetricsUtil;
+import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
@@ -25,7 +25,7 @@ public class JobExecutor extends Thread {
 
 	public JobExecutor(String name) {
 		super(name);
-		MetricsUtil.createJobQueueGauge(name, jobs);
+		JobMetrics.createJobQueueGauge(name, jobs);
 	}
 
 	public void add(Job job) {
@@ -71,7 +71,7 @@ public class JobExecutor extends Thread {
 	public void close() {
 		closed.set(true);
 		Uninterruptibles.joinUninterruptibly(this);
-		MetricsUtil.removeJobQueueSizeGauge(getName());
+		JobMetrics.removeJobQueueSizeGauge(getName());
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class JobExecutor extends Thread {
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 
-					final Timer.Context time = MetricsUtil.getJobExecutorTimer(job);
+					final Timer.Context time = JobMetrics.getJobExecutorTimer(job);
 
 					try {
 						if(job.isCancelled()){
