@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -51,7 +50,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 
 			storage.addUser(user);

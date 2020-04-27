@@ -1,11 +1,8 @@
 package com.bakdata.conquery.integration.json.filter;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,10 +21,6 @@ import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.preproc.InputFile;
-import com.bakdata.conquery.models.preproc.TableImportDescriptor;
-import com.bakdata.conquery.models.preproc.TableInputDescriptor;
-import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -41,7 +34,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 
 @Slf4j @Getter @Setter
@@ -85,50 +77,16 @@ public class FilterTest extends AbstractQueryEngineTest {
 		importTables(support);
 		support.waitUntilWorkDone();
 
+
 		importConcepts(support);
 		support.waitUntilWorkDone();
 		
 		query = parseQuery(support);
 
-		importTableContents(support);
+		IntegrationUtils.importTableContents(support, content.getTables(), support.getDataset());
 	}
 
-	private void importTableContents(StandaloneSupport support) throws IOException, JSONException {
 
-		List<File> preprocessedFiles = new ArrayList<>();
-
-		for (RequiredTable rTable : content.getTables()) {
-			//copy csv to tmp folder
-			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
-			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
-
-			//create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name, null);
-			TableImportDescriptor desc = new TableImportDescriptor();
-			desc.setInputFile(inputFile);
-			desc.setName(rTable.getName() + "_import");
-			desc.setTable(rTable.getName());
-			TableInputDescriptor input = new TableInputDescriptor();
-			{
-				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
-				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
-				input.setOutput(new OutputDescription[rTable.getColumns().length]);
-				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
-				}
-			}
-			desc.setInputs(new TableInputDescriptor[]{input});
-			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
-			preprocessedFiles.add(inputFile.getPreprocessedFile());
-		}
-		//preprocess
-		support.preprocessTmp();
-
-		//import preprocessedFiles
-		for (File file : preprocessedFiles) {
-			support.getDatasetsProcessor().addImport(support.getDataset(), file);
-		}
-	}
 
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
 		Dataset dataset = support.getDataset();

@@ -4,7 +4,6 @@ import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.util.Arrays;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -64,7 +63,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -163,7 +162,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		// Load more data under the same name into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			final RequiredTable import2Table = Arrays.stream(test.getContent().getTables())
+			final RequiredTable import2Table = test.getContent().getTables().stream()
 													 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
 													 .findFirst()
 													 .orElseThrow();

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -134,7 +133,7 @@ public class IntegrationUtils {
 		}
 	}
 
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
+	public static void importTableContents(StandaloneSupport support, List<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
 
 		List<File> preprocessedFiles = new ArrayList<>();
 
