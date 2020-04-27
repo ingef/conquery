@@ -93,7 +93,7 @@ public class Preprocessor {
 			return file;
 		}
 
-		return new File(file.getParentFile(), file.getName().replaceAll("\\.(?=" + Pattern.quote(extension) + "$)", String.format(".%s.", tag)));
+		return new File(file.getParentFile(), file.getName().replaceAll(Pattern.quote(extension) + "$", String.format(".%s%s", tag, extension)));
 	}
 
 
