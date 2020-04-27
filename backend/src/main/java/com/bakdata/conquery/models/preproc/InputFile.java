@@ -35,7 +35,7 @@ public class InputFile implements Serializable {
 			TableImportDescriptor descriptor = Jackson.MAPPER.readerFor(TableImportDescriptor.class).readValue(in);
 
 			for (TableInputDescriptor inputDescriptor : descriptor.getInputs()) {
-				inputDescriptor.setSourceFile(Preprocessor.getTaggedVersion(csvDirectory.toPath().resolve(inputDescriptor.getSourceFile().toPath()).toFile(), tag));
+				inputDescriptor.setSourceFile(Preprocessor.getTaggedVersion(csvDirectory.toPath().resolve(inputDescriptor.getSourceFile().toPath()).toFile(), tag, "csv\\.gz"));
 			}
 
 			if (validator != null) {
@@ -57,7 +57,7 @@ public class InputFile implements Serializable {
 	public static InputFile fromName(PreprocessingDirectories dirs, String extensionlessName, String tag) {
 		return builder()
 				.descriptionFile(new File(dirs.getDescriptionsDir(), extensionlessName + EXTENSION_DESCRIPTION))
-				.preprocessedFile(Preprocessor.getTaggedVersion(new File(dirs.getPreprocessedOutputDir(), extensionlessName + EXTENSION_PREPROCESSED), tag))
+				.preprocessedFile(Preprocessor.getTaggedVersion(new File(dirs.getPreprocessedOutputDir(), extensionlessName + EXTENSION_PREPROCESSED), tag, EXTENSION_PREPROCESSED))
 				.csvDirectory(dirs.getCsvDir().getAbsoluteFile())
 				.build();
 	}

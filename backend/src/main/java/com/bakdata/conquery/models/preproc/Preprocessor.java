@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -87,12 +88,12 @@ public class Preprocessor {
 	/**
 	 * Create version of file-name with tag.
 	 */
-	public static File getTaggedVersion(File file, String tag) {
+	public static File getTaggedVersion(File file, String tag, String extension) {
 		if(Strings.isNullOrEmpty(tag)) {
 			return file;
 		}
 
-		return new File(file.getParentFile(), file.getName().replaceAll("\\.(?=csv(\\.gz)?$)", String.format(".%s.", tag)));
+		return new File(file.getParentFile(), file.getName().replaceAll("\\.(?=" + Pattern.quote(extension) + "$)", String.format(".%s.", tag)));
 	}
 
 

@@ -36,6 +36,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public class PreprocessorCommand extends ConqueryCommand {
 
 	private ExecutorService pool;
+	private final List<String> failed = Collections.synchronizedList(new ArrayList<>());
 
 	public PreprocessorCommand() {
 		this(null);
@@ -105,8 +106,6 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		ProgressBar totalProgress = new ProgressBar(totalSize, System.out);
 
-		List<TableImportDescriptor> failed = Collections.synchronizedList(new ArrayList<>());
-
 		for (TableImportDescriptor descriptor : descriptors) {
 			pool.submit(() -> {
 				ConqueryMDC.setLocation(descriptor.toString());
@@ -114,7 +113,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 					Preprocessor.preprocess(descriptor, totalProgress);
 				} catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
-					failed.add(descriptor);
+					failed.add(descriptor.toString());
 				}
 			});
 		}
@@ -129,7 +128,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	public static List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag) throws IOException {
+	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag) throws IOException {
 		List<TableImportDescriptor> out = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
 
@@ -151,6 +150,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 				}
 				catch (Exception e) {
 					log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
+					failed.add(file.getDescriptionFile().toString());
 				}
 			}
 		}

@@ -181,7 +181,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			//import preprocessedFiles
 
-			conquery.getDatasetsProcessor().addImport(conquery.getDataset(), Preprocessor.getTaggedVersion(new File(conquery.getTmpDir(), import2Table.getCsv().getName().substring(0, import2Table.getCsv().getName().lastIndexOf('.')) + EXTENSION_PREPROCESSED), null));
+			conquery.getDatasetsProcessor().addImport(conquery.getDataset(), Preprocessor.getTaggedVersion(new File(conquery.getTmpDir(), import2Table.getCsv().getName().substring(0, import2Table.getCsv().getName().lastIndexOf('.')) + EXTENSION_PREPROCESSED), null, "csv\\.gz"));
 			conquery.waitUntilWorkDone();
 		}
 
