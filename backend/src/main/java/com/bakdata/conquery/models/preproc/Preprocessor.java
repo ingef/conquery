@@ -92,7 +92,7 @@ public class Preprocessor {
 			return file;
 		}
 
-		return new File(file.getParentFile(), file.getName().replace("\\.(?=csv(\\.gz)?)", String.format(".%s.", tag)));
+		return new File(file.getParentFile(), file.getName().replaceAll("\\.(?=csv(\\.gz)?$)", String.format(".%s.", tag)));
 	}
 
 
