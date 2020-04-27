@@ -1,5 +1,14 @@
 package com.bakdata.conquery.models.concepts;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -12,14 +21,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -46,6 +47,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	}
 
 	public abstract List<? extends Select> getSelects();
+	public abstract void addSelect(Select select);
 	
 	public void initElements(Validator validator) throws ConfigurationException, JSONException {}
 	
