@@ -123,7 +123,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		List<TableImportDescriptor> out = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
 
-			File inDir = description.getDescriptions().getAbsoluteFile();
+			File inDir = description.getDescriptionsDir().getAbsoluteFile();
 
 			for (File descriptionFile : inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)))) {
 
