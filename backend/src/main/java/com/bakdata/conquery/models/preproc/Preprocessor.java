@@ -191,7 +191,7 @@ public class Preprocessor {
 
 						}
 						catch (OutputDescription.OutputException e) {
-							exceptions.computeInt(e.getCause().getClass(), (key, value) -> value + 1);
+							exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
 
 							long errors = errorCounter.getAndIncrement();
 
@@ -206,8 +206,7 @@ public class Preprocessor {
 
 						}
 						catch (Exception e) {
-
-							exceptions.computeInt(e.getClass(), (key, value) -> value + 1);
+							exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
 
 							long errors = errorCounter.getAndIncrement();
 
