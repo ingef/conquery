@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
+import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.ToString;
@@ -39,11 +40,11 @@ public class EpochDateRangeOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
-				if (!allowOpen && (row[startIndex] == null || row[endIndex] == null)) {
+				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
 
-				if (row[startIndex] == null && row[endIndex] == null) {
+				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
 					return null;
 				}
 

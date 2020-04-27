@@ -90,7 +90,7 @@ public abstract class OutputDescription implements Serializable {
 		}
 
 		if (missing.length() != 0) {
-			throw new InputMismatchException(String.format("Did not find headers `[%s]` in `[%s]`", missing.toString(), actualHeaders.keySet()));
+			throw new InputMismatchException(String.format("Did not find headers `%s` in `%s`", missing.toString(), actualHeaders.keySet()));
 		}
 	}
 
