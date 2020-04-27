@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -104,6 +105,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		ProgressBar totalProgress = new ProgressBar(totalSize, System.out);
 
+		List<TableImportDescriptor> failed = Collections.synchronizedList(new ArrayList<>());
+
 		for (TableImportDescriptor descriptor : descriptors) {
 			pool.submit(() -> {
 				ConqueryMDC.setLocation(descriptor.toString());
@@ -111,12 +114,19 @@ public class PreprocessorCommand extends ConqueryCommand {
 					Preprocessor.preprocess(descriptor, totalProgress);
 				} catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
+					failed.add(descriptor);
 				}
 			});
 		}
 
 		pool.shutdown();
 		pool.awaitTermination(24, TimeUnit.HOURS);
+
+		if (!failed.isEmpty()) {
+			log.error("Failed {} Preprocessing Jobs:", failed.size());
+			failed.forEach(desc -> log.error("\tFailed Preprocessing for {}", desc));
+			System.exit(Math.min(failed.size(), 255));
+		}
 	}
 
 	public static List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag) throws IOException {
