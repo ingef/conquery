@@ -121,6 +121,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.shutdown();
 		pool.awaitTermination(24, TimeUnit.HOURS);
 
+		ConqueryMDC.clearLocation();
+
 		if (!failed.isEmpty()) {
 			log.error("Failed {} Preprocessing Jobs:", failed.size());
 			failed.forEach(desc -> log.error("\tFailed Preprocessing for {}", desc));
