@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.concepts.select.concept.specific.EventDateUnionSelect;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -97,7 +98,6 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @RequiredArgsConstructor
 public class AdminProcessor {
-	private final static EventDateUnionSelect DEFAULT_EVENT_DATE_SELECT = new EventDateUnionSelect();
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
@@ -131,9 +131,13 @@ public class AdminProcessor {
 
 	public void addConcept(Dataset dataset, Concept<?> c) {
 		c.setDataset(dataset.getId());
-		c.addSelect(DEFAULT_EVENT_DATE_SELECT);
+		EventDateUnionSelect select = new EventDateUnionSelect();
+		select.setHolder((SelectHolder<?>) c);
+		c.addSelect(select);
 		for(Connector connector : c.getConnectors()) {
-			connector.getSelects().add(DEFAULT_EVENT_DATE_SELECT);
+			select = new EventDateUnionSelect();
+			select.setHolder(connector);
+			connector.getSelects().add(select);
 		}
 		if (namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + c.getId(), Status.CONFLICT);
