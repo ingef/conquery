@@ -126,7 +126,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		if (!failed.isEmpty()) {
 			log.error("Failed {} Preprocessing Jobs:", failed.size());
 			failed.forEach(desc -> log.error("\tFailed Preprocessing for {}", desc));
-			System.exit(Math.min(failed.size(), 255));
+			System.exit(Math.min(failed.size(), 100)); // Inspired by: https://www.gnu.org/software/parallel/man.html#EXIT-STATUS
 		}
 	}
 
