@@ -28,7 +28,7 @@ public class EpochDateRangeOutput extends OutputDescription {
 	/**
 	 * Parse null values as open date-range if true.
 	 */
-	public boolean allowOpen = false;
+	private boolean allowOpen = false;
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
