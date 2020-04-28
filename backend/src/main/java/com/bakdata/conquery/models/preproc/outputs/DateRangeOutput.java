@@ -44,13 +44,12 @@ public class DateRangeOutput extends OutputDescription {
 			@Override
 			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
 
+				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
+					return null;
+				}
 
 				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
-				}
-
-				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
-					return null;
 				}
 
 				LocalDate start = DateFormats.parseToLocalDate(row[startIndex]);
