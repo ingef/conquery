@@ -19,6 +19,7 @@ public class EventDateUnionAggregator implements Aggregator<String>{
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
 	private CDateSet set = CDateSet.create();
+	private CDateSet dateRestriction;
 	
 
 	@Override
@@ -29,6 +30,7 @@ public class EventDateUnionAggregator implements Aggregator<String>{
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		validityDateColumn = ctx.getValidityDateColumn();
+		dateRestriction = ctx.getDateRestriction();
 		Aggregator.super.nextTable(ctx, currentTable);
 	}
 
@@ -39,6 +41,7 @@ public class EventDateUnionAggregator implements Aggregator<String>{
 
 	@Override
 	public String getAggregationResult() {
+		set.retainAll(dateRestriction);
 		return set.toString();
 	}
 
