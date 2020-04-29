@@ -52,7 +52,7 @@ public class FrontEndConceptBuilder {
 		allConcepts.removeIf(Concept::isHidden);
 		
 		if(allConcepts.isEmpty()) {
-			log.warn("There are displayable concepts in dataset {}", storage.getDataset().getId());
+			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
 		}
 		
 		List<Permission> permissions = new ArrayList<>(allConcepts.size());
