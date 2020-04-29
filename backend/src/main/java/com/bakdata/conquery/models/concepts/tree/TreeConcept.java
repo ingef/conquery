@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
@@ -55,7 +56,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private int localId;
 	@JsonIgnore @Getter @Setter
 	private int depth=-1;
-	@NotNull @Getter @Setter @JsonManagedReference
+	@NotNull @Getter @Setter @JsonManagedReference @Valid
 	private List<UniversalSelect> selects = new ArrayList<>();
 	@JsonIgnore @Getter @Setter
 	private TreeChildPrefixIndex childIndex;

@@ -15,7 +15,7 @@
                     "filters": []
                     ,
                     "selects": [
-                        "${dataset}.test_tree.test_column.dates"
+                        "${dataset}.test_tree.test_column.event-date"
                     ]
                 }
                 ,

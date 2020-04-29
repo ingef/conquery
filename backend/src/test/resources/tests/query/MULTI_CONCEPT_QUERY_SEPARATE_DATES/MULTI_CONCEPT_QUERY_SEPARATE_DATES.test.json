@@ -17,7 +17,7 @@
                             "id": "${dataset}.test_tree.test_column",
                             "filters": [],
                             "selects": [
-                                "${dataset}.test_tree.dates"
+                                "${dataset}.test_tree.event-date"
                             ]
                         }
                     ]
@@ -32,7 +32,7 @@
                             "id": "${dataset}.test_tree2.test_column2",
                             "filters": [],
                             "selects": [
-                                "${dataset}.test_tree2.dates"
+                                "${dataset}.test_tree2.event-date"
                             ]
                         }
                     ]
