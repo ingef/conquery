@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.bakdata.conquery.io.HCFile;
@@ -15,9 +16,9 @@ import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.esotericsoftware.kryo.io.Output;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import io.dropwizard.util.Size;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Data;
 
 @Data
@@ -31,7 +32,7 @@ public class Preprocessed {
 	private long rows = 0;
 	private CDateRange eventRange;
 	private long writtenGroups = 0;
-	private Multimap<Integer, Object[]> entries = MultimapBuilder.hashKeys().arrayListValues().build();
+	private Int2ObjectMap<List<Object[]>> entries = new Int2ObjectAVLTreeMap<>();
 	
 	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 
@@ -68,7 +69,7 @@ public class Preprocessed {
 
 		try (Output out = new Output(outFile.writeContent())) {
 			for(int entityId = 0; entityId < entries.size(); entityId++) {
-				List<Object[]> events = (List<Object[]>) entries.get(entityId);
+				List<Object[]> events = entries.get(entityId);
 
 				if(!events.isEmpty()) {
 					writeRowsToFile(out, imp, entityId, events);
@@ -111,7 +112,8 @@ public class Preprocessed {
 	}
 
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
-		entries.put(primaryId, outRow);
+		entries.computeIfAbsent(primaryId,(id) -> new ArrayList<>())
+			   .add(outRow);
 
 		for(int i=0;i<columns.length;i++) {
 			columns[i].getParser().addLine(outRow[i]);

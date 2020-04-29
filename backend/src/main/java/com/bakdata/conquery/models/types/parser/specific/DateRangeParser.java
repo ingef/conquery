@@ -82,7 +82,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 				new Transformer<CDateRange, Integer>() {
 					@Override
 					public Integer transform(CDateRange value) {
-						return ((CDateRange)value).getMinValue();
+						return value.getMinValue();
 					}
 				},
 				type
@@ -101,9 +101,6 @@ public class DateRangeParser extends Parser<CDateRange> {
 					new Transformer<CDateRange, Integer>() {
 						@Override
 						public Integer transform(CDateRange value) {
-							if (value.getMaxValue() > Integer.MAX_VALUE || value.getMinValue() < Integer.MIN_VALUE) {
-								throw new IllegalArgumentException(value + " is out of range");
-							}
 							return PackedUnsigned1616.pack(value.getMinValue() - minValue, value.getMaxValue() - minValue);
 						}
 					},
