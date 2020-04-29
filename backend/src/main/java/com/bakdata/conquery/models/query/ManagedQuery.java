@@ -176,7 +176,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		columnDescriptions.addAll(
 			collectResultInfos(new PrintSettings(true, I18n.LOCALE.get())).getInfos().stream()
 				.map(i -> ColumnDescriptor.builder()
-					.label(i.getName())
+					.label(i.getUniqueName())
 					.type(i.getType().toString())
 					.selectId(i instanceof SelectResultInfo ? ((SelectResultInfo)i).getSelect().getId() : null)
 					.build())
