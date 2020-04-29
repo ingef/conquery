@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +13,6 @@ public class PreprocessedHeader {
 
 	private long rows;
 	private long groups;
-	private CDateRange eventRange;
 	private PPColumn primaryColumn;
 	private PPColumn[] columns;
 
