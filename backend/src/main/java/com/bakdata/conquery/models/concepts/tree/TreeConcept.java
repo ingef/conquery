@@ -9,12 +9,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -54,7 +56,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private int localId;
 	@JsonIgnore @Getter @Setter
 	private int depth=-1;
-	@NotNull @Getter @Setter @JsonManagedReference
+	@NotNull @Getter @Setter @JsonManagedReference @Valid
 	private List<UniversalSelect> selects = new ArrayList<>();
 	@JsonIgnore @Getter @Setter
 	private TreeChildPrefixIndex childIndex;
@@ -218,5 +220,15 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	public ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
 		int mostSpecific = ids[ids.length-1];
 		return localIdMap.get(mostSpecific);
+	}
+
+	@Override
+	public void addSelect(Select select) {
+		if (!(select instanceof UniversalSelect)) {
+			throw new IllegalStateException(String.format("Cannot add the select %s to the concept %s, because the type was not %s but %s.", select, this, UniversalSelect.class.getName(), select.getClass().getName()));
+		}
+		
+		selects.add((UniversalSelect) select);
+		
 	}
 }
