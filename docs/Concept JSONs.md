@@ -15,7 +15,7 @@ A concept is a collection of filters and selects and their connection to tables.
 Different types of Concept can be used by setting `type` to one of the following values:
 
 
-### TREE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L36-L38)</sup></sub></sup>
+### TREE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L38-L40)</sup></sub></sup>
 This is a single node or concept in a concept tree.
 
 <details><summary>Details</summary><p>
@@ -26,14 +26,14 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L34) | connectors | list of [Connector](#Type-Connector) | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L36) | dataset | ID of `Dataset` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L32) | hidden | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L35) | connectors | list of [Connector](#Type-Connector) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L37) | dataset | ID of `Dataset` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L33) | hidden | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java#L21) | additionalInfos | list of [KeyValue](#Type-KeyValue) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java#L19) | description | `String` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L51) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L43) | globalToLocalOffset | `int` | `0` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L57) | selects | list of [UniversalSelect](#Marker-UniversalSelect) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L53) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L45) | globalToLocalOffset | `int` | `0` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java#L59) | selects | list of [UniversalSelect](#Marker-UniversalSelect) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L19-L22) | label | `String` | `null` | "someLabel" | shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L14) | name | `String` | `null` |  |  | 
 </p></details>
@@ -49,9 +49,9 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L34) | connectors | list of [Connector](#Type-Connector) | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L36) | dataset | ID of `Dataset` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L32) | hidden | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L35) | connectors | list of [Connector](#Type-Connector) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L37) | dataset | ID of `Dataset` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java#L33) | hidden | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java#L21) | additionalInfos | list of [KeyValue](#Type-KeyValue) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java#L19) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/virtual/VirtualConcept.java#L23) | selects | list of [Select](#Base-Select) | `[]` |  |  | 
@@ -580,6 +580,22 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L14) | name | `String` | ? |  |  | 
 </p></details>
 
+### EVENT_DATE_UNION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/concept/specific/EventDateUnionSelect.java#L19-L23)</sup></sub></sup>
+Collects the event dates that are corresponding to an enclosing {@link Connector} or {@link Concept} provided in a query. The resulting date set is in bounds of a provided date restriction. This works as a basic {@link Select} that is by default added to all {@link Concept}s and {@link Connector}s ({@link AdminProcessor#addConcept(Dataset, Concept)}).
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.EventDateUnionSelect`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java#L27) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L19-L22) | label | `String` | `"EventDateUnionSelectC10n.label"` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L14) | name | `String` | `"event-date"` |  |  | 
+</p></details>
+
 ### EXISTS<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/concept/specific/ExistsSelect.java#L17)</sup></sub></sup>
 
 
@@ -810,6 +826,7 @@ Supported Fields:
 Java Type: `com.bakdata.conquery.models.concepts.select.concept.UniversalSelect`
 
 A Marker UniversalSelect is any of:
+* [EVENT_DATE_UNION](#EVENT_DATE_UNION)
 * [EXISTS](#EXISTS)
 
 </p></details>
