@@ -199,6 +199,74 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return of(Math.min(getMinValue(), other.getMinValue()), Math.max(getMaxValue(), other.getMaxValue()));
 	}
 
+	/**
+	 * Create a span over ranges ignoring incoming open values, and favoring closed values.
+	 *
+	 * @param other Date range to span over, may be open.
+	 * @return A new closed span.
+	 */
+	public CDateRange spanClosed(CDateRange other) {
+		if(other == null){
+			return this;
+		}
+
+		int min = Integer.MAX_VALUE;
+		{
+			if (getMinValue() != Integer.MIN_VALUE) {
+				min = Math.min(min, getMinValue());
+			}
+
+			if (other.getMinValue() != Integer.MIN_VALUE) {
+				min = Math.min(min, other.getMinValue());
+			}
+
+			if (getMaxValue() != Integer.MAX_VALUE) {
+				min = Math.min(min, getMaxValue());
+			}
+
+			if (other.getMaxValue() != Integer.MAX_VALUE) {
+				min = Math.min(min, other.getMaxValue());
+			}
+
+			if (min == Integer.MAX_VALUE) {
+				min = Integer.MIN_VALUE;
+			}
+		}
+
+		int max = Integer.MIN_VALUE;
+		{
+			if (getMinValue() != Integer.MIN_VALUE) {
+				max = Math.max(max, getMinValue());
+			}
+
+			if (other.getMinValue() != Integer.MIN_VALUE) {
+				max = Math.max(max, other.getMinValue());
+			}
+
+			if (getMaxValue() != Integer.MAX_VALUE) {
+				max = Math.max(max, getMaxValue());
+			}
+
+			if (other.getMaxValue() != Integer.MAX_VALUE) {
+				max = Math.max(max, other.getMaxValue());
+			}
+
+			if (max == Integer.MIN_VALUE) {
+				max = Integer.MAX_VALUE;
+			}
+		}
+
+		if(min == Integer.MIN_VALUE && max != Integer.MAX_VALUE){
+			min = max;
+		}
+
+		if(max == Integer.MAX_VALUE && min != Integer.MIN_VALUE){
+			max = min;
+		}
+
+		return of(min, max);
+	}
+
 	public static CDateRange spanOf(CDateRange a, CDateRange b) {
 		if (a == null) {
 			return b;

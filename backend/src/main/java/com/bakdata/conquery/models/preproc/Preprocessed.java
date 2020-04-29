@@ -142,7 +142,7 @@ public class Preprocessed {
 			eventRange = range;
 		}
 		else if(range != null) {
-			eventRange = eventRange.span(range);
+			eventRange = eventRange.spanClosed(range);
 		}
 	}
 
