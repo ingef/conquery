@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,8 +21,6 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ExecutionStatus.WithQuery;
 import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
@@ -219,7 +218,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithQuery status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
 		super.setAdditionalFieldsForStatusWithSource(storage, url, user, status);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
@@ -227,7 +226,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			this.initExecutable(storage.getNamespaces());
 		}
 		if(subQueries.size() != 1) {
-			// The sub-query size might also be zero if the backend just delegates the form further to another backend.
+			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
 			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.", subQueries.size(),
 				this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName());
 			return;
@@ -246,7 +245,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	protected String getDownloadLink(URLBuilder url) {
+	protected URL getDownloadLink(URLBuilder url) {
 		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
 			.to(ResultCSVResource.GET_CSV_PATH).get();
 	}

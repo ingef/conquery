@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
+import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class ExecutionStatus {
 	private ExecutionState status;
 	private Long numberOfResults;
 	private Long requiredTime;
-	private String resultUrl;
+	private URL resultUrl;
 
 	@Data
 	@NoArgsConstructor

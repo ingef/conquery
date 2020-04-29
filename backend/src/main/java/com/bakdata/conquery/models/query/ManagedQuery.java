@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -227,7 +228,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected String getDownloadLink(URLBuilder url) {
+	protected URL getDownloadLink(URLBuilder url) {
 		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
 			.to(ResultCSVResource.GET_CSV_PATH).get();
 	}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -196,7 +197,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				: null);
 	}
 
-	protected abstract String getDownloadLink(URLBuilder url);
+	/**
+	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
+	 */
+	protected abstract URL getDownloadLink(URLBuilder url);
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		ExecutionStatus status = new ExecutionStatus();
@@ -207,7 +211,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus.WithQuery status = new ExecutionStatus.WithQuery();
+		ExecutionStatus.WithSingleQuery status = new ExecutionStatus.WithSingleQuery();
 		setStatusBase(storage, url, user, status);
 		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
 		return status;
