@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ExecutionStatus.WithQuery;
+import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -147,7 +147,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithQuery status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
 		if(columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions();
 		}
@@ -169,7 +169,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			columnDescriptions.add(ColumnDescriptor.builder()
 				.label(header)
 				.type(ConqueryConstants.ID_TYPE)
-				// set no type for the ID columns
 				.build());
 		}
 		// Then all columns that originate from selects

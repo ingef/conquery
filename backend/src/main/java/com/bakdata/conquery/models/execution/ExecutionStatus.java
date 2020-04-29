@@ -40,7 +40,7 @@ public class ExecutionStatus {
 	@Data
 	@NoArgsConstructor
 	@EqualsAndHashCode(callSuper = true)
-	public static class WithQuery extends ExecutionStatus {
+	public static class WithSingleQuery extends ExecutionStatus {
 		/**
 		 * Indicates if the concepts that are included in the query description can be accesed by the user.
 		 */

@@ -20,7 +20,9 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ExecutionStatus.WithQuery;
+import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -225,13 +227,17 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			this.initExecutable(storage.getNamespaces());
 		}
 		if(subQueries.size() != 1) {
+			// The sub-query size might also be zero if the backend just delegates the form further to another backend.
 			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.", subQueries.size(),
 				this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName());
 			return;
 		}
 		List<ManagedQuery> subQuery = subQueries.entrySet().iterator().next().getValue();
 		if(subQuery.isEmpty()) {
-			log.trace("The {} ({} from Form {}) does not have any subqueries after initialization. Not creating ", this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName());
+			log.warn("The {} ({} from Form {}) does not have any subqueries after initialization. Not creating a column description.",
+				this.getClass().getSimpleName(),
+				getId(),
+				getSubmitted().getClass().getSimpleName());
 			return;
 		}
 		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions());
