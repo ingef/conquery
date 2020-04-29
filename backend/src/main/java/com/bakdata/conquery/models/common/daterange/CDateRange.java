@@ -58,27 +58,23 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 	
 	public static CDateRange of(int min, int max) {
-		if(min == Integer.MIN_VALUE) {
-			if(max == Integer.MAX_VALUE) {
-				return CDateRangeOpen.INSTANCE;
-			}
-			else {
-				return new CDateRangeEnding(max);
-			}
+		if(min == Integer.MIN_VALUE && max == Integer.MAX_VALUE){
+			return CDateRange.all();
 		}
-		else {
-			if(max == Integer.MAX_VALUE) {
-				return new CDateRangeStarting(min);
-			}
-			else {
-				if(min == max) {
-					return new CDateRangeExactly(min);
-				}
-				else {
-					return new CDateRangeClosed(min, max);
-				}
-			}
+
+		if(max == Integer.MAX_VALUE){
+			return atLeast(min);
 		}
+
+		if(min == Integer.MIN_VALUE){
+			return atMost(max);
+		}
+
+		if(min == max){
+			return exactly(min);
+		}
+
+		return new CDateRangeClosed(min, max);
 	}
 
 	/**

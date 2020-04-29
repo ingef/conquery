@@ -40,12 +40,23 @@ public class EpochDateRangeOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
-				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
+				final boolean startNull = Strings.isNullOrEmpty(row[startIndex]);
+				final boolean endNull = Strings.isNullOrEmpty(row[endIndex]);
+
+				if (startNull && endNull) {
 					return null;
 				}
 
-				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
+				if (!allowOpen && (startNull || endNull)) {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
+				}
+
+				if(startNull){
+					return CDateRange.atMost(Integer.parseInt(row[endIndex]));
+				}
+
+				if(endNull){
+					return CDateRange.atLeast(Integer.parseInt(row[startIndex]));
 				}
 
 				int start = Integer.parseInt(row[startIndex]);
