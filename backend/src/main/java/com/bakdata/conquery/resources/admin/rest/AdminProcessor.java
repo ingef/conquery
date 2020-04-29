@@ -130,6 +130,7 @@ public class AdminProcessor {
 	}
 
 	public void addConcept(Dataset dataset, Concept<?> c) {
+		// Add the standard EventDateUnionSelect to every added Concept
 		c.setDataset(dataset.getId());
 		EventDateUnionSelect select = new EventDateUnionSelect();
 		select.setHolder((SelectHolder<?>) c);
@@ -139,6 +140,8 @@ public class AdminProcessor {
 			select.setHolder(connector);
 			connector.getSelects().add(select);
 		}
+		
+		// Register the Concept in the Master and Workers
 		if (namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + c.getId(), Status.CONFLICT);
 		}

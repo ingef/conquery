@@ -13,6 +13,11 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Collects the event dates of all events that are applicable to the specific part of a query.
+ * Eventually the set of collected dates is tailored to the provided date restriction.
+ *
+ */
 @RequiredArgsConstructor
 public class EventDateUnionAggregator implements Aggregator<String>{
 
