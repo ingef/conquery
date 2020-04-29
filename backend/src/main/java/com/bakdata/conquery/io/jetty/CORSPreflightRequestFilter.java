@@ -8,14 +8,12 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.jetty.http.HttpMethod;
-
 import com.google.common.net.HttpHeaders;
+import org.eclipse.jetty.http.HttpMethod;
 
 @PreMatching
 /*
- * We need this filter to be executed after token extraction (=800) and before
- * the authentication (=1000).
+ * We need this filter to be executed before the authentication (@Priority=1000).
  */
 @Priority(900)
 public class CORSPreflightRequestFilter implements ContainerRequestFilter {
