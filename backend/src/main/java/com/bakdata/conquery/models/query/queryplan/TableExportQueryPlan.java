@@ -25,7 +25,7 @@ public class TableExportQueryPlan implements QueryPlan {
 
 	private final QueryPlan subPlan;
 	private final CDateRange dateRange;
-	private final List<TableExportConnector> tables;
+	private final List<TableExportDescription> tables;
 	private final int totalColumns;
 	
 	@Override
@@ -52,7 +52,7 @@ public class TableExportQueryPlan implements QueryPlan {
 
 		
 		List<Object[]> results = new ArrayList<>();
-		for(TableExportConnector tec : tables) {
+		for(TableExportDescription tec : tables) {
 			for(Bucket bucket : entity.getBucket(tec.getTable().getId())) {
 				int localEntity = bucket.toLocal(entity.getId());
 				if(bucket.containsLocalEntity(localEntity)) {
@@ -86,7 +86,7 @@ public class TableExportQueryPlan implements QueryPlan {
 	
 	@RequiredArgsConstructor
 	@Getter
-	public static class TableExportConnector {
+	public static class TableExportDescription {
 		private final Table table;
 		private final Column validityDateColumn;
 		private final int columnOffset;

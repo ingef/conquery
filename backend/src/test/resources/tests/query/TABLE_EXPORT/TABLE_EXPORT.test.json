@@ -9,7 +9,8 @@
 			"dateColumn": "${dataset}.number.number_connector.datum"
 		}, 
 		{
-			"id" : "${dataset}.number.number_connector2"
+			"id" : "${dataset}.number.number_connector2",
+			"dateColumn": "${dataset}.number.number_connector2.datum"
 		}],
 		"dateRange" : {
 			"min" : "2000-01-01",

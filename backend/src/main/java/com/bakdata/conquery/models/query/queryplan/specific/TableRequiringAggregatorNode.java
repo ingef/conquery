@@ -6,6 +6,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * An aggregator node that also requires a specific table from the query execution. This is necessary for 
+ * the SpecialDateUnionAggregator. 
+ */
 public class TableRequiringAggregatorNode<T> extends AggregatorNode<T> {
 
 	private TableId requiredTable;

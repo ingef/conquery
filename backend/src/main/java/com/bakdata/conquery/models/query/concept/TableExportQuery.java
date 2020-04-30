@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -21,7 +20,6 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -30,7 +28,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportConnector;
+import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportDescription;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -63,13 +61,13 @@ public class TableExportQuery extends IQuery {
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
 		int totalColumns = 0;
-		List<TableExportConnector> resolvedConnectors = new ArrayList<>();
+		List<TableExportDescription> resolvedConnectors = new ArrayList<>();
 		for(CQUnfilteredTable table : tables) {
 			try {
 				Concept<?> concept = context.getCentralRegistry().resolve(table.getId().getConcept());
 				Connector connector = concept.getConnectorByName(table.getId().getConnector());
 				resolvedConnectors.add(
-					new TableExportConnector(
+					new TableExportDescription(
 						connector.getTable(),
 						connector.getValidityDateColumn(table.selectedValidityDate()),
 						totalColumns
