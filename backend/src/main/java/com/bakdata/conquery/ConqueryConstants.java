@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+
 import lombok.experimental.UtilityClass;
 
 @UtilityClass

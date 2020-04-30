@@ -14,8 +14,9 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
-import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.specific.TableRequiringAggregatorNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +36,7 @@ public class CQExternalResolved implements CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		DatasetId dataset = context.getDataset();
 		return new ExternalNode(
-			new SpecialDateUnionAggregatorNode(
+			new TableRequiringAggregatorNode(
 				new TableId(
 					dataset,
 					ConqueryConstants.ALL_IDS_TABLE
