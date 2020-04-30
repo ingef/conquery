@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -15,6 +16,7 @@ import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -45,6 +47,8 @@ public final class AuthorizationController implements Managed{
 	@Getter
 	private final MasterMetaStorage storage;
 
+	@Accessors(fluent = true) @Getter
+	private static ConqueryTokenRealm CENTRAL_TOKEN_REALM;
 	@Getter
 	private List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
 	@Getter
@@ -53,7 +57,21 @@ public final class AuthorizationController implements Managed{
 	private List<Realm> realms = new ArrayList<>();
 	
 	public void init() {
-		initializeRealms(storage, authenticationConfigs, authenticationRealms, realms);
+		// Init authentication realms provided by with the config.
+		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
+			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
+			authenticationRealms.add(realm);
+			realms.add(realm);
+		}
+		
+		// Add the central authentication realm
+		CENTRAL_TOKEN_REALM = new ConqueryTokenRealm(storage);
+		authenticationRealms.add(CENTRAL_TOKEN_REALM);
+		realms.add(CENTRAL_TOKEN_REALM);
+		
+		// Add the central authorization realm
+		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
+		realms.add(authorizingRealm);
 		
 		registerShiro(realms);
 		
@@ -81,18 +99,6 @@ public final class AuthorizationController implements Managed{
 		SecurityManager securityManager = new DefaultSecurityManager(realms);
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
-	}
-
-	private static void initializeRealms(MasterMetaStorage storage, List<AuthenticationConfig> config, List<ConqueryAuthenticationRealm> authenticationRealms, List<Realm> realms) {
-		// Init authentication realms provided by with the config.
-		for (AuthenticationConfig authenticationConf : config) {
-			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
-			authenticationRealms.add(realm);
-			realms.add(realm);
-		}
-		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
-		realms.add(authorizingRealm);
-
 	}
 
 	/**

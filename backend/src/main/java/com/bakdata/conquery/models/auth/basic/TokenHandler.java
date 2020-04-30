@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.auth.basic;
 
+import java.security.SecureRandom;
 import java.util.Date;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -115,6 +117,16 @@ public class TokenHandler {
 			return credentials;
 		}
 		return null;
+	}
+	
+	/**
+	 * Generate a random secret.
+	 */
+	public static String generateTokenSecret() {
+		Random rand = new SecureRandom();
+		byte[] buffer = new byte[32];
+		rand.nextBytes(buffer);
+		return buffer.toString();
 	}
 
 	@SuppressWarnings("serial")
