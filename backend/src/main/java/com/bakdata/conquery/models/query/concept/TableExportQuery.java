@@ -18,7 +18,11 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -54,31 +58,29 @@ public class TableExportQuery extends IQuery {
 	private Range<LocalDate> dateRange = Range.all();
 	@NotEmpty @Valid
 	private List<CQUnfilteredTable> tables;
+	private List<ColumnId> resolvedHeader;  
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
+		int totalColumns = 0;
+		List<TableExportConnector> resolvedConnectors = new ArrayList<>();
 		for(CQUnfilteredTable table : tables) {
 			try {
-				Concept<?> concept=context.getCentralRegistry().resolve(table.getId().getConcept());
-				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
+				Concept<?> concept = context.getCentralRegistry().resolve(table.getId().getConcept());
+				Connector connector = concept.getConnectorByName(table.getId().getConnector());
+				resolvedConnectors.add(
+					new TableExportConnector(
+						connector.getTable(),
+						connector.getValidityDateColumn(table.selectedValidityDate()),
+						totalColumns
+					)
+				);
+				totalColumns+=connector.getTable().getColumns().length;
 			}
 			catch (NoSuchElementException exc){
 				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), table.getId().getDataset(), exc);
 				continue;
 			}
-		}
-		
-		int totalColumns = 0;
-		List<TableExportConnector> resolvedConnectors = new ArrayList<>();
-		for(CQUnfilteredTable ut : tables) {
-			resolvedConnectors.add(
-				new TableExportConnector(
-					ut.getResolvedConnector().getTable(),
-					ut.getResolvedConnector().getValidityDateColumn(ut.selectedValidityDate()),
-					totalColumns
-				)
-			);
-			totalColumns+=ut.getResolvedConnector().getTable().getColumns().length;
 		}
 		
 		return new TableExportQueryPlan(
@@ -97,14 +99,28 @@ public class TableExportQuery extends IQuery {
 	@Override
 	public TableExportQuery resolve(QueryResolveContext context) {
 		this.query = query.resolve(context);
+		resolvedHeader = new ArrayList<>();
+		for(CQUnfilteredTable table : tables) {
+			try {
+				Concept<?> concept = context.getNamespace().getStorage().getCentralRegistry().resolve(table.getId().getConcept());
+				Connector connector = concept.getConnectorByName(table.getId().getConnector());
+				for(Column col : connector.getTable().getColumns()) {
+					resolvedHeader.add(col.getId());
+				}
+			}
+			catch (NoSuchElementException exc){
+				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), table.getId().getDataset(), exc);
+				continue;
+			}
+		}
 		return this;
 	}
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		//collector.getSettings().
-		collector.add(new SimpleResultInfo("column", ResultType.CATEGORICAL));
-		collector.add(new SimpleResultInfo("value", ResultType.STRING));
+		for(ColumnId col : resolvedHeader) {
+			collector.add(new SimpleResultInfo(col.toStringWithoutDataset(), ResultType.STRING));
+		}
 	}
 
 	@Override

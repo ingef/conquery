@@ -62,12 +62,14 @@ public class TableExportQueryPlan implements QueryPlan {
 						if (bucket.eventIsContainedIn(event, tec.getValidityDateColumn(), dateRange)) {
 							Object[] entry = new Object[totalColumns];
 							for(int col = 0; col < tec.getTable().getColumns().length; col++) {
-								CType type = tec.getTable().getColumns()[col].getTypeFor(bucket);
-	
-								// depending on context use pretty printing or script value
-								entry[col+tec.getColumnOffset()] = ctx.isPrettyPrint()
-									? type.createPrintValue(bucket.getRaw(event, col))
-									: type.createScriptValue(bucket.getRaw(event, col));
+								if(bucket.has(event, col)) {
+									CType type = tec.getTable().getColumns()[col].getTypeFor(bucket);
+		
+									// depending on context use pretty printing or script value
+									entry[col+tec.getColumnOffset()] = ctx.isPrettyPrint()
+										? type.createPrintValue(bucket.getRaw(event, col))
+										: type.createScriptValue(bucket.getRaw(event, col));
+								}
 							}
 							results.add(entry);
 						}
