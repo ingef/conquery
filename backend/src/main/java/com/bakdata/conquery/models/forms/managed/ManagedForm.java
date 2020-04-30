@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,6 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.ResultGenerationContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -106,15 +104,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
-	}
-	
-	@Override
-	public Collection<ManagedQuery> toResultQuery() {
-		if(subQueries.size() == 1) {
-			// Get the query, only if there is only one in the whole execution
-			return subQueries.values().iterator().next();
-		}
-		throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 	}
 
 	@Override
@@ -214,7 +203,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	@Override
 	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
-		return ResultCSVResource.resultAsStreamingOutput(new ResultGenerationContext(this, mappingState, settings, charset, lineSeparator));
+		if(subQueries.size() == 1) {
+			// Get the query, only if there is only one query set in the whole execution
+			return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), mappingState, charset, lineSeparator);
+		}
+		throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 	}
 	
 	@Override

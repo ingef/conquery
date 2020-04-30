@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.FormConfigProcessor;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
@@ -27,6 +26,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;

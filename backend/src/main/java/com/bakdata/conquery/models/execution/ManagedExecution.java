@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,7 +39,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -243,8 +241,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.collect(Collectors.toList()));
 		return url != null && state != ExecutionState.NEW && isPermittedDownload;
 	}
-
-	public abstract Collection<ManagedQuery> toResultQuery();
+	
+	/**
+	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
+	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
+	 */
 	@JsonIgnore
 	public abstract StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator);
 	

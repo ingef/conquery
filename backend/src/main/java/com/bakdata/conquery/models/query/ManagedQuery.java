@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -183,11 +182,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 				.collect(Collectors.toList()));
 		return columnDescriptions;
 	}
-	
-	@Override
-	public Collection<ManagedQuery> toResultQuery() {
-		return List.of(this);
-	}
 
 	@Override
 	public Set<NamespacedId> getUsedNamespacedIds() {
@@ -224,7 +218,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
-		return ResultCSVResource.resultAsStreamingOutput(new ResultGenerationContext(this, mappingState, settings, charset, lineSeparator));
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), mappingState, charset, lineSeparator);
 	}
 	
 	@Override
