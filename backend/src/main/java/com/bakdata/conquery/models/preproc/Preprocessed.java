@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.HCFile;
@@ -65,7 +66,7 @@ public class Preprocessed {
 
 		try (Output out = new Output(outFile.writeContent())) {
 			for(int entityId = 0; entityId < entries.size(); entityId++) {
-				List<Object[]> events = entries.get(entityId);
+				List<Object[]> events = entries.getOrDefault(entityId, Collections.emptyList());
 
 				if(!events.isEmpty()) {
 					writeRowsToFile(out, imp, entityId, events);
