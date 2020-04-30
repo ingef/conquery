@@ -154,6 +154,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public Column getValidityDateColumn(String name) {
+		if(name == null ) {
+			return validityDates.get(0).getColumn();
+		}
 		for(ValidityDate vDate:validityDates) {
 			if(vDate.getName().equals(name))
 				return vDate.getColumn();
