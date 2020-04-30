@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Lists;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -95,7 +96,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 				}
 			}
 
-			QPNode aggregators = context.getResultFormat().createAggregators(context, plan, this, table);
+			QPNode aggregators = createAggregators(context, plan, this, table);
 
 			tableNodes.add(
 				new ConceptNode(
@@ -115,6 +116,25 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 		}
 
 		return OrNode.of(tableNodes);
+	}
+
+	private QPNode createAggregators(QueryPlanContext context, ConceptQueryPlan plan, CQConcept cqConcept, CQTable table) {
+		List<AggregatorNode<?>> aggregators = new ArrayList<>();
+		aggregators.addAll(Lists.transform(this.getSelects(), s->new AggregatorNode<>(s.createAggregator())));
+		aggregators.addAll(Lists.transform(table.getSelects(), s->new AggregatorNode<>(s.createAggregator())));
+		
+		for(AggregatorNode<?> aggNode : aggregators) {
+			plan.addAggregator(aggNode.getAggregator());
+		}
+
+		if(!this.isExcludeFromTimeAggregation() && context.isGenerateSpecialDateUnion()) {
+			aggregators.add(new TableRequiringAggregatorNode<>(
+				table.getResolvedConnector().getTable().getId(),
+				plan.getSpecialDateUnion()
+			));
+		}
+		
+		return AndNode.of(aggregators);
 	}
 
 	private long calculateBitMask(ConceptElement<?>[] concepts) {
