@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -38,7 +40,7 @@ import org.apache.shiro.authz.Permission;
 public class QueryCleanupTask extends Task {
 
     public static final String EXPIRATION_PARAM = "expiration";
-
+	private static final Predicate<String> UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
 
     private final MasterMetaStorage storage;
     private Duration queryExpiration;
@@ -47,6 +49,10 @@ public class QueryCleanupTask extends Task {
 		super("cleanup");
 		this.storage = storage;
 		this.queryExpiration = queryExpiration;
+	}
+
+	public static boolean isDefaultLabel(String label){
+		return UUID_PATTERN.test(label);
 	}
 
 	@Override
@@ -87,24 +93,24 @@ public class QueryCleanupTask extends Task {
 				if (execution.isShared()) {
 					continue;
 				}
-				log.debug("{} is not shared", execution.getId());
+				log.trace("{} is not shared", execution.getId());
 
 
 				if (ArrayUtils.isNotEmpty(execution.getTags())) {
 					continue;
 				}
-				log.debug("{} has no tags", execution.getId());
+				log.trace("{} has no tags", execution.getId());
 
-				if (execution.getLabel() != null) {
+				if (execution.getLabel() != null || isDefaultLabel(execution.getLabel())) {
 					continue;
 				}
-				log.debug("{} has no label", execution.getId());
+				log.trace("{} has no label", execution.getId());
 
 
 				if (LocalDateTime.now().minus(queryExpiration).isBefore(execution.getCreationTime())) {
 					continue;
 				}
-				log.debug("{} is not older than {}.", execution.getId(), queryExpiration);
+				log.trace("{} is not older than {}.", execution.getId(), queryExpiration);
 
 				toDelete.add(execution.getId());
 			}
@@ -116,11 +122,14 @@ public class QueryCleanupTask extends Task {
 								 .collect(Collectors.toList()));
 
 			if (toDelete.isEmpty()) {
+				log.info("No queries to delete");
 				break;
 			}
 
+			log.info("Deleting {} Executions", toDelete.size());
+
 			for (ManagedExecutionId managedExecutionId : toDelete) {
-				log.debug("Deleting Execution[{}]", managedExecutionId);
+				log.trace("Deleting Execution[{}]", managedExecutionId);
 				storage.removeExecution(managedExecutionId);
 			}
 			
