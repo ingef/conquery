@@ -191,14 +191,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
 		status.setResultUrl(
 			isReadyToDownload(url, user)
-				? getDownloadLink(url)
+				? getDownloadURL(url)
 				: null);
 	}
 
 	/**
 	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
 	 */
-	protected abstract URL getDownloadLink(URLBuilder url);
+	protected abstract URL getDownloadURL(URLBuilder url);
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		ExecutionStatus status = new ExecutionStatus();
