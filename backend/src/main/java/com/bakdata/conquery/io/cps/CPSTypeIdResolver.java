@@ -123,9 +123,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 		if(result == null) {
 			throw new IllegalStateException("There is no type "+id+" for "+baseType.getTypeName()+". Try: "+getDescForKnownTypeIds());
 		}
-		else {
-			return TypeFactory.defaultInstance().constructSpecializedType(baseType, result);
-		}
+		return TypeFactory.defaultInstance().constructSpecializedType(baseType, result);
 	}
 	
 	public static <T> Set<Class<? extends T>> listImplementations(Class<T> base) {
@@ -134,9 +132,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			log.warn("No implementations for {}", base);
 			return Collections.emptySet();
 		}
-		else {
-			return (Set<Class<? extends T>>)(Set)map.getClasses();
-		}
+		return (Set<Class<? extends T>>)(Set)map.getClasses();
 	}
 	
 	public static Set<Pair<Class<?>, Class<?>>> listImplementations() {
@@ -160,12 +156,9 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			CPSType anno = value.getClass().getAnnotation(CPSType.class);
 			if(anno == null)
 				throw new IllegalStateException("There is no id for the class "+suggestedType+" for "+baseType.getTypeName()+".");
-			else
-				return anno.id();
+			return anno.id();
 		}
-		else {
-			return result;
-		}
+		return result;
 	}
 	
 	@Override

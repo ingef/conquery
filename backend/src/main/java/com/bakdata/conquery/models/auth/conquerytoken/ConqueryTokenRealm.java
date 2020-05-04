@@ -39,7 +39,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	
 	
 	public ConqueryTokenRealm(MasterMetaStorage storage) {
-		
+		this.storage = storage;
 		updateJWTConfig(new JWTConfig());
 	}
 	
