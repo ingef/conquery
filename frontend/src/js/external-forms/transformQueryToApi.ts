@@ -46,9 +46,16 @@ function transformFieldsToApi(fields, form) {
   }, {});
 }
 
+function setFormSubtype(formConfig: FormType) {
+  // Sets the subType member of the form request only if it was set in the form config.
+  // It might be better to introduce a metadata field in the config-type.ts that is hidden in the representation but is send to the backend.
+  return formConfig.subType ? { subType: formConfig.subType} : {};
+}
+
 const transformQueryToApi = (formConfig: FormType) => (form: Object) => {
   return {
     type: formConfig.type,
+    ...setFormSubtype(formConfig),
     ...transformFieldsToApi(formConfig.fields, form)
   };
 };
