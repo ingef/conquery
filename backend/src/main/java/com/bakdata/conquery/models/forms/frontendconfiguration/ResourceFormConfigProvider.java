@@ -22,14 +22,14 @@ public class ResourceFormConfigProvider extends FormFrontendConfigProviderBase{
 	}
 
 	@Override
-	public void accept(Collection<FormFrontendConfigInformation> t) {
+	public void accept(Collection<FormFrontendConfigInformation> formConfigInfos) {
 		ResourceList frontendConfigs = CPSTypeIdResolver.SCAN_RESULT
 			.getResourcesMatchingPattern(Pattern.compile(".*\\.frontend_conf\\.json"));
 		
 		for (Resource config : frontendConfigs) {
 			try {
 				JsonNode configTree = reader.readTree(config.open());
-				t.add(new FormFrontendConfigInformation("Resource " + config.getPath(), configTree));
+				formConfigInfos.add(new FormFrontendConfigInformation("Resource " + config.getPath(), configTree));
 			}
 			catch (IOException e) {
 				throw new IllegalArgumentException(String.format("Could not parse the frontend config: %s", config.getPath()), e);

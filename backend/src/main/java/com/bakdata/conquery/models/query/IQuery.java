@@ -31,8 +31,8 @@ public abstract class IQuery implements QueryDescription {
 		return set;
 	}
 
-	public ResultInfoCollector collectResultInfos(PrintSettings config) {
-		ResultInfoCollector collector = new ResultInfoCollector(config);
+	public ResultInfoCollector collectResultInfos() {
+		ResultInfoCollector collector = new ResultInfoCollector();
 		collectResultInfos(collector);
 		return collector;
 	}
