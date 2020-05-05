@@ -101,7 +101,7 @@ public class QueryCleanupTask extends Task {
 				}
 				log.trace("{} has no tags", execution.getId());
 
-				if (execution.getLabel() != null || isDefaultLabel(execution.getLabel())) {
+				if (execution.getLabel() != null && isDefaultLabel(execution.getLabel())) {
 					continue;
 				}
 				log.trace("{} has no label", execution.getId());
