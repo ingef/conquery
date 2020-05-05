@@ -40,7 +40,7 @@ import org.apache.shiro.authz.Permission;
 public class QueryCleanupTask extends Task {
 
     public static final String EXPIRATION_PARAM = "expiration";
-	private static final Predicate<String> UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
+    private static final Predicate<String> UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
 
     private final MasterMetaStorage storage;
     private Duration queryExpiration;
