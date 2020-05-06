@@ -206,7 +206,7 @@ public class Preprocessor {
 
 						}
 						catch (Exception e) {
-							exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
+							exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
 
 							long errors = errorCounter.getAndIncrement();
 
