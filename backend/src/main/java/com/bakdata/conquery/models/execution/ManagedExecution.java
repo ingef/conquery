@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.execution;
 
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
@@ -28,27 +30,28 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -61,11 +64,12 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @Slf4j
 @CPSBase
+@NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
 
 	protected DatasetId dataset;
-	protected UUID queryId = UUID.randomUUID();
+	protected UUID queryId;
 	protected String label;
 
 	protected LocalDateTime creationTime = LocalDateTime.now();
@@ -77,6 +81,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private boolean shared = false;
 
 	protected boolean machineGenerated;
+	
 
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
@@ -109,6 +114,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@Override
 	public ManagedExecutionId createId() {
+		if(queryId == null) {
+			queryId = UUID.randomUUID();
+		}
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
@@ -183,10 +191,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
 		status.setResultUrl(
 			isReadyToDownload(url, user)
-				? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-					.to(ResultCSVResource.GET_CSV_PATH).get()
+				? getDownloadURL(url)
 				: null);
 	}
+
+	/**
+	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
+	 */
+	protected abstract URL getDownloadURL(URLBuilder url);
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		ExecutionStatus status = new ExecutionStatus();
@@ -197,6 +209,16 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+		ExecutionStatus.WithSingleQuery status = new ExecutionStatus.WithSingleQuery();
+		setStatusBase(storage, url, user, status);
+		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		return status;
+	}
+
+	/**
+	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
+	 */
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
@@ -204,12 +226,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
 		
 		boolean canExpand = user.isPermittedAll(permissions);
-		
-		ExecutionStatus.WithQuery status = new ExecutionStatus.WithQuery();
+
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);
-		setStatusBase(storage, url, user, status);
-		return status;
 	}
 
 	public boolean isReadyToDownload(URLBuilder url, User user) {
@@ -222,8 +241,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.collect(Collectors.toList()));
 		return url != null && state != ExecutionState.NEW && isPermittedDownload;
 	}
-
-	public abstract Collection<ManagedQuery> toResultQuery();
+	
+	/**
+	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
+	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
+	 */
+	@JsonIgnore
+	public abstract StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator);
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.

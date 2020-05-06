@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.permissions;
 
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 
 /**
@@ -19,14 +18,6 @@ public class FormPermission extends StringPermissionBuilder {
 		Ability.CREATE);
 	
 	public final static FormPermission INSTANCE = new FormPermission();
-	
-	private ConqueryPermission instancePermission(Ability ability, Class<? extends Form> instance) {
-		return instancePermission(ability, instance.getAnnotation(CPSType.class).id());
-	}
-	
-	private ConqueryPermission instancePermission(Set<Ability> abilities, Class<? extends Form> instance) {
-		return instancePermission(abilities, instance.getAnnotation(CPSType.class).id());
-	}
 
 	@Override
 	public String getDomain() {
@@ -39,11 +30,11 @@ public class FormPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
-	public static ConqueryPermission onInstance(Set<Ability> abilities, Class<? extends Form> instance) {
+	public static ConqueryPermission onInstance(Set<Ability> abilities, String instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
 
-	public static ConqueryPermission onInstance(Ability ability, Class<? extends Form> instance) {
+	public static ConqueryPermission onInstance(Ability ability, String instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}
 }

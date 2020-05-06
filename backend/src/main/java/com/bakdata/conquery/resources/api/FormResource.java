@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
