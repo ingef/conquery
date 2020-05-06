@@ -49,7 +49,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-//@NoArgsConstructor
 @Getter
 @Setter
 @ToString(callSuper = true)
