@@ -36,6 +36,10 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		validityDateColumn = Objects.requireNonNull(ctx.getValidityDateColumn());
+		if (!validityDateColumn.getType().isDateCompatible()) {
+			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
+		}
+		
 		dateRestriction = ctx.getDateRestriction();
 		Aggregator.super.nextTable(ctx, currentTable);
 	}
