@@ -131,7 +131,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
+	protected void finish(MasterMetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW)
 			log.error("Query {} was never run.", getId());
 
@@ -144,11 +144,15 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if(getState() == ExecutionState.DONE) {
+				if(storage == null) {
+					log.warn("Not saving successful execution {} because no storage was provided", getId());
+					return;
+				}
 				try {
 					storage.updateExecution(this);
 				}
 				catch (JSONException e) {
-					log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
+					log.error("Failed to store execution {} after finishing: {}", getClass().getSimpleName(), this, e);
 				}
 			}
 		}
