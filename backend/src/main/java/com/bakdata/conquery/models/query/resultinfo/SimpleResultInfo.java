@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.function.Supplier;
-
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.AllArgsConstructor;
@@ -22,14 +20,5 @@ public class SimpleResultInfo extends ResultInfo {
 	@Override
 	public String getName(PrintSettings settings) {
 		return name;
-	}
-	
-	public static Creator creator(String name, ResultType type) {
-		return () -> new SimpleResultInfo(name, type);
-	}
-	
-	@FunctionalInterface
-	public static interface Creator extends Supplier<SimpleResultInfo> {
-		
 	}
 }
