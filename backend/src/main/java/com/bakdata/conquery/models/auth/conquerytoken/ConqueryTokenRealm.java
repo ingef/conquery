@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth.conquerytoken;
 
+import javax.validation.constraints.Min;
 import javax.ws.rs.container.ContainerRequestContext;
 
 import com.auth0.jwt.JWT;
@@ -16,9 +17,12 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler;
 import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -32,6 +36,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 	private MasterMetaStorage storage;
 	
+	@Setter(value = AccessLevel.PRIVATE)
 	private JWTConfig jwtConfig;
 	
 	@JsonIgnore
@@ -40,10 +45,12 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	
 	public ConqueryTokenRealm(MasterMetaStorage storage) {
 		this.storage = storage;
+		setAuthenticationTokenClass(TOKEN_CLASS);
+		setCredentialsMatcher(new SkippingCredentialsMatcher());
 		updateJWTConfig(new JWTConfig());
 	}
 	
-	private void updateJWTConfig(JWTConfig jwtConfig){
+	public void updateJWTConfig(JWTConfig jwtConfig){
 		this.jwtConfig = jwtConfig;
 		oauthTokenVerifier = JWT.require(jwtConfig.getTokenSignAlgorithm()).withIssuer(getName()).build();
 	}
@@ -73,7 +80,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 		String username = decodedToken.getSubject();
 
-		UserId userId = new UserId(username);
+		UserId userId = UserId.Parser.INSTANCE.parse(username);
 		User user = storage.getUser(userId);
 		// try to construct a new User if none could be found in the storage
 		if (user == null) {
@@ -97,7 +104,8 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	
 	@Data
 	public static class JWTConfig{
-		private int jwtDuration; // Hours
+		@Min(1)
+		private int jwtDuration = 8; // Hours
 		
 		@JsonIgnore
 		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(TokenHandler.generateTokenSecret());
