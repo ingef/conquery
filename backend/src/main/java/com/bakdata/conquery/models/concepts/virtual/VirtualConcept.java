@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -27,10 +26,4 @@ public class VirtualConcept extends Concept<VirtualConceptConnector> implements 
 	public Concept<?> findConcept() {
 		return getConcept();
 	}
-
-	@Override
-	public void addSelect(@NonNull Select select) {
-		selects.add(select);
-	}
-
 }
