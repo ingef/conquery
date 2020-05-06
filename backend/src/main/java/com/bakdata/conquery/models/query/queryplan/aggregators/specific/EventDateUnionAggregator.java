@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -14,27 +15,27 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Collects the event dates of all events that are applicable to the specific part of a query.
- * Eventually the set of collected dates is tailored to the provided date restriction.
+ * Collects the event dates of all events that are applicable to the specific
+ * part of a query. Eventually the set of collected dates is tailored to the
+ * provided date restriction.
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<String>{
+public class EventDateUnionAggregator implements Aggregator<String> {
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
-	
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		requiredTables.addAll(this.requiredTables);
 	}
-	
+
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		validityDateColumn = ctx.getValidityDateColumn();
+		validityDateColumn = Objects.requireNonNull(ctx.getValidityDateColumn());
 		dateRestriction = ctx.getDateRestriction();
 		Aggregator.super.nextTable(ctx, currentTable);
 	}
@@ -46,7 +47,6 @@ public class EventDateUnionAggregator implements Aggregator<String>{
 
 	@Override
 	public String getAggregationResult() {
-		set.retainAll(dateRestriction);
 		return set.toString();
 	}
 
@@ -55,7 +55,9 @@ public class EventDateUnionAggregator implements Aggregator<String>{
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}
-		set.add(bucket.getAsDateRange(event, validityDateColumn));
+		CDateSet validtyDate = CDateSet.create(bucket.getAsDateRange(event, validityDateColumn));
+		validtyDate.retainAll(dateRestriction);
+		set.addAll(validtyDate);
 	}
 
 	@Override
