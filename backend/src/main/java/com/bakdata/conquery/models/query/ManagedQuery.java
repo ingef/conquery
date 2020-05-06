@@ -87,8 +87,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	public void initExecutable(@NonNull Namespaces namespaces) {
-		this.namespace = namespaces.get(getDataset());
-		this.involvedWorkers = namespace.getWorkers().size();
+		synchronized (getExecution()) {
+			this.namespace = namespaces.get(getDataset());
+			this.involvedWorkers = namespace.getWorkers().size();
+		}
 	}
 	
 	@Override
@@ -135,8 +137,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@JsonIgnore
-	public ResultInfoCollector collectResultInfos(PrintSettings config) {
-		return query.collectResultInfos(config);
+	public ResultInfoCollector collectResultInfos() {
+		return query.collectResultInfos();
 	}
 	
 	@Override
@@ -172,10 +174,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 				.build());
 		}
 		// Then all columns that originate from selects
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
 		columnDescriptions.addAll(
-			collectResultInfos(new PrintSettings(true, I18n.LOCALE.get())).getInfos().stream()
+			collectResultInfos().getInfos().stream()
 				.map(i -> ColumnDescriptor.builder()
-					.label(i.getUniqueName())
+					.label(i.getUniqueName(settings))
 					.type(i.getType().toString())
 					.selectId(i instanceof SelectResultInfo ? ((SelectResultInfo)i).getSelect().getId() : null)
 					.build())

@@ -40,13 +40,13 @@ public class QueryToCSVRenderer {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
 		}
 
-		ResultInfoCollector infos = queries.iterator().next().collectResultInfos(cfg);
+		ResultInfoCollector infos = queries.iterator().next().collectResultInfos();
 		
 		//build header
 		CsvWriter writer = CsvIo.createWriter();
 		writer.addStringValues(HEADER);
 		for(ResultInfo info : infos.getInfos()) {
-			writer.addValue(info.getUniqueName());
+			writer.addValue(info.getUniqueName(cfg));
 		}
 		
 		return Stream.concat(
@@ -57,7 +57,7 @@ public class QueryToCSVRenderer {
 					q -> createCSVBody(
 						writer,
 						cfg,
-						q.collectResultInfos(cfg),
+						q.collectResultInfos(),
 						q,
 						mappingState))
 		);

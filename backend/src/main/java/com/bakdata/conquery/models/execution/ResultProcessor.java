@@ -57,6 +57,9 @@ public class ResultProcessor {
 		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
 		}
+		finally {
+			ConqueryMDC.clearLocation();
+		}
 	}
 
 	private static Charset determineCharset(String userAgent) {

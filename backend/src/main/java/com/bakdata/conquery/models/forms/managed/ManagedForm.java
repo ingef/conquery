@@ -94,13 +94,17 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public void initExecutable(@NonNull Namespaces namespaces) {
 		// init all subqueries
-		subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
-		subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
-		flatSubQueries.values().forEach(mq -> mq.initExecutable(namespaces));
+		synchronized (getExecution()) {
+			subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
+			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(namespaces));
+		}
 	}
 	
 	@Override
 	public void start() {
+		synchronized (getExecution()) {
+			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
+		}
 		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
@@ -203,11 +207,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	@Override
 	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
-		if(subQueries.size() == 1) {
+		if(subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
-			return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), mappingState, charset, lineSeparator);
+			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 		}
-		throw new UnsupportedOperationException("Can't return the result query of a multi query form");
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), mappingState, charset, lineSeparator);
 	}
 	
 	@Override

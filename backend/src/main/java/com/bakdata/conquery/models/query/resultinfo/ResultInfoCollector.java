@@ -5,26 +5,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class ResultInfoCollector {
+	
 	@Getter
-	private final PrintSettings settings;
 	private final HashMap<String, AtomicInteger> ocurrenceCounter = new HashMap<>();
 	@Getter
 	private final List<ResultInfo> infos = new ArrayList<>();
 	
-	public void add(SimpleResultInfo info) {
+	public void add(ResultInfo info) {
 		infos.add(info);
 	}
 	
 	public void add(SelectResultInfo info) {
-		String name = info.getName();
-		AtomicInteger occurence = ocurrenceCounter.computeIfAbsent(name, str -> new AtomicInteger(0));
-		info.setPostfix(occurence.getAndIncrement());
+		info.setOcurrenceCounter(ocurrenceCounter);
 		infos.add(info);
 	}
 
