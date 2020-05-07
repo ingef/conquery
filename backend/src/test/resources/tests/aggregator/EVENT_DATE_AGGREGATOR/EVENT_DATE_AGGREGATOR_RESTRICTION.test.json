@@ -40,12 +40,14 @@
                         "column": "vers_stamm.indexdatum"
                     },
                     "selects": {
-                        "type": "EVENT_DATE_UNION"
+                        "type": "EVENT_DATE_UNION",
+                        "name": "event-date"
                     }
                 }
             ],
             "selects": {
-                "type": "EVENT_DATE_UNION"
+                "type": "EVENT_DATE_UNION",
+                "name": "event-date"
             }
         }
     ],

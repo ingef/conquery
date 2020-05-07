@@ -77,7 +77,7 @@
             ],
             "selects": [
                 {
-                    "name": "dates",
+                    "name": "event-date",
                     "type": "EVENT_DATE_UNION"
                 }
             ]
@@ -118,7 +118,7 @@
             ],
             "selects": [
                 {
-                    "name": "dates",
+                    "name": "event-date",
                     "type": "EVENT_DATE_UNION"
                 }
             ]

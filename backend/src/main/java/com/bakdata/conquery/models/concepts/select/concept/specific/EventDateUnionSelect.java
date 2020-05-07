@@ -21,6 +21,15 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDat
 @CPSType(id = "EVENT_DATE_UNION", base = Select.class)
 public class EventDateUnionSelect extends UniversalSelect {
 	
+	{
+		/*
+		 *  WORKAROUND to satisfy the validator when the concept is added and a submitted query is deserialized.
+		 *  The label is here internationalized but that doesn't have an effect on the effective label, which is used in a result header.
+		 *  For the result header, the label is generated on a per request basis with respect to the request provided locale.  
+		 */
+		this.setLabel(C10N.get(EventDateUnionSelectC10n.class).label());		
+	}
+	
 	@Override
 	public String getLabel() {
 		return C10N.get(EventDateUnionSelectC10n.class, I18n.LOCALE.get()).label();

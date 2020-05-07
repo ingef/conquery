@@ -15,7 +15,7 @@
                     "filters": []
                     ,
                     "selects": [
-                        "${dataset}.test_tree.test_column.event-date"
+                        "${dataset}.test_tree.test_column.event-dates"
                     ]
                 }
                 ,
@@ -41,8 +41,8 @@
                     },
                     "selects": [
                         {
-                            "name": "dates",
-                            "type": "EVENT_DATE_UNION"
+                            "type": "EVENT_DATE_UNION",
+                            "name": "event-dates"
                         }
                     ]
                 },
@@ -56,8 +56,8 @@
                     },
                     "selects": [
                         {
-                            "name": "dates",
-                            "type": "EVENT_DATE_UNION"
+                            "type": "EVENT_DATE_UNION",
+                            "name": "event-dates"
                         }
                     ]
                 }
