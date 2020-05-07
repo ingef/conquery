@@ -29,7 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class CPSTypeIdResolver implements TypeIdResolver {
 
 	public static final String ATTRIBUTE_SUB_TYPE = "subType";
-	public static final String SEPARATOR_SUB_TYPE = "-";
+	public static final String SEPARATOR_SUB_TYPE = "@";
 
 	private static HashMap<Class<?>, CPSMap> globalMap;
 
