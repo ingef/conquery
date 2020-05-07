@@ -94,29 +94,32 @@ public class FormScanner {
 		Map<String, JsonNode> result = new HashMap<>();
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
 			JsonNode configTree = configInfo.getConfigTree();
-			String typeIdentifier = null;
+			String fullTypeIdentifier = null;
 			JsonNode type = configTree.get("type");
-			if (validTypeId(type)) {
-				typeIdentifier = type.asText();
+			if (!validTypeId(type)) {
+				log.warn("Found invalid type id in {}. Was: {}", configInfo.getOrigin(), type);
+				continue;
 			}
+			fullTypeIdentifier = type.asText();
+			String typeIdentifier = CPSTypeIdResolver.truncateSubTypeInformation(fullTypeIdentifier);
 			if (!forms.containsKey(typeIdentifier)) {
 				log.warn("Frontend form config {} (type = {}) does not map to a backend class.", configInfo, type);
 				continue;
 			}
-			JsonNode subtype = configTree.get("subType");
-			if (validTypeId(subtype)) {
-				typeIdentifier = subtype.asText();
-			}
-			JsonNode prev = result.put(typeIdentifier, configTree);
+//			JsonNode subtype = configTree.get("subType");
+//			if (validTypeId(subtype)) {
+//				typeIdentifier = subtype.asText();
+//			}
+			JsonNode prev = result.put(fullTypeIdentifier, configTree);
 			if (prev != null) {
 				throw new IllegalStateException(String.format(
 					"Could not map %s to form %s because there was already a mapping:\n%s",
 					configInfo.getOrigin(),
-					typeIdentifier,
+					fullTypeIdentifier,
 					prev));
 			}
-			Class<? extends Form> formClass = forms.get(type.asText());
-			info.add(String.format(INFO_FORMAT, typeIdentifier, configInfo.getOrigin(), formClass.getName()));
+			Class<? extends Form> formClass = forms.get(typeIdentifier);
+			info.add(String.format(INFO_FORMAT, fullTypeIdentifier, configInfo.getOrigin(), formClass.getName()));
 		}
 		log.info(info.toString());
 		return result;

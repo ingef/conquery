@@ -12,4 +12,9 @@ import java.lang.annotation.Target;
 public @interface CPSType {
 	String id();
 	Class<?> base();
+	/**
+	 * When true, it indicates that the class uses sub-typing information in its id, which is saved in objects. if so, the class must implement 
+	 * {@link SubTyped}. The consumed and produced type ids used by serdes (Jackson) are of the form <TYPE-ID>-<SUBTYPE-ID>.
+	 */
+	boolean subTyped() default false;
 }
