@@ -1,0 +1,76 @@
+{
+    "type": "QUERY_TEST",
+    "label": "EVENT_DATE_AGGREGATOR_RESTRICTION Test",
+    "expectedCsv": "tests/aggregator/EVENT_DATE_AGGREGATOR/expected_restriction.csv",
+    "query": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+            "type": "DATE_RESTRICTION",
+            "dateRange": {
+                "min": "2010-02-01",
+                "max": "2010-02-28"
+            },
+            "child": {
+                "ids": [
+                    "${dataset}.con"
+                ],
+                "type": "CONCEPT",
+                "label": "Geschlecht SELECT",
+                "tables": [
+                    {
+                        "id": "${dataset}.con.geschlecht_connector",
+                        "selects": "${dataset}.con.geschlecht_connector.event-date"
+                    }
+                ],
+				"selects": "${dataset}.con.geschlecht_connector.event-date"
+            }
+        }
+    },
+    "concepts": [
+        {
+            "label": "Geschlecht SELECT",
+            "name": "con",
+            "type": "VIRTUAL",
+            "connectors": [
+                {
+                    "label": "geschlecht_connector",
+                    "table": "vers_stamm",
+                    "validityDates": {
+                        "label": "indexdatum",
+                        "column": "vers_stamm.indexdatum"
+                    },
+                    "selects": {
+                        "type": "EVENT_DATE_UNION",
+                        "name": "event-date"
+                    }
+                }
+            ],
+            "selects": {
+                "type": "EVENT_DATE_UNION",
+                "name": "event-date"
+            }
+        }
+    ],
+    "content": {
+        "tables": [
+            {
+                "csv": "tests/aggregator/EVENT_DATE_AGGREGATOR/content.csv",
+                "name": "vers_stamm",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name": "indexdatum",
+                        "type": "DATE_RANGE"
+                    },
+                    {
+                        "name": "geburtsdatum",
+                        "type": "DATE"
+                    }
+                ]
+            }
+        ]
+    }
+}
