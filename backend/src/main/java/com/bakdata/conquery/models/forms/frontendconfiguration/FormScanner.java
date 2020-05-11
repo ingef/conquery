@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FormScanner {
 
-	private final static String INFO_FORMAT = "\t%-20s %-60s %-20s\n";
+	private final static String INFO_FORMAT = "\t%-30s %-60s %-20s";
 	private final static ObjectReader READER = Jackson.MAPPER.copy().reader();
 	
 	public static final Map<String, JsonNode> FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
@@ -81,7 +81,7 @@ public class FormScanner {
 
 	private static Map<String, JsonNode> generateFEFormConfigMap() {
 		StringJoiner info = new StringJoiner("\n", "\n", "\n");
-		info.add(String.format("\n" + INFO_FORMAT, "Form Type", "Frontend Config", "Backend Class"));
+		info.add(String.format(INFO_FORMAT, "Form Type", "Frontend Config", "Backend Class"));
 		
 
 		// Collect backend implementations for specific forms
