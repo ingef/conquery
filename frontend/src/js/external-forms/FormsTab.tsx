@@ -11,7 +11,6 @@ import buildExternalFormsReducer from "./reducer";
 import FormsNavigation from "./FormsNavigation";
 import FormsContainer from "./FormsContainer";
 import FormsQueryRunner from "./FormsQueryRunner";
-import FormConfigSaver from "./FormConfigSaver";
 import { tabDescription } from ".";
 
 const FormsTab = (props: TabPropsType) => {
@@ -34,8 +33,8 @@ const FormsTab = (props: TabPropsType) => {
         TimebasedQueryEditorTab,
         {
           ...tabDescription,
-          reducer: externalFormsReducer
-        }
+          reducer: externalFormsReducer,
+        },
       ];
 
       updateReducers(store, tabs);
@@ -47,7 +46,6 @@ const FormsTab = (props: TabPropsType) => {
   return (
     <>
       <FormsNavigation />
-      <FormConfigSaver datasetId={props.selectedDatasetId} />
       <FormsContainer datasetId={props.selectedDatasetId} />
       <FormsQueryRunner datasetId={props.selectedDatasetId} />
     </>

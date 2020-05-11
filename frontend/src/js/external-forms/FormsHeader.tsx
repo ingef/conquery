@@ -5,7 +5,7 @@ import { reset } from "redux-form";
 import { T } from "../localization";
 import IconButton from "../button/IconButton";
 import { useDispatch, useSelector } from "react-redux";
-import { selectActiveForm } from "./stateSelectors";
+import { selectActiveFormType } from "./stateSelectors";
 import { StateT } from "app-types";
 
 const Root = styled("div")`
@@ -17,8 +17,8 @@ const Root = styled("div")`
 `;
 
 const FormsHeader: React.FC = () => {
-  const activeForm = useSelector<StateT, string | null>(state =>
-    selectActiveForm(state)
+  const activeFormType = useSelector<StateT, string | null>((state) =>
+    selectActiveFormType(state)
   );
 
   const dispatch = useDispatch();
@@ -34,7 +34,7 @@ const FormsHeader: React.FC = () => {
         frame
         regular
         icon="trash-alt"
-        onClick={() => onClear(activeForm)}
+        onClick={() => onClear(activeFormType)}
         title={T.translate("externalForms.common.clear")}
       >
         {T.translate("externalForms.common.clear")}

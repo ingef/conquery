@@ -1,7 +1,8 @@
 import { apiUrl } from "../environment";
 
-import type { DatasetIdT, QueryIdT, PostFormConfigsResponseT } from "./types";
 import type {
+  DatasetIdT,
+  QueryIdT,
   ConceptIdT,
   GetFrontendConfigResponseT,
   GetConceptsResponseT,
@@ -16,12 +17,18 @@ import type {
   GetFormQueriesResponseT,
   GetMeResponseT,
   PostLoginResponseT,
-  GetFormConfigsResponseT
+  PostFormConfigsResponseT,
+  GetFormConfigsResponseT,
+  GetFormConfigResponseT,
 } from "./types";
 
 import fetchJson, { fetchJsonUnauthorized } from "./fetchJson";
 import { transformQueryToApi } from "./apiHelper";
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
+import {
+  FormConfigT,
+  BaseFormConfigT,
+} from "js/external-forms/form-configs/reducer";
 
 const PROTECTED_PREFIX = "/api";
 
@@ -63,7 +70,7 @@ export function postQueries(
 
   return fetchJson(getProtectedUrl(`/datasets/${datasetId}/queries`), {
     method: "POST",
-    data
+    data,
   });
 }
 
@@ -80,7 +87,7 @@ export function postFormQueries(
 
   return fetchJson(getProtectedUrl(`/datasets/${datasetId}/queries`), {
     method: "POST",
-    data
+    data,
   });
 }
 
@@ -91,7 +98,7 @@ export function deleteQuery(
   return fetchJson(
     getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
     {
-      method: "DELETE"
+      method: "DELETE",
     }
   );
 }
@@ -133,7 +140,7 @@ export function deleteStoredQuery(
   return fetchJson(
     getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
     {
-      method: "DELETE"
+      method: "DELETE",
     }
   );
 }
@@ -147,7 +154,7 @@ export function patchStoredQuery(
     getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
     {
       method: "PATCH",
-      data: attributes
+      data: attributes,
     }
   );
 }
@@ -165,7 +172,7 @@ export function postPrefixForSuggestions(
     ),
     {
       method: "POST",
-      data: { text }
+      data: { text },
     }
   );
 }
@@ -179,7 +186,7 @@ export function postConceptsListToResolve(
     getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}/resolve`),
     {
       method: "POST",
-      data: { concepts }
+      data: { concepts },
     }
   );
 }
@@ -197,7 +204,7 @@ export function postFilterValuesResolve(
     ),
     {
       method: "POST",
-      data: { values }
+      data: { values },
     }
   );
 }
@@ -214,35 +221,40 @@ export function postLogin(
     method: "POST",
     data: {
       user,
-      password
-    }
+      password,
+    },
   });
 }
 
 export function postFormConfig(
   datasetId: DatasetIdT,
-  values: {
-    [fieldName: string]: any;
-  }
+  data: BaseFormConfigT
 ): Promise<PostFormConfigsResponseT> {
   return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-configs`), {
     method: "POST",
-    data: values
+    data,
   });
+}
+
+export function getFormConfig(
+  datasetId: DatasetIdT,
+  formConfigId: string
+): Promise<GetFormConfigResponseT> {
+  return fetchJson(
+    getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`)
+  );
 }
 
 export function patchFormConfig(
   datasetId: DatasetIdT,
   formConfigId: string,
-  values: {
-    [fieldName: string]: any;
-  }
+  data: Partial<FormConfigT>
 ): Promise<PostFormConfigsResponseT> {
   return fetchJson(
     getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
     {
       method: "PATCH",
-      data: values
+      data,
     }
   );
 }
@@ -260,7 +272,7 @@ export function deleteFormConfig(
   return fetchJson(
     getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
     {
-      method: "DELETE"
+      method: "DELETE",
     }
   );
 }

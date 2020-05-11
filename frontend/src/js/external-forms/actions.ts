@@ -1,9 +1,14 @@
-import { SET_EXTERNAL_FORM } from "./actionTypes";
+import { SET_EXTERNAL_FORM, LOAD_EXTERNAL_FORM_VALUES } from "./actionTypes";
 import createQueryRunnerActions from "../query-runner/actions";
 
 export const setExternalForm = (form: string) => ({
   type: SET_EXTERNAL_FORM,
-  payload: { form }
+  payload: { form },
+});
+
+export const loadExternalFormValues = (formType: string, values: any) => ({
+  type: LOAD_EXTERNAL_FORM_VALUES,
+  payload: { formType, values },
 });
 
 const {
@@ -19,7 +24,7 @@ const {
   queryExternalFormsResultStop,
   queryExternalFormsResultError,
   queryExternalFormsResultSuccess,
-  queryExternalFormsResult
+  queryExternalFormsResult,
 } = createQueryRunnerActions("externalForms", true);
 
 export {
@@ -35,5 +40,5 @@ export {
   queryExternalFormsResultStop,
   queryExternalFormsResultError,
   queryExternalFormsResultSuccess,
-  queryExternalFormsResult
+  queryExternalFormsResult,
 };

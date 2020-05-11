@@ -7,13 +7,19 @@ import { StateT } from "app-types";
 import {
   selectActiveFormValues,
   selectActiveFormName,
-  selectActiveForm,
+  selectActiveFormType,
 } from "./stateSelectors";
-import { postFormConfig, patchFormConfig } from "js/api/api";
+import { postFormConfig, patchFormConfig, getFormConfig } from "js/api/api";
 import Label from "js/form-components/Label";
 import { setMessage } from "js/snack-message/actions";
 import IconButton from "js/button/IconButton";
 import { usePrevious } from "js/common/helpers/usePrevious";
+import Dropzone from "js/form-components/Dropzone";
+
+import { FORM_CONFIG } from "js/common/constants/dndTypes";
+import { FormConfigDragItem } from "./form-configs/FormConfig";
+import { loadExternalFormValues, setExternalForm } from "./actions";
+import FaIcon from "js/icon/FaIcon";
 
 interface PropsT {
   datasetId: string;
@@ -21,11 +27,9 @@ interface PropsT {
 
 const Root = styled("div")`
   display: flex;
-  padding: 5px 20px 15px 10px;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #ccc;
-  margin: 0 0 20px;
+  margin: 5px 0 20px;
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
 const SxEditableText = styled(EditableText)<{ editing: boolean }>`
@@ -38,12 +42,31 @@ const Row = styled("div")`
   align-items: center;
 `;
 
+const SpacedRow = styled(Row)`
+  justify-content: space-between;
+  width: 100%;
+`;
+
 const DirtyFlag = styled("div")`
   width: 7px;
   height: 7px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   border-radius: 50%;
   margin: 4px 4px 0;
+  flex-shrink: 0;
+`;
+
+const SxDropzone = styled(Dropzone)`
+  color: #333;
+`;
+
+const LoadingText = styled("p")`
+  font-weight: 700;
+  margin: 5px 0 0px 8px;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  margin-right: 8px;
 `;
 
 const hasChanged = (a: any, b: any) => {
@@ -55,17 +78,18 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   const [editing, setEditing] = useState<boolean>(false);
   const [formConfigId, setFormConfigId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState<boolean>(true);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const activeFormType = useSelector<StateT, string | null>((state) =>
-    selectActiveForm(state)
-  );
-  const hasActiveForm = !!activeFormType;
-  const formValues = useSelector<StateT>((state) =>
+
+  const formValues = useSelector<StateT, Record<string, any>>((state) =>
     selectActiveFormValues(state)
   );
   const previousFormValues = usePrevious(formValues);
   const activeFormName = useSelector<StateT, string>((state) =>
     selectActiveFormName(state)
+  );
+  const activeFormType = useSelector<StateT, string | null>((state) =>
+    selectActiveFormType(state)
   );
 
   function getUntitledName(name: string) {
@@ -92,18 +116,18 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   }, [formValues, previousFormValues]);
 
   async function onSubmit() {
-    setIsLoading(true);
+    setIsSaving(true);
     try {
       if (formConfigId) {
         await patchFormConfig(datasetId, formConfigId, {
-          name: configName,
+          label: configName,
           values: formValues,
         });
 
         setIsDirty(false);
-      } else {
+      } else if (activeFormType) {
         const result = await postFormConfig(datasetId, {
-          name: configName,
+          label: configName,
           formType: activeFormType,
           values: formValues,
         });
@@ -114,38 +138,76 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
     } catch (e) {
       dispatch(setMessage("externalForms.config.saveError"));
     }
+    setIsSaving(false);
+  }
+
+  async function onLoad(dragItem: FormConfigDragItem) {
+    setIsLoading(true);
+    setIsDirty(false);
+    try {
+      const config = await getFormConfig(datasetId, dragItem.id);
+
+      if (config.formType !== activeFormType) {
+        dispatch(setExternalForm(config.formType));
+      }
+
+      dispatch(loadExternalFormValues(config.formType, config.values));
+      setConfigName(config.label);
+      setIsDirty(false);
+    } catch (e) {
+      dispatch(setMessage("formConfig.loadError"));
+    }
     setIsLoading(false);
   }
 
-  if (!hasActiveForm) return null;
+  function onDropConfig(props: any, monitor: any) {
+    const dragItem = monitor.getItem();
+
+    onLoad(dragItem);
+  }
 
   return (
     <Root>
-      <div>
-        <Label>{T.translate("externalForms.config.headline")}</Label>
-        <Row>
-          <SxEditableText
-            loading={false}
-            editing={editing}
-            onToggleEdit={() => setEditing(!editing)}
-            text={configName || ""}
-            onSubmit={(txt: string) => {
-              if (txt) {
-                setConfigName(txt);
-              }
-              setEditing(false);
-            }}
-          />
-          {isDirty && <DirtyFlag />}
-        </Row>
-      </div>
-      <IconButton
-        frame
-        icon={isLoading ? "spinner" : "save"}
-        onClick={onSubmit}
-      >
-        {T.translate("externalForms.config.save")}
-      </IconButton>
+      <SxDropzone onDrop={onDropConfig} acceptedDropTypes={[FORM_CONFIG]}>
+        {() => (
+          <SpacedRow>
+            <div>
+              <Label>{T.translate("externalForms.config.headline")}</Label>
+              <Row>
+                {!isLoading ? (
+                  <LoadingText>
+                    <SxFaIcon icon="spinner" />
+                    {T.translate("common.loading")}
+                  </LoadingText>
+                ) : (
+                  <>
+                    <SxEditableText
+                      loading={false}
+                      editing={editing}
+                      onToggleEdit={() => setEditing(!editing)}
+                      text={configName || ""}
+                      onSubmit={(txt: string) => {
+                        if (txt) {
+                          setConfigName(txt);
+                        }
+                        setEditing(false);
+                      }}
+                    />
+                    {isDirty && <DirtyFlag />}
+                  </>
+                )}
+              </Row>
+            </div>
+            <IconButton
+              frame
+              icon={isSaving ? "spinner" : "save"}
+              onClick={onSubmit}
+            >
+              {T.translate("externalForms.config.save")}
+            </IconButton>
+          </SpacedRow>
+        )}
+      </SxDropzone>
     </Root>
   );
 };

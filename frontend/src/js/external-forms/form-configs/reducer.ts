@@ -4,12 +4,16 @@ import {
   PATCH_CONFIG_SUCCESS,
   DELETE_CONFIG_SUCCESS,
 } from "./actionTypes";
-
-export interface FormConfigT {
-  id: string;
+export interface BaseFormConfigT {
+  formType: string;
+  values: Record<string, any>;
   label: string;
-  createdAt: string; // Datetime
+}
+
+export interface FormConfigT extends BaseFormConfigT {
+  id: string;
   tags: string[];
+  createdAt: string; // Datetime
   own: boolean;
   shared: boolean;
   system: boolean;
@@ -36,7 +40,14 @@ const sortConfigs = (configs: FormConfigT[]) => {
   });
 };
 
-const deleteFormConfig = (state: FormConfigsStateT, action: Object) => {};
+const findConfig = (configs: FormConfigT[], configId: string | number) => {
+  const config = configs.find((c) => c.id === configId);
+
+  return {
+    config,
+    idx: config ? configs.indexOf(config) : -1,
+  };
+};
 
 const findUniqueTags = (configs: FormConfigT[]) => {
   const uniqueTags = new Set<string>();
@@ -48,7 +59,7 @@ const findUniqueTags = (configs: FormConfigT[]) => {
   return Array.from(uniqueTags);
 };
 
-const findUniqueNames = (queries: FormQueryT[]) => {
+const findUniqueNames = (queries: FormConfigT[]) => {
   const uniqueNames = new Set<string>();
 
   queries.filter((q) => !!q.label).forEach((q) => uniqueNames.add(q.label));
@@ -77,7 +88,7 @@ const updateFormConfig = (configs: FormConfigT[], { id, values }) => {
 
 const formConfigs = (
   state: FormConfigsStateT = initialState,
-  action: Object
+  action: any
 ): FormConfigsStateT => {
   switch (action.type) {
     case LOAD_CONFIGS_SUCCESS:
@@ -99,14 +110,11 @@ const formConfigs = (
         names: findUniqueNames(data),
       };
     case DELETE_CONFIG_SUCCESS:
-      const idx = findQuery(state.queries, action.payload.queryId);
+      const { idx } = findConfig(state.data, action.payload.configId);
 
       return {
         ...state,
-        data: [
-          ...state.data.slice(0, queryIdx),
-          ...state.data.slice(queryIdx + 1),
-        ],
+        data: [...state.data.slice(0, idx), ...state.data.slice(idx + 1)],
       };
     case LOAD_CONFIGS_ERROR:
       return {

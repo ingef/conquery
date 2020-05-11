@@ -1,15 +1,19 @@
 import { combineReducers } from "redux";
-import { reducer as reduxFormReducer, FormReducer } from "redux-form";
+import {
+  reducer as reduxFormReducer,
+  FormReducer,
+  FormReducerMapObject,
+} from "redux-form";
 import createQueryRunnerReducer, {
-  QueryRunnerStateT
+  QueryRunnerStateT,
 } from "../query-runner/reducer";
 
-import { SET_EXTERNAL_FORM } from "./actionTypes";
+import { SET_EXTERNAL_FORM, LOAD_EXTERNAL_FORM_VALUES } from "./actionTypes";
 
 import { createFormQueryNodeEditorReducer } from "./form-query-node-editor";
 import {
   createFormSuggestionsReducer,
-  FormSuggestionsStateT
+  FormSuggestionsStateT,
 } from "./form-suggestions/reducer";
 import { collectAllFields } from "./helper";
 
@@ -17,8 +21,8 @@ import type { Forms, Form } from "./config-types";
 
 function collectConceptListFieldNames(config: Form) {
   const fieldNames = collectAllFields(config.fields)
-    .filter(field => field.type === "CONCEPT_LIST")
-    .map(field => field.name);
+    .filter((field) => field.type === "CONCEPT_LIST")
+    .map((field) => field.name);
 
   return [...new Set(fieldNames)];
 }
@@ -43,7 +47,7 @@ function buildFormReducer(form: Form) {
         suggestions: createFormSuggestionsReducer(
           form.type,
           conceptListFieldNames
-        )
+        ),
       }
     )
   );
@@ -54,14 +58,16 @@ export interface FormsStateT {
   queryRunner: QueryRunnerStateT;
   reduxForm: FormReducer;
   availableForms: {
-    [formNAme: string]: Form;
+    [formName: string]: Form;
   };
   formsContext: {
     [formName: string]: null | FormContextStateT;
   };
 }
 
-const buildExternalFormsReducer = (availableForms: Forms) => {
+const buildExternalFormsReducer = (availableForms: {
+  [formName: string]: Form;
+}) => {
   const forms = Object.values(availableForms);
 
   const formReducers = forms.reduce<{
@@ -80,7 +86,7 @@ const buildExternalFormsReducer = (availableForms: Forms) => {
 
   const activeFormReducer = (
     state: string | null = defaultFormType,
-    action: Object
+    action: any
   ): string | null => {
     switch (action.type) {
       case SET_EXTERNAL_FORM:
@@ -90,18 +96,39 @@ const buildExternalFormsReducer = (availableForms: Forms) => {
     }
   };
 
+  const reduxFormReducerPlugin: FormReducerMapObject = forms.reduce(
+    (all, form) => ({
+      ...all,
+      [form.type]: (state: any, action: any) => {
+        switch (action.type) {
+          case LOAD_EXTERNAL_FORM_VALUES: {
+            if (action.payload.formType !== form.type) return state;
+
+            return {
+              ...state,
+              values: action.payload.values,
+            };
+          }
+          default:
+            return state;
+        }
+      },
+    }),
+    {}
+  );
+
   return combineReducers({
     activeForm: activeFormReducer,
 
     // Redux-Form reducer to keep the state of all forms:
-    reduxForm: reduxFormReducer,
+    reduxForm: reduxFormReducer.plugin(reduxFormReducerPlugin),
 
     // Query Runner reducer that works with external forms
     queryRunner: createQueryRunnerReducer("externalForms"),
 
     availableForms: (state = availableForms) => state,
 
-    formsContext: combineReducers(formReducers)
+    formsContext: combineReducers(formReducers),
   });
 };
 

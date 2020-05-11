@@ -29,7 +29,7 @@ type PropsType = {
   dropzoneChildren: (args: ChildArgs) => React.ReactNode;
   items: any;
   acceptedDropTypes: string[];
-  onDrop: () => void;
+  onDrop: (props: any, monitor: any) => void;
   onDropFile?: (file: File) => void;
   onDelete: Function;
   allowFile?: boolean;

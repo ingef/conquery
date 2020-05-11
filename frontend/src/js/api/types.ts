@@ -323,3 +323,5 @@ export interface PostFormConfigsResponseT {
 }
 
 export type GetFormConfigsResponseT = FormConfigT[];
+
+export type GetFormConfigResponseT = FormConfigT;

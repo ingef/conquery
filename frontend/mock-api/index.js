@@ -17,7 +17,7 @@ function shuffleArray(array) {
 }
 
 const ERROR = JSON.stringify({
-  message: "Could not process the request"
+  message: "Could not process the request",
 });
 
 const LONG_DELAY = 500;
@@ -79,7 +79,7 @@ module.exports = function (app, port) {
               id: 1,
               status: "DONE",
               numberOfResults: 5,
-              resultUrl: `/api/results/results.csv`
+              resultUrl: `/api/results/results.csv`,
             })
           );
       }, LONG_DELAY);
@@ -98,8 +98,8 @@ module.exports = function (app, port) {
         { id: "empty-set", label: "Empty Dataset" },
         {
           id: "another-empty-set",
-          label: "Another empty dataset with a long name"
-        }
+          label: "Another empty dataset with a long name",
+        },
       ])
     );
   });
@@ -150,7 +150,7 @@ module.exports = function (app, port) {
           "group 1",
           "important",
           "jk",
-          "interesting"
+          "interesting",
         ];
 
         for (var i = 25600; i < 35600; i++) {
@@ -169,7 +169,7 @@ module.exports = function (app, port) {
             own: Math.random() < 0.1,
             shared: Math.random() < 0.8,
             resultUrl: notExecuted ? null : `/api/results/results.csv`,
-            ownerName: "System"
+            ownerName: "System",
           });
         }
 
@@ -230,7 +230,7 @@ module.exports = function (app, port) {
         res.send(
           JSON.stringify({
             successful: 1 + Math.floor(Math.random() * 200),
-            unsuccessful: 586
+            unsuccessful: 586,
           })
         );
       }, LONG_DELAY);
@@ -259,16 +259,16 @@ module.exports = function (app, port) {
               "1000326535",
               "1014150881",
               "1017126347",
-              "1008445564"
+              "1008445564",
             ];
 
         const suggestions = storedValues
           .map((v, id) => ({
             label: v,
             value: id,
-            templateValues: { company: "Columbia Pictures Corporation" }
+            templateValues: { company: "Columbia Pictures Corporation" },
           }))
-          .filter(v => v.label.toLowerCase().startsWith(text));
+          .filter((v) => v.label.toLowerCase().startsWith(text));
 
         res.send(JSON.stringify(suggestions));
       }, LONG_DELAY);
@@ -286,7 +286,7 @@ module.exports = function (app, port) {
 
         res.send({
           unknownCodes: concepts.slice(5),
-          resolvedConcepts: concepts.slice(1)
+          resolvedConcepts: concepts.slice(1),
         });
       }, LONG_DELAY);
     }
@@ -300,7 +300,7 @@ module.exports = function (app, port) {
 
     res.send({
       version: version,
-      isDevelopment: process.env.NODE_ENV !== "production"
+      isDevelopment: process.env.NODE_ENV !== "production",
     });
   });
 
@@ -319,16 +319,16 @@ module.exports = function (app, port) {
         if (req.params.filterId !== "production_country") return null;
 
         const countries = require("./autocomplete/countries");
-        const unknownCodes = values.filter(val => !countries.includes(val));
-        const resolvedValues = values.filter(val => countries.includes(val));
+        const unknownCodes = values.filter((val) => !countries.includes(val));
+        const resolvedValues = values.filter((val) => countries.includes(val));
 
         res.send({
           unknownCodes: unknownCodes,
           resolvedFilter: {
             tableId: req.params.tableId,
             filterId: req.params.filterId,
-            value: resolvedValues.map(val => ({ label: val, value: val }))
-          }
+            value: resolvedValues.map((val) => ({ label: val, value: val })),
+          },
         });
       }, LONG_DELAY);
     }
@@ -352,13 +352,13 @@ module.exports = function (app, port) {
 
       if (user === "test" && password === "test") {
         res.send({
-          access_token: "VALID"
+          access_token: "VALID",
         });
       } else {
         res.status(422);
         res.send(
           JSON.stringify({
-            message: "Login failed"
+            message: "Login failed",
           })
         );
       }
@@ -375,10 +375,10 @@ module.exports = function (app, port) {
           domains: ["datasets"],
           abilities: ["read", "download", "preserve_id"],
           targets: ["imdb"],
-          creationTime: "2020-01-23T09:52:31.3318485"
-        }
+          creationTime: "2020-01-23T09:52:31.3318485",
+        },
       ],
-      groups: []
+      groups: [],
     });
   });
 
@@ -391,46 +391,59 @@ module.exports = function (app, port) {
         res.status(201);
         res.send(
           JSON.stringify({
-            id: 56000 + Math.floor(Math.random() * 200)
+            id: 56000 + Math.floor(Math.random() * 200),
           })
         );
       }, LONG_DELAY);
     }
   );
+
   app.get(
     "/api/datasets/:datasetId/form-configs",
     mockAuthMiddleware,
     function response(req, res) {
       res.setHeader("Content-Type", "application/json");
 
+      function getFormConfigAttributes() {
+        const dice = Math.random();
+
+        if (dice < 0.5) {
+          return {
+            formType: "Export form",
+            values: {},
+          };
+        } else {
+          return {
+            formType: "Other form",
+            values: {},
+          };
+        }
+      }
+
       setTimeout(() => {
         const configs = [];
         const possibleTags = [
           "research",
           "fun",
-          "test",
+          "export",
           "group 1",
           "important",
           "jk",
-          "interesting"
+          "interesting",
         ];
 
         for (var i = 55600; i < 85600; i++) {
-          const notExecuted = Math.random() < 0.1;
-
           configs.push({
             id: i,
-            label: Math.random() > 0.7 ? "Saved Config" : null,
-            numberOfResults: notExecuted
-              ? null
-              : Math.floor(Math.random() * 500000),
+            label: "Saved Config",
             tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
             createdAt: new Date(
               Date.now() - Math.floor(Math.random() * 10000000)
             ).toISOString(),
             own: Math.random() < 0.1,
             shared: Math.random() < 0.8,
-            ownerName: "System"
+            ownerName: "System",
+            ...getFormConfigAttributes(),
           });
         }
 
@@ -444,7 +457,7 @@ module.exports = function (app, port) {
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
-        res.sendFile(path.join(__dirname, "./form-configs/25341.json"));
+        res.sendFile(path.join(__dirname, "./form-configs/testconf.json"));
       }, LONG_DELAY);
     }
   );

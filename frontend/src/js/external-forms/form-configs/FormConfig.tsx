@@ -101,6 +101,14 @@ const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
 `;
 
+export interface FormConfigDragItem {
+  width: number;
+  height: number;
+  type: string;
+  id: string;
+  label: string;
+}
+
 interface PropsT {
   datasetId: DatasetIdT;
   config: FormConfigT;
@@ -165,15 +173,17 @@ const FormConfig: React.FC<PropsT> = ({
     onPatchFormConfig({ tags }, "formConfig.retagError");
   };
 
+  const dragItem: FormConfigDragItem = {
+    // TODO: Try to actually measure this using ref + getBoundingClientRect
+    width: 200,
+    height: 100,
+    type: FORM_CONFIG,
+    id: config.id,
+    label: config.label,
+  };
+
   const [collectedProps, drag] = useDrag({
-    item: {
-      // TODO: Try to actually measure this using ref + getBoundingClientRect
-      width: 200,
-      height: 100,
-      type: FORM_CONFIG,
-      id: config.id,
-      label: config.label,
-    },
+    item: dragItem,
     isDragging: (monitor) => monitor.isDragging(),
   });
 
@@ -188,6 +198,7 @@ const FormConfig: React.FC<PropsT> = ({
     >
       <TopInfos>
         <div>
+          {config.formType}
           {config.own && config.shared && (
             <SharedIndicator
               onClick={() => onSetSharedFormConfig(!config.shared)}

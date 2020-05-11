@@ -113,7 +113,8 @@
     "create": "Create",
     "addTag": "Add Tag",
     "share": "Share",
-    "shared": "Shared"
+    "shared": "Shared",
+    "loading": "Loading ..."
   },
   "tooltip": {
     "headline": "Info",
