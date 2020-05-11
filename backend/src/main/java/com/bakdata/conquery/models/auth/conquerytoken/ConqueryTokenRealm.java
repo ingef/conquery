@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
+import io.dropwizard.util.Duration;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,25 +34,16 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 
-	private MasterMetaStorage storage;
+	private final MasterMetaStorage storage;
 	
-	@Setter(value = AccessLevel.PRIVATE)
-	private JWTConfig jwtConfig;
-	
-	@JsonIgnore
-	private JWTVerifier oauthTokenVerifier;
+	@Setter
+	private JWTConfig jwtConfig = new JWTConfig();
 	
 	
 	public ConqueryTokenRealm(MasterMetaStorage storage) {
 		this.storage = storage;
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		setCredentialsMatcher(new SkippingCredentialsMatcher());
-		updateJWTConfig(new JWTConfig());
-	}
-	
-	public void updateJWTConfig(JWTConfig jwtConfig){
-		this.jwtConfig = jwtConfig;
-		oauthTokenVerifier = JWT.require(jwtConfig.getTokenSignAlgorithm()).withIssuer(getName()).build();
 	}
 
 	@Override
@@ -63,7 +54,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		}
 		DecodedJWT decodedToken = null;
 		try {
-			decodedToken = oauthTokenVerifier.verify((String) token.getCredentials());
+			decodedToken = jwtConfig.getTokenVerifier().verify((String) token.getCredentials());
 		}
 		catch (TokenExpiredException e) {
 			log.trace("The provided token is expired.");
@@ -105,10 +96,21 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	@Data
 	public static class JWTConfig{
 		@Min(1)
-		private int jwtDuration = 8; // Hours
+		private Duration jwtDuration = Duration.hours(8);
 		
 		@JsonIgnore
 		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(TokenHandler.generateTokenSecret());
+		@JsonIgnore
+		private JWTVerifier tokenVerifier;
+		
+		@JsonIgnore
+		public JWTVerifier getTokenVerifier(ConqueryAuthenticationRealm realm) {
+			if(tokenVerifier == null) {
+				tokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(realm.getName()).build();
+			}
+			return tokenVerifier;
+		}
+		
 
 	}
 

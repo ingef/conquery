@@ -12,6 +12,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
+import io.dropwizard.util.Duration;
 import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +25,16 @@ public class TokenHandler {
 
 	private static final String PREFIX = "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
+	
+	private static final Random RANDOM_GEN = new SecureRandom();
 
 	/**
 	 * Creates a signed JWT token for the authentication with the
 	 * {@link LocalAuthenticationRealm}.
 	 */
-	public String createToken(String username, int duration, String issuer, Algorithm algorithm) {
+	public String createToken(String username, Duration duration, String issuer, Algorithm algorithm) {
 		Date issueDate = new Date();
-		Date expDate = DateUtils.addHours(issueDate, duration);
+		Date expDate = DateUtils.addMinutes(issueDate, Long.valueOf(duration.toMinutes()).intValue());
 		String token = JWT.create().withIssuer(issuer).withSubject(username).withIssuedAt(issueDate).withExpiresAt(expDate).sign(algorithm);
 		return token;
 	}
@@ -123,9 +126,9 @@ public class TokenHandler {
 	 * Generate a random secret.
 	 */
 	public static String generateTokenSecret() {
-		Random rand = new SecureRandom();
+		
 		byte[] buffer = new byte[32];
-		rand.nextBytes(buffer);
+		RANDOM_GEN.nextBytes(buffer);
 		return buffer.toString();
 	}
 
