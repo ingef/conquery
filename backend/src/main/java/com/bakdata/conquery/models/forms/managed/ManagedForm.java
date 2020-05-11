@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -80,9 +79,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@InternalOnly
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 	
-	@JsonIgnore
-	private transient AtomicInteger openSubQueries;
-
 
 	public ManagedForm(Form submittedForm , UserId owner, DatasetId submittedDataset) {
 		super(owner, submittedDataset);
@@ -105,7 +101,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		synchronized (getExecution()) {
 			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
 		}
-		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
 	}
@@ -126,11 +121,13 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	// Executed on Worker
 	@Override
 	public Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context) {
-		Map<ManagedExecutionId,QueryPlan> plans = new HashMap<>();
-		for( ManagedQuery subQuery : flatSubQueries.values()) {
-			plans.putAll(subQuery.createQueryPlans(context));
+		synchronized (getExecution()) {			
+			Map<ManagedExecutionId,QueryPlan> plans = new HashMap<>();
+			for( ManagedQuery subQuery : flatSubQueries.values()) {
+				plans.putAll(subQuery.createQueryPlans(context));
+			}
+			return plans;
 		}
-		return plans;
 	}
 
 	/**
@@ -154,7 +151,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		subQuery.addResult(storage, result);
 		switch(subQuery.getState()) {
 			case DONE:
-				if(openSubQueries.decrementAndGet() == 0) {
+				if(allSubQueriesDone()) {
 					finish(storage, ExecutionState.DONE);
 				}
 				break;
@@ -171,6 +168,19 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			
 		}
 		
+	}
+
+
+	private boolean allSubQueriesDone() {
+		boolean wholeDone = true;
+		synchronized (getExecution()) {			
+			for (ManagedQuery q : flatSubQueries.values()) {
+				if (!q.getState().equals(ExecutionState.DONE)) {
+					wholeDone = false;
+				}
+			}
+		}
+		return wholeDone;
 	}
 
 	@Override
