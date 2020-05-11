@@ -18,15 +18,18 @@ interface PropsT {
   onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
   onDropFile: (file: DraggedFileType) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
-};
+}
 
 const DROP_TYPES = [
   dndTypes.CONCEPT_TREE_NODE,
   dndTypes.QUERY_NODE,
-  dndTypes.PREVIOUS_QUERY
+  dndTypes.PREVIOUS_QUERY,
 ];
 
-const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{ isInitial?: boolean, isAnd?: boolean}>`
+const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
+  isInitial?: boolean;
+  isAnd?: boolean;
+}>`
   ${({ isInitial }) =>
     isInitial &&
     css`
@@ -83,7 +86,7 @@ const QueryEditorDropzone: React.FC<PropsT> = ({
   isInitial,
   onLoadPreviousQuery,
   onDropFile,
-  onDropNode
+  onDropNode,
 }) => {
   const onDrop = (props, monitor) => {
     const item = monitor.getItem();
