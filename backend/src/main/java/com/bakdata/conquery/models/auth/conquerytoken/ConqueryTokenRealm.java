@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
-import lombok.Data;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
@@ -54,7 +54,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		}
 		DecodedJWT decodedToken = null;
 		try {
-			decodedToken = jwtConfig.getTokenVerifier().verify((String) token.getCredentials());
+			decodedToken = jwtConfig.getTokenVerifier(this).verify((String) token.getCredentials());
 		}
 		catch (TokenExpiredException e) {
 			log.trace("The provided token is expired.");
@@ -93,12 +93,14 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		return TokenHandler.createToken(userId.toString(), jwtConfig.getJwtDuration(), getName(), jwtConfig.getTokenSignAlgorithm());
 	}
 	
-	@Data
 	public static class JWTConfig{
 		@Min(1)
+		@Getter
+		@Setter
 		private Duration jwtDuration = Duration.hours(8);
 		
 		@JsonIgnore
+		@Getter
 		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(TokenHandler.generateTokenSecret());
 		@JsonIgnore
 		private JWTVerifier tokenVerifier;
