@@ -13,13 +13,13 @@ import startup, { StartupStateT } from "../startup/reducer";
 import { buildPanesReducer, PanesStateT } from "../pane/reducer";
 import queryGroupModal from "../query-group-modal/reducer";
 import previousQueries, {
-  PreviousQueriesStateT
+  PreviousQueriesStateT,
 } from "../previous-queries/list/reducer";
 import previousQueriesSearch, {
-  PreviousQueriesSearchStateT
+  PreviousQueriesSearchStateT,
 } from "../previous-queries/search/reducer";
 import previousQueriesFilter, {
-  PreviousQueriesFilterStateT
+  PreviousQueriesFilterStateT,
 } from "../previous-queries/filter/reducer";
 import uploadQueryResults from "../previous-queries/upload/reducer";
 import deletePreviousQueryModal from "../previous-queries/delete-modal/reducer";
@@ -27,15 +27,21 @@ import snackMessage from "../snack-message/reducer";
 import preview from "../preview/reducer";
 import queryUploadConceptListModal from "../query-upload-concept-list-modal/reducer";
 import uploadConceptListModal, {
-  UploadConceptListModalStateT
+  UploadConceptListModalStateT,
 } from "../upload-concept-list-modal/reducer";
 
 import { createQueryNodeEditorReducer } from "../query-node-editor/reducer";
 
 import type { StandardQueryEditorStateT } from "../standard-query-editor";
 import formConfigs, {
-  FormConfigsStateT
+  FormConfigsStateT,
 } from "../external-forms/form-configs/reducer";
+import formConfigsSearch, {
+  FormConfigsSearchStateT,
+} from "../external-forms/form-configs/search/reducer";
+import formConfigsFilter, {
+  FormConfigsFilterStateT,
+} from "../external-forms/form-configs/filter/reducer";
 
 // TODO: Introduce more StateTypes gradually
 export type StateT = {
@@ -51,6 +57,8 @@ export type StateT = {
   previousQueriesSearch: PreviousQueriesSearchStateT;
   previousQueriesFilter: PreviousQueriesFilterStateT;
   formConfigs: FormConfigsStateT;
+  formConfigsSearch: FormConfigsSearchStateT;
+  formConfigsFilter: FormConfigsFilterStateT;
 };
 
 const buildAppReducer = (tabs: TabT[]) => {
@@ -73,10 +81,12 @@ const buildAppReducer = (tabs: TabT[]) => {
     queryUploadConceptListModal,
     user,
     formConfigs,
+    formConfigsSearch,
+    formConfigsFilter,
     ...tabs.reduce((all, tab) => {
       all[tab.key] = tab.reducer;
       return all;
-    }, {})
+    }, {}),
   });
 };
 

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-import SelectableLabel from "../selectable-label/SelectableLabel";
+import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import EditableTextForm from "./EditableTextForm";
 import IconButton from "../button/IconButton";
 
@@ -11,6 +11,7 @@ interface PropsT {
   editing: boolean;
   text: string;
   large?: boolean;
+  isHighlighted?: boolean;
   selectTextOnMount?: boolean;
   onSubmit: (text: string) => void;
   onToggleEdit: () => void;
@@ -47,7 +48,10 @@ const EditableText: React.FC<PropsT> = (props) => {
         icon="edit"
         onClick={props.onToggleEdit}
       />
-      <SelectableLabel label={props.text} />
+      <HighlightableLabel
+        label={props.text}
+        isHighlighted={props.isHighlighted}
+      />
     </Text>
   );
 };

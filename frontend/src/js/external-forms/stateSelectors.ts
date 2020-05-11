@@ -82,6 +82,9 @@ export const selectAvailableForms = (state: StateT) =>
 export const selectActiveFormType = (state: StateT) =>
   state.externalForms ? state.externalForms.activeForm : null;
 
+export const useActiveFormType = () =>
+  useSelector<StateT, string | null>((state) => selectActiveFormType(state));
+
 export const selectFormConfig = (state: StateT): Form | null => {
   const availableForms = selectAvailableForms(state);
   const activeFormType = selectActiveFormType(state);
@@ -153,4 +156,15 @@ export const useAllowExtendedCopying = (targetFieldname: string) => {
     );
 
   return otherConceptListFields.some(fieldHasFilledConcept);
+};
+
+export const useFormLabelByType = (formType: string) => {
+  const availableForms = useSelector<StateT, { [formName: string]: Form }>(
+    (state) => selectAvailableForms(state)
+  );
+  const locale = getLocale();
+
+  return availableForms[formType]
+    ? availableForms[formType].title[locale]
+    : formType;
 };

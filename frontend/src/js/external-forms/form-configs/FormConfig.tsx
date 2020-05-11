@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { parseISO } from "date-fns";
 
 import { FORM_CONFIG } from "../../common/constants/dndTypes";
-import SelectableLabel from "../../selectable-label/SelectableLabel";
+import SelectableLabel from "../../highlightable-label/HighlightableLabel";
 
 import IconButton from "../../button/IconButton";
 import FaIcon from "../../icon/FaIcon";
@@ -17,9 +17,6 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import EditableText from "../../form-components/EditableText";
 import EditableTags from "../../form-components/EditableTags";
 
-// import { deletePreviousQueryModalOpen } from "../delete-modal/actions";
-
-// import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
 import { FormConfigT } from "./reducer";
 import { StateT } from "app-types";
@@ -28,6 +25,8 @@ import { patchFormConfig } from "js/api/api";
 import FormConfigTags from "./FormConfigTags";
 import { patchFormConfigSuccess } from "./actions";
 import { setMessage } from "js/snack-message/actions";
+import { useIsLabelHighlighted } from "./selectors";
+import { useFormLabelByType } from "../stateSelectors";
 
 const Root = styled("div")<{ own: boolean; system: boolean; shared: boolean }>`
   margin: 0;
@@ -63,6 +62,10 @@ const Gray = styled("div")`
 `;
 const TopInfos = styled(Gray)`
   line-height: 24px;
+`;
+
+const MiddleRight = styled(Gray)`
+  text-align: right;
 `;
 
 const TopRight = styled("div")`
@@ -116,21 +119,22 @@ const FormConfig: React.FC<PropsT> = ({
   config,
   onIndicateDeletion,
 }) => {
+  const formLabel = useFormLabelByType(config.formType);
   const availableTags = useSelector<StateT, string[]>(
     (state) => state.formConfigs.tags
   );
 
-  const createdAt = formatDateDistance(
-    parseISO(config.createdAt),
-    new Date(),
-    true
-  );
+  const createdAt = config.createdAt
+    ? formatDateDistance(parseISO(config.createdAt), new Date(), true)
+    : "";
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
   const [isEditingTags, setIsEditingTags] = useState<boolean>(false);
 
   const label = config.label || config.id.toString();
+  const isLabelHighlighted = useIsLabelHighlighted(label);
+
   const mayEdit = config.own || config.shared;
   const isNotEditing = !(isEditingLabel || isEditingTags);
 
@@ -196,7 +200,7 @@ const FormConfig: React.FC<PropsT> = ({
     >
       <TopInfos>
         <div>
-          {config.formType}
+          {formLabel}
           {config.own && config.shared && (
             <SharedIndicator
               onClick={() => onSetSharedFormConfig(!config.shared)}
@@ -241,6 +245,7 @@ const FormConfig: React.FC<PropsT> = ({
       <MiddleRow>
         {mayEdit ? (
           <StyledEditableText
+            isHighlighted={isLabelHighlighted}
             loading={isLoading}
             text={label}
             selectTextOnMount={true}
@@ -251,7 +256,7 @@ const FormConfig: React.FC<PropsT> = ({
         ) : (
           <StyledSelectableLabel label={label} />
         )}
-        <Gray>{config.ownerName}</Gray>
+        <MiddleRight>{config.ownerName}</MiddleRight>
       </MiddleRow>
       {mayEdit ? (
         <EditableTags

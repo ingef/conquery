@@ -3,9 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
-import ReactSelect from "../../form-components/ReactSelect";
+import ReactSelect from "../../../form-components/ReactSelect";
 
-import { updatePreviousQueriesSearch } from "./actions";
+import { setFormConfigsSearch } from "./actions";
 import { StateT } from "app-types";
 
 const Root = styled("div")`
@@ -13,18 +13,17 @@ const Root = styled("div")`
   position: relative;
 `;
 
-const PreviousQueriesSearchBox: React.FC = () => {
+const FormConfigsSearchBox: React.FC = () => {
   const search = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch
+    (state) => state.formConfigsSearch
   );
   const options = useSelector<StateT, string[]>(
-    (state) => state.previousQueries.names
+    (state) => state.formConfigs.names
   );
 
   const dispatch = useDispatch();
 
-  const onSearch = (values: string[]) =>
-    dispatch(updatePreviousQueriesSearch(values));
+  const onSearch = (values: string[]) => dispatch(setFormConfigsSearch(values));
 
   return (
     <Root>
@@ -47,4 +46,4 @@ const PreviousQueriesSearchBox: React.FC = () => {
   );
 };
 
-export default PreviousQueriesSearchBox;
+export default FormConfigsSearchBox;

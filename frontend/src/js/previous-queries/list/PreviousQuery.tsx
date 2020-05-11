@@ -10,7 +10,6 @@ import { parseISO } from "date-fns";
 
 import ErrorMessage from "../../error-message/ErrorMessage";
 import * as dndTypes from "../../common/constants/dndTypes";
-import SelectableLabel from "../../selectable-label/SelectableLabel";
 import { isEmpty } from "../../common/helpers/commonHelper";
 
 import DownloadButton from "../../button/DownloadButton";
@@ -18,7 +17,6 @@ import IconButton from "../../button/IconButton";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
-import EditableText from "../../form-components/EditableText";
 import EditableTags from "../../form-components/EditableTags";
 
 import { deletePreviousQueryModalOpen } from "../delete-modal/actions";
@@ -37,6 +35,7 @@ import {
 import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
 import { PreviousQueryT } from "./reducer";
+import PreviousQueriesLabel from "./PreviousQueriesLabel";
 
 const nodeSource = {
   beginDrag(props, monitor, component): DraggedQueryType {
@@ -102,16 +101,6 @@ const TopRight = styled("div")`
 const SharedIndicator = styled("span")`
   margin-left: 10px;
   color: ${({ theme }) => theme.col.blueGray};
-`;
-const StyledSelectableLabel = styled(SelectableLabel)`
-  margin: 0;
-  font-weight: 400;
-  word-break: break-word;
-`;
-const StyledEditableText = styled(EditableText)`
-  margin: 0;
-  font-weight: 400;
-  word-break: break-word;
 `;
 const MiddleRow = styled("div")`
   display: flex;
@@ -240,18 +229,15 @@ class PreviousQuery extends React.Component {
           </div>
         </TopInfos>
         <MiddleRow>
-          {mayEditQuery ? (
-            <StyledEditableText
-              loading={!!query.loading}
-              text={label}
-              selectTextOnMount={true}
-              editing={!!query.editingLabel}
-              onSubmit={onRenamePreviousQuery}
-              onToggleEdit={onToggleEditPreviousQueryLabel}
-            />
-          ) : (
-            <StyledSelectableLabel label={label} />
-          )}
+          <PreviousQueriesLabel
+            mayEditQuery={mayEditQuery}
+            loading={!!query.loading}
+            label={label}
+            selectTextOnMount={true}
+            editing={!!query.editingLabel}
+            onSubmit={onRenamePreviousQuery}
+            onToggleEdit={onToggleEditPreviousQueryLabel}
+          />
           <Gray>{query.ownerName}</Gray>
         </MiddleRow>
         {mayEditQuery ? (

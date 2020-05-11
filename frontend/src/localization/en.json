@@ -184,6 +184,9 @@
     "shared": "Shared",
     "system": "SYSTEM"
   },
+  "formConfigsFilter": {
+    "activeForm": "Active form"
+  },
   "timebasedQueryEditor": {
     "headline": "Anfragen in Relation",
     "opBefore": "BEFORE",

@@ -180,9 +180,12 @@
   },
   "previousQueriesFilter": {
     "all": "Alle",
-    "own": "Selbst erstellt",
+    "own": "Eigene",
     "shared": "Freigegeben",
     "system": "SYSTEM"
+  },
+  "formConfigsFilter": {
+    "activeForm": "Aktives Formular"
   },
   "timebasedQueryEditor": {
     "headline": "Anfragen in Relation",

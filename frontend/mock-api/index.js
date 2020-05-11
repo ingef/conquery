@@ -409,7 +409,7 @@ module.exports = function (app, port) {
 
         if (dice < 0.5) {
           return {
-            formType: "Export form",
+            formType: "EXPORT_FORM",
             values: {},
           };
         } else {

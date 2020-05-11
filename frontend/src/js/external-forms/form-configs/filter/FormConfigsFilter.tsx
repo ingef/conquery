@@ -4,7 +4,7 @@ import T from "i18n-react";
 import styled from "@emotion/styled";
 import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
-import { setPreviousQueriesFilter } from "./actions";
+import { setFormConfigsFilter } from "./actions";
 import SmallTabNavigation from "js/small-tab-navigation/SmallTabNavigation";
 
 const SxSmallTabNavigation = styled(SmallTabNavigation)`
@@ -12,11 +12,15 @@ const SxSmallTabNavigation = styled(SmallTabNavigation)`
   padding: 0 10px;
 `;
 
-const PreviousQueriesFilter: FC = () => {
+const FormConfigsFilter: FC = () => {
   const OPTIONS = [
     {
       value: "all",
       label: T.translate("previousQueriesFilter.all") as string,
+    },
+    {
+      value: "activeForm",
+      label: T.translate("formConfigsFilter.activeForm") as string,
     },
     {
       value: "own",
@@ -33,15 +37,14 @@ const PreviousQueriesFilter: FC = () => {
   ];
 
   const selectedFilter = useSelector<StateT, string>(
-    (state) => state.previousQueriesFilter
+    (state) => state.formConfigsFilter
   );
   const dispatch = useDispatch();
-  const setFilter = (filter: string) =>
-    dispatch(setPreviousQueriesFilter(filter));
+  const setFilter = (filter: string) => dispatch(setFormConfigsFilter(filter));
 
   return (
     <SxSmallTabNavigation
-      className="previous-queries-filter"
+      className="form-configs-filter"
       options={OPTIONS}
       selectedTab={selectedFilter}
       onSelectTab={(tab) => setFilter(tab)}
@@ -49,4 +52,4 @@ const PreviousQueriesFilter: FC = () => {
   );
 };
 
-export default PreviousQueriesFilter;
+export default FormConfigsFilter;

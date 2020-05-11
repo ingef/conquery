@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import type { DatasetIdT } from "../../api/types";
 
 import { loadFormConfigsSuccess, loadFormConfigsError } from "./actions";
-import { selectFormConfigs } from "./selectors";
 import { T } from "js/localization";
 import EmptyList from "js/list/EmptyList";
-import { FormConfigT } from "./reducer";
-import { StateT } from "app-types";
 import { getFormConfigs } from "js/api/api";
 import Loading from "js/list/Loading";
 import FormConfigs from "./FormConfigs";
+import FormConfigsSearchBox from "./search/FormConfigsSearchBox";
+import FormConfigsFilter from "./filter/FormConfigsFilter";
+import { useFilteredFormConfigs } from "./selectors";
 
 const Container = styled("div")`
   overflow-y: auto;
@@ -27,13 +27,7 @@ type PropsT = {
 const FormConfigsTab = ({ datasetId }: PropsT) => {
   const [loading, setLoading] = useState<boolean>(false);
 
-  const formConfigs = useSelector<StateT, FormConfigT[]>(state =>
-    selectFormConfigs(
-      state.formConfigs.data,
-      state.previousQueriesSearch,
-      state.previousQueriesFilter
-    )
-  );
+  const formConfigs = useFilteredFormConfigs();
   const dispatch = useDispatch();
 
   const hasConfigs = loading || formConfigs.length !== 0;
@@ -60,6 +54,8 @@ const FormConfigsTab = ({ datasetId }: PropsT) => {
 
   return (
     <>
+      <FormConfigsFilter />
+      <FormConfigsSearchBox />
       <Container>
         {loading && <Loading message={T.translate("formConfigs.loading")} />}
         {formConfigs.length === 0 && !loading && (
@@ -74,9 +70,5 @@ const FormConfigsTab = ({ datasetId }: PropsT) => {
     </>
   );
 };
-
-// <DeleteFormConfigModal datasetId={datasetId} />
-// <PreviousQueriesFilter />
-// <PreviousQueriesSearchBox />
 
 export default FormConfigsTab;
