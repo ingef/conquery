@@ -95,7 +95,7 @@ public final class AuthorizationController implements Managed{
 	
 	private static void registerShiro(List<Realm> realms) {
 		// Register all realms in Shiro
-		log.info("Registering the following realms to Shiro:\n\t", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
+		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
 		SecurityManager securityManager = new DefaultSecurityManager(realms);
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");

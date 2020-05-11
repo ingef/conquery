@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth.conquerytoken;
 
-import javax.validation.constraints.Min;
 import javax.ws.rs.container.ContainerRequestContext;
 
 import com.auth0.jwt.JWT;
@@ -94,7 +93,6 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	}
 	
 	public static class JWTConfig{
-		@Min(1)
 		@Getter
 		@Setter
 		private Duration jwtDuration = Duration.hours(8);
