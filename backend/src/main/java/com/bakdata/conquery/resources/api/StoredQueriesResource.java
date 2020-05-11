@@ -4,7 +4,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,23 +19,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
-import lombok.Data;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -54,8 +49,6 @@ public class StoredQueriesResource {
 
 	@GET
 	public List<ExecutionStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
-		authorize(user, datasetId, Ability.READ);
-
 		return processor.getAllQueries(dsUtil.getDataset(datasetId), req, user)
 			.collect(Collectors.toList());
 	}
@@ -76,43 +69,16 @@ public class StoredQueriesResource {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, QueryPatch patch) throws JSONException {
+	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
-
-		Dataset dataset = dsUtil.getDataset(datasetId);
-
-		MasterMetaStorage storage = processor.getNamespaces().get(dataset.getId()).getStorage().getMetaStorage();
-		ManagedExecution exec = storage.getExecution(queryId);
-		if (!(exec instanceof ManagedQuery)) {
-			throw new IllegalArgumentException(queryId + " is not a patchable query");
-		}
-		ManagedQuery query = (ManagedQuery) exec;
-		if (patch.getTags() != null) {
-			processor.tagQuery(user, query, patch.getTags());
-		}
-		else if (patch.getLabel() != null) {
-			processor.updateQueryLabel(user, query, patch.getLabel());
-		}
-		else if (patch.getShared() != null) {
-			processor.shareQuery(user, query, patch.getGroups(), patch.getShared());
-		}
-
+		processor.patchQuery(user, queryId, patch);
+		
 		return getQueryWithSource(user, datasetId, queryId);
-	}
-
-	@Data
-	public static class QueryPatch {
-
-		private String[] tags;
-		private String label;
-		private Boolean shared;
-		private Collection<GroupId> groups;
 	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
-
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.DELETE);
 

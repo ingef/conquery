@@ -37,7 +37,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-//@NoArgsConstructor
 @Getter
 @Setter
 @ToString(callSuper = true)
@@ -120,10 +119,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus status = super.buildStatus(storage, url, user);
+	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
-		return status;
 	}
 	
 	@Override

@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -113,7 +114,7 @@ public class IntegrationUtils {
 
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(String[][]::new);
 
-			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data));
+			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data)).resolve(new QueryResolveContext(dataset, support.getNamespace().getNamespaces()));
 
 			ManagedExecution<?> managed = ExecutionManager.runQuery( namespaces, query, queryId, userId, dataset);
 			managed.awaitDone(1, TimeUnit.DAYS);

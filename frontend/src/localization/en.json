@@ -297,7 +297,8 @@
       "1": "1 value not resolved",
       "_": "{context} values not resolved"
     },
-    "error": "An error occurred when resolving the values."
+    "error": "An error occurred when resolving the values.",
+    "nothingResolved": "No concept resolved."
   },
   "uploadFilterListModal": {
     "headline": "Upload filter values"

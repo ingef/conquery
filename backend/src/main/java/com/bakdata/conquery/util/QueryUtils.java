@@ -1,24 +1,52 @@
 package com.bakdata.conquery.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.google.common.collect.ClassToInstanceMap;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.Permission;
 
+@Slf4j
 @UtilityClass
 public class QueryUtils {
+	
+	/**
+	 * Provides a starting operator for consumer chains, that does nothing.
+	 */
+	public static <T> Consumer<T> getNoOpEntryPoint() {
+		return (whatever) -> {};
+	}
+	
+	/**
+	 * Gets the specified visitor from the map. If none was found an exception is raised.
+	 */
+	public static <T extends QueryVisitor> T getVisitor(ClassToInstanceMap<QueryVisitor> visitors, Class<T> clazz){
+		return Objects.requireNonNull(visitors.getInstance(clazz),String.format("Among the visitor that traversed the query no %s could be found", clazz));
+	}
 
 	/**
 	 * Checks if the query requires to resolve external ids.
@@ -27,12 +55,12 @@ public class QueryUtils {
 	 */
 	public static class ExternalIdChecker implements QueryVisitor {
 
-		private final List<CQExternal> elements = new ArrayList<>();
+		private final List<CQElement> elements = new ArrayList<>();
 
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof CQExternal) {
-				elements.add((CQExternal) element);
+			if (element instanceof CQExternal || element instanceof CQExternalResolved) {
+				elements.add((CQElement) element);
 			}
 		}
 
@@ -106,5 +134,16 @@ public class QueryUtils {
 				ids.addAll(idHolder.collectNamespacedIds());
 			}
 		}
+	}
+	
+	public static void generateConceptReadPermissions(@NonNull NamespacedIdCollector idCollector, @NonNull Collection<Permission> collectPermissions){
+		idCollector.getIds().stream()
+			.filter(id -> ConceptElementId.class.isAssignableFrom(id.getClass()))
+			.map(ConceptElementId.class::cast)
+			.map(ConceptElementId::findConcept)
+			.map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
+			.map(Permission.class::cast)
+			.distinct()
+			.collect(Collectors.toCollection(() -> collectPermissions));
 	}
 }

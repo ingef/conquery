@@ -12,7 +12,7 @@ import type { DraggedNodeType, DraggedQueryType } from "./types";
 
 type DraggedFileType = Object;
 
-type PropsType = {
+interface PropsT {
   isInitial?: boolean;
   isAnd?: boolean;
   onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
@@ -26,7 +26,7 @@ const DROP_TYPES = [
   dndTypes.PREVIOUS_QUERY
 ];
 
-const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
+const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{ isInitial?: boolean, isAnd?: boolean}>`
   ${({ isInitial }) =>
     isInitial &&
     css`
@@ -78,13 +78,13 @@ const Row = styled("div")`
   align-items: center;
 `;
 
-const QueryEditorDropzone = ({
+const QueryEditorDropzone: React.FC<PropsT> = ({
   isAnd,
   isInitial,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode
-}: PropsType) => {
+}) => {
   const onDrop = (props, monitor) => {
     const item = monitor.getItem();
 

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.google.common.base.Strings;
 
 public class DateFormats {
 
@@ -49,6 +50,10 @@ public class DateFormats {
 	}
 
 	private LocalDate tryParse(String value) {
+		if(Strings.isNullOrEmpty(value)){
+			return ERROR_DATE;
+		}
+
 		if (lastFormat != null) {
 			try {
 				return LocalDate.parse(value, lastFormat);

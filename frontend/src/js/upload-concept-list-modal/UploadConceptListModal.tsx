@@ -106,7 +106,9 @@ const UploadConceptListModal = (props: PropsType) => {
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;
 
-  const onClick = () => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     onAccept(label, rootConcepts, resolved.resolvedConcepts);
     onClose();
   };
@@ -134,10 +136,18 @@ const UploadConceptListModal = (props: PropsType) => {
             label: x.value.label
           }))}
           selectProps={{
-            isSearchable: true
+            isSearchable: true,
+            autoFocus: true
           }}
         />
-        {(!!error || !!loading || !!resolved) && (
+        {!!resolved && !hasResolvedItems && !hasUnresolvedItems && (
+          <Section>
+            <Msg>{T.translate("uploadConceptListModal.nothingResolved")}</Msg>
+          </Section>
+        )}
+        {(!!error ||
+          !!loading ||
+          (!!resolved && (hasResolvedItems || hasUnresolvedItems))) && (
           <Section>
             {error && (
               <p>
@@ -149,7 +159,7 @@ const UploadConceptListModal = (props: PropsType) => {
             {resolved && (
               <>
                 {hasResolvedItems && (
-                  <div>
+                  <form onSubmit={onSubmit}>
                     <Msg>
                       <SuccessIcon icon="check-circle" />
                       {T.translate("uploadConceptListModal.resolvedCodes", {
@@ -160,16 +170,19 @@ const UploadConceptListModal = (props: PropsType) => {
                       <InputText
                         label={T.translate("uploadConceptListModal.label")}
                         fullWidth
+                        inputProps={{
+                          autoFocus: true
+                        }}
                         input={{
                           value: label,
                           onChange: setLabel
                         }}
                       />
-                      <SxPrimaryButton onClick={onClick}>
+                      <SxPrimaryButton type="submit">
                         {T.translate("uploadConceptListModal.insertNode")}
                       </SxPrimaryButton>
                     </MsgRow>
-                  </div>
+                  </form>
                 )}
                 {hasUnresolvedItems && (
                   <div>
