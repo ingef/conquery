@@ -7,7 +7,6 @@ import { useDrag } from "react-dnd";
 import { useSelector, useDispatch } from "react-redux";
 import { parseISO } from "date-fns";
 
-import ErrorMessage from "../../error-message/ErrorMessage";
 import { FORM_CONFIG } from "../../common/constants/dndTypes";
 import SelectableLabel from "../../selectable-label/SelectableLabel";
 
@@ -89,9 +88,6 @@ const MiddleRow = styled("div")`
   justify-content: space-between;
   line-height: 24px;
 `;
-const StyledErrorMessage = styled(ErrorMessage)`
-  margin: 0;
-`;
 
 const StyledFaIcon = styled(FaIcon)`
   margin: 0 6px;
@@ -169,8 +165,10 @@ const FormConfig: React.FC<PropsT> = ({
     setIsEditingLabel(false);
   };
 
-  const onRetagFormConfig = (tags: string[]) => {
-    onPatchFormConfig({ tags }, "formConfig.retagError");
+  const onRetagFormConfig = async (tags: string[]) => {
+    await onPatchFormConfig({ tags }, "formConfig.retagError");
+
+    setIsEditingTags(false);
   };
 
   const dragItem: FormConfigDragItem = {
