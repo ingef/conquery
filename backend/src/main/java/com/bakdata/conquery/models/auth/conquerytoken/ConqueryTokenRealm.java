@@ -48,9 +48,10 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	@Override
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
-			// Incompatible token
+			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
 		}
+		log.trace("Token has expected format.", TOKEN_CLASS, token.getClass());
 		DecodedJWT decodedToken = null;
 		try {
 			decodedToken = jwtConfig.getTokenVerifier(this).verify((String) token.getCredentials());
@@ -67,6 +68,11 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 			log.trace("The provided token could not be verified.");
 			throw new AuthenticationException(e);
 		}
+		catch (Exception e) {
+			log.trace("Unable to decode token", e);
+			throw new AuthenticationException(e);
+		}
+		log.trace("Received valid token.");
 
 		String username = decodedToken.getSubject();
 
