@@ -7,8 +7,8 @@ import { setExternalForm } from "./actions";
 import InputSelect from "../form-components/InputSelect";
 import { T, getLocale } from "../localization";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
-import { StateT } from "app-types";
-import { Form } from "js/api/form-types";
+import type { StateT } from "app-types";
+import type { Form } from "js/api/form-types";
 
 const Root = styled("div")`
   flex-shrink: 0;

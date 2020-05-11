@@ -5,10 +5,10 @@ import { useDispatch } from "react-redux";
 import type { DatasetIdT } from "../../api/types";
 
 import { loadFormConfigsSuccess, loadFormConfigsError } from "./actions";
-import { T } from "js/localization";
-import EmptyList from "js/list/EmptyList";
-import { getFormConfigs } from "js/api/api";
-import Loading from "js/list/Loading";
+import { T } from "../../localization";
+import EmptyList from "../../list/EmptyList";
+import { getFormConfigs } from "../../api/api";
+import Loading from "../../list/Loading";
 import FormConfigs from "./FormConfigs";
 import FormConfigsSearchBox from "./search/FormConfigsSearchBox";
 import FormConfigsFilter from "./filter/FormConfigsFilter";

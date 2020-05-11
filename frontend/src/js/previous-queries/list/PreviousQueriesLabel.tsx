@@ -1,9 +1,10 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import EditableText from "js/form-components/EditableText";
-import HighlightableLabel from "js/highlightable-label/HighlightableLabel";
 import { StateT } from "app-types";
 import { useSelector } from "react-redux";
+
+import EditableText from "../../form-components/EditableText";
+import HighlightableLabel from "../../highlightable-label/HighlightableLabel";
 
 const StyledSelectableLabel = styled(HighlightableLabel)`
   margin: 0;

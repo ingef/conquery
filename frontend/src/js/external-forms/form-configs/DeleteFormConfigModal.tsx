@@ -5,11 +5,11 @@ import T from "i18n-react";
 import Modal from "../../modal/Modal";
 import PrimaryButton from "../../button/PrimaryButton";
 import TransparentButton from "../../button/TransparentButton";
-import { deleteFormConfig } from "js/api/api";
+import { deleteFormConfig } from "../../api/api";
 import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
-import { DatasetIdT } from "js/api/types";
-import { setMessage } from "js/snack-message/actions";
+import type { DatasetIdT } from "js/api/types";
+import { setMessage } from "../../snack-message/actions";
 
 const Root = styled("div")`
   text-align: center;

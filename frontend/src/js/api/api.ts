@@ -25,7 +25,7 @@ import type {
 import fetchJson, { fetchJsonUnauthorized } from "./fetchJson";
 import { transformQueryToApi } from "./apiHelper";
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
-import {
+import type {
   FormConfigT,
   BaseFormConfigT,
 } from "js/external-forms/form-configs/reducer";

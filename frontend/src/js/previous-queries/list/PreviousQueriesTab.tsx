@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "app-types";
 
 import type { DatasetIdT } from "../../api/types";
 import DeletePreviousQueryModal from "../delete-modal/DeletePreviousQueryModal";
@@ -12,10 +13,11 @@ import UploadQueryResults from "../upload/UploadQueryResults";
 import { loadPreviousQueries } from "./actions";
 import { selectPreviousQueries } from "./selector";
 import { canUploadResult } from "../../user/selectors";
-import { T } from "js/localization";
-import EmptyList from "js/list/EmptyList";
-import Loading from "js/list/Loading";
-import { StateT } from "app-types";
+
+import { T } from "../../localization";
+
+import EmptyList from "../../list/EmptyList";
+import Loading from "../../list/Loading";
 import { PreviousQueryT } from "./reducer";
 
 const Container = styled("div")`
@@ -29,7 +31,7 @@ type PropsT = {
 };
 
 const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
-  const queries = useSelector<StateT, PreviousQueryT[]>(state =>
+  const queries = useSelector<StateT, PreviousQueryT[]>((state) =>
     selectPreviousQueries(
       state.previousQueries.queries,
       state.previousQueriesSearch,
@@ -37,9 +39,9 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
     )
   );
   const loading = useSelector<StateT, boolean>(
-    state => state.previousQueries.loading
+    (state) => state.previousQueries.loading
   );
-  const hasPermissionToUpload = useSelector<StateT, boolean>(state =>
+  const hasPermissionToUpload = useSelector<StateT, boolean>((state) =>
     canUploadResult(state)
   );
 

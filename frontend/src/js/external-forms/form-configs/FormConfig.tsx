@@ -7,6 +7,9 @@ import { useDrag } from "react-dnd";
 import { useSelector, useDispatch } from "react-redux";
 import { parseISO } from "date-fns";
 
+import type { StateT } from "app-types";
+import type { DatasetIdT } from "js/api/types";
+
 import { FORM_CONFIG } from "../../common/constants/dndTypes";
 import SelectableLabel from "../../highlightable-label/HighlightableLabel";
 
@@ -19,12 +22,10 @@ import EditableTags from "../../form-components/EditableTags";
 
 import { formatDateDistance } from "../../common/helpers";
 import { FormConfigT } from "./reducer";
-import { StateT } from "app-types";
-import { DatasetIdT } from "js/api/types";
-import { patchFormConfig } from "js/api/api";
+import { patchFormConfig } from "../../api/api";
 import FormConfigTags from "./FormConfigTags";
 import { patchFormConfigSuccess } from "./actions";
-import { setMessage } from "js/snack-message/actions";
+import { setMessage } from "../../snack-message/actions";
 import { useIsLabelHighlighted } from "./selectors";
 import { useFormLabelByType } from "../stateSelectors";
 

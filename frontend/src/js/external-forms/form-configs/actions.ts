@@ -1,10 +1,10 @@
 import { FormConfigT } from "./reducer";
-import { defaultError, defaultSuccess } from "js/common/actions";
+import { defaultError, defaultSuccess } from "../../common/actions";
 import {
   LOAD_CONFIGS_ERROR,
   LOAD_CONFIGS_SUCCESS,
   PATCH_CONFIG_SUCCESS,
-  DELETE_CONFIG_SUCCESS
+  DELETE_CONFIG_SUCCESS,
 } from "./actionTypes";
 
 export const loadFormConfigsSuccess = (response: FormConfigT[]) =>
