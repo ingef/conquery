@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.FORM_CONFIG;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -35,6 +36,7 @@ import io.dropwizard.jersey.PATCH;
 @Path("datasets/{" + DATASET + "}/form-configs")
 public class FormConfigResource {
 	
+	@Inject
 	private FormConfigProcessor processor;
 	
 	@PathParam(DATASET)
