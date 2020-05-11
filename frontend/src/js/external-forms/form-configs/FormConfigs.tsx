@@ -5,6 +5,8 @@ import ReactList from "react-list";
 import { FormConfigT } from "./reducer";
 import FormConfig from "./FormConfig";
 import DeleteFormConfigModal from "./DeleteFormConfigModal";
+import { useDispatch } from "react-redux";
+import { deleteFormConfigSuccess } from "./actions";
 
 interface PropsT {
   datasetId: string;
@@ -26,7 +28,17 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
     null
   );
 
+  const dispatch = useDispatch();
+
   const closeDeleteModal = () => setFormConfigToDelete(null);
+
+  function onDeleteSuccess() {
+    if (formConfigToDelete) {
+      dispatch(deleteFormConfigSuccess(formConfigToDelete));
+    }
+
+    closeDeleteModal();
+  }
 
   function renderConfig(index: number, key: string | number) {
     return (
@@ -48,7 +60,7 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
         <DeleteFormConfigModal
           formConfigId={formConfigToDelete}
           onClose={closeDeleteModal}
-          onDeleteSuccess={closeDeleteModal}
+          onDeleteSuccess={onDeleteSuccess}
         />
       )}
       <ReactList
