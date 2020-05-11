@@ -11,7 +11,7 @@ import ScrollableList from "../scrollable-list/ScrollableList";
 import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";
 
-import type { StateType } from "../app/reducers";
+import type { StateT } from "../app/reducers";
 import type { DatasetIdT } from "../api/types";
 import type { TreesT } from "../concept-trees/reducer";
 
@@ -241,7 +241,7 @@ const selectAvailableConceptRootNodes = state => {
     );
 };
 
-const mapStateToProps = (state: StateType) => ({
+const mapStateToProps = (state: StateT) => ({
   filename: state.uploadConceptListModal.filename,
   conceptCodesFromFile: state.uploadConceptListModal.conceptCodesFromFile,
   availableConceptRootNodes: selectAvailableConceptRootNodes(state),

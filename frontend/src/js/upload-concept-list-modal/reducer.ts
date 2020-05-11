@@ -10,16 +10,16 @@ import {
   RESET
 } from "./actionTypes";
 
-export type StateType = {
-  filename: string | null,
-  conceptCodesFromFile: string[],
-  selectedConceptRootNode: string,
-  loading: boolean,
-  resolved: PostConceptResolveResponseT,
-  error: Error | null
+export type UploadConceptListModalStateT = {
+  filename: string | null;
+  conceptCodesFromFile: string[];
+  selectedConceptRootNode: string;
+  loading: boolean;
+  resolved: PostConceptResolveResponseT;
+  error: Error | null;
 };
 
-const initialState: StateType = {
+const initialState: UploadConceptListModalStateT = {
   filename: null,
   conceptCodesFromFile: [],
   selectedConceptRootNode: "",
@@ -28,7 +28,10 @@ const initialState: StateType = {
   error: null
 };
 
-const uploadConcepts = (state: StateType = initialState, action: Object) => {
+const uploadConcepts = (
+  state: UploadConceptListModalStateT = initialState,
+  action: Object
+) => {
   switch (action.type) {
     case INIT:
       const { filename, rows } = action.payload;

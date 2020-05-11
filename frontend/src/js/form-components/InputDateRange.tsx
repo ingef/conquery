@@ -1,6 +1,6 @@
 import * as React from "react";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 
 import T from "i18n-react";
 import type { FieldPropsType } from "redux-form";
@@ -43,12 +43,12 @@ const StyledLabeled = styled(Labeled)`
 `;
 
 type PropsType = FieldPropsType & {
-  label?: React.Node,
-  labelSuffix?: React.Node,
-  className?: string,
-  inline?: boolean,
-  large?: boolean,
-  center?: boolean
+  label?: React.Node;
+  labelSuffix?: React.Node;
+  className?: string;
+  inline?: boolean;
+  large?: boolean;
+  center?: boolean;
 };
 
 function getDisplayDate(what, value, displayDateFormat) {

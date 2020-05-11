@@ -1,7 +1,10 @@
+import type { Theme } from "@emotion/react";
+import styled from "@emotion/styled";
+
 import logo from "./images/conquery-logo.png";
 import spinner from "./images/spinner.png";
 
-export default {
+export const theme: Theme = {
   col: {
     bg: "#f9f9f9",
     bgAlt: "#f3f6f4",
@@ -37,3 +40,5 @@ export default {
   borderRadius: "3px",
   transitionTime: "0.1s"
 };
+
+export default styled;

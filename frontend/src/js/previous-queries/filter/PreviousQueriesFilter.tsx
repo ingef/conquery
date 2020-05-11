@@ -1,29 +1,51 @@
-import React from "react";
+import React, { FC } from "react";
 import T from "i18n-react";
 
-import PreviousQueriesFilterButton from "./PreviousQueriesFilterButton";
+import styled from "@emotion/styled";
+import { useSelector, useDispatch } from "react-redux";
+import { StateT } from "app-types";
+import { setPreviousQueriesFilter } from "./actions";
+import SmallTabNavigation from "js/small-tab-navigation/SmallTabNavigation";
 
-const PreviousQueriesFilter = () => {
+const SxSmallTabNavigation = styled(SmallTabNavigation)`
+  margin-bottom: 5px;
+  padding: 0 10px;
+`;
+
+const PreviousQueriesFilter: FC = () => {
+  const OPTIONS = [
+    {
+      value: "all",
+      label: T.translate("previousQueriesFilter.all") as string,
+    },
+    {
+      value: "own",
+      label: T.translate("previousQueriesFilter.own") as string,
+    },
+    {
+      value: "system",
+      label: T.translate("previousQueriesFilter.system") as string,
+    },
+    {
+      value: "shared",
+      label: T.translate("previousQueriesFilter.shared") as string,
+    },
+  ];
+
+  const selectedFilter = useSelector<StateT, string>(
+    (state) => state.previousQueriesFilter
+  );
+  const dispatch = useDispatch();
+  const setFilter = (filter: string) =>
+    dispatch(setPreviousQueriesFilter(filter));
+
   return (
-    <div className="previous-queries-filter">
-      <PreviousQueriesFilterButton
-        value="all"
-        text={T.translate("previousQueriesFilter.all")}
-      />
-      <span className="previous-queries-filter__spacer" />
-      <PreviousQueriesFilterButton
-        value="own"
-        text={T.translate("previousQueriesFilter.own")}
-      />
-      <PreviousQueriesFilterButton
-        value="system"
-        text={T.translate("previousQueriesFilter.system")}
-      />
-      <PreviousQueriesFilterButton
-        value="shared"
-        text={T.translate("previousQueriesFilter.shared")}
-      />
-    </div>
+    <SxSmallTabNavigation
+      className="previous-queries-filter"
+      options={OPTIONS}
+      selectedTab={selectedFilter}
+      onSelectTab={(tab) => setFilter(tab)}
+    />
   );
 };
 
