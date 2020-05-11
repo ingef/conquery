@@ -61,12 +61,12 @@ const SxDropzone = styled(Dropzone)`
 `;
 
 const LoadingText = styled("p")`
-  font-weight: 700;
+  font-weight: 400;
   margin: 5px 0 0px 8px;
 `;
 
 const SxFaIcon = styled(FaIcon)`
-  margin-right: 8px;
+  margin-right: 5px;
 `;
 
 const hasChanged = (a: any, b: any) => {
@@ -174,7 +174,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
             <div>
               <Label>{T.translate("externalForms.config.headline")}</Label>
               <Row>
-                {!isLoading ? (
+                {isLoading ? (
                   <LoadingText>
                     <SxFaIcon icon="spinner" />
                     {T.translate("common.loading")}
