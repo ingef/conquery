@@ -7,15 +7,15 @@ import Pane from "../pane/Pane";
 import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
 import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
-import FormConfigsTab from "js/external-forms/form-configs/FormConfigsTab";
+import FormConfigsTab from "../external-forms/form-configs/FormConfigsTab";
 import { StateT } from "./reducers";
 
 const LeftPane = () => {
   const activeTab = useSelector<StateT, string>(
-    state => state.panes.left.activeTab
+    (state) => state.panes.left.activeTab
   );
   const selectedDatasetId = useSelector<StateT, DatasetIdT | null>(
-    state => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId
   );
 
   return (

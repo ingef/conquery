@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { T } from "js/localization";
+import { T } from "../localization";
 import styled from "@emotion/styled";
-import EditableText from "js/form-components/EditableText";
+import EditableText from "../form-components/EditableText";
 import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
 import {
@@ -9,17 +9,17 @@ import {
   selectActiveFormName,
   selectActiveFormType,
 } from "./stateSelectors";
-import { postFormConfig, patchFormConfig, getFormConfig } from "js/api/api";
-import Label from "js/form-components/Label";
-import { setMessage } from "js/snack-message/actions";
-import IconButton from "js/button/IconButton";
-import { usePrevious } from "js/common/helpers/usePrevious";
-import Dropzone from "js/form-components/Dropzone";
+import { postFormConfig, patchFormConfig, getFormConfig } from "../api/api";
+import Label from "../form-components/Label";
+import { setMessage } from "../snack-message/actions";
+import IconButton from "../button/IconButton";
+import { usePrevious } from "../common/helpers/usePrevious";
+import Dropzone from "../form-components/Dropzone";
 
-import { FORM_CONFIG } from "js/common/constants/dndTypes";
+import { FORM_CONFIG } from "../common/constants/dndTypes";
 import { FormConfigDragItem } from "./form-configs/FormConfig";
 import { loadExternalFormValues, setExternalForm } from "./actions";
-import FaIcon from "js/icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 
 interface PropsT {
   datasetId: string;

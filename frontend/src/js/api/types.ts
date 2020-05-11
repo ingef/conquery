@@ -3,7 +3,7 @@
 // - partial types that the reponses are built from
 
 import type { Forms } from "./form-types";
-import { FormConfigT } from "js/external-forms/form-configs/reducer";
+import type { FormConfigT } from "js/external-forms/form-configs/reducer";
 
 export type DatasetIdT = string;
 export type DatasetT = {

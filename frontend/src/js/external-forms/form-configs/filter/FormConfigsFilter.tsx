@@ -1,11 +1,11 @@
 import React, { FC } from "react";
 import T from "i18n-react";
-
 import styled from "@emotion/styled";
 import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
+
 import { setFormConfigsFilter } from "./actions";
-import SmallTabNavigation from "js/small-tab-navigation/SmallTabNavigation";
+import SmallTabNavigation from "../../../small-tab-navigation/SmallTabNavigation";
 
 const SxSmallTabNavigation = styled(SmallTabNavigation)`
   margin-bottom: 5px;

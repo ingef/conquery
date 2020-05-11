@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import FaIcon from "js/icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 
 const Root = styled("p")`
   margin: 2px 10px;
