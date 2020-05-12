@@ -1,11 +1,16 @@
 package com.bakdata.conquery.apiv1.forms;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.Labelable;
@@ -17,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -26,6 +32,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -41,7 +48,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@NotEmpty
 	private String formType;
-	private UUID formId;
+	@VariableDefaultValue @NonNull
+	private UUID formId = UUID.randomUUID();
 	private String label;
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
@@ -49,6 +57,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private JsonNode values;
 	private UserId owner;
+	@VariableDefaultValue
+	private LocalDateTime creationTime = LocalDateTime.now();
 	
 	
 	public FormConfig(String formType, JsonNode values) {
@@ -58,10 +68,6 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		if(formId == null) {			
-			formId = UUID.randomUUID();
-			label = formId.toString();
-		}
 		return new FormConfigId(formType, formId);
 	}
 
@@ -79,6 +85,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.tags(tags)
 			.ownerName(ownerName)
 			.own(owner.equals(user.getId()))
+			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system?
 			.build();
@@ -111,6 +118,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.tags(tags)
 			.ownerName(ownerName)
 			.own(user.getId().equals(owner))
+			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system?
 			.values(finalRep).build();
@@ -124,6 +132,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@SuperBuilder
 	@ToString
 	@EqualsAndHashCode(callSuper = false)
+	@FieldNameConstants
 	public static class FormConfigOverviewRepresentation {
 
 		private FormConfigId id;
@@ -132,6 +141,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		private String[] tags;
 
 		private String ownerName;
+		private ZonedDateTime createdAt;
 		private boolean own;
 		private boolean shared;
 		private boolean system;
@@ -146,9 +156,14 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@SuperBuilder
 	@ToString(callSuper = true)
 	@EqualsAndHashCode(callSuper = true)
+	@FieldNameConstants
 	public static class FormConfigFullRepresentation extends FormConfigOverviewRepresentation {
 
 		private JsonNode values;
+	}
+
+	public Consumer<FormConfigPatch> valueSetter() {
+		return (patch) -> {setValues(patch.getValues());};
 	}
 
 }

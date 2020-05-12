@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.BigStore;
 import com.bakdata.conquery.io.xodus.stores.CachedStore;
@@ -30,6 +31,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -67,6 +69,7 @@ public enum StoreInfo implements IStoreInfo {
 	AUTH_USER(User.class, UserId.class),
 	AUTH_GROUP(Group.class, GroupId.class),
 	STRUCTURE(StructureNode[].class, Boolean.class),
+	FORM_CONFIG(FormConfig.class, FormConfigId.class)
 	;
 
 	private final Class<?> valueType;
