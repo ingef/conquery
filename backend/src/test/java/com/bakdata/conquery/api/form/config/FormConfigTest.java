@@ -300,7 +300,12 @@ public class FormConfigTest {
 		patchedFormExpected.setTags(new String[] {"tag1", "tag2"});
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))));
 		
-		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "formType", "label","shared","tags","values");
+		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected,
+			FormConfig.Fields.formType,
+			FormConfig.Fields.label,
+			FormConfig.Fields.shared,
+			FormConfig.Fields.tags,
+			FormConfig.Fields.values);
 
 		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
 		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
@@ -321,7 +326,12 @@ public class FormConfigTest {
 		// CHECK PART 2
 		patchedFormExpected.setShared(false);
 		
-		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "formType","label","shared","tags");
+		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected,
+			FormConfig.Fields.formType,
+			FormConfig.Fields.label,
+			FormConfig.Fields.shared,
+			FormConfig.Fields.tags,
+			FormConfig.Fields.values);
 
 		assertThat(groups.get(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
 		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));

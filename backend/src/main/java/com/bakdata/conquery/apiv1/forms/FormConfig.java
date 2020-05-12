@@ -44,6 +44,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode(callSuper = false)
+@FieldNameConstants
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
 
 	@NotEmpty
