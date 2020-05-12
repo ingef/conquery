@@ -6,9 +6,11 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.Labelable;
@@ -30,6 +32,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -129,6 +132,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@SuperBuilder
 	@ToString
 	@EqualsAndHashCode(callSuper = false)
+	@FieldNameConstants
 	public static class FormConfigOverviewRepresentation {
 
 		private FormConfigId id;
@@ -152,9 +156,14 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@SuperBuilder
 	@ToString(callSuper = true)
 	@EqualsAndHashCode(callSuper = true)
+	@FieldNameConstants
 	public static class FormConfigFullRepresentation extends FormConfigOverviewRepresentation {
 
 		private JsonNode values;
+	}
+
+	public Consumer<FormConfigPatch> valueSetter() {
+		return (patch) -> {setValues(patch.getValues());};
 	}
 
 }
