@@ -1,0 +1,138 @@
+{
+	"type": "QUERY_TEST",
+	"label": "SECONDARY_ID_MIXED Test",
+	"expectedCsv": "tests/query/SECONDARY_ID_MIXED/expected.csv",
+	"query": {
+		"type": "SECONDARY_ID_QUERY",
+		"secondaryId": "secondary",
+		"query": {
+			"type": "CONCEPT_QUERY",
+			
+			"root": {
+				"type": "AND",
+				"children": [
+					{
+						"ids": [
+							"${dataset}.number"
+						],
+						"type": "CONCEPT",
+						"label": "vs",
+						"tables": [
+							{
+								"id": "${dataset}.number.number_connector",
+								"filters": [
+									{
+										"filter": "${dataset}.number.number_connector.value",
+										"type": "REAL_RANGE",
+										"value": {
+											"min": 1,
+											"max": 1
+										}
+									}
+								]
+							},
+							{
+								"id": "${dataset}.number.number_connector2",
+								"filters": [
+									{
+										"filter": "${dataset}.number.number_connector2.value",
+										"type": "REAL_RANGE",
+										"value": {
+											"min": 1,
+											"max": 1
+										}
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		}
+	},
+	"concepts": [
+		{
+			"label": "number",
+			"type": "VIRTUAL",
+			"connectors": [
+				{
+					"label": "number_connector",
+					"table": "vers_stamm",
+					"validityDates": {
+						"label": "datum",
+						"column": "vers_stamm.datum"
+					},
+					"filter": {
+						"label": "value",
+						"description": "xy",
+						"column": "vers_stamm.value",
+						"type": "NUMBER"
+					}
+				},
+				{
+					"label": "number_connector2",
+					"table": "vers_stamm2",
+					"validityDates": {
+						"label": "datum",
+						"column": "vers_stamm.datum"
+					},
+					"filter": {
+						"label": "value",
+						"description": "xy",
+						"column": "vers_stamm.value",
+						"type": "NUMBER"
+					}
+				}
+			]
+		}
+	],
+	"content": {
+		"tables": [
+			{
+				"csv": "tests/query/SECONDARY_ID_MIXED/content.csv",
+				"name": "vers_stamm",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},				
+				"columns": [
+					{
+						"name": "sid",
+						"type": "STRING",
+						"secondaryId": "secondary"
+					},
+					{
+						"name": "value",
+						"type": "REAL"
+					},
+					{
+						"name": "datum",
+						"type": "DATE_RANGE"
+					}
+				]
+			},
+			{
+				"csv": "tests/query/SECONDARY_ID_MIXED/content2.csv",
+				"name": "vers_stamm2",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},				
+				"columns": [
+					{
+						"name": "sid",
+						"type": "STRING"
+					},
+					{
+						"name": "value",
+						"type": "REAL"
+					},
+					{
+						"name": "datum",
+						"type": "DATE_RANGE"
+					}
+				]
+			}
+		]
+	}
+}
