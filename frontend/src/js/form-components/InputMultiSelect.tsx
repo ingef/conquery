@@ -17,16 +17,16 @@ import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
-  label?: string,
-  options: SelectOptionsT | null,
-  disabled?: boolean | null,
-  tooltip?: string,
-  onInputChange?: Function,
-  isLoading?: boolean,
-  className?: string,
+  label?: string;
+  options: SelectOptionsT | null;
+  disabled?: boolean | null;
+  tooltip?: string;
+  onInputChange?: Function;
+  isLoading?: boolean;
+  className?: string;
 
-  allowDropFile?: boolean | null,
-  onDropFile?: Function
+  allowDropFile?: boolean | null;
+  onDropFile?: Function;
 };
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
@@ -77,10 +77,8 @@ const MultiValueLabel = params => {
 
 const optionContainsStr = str => option => {
   return (
-    option.value
-      .toString()
-      .toLowerCase()
-      .includes(str) || option.label.toLowerCase().includes(str)
+    option.value.toString().toLowerCase().includes(str) ||
+    option.label.toLowerCase().includes(str)
   );
 };
 
@@ -153,7 +151,7 @@ const InputMultiSelect = (props: PropsType) => {
       onChange={props.input.onChange}
       onInputChange={
         props.onInputChange || // To allow for async option loading
-        function(value) {
+        function (value) {
           return value;
         }
       }

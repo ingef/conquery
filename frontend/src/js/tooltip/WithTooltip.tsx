@@ -2,15 +2,19 @@ import * as React from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
 
-type PropsType = {
+interface PropsT {
   className?: string;
-  children: React.ReacNode;
   place?: string;
-  text?: string | null;
-};
+  text?: React.ReactNode;
+}
 
-const WithTooltip = ({ className, children, place, text }: PropsType) => {
-  if (!text) return children;
+const WithTooltip: React.FC<PropsT> = ({
+  className,
+  children,
+  place,
+  text
+}) => {
+  if (!text) return <>{children}</>;
 
   return (
     <Tooltip
