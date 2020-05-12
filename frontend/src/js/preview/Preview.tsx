@@ -206,6 +206,42 @@ const Preview: React.FC = () => {
 
   const onClose = () => dispatch(closePreview());
 
+  const headerRef = React.useRef<HTMLDivElement>();
+  const listRef = React.useRef<HTMLDivElement>();
+
+  const syncScrollBetweenListAndHeader = () => {
+    window.requestAnimationFrame(() => {
+      if (listRef.current && headerRef.current) {
+        headerRef.current.scrollLeft = listRef.current.scrollLeft;
+      }
+    });
+  };
+
+  const syncScrollBetweenHeaderAndList = () => {
+    window.requestAnimationFrame(() => {
+      if (listRef.current && headerRef.current) {
+        listRef.current.scrollLeft = headerRef.current.scrollLeft;
+      }
+    });
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (headerRef.current) {
+        headerRef.current.removeEventListener(
+          "scroll",
+          syncScrollBetweenHeaderAndList
+        );
+      }
+      if (listRef.current) {
+        listRef.current.removeEventListener(
+          "scroll",
+          syncScrollBetweenListAndHeader
+        );
+      }
+    };
+  }, []);
+
   if (!preview.csv || preview.csv.length < 2) return null;
 
   const columns = detectColumnsByHeader(preview.csv[0]);
@@ -314,7 +350,18 @@ const Preview: React.FC = () => {
         </table>
       </TopRow>
       <CSVFrame>
-        <Line isHeader>
+        <Line
+          ref={(instance) => {
+            if (instance) {
+              headerRef.current = instance;
+              headerRef.current.addEventListener(
+                "scroll",
+                syncScrollBetweenHeaderAndList
+              );
+            }
+          }}
+          isHeader
+        >
           {slice[0].map((cell, k) => (
             <Cell
               isHeader
@@ -330,6 +377,15 @@ const Preview: React.FC = () => {
           <AutoSizer>
             {({ width, height }) => (
               <List
+                outerRef={(instance) => {
+                  if (instance) {
+                    listRef.current = instance;
+                    listRef.current.addEventListener(
+                      "scroll",
+                      syncScrollBetweenListAndHeader
+                    );
+                  }
+                }}
                 height={height}
                 width={width}
                 itemCount={slice.length - 1}
