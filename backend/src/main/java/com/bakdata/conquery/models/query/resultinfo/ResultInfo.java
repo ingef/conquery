@@ -43,8 +43,7 @@ public abstract class ResultInfo {
 		}
 		synchronized (ocurrenceCounter) {
 			if(postfix == UNSET_PREFIX) {
-				AtomicInteger occurence = ocurrenceCounter.computeIfAbsent(name, str -> new AtomicInteger(0));
-				postfix = occurence.getAndIncrement();
+				postfix = ocurrenceCounter.computeIfAbsent(name, str -> new AtomicInteger(0)).getAndIncrement();
 			}
 		}
 		return (postfix > 0) ? name + "_" + postfix : name;
