@@ -1,6 +1,9 @@
 package com.bakdata.conquery.apiv1.forms;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,6 +52,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private JsonNode values;
 	private UserId owner;
+	private LocalDateTime creationTime = LocalDateTime.now();
 	
 	
 	public FormConfig(String formType, JsonNode values) {
@@ -79,6 +83,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.tags(tags)
 			.ownerName(ownerName)
 			.own(owner.equals(user.getId()))
+			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system?
 			.build();
@@ -111,6 +116,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.tags(tags)
 			.ownerName(ownerName)
 			.own(user.getId().equals(owner))
+			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system?
 			.values(finalRep).build();
@@ -132,6 +138,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		private String[] tags;
 
 		private String ownerName;
+		private ZonedDateTime createdAt;
 		private boolean own;
 		private boolean shared;
 		private boolean system;
