@@ -58,7 +58,7 @@ public class ConqueryConfig extends Configuration {
 	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
 	@Valid @NotNull
 	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
-	
+	@Valid
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**
 	 * null means here that we try to deduce from an attached agent

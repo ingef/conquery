@@ -21,21 +21,52 @@ import {
   DELETE_PREVIOUS_QUERY_ERROR
 } from "./actionTypes";
 
-const initialState = {
-  queries: []
+export interface PreviousQueryT {
+  id: number | string;
+  label: string;
+  loading: boolean;
+  error: string | null;
+  numberOfResults: number;
+  createdAt: string;
+  tags: string[];
+  own: boolean;
+  shared: boolean;
+}
+
+export interface PreviousQueriesStateT {
+  queries: PreviousQueryT[];
+  loading: boolean;
+  tags: string[];
+  names: string[];
+  error: string | null;
+}
+
+const initialState: PreviousQueriesStateT = {
+  queries: [],
+  loading: false,
+  tags: [],
+  names: [],
+  error: null
 };
 
-const findQuery = (queries, queryId) => {
+const findQuery = (queries: PreviousQueryT[], queryId: string | number) => {
   const query = queries.find(q => q.id === queryId);
 
   return {
     query,
-    queryIdx: queries.indexOf(query)
+    queryIdx: query ? queries.indexOf(query) : -1
   };
 };
 
-const updatePreviousQuery = (state, action, attributes) => {
+const updatePreviousQuery = (
+  state: PreviousQueriesStateT,
+  action: Object,
+  attributes: Partial<PreviousQueryT>
+) => {
   const { query, queryIdx } = findQuery(state.queries, action.payload.queryId);
+
+  if (!query) return state;
+
   return {
     ...state,
     queries: [
@@ -49,19 +80,25 @@ const updatePreviousQuery = (state, action, attributes) => {
   };
 };
 
-const sortQueries = queries => {
+const sortQueries = (queries: PreviousQueryT[]) => {
   return queries.sort((a, b) => {
-    return new Date(b.createdAt) - new Date(a.createdAt);
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 };
 
-const toggleQueryAttribute = (state, action, attribute) => {
+const toggleQueryAttribute = (
+  state: PreviousQueriesStateT,
+  action: Object,
+  attribute: keyof PreviousQueryT
+) => {
   const { query } = findQuery(state.queries, action.payload.queryId);
+
+  if (!query) return state;
 
   return updatePreviousQuery(state, action, { [attribute]: !query[attribute] });
 };
 
-const deletePreviousQuery = (state, action) => {
+const deletePreviousQuery = (state: PreviousQueriesStateT, action: Object) => {
   const { queryIdx } = findQuery(state.queries, action.payload.queryId);
 
   return {
@@ -73,8 +110,8 @@ const deletePreviousQuery = (state, action) => {
   };
 };
 
-const findUniqueTags = queries => {
-  const uniqueTags = new Set();
+const findUniqueTags = (queries: PreviousQueryT[]) => {
+  const uniqueTags = new Set<string>();
 
   queries.forEach(query => {
     if (query.tags) query.tags.forEach(tag => uniqueTags.add(tag));
@@ -83,31 +120,34 @@ const findUniqueTags = queries => {
   return Array.from(uniqueTags);
 };
 
-const findNewTags = tags => {
+const findNewTags = (tags: string[]) => {
   if (!tags) return [];
 
-  let uniqueTags = new Set();
+  let uniqueTags = new Set<string>();
 
   tags.forEach(tag => uniqueTags.add(tag));
 
   return Array.from(uniqueTags);
 };
 
-const findUniqueNames = queries => {
-  const uniqueNames = new Set();
+const findUniqueNames = (queries: PreviousQueryT[]) => {
+  const uniqueNames = new Set<string>();
 
   queries.filter(q => !!q.label).forEach(q => uniqueNames.add(q.label));
 
   return Array.from(uniqueNames);
 };
 
-const updateUniqueNames = (existingNames, newName) => {
+const updateUniqueNames = (existingNames: string[], newName: string) => {
   return existingNames.includes(newName)
     ? existingNames
     : [newName, ...existingNames];
 };
 
-const previousQueriesReducer = (state = initialState, action) => {
+const previousQueriesReducer = (
+  state: PreviousQueriesStateT = initialState,
+  action: Object
+): PreviousQueriesStateT => {
   switch (action.type) {
     case LOAD_PREVIOUS_QUERIES_START:
       return { ...state, loading: true };

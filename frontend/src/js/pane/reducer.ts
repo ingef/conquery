@@ -1,28 +1,29 @@
 import { CLICK_PANE_TAB } from "./actionTypes";
 
-export type TabType = {
+export interface TabType {
   label: string;
   key: string;
-};
+}
 
-export type StateType = {
+export interface PanesStateT {
   left: {
-    activeTab: "conceptTrees" | "previousQueries";
+    activeTab: "conceptTrees" | "previousQueries" | "formConfigs";
     tabs: TabType[];
   };
   right: {
     activeTab: string;
     tabs: TabType[];
   };
-};
+}
 
 export const buildPanesReducer = tabs => {
-  const initialState: StateType = {
+  const initialState: PanesStateT = {
     left: {
       activeTab: "conceptTrees",
       tabs: [
         { label: "leftPane.conceptTrees", key: "conceptTrees" },
-        { label: "leftPane.previousQueries", key: "previousQueries" }
+        { label: "leftPane.previousQueries", key: "previousQueries" },
+        { label: "leftPane.formConfigs", key: "formConfigs" }
       ]
     },
     right: {
@@ -31,7 +32,7 @@ export const buildPanesReducer = tabs => {
     }
   };
 
-  return (state: StateType = initialState, action: Object): StateType => {
+  return (state: PanesStateT = initialState, action: Object): PanesStateT => {
     switch (action.type) {
       case CLICK_PANE_TAB:
         const { paneType, tab } = action.payload;

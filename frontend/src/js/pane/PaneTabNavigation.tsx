@@ -1,36 +1,30 @@
 import React from "react";
-import type { Dispatch } from "redux-thunk";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import { clickPaneTab } from "./actions";
 import type { TabType } from "./reducer";
 
 import TabNavigation from "./TabNavigation";
+import { StateT } from "app-types";
 
-type PropsType = {
-  tabs: TabType[];
+interface PropsT {
   paneType: "left" | "right";
-  activeTab: string;
-  clickPaneTab: Function;
-};
+}
 
-const PaneTabNavigation = (props: PropsType) => {
+const PaneTabNavigation: React.FC<PropsT> = ({ paneType }) => {
+  const tabs = useSelector<StateT, TabType[]>(
+    state => state.panes[paneType].tabs
+  );
+  const activeTab = useSelector<StateT, string>(
+    state => state.panes[paneType].activeTab
+  );
+  const dispatch = useDispatch();
+
+  const onClickTab = (tab: string) => dispatch(clickPaneTab(paneType, tab));
+
   return (
-    <TabNavigation
-      onClickTab={props.clickPaneTab}
-      activeTab={props.activeTab}
-      tabs={props.tabs}
-    />
+    <TabNavigation onClickTab={onClickTab} activeTab={activeTab} tabs={tabs} />
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  tabs: state.panes[ownProps.paneType].tabs,
-  activeTab: state.panes[ownProps.paneType].activeTab
-});
-
-const mapDispatchToProps = (dispatch: Dispatch, ownProps) => ({
-  clickPaneTab: tab => dispatch(clickPaneTab(ownProps.paneType, tab))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(PaneTabNavigation);
+export default PaneTabNavigation;

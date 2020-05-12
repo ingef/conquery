@@ -1,5 +1,4 @@
 import { connect } from "react-redux";
-import type { Dispatch } from "redux-thunk";
 import { isValid, isPristine, getFormValues } from "redux-form";
 
 import transformQueryToApi from "./transformQueryToApi";
@@ -9,15 +8,15 @@ import {
   selectFormConfig,
   selectQueryRunner,
   selectRunningQuery,
-  selectActiveForm
+  selectActiveFormType,
 } from "./stateSelectors";
 
 import QueryRunner from "../query-runner/QueryRunner";
 
 const { startExternalFormsQuery, stopExternalFormsQuery } = actions;
 
-const isActiveFormValid = state => {
-  const activeForm = selectActiveForm(state);
+const isActiveFormValid = (state) => {
+  const activeForm = selectActiveFormType(state);
 
   if (!activeForm) return false;
 
@@ -48,12 +47,12 @@ const mapStateToProps = (state, ownProps) => ({
   queryId: selectRunningQuery(state),
   version: state.conceptTrees.version,
   query: {
-    formName: selectActiveForm(state),
-    form: selectActiveForm(state)
-      ? getFormValues(selectActiveForm(state), selectReduxFormState)(state)
-      : {}
+    formName: selectActiveFormType(state),
+    form: selectActiveFormType(state)
+      ? getFormValues(selectActiveFormType(state), selectReduxFormState)(state)
+      : {},
   },
-  formQueryTransformation: transformQueryToApi(selectFormConfig(state))
+  formQueryTransformation: transformQueryToApi(selectFormConfig(state)),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -67,7 +66,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
       )
     ),
   stopQuery: (datasetId, queryId) =>
-    dispatch(stopExternalFormsQuery(datasetId, queryId))
+    dispatch(stopExternalFormsQuery(datasetId, queryId)),
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({
@@ -82,7 +81,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
       stateProps.formQueryTransformation
     ),
   stopQuery: () =>
-    dispatchProps.stopQuery(ownProps.datasetId, stateProps.queryId)
+    dispatchProps.stopQuery(ownProps.datasetId, stateProps.queryId),
 });
 
 export default connect(

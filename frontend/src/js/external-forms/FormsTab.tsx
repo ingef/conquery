@@ -33,8 +33,8 @@ const FormsTab = (props: TabPropsType) => {
         TimebasedQueryEditorTab,
         {
           ...tabDescription,
-          reducer: externalFormsReducer
-        }
+          reducer: externalFormsReducer,
+        },
       ];
 
       updateReducers(store, tabs);

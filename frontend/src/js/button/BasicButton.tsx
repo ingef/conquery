@@ -1,7 +1,15 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-const BasicButton = styled("button")`
+interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
+  bare?: boolean;
+  tiny?: boolean;
+  small?: boolean;
+  large?: boolean;
+  active?: boolean;
+}
+
+const Button = styled("button")<PropsT>`
   cursor: pointer;
   font-weight: ${({ active }) => (active ? "700" : "400")};
   padding: ${({ small, tiny, bare, large }) =>
@@ -25,8 +33,10 @@ const BasicButton = styled("button")`
   }
 `;
 
-export default ({ children, ...props }) => (
-  <BasicButton type="button" {...props}>
+const BasicButton: React.FC<PropsT> = ({ children, ...props }) => (
+  <Button type="button" {...props}>
     {children}
-  </BasicButton>
+  </Button>
 );
+
+export default BasicButton;

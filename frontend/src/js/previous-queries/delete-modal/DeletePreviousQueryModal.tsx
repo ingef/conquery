@@ -30,9 +30,11 @@ const PrimaryBtn = styled(PrimaryButton)`
 const DeletePreviousQueryModal = (props: PropsType) => {
   return (
     !!props.queryId && (
-      <Modal onClose={props.onClose}>
+      <Modal
+        onClose={props.onClose}
+        headline={T.translate("deletePreviousQueryModal.areYouSure")}
+      >
         <Root>
-          <h3>{T.translate("deletePreviousQueryModal.areYouSure")}</h3>
           <Btn onClick={props.onClose}>{T.translate("common.cancel")}</Btn>
           <PrimaryBtn onClick={props.onDeletePreviousQuery}>
             {T.translate("common.delete")}
