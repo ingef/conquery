@@ -11,10 +11,9 @@ const ListItem = styled("div")`
   padding: 5px;
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
+  border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
-  &:not(:last-child) {
-    border-bottom: 0;
-  }
+  margin-bottom: 3px;
 `;
 
 const StyledIconButton = styled(IconButton)`
@@ -29,7 +28,7 @@ type PropsType = {
   dropzoneChildren: (args: ChildArgs) => React.ReactNode;
   items: any;
   acceptedDropTypes: string[];
-  onDrop: () => void;
+  onDrop: (props: any, monitor: any) => void;
   onDropFile?: (file: File) => void;
   onDelete: Function;
   allowFile?: boolean;

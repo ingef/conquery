@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "src",
     "jsx": "preserve",
     "moduleResolution": "node",
     "sourceMap": true,

@@ -2,7 +2,10 @@ import React from "react";
 import styled from "@emotion/styled";
 import { DropTarget } from "react-dnd";
 
-const Root = styled("div")`
+const Root = styled("div")<{
+  isOver?: boolean;
+  canDrop?: boolean;
+}>`
   border: 3px
     ${({ theme, isOver, canDrop }) =>
       isOver && !canDrop
@@ -25,19 +28,19 @@ const Root = styled("div")`
 `;
 
 export type ChildArgs = {
-  isOver: boolean,
-  canDrop: boolean,
-  itemType: String
+  isOver: boolean;
+  canDrop: boolean;
+  itemType: String;
 };
 
 type InnerZonePropsType = {
-  className?: string,
-  children?: (args: ChildArgs) => React.ReactNode,
-  connectDropTarget: Function,
-  isOver: boolean,
-  canDrop: boolean,
-  itemType: string,
-  onClick: () => void
+  className?: string;
+  children: (args: ChildArgs) => React.ReactNode;
+  connectDropTarget: Function;
+  isOver: boolean;
+  canDrop: boolean;
+  itemType: string;
+  onClick: () => void;
 };
 
 export const InnerZone = ({
@@ -47,11 +50,11 @@ export const InnerZone = ({
   isOver,
   canDrop,
   itemType,
-  connectDropTarget
+  connectDropTarget,
 }: InnerZonePropsType) => {
   return (
     <Root
-      ref={instance => connectDropTarget(instance)}
+      ref={(instance) => connectDropTarget(instance)}
       isOver={isOver}
       canDrop={canDrop}
       className={className}
@@ -63,17 +66,17 @@ export const InnerZone = ({
 };
 
 type PropsType = {
-  acceptedDropTypes: string[],
-  children?: (args: ChildArgs) => React.ReactNode,
-  onDrop: (Object, Object) => void,
-  target?: Object
+  acceptedDropTypes: string[];
+  children?: (args: ChildArgs) => React.ReactNode;
+  onDrop: (props: any, monitor: any) => void;
+  target?: Object;
 };
 
 const collect = (connect, monitor) => ({
   connectDropTarget: connect.dropTarget(),
   isOver: monitor.isOver(),
   canDrop: monitor.canDrop(),
-  itemType: monitor.getItemType()
+  itemType: monitor.getItemType(),
 });
 
 const Dropzone = ({
@@ -84,9 +87,11 @@ const Dropzone = ({
 }: PropsType) => {
   const dropzoneTarget = { drop: onDrop, ...target };
 
-  const FinalZone = DropTarget(acceptedDropTypes, dropzoneTarget, collect)(
-    InnerZone
-  );
+  const FinalZone = DropTarget(
+    acceptedDropTypes,
+    dropzoneTarget,
+    collect
+  )(InnerZone);
 
   return <FinalZone {...restProps} />;
 };
