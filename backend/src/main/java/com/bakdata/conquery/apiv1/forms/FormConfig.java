@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -44,7 +45,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@NotEmpty
 	private String formType;
-	private UUID formId;
+	@VariableDefaultValue @NonNull
+	private UUID formId = UUID.randomUUID();
 	private String label;
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
@@ -52,6 +54,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private JsonNode values;
 	private UserId owner;
+	@VariableDefaultValue
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
 	
@@ -62,10 +65,6 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		if(formId == null) {			
-			formId = UUID.randomUUID();
-			label = formId.toString();
-		}
 		return new FormConfigId(formType, formId);
 	}
 
