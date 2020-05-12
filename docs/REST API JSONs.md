@@ -696,7 +696,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/ExecutionStatus.java#L20) | tags | list of `String` | `null` |  |  | 
 </p></details>
 
-### Type FERoot<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/api/description/FERoot.java#L10-L12)</sup></sub></sup>
+### Type FERoot<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/api/description/FERoot.java#L14-L16)</sup></sub></sup>
 This class represents the root node of the concepts as it is presented to the front end.
 
 <details><summary>Details</summary><p>
