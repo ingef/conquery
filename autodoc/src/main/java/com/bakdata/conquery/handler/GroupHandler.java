@@ -35,6 +35,7 @@ import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.PrettyPrinter;
+import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
@@ -303,6 +304,10 @@ public class GroupHandler {
 			var def = node.get(field.getName());
 			if(def == null) {
 				return "\u2400";
+			}
+			
+			if(field.getAnnotationInfo(VariableDefaultValue.class.getName()) != null) {
+				return "generated default varies";
 			}
 			String json = Jackson.MAPPER.writeValueAsString(def);
 			//we don't want to print defaults if it is a whole object itself

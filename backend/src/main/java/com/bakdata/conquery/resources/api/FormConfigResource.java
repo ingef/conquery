@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.FORM_CONFIG;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -17,9 +18,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.FormConfigProcessor;
 import com.bakdata.conquery.apiv1.FormConfigProcessor.PostResponse;
-import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
@@ -35,6 +36,7 @@ import io.dropwizard.jersey.PATCH;
 @Path("datasets/{" + DATASET + "}/form-configs")
 public class FormConfigResource {
 	
+	@Inject
 	private FormConfigProcessor processor;
 	
 	@PathParam(DATASET)
@@ -58,7 +60,7 @@ public class FormConfigResource {
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId, MetaDataPatch patch ) {
+	public FormConfigFullRepresentation patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId, FormConfigPatch patch ) {
 		return processor.patchConfig(user, datasetId, formId, patch);
 	}
 	

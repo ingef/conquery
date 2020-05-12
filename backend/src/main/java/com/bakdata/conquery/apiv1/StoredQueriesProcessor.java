@@ -74,7 +74,7 @@ public class StoredQueriesProcessor {
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
 		ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId), String.format("Could not find form config %s", executionId));
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
-		MetaDataPatch.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
+		patch.applyTo(execution, storage, user, QueryPermission::onInstance);
 		storage.updateExecution(execution);
 		
 		// Patch this query in other datasets
@@ -87,7 +87,7 @@ public class StoredQueriesProcessor {
 				continue;
 			}
 			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			MetaDataPatch.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
+			patch.applyTo(execution, storage, user, QueryPermission::onInstance);
 			storage.updateExecution(execution);
 		}
 	}
