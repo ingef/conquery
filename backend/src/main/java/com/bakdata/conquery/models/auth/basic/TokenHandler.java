@@ -16,6 +16,7 @@ import io.dropwizard.util.Duration;
 import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 
@@ -27,6 +28,7 @@ public class TokenHandler {
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
 	
 	private static final Random RANDOM_GEN = new SecureRandom();
+	private static final int TOKEN_SECRET_LENGTH = 32;
 
 	/**
 	 * Creates a signed JWT token for the authentication with the
@@ -126,10 +128,7 @@ public class TokenHandler {
 	 * Generate a random secret.
 	 */
 	public static String generateTokenSecret() {
-		
-		byte[] buffer = new byte[32];
-		RANDOM_GEN.nextBytes(buffer);
-		return buffer.toString();
+		return RandomStringUtils.random(TOKEN_SECRET_LENGTH, 0, 0, false, false, null, RANDOM_GEN);
 	}
 
 	@SuppressWarnings("serial")
