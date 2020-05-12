@@ -176,13 +176,15 @@ public class Preprocessor {
 
 					// Read all CSV lines, apply Output transformations and add the to preprocessed.
 					while ((row = parser.parseNext()) != null) {
+
+						// Check if row shall be evaluated
+						// This is explicitly NOT in a try-catch block as scripts may not fail and we should not recover from faulty scripts.
+						if (filter != null && !filter.filterRow(row)) {
+							continue;
+						}
+
 						try {
-
 							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn().getParser(), lineId), "primaryId may not be null");
-
-							if (filter != null && !filter.filterRow(row)) {
-								continue;
-							}
 
 							final int primary = result.addPrimary(primaryId);
 							final PPColumn[] columns = result.getColumns();
@@ -312,10 +314,6 @@ public class Preprocessor {
 
 				if (result == null) {
 					continue;
-				}
-
-				if (outRow == null) {
-					outRow = new Object[outputs.size()];
 				}
 
 				outRow[index] = result;
