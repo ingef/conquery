@@ -48,26 +48,27 @@ const Headline = styled("h3")`
 `;
 
 // https://github.com/Pomax/react-onclickoutside
-type ContentPropsT = {
-  children?: React.Node;
+interface ContentPropsT {
   onClose: () => void;
-};
+}
 
-const ModalContentComponent = ({ children, onClose }: ContentPropsT) => {
+const ModalContentComponent: React.FC<ContentPropsT> = ({
+  children,
+  onClose,
+}) => {
   ModalContentComponent.handleClickOutside = onClose;
 
   return <Content>{children}</Content>;
 };
 
 const ModalContent = onClickOutside(ModalContentComponent, {
-  handleClickOutside: () => ModalContentComponent.handleClickOutside
+  handleClickOutside: () => ModalContentComponent.handleClickOutside,
 });
 // -----------------------------------------------
 
 type PropsT = {
-  children?: React.Node;
   className?: string;
-  headline?: React.Node;
+  headline?: React.ReactNode;
   doneButton?: boolean;
   closeIcon?: boolean;
   tabIndex?: number;
@@ -78,15 +79,15 @@ type PropsT = {
 // - a button
 // - click outside
 // - press esc
-const Modal = ({
+const Modal: React.FC<PropsT> = ({
   className,
   children,
   headline,
   tabIndex,
   doneButton,
   closeIcon,
-  onClose
-}: PropsT) => {
+  onClose,
+}) => {
   return (
     <Root className={className}>
       <Hotkeys keyName="escape" onKeyDown={onClose} />

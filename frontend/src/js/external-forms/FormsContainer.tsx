@@ -1,17 +1,18 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
 import Form from "./form/Form";
 
 import { selectFormConfig } from "./stateSelectors";
 import type { Form as FormType } from "./config-types";
+import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+import FormConfigSaver from "./FormConfigSaver";
 
-type PropsType = {
-  formConfig: FormType;
+interface PropsT {
   datasetId: DatasetIdT;
-};
+}
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -19,16 +20,21 @@ const Root = styled("div")`
   padding: 0 20px 20px 10px;
 `;
 
-const mapStateToProps = state => ({
-  formConfig: selectFormConfig(state)
-});
+const FormsContainer: FC<PropsT> = ({ datasetId }) => {
+  const formConfig = useSelector<StateT, FormType | null>((state) =>
+    selectFormConfig(state)
+  );
 
-export default connect(mapStateToProps)((props: PropsType) => {
   return (
     <Root>
-      {!!props.formConfig && (
-        <Form config={props.formConfig} selectedDatasetId={props.datasetId} />
+      {!!formConfig && (
+        <>
+          <FormConfigSaver activeFormType datasetId={datasetId} />
+          <Form config={formConfig} selectedDatasetId={datasetId} />
+        </>
       )}
     </Root>
   );
-});
+};
+
+export default FormsContainer;

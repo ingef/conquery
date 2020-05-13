@@ -72,17 +72,17 @@ const StyledButton = styled(TransparentButton)`
 `;
 
 type PropsT = {
-  datasetId: string,
+  datasetId: string;
 
-  trees: TreesT,
-  search: SearchT,
-  areTreesAvailable: boolean,
-  showMismatches: boolean,
+  trees: TreesT;
+  search: SearchT;
+  areTreesAvailable: boolean;
+  showMismatches: boolean;
 
-  onSearch: (datasetId: DatasetIdT, trees: TreesT, value: string) => void,
-  onChange: (val: string) => void,
-  onClearQuery: () => void,
-  onToggleShowMismatches: () => void
+  onSearch: (datasetId: DatasetIdT, trees: TreesT, value: string) => void;
+  onChange: (val: string) => void;
+  onClearQuery: () => void;
+  onToggleShowMismatches: () => void;
 };
 
 const mapStateToProps = state => ({
