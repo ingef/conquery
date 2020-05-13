@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.preproc;
 import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.validation.Valid;
@@ -17,7 +16,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import groovy.lang.GroovyShell;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
@@ -29,6 +30,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
  */
 @Data
+@Slf4j
 public class TableInputDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -48,7 +50,7 @@ public class TableInputDescriptor implements Serializable {
 	 */
 	@NotNull
 	@Valid
-	private OutputDescription primary = new CopyOutput("pid", "pid", MajorTypeId.STRING);
+	private OutputDescription primary = new CopyOutput("pid", "id", MajorTypeId.STRING);
 	@Valid
 	private OutputDescription[] output;
 
@@ -62,7 +64,8 @@ public class TableInputDescriptor implements Serializable {
 		try{
 			createFilter(FAKE_HEADERS);
 		}
-		catch (Exception ignored) {
+		catch (Exception ex) {
+			log.error("Groovy script is not valid",ex);
 			return false;
 		}
 
@@ -73,13 +76,17 @@ public class TableInputDescriptor implements Serializable {
 	@JsonIgnore
 	@ValidationMethod(message = "Each column requires a unique name")
 	public boolean isEachNameUnique() {
-		return IntStream
-					   .range(0, this.getWidth())
-					   .mapToObj(this::getColumnDescription)
-					   .map(ColumnDescription::getName)
-					   .distinct()
-					   .count()
-			   == this.getWidth();
+		Object2IntMap<String> names = new Object2IntArrayMap<>(getWidth());
+
+		for (int index = 0; index < output.length; index++) {
+			int prev = names.put(output[index].getName(), index);
+			if(prev != -1){
+				log.error("Duplicate Output to Column[{}] at indices {} and {}", output[index].getName(), prev, index);
+				return false;
+			}
+		}
+
+		return false;
 	}
 
 	@JsonIgnore
