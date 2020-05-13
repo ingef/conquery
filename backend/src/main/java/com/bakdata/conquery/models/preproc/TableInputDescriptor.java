@@ -87,7 +87,7 @@ public class TableInputDescriptor implements Serializable {
 			}
 		}
 
-		return false;
+		return true;
 	}
 
 	@JsonIgnore
