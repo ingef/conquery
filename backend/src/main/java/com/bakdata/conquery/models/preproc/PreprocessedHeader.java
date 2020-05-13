@@ -6,8 +6,9 @@ import com.bakdata.conquery.models.datasets.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data @NoArgsConstructor @AllArgsConstructor @Slf4j
 public class PreprocessedHeader {
 	private String name;
 	private String table;
@@ -35,14 +36,15 @@ public class PreprocessedHeader {
 			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));
 		}
 
-		for (int i = 0; i < table.getColumns().length; i++) {
+		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
 			if (!table.getColumns()[i].matches(getColumns()[i])) {
 				errors.add(String.format("Column[%s] does not match table Column[%s]`", getColumns()[i], table.getColumns()[i]));
 			}
 		}
 
 		if (errors.length() != 0) {
-			throw new IllegalArgumentException(String.format("Headers[%s.%s.%s] do not match Table[%s]: %s", getTable(), getName(), getSuffix(), table.getId(), errors.toString()));
+			log.error(errors.toString());
+			throw new IllegalArgumentException(String.format("Headers[%s.%s.%s] do not match Table[%s]", getTable(), getName(), getSuffix(), table.getId()));
 		}
 	}
 }
