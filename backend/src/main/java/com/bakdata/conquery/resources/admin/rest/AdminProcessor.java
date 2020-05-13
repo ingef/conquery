@@ -127,8 +127,8 @@ public class AdminProcessor {
 		// see #143 check duplicate names
 	}
 
-	public void addConcept(Dataset dataset, Concept<?> c) {
-		c.setDataset(dataset.getId());
+	public void addConcept(Dataset dataset, Concept<?> c) {		
+		// Register the Concept in the Master and Workers
 		if (namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + c.getId(), Status.CONFLICT);
 		}

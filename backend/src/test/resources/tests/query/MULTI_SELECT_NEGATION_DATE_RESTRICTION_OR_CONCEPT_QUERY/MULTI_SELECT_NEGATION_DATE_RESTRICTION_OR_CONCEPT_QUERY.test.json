@@ -69,15 +69,15 @@
          "connectors":[  
             {  
                "label":"geschlecht_connector",
-               "table":"vers_stamm",
+               "table":"table1",
                "validityDates":{  
                   "label":"datum",
-                  "column":"vers_stamm.datum"
+                  "column":"table1.datum"
                },
                "filter":{  
                   "label":"geschlecht",
                   "description":"Geschlecht zur gegebenen Datumseinschränkung",
-                  "column":"vers_stamm.geschlecht",
+                  "column":"table1.geschlecht",
                   "type":"SELECT"
                }
             }
@@ -88,7 +88,7 @@
       "tables":[  
          {  
             "csv":"tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY/content.csv",
-            "name":"vers_stamm",
+            "name":"table1",
             "primaryColumn":{  
                "name":"pid",
                "type":"STRING"

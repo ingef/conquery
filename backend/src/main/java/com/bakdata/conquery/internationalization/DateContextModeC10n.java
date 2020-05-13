@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1.forms;
+package com.bakdata.conquery.internationalization;
 
 import c10n.annotations.De;
 import c10n.annotations.En;
