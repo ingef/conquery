@@ -77,6 +77,7 @@ public class TableInputDescriptor implements Serializable {
 	@ValidationMethod(message = "Each column requires a unique name")
 	public boolean isEachNameUnique() {
 		Object2IntMap<String> names = new Object2IntArrayMap<>(getWidth());
+		names.defaultReturnValue(-1);
 
 		for (int index = 0; index < output.length; index++) {
 			int prev = names.put(output[index].getName(), index);
