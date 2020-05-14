@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc;
 import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import javax.validation.Valid;
@@ -21,6 +22,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}.
@@ -51,7 +53,7 @@ public class TableInputDescriptor implements Serializable {
 	@NotNull
 	@Valid
 	private OutputDescription primary = new CopyOutput("pid", "id", MajorTypeId.STRING);
-	@Valid
+	@Valid @NotEmpty
 	private OutputDescription[] output;
 
 	/**
@@ -88,12 +90,6 @@ public class TableInputDescriptor implements Serializable {
 		}
 
 		return true;
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Outputs must not be empty")
-	public boolean isOutputsNotEmpty() {
-		return output != null && output.length > 0;
 	}
 
 	@JsonIgnore
@@ -134,13 +130,12 @@ public class TableInputDescriptor implements Serializable {
 	}
 
 
+	/**
+	 * Create a mapping from a header to it's column position.
+	 */
 	public static Object2IntArrayMap<String> buildHeaderMap(String[] headers) {
-		final Object2IntArrayMap<String> headersMap = new Object2IntArrayMap<>();
-		headersMap.defaultReturnValue(-1);
-
-		for (int index = 0; index < headers.length; index++) {
-			headersMap.put(headers[index], index);
-		}
-		return headersMap;
+		final int[] indices = new int[headers.length];
+		Arrays.setAll(indices, i -> i);
+		return new Object2IntArrayMap<>(headers, indices);
 	}
 }
