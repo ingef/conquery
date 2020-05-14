@@ -77,8 +77,7 @@ public class UpdateMatchingStats extends Job {
 				}
 			}
 			catch (Exception e) {
-				log.error("Failed to collect the matching stats for {}", cBlock);
-				log.error("",e);
+				log.error("Failed to collect the matching stats for {}", cBlock, e);
 			}
 
 			progressReporter.report(1);

@@ -53,6 +53,11 @@ public class MatchingStats {
 			for(Column c : table.getColumns()) {
 				if(c.getType().isDateCompatible()) {
 					final CDateRange time = bucket.getAsDateRange(event, c);
+
+					if(time == null){
+						continue;
+					}
+
 					span = time.spanClosed(span);
 				}
 			}
