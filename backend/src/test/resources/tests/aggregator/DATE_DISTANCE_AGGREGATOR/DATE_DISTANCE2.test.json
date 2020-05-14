@@ -39,15 +39,15 @@
       "connectors": [
         {
           "label": "geschlecht_connector",
-          "table": "vers_stamm",
+          "table": "table1",
           "validityDates": {
             "label": "indexdatum",
-            "column": "vers_stamm.indexdatum"
+            "column": "table1.indexdatum"
           },
 		  "selects": {
 			"name": "geb",
 			"type": "DATE_DISTANCE", 
-			"column": "vers_stamm.geburtsdatum"
+			"column": "table1.geburtsdatum"
 		  }
         }
       ]
@@ -57,7 +57,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/DATE_DISTANCE_AGGREGATOR/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

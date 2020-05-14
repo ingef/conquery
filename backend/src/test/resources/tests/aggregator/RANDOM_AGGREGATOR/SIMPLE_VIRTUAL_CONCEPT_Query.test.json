@@ -27,15 +27,15 @@
       "connectors": [
         {
           "label": "connector",
-          "table": "vers_stamm",
+          "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           },
           "selects": {
             "name" : "select",
             "type": "LAST",
-            "column": "vers_stamm.geschlecht"
+            "column": "table1.geschlecht"
           }
         }
       ]
@@ -45,7 +45,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/RANDOM_AGGREGATOR/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
