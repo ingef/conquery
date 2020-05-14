@@ -1,8 +1,13 @@
 import { SET_PREVIOUS_QUERIES_FILTER } from "./actionTypes";
 
-const initialState = "all";
+export type PreviousQueriesFilterStateT = string;
 
-const previousQueriesFilter = (state = initialState, action) => {
+const initialState: PreviousQueriesFilterStateT = "all";
+
+const previousQueriesFilter = (
+  state: PreviousQueriesFilterStateT = initialState,
+  action: Object
+): PreviousQueriesFilterStateT => {
   switch (action.type) {
     case SET_PREVIOUS_QUERIES_FILTER:
       return action.payload.filter;

@@ -1,0 +1,200 @@
+{
+  "id": "testconf",
+  "label": "Movie Apps",
+  "formType": "EXPORT_FORM",
+  "tags": ["fun", "interesting", "research"],
+  "own": false,
+  "shared": true,
+  "ownerName": "System",
+  "values": {
+    "queryGroup": {
+      "width": 376.46875,
+      "height": 85,
+      "id": 28057,
+      "label": null,
+      "isPreviousQuery": true
+    },
+    "timeMode": "ABSOLUTE",
+    "dateRange": { "min": "2019-01-01", "max": "2019-12-31" },
+    "features": [
+      {
+        "concepts": [
+          {
+            "width": 376.46875,
+            "height": 20,
+            "ids": ["movie_appearances"],
+            "label": "Movie Appearances",
+            "tables": [
+              {
+                "connectorId": "feature_films",
+                "id": "feature_films",
+                "label": "Feature Films",
+                "dateColumn": {
+                  "id": "385623",
+                  "options": [
+                    { "label": "Main date", "value": "main_date" },
+                    { "label": "Another date", "value": "another_date" }
+                  ],
+                  "value": "main_date"
+                },
+                "selects": [
+                  {
+                    "id": "12345678",
+                    "label": "Anzahl unterschiedliche Studios",
+                    "description": "Beispieldescription",
+                    "default": true,
+                    "selected": true
+                  },
+                  {
+                    "id": "123456789",
+                    "label": "Summe Budget",
+                    "description": "Die Summe berechnet sich aus X und Y und Z und example.",
+                    "selected": false
+                  }
+                ],
+                "filters": [
+                  {
+                    "id": "studio",
+                    "label": "Production Studio",
+                    "type": "MULTI_SELECT",
+                    "description": "The studio producing the movie",
+                    "options": [
+                      { "value": "universal", "label": "Universal Studios" },
+                      { "value": "paramount", "label": "Paramount Pictures" },
+                      { "value": "warner_bros", "label": "Warner Bros." },
+                      {
+                        "value": "20th_century_fox",
+                        "label": "20th Century Fox"
+                      },
+                      { "value": "sony", "label": "Sony/Columbia Pictures" },
+                      { "value": "disney", "label": "Walt Disney Studios" }
+                    ],
+                    "value": [
+                      {
+                        "value": "paramount",
+                        "label": "Paramount Pictures",
+                        "optionLabel": "Paramount Pictures"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "production_country",
+                    "label": "Production Country",
+                    "type": "BIG_MULTI_SELECT",
+                    "allowDropFile": true,
+                    "options": [
+                      { "value": "GER", "label": "Germany" },
+                      { "value": "USA", "label": "United States (USA)" }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "id": "budget",
+                    "label": "Budget",
+                    "type": "MONEY_RANGE",
+                    "unit": "EUR",
+                    "description": "The movie's total budget",
+                    "min": 1,
+                    "value": { "min": 2300, "max": null }
+                  }
+                ],
+                "exclude": false
+              },
+              {
+                "connectorId": "tv_series",
+                "id": "tv_series",
+                "label": "TV Series",
+                "dateColumn": {
+                  "id": "385623",
+                  "options": [
+                    { "label": "Main date", "value": "main_date" },
+                    { "label": "Another date", "value": "another_date" }
+                  ],
+                  "value": "main_date"
+                },
+                "filters": [
+                  {
+                    "id": "network",
+                    "label": "Network",
+                    "type": "MULTI_SELECT",
+                    "description": "The original broadcasting network",
+                    "options": [
+                      { "value": "amc", "label": "AMC" },
+                      { "value": "fox", "label": "FOX" },
+                      { "value": "cbs", "label": "CBS" },
+                      { "value": "hbo", "label": "HBO" },
+                      { "value": "netflix", "label": "Netflix" },
+                      { "value": "amazon", "label": "Amazon Video" }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "id": "picture_format",
+                    "label": "Picture Format",
+                    "type": "SELECT",
+                    "description": "The original picture format",
+                    "defaultValue": "hdtv",
+                    "options": [
+                      { "value": "sdtv", "label": "SDTV" },
+                      { "value": "hdtv", "label": "HDTV" },
+                      { "value": "4k", "label": "4K" }
+                    ],
+                    "value": "hdtv"
+                  },
+                  {
+                    "id": "production_country",
+                    "label": "Production Country",
+                    "type": "BIG_MULTI_SELECT",
+                    "value": []
+                  },
+                  {
+                    "id": "series_count",
+                    "label": "Number of series",
+                    "type": "INTEGER_RANGE",
+                    "distinct": true,
+                    "unit": "#",
+                    "description": "The total number of series",
+                    "pattern": "^(?!-)\\d*$",
+                    "min": 1,
+                    "value": null
+                  }
+                ],
+                "exclude": false,
+                "selects": null
+              }
+            ],
+            "selects": [
+              {
+                "id": "12345678",
+                "label": "Filme gespielt Gesamt",
+                "description": "Beispieldescription",
+                "default": true,
+                "selected": true
+              },
+              {
+                "id": "123456789",
+                "label": "Summe Gage",
+                "description": "Die Summe berechnet sich aus X und Y und Z und example.",
+                "selected": false
+              },
+              {
+                "id": "123456789a",
+                "label": "Hatte Spaß im Dreh",
+                "description": "Der Spaß ist manchmal gegeben und manchmal nicht.",
+                "selected": false
+              }
+            ],
+            "tree": "movie_appearances",
+            "isEditing": false
+          }
+        ]
+      }
+    ],
+    "timeUnit": "QUARTERS",
+    "timeCountBefore": 1,
+    "timeCountAfter": 1,
+    "indexSelector": "FIRST",
+    "indexPlacement": "BEFORE",
+    "outcomes": []
+  }
+}

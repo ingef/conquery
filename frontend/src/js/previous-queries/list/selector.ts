@@ -1,4 +1,6 @@
-const queryHasTag = (query, searchTerm) => {
+import { PreviousQueryT } from "./reducer";
+
+const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
     !!query.tags &&
     query.tags.some(tag => {
@@ -7,18 +9,18 @@ const queryHasTag = (query, searchTerm) => {
   );
 };
 
-const queryHasLabel = (query, searchTerm) => {
+const queryHasLabel = (query: PreviousQueryT, searchTerm: string) => {
   return (
     query.label &&
     query.label.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
   );
 };
 
-const queryHasId = (query, searchTerm) => {
+const queryHasId = (query: PreviousQueryT, searchTerm: string) => {
   return query.id.toString() === searchTerm;
 };
 
-const queryHasFilterType = (query, filter) => {
+const queryHasFilterType = (query: PreviousQueryT, filter: string) => {
   if (filter === "all") return true;
 
   // Checks query.own, query.shared or query.system
@@ -32,8 +34,8 @@ const queryHasFilterType = (query, filter) => {
 };
 
 export const selectPreviousQueries = (
-  queries: [],
-  search: [],
+  queries: PreviousQueryT[],
+  search: string[],
   filter: string
 ) => {
   if (search.length === 0 && filter === "all") return queries;

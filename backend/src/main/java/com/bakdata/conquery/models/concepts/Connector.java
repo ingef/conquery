@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.validation.ConstraintValidatorContext;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
@@ -27,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,7 +47,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@JsonIgnore @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
-	@NotNull @Getter @Setter @JsonManagedReference
+	@NotNull @Getter @Setter @JsonManagedReference @Valid
 	private List<Select> selects = new ArrayList<>();
 
 	@Override

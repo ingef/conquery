@@ -1,21 +1,14 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import type { Dispatch } from "redux-thunk";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import { setExternalForm } from "./actions";
 
 import InputSelect from "../form-components/InputSelect";
 import { T, getLocale } from "../localization";
-import { selectActiveForm, selectAvailableForms } from "./stateSelectors";
-import type { Forms as FormsType } from "./config-types";
-
-type PropsType = {
-  availableForms: FormsType;
-  activeForm: string;
-  onItemClick: Function;
-  onClearForm: Function;
-};
+import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
+import type { StateT } from "app-types";
+import type { Form } from "js/api/form-types";
 
 const Root = styled("div")`
   flex-shrink: 0;
@@ -32,11 +25,25 @@ const SxInputSelect = styled(InputSelect)`
   flex-grow: 1;
 `;
 
-const FormsNavigation = (props: PropsType) => {
+const FormsNavigation: FC = () => {
+  const availableForms = useSelector<
+    StateT,
+    {
+      [formName: string]: Form;
+    }
+  >((state) => selectAvailableForms(state));
+  const activeForm = useSelector<StateT, string | null>((state) =>
+    selectActiveFormType(state)
+  );
+
+  const dispatch = useDispatch();
+
+  const onItemClick = (form: string) => dispatch(setExternalForm(form));
+
   const locale = getLocale();
-  const options = Object.values(props.availableForms).map(formType => ({
+  const options = Object.values(availableForms).map((formType) => ({
     label: formType.headline[locale],
-    value: formType.type
+    value: formType.type,
   }));
 
   return (
@@ -45,26 +52,17 @@ const FormsNavigation = (props: PropsType) => {
         label={T.translate("externalForms.forms")}
         options={options}
         input={{
-          value: props.activeForm,
-          onChange: value => props.onItemClick(value)
+          value: activeForm,
+          onChange: (value: string) => onItemClick(value),
         }}
         selectProps={{
           clearable: false,
           autosize: true,
-          searchable: false
+          searchable: false,
         }}
       />
     </Root>
   );
 };
 
-const mapStateToProps = state => ({
-  availableForms: selectAvailableForms(state),
-  activeForm: selectActiveForm(state)
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onItemClick: form => dispatch(setExternalForm(form))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(FormsNavigation);
+export default FormsNavigation;
