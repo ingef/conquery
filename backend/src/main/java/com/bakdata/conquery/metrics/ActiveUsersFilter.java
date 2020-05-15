@@ -1,6 +1,7 @@
 package com.bakdata.conquery.metrics;
 
 import java.security.Principal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
@@ -34,6 +34,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 	private static final String ACTIVE = "active";
 
 	private final MasterMetaStorage storage;
+	private final Duration activeUserDuration;
 
 	private final Table<Group, User, LocalDateTime> activeUsers = HashBasedTable.create();
 
@@ -59,20 +60,21 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 
 		final String metricName = MetricRegistry.name(USERS, group.getName(), ACTIVE);
 
-		// No need to register the gauge multiple times.
-		if(!SharedMetricRegistries.getDefault().getGauges(((name, metric) -> metricName.equalsIgnoreCase(name))).isEmpty())
-			return;
-
-		SharedMetricRegistries.getDefault().gauge(metricName, () -> createActiveUsersGauge(group));
+		// This does not register multiple gauges, but reuses them under the hood.
+		SharedMetricRegistries.getDefault().gauge(metricName, () -> activeUsersGauge(group));
 	}
 
-	private Gauge<Integer> createActiveUsersGauge(Group group){
+	/**
+	 * Count the number of users who have issued a request in the configured duration.
+	 */
+	private Gauge<Integer> activeUsersGauge(Group group){
 		return () -> {
 			int active = 0;
 			for (Map.Entry<User, LocalDateTime> usageTimes : activeUsers.row(group).entrySet()) {
-				if(usageTimes.getValue().isBefore(LocalDateTime.now().minusHours(ConqueryConfig.getInstance().getMetricsConfig().getUserActiveHours()))){
+				if(usageTimes.getValue().isBefore(LocalDateTime.now().minus(activeUserDuration))){
 					continue;
 				}
+
 				active++;
 			}
 			return active;

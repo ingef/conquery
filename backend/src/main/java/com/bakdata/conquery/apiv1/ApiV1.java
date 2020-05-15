@@ -1,11 +1,14 @@
 package com.bakdata.conquery.apiv1;
 
+import java.time.Duration;
+
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.api.APIResource;
@@ -42,7 +45,10 @@ public class ApiV1 implements ResourcesProvider {
 		});
 
 		environment.register(new CORSPreflightRequestFilter());
-		environment.register(new ActiveUsersFilter(master.getStorage()));
+		environment.register(new ActiveUsersFilter(master.getStorage(), Duration.ofMinutes(ConqueryConfig.getInstance()
+																										.getMetricsConfig()
+																										.getUserActiveDuration()
+																										.toMinutes())));
 
 		/*
 		 * Register the authentication filter which protects all resources registered in this servlet.
