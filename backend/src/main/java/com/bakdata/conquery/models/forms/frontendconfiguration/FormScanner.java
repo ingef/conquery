@@ -94,22 +94,21 @@ public class FormScanner {
 		Map<String, JsonNode> result = new HashMap<>();
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
 			JsonNode configTree = configInfo.getConfigTree();
-			String fullTypeIdentifier = null;
 			JsonNode type = configTree.get("type");
 			if (!validTypeId(type)) {
 				log.warn("Found invalid type id in {}. Was: {}", configInfo.getOrigin(), type);
 				continue;
 			}
-			fullTypeIdentifier = type.asText();
+			
+			// Extract complete type information (type@subtype) and type information
+			String fullTypeIdentifier = type.asText();
 			String typeIdentifier = CPSTypeIdResolver.truncateSubTypeInformation(fullTypeIdentifier);
 			if (!forms.containsKey(typeIdentifier)) {
 				log.warn("Frontend form config {} (type = {}) does not map to a backend class.", configInfo, type);
 				continue;
 			}
-//			JsonNode subtype = configTree.get("subType");
-//			if (validTypeId(subtype)) {
-//				typeIdentifier = subtype.asText();
-//			}
+			
+			// Register Fontend config and check if there was already a mapping for this complete type to a frontend config
 			JsonNode prev = result.put(fullTypeIdentifier, configTree);
 			if (prev != null) {
 				throw new IllegalStateException(String.format(
@@ -118,8 +117,9 @@ public class FormScanner {
 					fullTypeIdentifier,
 					prev));
 			}
-			Class<? extends Form> formClass = forms.get(typeIdentifier);
-			info.add(String.format(INFO_FORMAT, fullTypeIdentifier, configInfo.getOrigin(), formClass.getName()));
+			
+			// Update information string
+			info.add(String.format(INFO_FORMAT, fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName()));
 		}
 		log.info(info.toString());
 		return result;
