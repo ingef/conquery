@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.resultinfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class ResultInfoCollector {
 	
 	@Getter
-	private final HashMap<String, AtomicInteger> ocurrenceCounter = new HashMap<>();
+	private final HashMap<String, Integer> ocurrenceCounter = new HashMap<>();
 	@Getter
 	private final List<ResultInfo> infos = new ArrayList<>();
 	

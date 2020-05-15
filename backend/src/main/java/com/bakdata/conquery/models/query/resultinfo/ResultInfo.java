@@ -3,7 +3,6 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -31,7 +30,7 @@ public abstract class ResultInfo {
 	 * Is injected by the {@link ResultInfoCollector} for {@link SelectResultInfo}s.
 	 */
 	@EqualsAndHashCode.Exclude
-	private HashMap<String, AtomicInteger> ocurrenceCounter;
+	private HashMap<String, Integer> ocurrenceCounter;
 	private ClassToInstanceMap<Object> appendices = MutableClassToInstanceMap.create();
 	
 	@NonNull
@@ -43,7 +42,7 @@ public abstract class ResultInfo {
 		}
 		synchronized (ocurrenceCounter) {
 			if(postfix == UNSET_PREFIX) {
-				postfix = ocurrenceCounter.computeIfAbsent(name, str -> new AtomicInteger(0)).getAndIncrement();
+				postfix = ocurrenceCounter.compute(name, (k, v) -> (v == null) ? 0 : ++v );
 			}
 		}
 		return (postfix > 0) ? name + "_" + postfix : name;
