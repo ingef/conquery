@@ -5,10 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -16,7 +12,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -28,7 +23,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
-import lombok.NonNull;
+import lombok.Data;
 
 public class ExecutionMetrics {
 
@@ -60,7 +55,7 @@ public class ExecutionMetrics {
 	/**
 	 * Report all NamespacedIds to the metrics registry.
 	 */
-	public static void reportNamespacedIds(Collection<NamespacedId> foundIds, User user, @NonNull MasterMetaStorage storage) {
+	public static void reportNamespacedIds(Collection<NamespacedId> foundIds, String tag) {
 		final Set<ConceptId> reportedIds = new HashSet<>(foundIds.size());
 
 		for (NamespacedId id : foundIds) {
@@ -83,30 +78,32 @@ public class ExecutionMetrics {
 			}
 		}
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getId).map(GroupId::toString).orElse("none");
-
 		for (ConceptId id : reportedIds) {
 
-			SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CONCEPTS, id.toStringWithoutDataset(), primaryGroupName)).inc();
+			SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CONCEPTS, id.toStringWithoutDataset(), tag)).inc();
 		}
 	}
 
 	/**
 	 * Log the entire Query tree into Metrics
 	 */
+	@Data
 	public static class QueryMetricsReporter implements QueryVisitor {
+
+		private final String tag;
 
 		@Override
 		public void accept(Visitable element) {
+
 			if (element instanceof CQElement) {
-				SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, element.getClass().getSimpleName())).inc();
+				SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, element.getClass().getSimpleName(), tag)).inc();
 			}
 
 			if (element instanceof CQConcept) {
 				for (Select select : ((CQConcept) element).getSelects()) {
-					SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName())).inc();
+					SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName(), tag)).inc();
 
-					SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, SELECTS, select.getId().toStringWithoutDataset())).inc();
+					SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, SELECTS, select.getId().toStringWithoutDataset(), tag)).inc();
 				}
 
 				// Report classes and ids used of filters and selects
@@ -114,20 +111,20 @@ public class ExecutionMetrics {
 
 					for (FilterValue<?> filter : table.getFilters()) {
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, CLASSES, filter.getFilter().getClass().getSimpleName()))
+											  .counter(MetricRegistry.name(QUERIES, CLASSES, filter.getFilter().getClass().getSimpleName(), tag))
 											  .inc();
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, FILTERS, filter.getFilter().getId().toStringWithoutDataset()))
+											  .counter(MetricRegistry.name(QUERIES, FILTERS, filter.getFilter().getId().toStringWithoutDataset(), tag))
 											  .inc();
 					}
 
 					for (Select select : table.getSelects()) {
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName()))
+											  .counter(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName(), tag))
 											  .inc();
 
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, SELECTS, select.getId().toStringWithoutDataset()))
+											  .counter(MetricRegistry.name(QUERIES, SELECTS, select.getId().toStringWithoutDataset(), tag))
 											  .inc();
 					}
 				}
