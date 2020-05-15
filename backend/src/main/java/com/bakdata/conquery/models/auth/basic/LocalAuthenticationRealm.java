@@ -1,11 +1,9 @@
 package com.bakdata.conquery.models.auth.basic;
 
 import java.io.File;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -21,6 +19,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
+import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -78,7 +77,9 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private XodusStore passwordStore;
 
 	@JsonIgnore
-	private MasterMetaStorage storage;
+	private final MasterMetaStorage storage;
+	@JsonIgnore
+	private final ConqueryTokenRealm centralTokenRealm;
 
 	@RequiredArgsConstructor
 	@Getter
@@ -94,25 +95,12 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(MasterMetaStorage storage, LocalAuthenticationConfig config) {
+	public LocalAuthenticationRealm(AuthorizationController controller, LocalAuthenticationConfig config) {
 		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
-		this.storage = storage;
+		this.storage = controller.getStorage();
 		this.storeName = config.getStoreName();
+		this.centralTokenRealm = controller.getCentralTokenRealm();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
-		
-		String tokenSecret = generateTokenSecret();
-
-	}
-	
-	/**
-	 * Generate a random default token.
-	 * @return The token as a {@link String}
-	 */
-	private static String generateTokenSecret() {
-		Random rand = new SecureRandom();
-		byte[] buffer = new byte[32];
-		rand.nextBytes(buffer);
-		return buffer.toString();
 	}
 
 	@Override
@@ -143,7 +131,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			throw new AuthenticationException("Provided username or password was not valid.");
 		}
 		// The username is in this case the email
-		return AuthorizationController.CENTRAL_TOKEN_REALM().createTokenForUser(new UserId(username));
+		return centralTokenRealm.createTokenForUser(new UserId(username));
 	}
 
 	/**

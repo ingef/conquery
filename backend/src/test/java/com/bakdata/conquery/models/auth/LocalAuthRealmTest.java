@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.google.common.collect.MoreCollectors;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -57,7 +58,7 @@ public class LocalAuthRealmTest {
 		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(),List.of(config), storage);
 		controller.init();
 		controller.start();
-		realm = (LocalAuthenticationRealm) controller.getAuthenticationRealms().get(0);
+		realm = (LocalAuthenticationRealm) controller.getAuthenticationRealms().stream().filter(r -> r instanceof LocalAuthenticationRealm).collect(MoreCollectors.onlyElement());
 	}
 
 	@BeforeEach
@@ -113,7 +114,7 @@ public class LocalAuthRealmTest {
 		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
-		assertThat(AuthorizationController.CENTRAL_TOKEN_REALM().doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
+		assertThat(controller.getCentralTokenRealm().doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
 			.isEqualTo(new UserId("TestUser"));
 	}
 

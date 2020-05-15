@@ -16,7 +16,6 @@ import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -39,6 +38,8 @@ import org.apache.shiro.util.LifecycleUtils;
 @RequiredArgsConstructor
 public final class AuthorizationController implements Managed{
 	
+	public static AuthorizationController INSTANCE;
+	
 	@NonNull
 	private final AuthorizationConfig authorizationConfig;
 	@NonNull
@@ -47,8 +48,8 @@ public final class AuthorizationController implements Managed{
 	@Getter
 	private final MasterMetaStorage storage;
 
-	@Accessors(fluent = true) @Getter
-	private static ConqueryTokenRealm CENTRAL_TOKEN_REALM;
+	@Getter
+	private ConqueryTokenRealm centralTokenRealm;
 	@Getter
 	private List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
 	@Getter
@@ -57,27 +58,28 @@ public final class AuthorizationController implements Managed{
 	private List<Realm> realms = new ArrayList<>();
 	
 	public void init() {
-		// Init authentication realms provided by with the config.
-		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
-			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
-			authenticationRealms.add(realm);
-			realms.add(realm);
-		}
-		
 		// Add the central authentication realm
-		CENTRAL_TOKEN_REALM = new ConqueryTokenRealm(storage);
-		authenticationRealms.add(CENTRAL_TOKEN_REALM);
-		realms.add(CENTRAL_TOKEN_REALM);
+		centralTokenRealm = new ConqueryTokenRealm(storage);
+		authenticationRealms.add(centralTokenRealm);
+		realms.add(centralTokenRealm);
 		
 		// Add the central authorization realm
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);
+
+		// Init authentication realms provided by with the config.
+		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
+			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(this);
+			authenticationRealms.add(realm);
+			realms.add(realm);
+		}
 		
 		registerShiro(realms);
 		
 		// Create Jersey filter for authentication
 		this.authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
-		
+
+		INSTANCE = this;
 	}
 	
 	@Override

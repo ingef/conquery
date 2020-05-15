@@ -51,7 +51,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
 		}
-		log.trace("Token has expected format.", TOKEN_CLASS, token.getClass());
+		log.trace("Token has expected format: {}\tWas: {} ", TOKEN_CLASS, token.getClass());
 		DecodedJWT decodedToken = null;
 		try {
 			decodedToken = jwtConfig.getTokenVerifier(this).verify((String) token.getCredentials());
