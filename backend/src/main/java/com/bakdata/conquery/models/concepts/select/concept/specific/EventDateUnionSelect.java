@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.date.EventDateUnionAggregator;
 
 /**
  * Collects the event dates that are corresponding to an enclosing {@link Connector} or {@link Concept} provided in a query.

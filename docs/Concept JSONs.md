@@ -494,7 +494,7 @@ Entity is included when the number of distinct quarters for all events is within
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountQuartersSelect`
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.CountQuartersSelect`
 
 Supported Fields:
 
@@ -512,7 +512,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateDistanceSelect`
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.DateDistanceSelect`
 
 Supported Fields:
 
@@ -531,7 +531,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateUnionSelect`
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.DateUnionSelect`
 
 Supported Fields:
 
@@ -567,7 +567,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DurationSumSelect`
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.DurationSumSelect`
 
 Supported Fields:
 
@@ -672,7 +672,7 @@ Entity is included when the the number of quarters with events is within a speci
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.QuartersInYearSelect`
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.QuartersInYearSelect`
 
 Supported Fields:
 
