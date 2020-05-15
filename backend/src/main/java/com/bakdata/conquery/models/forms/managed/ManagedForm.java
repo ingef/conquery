@@ -172,15 +172,14 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	private boolean allSubQueriesDone() {
-		boolean wholeDone = true;
 		synchronized (getExecution()) {			
 			for (ManagedQuery q : flatSubQueries.values()) {
 				if (!q.getState().equals(ExecutionState.DONE)) {
-					wholeDone = false;
+					return false;
 				}
 			}
 		}
-		return wholeDone;
+		return true;
 	}
 
 	@Override
