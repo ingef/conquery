@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
+package com.bakdata.conquery.models.query.queryplan.aggregators.specific.date;
 
 import java.util.Objects;
 import java.util.Set;
