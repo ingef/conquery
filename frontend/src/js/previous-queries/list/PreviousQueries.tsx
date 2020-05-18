@@ -1,13 +1,14 @@
-import React, { Component } from "react";
+import React from "react";
 import styled from "@emotion/styled";
 import ReactList from "react-list";
 
 import PreviousQuery from "./PreviousQuery";
+import { PreviousQueryT } from "./reducer";
 
-type PropsType = {
+interface PropsT {
   datasetId: string;
-  queries: [];
-};
+  queries: PreviousQueryT[];
+}
 
 const Root = styled("div")`
   flex: 1;
@@ -19,31 +20,24 @@ const Container = styled("div")`
   margin: 4px 0;
 `;
 
-class PreviousQueries extends Component<PropsType> {
-  _renderQuery = (index, key) => {
+const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
+  function renderQuery(index: number, key: string | number) {
     return (
       <Container key={key}>
-        <PreviousQuery
-          query={this.props.queries[index]}
-          datasetId={this.props.datasetId}
-        />
+        <PreviousQuery query={queries[index]} datasetId={datasetId} />
       </Container>
     );
-  };
-
-  render() {
-    return (
-      <Root>
-        {
-          <ReactList
-            itemRenderer={this._renderQuery}
-            length={this.props.queries.length}
-            type="variable"
-          />
-        }
-      </Root>
-    );
   }
-}
+
+  return (
+    <Root>
+      <ReactList
+        itemRenderer={renderQuery}
+        length={queries.length}
+        type="variable"
+      />
+    </Root>
+  );
+};
 
 export default PreviousQueries;

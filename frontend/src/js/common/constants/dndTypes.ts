@@ -3,3 +3,4 @@ export const QUERY_NODE = "QUERY_NODE";
 export const PREVIOUS_QUERY = "PREVIOUS_QUERY";
 export const TIMEBASED_NODE = "TIMEBASED_NODE";
 export const FORM_CONCEPT_NODE = "FORM_CONCEPT_NODE";
+export const FORM_CONFIG = "FORM_CONFIG";

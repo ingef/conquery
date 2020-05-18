@@ -18,7 +18,7 @@ export type AdditionalInfosType = {
   infos: InfoType[] | null;
 };
 
-export type StateType = {
+export type TooltipStateT = {
   displayTooltip: boolean;
   toggleAdditionalInfos: boolean;
   additionalInfos: AdditionalInfosType;
@@ -57,9 +57,9 @@ const setAdditionalInfos = (state, action) => {
 };
 
 const tooltip = (
-  state: StateType = initialState,
+  state: TooltipStateT = initialState,
   action: Object
-): StateType => {
+): TooltipStateT => {
   switch (action.type) {
     case DISPLAY_ADDITIONAL_INFOS:
       return setAdditionalInfos(state, action);

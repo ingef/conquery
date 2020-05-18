@@ -33,12 +33,12 @@
             "connectors": [
                 {
                     "label": "geschlecht_connector",
-                    "table": "vers_stamm",
-                    "validityDates": {"label": "datum" ,"column": "vers_stamm.datum"},
+                    "table": "table1",
+                    "validityDates": {"label": "datum" ,"column": "table1.datum"},
                     "filter": {
                       "label": "geschlecht",
                         "description": "Geschlecht zur gegebenen Datumseinschränkung",
-                        "column": "vers_stamm.geschlecht",
+                        "column": "table1.geschlecht",
                         "type": "SELECT"
                     }
                 }
@@ -49,7 +49,7 @@
         "tables": [
 			{
                 "csv": "tests/query/SIMPLE_VIRTUAL_CONCEPT_QUERY/content.csv",
-				"name": "vers_stamm",
+				"name": "table1",
                 "primaryColumn": {
                     "name": "pid",
                     "type": "STRING"

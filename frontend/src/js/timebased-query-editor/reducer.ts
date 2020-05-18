@@ -36,7 +36,7 @@ type ConditionType = {
   result1: ResultType | null;
 };
 
-type StateType = {
+export type TimebasedQueryStateT = {
   indexResult: number | null;
   conditions: ConditionType[];
 };
@@ -338,9 +338,9 @@ const initialState = {
 //   ]
 // }
 const timebasedQuery = (
-  state: StateType = initialState,
+  state: TimebasedQueryStateT = initialState,
   action: Object
-): StateType => {
+): TimebasedQueryStateT => {
   switch (action.type) {
     case DROP_TIMEBASED_NODE:
       return dropTimebasedNode(state, action);
