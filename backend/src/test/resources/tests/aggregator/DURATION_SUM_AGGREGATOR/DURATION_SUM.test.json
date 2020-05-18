@@ -34,8 +34,7 @@
           },
           "selects": {
             "type": "DURATION_SUM",
-            "name" : "select",
-            "column": "table1.datum"
+            "name" : "select"
           }
         }
       ]

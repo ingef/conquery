@@ -35,8 +35,7 @@
           },
           "selects":         {
             "name" : "count_quarters",
-            "type": "COUNT_QUARTERS",
-            "column": "table1.behandlungsdatum"
+            "type": "COUNT_QUARTERS"
           }
         }
       ]
@@ -55,10 +54,6 @@
           {
             "name": "behandlungsdatum",
             "type": "DATE"
-          },
-          {
-            "name": "datum",
-            "type": "DATE_RANGE"
           }
         ]
       }

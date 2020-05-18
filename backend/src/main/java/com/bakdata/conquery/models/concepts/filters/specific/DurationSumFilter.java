@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.date.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -21,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DurationSumFilter extends Filter<Range.LongRange> {
 
 	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.INTEGER_RANGE);
 		f.setMin(0);
 	}
