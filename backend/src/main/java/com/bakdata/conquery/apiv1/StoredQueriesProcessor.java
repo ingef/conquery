@@ -81,7 +81,7 @@ public class StoredQueriesProcessor {
 		List<Dataset> remainingDatasets = namespaces.getAllDatasets(() -> new ArrayList<>());
 		remainingDatasets.remove(namespaces.get(executionId.getDataset()).getDataset());
 		for(Dataset dataset : remainingDatasets) {
-			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(),execution.getQueryId());
+			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(),executionId.getExecution());
 			execution = storage.getExecution(id);
 			if(execution == null) {
 				continue;

@@ -17,14 +17,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.bakdata.conquery.apiv1.FormConfigProcessor;
-import com.bakdata.conquery.apiv1.FormConfigProcessor.PostResponse;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import io.dropwizard.auth.Auth;
