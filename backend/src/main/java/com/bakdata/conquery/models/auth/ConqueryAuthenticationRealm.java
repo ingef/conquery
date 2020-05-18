@@ -29,7 +29,7 @@ public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm im
 	 * type of {@link ConqueryAuthenticationInfo}.
 	 * 
 	 * @param token A token that the realm previously extracted from a request.
-	 * @return An {@link ConqueryAuthenticationInfo} containing the UserId of the user that caused the request.
+	 * @return An {@link ConqueryAuthenticationInfo} containing the UserId of the user that caused the request or {@code null}, which means that no account could be associated with the specified token.
 	 * @throws AuthenticationException Upon failed authentication.
 	 */
 	protected abstract ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException;
