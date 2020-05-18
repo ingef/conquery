@@ -36,20 +36,20 @@ public class ExecutionMetrics {
 	private static final String STATE = "state";
 	private static final String TIME = "time";
 
-	public static Counter getRunningQueriesCounter() {
-		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, RUNNING));
+	public static Counter getRunningQueriesCounter(String tag) {
+		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, RUNNING, tag));
 	}
 
-	public static Histogram getQueriesTimeHistogram() {
-		return SharedMetricRegistries.getDefault().histogram(MetricRegistry.name(QUERIES, TIME));
+	public static Histogram getQueriesTimeHistogram(String tag) {
+		return SharedMetricRegistries.getDefault().histogram(MetricRegistry.name(QUERIES, TIME, tag));
 	}
 
-	public static Counter getQueryStateCounter(ExecutionState state) {
-		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, STATE, state.toString()));
+	public static Counter getQueryStateCounter(ExecutionState state, String tag) {
+		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, STATE, state.toString(), tag));
 	}
 
-	public static void reportQueryClassUsage(Class<? extends QueryDescription> clazz) {
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, clazz.getSimpleName())).inc(); // Count usages of different types of Queries
+	public static void reportQueryClassUsage(Class<? extends QueryDescription> clazz, String tag) {
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, clazz.getSimpleName(), tag)).inc(); // Count usages of different types of Queries
 	}
 
 	/**

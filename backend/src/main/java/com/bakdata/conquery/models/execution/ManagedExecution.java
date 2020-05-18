@@ -23,7 +23,6 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -117,13 +116,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	public void start() {
-		ExecutionMetrics.getRunningQueriesCounter().inc();
-
 		startTime = LocalDateTime.now();
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
+	protected void finish(MasterMetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW)
 			log.error("Query {} was never run.", getId());
 
@@ -144,10 +141,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				}
 			}
 		}
-
-		ExecutionMetrics.getRunningQueriesCounter().dec();
-		ExecutionMetrics.getQueryStateCounter(getState()).inc();
-		ExecutionMetrics.getQueriesTimeHistogram().update(getExecutionTime().toMillis());
 
 
 		log.info(

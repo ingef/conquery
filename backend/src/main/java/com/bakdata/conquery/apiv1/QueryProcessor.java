@@ -86,7 +86,7 @@ public class QueryProcessor {
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);
 
-		ExecutionMetrics.reportQueryClassUsage(query.getClass());
+		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
 
 		// Evaluate the checks and take action

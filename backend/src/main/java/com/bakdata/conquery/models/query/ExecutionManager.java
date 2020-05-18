@@ -4,6 +4,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.metrics.ExecutionMetrics;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -12,7 +17,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -53,6 +57,10 @@ public class ExecutionManager {
 		execution.initExecutable(namespaces);
 
 		execution.start();
+
+		final MasterMetaStorage storage = namespaces.getMetaStorage();
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
+		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 		
 		for(Namespace namespace : execution.getRequiredNamespaces()) {
 			namespace.getQueryManager().executeQueryInNamespace(execution);
@@ -67,10 +75,7 @@ public class ExecutionManager {
 	 * @return
 	 */
 	private ManagedExecution<?> executeQueryInNamespace(ManagedExecution<?> query) {
-
-		for(WorkerInformation worker : namespace.getWorkers()) {
-			worker.send(new ExecuteQuery(query));
-		}
+		namespace.sendToAll(new ExecuteQuery(query));
 		return query;
 	}
 
@@ -79,7 +84,18 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
-		((E)getQuery(result.getQueryId())).addResult(namespace.getNamespaces().getMetaStorage(), result);
+		final MasterMetaStorage storage = namespace.getNamespaces().getMetaStorage();
+
+		final E query = (E) getQuery(result.getQueryId());
+		query.addResult(storage, result);
+
+		if(query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED){
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(query.getOwner()), storage).map(Group::getName).orElse("none");
+
+			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
+			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();
+			ExecutionMetrics.getQueriesTimeHistogram(primaryGroupName).update(query.getExecutionTime().toMillis());
+		}
 	}
 
 	public ManagedExecution<?> getQuery(@NonNull ManagedExecutionId id) {
