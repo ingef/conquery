@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,5 +26,4 @@ public class VirtualConcept extends Concept<VirtualConceptConnector> implements 
 	public Concept<?> findConcept() {
 		return getConcept();
 	}
-
 }

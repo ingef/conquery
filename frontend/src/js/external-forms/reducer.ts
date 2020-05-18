@@ -104,9 +104,21 @@ const buildExternalFormsReducer = (availableForms: {
           case LOAD_EXTERNAL_FORM_VALUES: {
             if (action.payload.formType !== form.type) return state;
 
+            const stateKeys = Object.keys(state.values);
+            const filteredValues = Object.keys(action.payload.values)
+              .filter((key) => stateKeys.includes(key))
+              .reduce<any>((all, key) => {
+                all[key] = action.payload.values[key];
+
+                return all;
+              }, {});
+
             return {
               ...state,
-              values: action.payload.values,
+              values: {
+                ...state.values,
+                ...filteredValues,
+              },
             };
           }
           default:
