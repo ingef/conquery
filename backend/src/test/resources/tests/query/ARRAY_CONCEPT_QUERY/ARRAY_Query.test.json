@@ -60,22 +60,22 @@
             "connectors": [
                 {
                     "label": "connector",
-                    "table": "vers_stamm",
+                    "table": "table1",
                     "validityDates": {
                         "label": "datum",
-                        "column": "vers_stamm.datum"
+                        "column": "table1.datum"
 					},
 					"filter": {
 						"label": "geschlecht",
 						"type": "COUNT",
-						"column": "vers_stamm.geschlecht",
+						"column": "table1.geschlecht",
 						"distinct": false
 					},
                     "selects": [
                         {
                             "name": "count_genders",
                             "type": "COUNT",
-                            "column": "vers_stamm.geschlecht"
+                            "column": "table1.geschlecht"
                         }
                     ]
                 }
@@ -86,7 +86,7 @@
         "tables": [
             {
                 "csv": "tests/query/ARRAY_CONCEPT_QUERY/content.csv",
-                "name": "vers_stamm",
+                "name": "table1",
                 "primaryColumn": {
                     "name": "pid",
                     "type": "STRING"
