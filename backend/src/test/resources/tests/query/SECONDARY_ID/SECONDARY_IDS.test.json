@@ -74,12 +74,12 @@
 					"table": "table12",
 					"validityDates": {
 						"label": "datum",
-						"column": "table1.datum"
+						"column": "table12.datum"
 					},
 					"filter": {
 						"label": "value",
 						"description": "xy",
-						"column": "table1.value",
+						"column": "table12.value",
 						"type": "NUMBER"
 					}
 				}
