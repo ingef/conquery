@@ -4,12 +4,16 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
-@RequiredArgsConstructor @Getter
+@Getter
+@ToString
+@EqualsAndHashCode(callSuper = true)
+@RequiredArgsConstructor
 public class SelectResultInfo extends ResultInfo {
 	@NonNull
 	private final Select select;
@@ -17,12 +21,12 @@ public class SelectResultInfo extends ResultInfo {
 	private final CQConcept cqConcept;
 
 	@Override
-	public String getName(PrintSettings settings) {
-		return settings.columnName(this);
+	public ResultType getType() {
+		return select.getResultType();
 	}
 
 	@Override
-	public ResultType getType() {
-		return select.getResultType();
+	public String getName(PrintSettings settings) {
+		return settings.columnName(this);
 	}
 }

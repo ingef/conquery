@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.commands.StandaloneCommand;
@@ -103,7 +105,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 		localTmpDir.mkdir();
-		ConqueryConfig localCfg = Cloner.clone(config);
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getMaster().getEnvironment().getValidator()));
 		localCfg
 			.getPreprocessor()
 			.setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir) });
