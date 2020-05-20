@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -15,5 +14,5 @@ public interface AuthenticationConfig {
 	 * @return The realm.
 	 */
 	@JsonIgnore
-	ConqueryAuthenticationRealm createRealm(MasterMetaStorage storage);
+	ConqueryAuthenticationRealm createRealm(AuthorizationController controller);
 }

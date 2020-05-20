@@ -4,14 +4,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.FormConfigProcessor;
-import com.bakdata.conquery.apiv1.MetaDataPatch;
+import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -34,6 +35,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.commons.collections4.map.HashedMap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -188,7 +191,7 @@ public class FormConfigTest {
 		 FormConfigFullRepresentation response = processor.getConfig(new DatasetId("testDataset"), user, formConfig.getId());
 		
 		// CHECK
-		assertThat(response).isEqualTo(FormConfigFullRepresentation.builder()
+		assertThat(response).isEqualToIgnoringGivenFields(FormConfigFullRepresentation.builder()
 			.formType(form.getClass().getAnnotation(CPSType.class).id())
 			.id(formConfig.getId())
 			.label(formConfig.getLabel())
@@ -198,7 +201,7 @@ public class FormConfigTest {
 			.system(false)
 			.tags(formConfig.getTags())
 			.values(values)
-			.build());
+			.build(),FormConfigOverviewRepresentation.Fields.createdAt);
 		
 	}
 	
@@ -241,6 +244,7 @@ public class FormConfigTest {
 				.shared(false)
 				.system(false)
 				.tags(formConfig.getTags())
+				.createdAt(formConfig.getCreationTime().atZone(ZoneId.systemDefault()))
 				.build(),
 			FormConfigOverviewRepresentation.builder()
 				.formType(form2.getClass().getAnnotation(CPSType.class).id())
@@ -251,6 +255,7 @@ public class FormConfigTest {
 				.shared(false)
 				.system(false)
 				.tags(formConfig2.getTags())
+				.createdAt(formConfig2.getCreationTime().atZone(ZoneId.systemDefault()))
 				.build());
 	}
 	
@@ -279,11 +284,12 @@ public class FormConfigTest {
 			 user,
 			 new DatasetId("testDataset"),
 			 formConfig.getId(), 
-			 MetaDataPatch.builder()
+			 FormConfigPatch.builder()
 				 .label("newTestLabel")
 				 .tags(new String[] {"tag1", "tag2"})
 				 .shared(true)
 				 .groups(List.of(group1.getId()))
+				 .values(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))))
 			 	.build()
 			 );
 		
@@ -292,8 +298,14 @@ public class FormConfigTest {
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
 		patchedFormExpected.setTags(new String[] {"tag1", "tag2"});
+		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))));
 		
-		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "formType", "label","shared","tags");
+		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected,
+			FormConfig.Fields.formType,
+			FormConfig.Fields.label,
+			FormConfig.Fields.shared,
+			FormConfig.Fields.tags,
+			FormConfig.Fields.values);
 
 		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
 		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
@@ -305,7 +317,7 @@ public class FormConfigTest {
 			 user,
 			 new DatasetId("testDataset"),
 			 formConfig.getId(), 
-			 MetaDataPatch.builder()
+			 FormConfigPatch.builder()
 				 .shared(false)
 				 .groups(List.of(group1.getId(), group2.getId()))
 			 	.build()
@@ -314,7 +326,12 @@ public class FormConfigTest {
 		// CHECK PART 2
 		patchedFormExpected.setShared(false);
 		
-		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected, "formType","label","shared","tags");
+		assertThat(storageMock.getFormConfig(formConfig.getId())).isEqualToComparingOnlyGivenFields(patchedFormExpected,
+			FormConfig.Fields.formType,
+			FormConfig.Fields.label,
+			FormConfig.Fields.shared,
+			FormConfig.Fields.tags,
+			FormConfig.Fields.values);
 
 		assertThat(groups.get(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));
 		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formConfig.getId()));

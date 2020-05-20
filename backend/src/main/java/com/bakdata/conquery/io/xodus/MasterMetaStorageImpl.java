@@ -92,10 +92,17 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
 
 		authGroup = StoreInfo.AUTH_GROUP.identifiable(getGroupsEnvironment(), getValidator(), getCentralRegistry());
+		
+		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
-		collector.collect(meta).collect(authRole)
+		collector
+			.collect(meta)
+			.collect(authRole)
 			// load users before queries
-			.collect(authUser).collect(authGroup).collect(executions);
+			.collect(authUser)
+			.collect(authGroup)
+			.collect(executions)
+			.collect(formConfigs);
 	}
 
 	@Override

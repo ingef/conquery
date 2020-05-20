@@ -83,6 +83,7 @@ import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -127,15 +128,17 @@ public class AdminProcessor {
 		// see #143 check duplicate names
 	}
 
-	public void addConcept(Dataset dataset, Concept<?> c) {		
+	public void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
+		concept.setDataset(dataset.getId());
+		ValidatorHelper.failOnError(log, validator.validate(concept));
 		// Register the Concept in the Master and Workers
-		if (namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
-			throw new WebApplicationException("Can't replace already existing concept " + c.getId(), Status.CONFLICT);
+		if (namespaces.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);
 		}
 		jobManager
-			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
+			.addSlowJob(new SimpleJob("Adding concept " + concept.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(concept)));
 		jobManager
-			.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
+			.addSlowJob(new SimpleJob("sendToAll " + concept.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(concept))));
 		// see #144 check duplicate names
 	}
 
