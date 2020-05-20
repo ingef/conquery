@@ -42,6 +42,9 @@ public class CPSBaseTest {
 			assertThat(anno.base()).isEqualTo(base);
 			assertThat(base).hasAnnotation(CPSBase.class);
 			assertThat(base).isAssignableFrom(base);
+			if(anno.subTyped()) {				
+				assertThat(SubTyped.class).isAssignableFrom(type);
+			}
 		}
 	}
 }

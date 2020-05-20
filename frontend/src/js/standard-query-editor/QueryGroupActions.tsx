@@ -57,6 +57,7 @@ const QueryGroupActions = (props: PropsType) => {
     <Actions>
       <div>
         <RedIconButton
+          red
           tight
           active={props.excludeActive}
           icon="ban"
@@ -65,9 +66,9 @@ const QueryGroupActions = (props: PropsType) => {
           {T.translate("queryEditor.exclude")}
         </RedIconButton>
         <StyledIconButton
-          tight
           active={props.dateActive}
           regular
+          tight
           icon="calendar"
           onClick={props.onDateClick}
         >

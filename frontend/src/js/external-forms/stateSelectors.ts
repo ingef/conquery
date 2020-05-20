@@ -1,5 +1,9 @@
 import { initTables } from "./transformers";
 import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+import { FormContextStateT } from "./reducer";
+import { getLocale } from "../localization";
+import type { Form } from "js/api/form-types";
 
 const selectFormField = (state, formName, fieldName) => {
   if (
@@ -20,7 +24,7 @@ export const selectEditedConceptPosition = (state, formName, fieldName) => {
     .reduce(
       (acc, group, andIdx) => [
         ...acc,
-        ...group.concepts.map((concept, orIdx) => ({ andIdx, orIdx, concept }))
+        ...group.concepts.map((concept, orIdx) => ({ andIdx, orIdx, concept })),
       ],
       []
     )
@@ -44,7 +48,11 @@ export const selectEditedConcept = (
   return initTables(blacklistedTables, whitelistedTables)(concept);
 };
 
-export const selectSuggestions = (state, fieldName, { andIdx, orIdx }) => {
+export const selectSuggestions = (
+  state: FormContextStateT,
+  fieldName: string,
+  { andIdx, orIdx }: { andIdx: number; orIdx: number }
+) => {
   return (
     state.suggestions &&
     state.suggestions[fieldName] &&
@@ -53,39 +61,51 @@ export const selectSuggestions = (state, fieldName, { andIdx, orIdx }) => {
   );
 };
 
-export const selectFormState = (state: Object, formType: string) =>
-  state.externalForms ? state.externalForms[formType] : null;
+export const selectFormContextState = (state: StateT, formType: string) =>
+  state.externalForms ? state.externalForms.formsContext[formType] : null;
 
-export const selectReduxForm = (state: Object) =>
+export const selectReduxForm = (state: StateT) =>
   state.externalForms ? state.externalForms.reduxForm : null;
 
-export const selectActiveFormValues = (state: Object) => {
+export const selectActiveFormValues = (state: StateT): Record<string, any> => {
   const reduxForm = selectReduxForm(state);
-  const activeForm = selectActiveForm(state);
+  const activeForm = selectActiveFormType(state);
 
-  return reduxForm && activeForm ? reduxForm[activeForm].values : {};
+  return reduxForm && activeForm && !!reduxForm[activeForm]
+    ? reduxForm[activeForm].values
+    : {};
 };
 
-export const selectAvailableForms = (state: Object) =>
-  state.externalForms ? state.externalForms.availableForms : [];
+export const selectAvailableForms = (state: StateT) =>
+  state.externalForms ? state.externalForms.availableForms : {};
 
-export const selectActiveForm = (state: Object) =>
+export const selectActiveFormType = (state: StateT) =>
   state.externalForms ? state.externalForms.activeForm : null;
 
-export const selectFormConfig = (state: Object) => {
-  const availableForms = selectAvailableForms(state);
-  const activeForm = selectActiveForm(state);
+export const useActiveFormType = () =>
+  useSelector<StateT, string | null>((state) => selectActiveFormType(state));
 
-  return activeForm ? availableForms[activeForm] : null;
+export const selectFormConfig = (state: StateT): Form | null => {
+  const availableForms = selectAvailableForms(state);
+  const activeFormType = selectActiveFormType(state);
+
+  return (activeFormType && availableForms[activeFormType]) || null;
 };
 
-export const selectReduxFormState = (state: Object) =>
+export const selectActiveFormName = (state: StateT): string => {
+  const formConfig = selectFormConfig(state);
+  const locale = getLocale();
+
+  return (formConfig && formConfig.title[locale]) || "";
+};
+
+export const selectReduxFormState = (state: StateT) =>
   state.externalForms ? state.externalForms.reduxForm : null;
 
-export const selectQueryRunner = (state: Object) =>
+export const selectQueryRunner = (state: StateT) =>
   state.externalForms ? state.externalForms.queryRunner : null;
 
-export const selectRunningQuery = (state: Object) => {
+export const selectRunningQuery = (state: StateT) => {
   const queryRunner = selectQueryRunner(state);
 
   return queryRunner ? queryRunner.runningQuery : null;
@@ -93,13 +113,13 @@ export const selectRunningQuery = (state: Object) => {
 
 function getVisibleConceptListFields(config, values) {
   const topLevelFields = config.fields.filter(
-    field => field.type === "CONCEPT_LIST"
+    (field) => field.type === "CONCEPT_LIST"
   );
-  const tabFields = config.fields.filter(field => field.type === "TABS");
+  const tabFields = config.fields.filter((field) => field.type === "TABS");
 
   const fieldsWithinVisibleTabs = tabFields.reduce((fields, tabField) => {
     const activeTabName = values[tabField.name];
-    const activeTab = tabField.tabs.find(tab => tab.name === activeTabName);
+    const activeTab = tabField.tabs.find((tab) => tab.name === activeTabName);
 
     const activeTabConceltListFields = activeTab
       ? getVisibleConceptListFields(activeTab)
@@ -112,8 +132,8 @@ function getVisibleConceptListFields(config, values) {
 }
 
 export const useVisibleConceptListFields = () => {
-  const config = useSelector(state => selectFormConfig(state));
-  const values = useSelector(state => selectActiveFormValues(state));
+  const config = useSelector((state) => selectFormConfig(state));
+  const values = useSelector((state) => selectActiveFormValues(state));
 
   if (!config) return false;
 
@@ -121,17 +141,30 @@ export const useVisibleConceptListFields = () => {
 };
 
 export const useAllowExtendedCopying = (targetFieldname: string) => {
-  const values = useSelector(state => selectActiveFormValues(state));
+  const values = useSelector((state) => selectActiveFormValues(state));
   const otherConceptListFields = useVisibleConceptListFields().filter(
-    field => field.name !== targetFieldname
+    (field) => field.name !== targetFieldname
   );
 
   // Need to have min 2 fields to copy from one to another
   if (otherConceptListFields.length < 1) return false;
 
-  const fieldHasFilledConcept = field =>
+  const fieldHasFilledConcept = (field) =>
     !!values[field.name] &&
-    values[field.name].some(value => value.concepts.some(concept => !!concept));
+    values[field.name].some((value) =>
+      value.concepts.some((concept) => !!concept)
+    );
 
   return otherConceptListFields.some(fieldHasFilledConcept);
+};
+
+export const useFormLabelByType = (formType: string) => {
+  const availableForms = useSelector<StateT, { [formName: string]: Form }>(
+    (state) => selectAvailableForms(state)
+  );
+  const locale = getLocale();
+
+  return availableForms[formType]
+    ? availableForms[formType].title[locale]
+    : formType;
 };

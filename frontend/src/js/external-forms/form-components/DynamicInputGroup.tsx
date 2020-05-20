@@ -4,12 +4,12 @@ import styled from "@emotion/styled";
 import IconButton from "../../button/IconButton";
 
 type PropsType = {
-  className?: string,
-  label?: string,
-  items: Array<Element>,
-  limit?: number,
-  onAddClick: Function,
-  onRemoveClick: Function
+  className?: string;
+  label?: string;
+  items: Array<Element>;
+  limit?: number;
+  onAddClick: Function;
+  onRemoveClick: Function;
 };
 
 const AddBtn = styled(IconButton)``;

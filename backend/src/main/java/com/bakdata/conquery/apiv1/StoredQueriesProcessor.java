@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -70,22 +71,24 @@ public class StoredQueriesProcessor {
 		return query.buildStatusWithSource(storage, null, user);
 	}
 
-	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) {
+	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
 		ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId), String.format("Could not find form config %s", executionId));
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
-		MetaDataPatch.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
+		patch.applyTo(execution, storage, user, QueryPermission::onInstance);
+		storage.updateExecution(execution);
 		
 		// Patch this query in other datasets
 		List<Dataset> remainingDatasets = namespaces.getAllDatasets(() -> new ArrayList<>());
 		remainingDatasets.remove(namespaces.get(executionId.getDataset()).getDataset());
 		for(Dataset dataset : remainingDatasets) {
-			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(),execution.getQueryId());
+			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(),executionId.getExecution());
 			execution = storage.getExecution(id);
 			if(execution == null) {
 				continue;
 			}
 			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			MetaDataPatch.patchIdentifialble(storage, user, execution, patch,  QueryPermission::onInstance);
+			patch.applyTo(execution, storage, user, QueryPermission::onInstance);
+			storage.updateExecution(execution);
 		}
 	}
 
