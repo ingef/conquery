@@ -8,10 +8,13 @@ import java.util.List;
 
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.types.parser.Transformer;
+import com.bakdata.conquery.models.types.parser.specific.DateParser;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.esotericsoftware.kryo.io.Output;
 import io.dropwizard.util.Size;
@@ -28,6 +31,7 @@ public class Preprocessed {
 	private final PPColumn[] columns;
 	private final TableImportDescriptor descriptor;
 	private long rows = 0;
+	private CDateRange eventRange;
 	private long writtenGroups = 0;
 	private Int2ObjectMap<List<Object[]>> entries = new Int2ObjectAVLTreeMap<>();
 	
@@ -84,6 +88,7 @@ public class Preprocessed {
 					imp.getSuffix(),
 					rows,
 					writtenGroups,
+					eventRange,
 					primaryColumn,
 					columns,
 					hash
@@ -117,6 +122,29 @@ public class Preprocessed {
 
 		//update stats
 		rows++;
+		for(int i=0;i<columns.length;i++) {
+			if(outRow[i] != null) {
+				if(columns[i].getParser() instanceof DateParser) {
+					extendEventRange(CDateRange.exactly((Integer)outRow[i]));
+				}
+				else if(columns[i].getParser() instanceof DateRangeParser) {
+					extendEventRange((CDateRange)outRow[i]);
+				}
+			}
+		}
+		
+	}
+
+	/**
+	 * Collect date span of all data.
+	 */
+	private void extendEventRange(CDateRange range) {
+		if(eventRange == null) {
+			eventRange = range;
+		}
+		else if(range != null) {
+			eventRange = eventRange.spanClosed(range);
+		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
