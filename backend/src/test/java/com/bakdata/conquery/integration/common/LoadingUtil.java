@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
@@ -57,7 +58,7 @@ public class LoadingUtil {
 			final CsvParser parser = new CsvParser(support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createCsvParserSettings());
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
-			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
+			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data)).resolve(new QueryResolveContext(support.getDataset().getId(), support.getNamespace().getNamespaces()));
 
 			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
 			user.addPermission(support.getStandaloneCommand().getMaster().getStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
@@ -84,7 +85,7 @@ public class LoadingUtil {
 	}
 	
 	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables, Dataset dataset) throws IOException {
-		importTableContents(support, tables, dataset);
+		importTableContents(support, Arrays.asList(tables), dataset);
 	}
 	
 	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws IOException {
