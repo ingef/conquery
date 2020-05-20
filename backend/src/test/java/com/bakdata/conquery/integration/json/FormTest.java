@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -89,7 +90,7 @@ public class FormTest extends ConqueryTestSpec {
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
-		LoadingUtil.importTableContents(support, content);
+		LoadingUtil.importTableContents(support, Arrays.asList(content.getTables()));
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
 		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
