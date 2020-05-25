@@ -2,7 +2,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import ReactList from "react-list";
 
-import PreviousQuery from "./PreviousQuery";
+import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import { PreviousQueryT } from "./reducer";
 
 interface PropsT {
@@ -24,7 +24,10 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   function renderQuery(index: number, key: string | number) {
     return (
       <Container key={key}>
-        <PreviousQuery query={queries[index]} datasetId={datasetId} />
+        <PreviousQueryDragContainer
+          query={queries[index]}
+          datasetId={datasetId}
+        />
       </Container>
     );
   }

@@ -18,7 +18,7 @@ import {
   TOGGLE_SHARE_PREVIOUS_QUERY_ERROR,
   DELETE_PREVIOUS_QUERY_START,
   DELETE_PREVIOUS_QUERY_SUCCESS,
-  DELETE_PREVIOUS_QUERY_ERROR
+  DELETE_PREVIOUS_QUERY_ERROR,
 } from "./actionTypes";
 
 export interface PreviousQueryT {
@@ -31,6 +31,7 @@ export interface PreviousQueryT {
   tags: string[];
   own: boolean;
   shared: boolean;
+  resultUrl: string | null;
 }
 
 export interface PreviousQueriesStateT {
@@ -46,15 +47,15 @@ const initialState: PreviousQueriesStateT = {
   loading: false,
   tags: [],
   names: [],
-  error: null
+  error: null,
 };
 
 const findQuery = (queries: PreviousQueryT[], queryId: string | number) => {
-  const query = queries.find(q => q.id === queryId);
+  const query = queries.find((q) => q.id === queryId);
 
   return {
     query,
-    queryIdx: query ? queries.indexOf(query) : -1
+    queryIdx: query ? queries.indexOf(query) : -1,
   };
 };
 
@@ -73,10 +74,10 @@ const updatePreviousQuery = (
       ...state.queries.slice(0, queryIdx),
       {
         ...query,
-        ...attributes
+        ...attributes,
       },
-      ...state.queries.slice(queryIdx + 1)
-    ]
+      ...state.queries.slice(queryIdx + 1),
+    ],
   };
 };
 
@@ -105,16 +106,16 @@ const deletePreviousQuery = (state: PreviousQueriesStateT, action: Object) => {
     ...state,
     queries: [
       ...state.queries.slice(0, queryIdx),
-      ...state.queries.slice(queryIdx + 1)
-    ]
+      ...state.queries.slice(queryIdx + 1),
+    ],
   };
 };
 
 const findUniqueTags = (queries: PreviousQueryT[]) => {
   const uniqueTags = new Set<string>();
 
-  queries.forEach(query => {
-    if (query.tags) query.tags.forEach(tag => uniqueTags.add(tag));
+  queries.forEach((query) => {
+    if (query.tags) query.tags.forEach((tag) => uniqueTags.add(tag));
   });
 
   return Array.from(uniqueTags);
@@ -125,7 +126,7 @@ const findNewTags = (tags: string[]) => {
 
   let uniqueTags = new Set<string>();
 
-  tags.forEach(tag => uniqueTags.add(tag));
+  tags.forEach((tag) => uniqueTags.add(tag));
 
   return Array.from(uniqueTags);
 };
@@ -133,7 +134,7 @@ const findNewTags = (tags: string[]) => {
 const findUniqueNames = (queries: PreviousQueryT[]) => {
   const uniqueNames = new Set<string>();
 
-  queries.filter(q => !!q.label).forEach(q => uniqueNames.add(q.label));
+  queries.filter((q) => !!q.label).forEach((q) => uniqueNames.add(q.label));
 
   return Array.from(uniqueNames);
 };
@@ -157,7 +158,7 @@ const previousQueriesReducer = (
         loading: false,
         queries: sortQueries(action.payload.data),
         tags: findUniqueTags(action.payload.data),
-        names: findUniqueNames(action.payload.data)
+        names: findUniqueNames(action.payload.data),
       };
     case LOAD_PREVIOUS_QUERIES_ERROR:
       return { ...state, loading: false, error: action.payload.message };
@@ -171,31 +172,31 @@ const previousQueriesReducer = (
       return updatePreviousQuery(state, action, {
         loading: false,
         error: null,
-        ...action.payload.data
+        ...action.payload.data,
       });
     case RENAME_PREVIOUS_QUERY_SUCCESS:
       return {
         ...updatePreviousQuery(state, action, {
           loading: false,
           error: null,
-          label: action.payload.label
+          label: action.payload.label,
         }),
-        names: updateUniqueNames(state.names, action.payload.label)
+        names: updateUniqueNames(state.names, action.payload.label),
       };
     case RETAG_PREVIOUS_QUERY_SUCCESS:
       return {
         ...updatePreviousQuery(state, action, {
           loading: false,
           error: null,
-          tags: action.payload.tags
+          tags: action.payload.tags,
         }),
-        tags: findNewTags([...state.tags, ...action.payload.tags])
+        tags: findNewTags([...state.tags, ...action.payload.tags]),
       };
     case TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS:
       return updatePreviousQuery(state, action, {
         loading: false,
         error: null,
-        shared: action.payload.shared
+        shared: action.payload.shared,
       });
     case DELETE_PREVIOUS_QUERY_SUCCESS:
       return deletePreviousQuery(state, action);
@@ -206,7 +207,7 @@ const previousQueriesReducer = (
     case DELETE_PREVIOUS_QUERY_ERROR:
       return updatePreviousQuery(state, action, {
         loading: false,
-        error: action.payload.message
+        error: action.payload.message,
       });
     case TOGGLE_EDIT_PREVIOUS_QUERY_LABEL:
       return toggleQueryAttribute(state, action, "editingLabel");
