@@ -12,7 +12,7 @@ import {
   validatePositive,
   validateConceptGroupFilled,
 } from "../validators";
-import { collectAllFields } from "../helper";
+import { collectAllFormFields, isFormField } from "../helper";
 import { selectReduxFormState } from "../stateSelectors";
 import FormsHeader from "../FormsHeader";
 
@@ -125,22 +125,26 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
     return (
       <form>
         <FormsHeader headline={config.headline[locale]} />
-        {config.fields.map((field) => (
-          <Field
-            key={field.name}
-            formType={config.type}
-            getFieldValue={getFieldValue}
-            field={field}
-            selectedDatasetId={selectedDatasetId}
-            availableDatasets={availableDatasets}
-            locale={locale}
-          />
-        ))}
+        {config.fields.map((field, i) => {
+          const key = isFormField(field) ? field.name : field.type + i;
+
+          return (
+            <Field
+              key={key}
+              formType={config.type}
+              getFieldValue={getFieldValue}
+              field={field}
+              selectedDatasetId={selectedDatasetId}
+              availableDatasets={availableDatasets}
+              locale={locale}
+            />
+          );
+        })}
       </form>
     );
   };
 
-  const allFields = collectAllFields(config.fields);
+  const allFields = collectAllFormFields(config.fields);
   const fieldValueSelector = formValueSelector(
     config.type,
     selectReduxFormState

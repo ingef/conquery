@@ -1,12 +1,6 @@
 import React, { FC } from "react";
 
 import SmallTabNavigationButton from "./SmallTabNavigationButton";
-import styled from "@emotion/styled";
-
-const Root = styled("div")`
-  margin-bottom: 5px;
-  padding: 0 10px;
-`;
 
 interface TabOption {
   label: string;
@@ -27,7 +21,7 @@ const SmallTabNavigation: FC<PropsT> = ({
   onSelectTab,
 }) => {
   return (
-    <Root className={className}>
+    <div className={className}>
       {options.map((option) => (
         <SmallTabNavigationButton
           key={option.value}
@@ -38,7 +32,7 @@ const SmallTabNavigation: FC<PropsT> = ({
           {option.label}
         </SmallTabNavigationButton>
       ))}
-    </Root>
+    </div>
   );
 };
 

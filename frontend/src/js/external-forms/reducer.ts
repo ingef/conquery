@@ -15,12 +15,12 @@ import {
   createFormSuggestionsReducer,
   FormSuggestionsStateT,
 } from "./form-suggestions/reducer";
-import { collectAllFields } from "./helper";
+import { collectAllFormFields } from "./helper";
 
-import type { Forms, Form } from "./config-types";
+import type { Form } from "./config-types";
 
 function collectConceptListFieldNames(config: Form) {
-  const fieldNames = collectAllFields(config.fields)
+  const fieldNames = collectAllFormFields(config.fields)
     .filter((field) => field.type === "CONCEPT_LIST")
     .map((field) => field.name);
 

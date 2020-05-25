@@ -55,7 +55,12 @@ const SmallTabNavigationButton: FC<PropsT> = ({
   const borderColor = valueToColor(theme, value);
 
   return (
-    <Button style={{ borderColor }} selected={isSelected} onClick={onClick}>
+    <Button
+      style={{ borderColor }}
+      type="button"
+      selected={isSelected}
+      onClick={onClick}
+    >
       {children}
     </Button>
   );
