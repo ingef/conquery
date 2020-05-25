@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.SlaveCommand;
@@ -59,7 +58,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -160,12 +159,12 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Load the same import into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), Arrays.stream(test.getContent().getTables())
+			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), test.getContent().getTables().stream()
 																				   .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
 																				   .map(RequiredTable::toTable).findFirst().get());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
+			IntegrationUtils.importTableContents(conquery, test.getContent().getTables().stream()
 																 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
 																 .collect(Collectors.toList()), conquery.getDataset());
 			conquery.waitUntilWorkDone();

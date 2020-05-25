@@ -91,6 +91,10 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		environment.lifecycle().manage(this);
 
+		if(config.getStorage().getDirectory().mkdirs()){
+			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
+		}
+
 		log.info("Started meta storage");
 		for (File directory : config.getStorage().getDirectory().listFiles()) {
 			if (directory.getName().startsWith("dataset_")) {

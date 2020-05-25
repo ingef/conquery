@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
