@@ -19,8 +19,7 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkerStorage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -135,21 +134,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 
 		DatasetId dataset = support.getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new SlaveMessage() {
-			@Override
-			public void react(NetworkMessageContext.Slave context) throws Exception {
-				context.getWorkers().getWorkers().values().stream()
-					   .filter(worker -> worker.getInfo().getDataset().equals(dataset))
-					   .forEach(worker -> {
-						   try {
-							   worker.getStorage().close();
-						   } catch (IOException e) {
-							   log.error("Failed closing down worker", e);
-						   }
-					   });
 
-			}
-		}));
+		standaloneCommand.getMaster().getNamespaces().get(dataset).sendToAll(new ShutdownWorkerStorage());
+
 		try {
 			standaloneCommand.getMaster().getStorage().close();
 		} catch (IOException e) {
