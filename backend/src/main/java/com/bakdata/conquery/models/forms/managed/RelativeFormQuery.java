@@ -81,8 +81,8 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		ResultInfoCollector featureHeader = features.collectResultInfos(collector.getSettings());
-		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos(collector.getSettings());
+		ResultInfoCollector featureHeader = features.collectResultInfos();
+		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos();
 		//remove SpecialDateUnion
 		featureHeader.getInfos().remove(0);
 		outcomeHeader.getInfos().remove(0);

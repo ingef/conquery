@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
 
 const Root = styled("div")`
   position: relative;
@@ -29,7 +28,7 @@ const Message = styled("p")`
   font-weight: 400;
 `;
 
-const Preview = styled("div")`
+const Preview = styled("div")<{ large?: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius};
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   width: 100%;
@@ -37,11 +36,15 @@ const Preview = styled("div")`
   margin: 5px 0;
 `;
 
-export default () => (
+interface PropsT {
+  emptyMessage: React.ReactNode;
+}
+
+const EmptyList: React.FC<PropsT> = ({ emptyMessage }) => (
   <Root>
     <MsgContainer>
       <Msg>
-        <Message>{T.translate("previousQueries.noQueriesFound")}</Message>
+        <Message>{emptyMessage}</Message>
       </Msg>
     </MsgContainer>
     <Preview large />
@@ -49,3 +52,5 @@ export default () => (
     <Preview large />
   </Root>
 );
+
+export default EmptyList;

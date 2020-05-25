@@ -8,18 +8,18 @@ import QueryGroupActions from "./QueryGroupActions";
 import type { QueryGroupType } from "./types";
 
 type PropsType = {
-  group: QueryGroupType,
-  andIdx: number,
-  onDropNode: (node: Object) => void,
-  onDropFile: Function,
-  onDeleteNode: Function,
-  onEditClick: Function,
-  onExcludeClick: Function,
-  onExpandClick: Function,
-  onDateClick: Function,
-  onDeleteGroup: Function,
-  onLoadPreviousQuery: Function,
-  onToggleTimestamps: Function
+  group: QueryGroupType;
+  andIdx: number;
+  onDropNode: (node: Object) => void;
+  onDropFile: Function;
+  onDeleteNode: Function;
+  onEditClick: Function;
+  onExcludeClick: Function;
+  onExpandClick: Function;
+  onDateClick: Function;
+  onDeleteGroup: Function;
+  onLoadPreviousQuery: Function;
+  onToggleTimestamps: Function;
 };
 
 const Root = styled("div")`

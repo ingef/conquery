@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 
 import { loadTree } from "./actions";
 
-import type { StateType } from "../app/reducers";
+import type { StateT } from "../app/reducers";
 
 import type { TreesT, SearchT } from "./reducer";
 import { getAreTreesAvailable } from "./selectors";
@@ -87,7 +87,7 @@ const ConceptTreeList = ({
 };
 
 export default connect(
-  (state: StateType) => ({
+  (state: StateT) => ({
     trees: state.conceptTrees.trees,
     loading: state.conceptTrees.loading,
     areTreesAvailable: getAreTreesAvailable(state),
