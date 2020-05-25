@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.validation.ConstraintValidatorContext;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
@@ -27,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,7 +47,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@JsonIgnore @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
-	@NotNull @Getter @Setter @JsonManagedReference
+	@NotNull @Getter @Setter @JsonManagedReference @Valid
 	private List<Select> selects = new ArrayList<>();
 
 	@Override
@@ -96,7 +96,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			for(Column c:f.getRequiredColumns()) {
 				if (c != null && c.getTable() != getTable()) {
 					context
-						.buildConstraintViolationWithTemplate("The filter "+f.getId()+" must be of the same table "+this.getTable().getId()+" as its connector "+this.getId())
+						.buildConstraintViolationWithTemplate("The filter "+f.getId()+" must be of the same table as its connector "+this.getId()+".\t Filter's table: "+ c.getTable().getId()+"\t Connector's table: "+ this.getTable().getId())
 						.addConstraintViolation();
 					passed = false;
 				}
@@ -132,7 +132,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			if (!col.getTable().equals(getTable())) {
 				passed = false;
 				context
-					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" is not of the same table "+this.getTable().getId()+" as its connector "+this.getId())
+					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" is not of the same table as its connector "+this.getId()+".\t Validity date's column: "+ col.getTable().getId()+"\t Connector's table: "+ this.getTable().getId())
 					.addConstraintViolation();
 			}
 		}

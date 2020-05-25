@@ -1,8 +1,8 @@
 import * as React from "react";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import T from "i18n-react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Hotkeys from "react-hot-keys";
 
 import { FixedSizeList as List } from "react-window";
@@ -12,20 +12,16 @@ import {
   getDiffInDays,
   parseStdDate,
   formatStdDate,
-  formatDateDistance
+  formatDateDistance,
 } from "../common/helpers/dateHelper";
 
 import TransparentButton from "../button/TransparentButton";
 
-import type { StateT as PreviewStateT } from "./reducer";
+import type { PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
+import { StateT } from "app-types";
 
-type PropsT = {
-  preview: PreviewStateT;
-  onClose: () => void;
-};
-
-const Preview = styled("div")`
+const Root = styled("div")`
   height: 100%;
   width: 100%;
   position: fixed;
@@ -62,7 +58,7 @@ const BStat = styled(Stat)`
   font-weight: 700;
 `;
 
-const Line = styled("div")`
+const Line = styled("div")<{ isHeader?: boolean }>`
   display: flex;
   width: 100%;
   align-items: center;
@@ -78,10 +74,11 @@ const Line = styled("div")`
     `};
 `;
 
-const Cell = styled("code")`
+const Cell = styled("code")<{ isDates?: boolean; isHeader?: boolean }>`
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.xs};
   height: ${({ theme }) => theme.font.xs};
+  min-width: ${({ isDates }) => (isDates ? "300px" : "100px")};
   width: ${({ isDates }) => (isDates ? "auto" : "100px")};
   flex-grow: ${({ isDates }) => (isDates ? "1" : "0")};
   flex-shrink: 0;
@@ -136,10 +133,18 @@ const CSVFrame = styled("div")`
   overflow: hidden;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
 `;
 
 const Tr = styled("tr")`
   line-height: 1;
+`;
+
+const AutoSizerContainer = styled("div")`
+  position: relative;
+  height: 100%;
+  flex-grow: 1;
 `;
 
 function detectColumn(cell) {
@@ -170,7 +175,7 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
   let min = null;
   let max = null;
 
-  const dateColumn = columns.find(col => col === "DATE_RANGE");
+  const dateColumn = columns.find((col) => col === "DATE_RANGE");
   const dateColumnIdx = columns.indexOf(dateColumn);
 
   if (dateColumnIdx === -1) return {};
@@ -191,16 +196,16 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
   return {
     min,
     max,
-    diff: getDaysDiff(min, max)
+    diff: getDaysDiff(min, max),
   };
 }
 
-export default connect(
-  state => ({ preview: state.preview }),
-  dispatch => ({
-    onClose: () => dispatch(closePreview())
-  })
-)(({ preview, onClose }: PropsT) => {
+const Preview: React.FC = () => {
+  const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
+  const dispatch = useDispatch();
+
+  const onClose = () => dispatch(closePreview());
+
   if (!preview.csv || preview.csv.length < 2) return null;
 
   const columns = detectColumnsByHeader(preview.csv[0]);
@@ -257,7 +262,7 @@ export default connect(
   );
 
   return (
-    <Preview>
+    <Root>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
       <TopRow>
         <StdRow>
@@ -309,11 +314,11 @@ export default connect(
         </table>
       </TopRow>
       <CSVFrame>
-        <Line isHeader={true}>
+        <Line isHeader>
           {slice[0].map((cell, k) => (
             <Cell
+              isHeader
               key={k}
-              isHeader={true}
               title={cell}
               isDates={columns[k] === "DATE_RANGE"}
             >
@@ -321,19 +326,23 @@ export default connect(
             </Cell>
           ))}
         </Line>
-        <AutoSizer>
-          {({ width, height }) => (
-            <List
-              height={height}
-              width={width}
-              itemCount={slice.length - 1}
-              itemSize={12}
-            >
-              {Row}
-            </List>
-          )}
-        </AutoSizer>
+        <AutoSizerContainer>
+          <AutoSizer>
+            {({ width, height }) => (
+              <List
+                height={height}
+                width={width}
+                itemCount={slice.length - 1}
+                itemSize={12}
+              >
+                {Row}
+              </List>
+            )}
+          </AutoSizer>
+        </AutoSizerContainer>
       </CSVFrame>
-    </Preview>
+    </Root>
   );
-});
+};
+
+export default Preview;

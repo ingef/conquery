@@ -1,34 +1,25 @@
 package com.bakdata.conquery.models.auth.basic;
 
 import java.io.File;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.InvalidClaimException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.exceptions.SignatureVerificationException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
 import com.bakdata.conquery.io.xodus.stores.XodusStore;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
-import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
+import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -55,8 +46,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.ExpiredCredentialsException;
-import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 /**
@@ -75,11 +64,9 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
-	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the MasterCommand)
 	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the slaves, so this is a problem.
 	private static final File STORE_DIR = ConqueryConfig.getInstance().getStorage().getDirectory();
-	private int jwtDuration; // Hours
 
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
@@ -90,11 +77,9 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private XodusStore passwordStore;
 
 	@JsonIgnore
-	private Algorithm tokenSignAlgorithm;
+	private final MasterMetaStorage storage;
 	@JsonIgnore
-	private JWTVerifier oauthTokenVerifier;
-	@JsonIgnore
-	private MasterMetaStorage storage;
+	private final ConqueryTokenRealm centralTokenRealm;
 
 	@RequiredArgsConstructor
 	@Getter
@@ -110,29 +95,12 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(MasterMetaStorage storage, LocalAuthenticationConfig config) {
-		this.setAuthenticationTokenClass(TOKEN_CLASS);
+	public LocalAuthenticationRealm(AuthorizationController controller, LocalAuthenticationConfig config) {
 		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
-		this.storage = storage;
+		this.storage = controller.getStorage();
 		this.storeName = config.getStoreName();
+		this.centralTokenRealm = controller.getCentralTokenRealm();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
-		this.jwtDuration = config.getJwtDuration();
-		
-		String tokenSecret = generateTokenSecret();
-
-		tokenSignAlgorithm = Algorithm.HMAC256(tokenSecret);
-		oauthTokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(getName()).build();
-	}
-	
-	/**
-	 * Generate a random default token.
-	 * @return The token as a {@link String}
-	 */
-	private static String generateTokenSecret() {
-		Random rand = new SecureRandom();
-		byte[] buffer = new byte[32];
-		rand.nextBytes(buffer);
-		return buffer.toString();
 	}
 
 	@Override
@@ -147,42 +115,12 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	//////////////////// AUTHENTICATION ////////////////////
 
 	//////////////////// FOR JWT
+	/**
+	 *  Should not be called since the tokens are now handled by the ConqueryTokenRealm.
+	 */
 	@Override
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
-			// Incompatible token
-			return null;
-		}
-		DecodedJWT decodedToken = null;
-		try {
-			decodedToken = oauthTokenVerifier.verify((String) token.getCredentials());
-		}
-		catch (TokenExpiredException e) {
-			log.trace("The provided token is expired.");
-			throw new ExpiredCredentialsException(e);
-		}
-		catch (SignatureVerificationException | InvalidClaimException e) {
-			log.trace("The provided token was not successfully verified against its signature or claims.");
-			throw new IncorrectCredentialsException(e);
-		}
-		catch (JWTVerificationException e) {
-			log.trace("The provided token could not be verified.");
-			throw new AuthenticationException(e);
-		}
-
-		String username = decodedToken.getSubject();
-
-		UserId userId = new UserId(username);
-		User user = storage.getUser(userId);
-		// try to construct a new User if none could be found in the storage
-		if (user == null) {
-			log.warn(
-				"Provided credentials were valid, but a corresponding user was not found in the System. You need to add a user to the system with the id: {}",
-				userId);
-			return null;
-		}
-
-		return new ConqueryAuthenticationInfo(userId, token, this);
+		throw new UnsupportedOperationException("Should not be called since the tokens are now handled by the ConqueryTokenRealm.");
 	}
 
 	//////////////////// FOR USERNAME/PASSWORD
@@ -193,7 +131,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			throw new AuthenticationException("Provided username or password was not valid.");
 		}
 		// The username is in this case the email
-		return TokenHandler.createToken(username, jwtDuration, getName(), tokenSignAlgorithm);
+		return centralTokenRealm.createTokenForUser(new UserId(username));
 	}
 
 	/**

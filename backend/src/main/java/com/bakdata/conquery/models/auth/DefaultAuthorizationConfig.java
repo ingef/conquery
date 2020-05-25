@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.cps.CPSType;
 import lombok.Getter;
@@ -11,7 +13,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Getter
 public class DefaultAuthorizationConfig implements AuthorizationConfig {
 
-	@NotEmpty
+	@NotEmpty 
+	@Valid
 	private List<ProtoUser> initialUsers;
 
 	@NotEmpty

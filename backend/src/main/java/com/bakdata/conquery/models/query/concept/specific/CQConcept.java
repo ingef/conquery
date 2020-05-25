@@ -182,9 +182,9 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		selects.forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
+		selects.forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		for (CQTable table : tables) {
-			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
+			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		}
 	}
 

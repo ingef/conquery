@@ -24,6 +24,7 @@ import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -68,7 +69,7 @@ public class StoredQueriesResource {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) {
+	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 		processor.patchQuery(user, queryId, patch);
 		

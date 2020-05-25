@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.auth.basic;
 
+import java.security.SecureRandom;
 import java.util.Date;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -10,9 +12,11 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
+import io.dropwizard.util.Duration;
 import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 
@@ -22,14 +26,17 @@ public class TokenHandler {
 
 	private static final String PREFIX = "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
+	
+	private static final Random RANDOM_GEN = new SecureRandom();
+	private static final int TOKEN_SECRET_LENGTH = 32;
 
 	/**
 	 * Creates a signed JWT token for the authentication with the
 	 * {@link LocalAuthenticationRealm}.
 	 */
-	public String createToken(String username, int duration, String issuer, Algorithm algorithm) {
+	public String createToken(String username, Duration duration, String issuer, Algorithm algorithm) {
 		Date issueDate = new Date();
-		Date expDate = DateUtils.addHours(issueDate, duration);
+		Date expDate = DateUtils.addMinutes(issueDate, Long.valueOf(duration.toMinutes()).intValue());
 		String token = JWT.create().withIssuer(issuer).withSubject(username).withIssuedAt(issueDate).withExpiresAt(expDate).sign(algorithm);
 		return token;
 	}
@@ -115,6 +122,13 @@ public class TokenHandler {
 			return credentials;
 		}
 		return null;
+	}
+	
+	/**
+	 * Generate a random secret.
+	 */
+	public static String generateTokenSecret() {
+		return RandomStringUtils.random(TOKEN_SECRET_LENGTH, 0, 0, false, false, null, RANDOM_GEN);
 	}
 
 	@SuppressWarnings("serial")

@@ -57,7 +57,7 @@ public class ConqueryConfig extends Configuration {
 
 	@Valid @NotNull
 	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
-	
+	@Valid
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**
 	 * null means here that we try to deduce from an attached agent
@@ -80,7 +80,7 @@ public class ConqueryConfig extends Configuration {
 		return (T) plugins.stream()
 			.filter(c -> type.isAssignableFrom(c.getClass()))
 			.collect(MoreCollectors.toOptional())
-			.orElseThrow(()-> new NoSuchElementException("No plugin config of type "+type.getClass().getSimpleName()+" configured"));
+			.orElseThrow(()-> new NoSuchElementException("No plugin config of type "+type.getSimpleName()+" configured"));
 	}
 
 }

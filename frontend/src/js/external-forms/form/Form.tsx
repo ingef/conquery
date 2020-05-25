@@ -10,7 +10,7 @@ import {
   validateRequired,
   validateDateRange,
   validatePositive,
-  validateConceptGroupFilled
+  validateConceptGroupFilled,
 } from "../validators";
 import { collectAllFields } from "../helper";
 import { selectReduxFormState } from "../stateSelectors";
@@ -18,7 +18,7 @@ import FormsHeader from "../FormsHeader";
 
 import type {
   Form as FormType,
-  FormField as FormFieldType
+  FormField as FormFieldType,
 } from "../config-types";
 
 import Field from "./Field";
@@ -36,8 +36,8 @@ const DEFAULT_VALUE_BY_TYPE = {
   MULTI_SELECT: null,
   DATE_RANGE: {
     min: null,
-    max: null
-  }
+    max: null,
+  },
 };
 
 const DEFAULT_VALIDATION_BY_TYPE = {
@@ -51,22 +51,22 @@ const DEFAULT_VALIDATION_BY_TYPE = {
   TABS: null,
   DATASET_SELECT: null,
   MULTI_SELECT: null,
-  DATE_RANGE: validateDateRange
+  DATE_RANGE: validateDateRange,
 };
 
 function getPossibleValidations(fieldType: string) {
   const notEmptyValidation =
     fieldType === "CONCEPT_LIST"
       ? {
-          NOT_EMPTY: validateConceptGroupFilled
+          NOT_EMPTY: validateConceptGroupFilled,
         }
       : {
-          NOT_EMPTY: validateRequired
+          NOT_EMPTY: validateRequired,
         };
 
   return {
     ...notEmptyValidation,
-    GREATER_THAN_ZERO: validatePositive
+    GREATER_THAN_ZERO: validatePositive,
   };
 }
 
@@ -95,6 +95,7 @@ function getErrorForField(field: FormFieldType, value: any) {
 
 type ConfiguredFormPropsType = {
   config: FormType;
+  selectedDatasetId: DatasetIdT;
 };
 
 type PropsType = {
@@ -117,14 +118,14 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
     onSubmit,
     getFieldValue,
     availableDatasets,
-    selectedDatasetId
+    selectedDatasetId,
   }: PropsType) => {
     const locale = getLocale();
 
     return (
       <form>
         <FormsHeader headline={config.headline[locale]} />
-        {config.fields.map(field => (
+        {config.fields.map((field) => (
           <Field
             key={field.name}
             formType={config.type}
@@ -154,9 +155,9 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
       return allValues;
     }, {}),
     destroyOnUnmount: false,
-    validate: values =>
+    validate: (values) =>
       Object.keys(values).reduce((errors, name) => {
-        const field = allFields.find(field => field.name === name);
+        const field = allFields.find((field) => field.name === name);
 
         // Note: For some reason, redux form understands, that:
         //       EVEN IF we add errors for ALL fields –
@@ -173,15 +174,15 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
         }
 
         return errors;
-      }, {})
+      }, {}),
   })(Form);
 
-  const mapStateToProps = state => ({
-    getFieldValue: field => fieldValueSelector(state, field),
-    availableDatasets: state.datasets.data.map(dataset => ({
+  const mapStateToProps = (state) => ({
+    getFieldValue: (field) => fieldValueSelector(state, field),
+    availableDatasets: state.datasets.data.map((dataset) => ({
       label: dataset.label,
-      value: dataset.id
-    }))
+      value: dataset.id,
+    })),
   });
 
   const ReduxConnectedForm = connect(mapStateToProps)(ReduxFormConnectedForm);

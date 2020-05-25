@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.Priority;
 import javax.ws.rs.NotAuthorizedException;
@@ -46,7 +46,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
 
 		// The token extraction process
-		List<AuthenticationToken> tokens = new ArrayList<>();
+		Set<AuthenticationToken> tokens = new HashSet<>();
 		for (ConqueryAuthenticationRealm realm : controller.getAuthenticationRealms()) {
 			AuthenticationToken token = null;
 			if ((token = realm.extractToken(requestContext)) != null) {
