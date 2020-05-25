@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
 import ReactList from "react-list";
 
-import PreviousQuery from "./PreviousQuery";
+import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import { PreviousQueryT } from "./reducer";
+import { useDispatch } from "react-redux";
+import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
+import SharePreviousQueryModal from "./SharePreviousQueryModal";
+import { deletePreviousQuerySuccess } from "./actions";
 
 interface PropsT {
   datasetId: string;
@@ -21,16 +25,58 @@ const Container = styled("div")`
 `;
 
 const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
+  const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
+    string | null
+  >(null);
+  const [previousQueryToShare, setPreviousQueryToShare] = useState<
+    string | null
+  >(null);
+
+  const dispatch = useDispatch();
+  const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
+  const onCloseShareModal = () => setPreviousQueryToShare(null);
+
+  function onShareSuccess() {
+    onCloseShareModal();
+  }
+
+  function onDeleteSuccess() {
+    if (previousQueryToDelete) {
+      dispatch(deletePreviousQuerySuccess(previousQueryToDelete));
+    }
+
+    onCloseDeleteModal();
+  }
+
   function renderQuery(index: number, key: string | number) {
     return (
       <Container key={key}>
-        <PreviousQuery query={queries[index]} datasetId={datasetId} />
+        <PreviousQueryDragContainer
+          query={queries[index]}
+          datasetId={datasetId}
+          onIndicateDeletion={() => setPreviousQueryToDelete(queries[index].id)}
+          onIndicateShare={() => setPreviousQueryToShare(queries[index].id)}
+        />
       </Container>
     );
   }
 
   return (
     <Root>
+      {!!previousQueryToShare && (
+        <SharePreviousQueryModal
+          previousQueryId={previousQueryToShare}
+          onClose={onCloseShareModal}
+          onShareSuccess={onShareSuccess}
+        />
+      )}
+      {!!previousQueryToDelete && (
+        <DeletePreviousQueryModal
+          previousQueryId={previousQueryToDelete}
+          onClose={onCloseDeleteModal}
+          onDeleteSuccess={onDeleteSuccess}
+        />
+      )}
       <ReactList
         itemRenderer={renderQuery}
         length={queries.length}
