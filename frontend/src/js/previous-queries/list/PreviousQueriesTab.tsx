@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
 
 import type { DatasetIdT } from "../../api/types";
-import DeletePreviousQueryModal from "../delete-modal/DeletePreviousQueryModal";
 import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
 import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
 import PreviousQueries from "./PreviousQueries";
@@ -71,10 +70,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
         )}
       </Container>
       {hasQueries && (
-        <>
-          <PreviousQueries queries={queries} datasetId={datasetId} />
-          <DeletePreviousQueryModal datasetId={datasetId} />
-        </>
+        <PreviousQueries queries={queries} datasetId={datasetId} />
       )}
     </>
   );

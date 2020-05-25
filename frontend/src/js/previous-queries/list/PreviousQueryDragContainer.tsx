@@ -35,6 +35,7 @@ function collect(connect, monitor) {
 type PropsType = {
   query: PreviousQueryT;
   datasetId: DatasetIdT;
+  onIndicateDeletion: () => void;
   connectDragSource: () => void;
 };
 
@@ -43,7 +44,12 @@ class PreviousQueryDragContainer extends React.Component {
   props: PropsType;
 
   render() {
-    const { query, datasetId, connectDragSource } = this.props;
+    const {
+      query,
+      datasetId,
+      onIndicateDeletion,
+      connectDragSource,
+    } = this.props;
 
     const isNotEditing = !(query.editingLabel || query.editingTags);
 
@@ -54,6 +60,7 @@ class PreviousQueryDragContainer extends React.Component {
         }}
         query={query}
         datasetId={datasetId}
+        onIndicateDeletion={onIndicateDeletion}
       />
     );
   }

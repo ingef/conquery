@@ -16,13 +16,11 @@ import {
   TOGGLE_SHARE_PREVIOUS_QUERY_START,
   TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
   TOGGLE_SHARE_PREVIOUS_QUERY_ERROR,
-  DELETE_PREVIOUS_QUERY_START,
   DELETE_PREVIOUS_QUERY_SUCCESS,
-  DELETE_PREVIOUS_QUERY_ERROR,
 } from "./actionTypes";
 
 export interface PreviousQueryT {
-  id: number | string;
+  id: string;
   label: string;
   loading: boolean;
   error: string | null;
@@ -166,7 +164,6 @@ const previousQueriesReducer = (
     case RENAME_PREVIOUS_QUERY_START:
     case RETAG_PREVIOUS_QUERY_START:
     case TOGGLE_SHARE_PREVIOUS_QUERY_START:
-    case DELETE_PREVIOUS_QUERY_START:
       return updatePreviousQuery(state, action, { loading: true });
     case LOAD_PREVIOUS_QUERY_SUCCESS:
       return updatePreviousQuery(state, action, {
@@ -204,7 +201,6 @@ const previousQueriesReducer = (
     case RENAME_PREVIOUS_QUERY_ERROR:
     case RETAG_PREVIOUS_QUERY_ERROR:
     case TOGGLE_SHARE_PREVIOUS_QUERY_ERROR:
-    case DELETE_PREVIOUS_QUERY_ERROR:
       return updatePreviousQuery(state, action, {
         loading: false,
         error: action.payload.message,

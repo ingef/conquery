@@ -16,7 +16,6 @@ import WithTooltip from "../../tooltip/WithTooltip";
 
 import EditableTags from "../../form-components/EditableTags";
 
-import { deletePreviousQueryModalOpen } from "../delete-modal/actions";
 import { canDownloadResult } from "../../user/selectors";
 
 import {
@@ -98,10 +97,14 @@ const StyledWithTooltip = styled(WithTooltip)`
 interface PropsT {
   query: PreviousQueryT;
   datasetId: DatasetIdT;
+  onIndicateDeletion: () => void;
 }
 
 const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
-  function PreviousQueryComponent({ query, datasetId }, ref) {
+  function PreviousQueryComponent(
+    { query, datasetId, onIndicateDeletion },
+    ref
+  ) {
     const availableTags = useSelector<StateT, string[]>(
       (state) => state.previousQueries.tags
     );
@@ -118,9 +121,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
 
     const onRetagPreviousQuery = (tags: string[]) =>
       dispatch(retagPreviousQuery(datasetId, query.id, tags));
-
-    const onDeletePreviousQuery = () =>
-      dispatch(deletePreviousQueryModalOpen(query.id));
 
     const onToggleEditPreviousQueryLabel = () =>
       dispatch(toggleEditPreviousQueryLabel(query.id));
@@ -194,7 +194,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                     <IconButton
                       icon="times"
                       bare
-                      onClick={onDeletePreviousQuery}
+                      onClick={onIndicateDeletion}
                     />
                   </StyledWithTooltip>
                 )
