@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -126,7 +125,7 @@ public class Preprocessor {
 
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
 
-		final AtomicLong errorCounter = new AtomicLong(0);
+		int errors = 0;
 
 		final Preprocessed result = new Preprocessed(descriptor);
 
@@ -195,7 +194,7 @@ public class Preprocessor {
 						catch (OutputDescription.OutputException e) {
 							exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
 
-							long errors = errorCounter.getAndIncrement();
+							errors++;
 
 							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
@@ -210,7 +209,7 @@ public class Preprocessor {
 						catch (Exception e) {
 							exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
 
-							long errors = errorCounter.getAndIncrement();
+							errors++;
 
 							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("Failed to parse line: {} content: {}", lineId, row, e);
@@ -236,8 +235,8 @@ public class Preprocessor {
 				}
 			}
 
-			if (errorCounter.get() > 0) {
-				log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errorCounter.get(), lineId);
+			if (errors > 0) {
+				log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errors, lineId);
 			}
 
 			if (log.isWarnEnabled()) {

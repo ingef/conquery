@@ -39,7 +39,7 @@ public class StringParser extends Parser<Integer> {
 
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
 	private VarIntParser indexType = new VarIntParser(); 
-	private Map<String, Integer> strings = Collections.synchronizedMap(new LinkedHashMap<>());
+	private Map<String, Integer> strings = new LinkedHashMap<>();
 	private List<byte[]> decoded;
 	private Encoding encoding;
 	private String prefix = null;

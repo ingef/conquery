@@ -115,7 +115,7 @@ public class TableInputDescriptor implements Serializable {
 			}
 
 			return  (GroovyPredicate) groovy.parse(filter);
-		} catch (Exception | Error e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to compile filter `" + filter + "`", e);
 		}
 	}

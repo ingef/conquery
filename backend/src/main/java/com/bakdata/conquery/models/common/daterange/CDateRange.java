@@ -216,13 +216,8 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 				min = Math.min(min, other.getMinValue());
 			}
 
-			if (getMaxValue() != Integer.MAX_VALUE) {
-				min = Math.min(min, getMaxValue());
-			}
-
-			if (other.getMaxValue() != Integer.MAX_VALUE) {
-				min = Math.min(min, other.getMaxValue());
-			}
+			min = Math.min(min, getMaxValue());
+			min = Math.min(min, other.getMaxValue());
 
 			if (min == Integer.MAX_VALUE) {
 				min = Integer.MIN_VALUE;
@@ -231,14 +226,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 
 		int max = Integer.MIN_VALUE;
 		{
-			if (getMinValue() != Integer.MIN_VALUE) {
-				max = Math.max(max, getMinValue());
-			}
-
-			if (other.getMinValue() != Integer.MIN_VALUE) {
-				max = Math.max(max, other.getMinValue());
-			}
-
 			if (getMaxValue() != Integer.MAX_VALUE) {
 				max = Math.max(max, getMaxValue());
 			}
@@ -246,6 +233,9 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 			if (other.getMaxValue() != Integer.MAX_VALUE) {
 				max = Math.max(max, other.getMaxValue());
 			}
+
+			max = Math.max(max, getMinValue());
+			max = Math.max(max, other.getMinValue());
 
 			if (max == Integer.MIN_VALUE) {
 				max = Integer.MAX_VALUE;

@@ -135,8 +135,12 @@ public class PreprocessorCommand extends ConqueryCommand {
 		for (PreprocessingDirectories description : directories) {
 
 			File inDir = description.getDescriptionsDir().getAbsoluteFile();
+			final File[] files =
+					inDir.isFile() ?
+					new File[]{inDir} :
+					inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
 
-			for (File descriptionFile : inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)))) {
+			for (File descriptionFile : files) {
 
 				InputFile file = InputFile.fromDescriptionFile(descriptionFile, description, tag);
 				try {
