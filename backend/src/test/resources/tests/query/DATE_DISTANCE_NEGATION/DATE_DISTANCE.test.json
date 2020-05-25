@@ -63,8 +63,6 @@
                },
                "filter":{  
                   "label":"alterseinschrankung",
-                  "description":"Geburtsdatum",
-                  "column":"table1.geburtsdatum",
                   "type":"DATE_DISTANCE"
                }
             }
