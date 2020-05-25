@@ -10,13 +10,17 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
  * Specific class to also patch the values stored in a {@link FormConfig}.
  */
-@Data
 @SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
 public class FormConfigPatch extends MetaDataPatch {
 	private JsonNode values;
 	
