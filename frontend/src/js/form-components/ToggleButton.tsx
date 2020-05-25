@@ -6,7 +6,7 @@ const Root = styled("p")`
   margin: 0;
 `;
 
-const Option = styled("span")`
+const Option = styled("span")<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.xs};
   display: inline-block;
   padding: 2px 8px;

@@ -9,7 +9,6 @@ const Root = styled("div")`
   padding: 0 20px;
   background-color: white;
   display: flex;
-  overflow: hidden:
   align-items: flex-start;
 `;
 
@@ -47,7 +46,7 @@ interface PropsT {
   tabs: TabType[];
 }
 
-const TabNavigation: React.FC<PropsT> = props => {
+const TabNavigation: React.FC<PropsT> = (props) => {
   return (
     <Root>
       {Object.values(props.tabs).map(({ label, key }) => (
