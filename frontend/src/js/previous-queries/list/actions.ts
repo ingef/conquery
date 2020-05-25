@@ -20,13 +20,10 @@ import {
   RETAG_PREVIOUS_QUERY_START,
   RETAG_PREVIOUS_QUERY_SUCCESS,
   RETAG_PREVIOUS_QUERY_ERROR,
-  TOGGLE_SHARE_PREVIOUS_QUERY_START,
   TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
-  TOGGLE_SHARE_PREVIOUS_QUERY_ERROR,
-  DELETE_PREVIOUS_QUERY_START,
   DELETE_PREVIOUS_QUERY_SUCCESS,
-  DELETE_PREVIOUS_QUERY_ERROR,
 } from "./actionTypes";
+import { PreviousQueryIdT } from "./reducer";
 
 export const loadPreviousQueriesStart = () => ({
   type: LOAD_PREVIOUS_QUERIES_START,
@@ -143,30 +140,16 @@ export const retagPreviousQuery = (datasetId, queryId, tags) => {
   };
 };
 
-export const toggleSharePreviousQueryStart = (queryId) => ({
-  type: TOGGLE_SHARE_PREVIOUS_QUERY_START,
-  payload: { queryId },
-});
-export const toggleSharePreviousQuerySuccess = (queryId, shared, res) =>
-  defaultSuccess(TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS, res, { queryId, shared });
-export const toggleSharePreviousQueryError = (queryId, err) =>
-  defaultError(TOGGLE_SHARE_PREVIOUS_QUERY_ERROR, err, { queryId });
-
-export const toggleSharePreviousQuery = (datasetId, queryId, shared) => {
-  return (dispatch) => {
-    dispatch(toggleSharePreviousQueryStart(queryId));
-
-    return api.patchStoredQuery(datasetId, queryId, { shared: shared }).then(
-      (r) => dispatch(toggleSharePreviousQuerySuccess(queryId, shared, r)),
-      (e) =>
-        dispatch(
-          toggleSharePreviousQueryError(queryId, {
-            message: T.translate("previousQuery.shareError"),
-          })
-        )
-    );
-  };
-};
+export const sharePreviousQuerySuccess = (
+  queryId: string,
+  shared: boolean,
+  groups: PreviousQueryIdT[]
+) =>
+  defaultSuccess(TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS, null, {
+    queryId,
+    shared,
+    groups,
+  });
 
 export const deletePreviousQuerySuccess = (queryId: string) =>
   defaultSuccess(DELETE_PREVIOUS_QUERY_SUCCESS, null, { queryId });

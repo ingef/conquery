@@ -19,7 +19,6 @@ import EditableTags from "../../form-components/EditableTags";
 import { canDownloadResult } from "../../user/selectors";
 
 import {
-  toggleSharePreviousQuery,
   renamePreviousQuery,
   retagPreviousQuery,
   toggleEditPreviousQueryLabel,
@@ -30,7 +29,7 @@ import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
 import { PreviousQueryT } from "./reducer";
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import { DatasetIdT } from "js/api/types";
+import type { DatasetIdT } from "js/api/types";
 import { StateT } from "app-types";
 
 const Root = styled("div")<{ own?: boolean; system?: boolean }>`
@@ -98,11 +97,12 @@ interface PropsT {
   query: PreviousQueryT;
   datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
+  onIndicateShare: () => void;
 }
 
 const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
-    { query, datasetId, onIndicateDeletion },
+    { query, datasetId, onIndicateDeletion, onIndicateShare },
     ref
   ) {
     const availableTags = useSelector<StateT, string[]>(
@@ -113,8 +113,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     );
 
     const dispatch = useDispatch();
-    const onToggleSharePreviousQuery = (shared: boolean) =>
-      dispatch(toggleSharePreviousQuery(datasetId, query.id, shared));
 
     const onRenamePreviousQuery = (label: string) =>
       dispatch(renamePreviousQuery(datasetId, query.id, label));
@@ -158,9 +156,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
               peopleFound
             )}
             {query.own && query.shared && (
-              <SharedIndicator
-                onClick={() => onToggleSharePreviousQuery(!query.shared)}
-              >
+              <SharedIndicator onClick={onIndicateShare}>
                 {T.translate("common.shared")}
               </SharedIndicator>
             )}
@@ -179,11 +175,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                 )}
               {query.own && !query.shared && (
                 <StyledWithTooltip text={T.translate("common.share")}>
-                  <IconButton
-                    icon="upload"
-                    bare
-                    onClick={() => onToggleSharePreviousQuery(!query.shared)}
-                  />
+                  <IconButton icon="upload" bare onClick={onIndicateShare} />
                 </StyledWithTooltip>
               )}
               {query.loading ? (

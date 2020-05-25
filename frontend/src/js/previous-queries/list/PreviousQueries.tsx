@@ -6,6 +6,7 @@ import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import { PreviousQueryT } from "./reducer";
 import { useDispatch } from "react-redux";
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
+import SharePreviousQueryModal from "./SharePreviousQueryModal";
 import { deletePreviousQuerySuccess } from "./actions";
 
 interface PropsT {
@@ -27,16 +28,24 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
     string | null
   >(null);
+  const [previousQueryToShare, setPreviousQueryToShare] = useState<
+    string | null
+  >(null);
 
   const dispatch = useDispatch();
-  const closeDeleteModal = () => setPreviousQueryToDelete(null);
+  const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
+  const onCloseShareModal = () => setPreviousQueryToShare(null);
+
+  function onShareSuccess() {
+    onCloseShareModal();
+  }
 
   function onDeleteSuccess() {
     if (previousQueryToDelete) {
       dispatch(deletePreviousQuerySuccess(previousQueryToDelete));
     }
 
-    closeDeleteModal();
+    onCloseDeleteModal();
   }
 
   function renderQuery(index: number, key: string | number) {
@@ -46,6 +55,7 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
           query={queries[index]}
           datasetId={datasetId}
           onIndicateDeletion={() => setPreviousQueryToDelete(queries[index].id)}
+          onIndicateShare={() => setPreviousQueryToShare(queries[index].id)}
         />
       </Container>
     );
@@ -53,10 +63,17 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
 
   return (
     <Root>
+      {!!previousQueryToShare && (
+        <SharePreviousQueryModal
+          previousQueryId={previousQueryToShare}
+          onClose={onCloseShareModal}
+          onShareSuccess={onShareSuccess}
+        />
+      )}
       {!!previousQueryToDelete && (
         <DeletePreviousQueryModal
           previousQueryId={previousQueryToDelete}
-          onClose={closeDeleteModal}
+          onClose={onCloseDeleteModal}
           onDeleteSuccess={onDeleteSuccess}
         />
       )}

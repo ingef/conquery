@@ -36,18 +36,18 @@ type PropsType = {
   query: PreviousQueryT;
   datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
+  onIndicateShare: () => void;
   connectDragSource: () => void;
 };
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
-class PreviousQueryDragContainer extends React.Component {
-  props: PropsType;
-
+class PreviousQueryDragContainer extends React.Component<PropsType> {
   render() {
     const {
       query,
       datasetId,
       onIndicateDeletion,
+      onIndicateShare,
       connectDragSource,
     } = this.props;
 
@@ -61,6 +61,7 @@ class PreviousQueryDragContainer extends React.Component {
         query={query}
         datasetId={datasetId}
         onIndicateDeletion={onIndicateDeletion}
+        onIndicateShare={onIndicateShare}
       />
     );
   }

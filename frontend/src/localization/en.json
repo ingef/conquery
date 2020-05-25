@@ -93,6 +93,11 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Should this query be deleted?"
   },
+  "sharePreviousQueryModal": {
+    "headline": "Sharing query: ",
+    "groupsLabel": "Groups to share the query with",
+    "unshare": "Revoke sharing"
+  },
   "common": {
     "back": "Back",
     "any": "Any",

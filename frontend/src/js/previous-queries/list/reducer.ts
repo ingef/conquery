@@ -13,14 +13,14 @@ import {
   RETAG_PREVIOUS_QUERY_START,
   RETAG_PREVIOUS_QUERY_SUCCESS,
   RETAG_PREVIOUS_QUERY_ERROR,
-  TOGGLE_SHARE_PREVIOUS_QUERY_START,
   TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
-  TOGGLE_SHARE_PREVIOUS_QUERY_ERROR,
   DELETE_PREVIOUS_QUERY_SUCCESS,
 } from "./actionTypes";
+import type { UserGroupIdT } from "js/api/types";
 
+export type PreviousQueryIdT = string;
 export interface PreviousQueryT {
-  id: string;
+  id: PreviousQueryIdT;
   label: string;
   loading: boolean;
   error: string | null;
@@ -28,8 +28,9 @@ export interface PreviousQueryT {
   createdAt: string;
   tags: string[];
   own: boolean;
-  shared: boolean;
   resultUrl: string | null;
+  shared: boolean;
+  groups?: UserGroupIdT[];
 }
 
 export interface PreviousQueriesStateT {
@@ -163,7 +164,6 @@ const previousQueriesReducer = (
     case LOAD_PREVIOUS_QUERY_START:
     case RENAME_PREVIOUS_QUERY_START:
     case RETAG_PREVIOUS_QUERY_START:
-    case TOGGLE_SHARE_PREVIOUS_QUERY_START:
       return updatePreviousQuery(state, action, { loading: true });
     case LOAD_PREVIOUS_QUERY_SUCCESS:
       return updatePreviousQuery(state, action, {
@@ -200,7 +200,6 @@ const previousQueriesReducer = (
     case LOAD_PREVIOUS_QUERY_ERROR:
     case RENAME_PREVIOUS_QUERY_ERROR:
     case RETAG_PREVIOUS_QUERY_ERROR:
-    case TOGGLE_SHARE_PREVIOUS_QUERY_ERROR:
       return updatePreviousQuery(state, action, {
         loading: false,
         error: action.payload.message,

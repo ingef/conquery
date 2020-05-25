@@ -14,7 +14,7 @@ interface PropsType {
   onDeleteSuccess: () => void;
 }
 
-const DeleteFormConfigModal = ({
+const DeletePreviousQueryModal = ({
   previousQueryId,
   onClose,
   onDeleteSuccess,
@@ -45,4 +45,4 @@ const DeleteFormConfigModal = ({
   );
 };
 
-export default DeleteFormConfigModal;
+export default DeletePreviousQueryModal;
