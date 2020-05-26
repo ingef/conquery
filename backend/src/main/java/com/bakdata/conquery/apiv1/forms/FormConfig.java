@@ -47,6 +47,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @FieldNameConstants
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
 
+	protected DatasetId dataset;
 	@NotEmpty
 	private String formType;
 	@VariableDefaultValue @NonNull
@@ -69,7 +70,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		return new FormConfigId(formType, formId);
+		return new FormConfigId(dataset, formType, formId);
 	}
 
 	/**
@@ -123,6 +124,23 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.shared(shared)
 			// system?
 			.values(finalRep).build();
+	}
+	
+	/**
+	 * Return the full representation of the configuration with the configured form fields and meta data.
+	 */
+	public FormConfigFullRepresentation fullRepresentation(MasterMetaStorage storage, User requestingUser){
+		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
+		return FormConfigFullRepresentation.builder()
+			.id(getId()).formType(formType)
+			.label(label)
+			.tags(tags)
+			.ownerName(ownerName)
+			.own(requestingUser != null? requestingUser.getId().equals(owner) : false)
+			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+			.shared(shared)
+			// system? TODO discuss how system is determined (may check if owning user is in a special system group or so)
+			.values(values).build();
 	}
 
 	/**

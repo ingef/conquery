@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
@@ -19,6 +21,8 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
@@ -30,6 +34,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 import org.jetbrains.annotations.TestOnly;
 
@@ -37,8 +42,10 @@ import org.jetbrains.annotations.TestOnly;
  * Holds the logic that serves the endpoints defined in {@link FormConfigResource}.
  */
 @RequiredArgsConstructor
+@Slf4j
 public class FormConfigProcessor {
 	
+	private final Validator validator;
 	private final MasterMetaStorage storage;
 	@Getter(onMethod = @__({@TestOnly}))
 	private final static ObjectMapper MAPPER = Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
@@ -47,10 +54,12 @@ public class FormConfigProcessor {
 	 * Return an overview of all form config available to the user. The selection can be reduced by setting a specific formType.
 	 * The provided overview does not contain the configured values for the form, just the meta data.
 	 * @param user The user vor which the overview is created.
+	 * @param dataset 
 	 * @param formType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull Optional<String> formType){
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Optional<String> formType){
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
+			.filter(c -> dataset.equals(c.getDataset()))
 			.filter(c -> user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
 		if(formType.isPresent()) {
 			stream = stream.filter(c -> c.getFormType().equals(formType.get()));
@@ -65,16 +74,20 @@ public class FormConfigProcessor {
 	 */
 	public FormConfigFullRepresentation getConfig(DatasetId datasetId, User user, FormConfigId formId) {
 		user.checkPermission(FormConfigPermission.onInstance(Ability.READ, formId));
-		FormConfigFullRepresentation config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId))
-			.tryTranslateToDataset(storage, datasetId, MAPPER, user);
-		return config;
+		return Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId))
+			.fullRepresentation(storage, user);
 	}
 
 	/**
 	 * Adds a formular configuration to the storage and grants the user the rights to manage/patch it. 
+	 * @param dataset 
+	 * @throws JSONException 
 	 */
-	public FormConfigId addConfig(User user, FormConfig config) {
+	public FormConfigId addConfig(User user, DatasetId dataset, FormConfig config) throws JSONException {
 		config.setOwner(user.getId());
+		config.setDataset(dataset);
+		
+		ValidatorHelper.failOnError(log, validator.validate(config));
 		storage.updateFormConfig(config);
 		
 		user.addPermission(storage, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, config.getId()));
