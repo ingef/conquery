@@ -291,7 +291,16 @@ public class Preprocessor {
 			result.write(outFile);
 		}
 
-		//if successful move the tmp file to the target location
+		if(errors > 0){
+			log.error("Had {}% faulty lines ({} of ~{} lines)", (double) errors / (double) lineId, errors, lineId);
+		}
+
+		if((double) errors / (double) lineId > ConqueryConfig.getInstance().getPreprocessor().getFaultyLineThreshold()){
+			throw new RuntimeException("Too many faulty lines.");
+		}
+
+
+			//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, preprocessedFile);
 		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
 	}
