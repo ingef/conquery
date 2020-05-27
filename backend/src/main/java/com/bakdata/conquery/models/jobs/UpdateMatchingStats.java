@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.worker.Worker;
-
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +77,7 @@ public class UpdateMatchingStats extends Job {
 				}
 			}
 			catch (Exception e) {
-				log.error("Failed to collect the matching stats for CBlock " + cBlock.getId(), e);
+				log.error("Failed to collect the matching stats for {}", cBlock, e);
 			}
 
 			progressReporter.report(1);

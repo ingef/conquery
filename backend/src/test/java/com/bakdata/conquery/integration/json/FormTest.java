@@ -14,7 +14,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
-import com.bakdata.conquery.integration.common.LoadingUtil;
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -81,7 +81,7 @@ public class FormTest extends ConqueryTestSpec {
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 
-		LoadingUtil.importTables(support, content);
+		IntegrationUtils.importTables(support, content);
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLES", getLabel());
 
@@ -89,10 +89,10 @@ public class FormTest extends ConqueryTestSpec {
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
-		LoadingUtil.importTableContents(support, content);
+		IntegrationUtils.importTableContents(support, content.getTables(), support.getDataset());
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
-		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
+		IntegrationUtils.importPreviousQueries(support, content);
 
 		support.waitUntilWorkDone();
 
