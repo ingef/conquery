@@ -212,7 +212,7 @@ public class FormConfigTest {
 	}
 	
 	@Test
-	public void getConfigs() {
+	public void getConfigs() throws JSONException {
 		// PREPARE
 		User user = new User("test","test");
 		storageMock.addUser(user);
@@ -229,12 +229,8 @@ public class FormConfigTest {
 		JsonNode values2 = mapper.valueToTree(form2);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		FormConfig formConfig2 = new FormConfig(form2.getClass().getAnnotation(CPSType.class).id(), values2);
-		formConfig.setOwner(user.getId());
-		formConfig2.setOwner(user.getId());
-		user.addPermission(storageMock, FormConfigPermission.onInstance(Ability.READ, formConfig.getId()));
-		user.addPermission(storageMock, FormConfigPermission.onInstance(Ability.READ, formConfig2.getId()));
-		configs.put(formConfig.getId(),formConfig);
-		configs.put(formConfig2.getId(),formConfig2);
+		processor.addConfig(user, dataset, formConfig);
+		processor.addConfig(user, dataset, formConfig2);
 		
 		// EXECUTE
 		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, dataset, Optional.empty());
@@ -266,7 +262,7 @@ public class FormConfigTest {
 	}
 	
 	@Test
-	public void patchConfig() {
+	public void patchConfig() throws JSONException {
 		// PREPARE
 		User user = new User("test","test");
 		storageMock.addUser(user);
@@ -281,9 +277,7 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setOwner(user.getId());
-		user.addPermission(storageMock, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
-		configs.put(formConfig.getId(),formConfig);
+		processor.addConfig(user, dataset, formConfig);
 		
 		// EXECUTE PART 1
 		processor.patchConfig(
