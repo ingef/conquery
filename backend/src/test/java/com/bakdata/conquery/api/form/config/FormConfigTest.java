@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
@@ -27,6 +29,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
@@ -37,6 +40,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import io.dropwizard.jersey.validation.Validators;
 import org.apache.commons.collections4.map.HashedMap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +65,9 @@ public class FormConfigTest {
 	
 	private FormConfigProcessor processor;
 	private AuthorizationController controller;
+	private Validator validator = Validators.newValidatorFactory().getValidator();
 	
+	private DatasetId dataset = new DatasetId("test");
 	private ExportForm form;
 	
 	@BeforeAll
@@ -120,7 +126,7 @@ public class FormConfigTest {
 		when(storageMock.getAllGroups()).thenReturn(groups.values());
 		
 		
-		processor = new FormConfigProcessor(storageMock);
+		processor = new FormConfigProcessor(validator, storageMock);
 		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(), Collections.emptyList(), storageMock);
 		controller.init();
 		controller.start();
@@ -140,13 +146,13 @@ public class FormConfigTest {
 	}
 	
 	@Test
-	public void addConfig() {
+	public void addConfig() throws JSONException {
 		User user = new User("test","test");
 		storageMock.addUser(user);
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
-		processor.addConfig(user, formConfig);
+		processor.addConfig(user, dataset, formConfig);
 		
 		assertThat(configs).containsAllEntriesOf(Map.of(formConfig.getId(),formConfig));
 		
@@ -231,7 +237,7 @@ public class FormConfigTest {
 		configs.put(formConfig2.getId(),formConfig2);
 		
 		// EXECUTE
-		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, Optional.empty());
+		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, dataset, Optional.empty());
 		
 		// CHECK
 		assertThat(response).containsExactlyInAnyOrder(
