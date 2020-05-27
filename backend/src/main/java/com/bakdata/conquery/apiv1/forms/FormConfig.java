@@ -100,7 +100,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * {@link Form}, for conversion. If that is not possible the untranslated values
 	 * are output.
 	 */
-	public FormConfigFullRepresentation tryTranslateToDataset(MasterMetaStorage storage, DatasetId target, ObjectMapper mapper, User user) {
+	public Optional<FormConfig> tryTranslateToDataset(MasterMetaStorage storage, DatasetId target, ObjectMapper mapper, User user) {
 		JsonNode finalRep = values;
 		try {
 			Form intemediateRep = mapper.readerFor(Form.class).readValue(values.traverse());
@@ -109,23 +109,23 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		}
 		catch (IOException e) {
 			log.warn("Unable to translate form configuration {} to dataset {}. Sending untranslated version.", getId(), target);
+			return Optional.empty();
 		}
 
 		@NonNull
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
+		
+		FormConfig translatedConf = new FormConfig(
+			target,
+			formType,
+			formId,
+			label,
+			tags,
+			);
 
-		return FormConfigFullRepresentation.builder()
-			.id(getId()).formType(formType)
-			.label(label)
-			.tags(tags)
-			.ownerName(ownerName)
-			.own(user.getId().equals(owner))
-			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-			.shared(shared)
-			// system?
-			.values(finalRep).build();
+		return Optional.of(new FormConfig());
 	}
-	
+
 	/**
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
