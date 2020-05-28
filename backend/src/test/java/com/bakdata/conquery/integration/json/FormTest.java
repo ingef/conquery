@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -14,7 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
-import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -81,7 +82,7 @@ public class FormTest extends ConqueryTestSpec {
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 
-		IntegrationUtils.importTables(support, content);
+		LoadingUtil.importTables(support, content);
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLES", getLabel());
 
@@ -89,10 +90,10 @@ public class FormTest extends ConqueryTestSpec {
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
-		IntegrationUtils.importTableContents(support, content.getTables(), support.getDataset());
+		LoadingUtil.importTableContents(support, Arrays.asList(content.getTables()));
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
-		IntegrationUtils.importPreviousQueries(support, content);
+		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
 
 		support.waitUntilWorkDone();
 

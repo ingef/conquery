@@ -1,6 +1,13 @@
 package com.bakdata.conquery.integration.json;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importConcepts;
+import static com.bakdata.conquery.integration.common.LoadingUtil.importIdMapping;
+import static com.bakdata.conquery.integration.common.LoadingUtil.importPreviousQueries;
+import static com.bakdata.conquery.integration.common.LoadingUtil.importTableContents;
+import static com.bakdata.conquery.integration.common.LoadingUtil.importTables;
+
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -49,16 +56,22 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
-		IntegrationUtils.importTables(support, content);
+		importTables(support, content);
 		support.waitUntilWorkDone();
 
-		IntegrationUtils.importConcepts(support, rawConcepts);
+		importConcepts(support, rawConcepts);
 		support.waitUntilWorkDone();
+
+		importTableContents(support, Arrays.asList(content.getTables()));
+		support.waitUntilWorkDone();
+		
+		importIdMapping(support, content);
+		support.waitUntilWorkDone();
+		
+		importPreviousQueries(support, content);
+		support.waitUntilWorkDone();
+		
 		query = IntegrationUtils.parseQuery(support, rawQuery);
-
-		IntegrationUtils.importTableContents(support, content.getTables(), support.getDataset());
-		support.waitUntilWorkDone();
-		IntegrationUtils.importIdMapping(support, content.getIdMapping());
-		IntegrationUtils.importPreviousQueries(support, content);
 	}
+
 }
