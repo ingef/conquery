@@ -13,7 +13,9 @@ import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class DecimalParser extends Parser<BigDecimal> {
 
 	private transient int maxScale = Integer.MIN_VALUE;

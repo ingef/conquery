@@ -16,7 +16,9 @@ import com.bakdata.conquery.util.NumberParsing;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class MoneyParser extends Parser<Long> {
 
 	private long maxValue = Long.MIN_VALUE;

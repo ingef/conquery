@@ -9,7 +9,9 @@ import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.DateTypeVarInt;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.util.DateFormats;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class DateParser extends Parser<Integer> {
 
 	private VarIntParser subType = new VarIntParser(); 

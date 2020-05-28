@@ -7,7 +7,9 @@ import com.bakdata.conquery.models.types.parser.NoopTransformer;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.RealTypeDouble;
 import com.bakdata.conquery.util.NumberParsing;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class RealParser extends Parser<Double> {
 
 	@Override

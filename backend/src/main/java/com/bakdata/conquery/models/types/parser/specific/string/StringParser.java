@@ -31,10 +31,12 @@ import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j @Getter
+@ToString(callSuper = true)
 public class StringParser extends Parser<Integer> {
 
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());

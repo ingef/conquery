@@ -259,6 +259,7 @@ public class Preprocessor {
 				result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
 
 				for (PPColumn c : result.getColumns()) {
+					log.trace("Compute best Subtype for  Column[{}] with {}", c.getName(), c.getParser());
 					c.findBestType();
 					log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
 				}
