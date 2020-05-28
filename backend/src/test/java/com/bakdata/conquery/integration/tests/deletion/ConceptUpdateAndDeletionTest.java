@@ -2,7 +2,6 @@ package com.bakdata.conquery.integration.tests.deletion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.commands.SlaveCommand;
@@ -70,7 +69,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 

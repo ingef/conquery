@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.util.Arrays;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -19,10 +18,10 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
@@ -66,7 +65,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -165,7 +164,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		// Load more data under the same name into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			final RequiredTable import2Table = Arrays.stream(test.getContent().getTables())
+			final RequiredTable import2Table = test.getContent().getTables().stream()
 													 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
 													 .findFirst()
 													 .orElseThrow();
@@ -179,21 +178,21 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 											  .asStream(), new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
 
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(conquery.getConfig().getPreprocessor().getDirectories()[0], importId.getTag());
-			ImportDescriptor desc = new ImportDescriptor();
+			InputFile inputFile = InputFile.fromName(conquery.getConfig().getPreprocessor().getDirectories()[0], importId.getTag(), null);
+			TableImportDescriptor desc = new TableImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(import2Table.getName() + "_import");
 			desc.setTable(import2Table.getName());
-			Input input = new Input();
+			TableInputDescriptor input = new TableInputDescriptor();
 			{
-				input.setPrimary(IntegrationUtils.copyOutput(0, import2Table.getPrimaryColumn()));
+				input.setPrimary(IntegrationUtils.copyOutput(import2Table.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), import2Table.getCsv().getName()));
-				input.setOutput(new Output[import2Table.getColumns().length]);
+				input.setOutput(new OutputDescription[import2Table.getColumns().length]);
 				for (int i = 0; i < import2Table.getColumns().length; i++) {
-					input.getOutput()[i] = IntegrationUtils.copyOutput(i + 1, import2Table.getColumns()[i]);
+					input.getOutput()[i] = IntegrationUtils.copyOutput(import2Table.getColumns()[i]);
 				}
 			}
-			desc.setInputs(new Input[]{input});
+			desc.setInputs(new TableInputDescriptor[]{input});
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 
 			//preprocess
