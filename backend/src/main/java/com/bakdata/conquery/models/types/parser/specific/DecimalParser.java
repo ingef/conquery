@@ -42,31 +42,37 @@ public class DecimalParser extends Parser<BigDecimal> {
 
 	@Override
 	protected Decision<BigDecimal, ?, ? extends CType<BigDecimal, ?>> decideType() {
-		if(getLines() > 0) {
-			BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
-			if(unscaled.bitLength() <= 63) {
-				IntegerParser sub = new IntegerParser();
-				sub.registerValue(unscaled.longValueExact());
-				sub.registerValue(-unscaled.longValueExact());
-				sub.setLines(getLines());
-				sub.setNullLines(getNullLines());
-				Decision<Long, Number, ? extends CType<Long, ? extends Number>> subDecision = sub.findBestType();
-				return new Decision<BigDecimal, Number, DecimalTypeScaled>(
-					new Transformer<BigDecimal, Number>() {
-						@Override
-						public Number transform(@NonNull BigDecimal value) {
-							return subDecision.getTransformer().transform(
-								DecimalTypeScaled.unscale(maxScale,value).longValueExact()
-							);
-						}
-					},
-					new DecimalTypeScaled(maxScale, subDecision.getType())
-				);
-			}
+		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
+			return new Decision<BigDecimal, BigDecimal, DecimalTypeBigDecimal>(
+				new NoopTransformer<>(),
+				new DecimalTypeBigDecimal()
+			);
 		}
-		return new Decision<BigDecimal, BigDecimal, DecimalTypeBigDecimal>(
-			new NoopTransformer<>(),
-			new DecimalTypeBigDecimal()
+
+		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
+		if (unscaled.bitLength() > 63) {
+			return new Decision<BigDecimal, BigDecimal, DecimalTypeBigDecimal>(
+				new NoopTransformer<>(),
+				new DecimalTypeBigDecimal()
+			);
+		}
+
+		IntegerParser sub = new IntegerParser();
+		sub.registerValue(unscaled.longValueExact());
+		sub.registerValue(-unscaled.longValueExact());
+		sub.setLines(getLines());
+		sub.setNullLines(getNullLines());
+		Decision<Long, Number, ? extends CType<Long, ? extends Number>> subDecision = sub.findBestType();
+		return new Decision<BigDecimal, Number, DecimalTypeScaled>(
+			new Transformer<BigDecimal, Number>() {
+				@Override
+				public Number transform(@NonNull BigDecimal value) {
+					return subDecision.getTransformer().transform(
+						DecimalTypeScaled.unscale(maxScale,value).longValueExact()
+					);
+				}
+			},
+			new DecimalTypeScaled(maxScale, subDecision.getType())
 		);
 	}
 
