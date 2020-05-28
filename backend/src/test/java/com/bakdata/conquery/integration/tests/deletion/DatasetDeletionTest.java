@@ -3,8 +3,6 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
-
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -58,7 +56,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -202,7 +200,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(newDataset.getTables().values()).isNotEmpty();
 
 			conquery.waitUntilWorkDone();
-			IntegrationUtils.importTableContents(conquery2, Arrays.asList(test.getContent().getTables()), newDataset);
+			IntegrationUtils.importTableContents(conquery2, test.getContent().getTables(), newDataset);
 
 			conquery.waitUntilWorkDone();
 

@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessorImpl;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -27,6 +26,7 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -130,17 +130,16 @@ public class CQExternal implements CQElement {
 		EVENT_DATE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.instance()
-																						   .parseToLocalDate(row[dateIndices[0]]))));
+				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]]))));
 			}
 		},
 		START_END_DATE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.instance().parseToLocalDate(row[dateIndices[0]]);
+				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.parseToLocalDate(row[dateIndices[0]]);
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
-								null :
-								DateFormats.instance().parseToLocalDate(row[dateIndices[1]]);
+					null :
+								 DateFormats.parseToLocalDate(row[dateIndices[1]]);
 
 				CDateRange range;
 				if (start != null && end != null) {

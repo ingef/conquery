@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.NumberParsing;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.NoopTransformer;
@@ -12,9 +11,13 @@ import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
-
+import com.bakdata.conquery.util.NumberParsing;
 import lombok.NonNull;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@ToString(callSuper = true)
+@Slf4j
 public class DecimalParser extends Parser<BigDecimal> {
 
 	private transient int maxScale = Integer.MIN_VALUE;
@@ -27,6 +30,8 @@ public class DecimalParser extends Parser<BigDecimal> {
 	
 	@Override
 	protected void registerValue(BigDecimal v) {
+		log.trace("Registering `{}`",v);
+
 		BigDecimal abs = v.abs();
 		if(v.scale() > maxScale)
 			maxScale = v.scale();

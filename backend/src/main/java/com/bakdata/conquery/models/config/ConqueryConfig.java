@@ -13,8 +13,6 @@ import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
-import com.bakdata.conquery.models.preproc.DateFormats;
-import com.bakdata.conquery.util.DebugMode;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
@@ -56,6 +54,7 @@ public class ConqueryConfig extends Configuration {
 	private IdMappingConfig idMapping = new NoIdMapping();
 	@Valid @NotNull
 	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
+
 	@Valid @NotNull
 	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	@Valid
@@ -84,10 +83,4 @@ public class ConqueryConfig extends Configuration {
 			.orElseThrow(()-> new NoSuchElementException("No plugin config of type "+type.getSimpleName()+" configured"));
 	}
 
-	public void initialize() {
-		if(debugMode != null) {
-			DebugMode.setActive(debugMode);
-		}
-		DateFormats.initialize(additionalFormats);
-	}
 }
