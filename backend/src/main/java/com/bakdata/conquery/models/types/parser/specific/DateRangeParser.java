@@ -14,10 +14,12 @@ import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.PackedUnsigned1616;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
+@ToString(callSuper = true)
 public class DateRangeParser extends Parser<CDateRange> {
 
 	private boolean onlyQuarters = true;
