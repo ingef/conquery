@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Parse column as type.
@@ -20,6 +21,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString(of = {"inputColumn", "inputType"})
 @CPSType(id = "COPY", base = OutputDescription.class)
+@Slf4j
 public class CopyOutput extends OutputDescription {
 
 	public CopyOutput(String name, String inputColumn, MajorTypeId typeId){
@@ -45,6 +47,8 @@ public class CopyOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+				log.trace("Registering `{}` in line {} for Output[{}]", row[column], sourceLine, this.getDescription().getName());
+
 				if (row[column] == null) {
 					return null;
 				}

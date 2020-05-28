@@ -8,11 +8,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 @ToString
+@Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE> {
 	private long lines = 0;
 	private long nullLines = 0;
@@ -45,6 +47,8 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 	
 	public MAJOR_JAVA_TYPE addLine(MAJOR_JAVA_TYPE v) {
 		lines++;
+		log.trace("Registering `{}` in line {}",v, lines);
+
 		if(v == null) {
 			nullLines++;
 		}

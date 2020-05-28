@@ -21,8 +21,10 @@ import io.dropwizard.util.Size;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Slf4j
 public class Preprocessed {
 	
 	private final InputFile file;
@@ -117,6 +119,7 @@ public class Preprocessed {
 			   .add(outRow);
 
 		for(int i=0;i<columns.length;i++) {
+			log.trace("Registering `{}` for Column[{}]", outRow[i], columns[i].getName());
 			columns[i].getParser().addLine(outRow[i]);
 		}
 
