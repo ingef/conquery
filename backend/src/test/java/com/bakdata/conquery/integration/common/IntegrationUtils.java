@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -57,9 +57,9 @@ public class IntegrationUtils {
 	
 
 
-	public static Output copyOutput(int columnPosition, RequiredColumn column) {
+	public static OutputDescription copyOutput(RequiredColumn column) {
 		CopyOutput out = new CopyOutput();
-		out.setInputColumn(columnPosition);
+		out.setInputColumn(column.getName());
 		out.setInputType(column.getType());
 		out.setName(column.getName());
 		return out;

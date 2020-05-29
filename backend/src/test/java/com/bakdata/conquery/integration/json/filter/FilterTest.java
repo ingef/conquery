@@ -6,7 +6,7 @@ import java.util.Collections;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -83,7 +83,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		
 		query = parseQuery(support);
 
-		IntegrationUtils.importTableContents(support, content.getTables(), support.getDataset());
+		LoadingUtil.importTableContents(support, content.getTables(), support.getDataset());
 	}
 
 

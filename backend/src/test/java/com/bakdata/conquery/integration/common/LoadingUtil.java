@@ -23,11 +23,10 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.preproc.DateFormats;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -97,7 +96,6 @@ public class LoadingUtil {
 	}
 	
 	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException {
-		DateFormats.initialize(new String[0]);
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : tables) {
@@ -106,21 +104,21 @@ public class LoadingUtil {
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			// create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
-			ImportDescriptor desc = new ImportDescriptor();
+			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name, null);
+			TableImportDescriptor desc = new TableImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(rTable.getName() + "_import");
 			desc.setTable(rTable.getName());
-			Input input = new Input();
+			TableInputDescriptor input = new TableInputDescriptor();
 			{
-				input.setPrimary(IntegrationUtils.copyOutput(0, rTable.getPrimaryColumn()));
+				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
-				input.setOutput(new Output[rTable.getColumns().length]);
+				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = IntegrationUtils.copyOutput(i + 1, rTable.getColumns()[i]);
+					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
 				}
 			}
-			desc.setInputs(new Input[] { input });
+			desc.setInputs(new TableInputDescriptor[] { input });
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 			preprocessedFiles.add(inputFile.getPreprocessedFile());
 		}

@@ -1,13 +1,8 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importConcepts;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importIdMapping;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importPreviousQueries;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importTableContents;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importTables;
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -62,7 +57,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		importConcepts(support, rawConcepts);
 		support.waitUntilWorkDone();
 
-		importTableContents(support, Arrays.asList(content.getTables()));
+		importTableContents(support, content.getTables());
 		support.waitUntilWorkDone();
 		
 		importIdMapping(support, content);
