@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +38,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 	private ExecutorService pool;
 	private final List<String> failed = Collections.synchronizedList(new ArrayList<>());
+	private final List<String> success = Collections.synchronizedList(new ArrayList<>());
 
 	public PreprocessorCommand() {
 		this(null);
@@ -111,7 +113,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 				ConqueryMDC.setLocation(descriptor.toString());
 				try {
 					Preprocessor.preprocess(descriptor, totalProgress);
-				} catch (Exception e) {
+					success.add(descriptor.toString());
+				}
+				catch (FileNotFoundException e) {
+					log.error("Did not find file `{}` for preprocessing.", e.getMessage());
+					failed.add(descriptor.toString());
+				}
+				catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
 					failed.add(descriptor.toString());
 				}
@@ -122,6 +130,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 
 		ConqueryMDC.clearLocation();
+
+		log.info("Successfully Preprocess {} Jobs:", success.size());
+		success.forEach(desc -> log.info("\tSucceeded Preprocessing for {}", desc));
 
 		if (!failed.isEmpty()) {
 			log.error("Failed {} Preprocessing Jobs:", failed.size());

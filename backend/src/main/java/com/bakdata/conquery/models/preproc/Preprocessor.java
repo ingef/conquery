@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -143,6 +144,10 @@ public class Preprocessor {
 
 				final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
 				ConqueryMDC.setLocation(name);
+
+				if(!(sourceFile.exists() && sourceFile.canRead())){
+					throw new FileNotFoundException(sourceFile.getAbsolutePath().toString());
+				}
 
 				CsvParser parser = null;
 
