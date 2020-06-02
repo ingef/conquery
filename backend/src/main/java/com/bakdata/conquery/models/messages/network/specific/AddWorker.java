@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Slave;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
@@ -15,7 +16,6 @@ import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class AddWorker extends SlaveMessage.Slow {
 		workerStorage.updateDataset(dataset);
 		Worker worker = new Worker(
 			info,
-			context.getJobManager(),
+			new JobManager(info.getName()),
 			workerStorage,
 			new QueryExecutor(config)
 		);
