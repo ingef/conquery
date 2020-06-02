@@ -18,6 +18,7 @@ import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -89,6 +90,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+
 			loaders.submit(() -> {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
 
@@ -98,7 +100,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 				Worker worker = new Worker(
 						workerStorage.getWorker(),
-						jobManager,
+						new JobManager(workerStorage.getWorker().getName()),
 						workerStorage,
 						new QueryExecutor(config)
 				);
@@ -238,9 +240,18 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	}
 	private void reportJobManagerStatus() {
 		try {
-			if(context!= null && context.isConnected()) {
-				context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
+			if (context == null || !context.isConnected()) {
+				return;
 			}
+
+			// Collect the Slaves and all its workers jobs into a single queue
+			final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
+
+			for (Worker worker : workers.getWorkers().values()) {
+				jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
+			}
+
+			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
 		}
 		catch(Exception e) {
 			log.warn("Failed to report job manager status", e);
