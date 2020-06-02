@@ -92,7 +92,7 @@
                     "column": "test_table2.test_column",
                     "validityDates": {
                         "label": "datum",
-                        "column": "test_table.datum"
+                        "column": "test_table2.datum"
                     }
                 }
             ],

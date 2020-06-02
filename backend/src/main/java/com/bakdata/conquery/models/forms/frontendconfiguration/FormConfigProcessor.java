@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
@@ -84,10 +85,10 @@ public class FormConfigProcessor {
 	/**
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
-	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, MetaDataPatch patch) {
+	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
 		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
 		
-		MetaDataPatch.patchIdentifialble(storage, user, config, patch, FormConfigPermission::onInstance);
+		patch.applyTo(config, storage, user, FormConfigPermission::onInstance);
 		
 		storage.updateFormConfig(config);
 		
