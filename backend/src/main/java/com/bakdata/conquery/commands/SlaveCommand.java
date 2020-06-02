@@ -1,12 +1,14 @@
 package com.bakdata.conquery.commands;
 
-import javax.validation.Validator;
-
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -82,22 +84,30 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 
 		this.config = config;
-		
+
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+
 		File storageDir = config.getStorage().getDirectory();
-		for(File directory : storageDir.listFiles()) {
-			if(directory.getName().startsWith("worker_")) {
+		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+			loaders.submit(() -> {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if(workerStorage != null) {
-					Worker worker = new Worker(
+
+				if (workerStorage == null) {
+					return;
+				}
+
+				Worker worker = new Worker(
 						workerStorage.getWorker(),
 						jobManager,
 						workerStorage,
 						new QueryExecutor(config)
-					);
-					workers.add(worker);
-				}
-			}
+				);
+				workers.add(worker);
+			});
 		}
+
+		loaders.shutdown();
+		loaders.awaitTermination(1, TimeUnit.DAYS);
 	}
 	
 	@Override
