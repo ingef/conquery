@@ -47,8 +47,6 @@
                },
                "filter":{  
                   "label":"datum",
-                  "description":"Zeitraum, der im oben beschriebenen Zeitraum liegen soll",
-                  "column":"table1.datum",
                   "type":"DURATION_SUM"
                }
             }

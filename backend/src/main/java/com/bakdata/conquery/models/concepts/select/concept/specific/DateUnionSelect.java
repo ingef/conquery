@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.select.connector.specific;
+package com.bakdata.conquery.models.concepts.select.concept.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateUnionAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.date.DateUnionAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id = "DATE_UNION", base = Select.class)
