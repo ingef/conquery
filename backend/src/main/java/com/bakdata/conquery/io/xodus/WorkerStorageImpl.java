@@ -1,8 +1,17 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.events.Bucket;
@@ -15,12 +24,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.functions.Collector;
+import com.codahale.metrics.Timer;
+import com.google.common.base.Stopwatch;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Collection;
 
 @Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
@@ -52,6 +59,31 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 			.collect(blocks)
 			.collect(cBlocks);
 	}
+
+	@Override
+	public void loadData() {
+		createStores(stores::add);
+		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
+
+		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
+			final ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
+
+			Stopwatch all = Stopwatch.createStarted();
+			for (KeyIncludingStore<?, ?> store : stores) {
+				loaders.submit(store::loadData);
+			}
+
+			loaders.shutdown();
+			loaders.awaitTermination(1, TimeUnit.DAYS);
+
+			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
+		}
+		catch (InterruptedException e) {
+			throw new IllegalStateException("Failed while loading stores", e);
+		}
+
+	}
+
 	
 	@Override
 	public void addCBlock(CBlock cBlock) throws JSONException {
