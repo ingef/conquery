@@ -84,7 +84,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		this.config = config;
 
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
 
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
