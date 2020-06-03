@@ -85,7 +85,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException {
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 	
 		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
 
@@ -100,21 +100,31 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
 
-		meta.loadData();
-		authRole.loadData();
-		authUser.loadData();
-		authGroup.loadData();
-		executions.loadData();
-		formConfigs.loadData();
-		
+
+		// load auth components in parallel, but load executions after them.
+
+		Futures.allAsList(List.of(
+				pool.submit(() -> {
+					meta.loadData();
+					authRole.loadData();
+					authUser.loadData();
+					authGroup.loadData();
+				})
+		)).get();
+
+		Futures.allAsList(List.of(
+				pool.submit(executions::loadData),
+				pool.submit(formConfigs::loadData)
+		)).get();
+
 		return List.of(
-			Futures.immediateFuture(meta),
-			Futures.immediateFuture(authRole),
-			// load users before queries
-			Futures.immediateFuture(authUser),
-			Futures.immediateFuture(authGroup),
-			Futures.immediateFuture(executions),
-			Futures.immediateFuture(formConfigs)
+				Futures.immediateFuture(meta),
+				Futures.immediateFuture(authRole),
+				// load users before queries
+				Futures.immediateFuture(authUser),
+				Futures.immediateFuture(authGroup),
+				Futures.immediateFuture(executions),
+				Futures.immediateFuture(formConfigs)
 		);
 	}
 

@@ -43,7 +43,8 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		this.nThreads = config.getThreads();
 	}
 
-	protected abstract List<ListenableFuture<KeyIncludingStore<?,?>>> createStores(ListeningExecutorService pool) throws ExecutionException;
+	protected abstract List<ListenableFuture<KeyIncludingStore<?,?>>> createStores(ListeningExecutorService pool)
+			throws ExecutionException, InterruptedException;
 
 	/**
 	 * Load all stores from disk.

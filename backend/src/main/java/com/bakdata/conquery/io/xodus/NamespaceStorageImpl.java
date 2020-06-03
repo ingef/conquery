@@ -55,17 +55,22 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 
 		Uninterruptibles.getUninterruptibly(Futures.allAsList(stores));
 
-		structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
-		idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
-
-		structure.loadData();
-		idMapping.loadData();
-
 		return ListUtils.union(
 				stores,
-				List.of(Futures.immediateFuture(structure), Futures.immediateFuture(idMapping))
-		);
+				List.of(
+						pool.submit(() -> {
 
+							structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
+
+							structure.loadData();
+							return structure;
+						}), pool.submit(() -> {
+							idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
+
+							idMapping.loadData();
+							return idMapping;
+						}))
+		);
 	}
 
 	@Override
