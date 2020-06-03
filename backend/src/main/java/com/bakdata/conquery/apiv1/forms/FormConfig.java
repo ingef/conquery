@@ -22,6 +22,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +49,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @FieldNameConstants
 public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
 
+	protected DatasetId dataset;
 	@NotEmpty
 	private String formType;
 	@VariableDefaultValue @NonNull
@@ -69,7 +72,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		return new FormConfigId(formType, formId);
+		return new FormConfigId(dataset, formType, formId);
 	}
 
 	/**
@@ -93,36 +96,57 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	}
 
 	/**
-	 * Tries to convert the given raw form to the provided dataset. It does not
+	 * Tries to convert this form to the provided dataset. It does not
 	 * check whether the {@link NamespacedId} that are converted in this processes
 	 * are actually resolvable. Also, it tries to map the values to a subclass of
-	 * {@link Form}, for conversion. If that is not possible the untranslated values
-	 * are output.
+	 * {@link Form}, for conversion. If that is not possible the an empty optional is returned.
 	 */
-	public FormConfigFullRepresentation tryTranslateToDataset(MasterMetaStorage storage, DatasetId target, ObjectMapper mapper, User user) {
+	public Optional<FormConfig> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
 		JsonNode finalRep = values;
 		try {
-			Form intemediateRep = mapper.readerFor(Form.class).readValue(values.traverse());
-			Form translatedRep = QueryTranslator.replaceDataset(storage.getNamespaces(), intemediateRep, target);
+			Form intermediateRep = mapper.readerFor(Form.class).readValue(values);
+			if (NamespacedIdHolding.class.isAssignableFrom(intermediateRep.getClass())) {
+				log.trace("Not translating FormConfig ({}) with form type ({}) to dataset ({}), because it does not hold any namespaced ids for translation.", this.getId(), this.getFormType(), target);
+				return Optional.empty();
+			}
+			Form translatedRep = QueryTranslator.replaceDataset(namespaces, intermediateRep, target);
 			finalRep = mapper.valueToTree(translatedRep);
 		}
 		catch (IOException e) {
-			log.warn("Unable to translate form configuration {} to dataset {}. Sending untranslated version.", getId(), target);
+			log.warn("Unable to translate form configuration {} to dataset {}.", getId(), target);
+			return Optional.empty();
 		}
+		
+		FormConfig translatedConf = new FormConfig(
+			target,
+			formType,
+			formId,
+			label,
+			tags,
+			shared,
+			finalRep,
+			owner,
+			creationTime
+			);
 
-		@NonNull
+		return Optional.of(translatedConf);
+	}
+
+	/**
+	 * Return the full representation of the configuration with the configured form fields and meta data.
+	 */
+	public FormConfigFullRepresentation fullRepresentation(MasterMetaStorage storage, User requestingUser){
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
-
 		return FormConfigFullRepresentation.builder()
 			.id(getId()).formType(formType)
 			.label(label)
 			.tags(tags)
 			.ownerName(ownerName)
-			.own(user.getId().equals(owner))
+			.own(requestingUser != null? requestingUser.getId().equals(owner) : false)
 			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
-			// system?
-			.values(finalRep).build();
+			// system? TODO discuss how system is determined (may check if owning user is in a special system group or so)
+			.values(values).build();
 	}
 
 	/**

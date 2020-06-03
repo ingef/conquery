@@ -23,7 +23,6 @@ public class AbilitySets {
 		Ability.LABEL,
 		Ability.MODIFY);
 	public static final EnumSet<Ability> FORM_CONFIG_SHAREHOLDER = EnumSet.of(
-		Ability.READ,
-		Ability.SHARE);
+		Ability.READ);
 	public static final EnumSet<Ability> DATASET_CREATOR = EnumSet.of(Ability.READ, Ability.DOWNLOAD, Ability.PRESERVE_ID);
 }

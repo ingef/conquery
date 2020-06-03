@@ -15,11 +15,13 @@ import lombok.Getter;
 public class FormConfigId extends AId<FormConfig> {
 	
 
+	private final DatasetId dataset;
 	private String formType;
 	private UUID id;
 
 	@Override
 	public void collectComponents(List<Object> components) {
+		components.add(dataset);
 		components.add(formType);
 		components.add(id);
 		
@@ -32,7 +34,7 @@ public class FormConfigId extends AId<FormConfig> {
 		public FormConfigId parseInternally(IdIterator parts) {
 			UUID id = UUID.fromString(parts.next());
 			String formType = parts.next();
-			return new FormConfigId(formType, id);
+			return new FormConfigId(DatasetId.Parser.INSTANCE.parse(parts),formType, id);
 		}
 	}
 }

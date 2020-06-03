@@ -235,6 +235,12 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 	
 	@Override
+	@SneakyThrows
+	public void addFormConfig(FormConfig formConfig) {
+		formConfigs.add(formConfig);
+	}
+	
+	@Override
 	public void close() throws IOException {
 		getExecutionsEnvironment().close();
 		getFormConfigEnvironment().close();
