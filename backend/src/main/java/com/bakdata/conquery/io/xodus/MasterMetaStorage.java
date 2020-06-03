@@ -147,4 +147,10 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param FormConfig The FormConfig, which holds the values, to be updated.
 	 */
 	void updateFormConfig(FormConfig config);
+	
+	/**
+	 * Adds a FormConfig that is identified by its id.
+	 * @param FormConfig The FormConfig, which holds the values, to be updated.
+	 */
+	void addFormConfig(FormConfig formConfig);
 }
