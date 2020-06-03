@@ -3,6 +3,8 @@ package com.bakdata.conquery.io.xodus;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.validation.Validator;
 
@@ -23,7 +25,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
@@ -81,8 +85,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException {
+	
 		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
 
 		executions = StoreInfo.EXECUTIONS
@@ -95,14 +99,23 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		
 		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
-		collector
-			.collect(meta)
-			.collect(authRole)
+
+		meta.loadData();
+		authRole.loadData();
+		authUser.loadData();
+		authGroup.loadData();
+		executions.loadData();
+		formConfigs.loadData();
+		
+		return List.of(
+			Futures.immediateFuture(meta),
+			Futures.immediateFuture(authRole),
 			// load users before queries
-			.collect(authUser)
-			.collect(authGroup)
-			.collect(executions)
-			.collect(formConfigs);
+			Futures.immediateFuture(authUser),
+			Futures.immediateFuture(authGroup),
+			Futures.immediateFuture(executions),
+			Futures.immediateFuture(formConfigs)
+		);
 	}
 
 	@Override

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
 
@@ -11,9 +13,12 @@ import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.util.functions.Collector;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
@@ -38,25 +43,32 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		this.nThreads = config.getThreads();
 	}
 
-	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
-	}
+	protected abstract List<ListenableFuture<KeyIncludingStore<?,?>>> createStores(ListeningExecutorService pool) throws ExecutionException;
 
 	/**
 	 * Load all stores from disk.
 	 */
 	@Override
 	public void loadData() {
-		createStores(stores::add);
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 
 		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
+			ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(getNThreads()));
 
 			Stopwatch all = Stopwatch.createStarted();
-			for (KeyIncludingStore<?, ?> store : stores) {
-				store.loadData();
-			}
+
+			final List<ListenableFuture<KeyIncludingStore<?,?>>> loaded = createStores(pool);
+
+			stores.addAll(Futures.allAsList(loaded).get());
 
 			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
+		}
+		catch (InterruptedException e) {
+			// TODO: 03.06.2020
+			e.printStackTrace();
+		}
+		catch (ExecutionException e) {
+			e.printStackTrace();
 		}
 	}
 

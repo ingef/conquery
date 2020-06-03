@@ -2,16 +2,14 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
-import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.events.Bucket;
@@ -23,11 +21,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.functions.Collector;
-import com.codahale.metrics.Timer;
-import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 
 @Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
@@ -48,43 +48,37 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		super.createStores(collector);
-		worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-		
-		collector
-			.collect(worker)
-			.collect(blocks)
-			.collect(cBlocks);
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException {
+
+		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
+
+
+		Uninterruptibles.getUninterruptibly(Futures.allAsList(stores));
+
+		return ListUtils.union(
+				stores,
+				List.of(
+				pool.submit(() -> {
+					worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
+					worker.loadData();
+
+					return worker;
+				}),
+				pool.submit(() -> {
+					blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+					blocks.loadData();
+
+					return blocks;
+				}),
+				pool.submit(() -> {
+					cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+					cBlocks.loadData();
+
+					return cBlocks;
+				})
+		)	);
 	}
 
-	@Override
-	public void loadData() {
-		createStores(stores::add);
-		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
-
-		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
-			final ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
-
-			Stopwatch all = Stopwatch.createStarted();
-			for (KeyIncludingStore<?, ?> store : stores) {
-				loaders.submit(store::loadData);
-			}
-
-			loaders.shutdown();
-			loaders.awaitTermination(1, TimeUnit.DAYS);
-
-			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
-		}
-		catch (InterruptedException e) {
-			throw new IllegalStateException("Failed while loading stores", e);
-		}
-
-	}
-
-	
 	@Override
 	public void addCBlock(CBlock cBlock) throws JSONException {
 		cBlocks.add(cBlock);
