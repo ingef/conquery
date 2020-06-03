@@ -47,6 +47,7 @@ public class ExportForm implements Form, NamespacedIdHolding {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
 		timeMode.visit(visitor);
 	}
 
