@@ -1,12 +1,14 @@
 package com.bakdata.conquery.commands;
 
-import javax.validation.Validator;
-
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -16,6 +18,7 @@ import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -25,7 +28,6 @@ import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.AddSlave;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
-import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
@@ -68,7 +70,6 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		jobManager = new JobManager(label);
 		synchronized (environment) {
-			environment.lifecycle().manage(jobManager);
 			environment.lifecycle().manage(this);
 			validator = environment.getValidator();
 			
@@ -82,22 +83,26 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 
 		this.config = config;
-		
+
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
+
 		File storageDir = config.getStorage().getDirectory();
-		for(File directory : storageDir.listFiles()) {
-			if(directory.getName().startsWith("worker_")) {
+		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+
+			loaders.submit(() -> {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if(workerStorage != null) {
-					Worker worker = new Worker(
-						workerStorage.getWorker(),
-						jobManager,
-						workerStorage,
-						new QueryExecutor(config)
-					);
-					workers.add(worker);
+
+				if (workerStorage == null) {
+					return;
 				}
-			}
+
+				Worker worker = Worker.createWorker(workerStorage.getWorker(), workerStorage, config);
+				workers.add(worker);
+			});
 		}
+
+		loaders.shutdown();
+		loaders.awaitTermination(1, TimeUnit.DAYS);
 	}
 	
 	@Override
@@ -175,6 +180,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	
 	@Override
 	public void start() throws Exception {
+		jobManager.start();
+
+		for (Worker value : workers.getWorkers().values()) {
+			value.getJobManager().start();
+		}
+
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		connector.setHandler(this);
@@ -211,9 +222,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void stop() throws Exception {
+		getJobManager().stop();
+
 		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
+				w.getJobManager().stop();
 			}
 			catch(Exception e) {
 				log.error(w+" could not be closed", e);
@@ -228,9 +242,18 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	}
 	private void reportJobManagerStatus() {
 		try {
-			if(context!= null && context.isConnected()) {
-				context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
+			if (context == null || !context.isConnected()) {
+				return;
 			}
+
+			// Collect the Slaves and all its workers jobs into a single queue
+			final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
+
+			for (Worker worker : workers.getWorkers().values()) {
+				jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
+			}
+
+			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
 		}
 		catch(Exception e) {
 			log.warn("Failed to report job manager status", e);

@@ -12,11 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 public class JobManager implements Managed {
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
+	private final String name;
 
 
 	public JobManager(String labelSuffix) {
-		slowExecutor = new JobExecutor("Job Manager slow " + labelSuffix);
-		fastExecutor = new JobExecutor("Job Manager lfast " + labelSuffix);
+		name = labelSuffix;
+		slowExecutor = new JobExecutor("Job Manager slow " + name);
+		fastExecutor = new JobExecutor("Job Manager lfast " + name);
 	}
 
 	public void addSlowJob(Job job) {
@@ -34,7 +36,7 @@ public class JobManager implements Managed {
 	
 	@Override
 	public void start() throws Exception {
-		log.debug("Started Job Manager");
+		log.info("Started Job Manager[{}]", name);
 		slowExecutor.start();
 		fastExecutor.start();
 	}

@@ -29,6 +29,10 @@ public class JobExecutor extends Thread {
 	}
 
 	public void add(Job job) {
+		if(!isAlive()){
+			throw new IllegalStateException(String.format("JobManage[%s] has not yet been started", getName()));
+		}
+
 		if(closed.get()) {
 			throw new IllegalStateException("Tried to add a job to a closed JobManager");
 		}

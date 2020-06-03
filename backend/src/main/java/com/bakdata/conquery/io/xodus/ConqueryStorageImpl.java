@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -28,11 +31,13 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final List<KeyIncludingStore<?,?>> stores = new ArrayList<>();
+	private final int nThreads;
 
 	public ConqueryStorageImpl(Validator validator, StorageConfig config, File directory) {
 		this.directory = directory;
 		this.validator = validator;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
+		this.nThreads = config.getThreads();
 	}
 
 	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
@@ -47,11 +52,20 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 
 		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
+			final ExecutorService loaders = Executors.newFixedThreadPool(nThreads);
+
 			Stopwatch all = Stopwatch.createStarted();
 			for (KeyIncludingStore<?, ?> store : stores) {
-				store.loadData();
+				loaders.submit(store::loadData);
 			}
+
+			loaders.shutdown();
+			loaders.awaitTermination(1, TimeUnit.DAYS);
+
 			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
+		}
+		catch (InterruptedException e) {
+			throw new IllegalStateException("Failed while loading stores", e);
 		}
 
 	}
