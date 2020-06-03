@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.AddSlave;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
-import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
@@ -71,7 +70,6 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		jobManager = new JobManager(label);
 		synchronized (environment) {
-			environment.lifecycle().manage(jobManager);
 			environment.lifecycle().manage(this);
 			validator = environment.getValidator();
 			
@@ -98,12 +96,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 					return;
 				}
 
-				Worker worker = new Worker(
-						workerStorage.getWorker(),
-						new JobManager(workerStorage.getWorker().getName()),
-						workerStorage,
-						new QueryExecutor(config)
-				);
+				Worker worker = Worker.createWorker(workerStorage.getWorker(), workerStorage, config);
 				workers.add(worker);
 			});
 		}
@@ -187,6 +180,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	
 	@Override
 	public void start() throws Exception {
+		jobManager.start();
+
+		for (Worker value : workers.getWorkers().values()) {
+			value.getJobManager().start();
+		}
+
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		connector.setHandler(this);
@@ -223,9 +222,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void stop() throws Exception {
+		getJobManager().stop();
+
 		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
+				w.getJobManager().stop();
 			}
 			catch(Exception e) {
 				log.error(w+" could not be closed", e);
