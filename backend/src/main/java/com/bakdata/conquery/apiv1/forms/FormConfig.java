@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -103,8 +104,12 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	public Optional<FormConfig> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
 		JsonNode finalRep = values;
 		try {
-			Form intemediateRep = mapper.readerFor(Form.class).readValue(values);
-			Form translatedRep = QueryTranslator.replaceDataset(namespaces, intemediateRep, target);
+			Form intermediateRep = mapper.readerFor(Form.class).readValue(values);
+			if (NamespacedIdHolding.class.isAssignableFrom(intermediateRep.getClass())) {
+				log.trace("Not translating FormConfig ({}) with form type ({}) to dataset ({}), because it does not hold any namespaced ids for translation.", this.getId(), this.getFormType(), target);
+				return Optional.empty();
+			}
+			Form translatedRep = QueryTranslator.replaceDataset(namespaces, intermediateRep, target);
 			finalRep = mapper.valueToTree(translatedRep);
 		}
 		catch (IOException e) {
