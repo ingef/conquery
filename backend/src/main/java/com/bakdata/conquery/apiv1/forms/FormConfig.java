@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -94,26 +95,22 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	}
 
 	/**
-	 * Tries to convert the given raw form to the provided dataset. It does not
+	 * Tries to convert this form to the provided dataset. It does not
 	 * check whether the {@link NamespacedId} that are converted in this processes
 	 * are actually resolvable. Also, it tries to map the values to a subclass of
-	 * {@link Form}, for conversion. If that is not possible the untranslated values
-	 * are output.
+	 * {@link Form}, for conversion. If that is not possible the an empty optional is returned.
 	 */
-	public Optional<FormConfig> tryTranslateToDataset(MasterMetaStorage storage, DatasetId target, ObjectMapper mapper, User user) {
+	public Optional<FormConfig> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
 		JsonNode finalRep = values;
 		try {
-			Form intemediateRep = mapper.readerFor(Form.class).readValue(values.traverse());
-			Form translatedRep = QueryTranslator.replaceDataset(storage.getNamespaces(), intemediateRep, target);
+			Form intemediateRep = mapper.readerFor(Form.class).readValue(values);
+			Form translatedRep = QueryTranslator.replaceDataset(namespaces, intemediateRep, target);
 			finalRep = mapper.valueToTree(translatedRep);
 		}
 		catch (IOException e) {
-			log.warn("Unable to translate form configuration {} to dataset {}. Sending untranslated version.", getId(), target);
+			log.warn("Unable to translate form configuration {} to dataset {}.", getId(), target);
 			return Optional.empty();
 		}
-
-		@NonNull
-		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 		
 		FormConfig translatedConf = new FormConfig(
 			target,
@@ -121,9 +118,13 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			formId,
 			label,
 			tags,
+			shared,
+			finalRep,
+			owner,
+			creationTime
 			);
 
-		return Optional.of(new FormConfig());
+		return Optional.of(translatedConf);
 	}
 
 	/**
