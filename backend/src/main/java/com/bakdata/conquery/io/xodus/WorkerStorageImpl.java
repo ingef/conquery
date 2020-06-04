@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -48,35 +47,35 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException {
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 
 		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
 
-
-		Uninterruptibles.getUninterruptibly(Futures.allAsList(stores));
+		Futures.allAsList(stores).get();
 
 		return ListUtils.union(
 				stores,
 				List.of(
-				pool.submit(() -> {
-					worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
-					worker.loadData();
+						pool.submit(() -> {
+							worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
+							worker.loadData();
 
-					return worker;
-				}),
-				pool.submit(() -> {
-					blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-					blocks.loadData();
+							return worker;
+						}),
+						pool.submit(() -> {
+							blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+							blocks.loadData();
 
-					return blocks;
-				}),
-				pool.submit(() -> {
-					cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-					cBlocks.loadData();
+							return blocks;
+						}),
+						pool.submit(() -> {
+							cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+							cBlocks.loadData();
 
-					return cBlocks;
-				})
-		)	);
+							return cBlocks;
+						})
+				)
+		);
 	}
 
 	@Override

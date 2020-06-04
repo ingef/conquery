@@ -110,18 +110,17 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 					authRole.loadData();
 					authUser.loadData();
 					authGroup.loadData();
-				})
+				}),
+				pool.submit(formConfigs::loadData)
 		)).get();
 
 		Futures.allAsList(List.of(
-				pool.submit(executions::loadData),
-				pool.submit(formConfigs::loadData)
+				pool.submit(executions::loadData)
 		)).get();
 
 		return List.of(
 				Futures.immediateFuture(meta),
 				Futures.immediateFuture(authRole),
-				// load users before queries
 				Futures.immediateFuture(authUser),
 				Futures.immediateFuture(authGroup),
 				Futures.immediateFuture(executions),

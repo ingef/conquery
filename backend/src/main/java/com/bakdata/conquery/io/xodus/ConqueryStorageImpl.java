@@ -50,7 +50,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	 * Load all stores from disk.
 	 */
 	@Override
-	public void loadData() {
+	public final void loadData() {
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 
 		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {

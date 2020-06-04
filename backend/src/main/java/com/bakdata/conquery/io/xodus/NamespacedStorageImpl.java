@@ -48,7 +48,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException {
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getEnvironment(), getValidator())
 			.onAdd(ds -> {
@@ -124,16 +124,22 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 			});
 
-		dataset.loadData();
-		dictionaries.loadData();
-		concepts.loadData();
-		imports.loadData();
+
+		pool.submit(() -> {
+			dataset.loadData();
+			concepts.loadData();
+		}).get();
 
 		return List.of(
 				Futures.immediateFuture(dataset),
-				Futures.immediateFuture(dictionaries),
 				Futures.immediateFuture(concepts),
-				Futures.immediateFuture(imports)
+				pool.submit(() -> {
+					dictionaries.loadData();
+					return dictionaries;
+				}), pool.submit(() -> {
+					imports.loadData();
+					return imports;
+				})
 		);
 	}
 

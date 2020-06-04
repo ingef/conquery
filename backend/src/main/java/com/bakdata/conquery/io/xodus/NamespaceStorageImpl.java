@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -49,11 +48,11 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	}
 
 	@Override
-	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException {
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 
 		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
 
-		Uninterruptibles.getUninterruptibly(Futures.allAsList(stores));
+		Futures.allAsList(stores).get();
 
 		return ListUtils.union(
 				stores,
