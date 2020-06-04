@@ -96,7 +96,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		log.info("Started meta storage");
 
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
 
 
 		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {
@@ -104,6 +104,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
 
 				if (datasetStorage == null) {
+					log.error("Unable to load a dataset at `{}`", directory);
 					return;
 				}
 

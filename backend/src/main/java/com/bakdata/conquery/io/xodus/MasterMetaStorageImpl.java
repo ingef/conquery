@@ -104,8 +104,9 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		// load auth components in parallel, but load executions after them.
 
 		Futures.allAsList(List.of(
+				pool.submit(meta::loadData),
 				pool.submit(() -> {
-					meta.loadData();
+					// DO NOT CHANGE THIS ORDER: Users need Roles and Groups need Users.
 					authRole.loadData();
 					authUser.loadData();
 					authGroup.loadData();
