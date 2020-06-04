@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FormScanner extends Task{
 
 	public FormScanner() {
-		super(FormScanner.class.getSimpleName());
+		super("form-scanner");
 	}
 
 	private final static String INFO_FORMAT = "\t%-30s %-60s %-20s";
