@@ -29,8 +29,8 @@ public class FormScanner {
 	public static final Map<String, JsonNode> FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
+		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
 		// Gather form implementations first
-		Map<String, Class<? extends Form>> forms = new HashMap<>();
 		for (Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(Form.class.getName()).loadClasses()) {
 			if (Modifier.isAbstract(subclass.getModifiers())) {
 				continue;
@@ -40,9 +40,9 @@ public class FormScanner {
 				log.warn("Implemented Form {} has no CPSType annotation", subclass);
 				continue;
 			}
-			forms.put(anno.id(), (Class<? extends Form>) subclass);
+			backendClasses.put(anno.id(), (Class<? extends Form>) subclass);
 		}
-		return forms;
+		return backendClasses.build();
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class FormScanner {
 		List<Class<?>> configProviders = CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(FormFrontendConfigProvider.class.getName())
 			.loadClasses();
 		
-		Consumer<Collection<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
+		Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
 		
 		for (Class<?> configProvider : configProviders) {
 			int modifiers = configProvider.getModifiers();
@@ -64,7 +64,7 @@ public class FormScanner {
 			}
 			@SuppressWarnings("unchecked")
 			Class<? extends FormFrontendConfigProvider> formConfigProvider = (Class<? extends FormFrontendConfigProviderBase>) configProvider;
-			Consumer<Collection<FormFrontendConfigInformation>> provider;
+			Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider;
 			// Distinguish between interface implementations and implementations of the abstract class 
 			if (FormFrontendConfigProviderBase.class.isAssignableFrom(formConfigProvider)) {
 				provider = formConfigProvider.getConstructor(ObjectReader.class).newInstance(READER);
@@ -74,9 +74,14 @@ public class FormScanner {
 			}
 			providerChain = providerChain.andThen(provider);
 		}
-		List<FormFrontendConfigInformation> frontendConfigs = new ArrayList<>();
-		providerChain.accept(frontendConfigs);
-		return frontendConfigs;
+
+		ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
+		try {
+			providerChain.accept(frontendConfigs);			
+		} catch (Exception e) {
+			log.error("Unable to collect all frontend form configurations.", e);
+		}
+		return frontendConfigs.build();
 	}
 
 	private static Map<String, JsonNode> generateFEFormConfigMap() {
@@ -91,7 +96,7 @@ public class FormScanner {
 		List<FormFrontendConfigInformation> frontendConfigs = findFrontendFormConfigs();
 
 		// Match frontend form configurations to backend implementations
-		Map<String, JsonNode> result = new HashMap<>();
+		ImmutableMap.Builder<String, JsonNode> result = ImmutableMap.builder();
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
 			JsonNode configTree = configInfo.getConfigTree();
 			JsonNode type = configTree.get("type");
@@ -109,20 +114,13 @@ public class FormScanner {
 			}
 			
 			// Register Fontend config and check if there was already a mapping for this complete type to a frontend config
-			JsonNode prev = result.put(fullTypeIdentifier, configTree);
-			if (prev != null) {
-				throw new IllegalStateException(String.format(
-					"Could not map %s to form %s because there was already a mapping:\n%s",
-					configInfo.getOrigin(),
-					fullTypeIdentifier,
-					prev));
-			}
+			result.put(fullTypeIdentifier, configTree);
 			
 			// Update information string
 			info.add(String.format(INFO_FORMAT, fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName()));
 		}
 		log.info(info.toString());
-		return result;
+		return result.build();
 	}
 
 	private static boolean validTypeId(JsonNode node) {
