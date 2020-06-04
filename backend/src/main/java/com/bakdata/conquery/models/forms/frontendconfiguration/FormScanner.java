@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
+import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -17,16 +15,26 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfi
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableMultimap;
+import io.dropwizard.servlets.tasks.Task;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FormScanner {
+public class FormScanner extends Task{
+
+	public FormScanner() {
+		super(FormScanner.class.getSimpleName());
+	}
 
 	private final static String INFO_FORMAT = "\t%-30s %-60s %-20s";
 	private final static ObjectReader READER = Jackson.MAPPER.copy().reader();
 	
-	public static final Map<String, JsonNode> FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
+	public static Map<String, JsonNode> FRONTEND_FORM_CONFIGS = ImmutableMap.of();
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
@@ -125,6 +133,12 @@ public class FormScanner {
 
 	private static boolean validTypeId(JsonNode node) {
 		return node != null && node.isTextual() && !node.asText().isEmpty();
+	}
+
+	@Override
+	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
+		
 	}
 
 }
