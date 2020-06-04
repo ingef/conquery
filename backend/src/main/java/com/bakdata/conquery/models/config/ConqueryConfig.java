@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -77,11 +77,11 @@ public class ConqueryConfig extends Configuration {
 		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
 	}
 
-	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
-		return (T) plugins.stream()
+	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
+		return plugins.stream()
 			.filter(c -> type.isAssignableFrom(c.getClass()))
-			.collect(MoreCollectors.toOptional())
-			.orElseThrow(()-> new NoSuchElementException("No plugin config of type "+type.getSimpleName()+" configured"));
+			.map(type::cast)
+			.collect(MoreCollectors.toOptional());
 	}
 
 	public void initialize() {
