@@ -21,6 +21,8 @@ import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkerStorage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
@@ -240,6 +242,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			do {
 				busy = false;
 				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
+				busy |= standaloneCommand.getMaster().getStorage().getAllExecutions().stream().map(ManagedExecution::getState).filter(ExecutionState.RUNNING::equals).count()>0;
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
 					busy |= slave.isBusy();
 				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
