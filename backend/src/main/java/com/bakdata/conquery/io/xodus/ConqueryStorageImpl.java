@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -61,6 +62,9 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 			final List<ListenableFuture<KeyIncludingStore<?,?>>> loaded = createStores(pool);
 
 			stores.addAll(Futures.allAsList(loaded).get());
+
+			pool.shutdown();
+			pool.awaitTermination(1, TimeUnit.DAYS);
 
 			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
 		}
