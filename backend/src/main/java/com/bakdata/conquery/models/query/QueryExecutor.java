@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -23,10 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class QueryExecutor implements Closeable {
 
+	private final ThreadPoolExecutor executor;
 	private final ListeningExecutorService pool;
 	
 	public QueryExecutor(ConqueryConfig config) {
-		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
+		this.executor = config.getQueries().getExecutionPool().createService("Query Executor %d");
+		this.pool = MoreExecutors.listeningDecorator(executor);
 	}
 
 	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
@@ -64,5 +67,10 @@ public class QueryExecutor implements Closeable {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public boolean isBusy () {
+		// This might not be super accurate (see the Documentation of ThreadPoolExecutor)
+		return executor.getActiveCount() != 0 || !executor.getQueue().isEmpty();
 	}
 }

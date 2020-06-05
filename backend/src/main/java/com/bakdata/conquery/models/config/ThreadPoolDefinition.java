@@ -5,10 +5,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.validation.constraints.Min;
 
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +21,7 @@ public class ThreadPoolDefinition {
 	private Duration keepAliveTime = Duration.seconds(60);
 	private Duration shutdownTime = Duration.hours(1);
 	
-	public ListeningExecutorService createService(String nameFormat) {
+	public ThreadPoolExecutor createService(String nameFormat) {
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(
 				minThreads,
 				maxThreads,
@@ -34,6 +31,6 @@ public class ThreadPoolDefinition {
 				new ThreadFactoryBuilder().setNameFormat(nameFormat).build()
 		);
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
-		return MoreExecutors.listeningDecorator(executor);
+		return executor;
 	}
 }

@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
@@ -12,9 +15,6 @@ import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.Closeable;
-import java.io.IOException;
 
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 	@Getter
@@ -56,5 +56,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Override
 	public String toString() {
 		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";
+	}
+	public boolean isBusy() {
+		return queryExecutor.isBusy();
 	}
 }

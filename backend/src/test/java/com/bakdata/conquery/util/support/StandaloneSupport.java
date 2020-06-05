@@ -56,7 +56,7 @@ public class StandaloneSupport implements Closeable {
 				busy = false;
 				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
-					busy |= slave.getJobManager().isSlowWorkerBusy();
+					busy |= slave.isBusy();
 				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
 				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
 					log.warn("waiting for done work for a long time");
