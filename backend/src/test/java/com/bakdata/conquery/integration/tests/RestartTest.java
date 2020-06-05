@@ -69,7 +69,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		test.executeTest(conquery);
 
 		// IDMapping Testing
-		NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
+		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 
 		namespaceStorage.updateIdMapping(persistentIdMap);
 
@@ -124,7 +124,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(support);
 
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());
@@ -145,11 +145,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		}
 
-		PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
-															  .getMaster()
-															  .getNamespaces()
-															  .get(dataset)
-															  .getStorage()
+		PersistentIdMap persistentIdMapAfterRestart = conquery.getNamespaceStorage()
 															  .getIdMapping();
 		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 	}

@@ -33,7 +33,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 		
 		//ensure the metadata is collected
-		for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+		for(SlaveCommand slave : conquery.getSlaves()) {
 			slave.getWorkers().getWorkers().forEach((id, worker) -> {
 				worker.getJobManager().addSlowJob(new UpdateMatchingStats(worker));
 			});

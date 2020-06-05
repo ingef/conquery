@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -43,7 +42,7 @@ import org.apache.commons.io.FileUtils;
 @UtilityClass
 public class LoadingUtil {
 
-	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws JSONException, IOException {
+	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
 		// Load previous query results if available
 		int id = 1;
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
@@ -55,7 +54,7 @@ public class LoadingUtil {
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 
 			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
-			user.addPermission(support.getStandaloneCommand().getMaster().getStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(support.getMasterMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -69,7 +68,7 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTableContents(StandaloneSupport support, RequiredData content) throws IOException, JSONException {
+	public static void importTableContents(StandaloneSupport support, RequiredData content) throws IOException {
 		DateFormats.initialize(new String[0]);
 		List<File> preprocessedFiles = new ArrayList<>();
 
@@ -124,7 +123,7 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException, ConfigurationException {
+	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = ConqueryTestSpec.parseSubTreeList(

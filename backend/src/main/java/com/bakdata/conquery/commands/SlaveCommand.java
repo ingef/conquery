@@ -1,12 +1,12 @@
 package com.bakdata.conquery.commands;
 
-import javax.validation.Validator;
-
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -235,5 +235,9 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		catch(Exception e) {
 			log.warn("Failed to report job manager status", e);
 		}
+	}
+	
+	public boolean isBusy() {
+		return getJobManager().isSlowWorkerBusy() || workers.isBusy();
 	}
 }

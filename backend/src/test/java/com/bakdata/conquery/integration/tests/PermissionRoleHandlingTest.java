@@ -22,7 +22,7 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 	 */
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
 		

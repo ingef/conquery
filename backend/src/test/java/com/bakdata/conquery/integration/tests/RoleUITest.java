@@ -43,7 +43,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 	public void execute(StandaloneSupport conquery) throws Exception {
 		try {
 	
-			storage = conquery.getStandaloneCommand().getMaster().getStorage();
+			storage = conquery.getMasterMetaStorage();
 			storage.addRole(mandator);
 			storage.addUser(user);
 			// override permission object, because it might have changed by the subject
