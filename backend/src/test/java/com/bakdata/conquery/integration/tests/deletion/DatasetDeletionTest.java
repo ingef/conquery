@@ -41,7 +41,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		StandaloneSupport conquery = testConquery.getSupport(name);
-		final MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
 		final DatasetId dataset = conquery.getDataset().getId();
 		Namespace namespace = storage.getNamespaces().get(dataset);
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
@@ -73,7 +73,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(dataset))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -138,7 +138,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().getTable().getDataset().equals(dataset))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -181,7 +181,6 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			final StandaloneSupport conquery2 =
 					new StandaloneSupport(
 							testConquery,
-							conquery.getStandaloneCommand(),
 							storage.getNamespaces()
 								   .get(dataset),
 							newDataset,
@@ -215,7 +214,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				assertThat(slave.getWorkers().getWorkers().values())
 						.filteredOn(w -> w.getInfo().getDataset().equals(dataset))
 						.describedAs("Workers for slave {}", slave.getLabel())
@@ -241,7 +240,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
 
-				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 							continue;

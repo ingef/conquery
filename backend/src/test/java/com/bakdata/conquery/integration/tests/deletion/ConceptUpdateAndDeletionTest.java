@@ -43,7 +43,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
 		// Read two JSONs with different Trees
 		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
@@ -86,7 +86,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -135,7 +135,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -181,7 +181,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -225,7 +225,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 						.isNotEmpty();
 
-				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 							continue;
