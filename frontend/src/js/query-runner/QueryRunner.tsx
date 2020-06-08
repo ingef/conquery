@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import Hotkeys from "react-hot-keys";
 import T from "i18n-react";
@@ -10,15 +10,16 @@ import QueryResults from "./QueryResults";
 import QueryRunningSpinner from "./QueryRunningSpinner";
 import QueryRunnerInfo from "./QueryRunnerInfo";
 import QueryRunnerButton from "./QueryRunnerButton";
+import type { QueryRunnerStateT } from "./reducer";
 
-type PropsType = {
-  queryRunner?: Object;
+interface PropsT {
+  queryRunner?: QueryRunnerStateT;
   isQueryRunning: boolean;
   isButtonEnabled: boolean;
   buttonTooltipKey?: string | null;
   startQuery: Function;
   stopQuery: Function;
-};
+}
 
 const Root = styled("div")`
   flex-shrink: 0;
@@ -44,21 +45,19 @@ const LoadingGroup = styled("div")`
   justify-content: flex-end;
 `;
 
-const QueryRunner = (props: PropsType) => {
-  const {
-    queryRunner,
-    startQuery,
-    stopQuery,
-    buttonTooltipKey,
-    isQueryRunning,
-    isButtonEnabled
-  } = props;
-
+const QueryRunner: FC<PropsT> = ({
+  queryRunner,
+  startQuery,
+  stopQuery,
+  buttonTooltipKey,
+  isQueryRunning,
+  isButtonEnabled,
+}) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
 
   const isStartStopLoading =
     !!queryRunner &&
-    (queryRunner.startQuery.loading || queryRunner.stopQuery.loading);
+    !!(queryRunner.startQuery.loading || queryRunner.stopQuery.loading);
 
   return (
     <Root>
@@ -95,6 +94,7 @@ const QueryRunner = (props: PropsType) => {
               datasetId={queryRunner.queryResult.datasetId}
               resultCount={queryRunner.queryResult.resultCount}
               resultUrl={queryRunner.queryResult.resultUrl}
+              resultColumns={queryRunner.queryResult.resultColumns}
             />
           )}
       </Right>
