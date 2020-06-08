@@ -116,14 +116,20 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		loaders.shutdown();
 		loaders.awaitTermination(1, TimeUnit.DAYS);
+
+		log.info("All stores loaded: {}", namespaces);
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
+		log.info("MetaStorage loaded {}", this.storage);
+
 		namespaces.setMetaStorage(this.storage);
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
+
+
 		
 		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();

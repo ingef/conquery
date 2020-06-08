@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -15,6 +16,7 @@ import com.bakdata.conquery.models.messages.network.MasterMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,9 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Getter
 	private final QueryExecutor queryExecutor;
 
+	@Getter
+	private final ThreadPoolExecutor pool;
+
 	@Setter
 	private NetworkSession session;
 
@@ -46,9 +51,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.setBucketManager(bucketManager);
 		jobManager.addSlowJob(new SimpleJob("Update Block Manager", bucketManager::fullUpdate));
 
-		final QueryExecutor queryExecutor = new QueryExecutor(config.getQueries().getExecutionPool().createService("Query Executor %d"));
+		// Second format-str is used by threadpool.
+		final ThreadPoolExecutor pool = config.getQueries().getExecutionPool().createService(String.format("Dataset[%s] Worker-Thread %d", info.getDataset()));
+		final QueryExecutor queryExecutor = new QueryExecutor(MoreExecutors.listeningDecorator(pool));
 
-		return new Worker(info, jobManager, storage, queryExecutor);
+		return new Worker(info, jobManager, storage, queryExecutor, pool);
 	}
 
 	@Override

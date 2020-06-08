@@ -4,25 +4,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.worker.Worker;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -47,35 +42,25 @@ public class UpdateMatchingStats extends Job {
 
 		progressReporter.setMax(worker.getStorage().getAllConcepts().size());
 
-
-		ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newWorkStealingPool(ConqueryConfig.getInstance().getStorage().getThreads())); // TODO refactor this.
-
-		List<ListenableFuture<Map<ConceptElementId<?>, MatchingStats.Entry>>> conceptMatches = new ArrayList<>();
+		List<Future<Map<ConceptElementId<?>, MatchingStats.Entry>>> conceptMatches = new ArrayList<>();
 
 		for (Concept<?> concept :worker.getStorage().getAllConcepts()) {
-			conceptMatches.add(pool.submit(() -> calculateConceptMatches(concept)));
+			conceptMatches.add(worker.getPool().submit(() -> calculateConceptMatches(concept)));
 		}
 
-		pool.shutdown();
+		do{
+			Uninterruptibles.sleepUninterruptibly(10, TimeUnit.SECONDS);
+			log.trace("{} active threads. {} remaining tasks.", worker.getPool().getActiveCount(), worker.getPool().getQueue().size());
+		}while (worker.getPool().getActiveCount() > 0);
+
+		log.info("All threads are done.");
 
 		Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
 
-		final ListenableFuture<List<Map<ConceptElementId<?>, MatchingStats.Entry>>> chunks = Futures.allAsList(conceptMatches);
-
-		while (true){
-			if(isCancelled()){
-				pool.shutdownNow();
-				return;
-			}
-
-			try {
-				chunks.get(1, TimeUnit.MINUTES)
-					  .forEach(messages::putAll);
-				break;
-			}catch (TimeoutException ignored){
-				// Intentionally left blank
-			}
+		for (Future<Map<ConceptElementId<?>, MatchingStats.Entry>> conceptMatch : conceptMatches) {
+			messages.putAll(conceptMatch.get());
 		}
+
 
 		if (!messages.isEmpty()) {
 			worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));

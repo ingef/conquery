@@ -91,18 +91,25 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 			loaders.submit(() -> {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-
 				if (workerStorage == null) {
+					log.error("No valid WorkerStorage found in {}",directory);
 					return;
 				}
 
-				Worker worker = Worker.createWorker(workerStorage.getWorker(), workerStorage, config);
+				Worker worker = Worker.createWorker(
+					workerStorage.getWorker(),
+					workerStorage,
+					config
+				);
+
 				workers.add(worker);
 			});
 		}
 
 		loaders.shutdown();
 		loaders.awaitTermination(1, TimeUnit.DAYS);
+
+		log.info("All Worker Storages loaded: {}", workers);
 	}
 	
 	@Override
