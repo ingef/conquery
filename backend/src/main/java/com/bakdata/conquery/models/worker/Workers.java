@@ -53,9 +53,10 @@ public class Workers extends NamespaceCollection {
 		if(removed == null) {
 			return;
 		}
-		
+
 		workers.remove(removed.getInfo().getId());
 		try {
+			removed.getJobManager().stop();
 			removed.getStorage().remove();
 		}
 		catch(Exception e) {

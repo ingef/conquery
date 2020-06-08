@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -18,16 +17,14 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j @RequiredArgsConstructor
 public class QueryExecutor implements Closeable {
 
 	private final ListeningExecutorService pool;
-	
-	public QueryExecutor(ConqueryConfig config) {
-		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
-	}
+
 
 	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
 

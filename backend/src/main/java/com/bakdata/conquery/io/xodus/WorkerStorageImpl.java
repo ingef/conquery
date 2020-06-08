@@ -1,5 +1,12 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -14,13 +21,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Collection;
+import org.apache.commons.collections4.ListUtils;
 
 @Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
@@ -41,18 +47,37 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		super.createStores(collector);
-		worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-		
-		collector
-			.collect(worker)
-			.collect(blocks)
-			.collect(cBlocks);
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
+
+		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
+
+		Futures.allAsList(stores).get();
+
+		return ListUtils.union(
+				stores,
+				List.of(
+						pool.submit(() -> {
+							worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
+							worker.loadData();
+
+							return worker;
+						}),
+						pool.submit(() -> {
+							blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+							blocks.loadData();
+
+							return blocks;
+						}),
+						pool.submit(() -> {
+							cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+							cBlocks.loadData();
+
+							return cBlocks;
+						})
+				)
+		);
 	}
-	
+
 	@Override
 	public void addCBlock(CBlock cBlock) throws JSONException {
 		cBlocks.add(cBlock);

@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -53,10 +54,15 @@ public class StandaloneSupport implements Closeable {
 		long started = System.nanoTime();
 		for(int i=0;i<10;i++) {
 			do {
-				busy = false;
-				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
-				for (SlaveCommand slave : standaloneCommand.getSlaves())
+				busy = standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
+				for (SlaveCommand slave : standaloneCommand.getSlaves()) {
 					busy |= slave.getJobManager().isSlowWorkerBusy();
+
+					for (Worker worker : slave.getWorkers().getWorkers().values()) {
+						busy |= worker.getJobManager().isSlowWorkerBusy();
+					}
+				}
+
 				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
 				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
 					log.warn("waiting for done work for a long time");

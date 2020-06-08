@@ -1,5 +1,12 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.StructureNode;
@@ -7,15 +14,14 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Objects;
+import org.apache.commons.collections4.ListUtils;
 
 @Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
@@ -41,15 +47,29 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 		this.idMapping.update(idMapping);
 	}
 
-	
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
-		idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
-		collector
-			.collect(structure)
-			.collect(idMapping);
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
+
+		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
+
+		Futures.allAsList(stores).get();
+
+		return ListUtils.union(
+				stores,
+				List.of(
+						pool.submit(() -> {
+
+							structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
+
+							structure.loadData();
+							return structure;
+						}), pool.submit(() -> {
+							idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
+
+							idMapping.loadData();
+							return idMapping;
+						}))
+		);
 	}
 
 	@Override
