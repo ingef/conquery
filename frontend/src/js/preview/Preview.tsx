@@ -5,9 +5,6 @@ import T from "i18n-react";
 import { useSelector, useDispatch } from "react-redux";
 import Hotkeys from "react-hot-keys";
 
-import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
-
 import {
   getDiffInDays,
   parseStdDate,
@@ -70,7 +67,6 @@ const Line = styled("div")<{ isHeader?: boolean }>`
       border-bottom: "1px solid #ccc";
       align-items: flex-end;
       margin: "0 0 10px";
-      overflow-x: auto;
     `};
 `;
 
@@ -133,21 +129,26 @@ const CSVFrame = styled("div")`
   overflow: hidden;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+`;
+
+const ScrollWrap = styled("div")`
+  overflow: auto;
   display: flex;
   flex-direction: column;
+  height: 100%;
 `;
 
 const Tr = styled("tr")`
   line-height: 1;
 `;
 
-const AutoSizerContainer = styled("div")`
+const List = styled("div")`
   position: relative;
   height: 100%;
   flex-grow: 1;
 `;
 
-function detectColumn(cell) {
+function detectColumn(cell: string) {
   if (cell === "dates") return "DATE_RANGE";
 
   return "OTHER";
@@ -157,7 +158,7 @@ function detectColumnsByHeader(line: string[]) {
   return line.map(detectColumn);
 }
 
-function getDaysDiff(d1, d2) {
+function getDaysDiff(d1: Date, d2: Date) {
   return Math.abs(getDiffInDays(d1, d2)) + 1;
 }
 
@@ -171,14 +172,21 @@ function getFirstAndLastDateOfRange(dateStr: string) {
   return { first, last };
 }
 
-function getMinMaxDates(rows: string[][], columns: string[]) {
+function getMinMaxDates(
+  rows: string[][],
+  columns: string[]
+): {
+  min: Date | null;
+  max: Date | null;
+  diff: number;
+} {
   let min = null;
   let max = null;
 
   const dateColumn = columns.find((col) => col === "DATE_RANGE");
-  const dateColumnIdx = columns.indexOf(dateColumn);
+  const dateColumnIdx = dateColumn ? columns.indexOf(dateColumn) : -1;
 
-  if (dateColumnIdx === -1) return {};
+  if (dateColumnIdx === -1) return { min: null, max: null, diff: 0 };
 
   for (let row of rows) {
     // To cut off '{' and '}'
@@ -196,7 +204,7 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
   return {
     min,
     max,
-    diff: getDaysDiff(min, max),
+    diff: min && max ? getDaysDiff(min, max) : 0,
   };
 }
 
@@ -206,22 +214,24 @@ const Preview: React.FC = () => {
 
   const onClose = () => dispatch(closePreview());
 
-  if (!preview.csv || preview.csv.length < 2) return null;
+  if (!preview.csv) return null;
 
-  const columns = detectColumnsByHeader(preview.csv[0]);
+  // Limit size:
+  const RENDER_ROWS_LIMIT = 500;
+  const slice = preview.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
 
-  // Potentially, limit size:
-  // const slice = csv.slice(1000);
-  const slice = preview.csv.slice();
+  if (slice.length < 2) return null;
+
+  const columns = detectColumnsByHeader(slice[0]);
 
   const { min, max, diff } = getMinMaxDates(slice.slice(1), columns);
 
-  const Row = ({ index, style }) => (
-    <Line style={style} key={index}>
-      {slice[index + 1].map((cell, i) => {
-        if (columns[i] === "DATE_RANGE") {
+  const Row = ({ index }: { index: number }) => (
+    <Line key={index}>
+      {slice[index + 1].map((cell, j) => {
+        if (columns[j] === "DATE_RANGE") {
           return (
-            <Cell key={i} isDates>
+            <Cell key={j} isDates>
               {cell
                 .slice(1, cell.length - 1)
                 .split(",")
@@ -253,7 +263,7 @@ const Preview: React.FC = () => {
         }
 
         return (
-          <Cell title={cell} key={i}>
+          <Cell title={cell} key={j}>
             {cell}
           </Cell>
         );
@@ -271,7 +281,9 @@ const Preview: React.FC = () => {
           </TransparentButton>
           <HeadInfo>
             <Headline>{T.translate("preview.headline")}</Headline>
-            <Explanation>{T.translate("preview.explanation")}</Explanation>
+            <Explanation>
+              {T.translate("preview.explanation", { count: RENDER_ROWS_LIMIT })}
+            </Explanation>
           </HeadInfo>
         </StdRow>
         <table>
@@ -281,7 +293,7 @@ const Preview: React.FC = () => {
                 <Stat>{T.translate("preview.total")}:</Stat>
               </td>
               <td>
-                <BStat>{preview.csv.length}</BStat>
+                <BStat>{slice.length - 1}</BStat>
               </td>
             </Tr>
             <Tr>
@@ -314,32 +326,25 @@ const Preview: React.FC = () => {
         </table>
       </TopRow>
       <CSVFrame>
-        <Line isHeader>
-          {slice[0].map((cell, k) => (
-            <Cell
-              isHeader
-              key={k}
-              title={cell}
-              isDates={columns[k] === "DATE_RANGE"}
-            >
-              {cell}
-            </Cell>
-          ))}
-        </Line>
-        <AutoSizerContainer>
-          <AutoSizer>
-            {({ width, height }) => (
-              <List
-                height={height}
-                width={width}
-                itemCount={slice.length - 1}
-                itemSize={12}
+        <ScrollWrap>
+          <Line isHeader>
+            {slice[0].map((cell, k) => (
+              <Cell
+                isHeader
+                key={k}
+                title={cell}
+                isDates={columns[k] === "DATE_RANGE"}
               >
-                {Row}
-              </List>
-            )}
-          </AutoSizer>
-        </AutoSizerContainer>
+                {cell}
+              </Cell>
+            ))}
+          </Line>
+          <List>
+            {slice.slice(1).map((_, i) => (
+              <Row key={i} index={i} />
+            ))}
+          </List>
+        </ScrollWrap>
       </CSVFrame>
     </Root>
   );

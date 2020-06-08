@@ -325,7 +325,7 @@
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
-    "explanation": "Stellt die CSV-Datei der Ergebnisse dar",
+    "explanation": "Stellt die ersten {count} Zeilen der Ergebnisse dar",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
