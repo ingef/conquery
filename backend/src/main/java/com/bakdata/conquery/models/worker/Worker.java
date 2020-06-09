@@ -52,7 +52,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		jobManager.addSlowJob(new SimpleJob("Update Block Manager", bucketManager::fullUpdate));
 
 		// Second format-str is used by threadpool.
-		final ThreadPoolExecutor pool = config.getQueries().getExecutionPool().createService(String.format("Dataset[%s] Worker-Thread %d", info.getDataset()));
+		final ThreadPoolExecutor pool = config.getQueries().getExecutionPool().createService(String.format("Dataset[%s] Worker-Thread %%d", info.getDataset()));
 		final QueryExecutor queryExecutor = new QueryExecutor(MoreExecutors.listeningDecorator(pool));
 
 		return new Worker(info, jobManager, storage, queryExecutor, pool);
