@@ -1,29 +1,30 @@
 import * as React from "react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import T from "i18n-react";
 
 import { getStoredAuthToken } from "../authorization/helper";
 import { openPreview } from "../preview/actions";
 
 import IconButton from "./IconButton";
+import { StateT } from "app-types";
 
 type PropsType = {
-  url: string,
-  isLoading: boolean,
-  onOpenPreview: (url: string) => void,
-  className?: string
+  url: string;
+  className?: string;
 };
 
-const PreviewButton = ({
-  url,
-  isLoading,
-  onOpenPreview,
-  className,
-  ...restProps
-}: PropsType) => {
+const PreviewButton = ({ url, className, ...restProps }: PropsType) => {
   const authToken = getStoredAuthToken();
+  const isLoading = useSelector<StateT, boolean>(
+    (state) => state.preview.isLoading
+  );
 
-  const href = `${url}?access_token=${encodeURIComponent(authToken || "")}`;
+  const dispatch = useDispatch();
+  const onOpenPreview = (url: string) => dispatch(openPreview(url));
+
+  const href = `${url}?access_token=${encodeURIComponent(
+    authToken || ""
+  )}&charset=utf-8`;
 
   return (
     <IconButton
@@ -36,11 +37,4 @@ const PreviewButton = ({
   );
 };
 
-export default connect(
-  state => ({
-    isLoading: state.preview.isLoading
-  }),
-  dispatch => ({
-    onOpenPreview: (url: string) => dispatch(openPreview(url))
-  })
-)(PreviewButton);
+export default PreviewButton;
