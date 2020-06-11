@@ -76,7 +76,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		group.addArgument("--tag").required(false)
 			 .type(new StringArgumentType())
-			 .nargs('*')
+			 .nargs("*")
 			 .help("Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
 
 	}
