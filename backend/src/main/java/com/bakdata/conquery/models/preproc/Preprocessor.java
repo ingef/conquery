@@ -266,11 +266,11 @@ public class Preprocessor {
 				for (PPColumn c : result.getColumns()) {
 					log.trace("Compute best Subtype for  Column[{}] with {}", c.getName(), c.getParser());
 					c.findBestType();
-					log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
+					log.trace("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
 				}
 
 				//estimate memory weight
-				log.info(
+				log.trace(
 						"estimated total memory consumption: {} + n*{}",
 						BinaryByteUnit.format(
 								Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateMemoryConsumption).sum()
@@ -284,7 +284,7 @@ public class Preprocessor {
 
 				for (PPColumn c : ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
 					long typeConsumption = c.getType().estimateTypeSize();
-					log.info(
+					log.trace(
 							"\t{}.{}: {}{}",
 							result.getName(),
 							c.getName(),
@@ -298,7 +298,7 @@ public class Preprocessor {
 		}
 
 		if(errors > 0){
-			log.error("Had {}% faulty lines ({} of ~{} lines)", String.format("%f.2", 100d * (double) errors / (double) lineId), errors, lineId);
+			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%f.2", 100d * (double) errors / (double) lineId), errors, lineId);
 		}
 
 		if((double) errors / (double) lineId > ConqueryConfig.getInstance().getPreprocessor().getFaultyLineThreshold()){
