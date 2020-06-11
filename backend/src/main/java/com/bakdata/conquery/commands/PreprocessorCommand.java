@@ -56,7 +56,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 	public void configure(Subparser subparser) {
 		super.configure(subparser);
 
-		final ArgumentGroup group = subparser.addArgumentGroup("Preprocessing CLI Config").description("Optional arguments to do a single import step by hand. Overrides json configuration.");
+		final ArgumentGroup
+				group =
+				subparser.addArgumentGroup("Preprocessing CLI Config")
+						 .description("Optional arguments to do a single import step by hand. Overrides json configuration.");
 
 		group.addArgument("--in").required(false)
 			 .type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
@@ -73,7 +76,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		group.addArgument("--tag").required(false)
 			 .type(new StringArgumentType())
-			 .help("Optional tag for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
+			 .nargs('*')
+			 .help("Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
 
 	}
 
@@ -83,20 +87,30 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
 		}
 
-		final Collection<TableImportDescriptor> descriptors;
+		final Collection<TableImportDescriptor> descriptors = new ArrayList<>();
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
-		final String tag = namespace.getString("tag");
+
 
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
-			descriptors = findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
-					new PreprocessingDirectories(namespace.get("in"), namespace.get("desc"), namespace.get("out"))
-			}, tag);
+
+			final List<String> tags = namespace.getList("tag");
+
+			for (String tag : tags) {
+				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
+						new PreprocessingDirectories(namespace.get("in"), namespace.get("desc"), namespace.get("out"))
+				}, tag));
+			}
+
 		}
 		else {
-			log.info("Preprocessing from config.json");
-			descriptors = findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag);
+			final List<String> tags = namespace.getList("tag");
+
+			for (String tag : tags) {
+				log.info("Preprocessing from config.json");
+				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag));
+			}
 		}
 
 
@@ -141,7 +155,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag) throws IOException {
+	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag)
+			throws IOException {
 		List<TableImportDescriptor> out = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
 
