@@ -39,6 +39,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 	private ExecutorService pool;
 	private final List<String> failed = Collections.synchronizedList(new ArrayList<>());
 	private final List<String> success = Collections.synchronizedList(new ArrayList<>());
+	private final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 
 	public PreprocessorCommand() {
 		this(null);
@@ -130,8 +131,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 					success.add(descriptor.toString());
 				}
 				catch (FileNotFoundException e) {
-					log.error("Did not find file `{}` for preprocessing.", e.getMessage());
-					failed.add(descriptor.toString());
+					log.warn("Did not find file `{}` for preprocessing.", e.getMessage());
+					missing.add(descriptor.toString());
 				}
 				catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
@@ -147,6 +148,11 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		log.info("Successfully Preprocess {} Jobs:", success.size());
 		success.forEach(desc -> log.info("\tSucceeded Preprocessing for {}", desc));
+
+		if(!missing.isEmpty()){
+			log.warn("Did not find {} Files",missing.size());
+			missing.forEach(desc -> log.warn("\tDid not find file for {}", desc));
+		}
 
 		if (!failed.isEmpty()) {
 			log.error("Failed {} Preprocessing Jobs:", failed.size());
