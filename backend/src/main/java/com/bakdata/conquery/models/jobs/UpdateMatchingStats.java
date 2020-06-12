@@ -49,7 +49,7 @@ public class UpdateMatchingStats extends Job {
 		}
 
 		do{
-			Uninterruptibles.sleepUninterruptibly(10, TimeUnit.SECONDS);
+			Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
 			log.trace("{} active threads. {} remaining tasks.", worker.getPool().getActiveCount(), worker.getPool().getQueue().size());
 		}while (worker.getPool().getActiveCount() > 0);
 
