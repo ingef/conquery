@@ -247,19 +247,20 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		log.info("Connection was closed by master");
 		connector.dispose();
 	}
+
 	private void reportJobManagerStatus() {
+		if (context == null || !context.isConnected()) {
+			return;
+		}
+
+		// Collect the Slaves and all its workers jobs into a single queue
+		final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
+
+		for (Worker worker : workers.getWorkers().values()) {
+			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
+		}
+
 		try {
-			if (context == null || !context.isConnected()) {
-				return;
-			}
-
-			// Collect the Slaves and all its workers jobs into a single queue
-			final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
-
-			for (Worker worker : workers.getWorkers().values()) {
-				jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
-			}
-
 			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
 		}
 		catch(Exception e) {
