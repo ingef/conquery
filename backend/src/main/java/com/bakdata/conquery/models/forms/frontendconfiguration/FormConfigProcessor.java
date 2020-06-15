@@ -84,21 +84,20 @@ public class FormConfigProcessor {
 	}
 	
 	/**
-	 * Adds the provided config to the desired dataset and the datasets that the user has access to (has the READ ability on the Dataset), if the config is translatable to those.
+	 * Adds the provided config to the desired dataset and the datasets that the
+	 * user has access to (has the READ ability on the Dataset), if the config is
+	 * translatable to those.
 	 */
 	public FormConfigId addConfig(User user, DatasetId targetDataset, FormConfig config) {
 		user.checkPermission(DatasetPermission.onInstance(Ability.READ.asSet(), targetDataset));
-		
-		List<DatasetId> translateToDatasets = storage.getNamespaces()
-		.getAllDatasets()
-		.stream()
-		.map(Identifiable::getId)
-		.filter(dId -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dId)))
-		.collect(Collectors.toList());
-		
-		
+
+		List<DatasetId> translateToDatasets = storage.getNamespaces().getAllDatasets().stream()
+			.map(Identifiable::getId)
+			.filter(dId -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dId)))
+			.collect(Collectors.toList());
+
 		translateToDatasets.remove(targetDataset);
-		
+
 		return addConfigAndTranslations(user, targetDataset, translateToDatasets, config);
 	}
 	
@@ -117,9 +116,11 @@ public class FormConfigProcessor {
 				// Skip the actual target dataset here because its already added
 				continue;
 			}
-			config.tryTranslateToDataset(storage.getNamespaces(), target, MAPPER).ifPresentOrElse(
+			config.tryTranslateToDataset(storage.getNamespaces(), target, MAPPER)
+				.ifPresentOrElse(
 				c -> addConfigToDataset(user, target, c),
-				() -> log.info("Could not convert FormConfig {} to dataset {}", config.getId(), target));
+				() -> log.info("Could not convert FormConfig {} to dataset {}", config.getId(), target)
+				);
 		}
 
 		return config.getId();
