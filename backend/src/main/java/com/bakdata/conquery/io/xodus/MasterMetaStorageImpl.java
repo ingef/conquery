@@ -88,15 +88,10 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 	
 		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
-
-		executions = StoreInfo.EXECUTIONS
-			.<ManagedExecution<?>>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces);
+		executions = StoreInfo.EXECUTIONS.identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces);
 		authRole = StoreInfo.AUTH_ROLE.identifiable(getRolesEnvironment(), getValidator(), getCentralRegistry());
-
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
-
 		authGroup = StoreInfo.AUTH_GROUP.identifiable(getGroupsEnvironment(), getValidator(), getCentralRegistry());
-		
 		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
 
@@ -114,16 +109,15 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 				pool.submit(formConfigs::loadData)
 		)).get();
 
-		Futures.allAsList(List.of(
-				pool.submit(executions::loadData)
-		)).get();
-
 		return List.of(
 				Futures.immediateFuture(meta),
 				Futures.immediateFuture(authRole),
 				Futures.immediateFuture(authUser),
 				Futures.immediateFuture(authGroup),
-				Futures.immediateFuture(executions),
+				pool.submit(() -> {
+					executions.loadData();
+					return executions;
+				}),
 				Futures.immediateFuture(formConfigs)
 		);
 	}

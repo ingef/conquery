@@ -49,6 +49,8 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 	/**
 	 * Load all stores from disk.
+	 *
+	 * Create a ThreadPool that can be used to submit as many tasks in parallel as possible.
 	 */
 	@Override
 	public final void loadData() {
@@ -68,12 +70,8 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
 		}
-		catch (InterruptedException e) {
-			// TODO: 03.06.2020
-			e.printStackTrace();
-		}
-		catch (ExecutionException e) {
-			e.printStackTrace();
+		catch (InterruptedException | ExecutionException e) {
+			throw new IllegalStateException("Failed loading storage.", e);
 		}
 	}
 

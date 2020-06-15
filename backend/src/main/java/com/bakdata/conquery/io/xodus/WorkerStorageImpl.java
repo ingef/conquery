@@ -49,29 +49,28 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 
+		// Load all base data first, then load worker specific data.
 		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
-
 		Futures.allAsList(stores).get();
+
+
+		worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
+		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 
 		return ListUtils.union(
 				stores,
 				List.of(
 						pool.submit(() -> {
-							worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
 							worker.loadData();
-
 							return worker;
 						}),
 						pool.submit(() -> {
-							blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 							blocks.loadData();
-
 							return blocks;
 						}),
 						pool.submit(() -> {
-							cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 							cBlocks.loadData();
-
 							return cBlocks;
 						})
 				)

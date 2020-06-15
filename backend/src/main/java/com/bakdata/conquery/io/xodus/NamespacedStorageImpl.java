@@ -50,6 +50,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 
+		// Setup dependencies between dataset components.
+
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getEnvironment(), getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
@@ -105,7 +107,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			})
 			.onRemove(concept -> {
 				concept.getSelects().forEach(centralRegistry::remove);
-				//see #146  remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
 					c.getSelects().forEach(centralRegistry::remove);
 					c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
