@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1.forms;
+package com.bakdata.conquery.models.forms.configs;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
+import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.Labelable;
@@ -47,7 +48,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
+public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
 
 	protected DatasetId dataset;
 	@NotEmpty
@@ -65,7 +66,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
 	
-	public FormConfig(String formType, JsonNode values) {
+	public FormConfigInternal(String formType, JsonNode values) {
 		this.formType = formType;
 		this.values = values;
 	}
@@ -101,7 +102,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * are actually resolvable. Also, it tries to map the values to a subclass of
 	 * {@link Form}, for conversion. If that is not possible the an empty optional is returned.
 	 */
-	public Optional<FormConfig> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
+	public Optional<FormConfigInternal> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
 		JsonNode finalRep = values;
 		try {
 			Form intermediateRep = mapper.readerFor(Form.class).readValue(values);
@@ -117,7 +118,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			return Optional.empty();
 		}
 		
-		FormConfig translatedConf = new FormConfig(
+		FormConfigInternal translatedConf = new FormConfigInternal(
 			target,
 			formType,
 			formId,
@@ -150,7 +151,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	}
 
 	/**
-	 * API representation for the overview of all {@link FormConfig}s which does not
+	 * API representation for the overview of all {@link FormConfigInternal}s which does not
 	 * include the form fields an their values.
 	 */
 	@Getter
@@ -174,7 +175,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	}
 
 	/**
-	 * API representation for a single {@link FormConfig} which includes the form
+	 * API representation for a single {@link FormConfigInternal} which includes the form
 	 * fields an their values.
 	 */
 	@Getter

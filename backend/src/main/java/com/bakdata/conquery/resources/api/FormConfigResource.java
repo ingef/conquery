@@ -20,12 +20,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.apiv1.forms.FormConfig;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
+import com.bakdata.conquery.apiv1.forms.FormConfigExternal;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigFullRepresentation;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -47,7 +46,7 @@ public class FormConfigResource {
 	private DatasetId datasetId;
 	
 	@POST
-	public Response postConfig(@Auth User user, @Valid FormConfig config) throws JSONException {
+	public Response postConfig(@Auth User user, @Valid FormConfigExternal config) {
 		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config))).status(Status.CREATED).build();
 	}
 	

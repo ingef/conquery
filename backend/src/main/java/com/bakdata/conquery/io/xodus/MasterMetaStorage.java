@@ -2,12 +2,12 @@ package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
 
-import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -128,13 +128,13 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param id The id of the FormConfig to be retrieved.
 	 * @return The FormConfig with the specified id.
 	 */
-	FormConfig getFormConfig(FormConfigId id);
+	FormConfigInternal getFormConfig(FormConfigId id);
 	
 	/**
 	 * Gets all FormConfigs saved in the storage.
 	 * @return A collection of the stored FormConfigs
 	 */
-	Collection<FormConfig> getAllFormConfigs();
+	Collection<FormConfigInternal> getAllFormConfigs();
 	
 	/**
 	 * Removes a FormConfig from the storage that has the given id.
@@ -144,13 +144,13 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	
 	/**
 	 * Updates a stored FormConfig that is identified by its id.
-	 * @param FormConfig The FormConfig, which holds the values, to be updated.
+	 * @param FormConfigInternal The FormConfig, which holds the values, to be updated.
 	 */
-	void updateFormConfig(FormConfig config);
+	void updateFormConfig(FormConfigInternal config);
 	
 	/**
 	 * Adds a FormConfig that is identified by its id.
-	 * @param FormConfig The FormConfig, which holds the values, to be updated.
+	 * @param FormConfigInternal The FormConfig, which holds the values, to be updated.
 	 */
-	void addFormConfig(FormConfig formConfig);
+	void addFormConfig(FormConfigInternal formConfig);
 }
