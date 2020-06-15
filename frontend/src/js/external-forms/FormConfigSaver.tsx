@@ -20,6 +20,7 @@ import { FORM_CONFIG } from "../common/constants/dndTypes";
 import { FormConfigDragItem } from "./form-configs/FormConfig";
 import { loadExternalFormValues, setExternalForm } from "./actions";
 import FaIcon from "../icon/FaIcon";
+import { useLoadFormConfigs } from "./form-configs/useLoadFormConfigs";
 
 interface PropsT {
   datasetId: string;
@@ -92,6 +93,8 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
     selectActiveFormType(state)
   );
 
+  const { loadFormConfigs } = useLoadFormConfigs();
+
   function getUntitledName(name: string) {
     return `${name} ${new Date().toISOString().split("T")[0]}`;
   }
@@ -125,6 +128,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
         });
 
         setIsDirty(false);
+        loadFormConfigs(datasetId);
       } else if (activeFormType) {
         const result = await postFormConfig(datasetId, {
           label: configName,
@@ -134,6 +138,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
 
         setFormConfigId(result.id);
         setIsDirty(false);
+        loadFormConfigs(datasetId);
       }
     } catch (e) {
       dispatch(setMessage("externalForms.config.saveError"));

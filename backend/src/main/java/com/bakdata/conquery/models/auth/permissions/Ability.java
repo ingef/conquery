@@ -8,15 +8,18 @@ public enum Ability {
 	READ,
 	CREATE,
 
-	// Query Specific
+	// Query specific
 	TAG,
 	CANCEL,
 	LABEL,
 	SHARE,
 
-	// Dataset Specific
+	// Dataset specific
 	DOWNLOAD,
-	PRESERVE_ID
+	PRESERVE_ID,
+	
+	// FormConfig specific
+	MODIFY
 	;
 	
 	private final Set<Ability> asSet = Collections.singleton(this);

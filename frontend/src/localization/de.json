@@ -93,6 +93,11 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Diese Anfrage wirklich löschen?"
   },
+  "sharePreviousQueryModal": {
+    "headline": "Anfrage freigeben: ",
+    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "unshare": "Freigabe aufheben"
+  },
   "common": {
     "back": "Zurück",
     "any": "Beliebig",
