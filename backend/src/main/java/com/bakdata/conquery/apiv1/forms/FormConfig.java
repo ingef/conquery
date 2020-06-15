@@ -113,7 +113,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			finalRep = mapper.valueToTree(translatedRep);
 		}
 		catch (IOException e) {
-			log.warn("Unable to translate form configuration {} to dataset {}.", getId(), target);
+			log.warn("Unable to translate form configuration {} to dataset {}.", getId(), target, e);
 			return Optional.empty();
 		}
 		
