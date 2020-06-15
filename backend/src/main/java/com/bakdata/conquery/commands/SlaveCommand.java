@@ -3,6 +3,7 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
+import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -259,6 +261,8 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		for (Worker worker : workers.getWorkers().values()) {
 			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
 		}
+
+		jobManagerStatus.getJobs().sort(Comparator.<JobStatus>comparingLong(js -> js.getProgressReporter().getStartTime()).reversed());
 
 		try {
 			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));

@@ -36,7 +36,7 @@ public class QueryExecutor implements Closeable {
 		Collection<Entity> entries = context.getStorage().getBucketManager().getEntities().values();
 
 		if(entries.isEmpty()) {
-			log.warn("entries for query {} are empty", executionId);
+			log.warn("entries for Query[{}] are empty", executionId);
 		}
 		
 		List<ListenableFuture<EntityResult>> futures = entry.getValue()

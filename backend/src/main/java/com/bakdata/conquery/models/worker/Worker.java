@@ -2,7 +2,9 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -17,11 +19,14 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 
@@ -37,6 +42,9 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Getter
 	private final QueryExecutor queryExecutor;
 
+	/**
+	 * Pool that can be used in Jobs to execute a job in parallel.
+	 */
 	@Getter
 	private final ThreadPoolExecutor pool;
 
@@ -53,7 +61,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		// Second format-str is used by threadpool.
 		final ThreadPoolExecutor pool = config.getQueries().getExecutionPool().createService(String.format("Dataset[%s] Worker-Thread %%d", info.getDataset()));
-		final QueryExecutor queryExecutor = new QueryExecutor(MoreExecutors.listeningDecorator(pool));
+
+		//TODO fk: I am using a workstealing pool for the query-engine as that is probably exactly the use case for it. It could increase performance.
+		final QueryExecutor queryExecutor = new QueryExecutor(MoreExecutors.listeningDecorator(Executors.newWorkStealingPool()));
+
 
 		return new Worker(info, jobManager, storage, queryExecutor, pool);
 	}
@@ -70,6 +81,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	
 	@Override
 	public void close() throws IOException {
+		pool.shutdownNow();
 		queryExecutor.close();
 		storage.close();
 	}
@@ -77,5 +89,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Override
 	public String toString() {
 		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";
+	}
+
+	public void awaitSubJobTermination() {
+		do{
+			Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+			log.trace("{} active threads. {} remaining tasks.", getPool().getActiveCount(), getPool().getQueue().size());
+		}while (getPool().getActiveCount() > 0);
 	}
 }

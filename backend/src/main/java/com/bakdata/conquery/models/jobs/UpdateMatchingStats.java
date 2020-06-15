@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.MatchingStats;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.worker.Worker;
-import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -48,10 +46,7 @@ public class UpdateMatchingStats extends Job {
 			conceptMatches.add(worker.getPool().submit(() -> calculateConceptMatches(concept)));
 		}
 
-		do{
-			Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-			log.trace("{} active threads. {} remaining tasks.", worker.getPool().getActiveCount(), worker.getPool().getQueue().size());
-		}while (worker.getPool().getActiveCount() > 0);
+		worker.awaitSubJobTermination();
 
 		log.info("All threads are done.");
 
