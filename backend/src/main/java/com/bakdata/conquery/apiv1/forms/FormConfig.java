@@ -105,7 +105,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		JsonNode finalRep = values;
 		try {
 			Form intermediateRep = mapper.readerFor(Form.class).readValue(values);
-			if (NamespacedIdHolding.class.isAssignableFrom(intermediateRep.getClass())) {
+			if (! NamespacedIdHolding.class.isAssignableFrom(intermediateRep.getClass())) {
 				log.trace("Not translating FormConfig ({}) with form type ({}) to dataset ({}), because it does not hold any namespaced ids for translation.", this.getId(), this.getFormType(), target);
 				return Optional.empty();
 			}
