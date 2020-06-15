@@ -1,24 +1,33 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.apiv1.forms.FormConfig;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
+import com.bakdata.conquery.apiv1.forms.FormConfigExternal;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigFullRepresentation;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigOverviewRepresentation;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
@@ -30,6 +39,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 import org.jetbrains.annotations.TestOnly;
 
@@ -37,8 +48,10 @@ import org.jetbrains.annotations.TestOnly;
  * Holds the logic that serves the endpoints defined in {@link FormConfigResource}.
  */
 @RequiredArgsConstructor
+@Slf4j
 public class FormConfigProcessor {
 	
+	private final Validator validator;
 	private final MasterMetaStorage storage;
 	@Getter(onMethod = @__({@TestOnly}))
 	private final static ObjectMapper MAPPER = Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
@@ -47,10 +60,12 @@ public class FormConfigProcessor {
 	 * Return an overview of all form config available to the user. The selection can be reduced by setting a specific formType.
 	 * The provided overview does not contain the configured values for the form, just the meta data.
 	 * @param user The user vor which the overview is created.
+	 * @param dataset 
 	 * @param formType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull Optional<String> formType){
-		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Optional<String> formType){
+		Stream<FormConfigInternal> stream = storage.getAllFormConfigs().stream()
+			.filter(c -> dataset.equals(c.getDataset()))
 			.filter(c -> user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
 		if(formType.isPresent()) {
 			stream = stream.filter(c -> c.getFormType().equals(formType.get()));
@@ -65,34 +80,78 @@ public class FormConfigProcessor {
 	 */
 	public FormConfigFullRepresentation getConfig(DatasetId datasetId, User user, FormConfigId formId) {
 		user.checkPermission(FormConfigPermission.onInstance(Ability.READ, formId));
-		FormConfigFullRepresentation config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId))
-			.tryTranslateToDataset(storage, datasetId, MAPPER, user);
-		return config;
+		return Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId))
+			.fullRepresentation(storage, user);
+	}
+	
+	/**
+	 * Adds the provided config to the desired dataset and the datasets that the
+	 * user has access to (has the READ ability on the Dataset), if the config is
+	 * translatable to those.
+	 */
+	public FormConfigId addConfig(User user, DatasetId targetDataset, FormConfigExternal config) {
+		user.checkPermission(DatasetPermission.onInstance(Ability.READ.asSet(), targetDataset));
+
+		List<DatasetId> translateToDatasets = storage.getNamespaces().getAllDatasets().stream()
+			.map(Identifiable::getId)
+			.filter(dId -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dId)))
+			.collect(Collectors.toList());
+
+		translateToDatasets.remove(targetDataset);
+
+		return addConfigAndTranslations(user, targetDataset, translateToDatasets, config);
+	}
+	
+	/**
+	 * Adds the config to the dataset it was submitted under and also to all other datasets it can be translated to.
+	 * This method does not check permissions.
+	 */
+	public FormConfigId addConfigAndTranslations(User user, DatasetId targetDataset, Collection<DatasetId> translateTo, FormConfigExternal config) {
+		FormConfigInternal internalConfig = FormConfigExternal.intern(config, user.getId(), targetDataset);
+		// Add the config immediately to the submitted dataset
+		addConfigToDataset(user, internalConfig);
+
+		// Add the translated config to the other datasets (synchronous at the moment)
+		for (DatasetId target : translateTo) {
+			if (target.equals(targetDataset)) {
+				// Skip the actual target dataset here because its already added
+				continue;
+			}
+			internalConfig.tryTranslateToDataset(storage.getNamespaces(), target, MAPPER)
+				.ifPresentOrElse(
+				c -> addConfigToDataset(user, c),
+				() -> log.info("Could not convert FormConfig {} to dataset {}", internalConfig.getId(), target)
+				);
+		}
+
+		return internalConfig.getId();
 	}
 
 	/**
-	 * Adds a formular configuration to the storage and grants the user the rights to manage/patch it. 
+	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
-	public FormConfigId addConfig(User user, FormConfig config) {
-		config.setOwner(user.getId());
-		storage.updateFormConfig(config);
+	@SneakyThrows(JSONException.class)
+	private FormConfigId addConfigToDataset(User user, FormConfigInternal internalConfig) {
 		
-		user.addPermission(storage, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, config.getId()));
+		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
+		storage.addFormConfig(internalConfig);
 		
-		return config.getId();
+		user.addPermission(storage, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, internalConfig.getId()));
+		
+		return internalConfig.getId();
 	}
 
 	/**
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
-		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
+		FormConfigInternal config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
 		
 		patch.applyTo(config, storage, user, FormConfigPermission::onInstance);
 		
 		storage.updateFormConfig(config);
 		
-		return config.tryTranslateToDataset(storage, target, MAPPER, user);
+		return config.fullRepresentation(storage, user);
 	}
 
 	/**

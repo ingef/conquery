@@ -6,7 +6,6 @@ import java.util.Collection;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -17,6 +16,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -41,7 +41,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution<?>> executions;
-	private IdentifiableStore<FormConfig> formConfigs;
+	private IdentifiableStore<FormConfigInternal> formConfigs;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
@@ -214,12 +214,12 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public FormConfig getFormConfig(FormConfigId id) {
+	public FormConfigInternal getFormConfig(FormConfigId id) {
 		return formConfigs.get(id);
 	}
 
 	@Override
-	public Collection<FormConfig> getAllFormConfigs() {
+	public Collection<FormConfigInternal> getAllFormConfigs() {
 		return formConfigs.getAll();
 	}
 
@@ -230,8 +230,14 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	@Override
 	@SneakyThrows
-	public void updateFormConfig(FormConfig formConfig) {
+	public void updateFormConfig(FormConfigInternal formConfig) {
 		formConfigs.update(formConfig);
+	}
+	
+	@Override
+	@SneakyThrows
+	public void addFormConfig(FormConfigInternal formConfig) {
+		formConfigs.add(formConfig);
 	}
 	
 	@Override

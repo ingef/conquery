@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -55,9 +56,9 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	@ToString.Include
 	private String label;
 	@Valid @NotEmpty
-	private List<ConceptElementId<?>> ids;
+	private List<ConceptElementId<?>> ids = Collections.emptyList();
 	@Valid @NotEmpty @JsonManagedReference
-	private List<CQTable> tables;
+	private List<CQTable> tables = Collections.emptyList();
 
 	@Valid @NotNull
 	@NsIdRefCollection
