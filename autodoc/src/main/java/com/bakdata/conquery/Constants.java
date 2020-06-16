@@ -20,9 +20,6 @@ import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.forms.FormConfig;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
@@ -62,6 +59,9 @@ import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigFullRepresentation;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
@@ -173,7 +173,7 @@ public class Constants {
 			.otherClass(ConceptResource.ConceptCodeList.class)
 			.otherClass(CQTable.class)
 			.otherClass(CQTable.ValidityDateColumn.class)
-			.otherClass(FormConfig.class)
+			.otherClass(FormConfigInternal.class)
 			.otherClass(FormConfigOverviewRepresentation.class)
 			.otherClass(FormConfigFullRepresentation.class)
 			.build()

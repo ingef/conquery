@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,11 +20,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.apiv1.forms.FormConfig;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigFullRepresentation;
-import com.bakdata.conquery.apiv1.forms.FormConfig.FormConfigOverviewRepresentation;
+import com.bakdata.conquery.apiv1.forms.FormConfigExternal;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigFullRepresentation;
+import com.bakdata.conquery.models.forms.configs.FormConfigInternal.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -36,6 +37,8 @@ import io.dropwizard.jersey.PATCH;
 @Path("datasets/{" + DATASET + "}/form-configs")
 public class FormConfigResource {
 	
+	@PathParam(DATASET)
+	private DatasetId dataset;
 	@Inject
 	private FormConfigProcessor processor;
 	
@@ -43,13 +46,13 @@ public class FormConfigResource {
 	private DatasetId datasetId;
 	
 	@POST
-	public Response postConfig(@Auth User user, FormConfig config) {
-		return Response.ok(new PostResponse(processor.addConfig(user, config))).status(Status.CREATED).build();
+	public Response postConfig(@Auth User user, @Valid FormConfigExternal config) {
+		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config))).status(Status.CREATED).build();
 	}
 	
 	@GET
 	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth User user, @QueryParam("formType") Optional<String> formType) {
-		return processor.getConfigsByFormType(user, formType);
+		return processor.getConfigsByFormType(user, dataset, formType);
 	}
 
 	@GET
@@ -66,7 +69,7 @@ public class FormConfigResource {
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId) {
+	public Response deleteConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId) {
 		processor.deleteConfig(user, formId);
 		return Response.ok().build();
 	}
