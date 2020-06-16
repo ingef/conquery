@@ -133,7 +133,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	protected void finish(MasterMetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW)
-			log.error("Query {} was never run.", getId());
+			log.error("Query[{}] was never run.", getId());
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();

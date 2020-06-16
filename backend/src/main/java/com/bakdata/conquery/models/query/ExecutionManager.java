@@ -82,7 +82,6 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
-		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 		((E)getQuery(result.getQueryId())).addResult(namespace.getNamespaces().getMetaStorage(), result);
 	}
 
