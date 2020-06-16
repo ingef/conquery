@@ -34,7 +34,9 @@ const DownloadButton = ({
 }: PropsType) => {
   const authToken = getStoredAuthToken();
 
-  const href = `${url}?access_token=${encodeURIComponent(authToken || "")}`;
+  const href = `${url}?access_token=${encodeURIComponent(
+    authToken || ""
+  )}&charset=ISO_8859_1`;
 
   const icon = getIcon(ending);
 
