@@ -93,10 +93,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
 
+		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.singletonList(null);
+
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
-
-			final List<String> tags = namespace.getList("tag");
 
 			for (String tag : tags) {
 				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
@@ -105,8 +105,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			}
 
 		}
-		else {
-			final List<String> tags = namespace.getList("tag");
+		else if(namespace.getList("tag") != null){
 
 			for (String tag : tags) {
 				log.info("Preprocessing from config.json");
@@ -167,10 +166,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 		for (PreprocessingDirectories description : directories) {
 
 			File inDir = description.getDescriptionsDir().getAbsoluteFile();
-			final File[] files =
-					inDir.isFile() ?
-					new File[]{inDir} :
-					inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
+			final File[] files = inDir.isFile() ?
+								 new File[]{inDir} :
+								 inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
 
 			for (File descriptionFile : files) {
 
