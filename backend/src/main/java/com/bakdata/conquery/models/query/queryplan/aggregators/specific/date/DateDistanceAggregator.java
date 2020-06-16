@@ -66,7 +66,7 @@ public class DateDistanceAggregator implements Aggregator<Long> {
 
 		hit = true;
 
-		LocalDate date = CDate.toLocalDate(bucket.getDate(event, column));
+		LocalDate date = bucket.getAsDateRange(event, column).getMin();
 
 		final long between = unit.between(date, reference);
 

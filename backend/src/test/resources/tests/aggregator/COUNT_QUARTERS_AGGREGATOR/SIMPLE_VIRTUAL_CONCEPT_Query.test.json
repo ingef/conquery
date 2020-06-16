@@ -10,21 +10,24 @@
       ],
       "type": "CONCEPT",
       "label": "select",
+      "selects": [
+        "${dataset}.select.count_quarters"
+      ],
       "tables": [
         {
-          "id": "${dataset}.select.connector",
-          "selects": [
-            "${dataset}.select.connector.count_quarters"
-          ]
+          "id": "${dataset}.select.connector"
         }
       ]
-
     }
   },
   "concepts": [
     {
       "label": "select",
       "type": "VIRTUAL",
+      "selects": {
+        "name": "count_quarters",
+        "type": "COUNT_QUARTERS"
+      },
       "connectors": [
         {
           "label": "connector",
@@ -32,10 +35,6 @@
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
-          },
-          "selects":         {
-            "name" : "count_quarters",
-            "type": "COUNT_QUARTERS"
           }
         }
       ]
@@ -52,7 +51,7 @@
         },
         "columns": [
           {
-            "name": "behandlungsdatum",
+            "name": "datum",
             "type": "DATE"
           }
         ]

@@ -62,7 +62,7 @@ public class DateDistanceFilterNode extends FilterNode<Range.LongRange> {
 			return false;
 		}
 
-		LocalDate date = CDate.toLocalDate(bucket.getDate(event, column));
+		LocalDate date = bucket.getAsDateRange(event, column).getMin();
 
 		final long between = unit.between(date, reference);
 

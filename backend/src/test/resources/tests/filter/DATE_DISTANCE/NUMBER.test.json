@@ -1,6 +1,6 @@
 {
   "type": "FILTER_TEST",
-  "label": "NUMBER_REAL Test",
+  "label": "Date Distance Filter Test",
   "expectedCsv": "tests/filter/DATE_DISTANCE/expected_NUMBER_Filter.csv",
   "dateRange" : {
     "min" : "2000-01-31",
