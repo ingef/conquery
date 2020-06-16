@@ -15,8 +15,10 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class ExecutionManager {
 
 	@NonNull
@@ -48,7 +50,7 @@ public class ExecutionManager {
 	}
 
 	public static ManagedExecution<?> execute(Namespaces namespaces, ManagedExecution<?> execution){
-		
+		log.info("Executing Query[{}] in Namesspaces[{}]", execution.getQueryId(), execution.getRequiredNamespaces());
 		// Initialize the query / create subqueries
 		execution.initExecutable(namespaces);
 
@@ -69,6 +71,7 @@ public class ExecutionManager {
 	private ManagedExecution<?> executeQueryInNamespace(ManagedExecution<?> query) {
 
 		for(WorkerInformation worker : namespace.getWorkers()) {
+			log.trace("Sending Query[{}] to Worker[{}]", query.getQueryId(), worker.getId());
 			worker.send(new ExecuteQuery(query));
 		}
 		return query;
@@ -79,6 +82,7 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
+		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 		((E)getQuery(result.getQueryId())).addResult(namespace.getNamespaces().getMetaStorage(), result);
 	}
 
