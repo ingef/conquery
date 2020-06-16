@@ -77,8 +77,6 @@ public class ExecutionManager {
 	 * @return
 	 */
 	private ManagedExecution<?> executeQueryInNamespace(ManagedExecution<?> query) {
-		log.trace("Sending Query[{}] to Workers[{}]", query.getQueryId(), workers);
-
 		namespace.sendToAll(new ExecuteQuery(query));
 		return query;
 	}
