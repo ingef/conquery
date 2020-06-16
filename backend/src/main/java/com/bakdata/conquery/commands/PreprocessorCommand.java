@@ -105,8 +105,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			}
 
 		}
-		else if(namespace.getList("tag") != null){
-
+		else {
 			for (String tag : tags) {
 				log.info("Preprocessing from config.json");
 				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag));
