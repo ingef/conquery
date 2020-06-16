@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -103,7 +104,10 @@ public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implement
 	 * {@link Form}, for conversion. If that is not possible the an empty optional is returned.
 	 */
 	public Optional<FormConfigInternal> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
-		JsonNode finalRep = values;
+		ObjectNode finalRep = (ObjectNode) values;
+		if(!finalRep.has("type")) {
+			finalRep.put("type", formType);			
+		}
 		try {
 			Form intermediateRep = mapper.readerFor(Form.class).readValue(values);
 			if (! NamespacedIdHolding.class.isAssignableFrom(intermediateRep.getClass())) {

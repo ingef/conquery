@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,8 +54,11 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	}
 
 	@Override
-	public Set<NamespacedId> collectNamespacedIds() {
-		return Set.of(queryGroup);
+	public void collectNamespacedIds(Set<NamespacedId> ids) {
+		checkNotNull(ids);
+		if(queryGroup != null) {
+			ids.add(queryGroup);
+		}
 	}
 
 	@Override

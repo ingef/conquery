@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -190,11 +191,10 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	}
 
 	@Override
-	public Set<NamespacedId> collectNamespacedIds() {
-		Set<NamespacedId> namespacedIds = new HashSet<>();
+	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+		checkNotNull(namespacedIds);
 		namespacedIds.addAll(ids);
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
-		return namespacedIds;
 	}
 }

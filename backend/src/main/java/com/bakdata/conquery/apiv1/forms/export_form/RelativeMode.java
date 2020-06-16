@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -36,9 +37,9 @@ public class RelativeMode extends Mode {
 	@NotNull
 	private TemporalSampler indexSelector;
 	@NotEmpty
-	private List<CQElement> features;
+	private List<CQElement> features = Collections.emptyList();
 	@NotEmpty
-	private List<CQElement> outcomes;
+	private List<CQElement> outcomes = Collections.emptyList();
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
