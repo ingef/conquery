@@ -8,17 +8,18 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkerStorage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -104,7 +105,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 		localTmpDir.mkdir();
-		ConqueryConfig localCfg = Cloner.clone(config);
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getMaster().getEnvironment().getValidator()));
 		localCfg
 			.getPreprocessor()
 			.setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir) });
@@ -133,21 +134,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 
 		DatasetId dataset = support.getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new SlaveMessage() {
-			@Override
-			public void react(NetworkMessageContext.Slave context) throws Exception {
-				context.getWorkers().getWorkers().values().stream()
-					   .filter(worker -> worker.getInfo().getDataset().equals(dataset))
-					   .forEach(worker -> {
-						   try {
-							   worker.getStorage().close();
-						   } catch (IOException e) {
-							   log.error("Failed closing down worker", e);
-						   }
-					   });
 
-			}
-		}));
+		standaloneCommand.getMaster().getNamespaces().get(dataset).sendToAll(new ShutdownWorkerStorage());
+
 		try {
 			standaloneCommand.getMaster().getStorage().close();
 		} catch (IOException e) {

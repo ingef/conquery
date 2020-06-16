@@ -93,6 +93,11 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Diese Anfrage wirklich löschen?"
   },
+  "sharePreviousQueryModal": {
+    "headline": "Anfrage freigeben: ",
+    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "unshare": "Freigabe aufheben"
+  },
   "common": {
     "back": "Zurück",
     "any": "Beliebig",
@@ -320,7 +325,7 @@
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
-    "explanation": "Stellt die CSV-Datei der Ergebnisse dar",
+    "explanation": "Stellt die ersten {count} Zeilen der Ergebnisse dar",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",

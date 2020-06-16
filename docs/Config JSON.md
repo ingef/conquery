@@ -15,7 +15,7 @@ An `AuthorizationConfig` defines the initial users that are created on applicati
 Different types of AuthorizationConfig can be used by setting `type` to one of the following values:
 
 
-### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/DefaultAuthorizationConfig.java#L10)</sup></sub></sup>
+### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/DefaultAuthorizationConfig.java#L12)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>

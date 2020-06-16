@@ -20,7 +20,8 @@ public class AbilitySets {
 		Ability.DELETE,
 		Ability.SHARE,
 		Ability.TAG,
-		Ability.LABEL);
+		Ability.LABEL,
+		Ability.MODIFY);
 	public static final EnumSet<Ability> FORM_CONFIG_SHAREHOLDER = EnumSet.of(
 		Ability.READ,
 		Ability.SHARE);

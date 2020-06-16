@@ -1,11 +1,9 @@
 export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 
-export const flatmap = (ar: [], map: Function) => concat(ar.map(map));
-
 export const compose = (...fns: Function[]) =>
   fns.reduceRight(
     (prevFn, nextFn) => (...args) => nextFn(prevFn(...args)),
-    v => v
+    (v) => v
   );
 
 export const objectWithoutKey = (key: string) => (obj: Object) => {
@@ -33,7 +31,7 @@ export const isEmptyObject = (variable: any) => {
     variable.constructor === Object &&
     (Object.keys(variable).length === 0 ||
       (Object.keys(variable).length > 0 &&
-        Object.keys(variable).every(k => typeof variable[k] === "undefined")))
+        Object.keys(variable).every((k) => typeof variable[k] === "undefined")))
   );
 };
 
@@ -62,7 +60,7 @@ export const toUpperCaseUnderscore = (str: string) => {
   if (str.toUpperCase() === str) return str;
 
   return str
-    .replace(/[A-Z]/g, upperCaseChar => "_" + upperCaseChar.toLowerCase())
+    .replace(/[A-Z]/g, (upperCaseChar) => "_" + upperCaseChar.toLowerCase())
     .toUpperCase();
 };
 
@@ -72,21 +70,21 @@ export const isObject = (item: any) =>
 export const mergeDeep = (...elements: Object[]) => {
   return elements.filter(isObject).reduce((aggregate, current) => {
     const nonObjectKeys = Object.keys(current).filter(
-      key => !isObject(current[key])
+      (key) => !isObject(current[key])
     );
-    const objectKeys = Object.keys(current).filter(key =>
+    const objectKeys = Object.keys(current).filter((key) =>
       isObject(current[key])
     );
-    const newKeys = objectKeys.filter(key => !(key in aggregate));
-    const mergeKeys = objectKeys.filter(key => key in aggregate);
+    const newKeys = objectKeys.filter((key) => !(key in aggregate));
+    const mergeKeys = objectKeys.filter((key) => key in aggregate);
 
     return Object.assign(
       {},
       aggregate,
-      ...nonObjectKeys.map(key => ({ [key]: current[key] })),
-      ...newKeys.map(key => ({ [key]: current[key] })),
-      ...mergeKeys.map(key => ({
-        [key]: mergeDeep(aggregate[key], current[key])
+      ...nonObjectKeys.map((key) => ({ [key]: current[key] })),
+      ...newKeys.map((key) => ({ [key]: current[key] })),
+      ...mergeKeys.map((key) => ({
+        [key]: mergeDeep(aggregate[key], current[key]),
       }))
     );
   }, {});

@@ -2,30 +2,23 @@ import * as React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import T from "i18n-react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Hotkeys from "react-hot-keys";
-
-import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
 
 import {
   getDiffInDays,
   parseStdDate,
   formatStdDate,
-  formatDateDistance
+  formatDateDistance,
 } from "../common/helpers/dateHelper";
 
 import TransparentButton from "../button/TransparentButton";
 
-import type { StateT as PreviewStateT } from "./reducer";
+import type { PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
+import { StateT } from "app-types";
 
-type PropsT = {
-  preview: PreviewStateT;
-  onClose: () => void;
-};
-
-const Preview = styled("div")`
+const Root = styled("div")`
   height: 100%;
   width: 100%;
   position: fixed;
@@ -62,7 +55,7 @@ const BStat = styled(Stat)`
   font-weight: 700;
 `;
 
-const Line = styled("div")`
+const Line = styled("div")<{ isHeader?: boolean }>`
   display: flex;
   width: 100%;
   align-items: center;
@@ -74,14 +67,14 @@ const Line = styled("div")`
       border-bottom: "1px solid #ccc";
       align-items: flex-end;
       margin: "0 0 10px";
-      overflow-x: auto;
     `};
 `;
 
-const Cell = styled("code")`
+const Cell = styled("code")<{ isDates?: boolean; isHeader?: boolean }>`
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.xs};
   height: ${({ theme }) => theme.font.xs};
+  min-width: ${({ isDates }) => (isDates ? "300px" : "100px")};
   width: ${({ isDates }) => (isDates ? "auto" : "100px")};
   flex-grow: ${({ isDates }) => (isDates ? "1" : "0")};
   flex-shrink: 0;
@@ -138,11 +131,24 @@ const CSVFrame = styled("div")`
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 `;
 
+const ScrollWrap = styled("div")`
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
+
 const Tr = styled("tr")`
   line-height: 1;
 `;
 
-function detectColumn(cell) {
+const List = styled("div")`
+  position: relative;
+  height: 100%;
+  flex-grow: 1;
+`;
+
+function detectColumn(cell: string) {
   if (cell === "dates") return "DATE_RANGE";
 
   return "OTHER";
@@ -152,7 +158,7 @@ function detectColumnsByHeader(line: string[]) {
   return line.map(detectColumn);
 }
 
-function getDaysDiff(d1, d2) {
+function getDaysDiff(d1: Date, d2: Date) {
   return Math.abs(getDiffInDays(d1, d2)) + 1;
 }
 
@@ -166,14 +172,21 @@ function getFirstAndLastDateOfRange(dateStr: string) {
   return { first, last };
 }
 
-function getMinMaxDates(rows: string[][], columns: string[]) {
+function getMinMaxDates(
+  rows: string[][],
+  columns: string[]
+): {
+  min: Date | null;
+  max: Date | null;
+  diff: number;
+} {
   let min = null;
   let max = null;
 
-  const dateColumn = columns.find(col => col === "DATE_RANGE");
-  const dateColumnIdx = columns.indexOf(dateColumn);
+  const dateColumn = columns.find((col) => col === "DATE_RANGE");
+  const dateColumnIdx = dateColumn ? columns.indexOf(dateColumn) : -1;
 
-  if (dateColumnIdx === -1) return {};
+  if (dateColumnIdx === -1) return { min: null, max: null, diff: 0 };
 
   for (let row of rows) {
     // To cut off '{' and '}'
@@ -191,32 +204,34 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
   return {
     min,
     max,
-    diff: getDaysDiff(min, max)
+    diff: min && max ? getDaysDiff(min, max) : 0,
   };
 }
 
-export default connect(
-  state => ({ preview: state.preview }),
-  dispatch => ({
-    onClose: () => dispatch(closePreview())
-  })
-)(({ preview, onClose }: PropsT) => {
-  if (!preview.csv || preview.csv.length < 2) return null;
+const Preview: React.FC = () => {
+  const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
+  const dispatch = useDispatch();
 
-  const columns = detectColumnsByHeader(preview.csv[0]);
+  const onClose = () => dispatch(closePreview());
 
-  // Potentially, limit size:
-  // const slice = csv.slice(1000);
-  const slice = preview.csv.slice();
+  if (!preview.csv) return null;
+
+  // Limit size:
+  const RENDER_ROWS_LIMIT = 500;
+  const slice = preview.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
+
+  if (slice.length < 2) return null;
+
+  const columns = detectColumnsByHeader(slice[0]);
 
   const { min, max, diff } = getMinMaxDates(slice.slice(1), columns);
 
-  const Row = ({ index, style }) => (
-    <Line style={style} key={index}>
-      {slice[index + 1].map((cell, i) => {
-        if (columns[i] === "DATE_RANGE") {
+  const Row = ({ index }: { index: number }) => (
+    <Line key={index}>
+      {slice[index + 1].map((cell, j) => {
+        if (columns[j] === "DATE_RANGE") {
           return (
-            <Cell key={i} isDates>
+            <Cell key={j} isDates>
               {cell
                 .slice(1, cell.length - 1)
                 .split(",")
@@ -248,7 +263,7 @@ export default connect(
         }
 
         return (
-          <Cell title={cell} key={i}>
+          <Cell title={cell} key={j}>
             {cell}
           </Cell>
         );
@@ -257,7 +272,7 @@ export default connect(
   );
 
   return (
-    <Preview>
+    <Root>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
       <TopRow>
         <StdRow>
@@ -266,7 +281,9 @@ export default connect(
           </TransparentButton>
           <HeadInfo>
             <Headline>{T.translate("preview.headline")}</Headline>
-            <Explanation>{T.translate("preview.explanation")}</Explanation>
+            <Explanation>
+              {T.translate("preview.explanation", { count: RENDER_ROWS_LIMIT })}
+            </Explanation>
           </HeadInfo>
         </StdRow>
         <table>
@@ -276,7 +293,7 @@ export default connect(
                 <Stat>{T.translate("preview.total")}:</Stat>
               </td>
               <td>
-                <BStat>{preview.csv.length}</BStat>
+                <BStat>{slice.length - 1}</BStat>
               </td>
             </Tr>
             <Tr>
@@ -309,31 +326,28 @@ export default connect(
         </table>
       </TopRow>
       <CSVFrame>
-        <Line isHeader={true}>
-          {slice[0].map((cell, k) => (
-            <Cell
-              key={k}
-              isHeader={true}
-              title={cell}
-              isDates={columns[k] === "DATE_RANGE"}
-            >
-              {cell}
-            </Cell>
-          ))}
-        </Line>
-        <AutoSizer>
-          {({ width, height }) => (
-            <List
-              height={height}
-              width={width}
-              itemCount={slice.length - 1}
-              itemSize={12}
-            >
-              {Row}
-            </List>
-          )}
-        </AutoSizer>
+        <ScrollWrap>
+          <Line isHeader>
+            {slice[0].map((cell, k) => (
+              <Cell
+                isHeader
+                key={k}
+                title={cell}
+                isDates={columns[k] === "DATE_RANGE"}
+              >
+                {cell}
+              </Cell>
+            ))}
+          </Line>
+          <List>
+            {slice.slice(1).map((_, i) => (
+              <Row key={i} index={i} />
+            ))}
+          </List>
+        </ScrollWrap>
       </CSVFrame>
-    </Preview>
+    </Root>
   );
-});
+};
+
+export default Preview;

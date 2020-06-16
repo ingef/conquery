@@ -29,7 +29,6 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
   );
 
   const dispatch = useDispatch();
-
   const closeDeleteModal = () => setFormConfigToDelete(null);
 
   function onDeleteSuccess() {

@@ -265,6 +265,7 @@ export interface GetStoredQueryResponseT {
   query: QueryT; // TODO: Remove in QUERIES response. Creates a lot of additional traffic right now
   owner: string; // TODO: Remove. Not used. And it's actually an ID
   status: "DONE"; // TODO: Remove. Not used here
+  groups?: UserGroupIdT[];
 }
 
 // TODO: This actually returns a lot of unused fields, see above
@@ -297,21 +298,22 @@ export type PostFilterSuggestionsResponseT = FilterSuggestion[];
 
 export type GetFormQueriesResponseT = Forms;
 
-export interface Permission {
+export interface PermissionT {
   domains: string[];
   abilities: string[];
   targets: string[];
 }
 
-export interface UserGroup {
-  groupId: string;
+export type UserGroupIdT = string;
+export interface UserGroupT {
+  groupId: UserGroupIdT;
   label: string;
 }
 
 export interface GetMeResponseT {
   userName: string;
-  permissions: Permission[];
-  groups: UserGroup[];
+  permissions: PermissionT[];
+  groups: UserGroupT[];
 }
 
 export interface PostLoginResponseT {

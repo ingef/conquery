@@ -19,8 +19,10 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class ExecutionManager {
 
 	@NonNull
@@ -52,7 +54,7 @@ public class ExecutionManager {
 	}
 
 	public static ManagedExecution<?> execute(Namespaces namespaces, ManagedExecution<?> execution){
-		
+		log.info("Executing Query[{}] in Namesspaces[{}]", execution.getQueryId(), execution.getRequiredNamespaces());
 		// Initialize the query / create subqueries
 		execution.initExecutable(namespaces);
 
@@ -61,7 +63,7 @@ public class ExecutionManager {
 		final MasterMetaStorage storage = namespaces.getMetaStorage();
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
-		
+
 		for(Namespace namespace : execution.getRequiredNamespaces()) {
 			namespace.getQueryManager().executeQueryInNamespace(execution);
 		}
@@ -75,6 +77,8 @@ public class ExecutionManager {
 	 * @return
 	 */
 	private ManagedExecution<?> executeQueryInNamespace(ManagedExecution<?> query) {
+		log.trace("Sending Query[{}] to Workers[{}]", query.getQueryId(), workers);
+
 		namespace.sendToAll(new ExecuteQuery(query));
 		return query;
 	}

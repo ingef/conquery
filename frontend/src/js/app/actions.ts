@@ -13,7 +13,6 @@ import * as paneActions from "../pane/actions";
 import * as previousQueriesActions from "../previous-queries/list/actions";
 import * as previousQueriesSearchActions from "../previous-queries/search/actions";
 import * as previousQueriesFilterActions from "../previous-queries/filter/actions";
-import * as deletePreviousQueryModalActions from "../previous-queries/delete-modal/actions";
 import * as timebasedQueryEditorActions from "../timebased-query-editor/actions";
 import * as queryEditorActions from "../standard-query-editor/actions";
 
@@ -36,7 +35,6 @@ export default {
   ...previousQueriesActions,
   ...previousQueriesSearchActions,
   ...previousQueriesFilterActions,
-  ...deletePreviousQueryModalActions,
   ...timebasedQueryEditorActions,
-  ...externalQueryRunnerActions
+  ...externalQueryRunnerActions,
 };

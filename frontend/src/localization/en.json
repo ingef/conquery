@@ -93,6 +93,11 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Should this query be deleted?"
   },
+  "sharePreviousQueryModal": {
+    "headline": "Sharing query: ",
+    "groupsLabel": "Groups to share the query with",
+    "unshare": "Revoke sharing"
+  },
   "common": {
     "back": "Back",
     "any": "Any",
@@ -320,7 +325,7 @@
   "preview": {
     "preview": "Preview",
     "headline": "Results preview",
-    "explanation": "Visualizes the CSV file for the results",
+    "explanation": "Visualizes the first {count} lines from the results",
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
