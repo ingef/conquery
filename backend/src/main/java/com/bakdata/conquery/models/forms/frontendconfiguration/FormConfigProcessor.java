@@ -111,19 +111,6 @@ public class FormConfigProcessor {
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(user, internalConfig);
 
-		// Add the translated config to the other datasets (synchronous at the moment)
-		for (DatasetId target : translateTo) {
-			if (target.equals(targetDataset)) {
-				// Skip the actual target dataset here because its already added
-				continue;
-			}
-			internalConfig.tryTranslateToDataset(storage.getNamespaces(), target, MAPPER)
-				.ifPresentOrElse(
-				c -> addConfigToDataset(user, c),
-				() -> log.info("Could not convert FormConfig {} to dataset {}", internalConfig.getId(), target)
-				);
-		}
-
 		return internalConfig.getId();
 	}
 
