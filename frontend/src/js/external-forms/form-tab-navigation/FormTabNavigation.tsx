@@ -20,6 +20,7 @@ const SxSmallTabNavigation = styled(SmallTabNavigation)`
 const FormTavNavigation: FC<PropsT> = ({ options, input }) => {
   return (
     <SxSmallTabNavigation
+      size="L"
       selectedTab={input.value}
       onSelectTab={input.onChange}
       options={options}
