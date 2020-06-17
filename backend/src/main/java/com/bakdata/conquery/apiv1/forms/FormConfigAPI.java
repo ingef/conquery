@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.VariableDefaultValue;
@@ -24,7 +24,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FormConfigExternal {
+public class FormConfigAPI {
 	@NotEmpty
 	private String formType;
 	private String label;
@@ -38,8 +38,8 @@ public class FormConfigExternal {
 	@VariableDefaultValue @Builder.Default
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
-	public static FormConfigInternal intern(FormConfigExternal extern, UserId owner, DatasetId dataset) {
-		FormConfigInternal intern = new FormConfigInternal();
+	public static FormConfig intern(FormConfigAPI extern, UserId owner, DatasetId dataset) {
+		FormConfig intern = new FormConfig();
 		intern.setFormId(extern.formId);
 		intern.setFormType(extern.formType);
 		intern.setLabel(extern.label);

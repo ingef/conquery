@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -41,7 +41,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution<?>> executions;
-	private IdentifiableStore<FormConfigInternal> formConfigs;
+	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
@@ -214,12 +214,12 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public FormConfigInternal getFormConfig(FormConfigId id) {
+	public FormConfig getFormConfig(FormConfigId id) {
 		return formConfigs.get(id);
 	}
 
 	@Override
-	public Collection<FormConfigInternal> getAllFormConfigs() {
+	public Collection<FormConfig> getAllFormConfigs() {
 		return formConfigs.getAll();
 	}
 
@@ -230,13 +230,13 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	@Override
 	@SneakyThrows
-	public void updateFormConfig(FormConfigInternal formConfig) {
+	public void updateFormConfig(FormConfig formConfig) {
 		formConfigs.update(formConfig);
 	}
 	
 	@Override
 	@SneakyThrows
-	public void addFormConfig(FormConfigInternal formConfig) {
+	public void addFormConfig(FormConfig formConfig) {
 		formConfigs.add(formConfig);
 	}
 	

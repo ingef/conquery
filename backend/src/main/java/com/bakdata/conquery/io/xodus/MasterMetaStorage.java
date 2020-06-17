@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -128,13 +128,13 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param id The id of the FormConfig to be retrieved.
 	 * @return The FormConfig with the specified id.
 	 */
-	FormConfigInternal getFormConfig(FormConfigId id);
+	FormConfig getFormConfig(FormConfigId id);
 	
 	/**
 	 * Gets all FormConfigs saved in the storage.
 	 * @return A collection of the stored FormConfigs
 	 */
-	Collection<FormConfigInternal> getAllFormConfigs();
+	Collection<FormConfig> getAllFormConfigs();
 	
 	/**
 	 * Removes a FormConfig from the storage that has the given id.
@@ -144,13 +144,13 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	
 	/**
 	 * Updates a stored FormConfig that is identified by its id.
-	 * @param FormConfigInternal The FormConfig, which holds the values, to be updated.
+	 * @param FormConfig The FormConfig, which holds the values, to be updated.
 	 */
-	void updateFormConfig(FormConfigInternal config);
+	void updateFormConfig(FormConfig config);
 	
 	/**
 	 * Adds a FormConfig that is identified by its id.
-	 * @param FormConfigInternal The FormConfig, which holds the values, to be updated.
+	 * @param FormConfig The FormConfig, which holds the values, to be updated.
 	 */
-	void addFormConfig(FormConfigInternal formConfig);
+	void addFormConfig(FormConfig formConfig);
 }

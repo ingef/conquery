@@ -25,7 +25,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
@@ -190,10 +190,10 @@ public class SerializationTests {
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
-		FormConfigInternal formConfig = new FormConfigInternal(form.getClass().getAnnotation(CPSType.class).id(), values);
+		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		
 		SerializationTestUtil
-			.forType(FormConfigInternal.class)
+			.forType(FormConfig.class)
 			.test(formConfig);
 	}
 	

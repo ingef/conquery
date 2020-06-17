@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 import java.util.UUID;
 
-import com.bakdata.conquery.models.forms.configs.FormConfigInternal;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class FormConfigId extends AId<FormConfigInternal> {
+public class FormConfigId extends AId<FormConfig> {
 	
 
 	private final DatasetId dataset;

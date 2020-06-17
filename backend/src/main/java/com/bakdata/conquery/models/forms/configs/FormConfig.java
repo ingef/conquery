@@ -49,7 +49,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
+public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
 
 	protected DatasetId dataset;
 	@NotEmpty
@@ -67,7 +67,7 @@ public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implement
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
 	
-	public FormConfigInternal(String formType, JsonNode values) {
+	public FormConfig(String formType, JsonNode values) {
 		this.formType = formType;
 		this.values = values;
 	}
@@ -103,7 +103,7 @@ public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implement
 	 * are actually resolvable. Also, it tries to map the values to a subclass of
 	 * {@link Form}, for conversion. If that is not possible the an empty optional is returned.
 	 */
-	public Optional<FormConfigInternal> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
+	public Optional<FormConfig> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
 		ObjectNode finalRep = (ObjectNode) values;
 		if(!finalRep.has("type")) {
 			finalRep.put("type", formType);			
@@ -122,7 +122,7 @@ public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implement
 			return Optional.empty();
 		}
 		
-		FormConfigInternal translatedConf = new FormConfigInternal(
+		FormConfig translatedConf = new FormConfig(
 			target,
 			formType,
 			formId,
@@ -155,7 +155,7 @@ public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implement
 	}
 
 	/**
-	 * API representation for the overview of all {@link FormConfigInternal}s which does not
+	 * API representation for the overview of all {@link FormConfig}s which does not
 	 * include the form fields an their values.
 	 */
 	@Getter
@@ -179,7 +179,7 @@ public class FormConfigInternal extends IdentifiableImpl<FormConfigId> implement
 	}
 
 	/**
-	 * API representation for a single {@link FormConfigInternal} which includes the form
+	 * API representation for a single {@link FormConfig} which includes the form
 	 * fields an their values.
 	 */
 	@Getter
