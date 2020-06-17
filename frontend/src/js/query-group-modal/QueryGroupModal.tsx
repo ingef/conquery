@@ -10,7 +10,7 @@ import Modal from "../modal/Modal";
 import {
   queryGroupModalClearNode,
   queryGroupModalSetDate,
-  queryGroupModalResetAllDates
+  queryGroupModalResetAllDates,
 } from "./actions";
 
 const HeadlinePart = styled("span")`
@@ -52,7 +52,6 @@ const QueryGroupModal = (props: PropsType) => {
     <Modal
       onClose={props.onClose}
       doneButton
-      tabIndex={3}
       headline={T.translate("queryGroupModal.explanation")}
     >
       <Elements>
@@ -62,12 +61,12 @@ const QueryGroupModal = (props: PropsType) => {
             <HeadlinePart key={i + "-headline"}>
               {concept.label || concept.id}
             </HeadlinePart>,
-            i !== elements.length - 1 ? <span key={i + "-comma"}>, </span> : ""
+            i !== elements.length - 1 ? <span key={i + "-comma"}>, </span> : "",
           ],
           [
             <HeadlinePart key={-1}>
               {T.translate("queryGroupModal.headlineStart")}
-            </HeadlinePart>
+            </HeadlinePart>,
           ]
         )}
       </Elements>
@@ -86,7 +85,7 @@ const QueryGroupModal = (props: PropsType) => {
         }
         input={{
           onChange: onSetDate,
-          value: dateRange
+          value: dateRange,
         }}
       />
     </Modal>
@@ -99,15 +98,15 @@ function findGroup(query, andIdx) {
   return query[andIdx];
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   group: findGroup(state.queryEditor.query, state.queryGroupModal.andIdx),
-  andIdx: state.queryGroupModal.andIdx
+  andIdx: state.queryGroupModal.andIdx,
 });
 
 const mapDispatchToProps = (dispatch: any) => ({
   onClose: () => dispatch(queryGroupModalClearNode()),
   onSetDate: (andIdx, date) => dispatch(queryGroupModalSetDate(andIdx, date)),
-  onResetAllDates: andIdx => dispatch(queryGroupModalResetAllDates(andIdx))
+  onResetAllDates: (andIdx) => dispatch(queryGroupModalResetAllDates(andIdx)),
 });
 
 // Used to enhance the dispatchProps with the andIdx
@@ -115,8 +114,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   ...stateProps,
   ...dispatchProps,
-  onSetDate: date => dispatchProps.onSetDate(stateProps.andIdx, date),
-  onResetAllDates: () => dispatchProps.onResetAllDates(stateProps.andIdx)
+  onSetDate: (date) => dispatchProps.onSetDate(stateProps.andIdx, date),
+  onResetAllDates: () => dispatchProps.onResetAllDates(stateProps.andIdx),
 });
 
 export default connect(
