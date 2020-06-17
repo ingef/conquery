@@ -53,13 +53,19 @@ const ConceptTreeList = ({
   activeTab,
   areTreesAvailable,
   areDatasetsPristineOrLoading,
-  onLoadTree
+  onLoadTree,
 }: PropsT) => {
   if (search.loading) return null;
 
   const anyTreeLoading = Object.keys(trees).some(
-    treeId => trees[treeId].loading
+    (treeId) => trees[treeId].loading
   );
+
+  function isRootTreeId(treeId: string) {
+    // Those that don't have a parent, must be root
+    // If they don't have a label, they're loading, or in any other broken state
+    return !trees[treeId].parent && trees[treeId].label;
+  }
 
   return (
     <Root show={activeTab === "conceptTrees"}>
@@ -70,9 +76,7 @@ const ConceptTreeList = ({
       {!!anyTreeLoading && <ProgressBar trees={trees} />}
       {!anyTreeLoading &&
         Object.keys(trees)
-          // Only take those that don't have a parent, they must be root
-          // If they don't have a label, they're loading, or in any other broken state
-          .filter(treeId => !trees[treeId].parent && trees[treeId].label)
+          .filter(isRootTreeId)
           .map((treeId, i) => (
             <ConceptTreeListItem
               key={i}
@@ -94,9 +98,9 @@ export default connect(
     areDatasetsPristineOrLoading:
       state.datasets.pristine || state.datasets.loading,
     activeTab: state.panes.left.activeTab,
-    search: state.conceptTrees.search
+    search: state.conceptTrees.search,
   }),
   (dispatch, ownProps) => ({
-    onLoadTree: id => dispatch(loadTree(ownProps.datasetId, id))
+    onLoadTree: (id) => dispatch(loadTree(ownProps.datasetId, id)),
   })
 )(ConceptTreeList);
