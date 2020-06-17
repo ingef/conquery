@@ -35,21 +35,12 @@ public class DateRangeParser extends Parser<CDateRange> {
 	@Override
 	protected void registerValue(CDateRange v) {
 		// test if value is already set to avoid expensive computation.
-		if(onlyQuarters && !v.isSingleQuarter()) {
-			onlyQuarters = false;
-		}
 
-		if (onlyClosed && v.isOpen()) {
-			onlyClosed = false;
-		}
+		onlyQuarters = onlyQuarters && !v.isSingleQuarter();
+		onlyClosed = onlyClosed && v.isOpen();
 
-		if(v.getMaxValue() > maxValue) {
-			maxValue = v.getMaxValue();
-		}
-
-		if(v.getMinValue() < minValue) {
-			minValue = v.getMinValue();
-		}
+		maxValue = Math.max(maxValue, v.getMaxValue());
+		minValue = Math.min(minValue, v.getMinValue());
 	}
 
 	public static CDateRange parseISORange(String value) throws ParsingException {
