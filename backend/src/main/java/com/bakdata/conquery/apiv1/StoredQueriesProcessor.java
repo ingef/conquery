@@ -52,7 +52,9 @@ public class StoredQueriesProcessor {
 						mq.buildStatus(
 							storage,
 							URLBuilder.fromRequest(req),
-							user));
+							user,
+							false,
+							false));
 				}
 				catch (Exception e) {
 					log.warn("Could not build status of " + mq, e);
@@ -70,7 +72,7 @@ public class StoredQueriesProcessor {
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatusWithSource(storage, null, user);
+		return query.buildStatus(storage, null, user, true, true);
 	}
 
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
