@@ -52,6 +52,11 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
+	
+	/**
+	 * This is a blackbox for us at the moment, where the front end saves the state of the 
+	 * formular, when the user saved it.
+	 */
 	@NotNull
 	private JsonNode values;
 	private UserId owner;
