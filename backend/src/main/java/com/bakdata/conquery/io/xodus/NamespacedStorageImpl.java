@@ -126,6 +126,9 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			});
 
 
+		// datasets and concepts need to be loaded in order.
+		// Dictionaries and Imports depend either and need to be loaded after that.
+
 		pool.submit(() -> {
 			dataset.loadData();
 			concepts.loadData();
@@ -137,7 +140,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				pool.submit(() -> {
 					dictionaries.loadData();
 					return dictionaries;
-				}), pool.submit(() -> {
+				}),
+				pool.submit(() -> {
 					imports.loadData();
 					return imports;
 				})

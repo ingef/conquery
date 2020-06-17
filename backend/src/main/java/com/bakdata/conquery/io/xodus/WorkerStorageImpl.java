@@ -21,12 +21,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
 
 @Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
@@ -58,23 +58,23 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 
-		return ListUtils.union(
-				stores,
-				List.of(
-						pool.submit(() -> {
-							worker.loadData();
-							return worker;
-						}),
-						pool.submit(() -> {
-							blocks.loadData();
-							return blocks;
-						}),
-						pool.submit(() -> {
-							cBlocks.loadData();
-							return cBlocks;
-						})
-				)
-		);
+		return ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
+					   .addAll(stores)
+					   .add(
+							   pool.submit(() -> {
+								   worker.loadData();
+								   return worker;
+							   }),
+							   pool.submit(() -> {
+								   blocks.loadData();
+								   return blocks;
+							   }),
+							   pool.submit(() -> {
+								   cBlocks.loadData();
+								   return cBlocks;
+							   })
+					   )
+					   .build();
 	}
 
 	@Override
