@@ -54,9 +54,11 @@ public class ExecutionManager {
 	}
 
 	public static ManagedExecution<?> execute(Namespaces namespaces, ManagedExecution<?> execution){
-		log.info("Executing Query[{}] in Namesspaces[{}]", execution.getQueryId(), execution.getRequiredNamespaces());
 		// Initialize the query / create subqueries
 		execution.initExecutable(namespaces);
+
+		log.info("Executing Query[{}] in Namesspaces[{}]", execution.getQueryId(), execution.getRequiredNamespaces());
+
 
 		execution.start();
 
