@@ -71,7 +71,6 @@ type PropsT = {
   headline?: React.ReactNode;
   doneButton?: boolean;
   closeIcon?: boolean;
-  tabIndex?: number;
   onClose: () => void;
 };
 
@@ -83,7 +82,6 @@ const Modal: React.FC<PropsT> = ({
   className,
   children,
   headline,
-  tabIndex,
   doneButton,
   closeIcon,
   onClose,
@@ -96,22 +94,14 @@ const Modal: React.FC<PropsT> = ({
           <Headline>{headline}</Headline>
           {closeIcon && (
             <WithTooltip text={T.translate("common.closeEsc")}>
-              <TransparentButton
-                small
-                tabIndex={tabIndex || 0}
-                onClick={onClose}
-              >
+              <TransparentButton small onClick={onClose}>
                 <FaIcon icon="times" />
               </TransparentButton>
             </WithTooltip>
           )}
           {doneButton && (
             <WithTooltip text={T.translate("common.closeEsc")}>
-              <TransparentButton
-                small
-                tabIndex={tabIndex || 0}
-                onClick={onClose}
-              >
+              <TransparentButton small onClick={onClose}>
                 {T.translate("common.done")}
               </TransparentButton>
             </WithTooltip>

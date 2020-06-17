@@ -5,13 +5,20 @@ import { useTheme, Theme, css } from "@emotion/react";
 
 const Button = styled("button")<{
   selected?: boolean;
+  size?: "M" | "L";
 }>`
   border: 0;
   background-color: transparent;
-  padding: 5px 4px;
   margin: 0 2px;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
+  padding: ${({ size }) => (size === "L" ? "5px 8px" : "5px 4px")};
+  font-size: ${({ theme, size }) =>
+    size === "L" ? theme.font.sm : theme.font.xs};
+
+  ${({ size }) =>
+    size === "M" &&
+    css`
+      text-transform: uppercase;
+    `};
 
   ${({ theme, selected }) =>
     selected &&
@@ -30,6 +37,7 @@ const Button = styled("button")<{
 
 interface PropsT {
   value: string;
+  size: "M" | "L";
   isSelected?: boolean;
   onClick: () => void;
 }
@@ -48,6 +56,7 @@ const valueToColor = (theme: Theme, value: string) => {
 const SmallTabNavigationButton: FC<PropsT> = ({
   value,
   children,
+  size,
   isSelected,
   onClick,
 }) => {
@@ -58,6 +67,7 @@ const SmallTabNavigationButton: FC<PropsT> = ({
     <Button
       style={{ borderColor }}
       type="button"
+      size={size}
       selected={isSelected}
       onClick={onClick}
     >
