@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ListMultimap;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class OrNode extends QPParentNode {
 
@@ -18,14 +17,14 @@ public class OrNode extends QPParentNode {
 		super(children);
 	}
 	
-	private OrNode(List<QPNode> children, ListMultimap<TableId, QPNode> childMap) {
-		super(children, childMap);
+	private OrNode(List<QPNode> children, ListMultimap<TableId, QPNode> childMap, List<QPNode> alwaysActive) {
+		super(children, childMap, alwaysActive);
 	}
 	
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		Pair<List<QPNode>, ListMultimap<TableId, QPNode>> fields = createClonedFields(ctx);
-		return new OrNode(fields.getLeft(), fields.getRight());
+		return new OrNode(fields.getLeft(), fields.getRight(), alwaysActiveChildren);
 	}
 	
 	@Override

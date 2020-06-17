@@ -49,7 +49,7 @@ public class CountQuartersAggregator implements Aggregator<Long> {
 			return;
 		}
 
-		CDateRange dateRange = bucket.getDateRange(event, column);
+		CDateRange dateRange = bucket.getAsDateRange(event, column);
 
 		if (dateRange.isOpen()) {
 			return;
