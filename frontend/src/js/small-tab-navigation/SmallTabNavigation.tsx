@@ -9,6 +9,7 @@ interface TabOption {
 
 interface PropsT {
   className?: string;
+  size?: "M" | "L";
   options: TabOption[];
   selectedTab: string;
   onSelectTab: (tab: string) => void;
@@ -16,6 +17,7 @@ interface PropsT {
 
 const SmallTabNavigation: FC<PropsT> = ({
   className,
+  size = "M",
   options,
   selectedTab,
   onSelectTab,
@@ -26,6 +28,7 @@ const SmallTabNavigation: FC<PropsT> = ({
         <SmallTabNavigationButton
           key={option.value}
           value={option.value}
+          size={size}
           isSelected={selectedTab === option.value}
           onClick={() => onSelectTab(option.value)}
         >
