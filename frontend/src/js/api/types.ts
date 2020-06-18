@@ -244,6 +244,8 @@ export type ColumnDescriptionKind =
   | "ID"
   | "STRING"
   | "INTEGER"
+  | "MONEY"
+  | "NUMERIC"
   | "DATE"
   | "DATE_RANGE";
 

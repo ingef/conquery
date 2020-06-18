@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { useSelector, useDispatch } from "react-redux";
 import Hotkeys from "react-hot-keys";
+import T from "i18n-react";
 
 import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
 
@@ -13,6 +14,7 @@ import { ColumnDescription, ColumnDescriptionKind } from "js/api/types";
 import DateCell from "./DateCell";
 import { Cell } from "./Cell";
 import PreviewInfo from "./PreviewInfo";
+import { StatsHeadline } from "./StatsHeadline";
 
 const Root = styled("div")`
   height: 100%;
@@ -68,13 +70,13 @@ function detectColumnType(
   cell: string,
   resultColumns: ColumnDescription[]
 ): ColumnDescriptionType {
+  if (cell === "dates") return "DATE_RANGE";
+
   const maybeColumn = resultColumns.find((column) => column.label === cell);
 
   if (maybeColumn) {
     return maybeColumn.type;
   }
-
-  if (cell === "dates") return "DATE_RANGE";
 
   return "OTHER";
 }
@@ -178,10 +180,12 @@ const Preview: React.FC = () => {
         rawPreviewData={preview.csv}
         columns={columns}
         onClose={onClose}
-        rowsLimit={RENDER_ROWS_LIMIT}
         minDate={min}
         maxDate={max}
       />
+      <StatsHeadline>
+        {T.translate("preview.previewHeadline", { count: RENDER_ROWS_LIMIT })}
+      </StatsHeadline>
       <CSVFrame>
         <ScrollWrap>
           <Line isHeader>

@@ -2,19 +2,20 @@ import React, { FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import TransparentButton from "../button/TransparentButton";
+import IconButton from "../button/IconButton";
 import {
   formatStdDate,
   formatDateDistance,
 } from "../common/helpers/dateHelper";
 import type { ColumnDescriptionType } from "./Preview";
 import ColumnStats from "./ColumnStats";
+import { StatsHeadline } from "./StatsHeadline";
 
 const TopRow = styled("div")`
   margin: 12px 0 20px;
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 `;
 
@@ -39,11 +40,6 @@ const Headline = styled("h2")`
   margin: 0;
 `;
 
-const Explanation = styled("p")`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 0;
-`;
-
 const HeadInfo = styled("div")`
   margin: 0 20px;
 `;
@@ -52,13 +48,25 @@ const Tr = styled("tr")`
   line-height: 1;
 `;
 
+const StatsContainer = styled("div")`
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+`;
+
+const COLUMN_TYPES_WITH_SUPPORTED_STATS = new Set<ColumnDescriptionType>([
+  "MONEY",
+  "NUMERIC",
+  "INTEGER",
+]);
+
 interface PropsT {
   columns: ColumnDescriptionType[];
   rawPreviewData: string[][];
   onClose: () => void;
   minDate: Date | null;
   maxDate: Date | null;
-  rowsLimit: number;
 }
 
 const PreviewInfo: FC<PropsT> = ({
@@ -67,74 +75,81 @@ const PreviewInfo: FC<PropsT> = ({
   onClose,
   minDate,
   maxDate,
-  rowsLimit,
 }) => {
   if (rawPreviewData.length < 2) return null;
 
+  const showStats = columns.some((column) =>
+    COLUMN_TYPES_WITH_SUPPORTED_STATS.has(column)
+  );
+
   return (
-    <TopRow>
-      <div>
-        <StdRow>
-          <TransparentButton icon="times" onClick={onClose}>
-            {T.translate("common.back")}
-          </TransparentButton>
-          <HeadInfo>
-            <Headline>{T.translate("preview.headline")}</Headline>
-            <Explanation>
-              {T.translate("preview.explanation", { count: rowsLimit })}
-            </Explanation>
-          </HeadInfo>
-        </StdRow>
-        {rawPreviewData[0].map((col, j) => (
-          <ColumnStats
-            key={j}
-            colName={col}
-            columnType={columns[j]}
-            rawColumnData={rawPreviewData.map((row) => row[j])}
-          />
-        ))}
-      </div>
-      <table>
-        <tbody>
-          <Tr>
-            <td>
-              <Stat>{T.translate("preview.total")}:</Stat>
-            </td>
-            <td>
-              <BStat>{rawPreviewData.length - 1}</BStat>
-            </td>
-          </Tr>
-          <Tr>
-            <td>
-              <Stat>{T.translate("preview.min")}:</Stat>
-            </td>
-            <td>
-              <BStat>{minDate ? formatStdDate(minDate) : "-"}</BStat>
-            </td>
-          </Tr>
-          <Tr>
-            <td>
-              <Stat>{T.translate("preview.max")}:</Stat>
-            </td>
-            <td>
-              <BStat>{maxDate ? formatStdDate(maxDate) : "-"}</BStat>
-            </td>
-          </Tr>
-          <Tr>
-            <td>
-              <Stat>{T.translate("preview.span")}:</Stat>
-            </td>
-            <td>
-              <BStat>
-                {!!minDate && !!maxDate
-                  ? formatDateDistance(minDate, maxDate)
-                  : "-"}
-              </BStat>
-            </td>
-          </Tr>
-        </tbody>
-      </table>
-    </TopRow>
+    <div>
+      <TopRow>
+        <div>
+          <StdRow>
+            <IconButton frame icon="chevron-left" onClick={onClose}>
+              {T.translate("common.back")}
+            </IconButton>
+            <HeadInfo>
+              <Headline>{T.translate("preview.headline")}</Headline>
+            </HeadInfo>
+          </StdRow>
+        </div>
+        <table>
+          <tbody>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.total")}:</Stat>
+              </td>
+              <td>
+                <BStat>{rawPreviewData.length - 1}</BStat>
+              </td>
+              <td>
+                <Stat>{T.translate("preview.min")}:</Stat>
+              </td>
+              <td>
+                <BStat>{minDate ? formatStdDate(minDate) : "-"}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.span")}:</Stat>
+              </td>
+              <td>
+                <BStat>
+                  {!!minDate && !!maxDate
+                    ? formatDateDistance(minDate, maxDate)
+                    : "-"}
+                </BStat>
+              </td>
+              <td>
+                <Stat>{T.translate("preview.max")}:</Stat>
+              </td>
+              <td>
+                <BStat>{maxDate ? formatStdDate(maxDate) : "-"}</BStat>
+              </td>
+            </Tr>
+          </tbody>
+        </table>
+      </TopRow>
+      {showStats && (
+        <div>
+          <StatsHeadline>
+            {T.translate("preview.statisticsHeadline")}
+          </StatsHeadline>
+          <StatsContainer>
+            {rawPreviewData[0].map((col, j) => (
+              <ColumnStats
+                key={j}
+                colName={col}
+                columnType={columns[j]}
+                rawColumnData={rawPreviewData.map((row) => row[j])}
+              />
+            ))}
+          </StatsContainer>
+        </div>
+      )}
+    </div>
   );
 };
 

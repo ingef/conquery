@@ -325,7 +325,8 @@
   "preview": {
     "preview": "Preview",
     "headline": "Results preview",
-    "explanation": "Visualizes the first {count} lines from the results",
+    "previewHeadline": "The first {count} lines from the results",
+    "statisticsHeadline": "Statistics by column based on the full results",
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
