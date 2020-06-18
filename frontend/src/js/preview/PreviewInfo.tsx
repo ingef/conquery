@@ -8,7 +8,6 @@ import {
   formatDateDistance,
 } from "../common/helpers/dateHelper";
 import type { ColumnDescriptionType } from "./Preview";
-import { faColumns } from "@fortawesome/free-solid-svg-icons";
 import ColumnStats from "./ColumnStats";
 
 const TopRow = styled("div")`
@@ -86,28 +85,14 @@ const PreviewInfo: FC<PropsT> = ({
             </Explanation>
           </HeadInfo>
         </StdRow>
-        <table>
-          <tbody>
-            {rawPreviewData[0].map((col, j) => (
-              <>
-                <Tr>
-                  <td>
-                    <BStat>{col}</BStat>
-                  </td>
-                  <td>{columns[j]}</td>
-                </Tr>
-                <Tr>
-                  <td colSpan={2}>
-                    <ColumnStats
-                      columnType={columns[j]}
-                      rawColumnData={rawPreviewData.map((row) => row[j])}
-                    />
-                  </td>
-                </Tr>
-              </>
-            ))}
-          </tbody>
-        </table>
+        {rawPreviewData[0].map((col, j) => (
+          <ColumnStats
+            key={j}
+            colName={col}
+            columnType={columns[j]}
+            rawColumnData={rawPreviewData.map((row) => row[j])}
+          />
+        ))}
       </div>
       <table>
         <tbody>

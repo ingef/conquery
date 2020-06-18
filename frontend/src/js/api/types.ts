@@ -240,7 +240,13 @@ export interface PostQueriesResponseT {
   id: QueryIdT;
 }
 
-export type ColumnDescriptionKind = "ID" | "STRING" | "INTEGER" | "DATE";
+export type ColumnDescriptionKind =
+  | "ID"
+  | "STRING"
+  | "INTEGER"
+  | "DATE"
+  | "DATE_RANGE";
+
 export interface ColumnDescription {
   label: string;
   selectId: string | null;

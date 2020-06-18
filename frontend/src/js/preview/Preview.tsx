@@ -74,7 +74,7 @@ function detectColumnType(
     return maybeColumn.type;
   }
 
-  if (cell === "dates") return "DATE";
+  if (cell === "dates") return "DATE_RANGE";
 
   return "OTHER";
 }
@@ -107,7 +107,7 @@ function getMinMaxDates(
   let min = null;
   let max = null;
 
-  const dateColumn = columns.find((col) => col === "DATE");
+  const dateColumn = columns.find((col) => col === "DATE_RANGE");
   const dateColumnIdx = dateColumn ? columns.indexOf(dateColumn) : -1;
 
   if (dateColumnIdx === -1) return { min: null, max: null, diff: 0 };
@@ -156,7 +156,7 @@ const Preview: React.FC = () => {
   const Row = ({ index }: { index: number }) => (
     <Line key={index}>
       {previewData[index + 1].map((cell, j) => {
-        if (columns[j] === "DATE" && min && max) {
+        if (columns[j] === "DATE_RANGE" && min && max) {
           return (
             <DateCell cell={cell} key={j} minDate={min} dateDiffInDays={diff} />
           );
@@ -190,7 +190,7 @@ const Preview: React.FC = () => {
                 isHeader
                 key={k}
                 title={cell}
-                isDates={columns[k] === "DATE"}
+                isDates={columns[k] === "DATE_RANGE"}
               >
                 {cell}
               </Cell>
