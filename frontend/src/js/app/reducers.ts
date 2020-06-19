@@ -22,7 +22,7 @@ import previousQueriesFilter, {
   PreviousQueriesFilterStateT,
 } from "../previous-queries/filter/reducer";
 import uploadQueryResults from "../previous-queries/upload/reducer";
-import snackMessage from "../snack-message/reducer";
+import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
 import preview, { PreviewStateT } from "../preview/reducer";
 import queryUploadConceptListModal from "../query-upload-concept-list-modal/reducer";
 import uploadConceptListModal, {
@@ -59,6 +59,7 @@ export type StateT = {
   formConfigsSearch: FormConfigsSearchStateT;
   formConfigsFilter: FormConfigsFilterStateT;
   preview: PreviewStateT;
+  snackMessage: SnackMessageStateT;
 };
 
 const buildAppReducer = (tabs: TabT[]) => {

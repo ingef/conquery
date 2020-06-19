@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import clickOutside from "react-onclickoutside";
 
 import PrimaryButton from "../button/PrimaryButton";
+import { useClickOutside } from "../common/helpers/useClickOutside";
 
 interface PropsT {
   className?: string;
   text: string;
   loading: boolean;
   selectTextOnMount?: boolean;
+  saveOnClickoutside?: boolean;
   onSubmit: (text: string) => void;
   onCancel: () => void;
 }
@@ -17,8 +18,6 @@ interface PropsT {
 const Input = styled("input")`
   height: 30px;
   font-size: ${({ theme }) => theme.font.sm};
-  margin-right: 3px;
-  margin-bottom: 3px;
 `;
 
 const Form = styled("form")`
@@ -36,13 +35,13 @@ const EditableTextForm: React.FC<PropsT> = ({
   text,
   loading,
   selectTextOnMount,
+  saveOnClickoutside,
   onSubmit,
-  onCancel
+  onCancel,
 }) => {
-  EditableTextForm.handleClickOutside = onCancel;
-
   const [value, setValue] = useState<string>(text);
   const [textSelected, setTextSelected] = useState<boolean>(false);
+  const ref = useRef(null);
 
   function onSubmitForm(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,12 +49,14 @@ const EditableTextForm: React.FC<PropsT> = ({
     onSubmit(value);
   }
 
+  useClickOutside(ref, saveOnClickoutside ? () => onSubmit(value) : onCancel);
+
   return (
-    <Form className={className} onSubmit={onSubmitForm}>
+    <Form ref={ref} className={className} onSubmit={onSubmitForm}>
       <Input
         type="text"
         value={value}
-        onChange={e => setValue(e.target.value)}
+        onChange={(e) => setValue(e.target.value)}
         ref={(instance: HTMLInputElement) => {
           if (instance) {
             instance.focus();
@@ -66,17 +67,13 @@ const EditableTextForm: React.FC<PropsT> = ({
           }
         }}
       />
-      <SxPrimaryButton type="submit" small disabled={loading}>
-        {T.translate("common.save")}
-      </SxPrimaryButton>
+      {!saveOnClickoutside && (
+        <SxPrimaryButton type="submit" small disabled={loading}>
+          {T.translate("common.save")}
+        </SxPrimaryButton>
+      )}
     </Form>
   );
 };
 
-// handleClickOutside() {
-//   this.props.onCancel();
-// }
-
-export default clickOutside(EditableTextForm, {
-  handleClickOutside: () => EditableTextForm.handleClickOutside
-});
+export default EditableTextForm;
