@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import type { StateType } from "./reducer";
+import type { QueryRunnerStateT } from "./reducer";
 
-const Status = styled("p")`
+const Status = styled("p")<{ success?: boolean; error?: boolean }>`
   font-weight: 400;
   margin: 0 10px;
   font-size: ${({ theme }) => theme.font.sm};
@@ -13,10 +13,10 @@ const Status = styled("p")`
 
 type PropsType = {
   className?: string;
-  queryRunner: StateType;
+  queryRunner: QueryRunnerStateT;
 };
 
-const getMessage = (queryRunner: StateType) => {
+const getMessage = (queryRunner: QueryRunnerStateT) => {
   if (queryRunner.startQuery.error)
     return { type: "error", value: T.translate("queryRunner.startError") };
   else if (queryRunner.stopQuery.error)
@@ -39,7 +39,11 @@ const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
   const noQueryResultOrError =
     !queryResult || (!!queryResult && queryResult.error);
 
-  return !!message && noQueryResultOrError ? (
+  if (!message || !noQueryResultOrError) {
+    return null;
+  }
+
+  return (
     <Status
       className={className}
       success={message.type === "success"}
@@ -47,7 +51,7 @@ const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
     >
       {message.value}
     </Status>
-  ) : null;
+  );
 };
 
 export default QueryRunnerInfo;
