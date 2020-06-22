@@ -1,6 +1,9 @@
 import { combineReducers } from "redux";
 
 import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
+import conceptTreesOpen, {
+  ConceptTreesOpenStateT,
+} from "../concept-trees-open/reducer";
 
 import datasets, { DatasetStateT } from "../dataset/reducer";
 import tooltip, { TooltipStateT } from "../tooltip/reducer";
@@ -45,6 +48,7 @@ import formConfigsFilter, {
 // TODO: Introduce more StateTypes gradually
 export type StateT = {
   conceptTrees: ConceptTreesStateT;
+  conceptTreesOpen: ConceptTreesOpenStateT;
   datasets: DatasetStateT;
   tooltip: TooltipStateT;
   panes: PanesStateT;
@@ -66,6 +70,7 @@ const buildAppReducer = (tabs: TabT[]) => {
   return combineReducers({
     startup,
     conceptTrees,
+    conceptTreesOpen,
     uploadConceptListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
     queryGroupModal,

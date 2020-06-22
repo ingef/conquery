@@ -12,7 +12,7 @@ import type { SearchT } from "./reducer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { isNodeInSearchResult } from "./selectors";
-import useOpenable from "./useOpenable";
+import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -51,14 +51,10 @@ const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
   tree,
 });
 
-const ConceptTreeNode: FC<PropsT> = ({
-  data,
-  id,
-  depth,
-  search,
-  openInitially,
-}) => {
-  const { open, onToggleOpen } = useOpenable({ openInitially });
+const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
+  const { open, onToggleOpen } = useOpenableConcept({
+    conceptId: id,
+  });
 
   function toggleOpen() {
     if (!data.children) return;

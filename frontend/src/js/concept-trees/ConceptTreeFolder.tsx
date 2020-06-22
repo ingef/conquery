@@ -6,9 +6,9 @@ import type { ConceptT, ConceptIdT } from "../api/types";
 import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT, TreesT } from "./reducer";
 
-import useOpenable from "./useOpenable";
 import ConceptTree from "./ConceptTree";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
+import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -44,7 +44,10 @@ const ConceptTreeFolder: FC<PropsT> = ({
   onLoadTree,
   openInitially,
 }) => {
-  const { open, onToggleOpen } = useOpenable({ openInitially });
+  const { open, onToggleOpen } = useOpenableConcept({
+    conceptId: treeId,
+    openInitially,
+  });
 
   const matchingEntries =
     !tree.children || !tree.matchingEntries

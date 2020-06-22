@@ -350,5 +350,12 @@
     "retagError": "Could not save tags",
     "shareError": "Could not share form configuration",
     "deleteError": "Could not delete form configuration"
+  },
+  "deleteFormConfigModal": {
+    "areYouSure": "Are you sure you want to delete this form configuration?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Back to default view",
+    "closeAll": "Close all concepts"
   }
 }
