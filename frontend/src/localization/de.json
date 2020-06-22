@@ -353,5 +353,9 @@
   },
   "deleteFormConfigModal": {
     "areYouSure": "Diese Konfiguration wirklich löschen?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Zurück zu Standardansicht",
+    "closeAll": "Alle Konzepte schließen"
   }
 }
