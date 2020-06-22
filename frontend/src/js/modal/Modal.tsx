@@ -1,12 +1,12 @@
-import * as React from "react";
+import React, { useRef, FC, ReactNode } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import onClickOutside from "react-onclickoutside";
 import Hotkeys from "react-hot-keys";
 
 import FaIcon from "../icon/FaIcon";
 import TransparentButton from "../button/TransparentButton";
 import WithTooltip from "../tooltip/WithTooltip";
+import { useClickOutside } from "../common/helpers/useClickOutside";
 
 const Root = styled("div")`
   position: fixed;
@@ -47,28 +47,17 @@ const Headline = styled("h3")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-// https://github.com/Pomax/react-onclickoutside
-interface ContentPropsT {
-  onClose: () => void;
-}
+const ModalContent: FC<{ onClose: () => void }> = ({ children, onClose }) => {
+  const ref = useRef(null);
 
-const ModalContentComponent: React.FC<ContentPropsT> = ({
-  children,
-  onClose,
-}) => {
-  ModalContentComponent.handleClickOutside = onClose;
+  useClickOutside(ref, onClose);
 
-  return <Content>{children}</Content>;
+  return <Content ref={ref}>{children}</Content>;
 };
-
-const ModalContent = onClickOutside(ModalContentComponent, {
-  handleClickOutside: () => ModalContentComponent.handleClickOutside,
-});
-// -----------------------------------------------
 
 type PropsT = {
   className?: string;
-  headline?: React.ReactNode;
+  headline?: ReactNode;
   doneButton?: boolean;
   closeIcon?: boolean;
   onClose: () => void;
@@ -78,7 +67,7 @@ type PropsT = {
 // - a button
 // - click outside
 // - press esc
-const Modal: React.FC<PropsT> = ({
+const Modal: FC<PropsT> = ({
   className,
   children,
   headline,

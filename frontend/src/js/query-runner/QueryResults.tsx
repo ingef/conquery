@@ -1,5 +1,5 @@
-import React from "react";
-import { connect } from "react-redux";
+import React, { FC } from "react";
+import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
@@ -8,6 +8,8 @@ import PreviewButton from "../button/PreviewButton";
 import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { canDownloadResult } from "../user/selectors";
+import type { ColumnDescription } from "js/api/types";
+import type { StateT } from "app-types";
 
 const Root = styled("div")`
   display: flex;
@@ -37,40 +39,43 @@ const Bold = styled("span")`
   font-weight: 700;
 `;
 
-type PropsType = {
+interface PropsT {
   datasetId: string;
   resultCount: number;
   resultUrl: string;
-  userCanDownloadResult: Boolean;
-};
+  resultColumns: ColumnDescription[];
+}
 
-const QueryResults = (props: PropsType) => {
-  const isDownloadAllowed = !!props.resultUrl && props.userCanDownloadResult;
-  const ending = isDownloadAllowed
-    ? props.resultUrl.split(".").reverse()[0]
-    : null;
+const QueryResults: FC<PropsT> = ({
+  datasetId,
+  resultUrl,
+  resultCount,
+  resultColumns,
+}) => {
+  const userCanDownloadResult = useSelector<StateT, boolean>((state) =>
+    canDownloadResult(state, datasetId)
+  );
+
+  const isDownloadAllowed = !!resultUrl && userCanDownloadResult;
+  const ending = isDownloadAllowed ? resultUrl.split(".").reverse()[0] : null;
 
   return (
     <Root>
-      {isEmpty(props.resultCount) ? (
+      {isEmpty(resultCount) ? (
         <Text>
           <FaIcon icon="check" left />
           {T.translate("queryRunner.endSuccess")}
         </Text>
       ) : (
         <LgText>
-          <Bold>{props.resultCount}</Bold>{" "}
-          {T.translate("queryRunner.resultCount")}
+          <Bold>{resultCount}</Bold> {T.translate("queryRunner.resultCount")}
         </LgText>
       )}
-      {ending === "csv" && <SxPreviewButton url={props.resultUrl} />}
+      {ending === "csv" && (
+        <SxPreviewButton columns={resultColumns} url={resultUrl} />
+      )}
       {isDownloadAllowed && ending && (
-        <StyledDownloadButton
-          frame
-          primary
-          ending={ending}
-          url={props.resultUrl}
-        >
+        <StyledDownloadButton frame primary ending={ending} url={resultUrl}>
           {ending.toUpperCase()}
         </StyledDownloadButton>
       )}
@@ -78,6 +83,4 @@ const QueryResults = (props: PropsType) => {
   );
 };
 
-export default connect((state, ownProps) => ({
-  userCanDownloadResult: canDownloadResult(state, ownProps.datasetId)
-}))(QueryResults);
+export default QueryResults;
