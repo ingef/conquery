@@ -135,7 +135,7 @@
 								<configuration>
 									<name>newVersion</name>
 									<value>${newVersion}</value>
-									<regex>^v\d\.\d\.\d-[\w\d]+$</regex>
+									<regex>^v(\d\.\d\.\d-[\w\d]+)$</regex>
 									<replacement>$1</replacement>
 									<failIfNoMatch>false</failIfNoMatch>
 								</configuration>
