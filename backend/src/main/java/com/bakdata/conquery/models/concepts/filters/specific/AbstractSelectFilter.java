@@ -24,10 +24,12 @@ import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
+@Slf4j
 public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
 
 	/**
@@ -58,20 +60,23 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
 		f.setType(filterType);
-		// TODO: 20.11.2019 Upgrade to BigMultiSelect if more than maximumSize values are found.
-		if (values != null) {
-			if (maximumSize != -1 && values.size() > maximumSize) {
-				throw new ConceptConfigurationException(getConnector(),
-					String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
-			}
-			if(this.filterType != FEFilterType.BIG_MULTI_SELECT) {
-				f.setOptions(
-					values
-						.stream()
-						.map(v->new FEValue(getLabelFor(v), v))
-						.collect(Collectors.toList())
-				);
-			}
+
+		if (values == null) {
+			return;
+		}
+
+		if (maximumSize != -1 && values.size() > maximumSize) {
+			log.warn("Too many possible values ({} of {} in Filter[{}]). Upgrading to BigMultiSelect", values.size(), maximumSize, getId());
+			f.setType(FEFilterType.BIG_MULTI_SELECT);
+		}
+
+		if(this.filterType != FEFilterType.BIG_MULTI_SELECT) {
+			f.setOptions(
+				values
+					.stream()
+					.map(v->new FEValue(getLabelFor(v), v))
+					.collect(Collectors.toList())
+			);
 		}
 	}
 
