@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -28,7 +29,7 @@ public class AbsoluteMode extends Mode {
 	private Range<LocalDate> dateRange;
 
 	@NotEmpty
-	private List<CQElement> features;
+	private List<CQElement> features = ImmutableList.of();
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
