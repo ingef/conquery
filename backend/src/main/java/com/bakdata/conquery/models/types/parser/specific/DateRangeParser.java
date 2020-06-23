@@ -26,34 +26,29 @@ public class DateRangeParser extends Parser<CDateRange> {
 	private boolean anyOpen = false;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
-	
+
 	@Override
 	protected CDateRange parseValue(@Nonnull String value) throws ParsingException {
 		return DateRangeParser.parseISORange(value);
 	}
-	
+
 	@Override
 	protected void registerValue(CDateRange v) {
-		// test if value is already set to avoid expensive computation.
-
 		onlyQuarters = onlyQuarters && v.isSingleQuarter();
 		anyOpen = anyOpen || v.isOpen();
 
-		if(!v.isAtLeast()) {
+		if (!anyOpen) {
 			maxValue = Math.max(maxValue, v.getMaxValue());
-		}
-
-		if(!v.isAtMost()) {
 			minValue = Math.min(minValue, v.getMinValue());
 		}
 	}
 
 	public static CDateRange parseISORange(String value) throws ParsingException {
-		if(value==null) {
+		if (value == null) {
 			return null;
 		}
 		String[] parts = StringUtils.split(value, '/');
-		if(parts.length!=2) {
+		if (parts.length != 2) {
 			throw ParsingException.of(value, "daterange");
 		}
 
@@ -62,28 +57,28 @@ public class DateRangeParser extends Parser<CDateRange> {
 				DateFormats.parseToLocalDate(parts[1])
 		);
 	}
-	
+
 	@Override
 	protected Decision<CDateRange, ?, ? extends CType<CDateRange, ?>> decideType() {
 		// We cannot yet do meaningful compression for open dateranges.
 		// TODO: 27.04.2020 consider packed compression with extra value as null value.
-		if(anyOpen) {
+		if (anyOpen) {
 			return new Decision<>(
 					new NoopTransformer<>(),
 					new DateRangeTypeDateRange()
 			);
 		}
 
-		if(onlyQuarters) {
+		if (onlyQuarters) {
 			DateRangeTypeQuarter type = new DateRangeTypeQuarter();
 			return new Decision<>(
-				new Transformer<CDateRange, Integer>() {
-					@Override
-					public Integer transform(CDateRange value) {
-						return value.getMinValue();
-					}
-				},
-				type
+					new Transformer<CDateRange, Integer>() {
+						@Override
+						public Integer transform(CDateRange value) {
+							return value.getMinValue();
+						}
+					},
+					type
 			);
 		}
 		// min or max can be Integer.MIN/MAX_VALUE when this happens, the left expression overflows causing it to be true when it is not.
@@ -105,10 +100,10 @@ public class DateRangeParser extends Parser<CDateRange> {
 					type
 			);
 		}
-		
+
 		return new Decision<>(
-			new NoopTransformer<>(),
-			new DateRangeTypeDateRange()
+				new NoopTransformer<>(),
+				new DateRangeTypeDateRange()
 		);
 	}
 }
