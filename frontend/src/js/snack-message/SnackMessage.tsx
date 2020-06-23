@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useRef, memo, FC } from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
-import onClickOutside from "react-onclickoutside";
+import { useSelector, useDispatch } from "react-redux";
 import T from "i18n-react";
 
 import FaIcon from "../icon/FaIcon";
 
 import { setMessage } from "./actions";
+import { StateT } from "app-types";
+import { useClickOutside } from "js/common/helpers/useClickOutside";
 
 const Root = styled("div")`
   position: fixed;
@@ -39,33 +40,34 @@ const ClearZone = styled("div")`
   }
 `;
 
-class SnackMessage extends React.PureComponent {
-  handleClickOutside(e) {
-    if (this.props.messageKey) this.props.resetMessage();
-  }
+const SnackMessage: FC = memo(function SnackMessageComponent() {
+  const ref = useRef(null);
+  const messageKey = useSelector<StateT, string | null>(
+    (state) => state.snackMessage.messageKey
+  );
+  const dispatch = useDispatch();
+  const resetMessage = () => dispatch(setMessage(null));
 
-  render() {
-    // Must be an empty div here for onClickOutside to connect properly
-    return (
-      <div>
-        {this.props.messageKey && (
-          <Root>
-            <Relative>
-              {T.translate(this.props.messageKey)}
-              <ClearZone onClick={this.props.resetMessage}>
-                <FaIcon white large icon="times" />
-              </ClearZone>
-            </Relative>
-          </Root>
-        )}
-      </div>
-    );
-  }
-}
+  useClickOutside(ref, () => {
+    if (messageKey) {
+      resetMessage();
+    }
+  });
 
-export default connect(
-  state => ({
-    messageKey: state.snackMessage.messageKey
-  }),
-  dispatch => ({ resetMessage: msg => dispatch(setMessage(null)) })
-)(onClickOutside(SnackMessage));
+  return (
+    <div ref={ref}>
+      {messageKey && (
+        <Root>
+          <Relative>
+            {T.translate(messageKey)}
+            <ClearZone onClick={resetMessage}>
+              <FaIcon white large icon="times" />
+            </ClearZone>
+          </Relative>
+        </Root>
+      )}
+    </div>
+  );
+});
+
+export default SnackMessage;

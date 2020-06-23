@@ -14,5 +14,4 @@ export const SEARCH_TREES_SUCCESS = "concept-trees/SEARCH_TREES_SUCCESS";
 export const SEARCH_TREES_ERROR = "concept-trees/SEARCH_TREES_ERROR";
 export const CLEAR_SEARCH_QUERY = "concept-trees/CLEAR_SEARCH_QUERY";
 
-export const TOGGLE_ALL_OPEN = "concept-trees/TOGGLE_ALL_OPEN";
 export const TOGGLE_SHOW_MISMATCHES = "concept-trees/TOGGLE_SHOW_MISMATCHES";
