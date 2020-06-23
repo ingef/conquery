@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.xodus;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.BigStore;
 import com.bakdata.conquery.io.xodus.stores.CachedStore;
@@ -24,6 +23,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;

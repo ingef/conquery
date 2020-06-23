@@ -94,11 +94,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	
 	@Override
 	public void addResult(@NonNull MasterMetaStorage storage, ShardResult result) {
+		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
+
 		for (EntityResult er : result.getResults()) {
 			if (er.isFailed() && state == ExecutionState.RUNNING) {
 				fail(storage);
 				FailedEntityResult failed = er.asFailed();
-				log.error("Failed query " + queryId + " at least for the entity " + failed.getEntityId() + " with:\n{}", failed.getThrowable());
+				log.error("Failed Query[{}] at least for the Entity[{}]", queryId, failed.getEntityId(), failed.getThrowable());
 			}
 		}
 		synchronized (getExecution()) {

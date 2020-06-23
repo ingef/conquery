@@ -53,7 +53,7 @@ const DirtyFlag = styled("div")`
   height: 7px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   border-radius: 50%;
-  margin: 4px 4px 0;
+  margin: 0 4px;
   flex-shrink: 0;
 `;
 
@@ -63,7 +63,7 @@ const SxDropzone = styled(Dropzone)`
 
 const LoadingText = styled("p")`
   font-weight: 400;
-  margin: 5px 0 0px 8px;
+  margin: 3px 0 0px 8px;
 `;
 
 const SxFaIcon = styled(FaIcon)`
@@ -191,6 +191,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
                       editing={editing}
                       onToggleEdit={() => setEditing(!editing)}
                       text={configName || ""}
+                      saveOnClickoutside
                       onSubmit={(txt: string) => {
                         if (txt) {
                           setConfigName(txt);

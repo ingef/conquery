@@ -325,7 +325,8 @@
   "preview": {
     "preview": "Preview",
     "headline": "Results preview",
-    "explanation": "Visualizes the first {count} lines from the results",
+    "previewHeadline": "The first {count} lines from the results",
+    "statisticsHeadline": "Statistics by column based on the full results",
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
@@ -349,5 +350,12 @@
     "retagError": "Could not save tags",
     "shareError": "Could not share form configuration",
     "deleteError": "Could not delete form configuration"
+  },
+  "deleteFormConfigModal": {
+    "areYouSure": "Are you sure you want to delete this form configuration?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Back to default view",
+    "closeAll": "Close all concepts"
   }
 }

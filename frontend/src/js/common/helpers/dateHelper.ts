@@ -7,7 +7,7 @@ import {
   endOfMonth,
   isValid,
   differenceInCalendarDays,
-  formatDistance
+  formatDistance,
 } from "date-fns";
 
 import { getDateLocale } from "../../localization";
@@ -63,7 +63,7 @@ const DATE_PATTERN = {
   raw: /(^\d{8})$/,
   year: /^[yj][.]*(\d{4})$/,
   quarter_year: /^[q]([1-4]).(\d{4})$/,
-  month_year: /^[m](1[0-2]|[1-9]).(\d{4})$/
+  month_year: /^[m](1[0-2]|[1-9]).(\d{4})$/,
 };
 
 function handleRaw(what, value, displayDateFormat) {
@@ -134,7 +134,7 @@ export const getDateStringFromShortcut = (
 
   return {
     min: date.min ? format(date.min, DATE_FORMAT) : null,
-    max: date.max ? format(date.max, DATE_FORMAT) : null
+    max: date.max ? format(date.max, DATE_FORMAT) : null,
   };
 };
 
@@ -163,5 +163,5 @@ export const testRegexes = (
 };
 
 export function getDiffInDays(d1: Date, d2: Date) {
-  return differenceInCalendarDays(d1, d2);
+  return Math.abs(differenceInCalendarDays(d1, d2)) + 1;
 }

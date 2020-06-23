@@ -1,30 +1,29 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
 
 import { getConceptById } from "./globalTreeStoreHelper";
-import type { SearchT } from "./reducer";
+import type { SearchT, TreesT } from "./reducer";
 
-import Openable from "./Openable";
 import ConceptTree from "./ConceptTree";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
+import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-type PropsType = {
+interface PropsT {
   depth: number;
-  trees: Object;
+  trees: TreesT;
   tree: ConceptT;
   treeId: ConceptIdT;
   active: boolean;
-  open?: boolean;
-  onToggleOpen?: Function;
+  openInitially?: boolean;
   search: SearchT;
   onLoadTree: (id: string) => void;
-};
+}
 
 const sumMatchingEntries = (children, initSum) => {
   return children.reduce((sum, treeId) => {
@@ -35,8 +34,21 @@ const sumMatchingEntries = (children, initSum) => {
   }, initSum);
 };
 
-const ConceptTreeFolder = (props: PropsType) => {
-  const { tree, search } = props;
+const ConceptTreeFolder: FC<PropsT> = ({
+  trees,
+  tree,
+  treeId,
+  search,
+  depth,
+  active,
+  onLoadTree,
+  openInitially,
+}) => {
+  const { open, onToggleOpen } = useOpenableConcept({
+    conceptId: treeId,
+    openInitially,
+  });
+
   const matchingEntries =
     !tree.children || !tree.matchingEntries
       ? null
@@ -46,36 +58,36 @@ const ConceptTreeFolder = (props: PropsType) => {
     <Root>
       <ConceptTreeNodeTextContainer
         node={{
-          id: props.treeId,
-          label: props.tree.label,
-          description: props.tree.description,
+          id: treeId,
+          label: tree.label,
+          description: tree.description,
           matchingEntries: matchingEntries,
-          dateRange: props.tree.dateRange,
-          additionalInfos: props.tree.additionalInfos,
-          children: props.tree.children
+          dateRange: tree.dateRange,
+          additionalInfos: tree.additionalInfos,
+          children: tree.children,
         }}
         createQueryElement={() => {
           // We don't have to implement this since ConceptTreeFolders should never be
           // dragged into the editor, hence they're 'active: false' and thus not draggable
         }}
         isStructFolder
-        open={props.open || false}
-        depth={props.depth}
-        active={props.active}
-        onTextClick={props.onToggleOpen}
+        open={open || false}
+        depth={depth}
+        active={active}
+        onTextClick={onToggleOpen}
         search={search}
       />
-      {props.open &&
-        props.tree.children &&
-        props.tree.children.map((childId, i) => {
-          const tree = props.trees[childId];
+      {open &&
+        tree.children &&
+        tree.children.map((childId, i) => {
+          const tree = trees[childId];
 
           const treeProps = {
             key: i,
             treeId: childId,
-            depth: props.depth + 1,
+            depth: depth + 1,
             search,
-            onLoadTree: props.onLoadTree
+            onLoadTree,
           };
 
           if (tree.detailsAvailable) {
@@ -95,24 +107,16 @@ const ConceptTreeFolder = (props: PropsType) => {
           } else {
             const treeFolderProps = {
               tree,
-              trees: props.trees,
+              trees: trees,
               openInitially: false,
-              active: tree.active
+              active: tree.active,
             };
 
-            return tree.children &&
-              props.tree.children &&
-              props.tree.children.length > 0 ? (
-              <OpenableConceptTreeFolder {...treeFolderProps} {...treeProps} />
-            ) : (
-              <ConceptTreeFolder {...treeFolderProps} {...treeProps} />
-            );
+            return <ConceptTreeFolder {...treeFolderProps} {...treeProps} />;
           }
         })}
     </Root>
   );
 };
 
-const OpenableConceptTreeFolder = Openable(ConceptTreeFolder);
-
-export default OpenableConceptTreeFolder;
+export default ConceptTreeFolder;

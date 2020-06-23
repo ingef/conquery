@@ -17,7 +17,7 @@ const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
     hasChildren ? (tight ? "5px" : "10px") : "0"};
 `;
 
-const StyledTransparentButton = styled(BasicButton)`
+const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   background-color: transparent;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.black};
@@ -34,7 +34,7 @@ const StyledTransparentButton = styled(BasicButton)`
 
   &:disabled {
     &:hover {
-      opacity: 0.8;
+      opacity: 0.6;
     }
   }
 `;
