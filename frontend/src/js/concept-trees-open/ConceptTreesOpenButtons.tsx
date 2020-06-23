@@ -6,7 +6,7 @@ import T from "i18n-react";
 import WithTooltip from "../tooltip/WithTooltip";
 import IconButton from "../button/IconButton";
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
-import { useRootConceptIds } from "js/concept-trees/useRootConceptIds";
+import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
 import { ConceptTreesOpenStateT } from "./reducer";
 import { StateT } from "app-types";
 import { clearSearchQuery } from "../concept-trees/actions";
