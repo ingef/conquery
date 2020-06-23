@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -61,7 +63,10 @@ public class QueryProcessor {
 		// Initialize checks that need to traverse the query tree
 		visitors.putInstance(QueryUtils.SingleReusedChecker.class, new QueryUtils.SingleReusedChecker());
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
-		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter());
+
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getName).orElse("none");
+
+		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
 		
 		
 		// Chain all Consumers
@@ -78,9 +83,9 @@ public class QueryProcessor {
 		query.collectPermissions(visitors, permissions, dataset.getId());
 		user.checkPermissions(permissions);
 
-		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), user, storage);
+		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);
 
-		ExecutionMetrics.reportQueryClassUsage(query.getClass());
+		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
 
 		// Evaluate the checks and take action

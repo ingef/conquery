@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
@@ -10,6 +11,12 @@ import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
 import FormConfigsTab from "../external-forms/form-configs/FormConfigsTab";
 import { StateT } from "./reducers";
 
+import { getAreTreesAvailable } from "../concept-trees/selectors";
+
+const SxConceptTreeSearchBox = styled(ConceptTreeSearchBox)`
+  margin: 0 10px 5px;
+`;
+
 const LeftPane = () => {
   const activeTab = useSelector<StateT, string>(
     (state) => state.panes.left.activeTab
@@ -17,12 +24,17 @@ const LeftPane = () => {
   const selectedDatasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId
   );
+  const areTreesAvailable = useSelector<StateT, boolean>((state) =>
+    getAreTreesAvailable(state)
+  );
 
   return (
     <Pane left>
-      {activeTab === "conceptTrees" && (
-        <ConceptTreeSearchBox datasetId={selectedDatasetId} />
-      )}
+      {activeTab === "conceptTrees" &&
+        areTreesAvailable &&
+        selectedDatasetId && (
+          <SxConceptTreeSearchBox datasetId={selectedDatasetId} />
+        )}
       <ConceptTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (
         <PreviousQueriesTab datasetId={selectedDatasetId} />

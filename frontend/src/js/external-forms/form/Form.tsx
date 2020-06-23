@@ -11,6 +11,7 @@ import {
   validateDateRange,
   validatePositive,
   validateConceptGroupFilled,
+  validateDateRangeRequired,
 } from "../validators";
 import { collectAllFormFields, isFormField } from "../helper";
 import { selectReduxFormState } from "../stateSelectors";
@@ -54,15 +55,21 @@ const DEFAULT_VALIDATION_BY_TYPE = {
   DATE_RANGE: validateDateRange,
 };
 
+function getNotEmptyValidation(fieldType: string) {
+  switch (fieldType) {
+    case "CONCEPT_LIST":
+      return validateConceptGroupFilled;
+    case "DATE_RANGE":
+      return validateDateRangeRequired;
+    default:
+      return validateRequired;
+  }
+}
+
 function getPossibleValidations(fieldType: string) {
-  const notEmptyValidation =
-    fieldType === "CONCEPT_LIST"
-      ? {
-          NOT_EMPTY: validateConceptGroupFilled,
-        }
-      : {
-          NOT_EMPTY: validateRequired,
-        };
+  const notEmptyValidation = {
+    NOT_EMPTY: getNotEmptyValidation(fieldType),
+  };
 
   return {
     ...notEmptyValidation,
