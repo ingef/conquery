@@ -19,11 +19,15 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.shiro.authz.Permission;
 
 @Data
 @SuperBuilder
+@EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor
 public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 
 	private String[] tags;

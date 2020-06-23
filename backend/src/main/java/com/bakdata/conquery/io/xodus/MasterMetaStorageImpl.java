@@ -6,7 +6,6 @@ import java.util.Collection;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -17,6 +16,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -232,6 +232,12 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@SneakyThrows
 	public void updateFormConfig(FormConfig formConfig) {
 		formConfigs.update(formConfig);
+	}
+	
+	@Override
+	@SneakyThrows
+	public void addFormConfig(FormConfig formConfig) {
+		formConfigs.add(formConfig);
 	}
 	
 	@Override

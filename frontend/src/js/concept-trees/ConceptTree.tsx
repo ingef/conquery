@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
@@ -10,7 +10,7 @@ import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
 
-type PropsType = {
+interface PropsT {
   id: ConceptIdT;
   tree: ConceptT | null;
   treeId: ConceptIdT;
@@ -20,10 +20,10 @@ type PropsType = {
   loading: boolean;
   error: string | null;
   search?: SearchT;
-};
+  onLoadTree: (treeId: ConceptIdT) => void;
+}
 
 const LoadingTree = styled("p")`
-  padding-left: ${({ depth }) => 24 + depth * 15}px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
   line-height: 20px;
@@ -31,7 +31,6 @@ const LoadingTree = styled("p")`
 const ErrorMessage = styled("p")`
   color: ${({ theme }) => theme.col.red};
   font-weight: 400;
-  padding-left: ${({ depth }) => 12 + depth * 15}px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
   line-height: 20px;
@@ -45,38 +44,43 @@ const Spinner = styled("span")`
   margin-right: 6px;
 `;
 
-export default (props: PropsType) => {
-  if (props.loading)
+const ConceptTree: FC<PropsT> = ({
+  id,
+  depth,
+  loading,
+  label,
+  error,
+  tree,
+  treeId,
+  search,
+  onLoadTree,
+}) => {
+  if (loading)
     return (
-      <LoadingTree depth={props.depth}>
+      <LoadingTree style={{ paddingLeft: 24 + depth * 15 }}>
         <Spinner>
           <FaIcon icon="spinner" />
         </Spinner>
-        <span>{props.label}</span>
+        <span>{label}</span>
       </LoadingTree>
     );
-  else if (props.error)
+  else if (error)
     return (
-      <ErrorMessage depth={props.depth}>
-        <ReloadButton
-          red
-          icon="redo"
-          onClick={() => props.onLoadTree(props.treeId)}
-        />
-        {T.translate("conceptTreeList.error", { tree: props.label })}
+      <ErrorMessage style={{ paddingLeft: 12 + depth * 15 }}>
+        <ReloadButton red icon="redo" onClick={() => onLoadTree(treeId)} />
+        {T.translate("conceptTreeList.error", { tree: label })}
       </ErrorMessage>
     );
-  else if (props.tree)
+  else if (tree)
     return (
       <ConceptTreeNode
-        id={props.id}
-        data={{ ...props.tree, tree: props.treeId }}
-        depth={props.depth}
-        search={props.search}
+        id={id}
+        data={{ ...tree, tree: treeId }}
+        depth={depth}
+        search={search}
       />
     );
-  else
-    return (
-      <ConceptTreeNodeText disabled label={props.label} depth={props.depth} />
-    );
+  else return <ConceptTreeNodeText disabled label={label} depth={depth} />;
 };
+
+export default ConceptTree;

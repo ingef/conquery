@@ -4,34 +4,39 @@ import {
   OPEN_PREVIEW,
   CLOSE_PREVIEW,
   LOAD_CSV_START,
-  LOAD_CSV_ERROR
+  LOAD_CSV_ERROR,
 } from "./actionTypes";
 
 import { defaultError } from "../common/actions";
+import { ColumnDescription } from "js/api/types";
 
 export function closePreview() {
   return {
-    type: CLOSE_PREVIEW
+    type: CLOSE_PREVIEW,
   };
 }
 
 const loadCSVStart = () => ({ type: LOAD_CSV_START });
 const loadCSVError = (err: any) => defaultError(LOAD_CSV_ERROR, err);
-const loadCSVSuccess = parsed => ({
+const loadCSVSuccess = (
+  parsed: { result: { data: string[][] } },
+  columns: ColumnDescription[]
+) => ({
   type: OPEN_PREVIEW,
   payload: {
-    csv: parsed.result.data
-  }
+    csv: parsed.result.data,
+    columns,
+  },
 });
 
-export function openPreview(url: string) {
-  return async dispatch => {
+export function openPreview(url: string, columns: ColumnDescription[]) {
+  return async (dispatch) => {
     dispatch(loadCSVStart());
 
     try {
       const parsed = await loadCSV(url);
 
-      dispatch(loadCSVSuccess(parsed));
+      dispatch(loadCSVSuccess(parsed, columns));
     } catch (e) {
       dispatch(loadCSVError(e));
     }
