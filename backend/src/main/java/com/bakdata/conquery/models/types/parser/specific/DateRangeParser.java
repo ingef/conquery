@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DateRangeParser extends Parser<CDateRange> {
 
 	private boolean onlyQuarters = true;
-	private boolean onlyClosed = true;
+	private boolean anyOpen = false;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
 	
@@ -36,11 +36,16 @@ public class DateRangeParser extends Parser<CDateRange> {
 	protected void registerValue(CDateRange v) {
 		// test if value is already set to avoid expensive computation.
 
-		onlyQuarters = onlyQuarters && !v.isSingleQuarter();
-		onlyClosed = onlyClosed && v.isOpen();
+		onlyQuarters = onlyQuarters && v.isSingleQuarter();
+		anyOpen = anyOpen || v.isOpen();
 
-		maxValue = Math.max(maxValue, v.getMaxValue());
-		minValue = Math.min(minValue, v.getMinValue());
+		if(!v.isAtLeast()) {
+			maxValue = Math.max(maxValue, v.getMaxValue());
+		}
+
+		if(!v.isAtMost()) {
+			minValue = Math.min(minValue, v.getMinValue());
+		}
 	}
 
 	public static CDateRange parseISORange(String value) throws ParsingException {
@@ -62,7 +67,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 	protected Decision<CDateRange, ?, ? extends CType<CDateRange, ?>> decideType() {
 		// We cannot yet do meaningful compression for open dateranges.
 		// TODO: 27.04.2020 consider packed compression with extra value as null value.
-		if(!onlyClosed) {
+		if(anyOpen) {
 			return new Decision<>(
 					new NoopTransformer<>(),
 					new DateRangeTypeDateRange()
