@@ -3,11 +3,11 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -53,13 +53,13 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			IntegrationUtils.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -160,17 +160,17 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Load the same import into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), Arrays.stream(test.getContent().getTables())
+			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), test.getContent().getTables().stream()
 																				   .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
 																				   .map(RequiredTable::toTable).findFirst().get());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables().stream()
 																 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
 																 .collect(Collectors.toList()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			assertThat(namespace.getDataset().getTables().getOptional(tableId))

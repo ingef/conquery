@@ -80,7 +80,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private boolean shared = false;
 
 	protected boolean machineGenerated;
-	
+
 
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
@@ -201,10 +201,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
 		return status;
-		
-		
+
+
 	}
-	
+
 	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		ExecutionStatus.WithSingleQuery status = new ExecutionStatus.WithSingleQuery();
 		setStatusBase(storage, url, user, status);
@@ -221,8 +221,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		query.visit(namespacesIdCollector);
 		List<Permission> permissions = new ArrayList<>();
 		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
-		
+
 		boolean canExpand = user.isPermittedAll(permissions);
+
 
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);
@@ -238,7 +239,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.collect(Collectors.toList()));
 		return url != null && state != ExecutionState.NEW && isPermittedDownload;
 	}
-	
+
 	/**
 	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
 	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.

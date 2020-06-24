@@ -93,7 +93,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 	public List<EntityExtractor> findPreprocessedJobs(ConqueryConfig config) throws IOException, JSONException {
 		List<EntityExtractor> l = new ArrayList<>();
 		for(PreprocessingDirectories directories:config.getPreprocessor().getDirectories()) {
-			File in = directories.getPreprocessedOutput().getAbsoluteFile();
+			File in = directories.getPreprocessedOutputDir().getAbsoluteFile();
 			for(File preprocessedFile:in.listFiles()) {
 				if(preprocessedFile.getName().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
 					try {

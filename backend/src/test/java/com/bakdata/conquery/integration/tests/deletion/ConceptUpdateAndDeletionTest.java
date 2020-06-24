@@ -2,11 +2,11 @@ package com.bakdata.conquery.integration.tests.deletion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -63,13 +63,13 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			IntegrationUtils.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -165,7 +165,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// Load a different concept with the same id (it has different children "C1" that are more than "A1")
 		{
 			// only import the deleted concept
-			IntegrationUtils.importConcepts(conquery, test2.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test2.getRawConcepts());
 			conquery.waitUntilWorkDone();
 		}
 

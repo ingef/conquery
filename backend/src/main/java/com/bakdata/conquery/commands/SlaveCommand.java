@@ -82,9 +82,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 
 		this.config = config;
-		
-		File storageDir = config.getStorage().getDirectory();
-		for(File directory : storageDir.listFiles()) {
+
+		if(config.getStorage().getDirectory().mkdirs()){
+			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
+		}
+
+		for(File directory : config.getStorage().getDirectory().listFiles()) {
 			if(directory.getName().startsWith("worker_")) {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
 				if(workerStorage != null) {

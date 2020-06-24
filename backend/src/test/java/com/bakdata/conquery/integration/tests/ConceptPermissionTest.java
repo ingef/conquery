@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -11,6 +10,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -45,13 +45,13 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			IntegrationUtils.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 
 			storage.addUser(user);

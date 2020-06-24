@@ -1,11 +1,10 @@
 package com.bakdata.conquery.models.config;
 
+import java.io.File;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import java.io.File;
-
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,7 @@ import lombok.ToString;
 
 @Getter @Setter @ToString
 public class StorageConfig {
-	@ExistingFile(directory = true)
+
 	private File directory = new File("storage");
 
 	private boolean validateOnWrite = false;

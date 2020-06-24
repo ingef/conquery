@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bakdata.conquery</groupId>
 	<artifactId>parent</artifactId>
@@ -8,7 +10,7 @@
 	<packaging>pom</packaging>
 	<name>Conquery Parent</name>
 
-	
+
 	<properties>
 		<java.required>11</java.required>
 		<lombok.version>1.18.12</lombok.version>
@@ -40,11 +42,11 @@
 
 	<dependencies>
 		<dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.6.2</version>
-            <scope>test</scope>
-        </dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.6.2</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -66,7 +68,7 @@
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
 					<argLine>-Xmx4G</argLine>
-                    <properties>
+					<properties>
 						<configurationParameters>
 							junit.jupiter.execution.parallel.enabled=false
 							junit.jupiter.execution.parallel.mode.default = concurrent
@@ -96,8 +98,6 @@
 							</execution>
 						</executions>
 						<configuration>
-							<!-- do not only use annotated tags -->
-							<tags>true</tags>
 							<failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
 							<dateFormat>${maven.build.timestamp.format}</dateFormat>
 							<skipPoms>false</skipPoms>
@@ -115,6 +115,34 @@
 						<inherited>false</inherited>
 						<executions>
 							<execution>
+								<id>regex-property-snapshot-old</id>
+								<goals>
+									<goal>regex-property</goal>
+								</goals>
+								<phase>initialize</phase>
+								<configuration>
+									<name>newVersion</name>
+									<value>${git.commit.id.describe}</value>
+									<regex>^v(\d\.\d\.\d-[\w\d]+(-\d+-[\w\d]+)(-dirty$)?)</regex>
+									<replacement>$1-SNAPSHOT</replacement>
+									<failIfNoMatch>false</failIfNoMatch>
+								</configuration>
+							</execution>
+							<execution>
+								<id>regex-property-old</id>
+								<goals>
+									<goal>regex-property</goal>
+								</goals>
+								<phase>initialize</phase>
+								<configuration>
+									<name>newVersion</name>
+									<value>${newVersion}</value>
+									<regex>^v(\d\.\d\.\d-[\w\d]+)$</regex>
+									<replacement>$1</replacement>
+									<failIfNoMatch>false</failIfNoMatch>
+								</configuration>
+							</execution>
+							<execution>
 								<id>regex-property-snapshot</id>
 								<goals>
 									<goal>regex-property</goal>
@@ -123,8 +151,8 @@
 								<configuration>
 									<name>newVersion</name>
 									<value>${git.commit.id.describe}</value>
-									<regex>v(\d+\.\d+\.\d+)(.)</regex>
-									<replacement>$1-SNAPSHOT$2</replacement>
+									<regex>^v(\d\-[\w\d]+(-\d+-[\w\d]+)(-dirty$)?)</regex>
+									<replacement>$1-SNAPSHOT</replacement>
 									<failIfNoMatch>false</failIfNoMatch>
 								</configuration>
 							</execution>
@@ -137,7 +165,7 @@
 								<configuration>
 									<name>newVersion</name>
 									<value>${newVersion}</value>
-									<regex>v(\d+\.\d+\.\d+)$</regex>
+									<regex>^v(\d-[\w\d]+)$</regex>
 									<replacement>$1</replacement>
 									<failIfNoMatch>false</failIfNoMatch>
 								</configuration>

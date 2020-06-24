@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.config;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import lombok.Getter;
@@ -15,4 +16,7 @@ public class PreprocessingConfig {
 	private int threads = Runtime.getRuntime().availableProcessors();
 	@Min(0)
 	private int maximumPrintedErrors = 10;
+
+	@Min(0) @Max(1)
+	private double faultyLineThreshold = 0.01d;
 }
