@@ -43,6 +43,7 @@ public class CSVConfig {
 		settings.setFormat(createCsvFormat());
 		settings.setHeaderExtractionEnabled(parseHeaders);
 		settings.setMaxColumns(maxColumns);
+		settings.setLineSeparatorDetectionEnabled(true);
 		return settings;
 	}
 

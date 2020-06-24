@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +30,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
+import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -198,24 +199,39 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected abstract URL getDownloadURL(URLBuilder url);
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
+	}
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
+	}
+	
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
+		for(CreationFlag flag : creationFlags) {
+			switch (flag) {
+				case WITH_COLUMN_DESCIPTION:
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					break;
+				case WITH_SOURCE:
+					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+					break;
+				default:
+					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
+			}
+		}
 		return status;
-
-
+		
 	}
 
-	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus.WithSingleQuery status = new ExecutionStatus.WithSingleQuery();
-		setStatusBase(storage, url, user, status);
-		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
-		return status;
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
