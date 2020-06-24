@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
@@ -56,29 +57,49 @@ public class DatasetsUIResource extends HAdmin {
 
 	@GET
 	public View getDataset() {
+
 		return new UIView<>(
-			"dataset.html.ftl",
-			processor.getUIContext(),
-			new DatasetInfos(
-				namespace.getDataset(),
-				namespace.getStorage().getAllConcepts(),
-				// total size of dictionaries
-				namespace
-					.getStorage()
-					.getAllImports()
-					.stream()
-					.flatMap(i -> Arrays.stream(i.getColumns()))
-					.filter(c -> c.getType().getTypeId() == MajorTypeId.STRING)
-					.map(c -> (AStringType) c.getType())
-					.filter(c -> c.getUnderlyingDictionary() != null)
-					.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
-					.values()
-					.stream()
-					.mapToLong(l -> l.get(0).estimateTypeSize())
-					.sum(),
-				// total size of entries
-				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum())
+				"dataset.html.ftl",
+				processor.getUIContext(),
+				new DatasetInfos(
+						namespace.getDataset(),
+						namespace.getDataset().getTables().stream()
+								 .map(table -> new TableInfos(
+								 		table.getId(),
+										table.getName(),
+										table.getLabel(),
+										table.findImports(namespace.getStorage()).stream().map(Import::getName).collect(Collectors.joining(", ")),
+										table.findImports(namespace.getStorage()).stream().mapToLong(Import::getNumberOfEntries).sum()
+								 ))
+								 .collect(Collectors.toList()),
+						namespace.getStorage().getAllConcepts(),
+						// total size of dictionaries
+						namespace
+								.getStorage()
+								.getAllImports()
+								.stream()
+								.flatMap(i -> Arrays.stream(i.getColumns()))
+								.filter(c -> c.getType().getTypeId() == MajorTypeId.STRING)
+								.map(c -> (AStringType) c.getType())
+								.filter(c -> c.getUnderlyingDictionary() != null)
+								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
+								.values()
+								.stream()
+								.mapToLong(l -> l.get(0).estimateTypeSize())
+								.sum(),
+						// total size of entries
+						namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
+				)
 		);
+	}
+
+	@Data
+	public static class TableInfos {
+		private final TableId id;
+		private final String name;
+		private final String label;
+		private final String imports;
+		private final long entries;
 	}
 
 	@Data
@@ -86,6 +107,7 @@ public class DatasetsUIResource extends HAdmin {
 	public static class DatasetInfos {
 
 		private Dataset ds;
+		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;
 		private long size;
