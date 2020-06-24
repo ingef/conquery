@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigProvider.FormFrontendConfigInformation;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.ImmutableCollection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
@@ -18,7 +18,7 @@ import lombok.ToString;
  * If the implementation should be provided with an {@link ObjectReader} see {@link FormFrontendConfigProviderBase}.
  */
 @FunctionalInterface
-public interface FormFrontendConfigProvider extends Consumer<Collection<FormFrontendConfigInformation>>{
+public interface FormFrontendConfigProvider extends Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>>{
 	
 	@Data
 	@AllArgsConstructor

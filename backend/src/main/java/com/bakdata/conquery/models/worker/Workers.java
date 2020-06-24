@@ -62,4 +62,13 @@ public class Workers extends NamespaceCollection {
 			log.error("Failed to remove storage "+removed, e);
 		}
 	}
+	
+	public boolean isBusy() {
+		for( Worker worker : workers.values()) {
+			if(worker.isBusy()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

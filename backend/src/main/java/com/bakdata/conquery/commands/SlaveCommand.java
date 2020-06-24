@@ -239,4 +239,8 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			log.warn("Failed to report job manager status", e);
 		}
 	}
+	
+	public boolean isBusy() {
+		return getJobManager().isSlowWorkerBusy() || workers.isBusy();
+	}
 }
