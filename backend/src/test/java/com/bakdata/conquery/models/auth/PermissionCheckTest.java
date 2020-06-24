@@ -59,7 +59,7 @@ public class PermissionCheckTest extends ConqueryTestSpec  {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
-		storage = support.getStandaloneCommand().getMaster().getStorage();
+		storage = support.getMasterMetaStorage();
 
 		// Clear MasterStorage
 		clearAuthStorage(storage, roles, rUsers);
