@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,6 +30,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -174,7 +176,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status, boolean withColumnDescription) {
+	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : label);
 		status.setId(getId());
 		status.setTags(tags);
@@ -196,14 +198,27 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	protected abstract URL getDownloadURL(URLBuilder url);
 
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, boolean withColumnDescription, boolean withSource) {
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
+	}
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
+	}
+	
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
 		ExecutionStatus status = new ExecutionStatus();
-		setStatusBase(storage, url, user, status, withColumnDescription);
-		if(withColumnDescription) {
-			setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
-		}
-		if(withSource) {			
-			setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		setStatusBase(storage, url, user, status);
+		for(CreationFlag flag : creationFlags) {
+			switch (flag) {
+				case WITH_COLUMN_DESCIPTION:
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					break;
+				case WITH_SOURCE:
+					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+					break;
+				default:
+					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
+			}
 		}
 		return status;
 		

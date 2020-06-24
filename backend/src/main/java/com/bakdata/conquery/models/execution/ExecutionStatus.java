@@ -51,4 +51,9 @@ public class ExecutionStatus {
 		 * Is set to the query description if the user can expand all included concepts.
 		 */
 		private QueryDescription query;
+		
+		public static enum CreationFlag{
+			WITH_COLUMN_DESCIPTION,
+			WITH_SOURCE;
+		}
 }
