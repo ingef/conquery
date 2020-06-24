@@ -19,7 +19,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -224,8 +224,8 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
-		super.setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
 			// If subqueries was not set the Execution was not initialized
@@ -246,7 +246,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			return;
 		}
 		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions());
-		
 	}
 
 
