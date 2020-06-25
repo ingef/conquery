@@ -9,12 +9,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 class RoundRobinQueueTest {
 
 	@Test
@@ -26,8 +29,6 @@ class RoundRobinQueueTest {
 
 		first.add(1);
 		second.add(2);
-
-
 
 		assertThat(queue.contains(1)).isTrue();
 		assertThat(queue.contains(2)).isTrue();
@@ -98,9 +99,11 @@ class RoundRobinQueueTest {
 		first.add(1);
 		second.add(2);
 
+		final Random waitMillis = new Random();
+
 		new Thread(() -> {
 			try {
-				TimeUnit.SECONDS.sleep(5);
+				TimeUnit.MILLISECONDS.sleep(waitMillis.nextInt(500));
 				first.add(3);
 			}
 			catch (InterruptedException e) {
@@ -121,18 +124,22 @@ class RoundRobinQueueTest {
 		final Queue<Integer> first = queue.createQueue();
 		final Queue<Integer> second = queue.createQueue();
 
-		IntStream.range(0,5).forEach(first::add);
-		IntStream.range(5,10).forEach(second::add);
+		IntStream.range(0, 5).forEach(first::add);
+		IntStream.range(5, 10).forEach(second::add);
 
 		final Set<Integer> found = Collections.synchronizedSet(new HashSet<>());
 
 		final List<Thread> threads = new ArrayList<>();
 
+		final Random waitMillis = new Random();
+
+
 		final Thread thread = new Thread(() -> {
 			try {
 				for (int value = 10; value < 20; value++) {
-					TimeUnit.SECONDS.sleep(1);
+					TimeUnit.MILLISECONDS.sleep(waitMillis.nextInt(500));
 					queue.createQueue().offer(value);
+					log.info("Offered {}", value);
 				}
 			}
 			catch (InterruptedException e) {
@@ -144,10 +151,12 @@ class RoundRobinQueueTest {
 
 		thread.start();
 
-		for (int value = 0; value < 10; value++) {
+		for (int value = 0; value < 20; value++) {
 			final Thread thread1 = new Thread(() -> {
 				try {
+					TimeUnit.MILLISECONDS.sleep(waitMillis.nextInt(1000));
 					final Integer taken = queue.take();
+					log.info("Received {}", taken);
 					assertThat(found.add(taken))
 							.describedAs("Value=%d", taken)
 							.isTrue();
@@ -162,13 +171,13 @@ class RoundRobinQueueTest {
 			threads.add(thread1);
 		}
 
-		assertThat(queue).isEmpty();
 
 		for (Thread thread1 : threads) {
 			thread1.join();
 		}
-	}
 
+		assertThat(queue).isEmpty();
+	}
 
 
 }

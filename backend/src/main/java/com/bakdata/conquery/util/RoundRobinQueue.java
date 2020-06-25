@@ -4,14 +4,13 @@ import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ForwardingQueue;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -20,15 +19,19 @@ import org.jetbrains.annotations.Nullable;
 
 public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 
-	private final Collection<Queue<E>> queues;
-	private final Map<Thread, Iterator<Queue<E>>> cycles;
+	private final Collection<Queue<E>> queues = new ArrayList<>();
 
 	private final Object signal = new Object();
 
-	public RoundRobinQueue(){
-		this.queues = new ArrayList<>();
-		cycles = Maps.newConcurrentMap();
-	}
+	/**
+	 * Clear switch serves as an Atomic comparator to communicate changes of {@code queues} to consuming threads.
+	 * @implNote  In order to guarantee atomic updates we use an integer that can be atomically altered, which is not possible with AtomicBooleans
+	 * @implSpec Iff clearSwitch != localClearSwitch, cycles is invalid.
+	 */
+	private final AtomicInteger clearSwitch = new AtomicInteger(1);
+	private final ThreadLocal<Integer> localClearSwitch = ThreadLocal.withInitial(() -> 0);
+
+	private final ThreadLocal<Iterator<Queue<E>>> cycles = new ThreadLocal<>();
 
 	/**
 	 * Helper class that notifies on {@code signal} when a new object is added to any queue, awakening all waiting threads.
@@ -74,16 +77,16 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 
 	public Queue<E> createQueue() {
 		// TODO: 25.06.2020 FK: add supplier as creation parameter
-		final Queue<E> out = new SignallingForwardingQueue<E>(Queues.newConcurrentLinkedQueue(), signal);
+		final Queue<E> out = new SignallingForwardingQueue<>(Queues.newConcurrentLinkedQueue(), signal);
 		queues.add(out);
-		cycles.clear();
+		clearSwitch.incrementAndGet();
 
 		return out;
 	}
 
 	public boolean removeQueue(Queue<E> del) {
 		final boolean remove = queues.remove(del);
-		cycles.clear();
+		clearSwitch.incrementAndGet();
 
 		return remove;
 	}
@@ -203,10 +206,16 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 
 	/**
 	 * Advance the ThreadLocal Cycle of Queues by one.
+	 * Reset
 	 */
 	private Queue<E> nextQueue() {
-		// TODO: 25.06.2020 this map is still a global lock, consider an atomic switch with a ThreadLocal comparator, instead of clearing the map.
-		return cycles.computeIfAbsent(Thread.currentThread(), ignored -> Iterators.cycle(queues)).next();
+		final int global = clearSwitch.getOpaque();
+		if(global != localClearSwitch.get()){
+			localClearSwitch.set(global);
+			cycles.set(Iterators.cycle(queues));
+		}
+
+		return cycles.get().next();
 	}
 
 
