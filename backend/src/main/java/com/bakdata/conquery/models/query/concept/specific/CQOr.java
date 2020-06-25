@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.AllArgsConstructor;
@@ -29,14 +30,24 @@ import lombok.Setter;
 public class CQOr implements CQElement {
 	@Getter @Setter @NotEmpty @Valid
 	private List<CQElement> children;
+
+	@Getter @Setter
+	private boolean summariseExists = false;
 	
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		QPNode[] aggs = new QPNode[children.size()];
-		for(int i=0;i<aggs.length;i++) {
-			aggs[i] = children.get(i).createQueryPlan(context, plan);
+		QPNode[] nodes = new QPNode[children.size()];
+
+		for(int i=0;i<nodes.length;i++) {
+			nodes[i] = children.get(i).createQueryPlan(context, plan);
 		}
-		return OrNode.of(Arrays.asList(aggs));
+
+		if(summariseExists) {
+			// TODO: 25.06.2020 FK: how do we get only the aggregators that are of the sub-QPNodes
+			plan.getAggregators().stream().filter(ExistsAggregator.class::isInstance); // TODO create or-ing additional aggregator
+		}
+
+		return OrNode.of(Arrays.asList(nodes));
 	}
 	
 	@Override
@@ -49,8 +60,8 @@ public class CQOr implements CQElement {
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		var copy = new ArrayList<>(children);
-		copy.replaceAll(c->c.resolve(context));
-		return new CQOr(copy);
+		copy.replaceAll(c -> c.resolve(context));
+		return new CQOr(copy, isSummariseExists());
 	}
 	
 	@Override
