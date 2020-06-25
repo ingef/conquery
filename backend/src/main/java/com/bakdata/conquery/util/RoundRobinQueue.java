@@ -1,37 +1,39 @@
 package com.bakdata.conquery.util;
 
 import java.util.AbstractQueue;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ForwardingQueue;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 
-	private final Collection<Queue<E>> queues = new ArrayList<>();
+    private static final Queue<?> EMPTY_QUEUE = new ArrayBlockingQueue<>(1);
+
+	private final Queue<E>[] queues;
 
 	private final Object signal = new Object();
+
+	public RoundRobinQueue(int capacity) {
+	    queues = new Queue[capacity];
+    }
 
 	/**
 	 * Clear switch serves as an Atomic comparator to communicate changes of {@code queues} to consuming threads.
 	 * @implNote  In order to guarantee atomic updates we use an integer that can be atomically altered, which is not possible with AtomicBooleans
 	 * @implSpec Iff clearSwitch != localClearSwitch, cycles is invalid.
 	 */
-	private final AtomicInteger clearSwitch = new AtomicInteger(1);
-	private final ThreadLocal<Integer> localClearSwitch = ThreadLocal.withInitial(() -> 0);
-
-	private final ThreadLocal<Iterator<Queue<E>>> cycles = new ThreadLocal<>();
+	private final ThreadLocal<Integer> cycleIndex = ThreadLocal.withInitial(() -> 0);
 
 	/**
 	 * Helper class that notifies on {@code signal} when a new object is added to any queue, awakening all waiting threads.
@@ -53,9 +55,9 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 			final boolean offer = super.offer(element);
 
 			if(offer){
-				synchronized (signal) {
-					signal.notify();
-				}
+                synchronized (signal) {
+                    signal.notify();
+                }
 			}
 
 			return offer;
@@ -66,9 +68,9 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 			final boolean add = super.add(element);
 
 			if(add){
-				synchronized (signal) {
-					signal.notify();
-				}
+                synchronized (signal) {
+                    signal.notify();
+                }
 			}
 
 			return add;
@@ -76,35 +78,77 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	}
 
 	public Queue<E> createQueue() {
-		// TODO: 25.06.2020 FK: add supplier as creation parameter
-		final Queue<E> out = new SignallingForwardingQueue<>(Queues.newConcurrentLinkedQueue(), signal);
-		queues.add(out);
-		clearSwitch.incrementAndGet();
+        // TODO: 25.06.2020 FK: add supplier as creation parameter
+        final Queue<E> out = new SignallingForwardingQueue<E>(Queues.newConcurrentLinkedQueue(), signal);
 
-		return out;
-	}
+        synchronized (queues) {
+            final int free = ArrayUtils.indexOf(queues, null);
+
+            if (free == -1) {
+                throw new IllegalStateException(String.format("Queue is full %d", this.queues.length));
+            }
+
+            queues[free] = out;
+        }
+
+        return out;
+    }
 
 	public boolean removeQueue(Queue<E> del) {
-		final boolean remove = queues.remove(del);
-		clearSwitch.incrementAndGet();
+	    synchronized (queues) {
+            final int index = ArrayUtils.indexOf(queues, del);
 
-		return remove;
+            if(index == -1) {
+                return false;
+            }
+
+            queues[index] = null;
+        }
+
+        return true;
 	}
 
 	@Override
 	public int size() {
-		return queues.stream().mapToInt(Queue::size).sum();
+        int sum = 0;
+        for (Queue<E> queue : queues) {
+            if(queue != null) {
+                sum += queue.size();
+            }
+        }
+        return sum;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return queues.stream().allMatch(Queue::isEmpty);
+        for (Queue<E> queue : queues) {
+            if (queue != null && !queue.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
 	}
 
-	@Override
-	public boolean contains(Object o) {
-		return queues.stream().anyMatch(q -> q.contains(o));
-	}
+    @Override
+    public boolean contains(Object o) {
+        for (Queue<E> queue : queues) {
+            if (queue != null &&  queue.contains(o)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean containsAll(@NotNull Collection<?> c) {
+        for (Object o : c) {
+            if (!contains(o)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 	@NotNull
 	@Override
@@ -127,35 +171,32 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	@Override
 	public E take() throws InterruptedException {
 		while(true){
-			final E out = poll();
+			E out = poll();
 			if(out != null){
 				return out;
 			}
 
-			doWait();
-		}
+            synchronized (signal) {
+                signal.wait();
+            }
+        }
 	}
 
-	protected void doWait() throws InterruptedException {
-		synchronized (signal) {
-			signal.wait();
-		}
-	}
 
 	@Nullable
 	@Override
 	public E poll(long timeout, @NotNull TimeUnit unit) throws InterruptedException {
-		final E out = poll();
+		E out = poll();
 
 		if(out != null){
 			return out;
 		}
 
 		synchronized (signal) {
-			unit.timedWait(signal, timeout);
-		}
+            unit.timedWait(signal, timeout);
+        }
 
-		return poll();
+        return poll();
 	}
 
 
@@ -165,57 +206,50 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	 */
 	@Override
 	public E poll() {
-		final Queue<E> begin = nextQueue();
-		Queue<E> curr = begin;
+        final int begin = cycleIndex.get();
 
-		do {
-			E out = curr.poll();
+        for (int offset = 0; offset < queues.length; offset++) {
+            final int index = (begin + offset) % (queues.length - 1);
+            Queue<E> curr = queues[index];
 
-			if(out != null){
-				return out;
-			}
+            if(curr == null){
+                continue;
+            }
 
-			curr = nextQueue();
+            E out = curr.poll();
 
-		} while (curr != begin);
+            if(out != null){
+                cycleIndex.set(index);
+                return out;
+            }
+        }
 
-		return null;
+        return null;
 	}
 
 
 
 	@Override
 	public E peek() {
-		final Queue<E> begin = nextQueue();
-		Queue<E> curr = begin;
+		final int begin = cycleIndex.get();
 
-		do {
-			E out = curr.peek();
+        for (int offset = 0; offset < queues.length; offset++) {
+            final int index = (begin + offset) % (queues.length - 1);
+            Queue<E> curr = queues[index];
 
-			if(out != null){
-				return out;
-			}
+            if(curr == null){
+                continue;
+            }
 
-			curr = nextQueue();
+            E out = curr.peek();
 
-		} while (curr != begin);
+            if(out != null){
+                cycleIndex.set(index);
+                return out;
+            }
+        }
 
 		return null;
-	}
-
-
-	/**
-	 * Advance the ThreadLocal Cycle of Queues by one.
-	 * Reset
-	 */
-	private Queue<E> nextQueue() {
-		final int global = clearSwitch.getOpaque();
-		if(global != localClearSwitch.get()){
-			localClearSwitch.set(global);
-			cycles.set(Iterators.cycle(queues));
-		}
-
-		return cycles.get().next();
 	}
 
 
@@ -247,11 +281,6 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	public <T1> T1[] toArray(@NotNull T1[] a) {
 		// TODO: 25.06.2020 implement this?
 		return null;
-	}
-
-	@Override
-	public boolean containsAll(@NotNull Collection<?> c) {
-		return c.stream().allMatch(this::contains);
 	}
 
 	@Override
