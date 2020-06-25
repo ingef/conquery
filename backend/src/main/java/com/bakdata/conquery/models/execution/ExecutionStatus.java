@@ -23,6 +23,7 @@ public class ExecutionStatus {
 
 		private String[] tags;
 		private String label;
+		private boolean isPristineLabel;
 		private ZonedDateTime createdAt;
 		private ZonedDateTime lastUsed;
 		private UserId owner;
