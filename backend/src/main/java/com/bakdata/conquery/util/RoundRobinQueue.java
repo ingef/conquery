@@ -39,7 +39,7 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
      */
     private final ThreadLocal<Integer> cycleIndex = ThreadLocal.withInitial(() -> 0);
 
-    public RoundRobinQueue(int capacity) {
+    public RoundRobinQueue(@Min(1) int capacity) {
         super();
         queues = new Queue[capacity];
     }
