@@ -110,7 +110,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 					workerStorage.getWorker(),
 					workerStorage,
 					config,
-					workers.createQueue(this)
+					workers.createQuerySubQueue()
 			);
 
 			workers.add(worker);

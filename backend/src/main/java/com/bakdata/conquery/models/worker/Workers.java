@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -51,7 +50,7 @@ public class Workers extends NamespaceCollection implements Closeable {
 	@JsonIgnore
 	private transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
 
-	public Queue<Runnable> createQueue(SlaveCommand slaveCommand) {
+	public Queue<Runnable> createQuerySubQueue() {
 		return queryExecutorQueues.createQueue();
 	}
 
