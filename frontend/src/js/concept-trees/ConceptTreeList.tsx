@@ -13,7 +13,7 @@ import EmptyConceptTreeList from "./EmptyConceptTreeList";
 import ConceptTreesLoading from "./ConceptTreesLoading";
 import ProgressBar from "./ProgressBar";
 import ConceptTreeListItem from "./ConceptTreeListItem";
-import { DatasetIdT } from "js/api/types";
+import type { DatasetIdT } from "../api/types";
 import { useRootConceptIds } from "./useRootConceptIds";
 
 const Root = styled("div")<{ show?: boolean }>`

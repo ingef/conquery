@@ -46,6 +46,12 @@ function toRoundedDecimalsString(num: number, decimals: number) {
   return rounded.toFixed(decimals);
 }
 
+const parseMoney = (str: string) => {
+  const numeric = str.replace(/\./g, "").replace(/,/g, ".");
+
+  return parseFloat(numeric);
+};
+
 const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
   switch (columnType) {
     case "NUMERIC":
@@ -54,7 +60,16 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
       const cleanData = rawColumnData
         .slice(1)
         .filter((x) => !!x)
-        .map((x) => (columnType === "INTEGER" ? parseInt(x) : parseFloat(x)));
+        .map((x) => {
+          switch (columnType) {
+            case "INTEGER":
+              return parseInt(x);
+            case "NUMERIC":
+              return parseFloat(x);
+            case "MONEY":
+              return parseMoney(x);
+          }
+        });
       const sum = cleanData.reduce((a, b) => a + b, 0);
       const avg = sum / cleanData.length;
       const min = Math.min(...cleanData);

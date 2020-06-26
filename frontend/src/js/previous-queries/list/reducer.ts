@@ -16,7 +16,7 @@ import {
   TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
   DELETE_PREVIOUS_QUERY_SUCCESS,
 } from "./actionTypes";
-import type { UserGroupIdT } from "js/api/types";
+import type { UserGroupIdT } from "../../api/types";
 
 export type PreviousQueryIdT = string;
 export interface PreviousQueryT {

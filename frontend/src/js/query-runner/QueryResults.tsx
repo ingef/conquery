@@ -8,7 +8,7 @@ import PreviewButton from "../button/PreviewButton";
 import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { canDownloadResult } from "../user/selectors";
-import type { ColumnDescription } from "js/api/types";
+import type { ColumnDescription } from "../api/types";
 import type { StateT } from "app-types";
 
 const Root = styled("div")`
