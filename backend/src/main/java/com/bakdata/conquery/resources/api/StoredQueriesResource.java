@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
@@ -48,8 +50,8 @@ public class StoredQueriesResource {
 	}
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
-		return processor.getAllQueries(dsUtil.getDataset(datasetId), req, user)
+	public List<ExecutionStatus> getQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req, @QueryParam("limit") OptionalInt limit, @QueryParam("offset") OptionalInt offset) {
+		return processor.getQueries(dsUtil.getDataset(datasetId), req, user, limit, offset)
 			.collect(Collectors.toList());
 	}
 

@@ -1,12 +1,11 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +38,7 @@ public class StoredQueriesProcessor {
 		this.storage = namespaces.getMetaStorage();
 	}
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
+	public Stream<ExecutionStatus> getQueries(Dataset dataset, HttpServletRequest req, User user, OptionalInt limit, OptionalInt offset) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return allQueries
@@ -48,6 +47,9 @@ public class StoredQueriesProcessor {
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
 			.filter(q -> q.getDataset().equals(dataset.getId()))
 			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
+			.sorted((q1,q2) -> q2.getCreationTime().compareTo(q1.getCreationTime())) // newest first
+			.skip(offset.orElse(0))
+			.limit(limit.orElse(allQueries.size()))
 			.flatMap(mq -> {
 				try {
 					return Stream.of(
