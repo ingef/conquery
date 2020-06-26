@@ -2,10 +2,8 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 import javax.validation.Validator;
 
@@ -30,9 +28,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
+import com.bakdata.conquery.util.functions.Collector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -48,10 +44,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
-
-		// Setup dependencies between dataset components.
-
+	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getEnvironment(), getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
@@ -107,6 +100,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			})
 			.onRemove(concept -> {
 				concept.getSelects().forEach(centralRegistry::remove);
+				//see #146  remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
 					c.getSelects().forEach(centralRegistry::remove);
 					c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
@@ -126,29 +120,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			});
 
 
-		// datasets and concepts need to be loaded in order.
-		// Dictionaries and Imports depend either and need to be loaded after that.
-
-		pool.submit(() -> {
-			dataset.loadData();
-			concepts.loadData();
-		}).get();
-
-		return List.of(
-				Futures.immediateFuture(dataset),
-				Futures.immediateFuture(concepts),
-				pool.submit(() -> {
-					dictionaries.loadData();
-					return dictionaries;
-				}),
-				pool.submit(() -> {
-					imports.loadData();
-					return imports;
-				})
-		);
+		collector
+			.collect(dataset)
+			.collect(dictionaries)
+			.collect(concepts)
+			.collect(imports);
 	}
-
-
 
 	@Override
 	public Dataset getDataset() {
