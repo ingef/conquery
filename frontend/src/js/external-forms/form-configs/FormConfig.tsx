@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { parseISO } from "date-fns";
 
 import type { StateT } from "app-types";
-import type { DatasetIdT } from "js/api/types";
+import type { DatasetIdT } from "../../api/types";
 
 import { FORM_CONFIG } from "../../common/constants/dndTypes";
 import SelectableLabel from "../../highlightable-label/HighlightableLabel";
