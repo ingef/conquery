@@ -1,11 +1,11 @@
 import { toUpperCaseUnderscore } from "../common/helpers";
 import * as actionTypes from "./actionTypes";
-import {
+import type {
   DatasetIdT,
   GetQueryResponseDoneT,
   GetQueryResponseT,
   ColumnDescription,
-} from "js/api/types";
+} from "../api/types";
 
 interface APICallType {
   loading?: boolean;
