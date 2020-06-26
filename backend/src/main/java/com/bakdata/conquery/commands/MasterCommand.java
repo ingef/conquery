@@ -5,7 +5,10 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -68,7 +71,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
-	public void run(ConqueryConfig config, Environment environment) {
+	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
 			.add(NamespaceCollection.class, namespaces);
@@ -99,24 +102,41 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		}
 
 		log.info("Started meta storage");
-		for (File directory : config.getStorage().getDirectory().listFiles()) {
-			if (directory.getName().startsWith("dataset_")) {
+
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
+
+
+		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {
+			loaders.submit(() -> {
 				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
-				if (datasetStorage != null) {
-					Namespace ns = new Namespace(datasetStorage);
-					ns.initMaintenance(maintenanceService);
-					namespaces.add(ns);
+
+				if (datasetStorage == null) {
+					log.error("Unable to load a dataset at `{}`", directory);
+					return;
 				}
-			}
+
+				Namespace ns = new Namespace(datasetStorage);
+				ns.initMaintenance(maintenanceService);
+				namespaces.add(ns);
+			});
 		}
+
+		loaders.shutdown();
+		loaders.awaitTermination(1, TimeUnit.DAYS);
+
+		log.info("All stores loaded: {}", namespaces);
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
+		log.info("MetaStorage loaded {}", this.storage);
+
 		namespaces.setMetaStorage(this.storage);
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
+
+
 		
 		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();
