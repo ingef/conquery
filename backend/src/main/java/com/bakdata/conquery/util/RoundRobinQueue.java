@@ -13,6 +13,7 @@ import com.google.common.collect.ForwardingQueue;
 import com.google.common.collect.Queues;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +22,8 @@ import org.jetbrains.annotations.Nullable;
  * Class implementing a queue that is backed by multiple queues at once that are evenly processed, avoiding starvation of jobs when a single producer creates a lot of jobs.
  * @param <E>
  */
+@Slf4j
+// TODO: 26.06.2020 fk: migrate logging to trace
 public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 
 	/**
@@ -78,6 +81,13 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
             return base;
         }
 
+		protected void doNotify() {
+			log.trace("Awakening a thread for new Work.");
+			synchronized (signal) {
+				signal.notify();
+			}
+		}
+
 		/**
 		 * Try to offer a new element to the queue, if successful notify on signal, awakening a waiting thread.
 		 */
@@ -86,10 +96,8 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
             final boolean offer = super.offer(element);
 
             if (offer) {
-                synchronized (signal) {
-                    signal.notify();
-                }
-            }
+				doNotify();
+			}
 
             return offer;
         }
@@ -102,10 +110,8 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
             final boolean add = super.add(element);
 
             if (add) {
-                synchronized (signal) {
-                    signal.notify();
-                }
-            }
+				doNotify();
+			}
 
             return add;
         }
@@ -136,9 +142,10 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
     public Queue<E> createQueue() {
         // TODO: 25.06.2020 FK: add supplier as creation parameter
         final Queue<E> out = new SignallingForwardingQueue<E>(Queues.newConcurrentLinkedQueue(), signal);
+		final int free;
 
         synchronized (queues) {
-            final int free = ArrayUtils.indexOf(queues, null);
+            free = ArrayUtils.indexOf(queues, null);
 
             if (free == -1) {
                 throw new IllegalStateException(String.format("Queue is full %d", queues.length));
@@ -146,6 +153,8 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 
             queues[free] = out;
         }
+
+		log.debug("Create a new Queue at {}. Now have {}", free, getNQueues());
 
         return out;
     }
@@ -156,8 +165,9 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	 * @return true if the queue was deleted, false if not.
 	 */
 	public boolean removeQueue(Queue<E> del) {
+		final int index;
         synchronized (queues) {
-            final int index = ArrayUtils.indexOf(queues, del);
+            index = ArrayUtils.indexOf(queues, del);
 
             if (index == -1) {
                 return false;
@@ -166,7 +176,9 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
             queues[index] = null;
         }
 
-        return true;
+		log.debug("Removing Queue at {}. Now have {}", index, getNQueues());
+
+		return true;
     }
 
 	/**
@@ -257,10 +269,14 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
                 return out;
             }
 
-            synchronized (signal) {
+			log.trace("Thread[{}], no element in Queue, waiting on Signal.", Thread.currentThread().getName());
+
+			synchronized (signal) {
                 signal.wait();
             }
-        }
+
+			log.trace("Thread[{}] Awakened for new Work.", Thread.currentThread().getName());
+		}
     }
 
 
@@ -278,11 +294,15 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
             return out;
         }
 
-        synchronized (signal) {
+		log.trace("Thread[{}], no element in Queue, waiting on Signal.", Thread.currentThread().getName());
+
+		synchronized (signal) {
             unit.timedWait(signal, timeout);
         }
 
-        return poll();
+		log.trace("Thread[{}] Awakened for new Work.", Thread.currentThread().getName());
+
+		return poll();
     }
 
 
@@ -307,12 +327,16 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
             E out = curr.poll();
 
             if (out != null) {
-                cycleIndex.set(index);
+				log.trace("Thread[{}] found Work in Queue[{}].", Thread.currentThread().getName(), index);
+				cycleIndex.set(index);
                 return out;
             }
         }
 
-        // If no queue had elements, return null.
+		log.trace("All Queues were empty.");
+
+
+		// If no queue had elements, return null.
         return null;
     }
 

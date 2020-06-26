@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerSta
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.util.RoundRobinQueue;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -56,10 +57,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	private Validator validator;
 	private ConqueryConfig config;
 	private Slave context;
-	private Workers workers = new Workers();
+	private Workers workers;
 	@Setter
 	private String label = "slave";
 	private ScheduledExecutorService scheduler;
+
+
 
 	public SlaveCommand() {
 		super("slave", "Connects this instance as a slave to a running master.");
@@ -83,8 +86,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
-
 		this.config = config;
+
+		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads());
+
 
 		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
 
@@ -101,7 +106,8 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				Worker worker = Worker.createWorker(
 					workerStorage.getWorker(),
 					workerStorage,
-					config
+					config,
+					workers.getQueryExecutorQueues().createQueue()
 				);
 
 				workers.add(worker);

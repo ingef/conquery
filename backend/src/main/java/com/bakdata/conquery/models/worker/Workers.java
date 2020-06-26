@@ -1,22 +1,48 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.util.RoundRobinQueue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Workers extends NamespaceCollection {
+public class Workers extends NamespaceCollection implements Closeable {
+
+	private final ThreadPoolExecutor queryThreadPool;
+
+	@Getter
+	private final RoundRobinQueue<Runnable> queryExecutorQueues;
+
+	public Workers(RoundRobinQueue<Runnable> queue, int threadPoolSize) {
+		super();
+		Objects.requireNonNull(queue, "Queues may not be empty.");
+		queryExecutorQueues = queue;
+
+		queryThreadPool = new ThreadPoolExecutor(threadPoolSize, threadPoolSize,
+												 0L, TimeUnit.MILLISECONDS,
+												 queryExecutorQueues,
+												 new ThreadFactoryBuilder().setNameFormat("QueryExecutor %d").build()
+		);
+		queryThreadPool.prestartAllCoreThreads();
+	}
+
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
@@ -58,9 +84,22 @@ public class Workers extends NamespaceCollection {
 		try {
 			removed.getJobManager().stop();
 			removed.getStorage().remove();
+			if(!getQueryExecutorQueues().removeQueue(removed.getQueryExecutor().getJobs())){
+				log.warn("Queue for Worker[{}] did not exist.", removed.getInfo().getDataset());
+			}
 		}
 		catch(Exception e) {
 			log.error("Failed to remove storage "+removed, e);
+		}
+	}
+
+	@SneakyThrows(InterruptedException.class)
+	@Override
+	public void close() throws IOException {
+		queryThreadPool.shutdown();
+		// TODO: 26.06.2020 this is probably not enough.
+		while (queryThreadPool.awaitTermination(5, TimeUnit.MINUTES)){
+			log.info("Waiting for QueryThreadPool to shut down");
 		}
 	}
 }

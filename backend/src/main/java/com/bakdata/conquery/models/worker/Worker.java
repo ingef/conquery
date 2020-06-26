@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.Executors;
+import java.util.Queue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.messages.network.MasterMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -52,19 +51,18 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private NetworkSession session;
 
 
-	public static Worker createWorker(WorkerInformation info, WorkerStorage storage, ConqueryConfig config) {
+	public static Worker createWorker(WorkerInformation info, WorkerStorage storage, ConqueryConfig config, Queue<Runnable> queryQueue) {
 		final JobManager jobManager = new JobManager(info.getName());
 		final BucketManager bucketManager = new BucketManager(jobManager, storage, info);
 
 		storage.setBucketManager(bucketManager);
 		jobManager.addSlowJob(new SimpleJob("Update Block Manager", bucketManager::fullUpdate));
 
+
+		final QueryExecutor queryExecutor = new QueryExecutor(queryQueue);
+
 		// Second format-str is used by threadpool.
 		final ThreadPoolExecutor pool = config.getQueries().getExecutionPool().createService(String.format("Dataset[%s] Worker-Thread %%d", info.getDataset()));
-
-		//TODO fk: I am using a workstealing pool for the query-engine as that is probably exactly the use case for it. It could increase performance.
-		final QueryExecutor queryExecutor = new QueryExecutor(MoreExecutors.listeningDecorator(Executors.newWorkStealingPool()));
-
 
 		return new Worker(info, jobManager, storage, queryExecutor, pool);
 	}

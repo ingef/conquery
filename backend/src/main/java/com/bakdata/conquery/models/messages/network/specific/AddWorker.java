@@ -42,7 +42,8 @@ public class AddWorker extends SlaveMessage.Slow {
 		Worker worker = Worker.createWorker(
 			info,
 			workerStorage,
-			config
+			config,
+			context.getWorkers().getQueryExecutorQueues().createQueue()
 		);
 
 		worker.getJobManager().start();
