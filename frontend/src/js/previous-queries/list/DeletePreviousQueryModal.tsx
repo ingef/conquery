@@ -5,7 +5,7 @@ import DeleteModal from "../../modal/DeleteModal";
 import { deleteStoredQuery } from "../../api/api";
 import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
-import type { DatasetIdT } from "js/api/types";
+import type { DatasetIdT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 
 interface PropsType {

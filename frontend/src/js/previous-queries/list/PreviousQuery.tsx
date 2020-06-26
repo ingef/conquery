@@ -29,8 +29,8 @@ import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
 import { PreviousQueryT } from "./reducer";
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import type { DatasetIdT } from "js/api/types";
-import { StateT } from "app-types";
+import type { DatasetIdT } from "../../api/types";
+import type { StateT } from "app-types";
 
 const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   margin: 0;

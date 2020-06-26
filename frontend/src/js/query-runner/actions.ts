@@ -8,7 +8,7 @@ import { loadPreviousQueries } from "../previous-queries/list/actions";
 
 import * as actionTypes from "./actionTypes";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
-import { DatasetIdT, GetQueryResponseDoneT, QueryIdT } from "js/api/types";
+import type { DatasetIdT, GetQueryResponseDoneT, QueryIdT } from "../api/types";
 
 /*
   This implements a polling mechanism,
