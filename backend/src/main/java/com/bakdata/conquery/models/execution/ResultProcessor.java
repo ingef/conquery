@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultProcessor {
 	
-	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, Namespaces namespaces, ConqueryConfig config) {
+	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, Namespaces namespaces, ConqueryConfig config) {
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, datasetId, Ability.READ);
@@ -47,7 +47,7 @@ public class ResultProcessor {
 		
 		// Get the locale extracted by the LocaleFilter
 		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
-		Charset charset = determineCharset(userAgent);
+		Charset charset = determineCharset(userAgent, queryCharset);
 
 		try {
 			StreamingOutput out = exec.getResult(mappingState, settings, charset, config.getCsv().getLineSeparator());
@@ -62,10 +62,22 @@ public class ResultProcessor {
 		}
 	}
 
-	private static Charset determineCharset(String userAgent) {
-		if(userAgent == null) {
-			return StandardCharsets.UTF_8;
+	/**
+	 * Tries to determine the charset for the result encoding from different request properties.
+	 * Defaults to StandardCharsets.UTF_8.
+	 */
+	private static Charset determineCharset(String userAgent, String queryCharset) {
+		if(queryCharset != null) {
+			try {
+				return Charset.forName(queryCharset);				
+			}catch (Exception e) {
+				log.warn("Unable to map '{}' to a charset. Defaulting to UTF-8", queryCharset);
+				return StandardCharsets.UTF_8;
+			}
 		}
-		return userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
+		if(userAgent != null) {
+			return userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
+		}
+		return StandardCharsets.UTF_8;
 	}
 }
