@@ -83,7 +83,7 @@ class RoundRobinQueueTest {
 			out.add(integer);
 		}
 
-		assertThat(out).containsExactly(1, 2);
+		assertThat(out).containsExactlyInAnyOrder(1, 2);
 	}
 
 	@Test

@@ -311,11 +311,10 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
      */
     @Override
     public E poll() {
-    	// The last queue we looked at
+    	// The next queue we look poll
         final int begin = cycleIndex.get();
 
-        // Start at the next queue
-        for (int offset = 1; offset < queues.length; offset++) {
+        for (int offset = 0; offset < queues.length; offset++) {
             final int index = (begin + offset) % (queues.length - 1);
             Queue<E> curr = queues[index];
 
@@ -328,7 +327,7 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 
             if (out != null) {
 				log.trace("Thread[{}] found Work in Queue[{}].", Thread.currentThread().getName(), index);
-				cycleIndex.set(index);
+				cycleIndex.set(index + 1);
                 return out;
             }
         }
