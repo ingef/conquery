@@ -6,11 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -18,6 +20,7 @@ import com.bakdata.conquery.util.RoundRobinQueue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +30,11 @@ public class Workers extends NamespaceCollection implements Closeable {
 
 	private final ThreadPoolExecutor queryThreadPool;
 
-	@Getter
 	private final RoundRobinQueue<Runnable> queryExecutorQueues;
 
-	public Workers(RoundRobinQueue<Runnable> queue, int threadPoolSize) {
+	public Workers(@NonNull RoundRobinQueue<Runnable> queues, int threadPoolSize) {
 		super();
-		Objects.requireNonNull(queue, "Queues may not be empty.");
-		queryExecutorQueues = queue;
+		queryExecutorQueues = queues;
 
 		queryThreadPool = new ThreadPoolExecutor(threadPoolSize, threadPoolSize,
 												 0L, TimeUnit.MILLISECONDS,
@@ -49,6 +50,10 @@ public class Workers extends NamespaceCollection implements Closeable {
 	private ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
 	@JsonIgnore
 	private transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
+
+	public Queue<Runnable> createQueue(SlaveCommand slaveCommand) {
+		return queryExecutorQueues.createQueue();
+	}
 
 	public void add(Worker worker) {
 		nextWorker.incrementAndGet();
@@ -84,7 +89,7 @@ public class Workers extends NamespaceCollection implements Closeable {
 		try {
 			removed.getJobManager().stop();
 			removed.getStorage().remove();
-			if(!getQueryExecutorQueues().removeQueue(removed.getQueryExecutor().getJobs())){
+			if(!queryExecutorQueues.removeQueue(removed.getQueryExecutor().getJobs())){
 				log.warn("Queue for Worker[{}] did not exist.", removed.getInfo().getDataset());
 			}
 		}
@@ -111,4 +116,6 @@ public class Workers extends NamespaceCollection implements Closeable {
 		}
 		return queryThreadPool.getActiveCount() != 0 || !queryExecutorQueues.isEmpty();
 	}
+
+
 }

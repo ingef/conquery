@@ -110,7 +110,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 					workerStorage.getWorker(),
 					workerStorage,
 					config,
-					workers.getQueryExecutorQueues().createQueue()
+					workers.createQueue(this)
 			);
 
 			workers.add(worker);
@@ -121,7 +121,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		log.info("All Worker Storages loaded: {}", workers);
 	}
-	
+
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
