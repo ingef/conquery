@@ -218,7 +218,7 @@ class RoundRobinQueueTest {
 					q.offer(_value);
 					log.info("Offered {}", _value);
 					if (_value % 3 == 0) {
-						TimeUnit.NANOSECONDS.sleep(_value % 2 == 0 ? 2 : 10);
+						TimeUnit.MILLISECONDS.sleep(_value % 2 == 0 ? 2 : 10);
 
 						if (q.isEmpty()) {
 							log.info("Dropped {} before it was accessed", _value);
@@ -245,7 +245,7 @@ class RoundRobinQueueTest {
 
 			final Thread thread1 = threadFactory.newThread(() -> {
 				try {
-					TimeUnit.NANOSECONDS.sleep(_value % 2 == 0 ? 4 : 10);
+					TimeUnit.MILLISECONDS.sleep(_value % 2 == 0 ? 4 : 10);
 					final Integer taken = queue.poll(100, TimeUnit.MILLISECONDS);
 					log.info("Received {}", taken);
 

@@ -30,11 +30,16 @@ import org.jetbrains.annotations.Nullable;
 public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 
 	/**
+	 * If {@code queues} is full, it is grown by {@code GROWTH_FACTOR}.
+	 */
+	private static final double GROWTH_FACTOR = 1.5d;
+
+	/**
 	 * The backing queues.
 	 *
 	 * @implNote null denotes no queue, and this queue must not be contiguously filled: Deletions just unset the queue so it is no longer processed.
 	 */
-	private final Queue<E>[] queues;
+	private Queue<E>[] queues;
 	private final Object signal = new Object();
 
 	/**
@@ -130,7 +135,9 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 
 			if (addAll) {
 				//TODO does this cause problems?
-				signal.notifyAll();
+				synchronized (signal) {
+					signal.notifyAll();
+				}
 			}
 
 			return addAll;
@@ -148,11 +155,12 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 		final Queue<E> out = new SignallingForwardingQueue<E>(Queues.newConcurrentLinkedQueue(), signal);
 		final int free;
 
-		synchronized (queues) {
+		synchronized (signal) {
 			free = ArrayUtils.indexOf(queues, null);
 
 			if (free == -1) {
-				throw new IllegalStateException(String.format("Queue is full %d", queues.length));
+				log.warn("Growing RoundRobinQueue to new size {}", (int) ((double) getCapacity() * GROWTH_FACTOR));
+				queues = Arrays.copyOf(queues, (int) ((double) getCapacity() * GROWTH_FACTOR));
 			}
 
 			queues[free] = out;
@@ -171,7 +179,7 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	 */
 	public boolean removeQueue(Queue<E> del) {
 		final int index;
-		synchronized (queues) {
+		synchronized (signal) {
 			index = ArrayUtils.indexOf(queues, del);
 
 			if (index == -1) {
