@@ -253,7 +253,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return url != null && state != ExecutionState.NEW && isPermittedDownload;
+		return url != null && state == ExecutionState.DONE && isPermittedDownload;
 	}
 
 	/**
