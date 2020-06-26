@@ -2,6 +2,8 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.validation.Validator;
 
@@ -19,7 +21,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,18 +47,36 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		super.createStores(collector);
+	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
+
+		// Load all base data first, then load worker specific data.
+		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
+		Futures.allAsList(stores).get();
+
+
 		worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
 		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-		
-		collector
-			.collect(worker)
-			.collect(blocks)
-			.collect(cBlocks);
+
+		return ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
+					   .addAll(stores)
+					   .add(
+							   pool.submit(() -> {
+								   worker.loadData();
+								   return worker;
+							   }),
+							   pool.submit(() -> {
+								   blocks.loadData();
+								   return blocks;
+							   }),
+							   pool.submit(() -> {
+								   cBlocks.loadData();
+								   return cBlocks;
+							   })
+					   )
+					   .build();
 	}
-	
+
 	@Override
 	public void addCBlock(CBlock cBlock) throws JSONException {
 		cBlocks.add(cBlock);
