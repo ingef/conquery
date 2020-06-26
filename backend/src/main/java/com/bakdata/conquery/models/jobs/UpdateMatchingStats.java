@@ -36,9 +36,10 @@ public class UpdateMatchingStats extends Job {
 			return;
 		}
 
-		log.debug("Starting to update Matching stats with {}", worker);
-
 		progressReporter.setMax(worker.getStorage().getAllConcepts().size());
+
+		log.info("Starting to update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
+
 
 		List<Future<Map<ConceptElementId<?>, MatchingStats.Entry>>> conceptMatches = new ArrayList<>();
 

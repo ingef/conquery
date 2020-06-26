@@ -240,16 +240,23 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		long started = System.nanoTime();
 		for(int i=0;i<10;i++) {
 			do {
-				busy = false;
-				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
-				busy |= standaloneCommand.getMaster().getStorage().getAllExecutions().stream().map(ManagedExecution::getState).filter(ExecutionState.RUNNING::equals).count()>0;
+				busy = standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
+				busy |= standaloneCommand.getMaster()
+										 .getStorage()
+										 .getAllExecutions()
+										 .stream()
+										 .map(ManagedExecution::getState)
+										 .anyMatch(ExecutionState.RUNNING::equals);
+
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
 					busy |= slave.isBusy();
+
 				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
 				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
 					log.warn("waiting for done work for a long time");
 					started = System.nanoTime();
 				}
+
 			} while(busy);
 		}
 		log.info("all jobs finished");

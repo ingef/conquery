@@ -92,10 +92,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		do{
 			Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
 			log.trace("{} active threads. {} remaining tasks.", getPool().getActiveCount(), getPool().getQueue().size());
-		}while (isBusy());
+		}while (pool.getActiveCount() != 0);
 	}
 
 	public boolean isBusy() {
-		return pool.getActiveCount() != 0;
+		return pool.getActiveCount() != 0 || jobManager.isSlowWorkerBusy();
 	}
 }

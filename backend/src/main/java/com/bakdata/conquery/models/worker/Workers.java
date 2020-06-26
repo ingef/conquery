@@ -109,6 +109,6 @@ public class Workers extends NamespaceCollection implements Closeable {
 				return true;
 			}
 		}
-		return queryThreadPool.getActiveCount() != 0 && queryExecutorQueues.isEmpty();
+		return queryThreadPool.getActiveCount() != 0 || !queryExecutorQueues.isEmpty();
 	}
 }
