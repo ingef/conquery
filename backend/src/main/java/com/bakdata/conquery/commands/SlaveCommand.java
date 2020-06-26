@@ -100,20 +100,23 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
 
-			WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-			if (workerStorage == null) {
-				log.warn("No valid WorkerStorage found in {}",directory);
-				continue;
-			}
+			loaders.submit(() -> {
 
-			Worker worker = Worker.createWorker(
-					workerStorage.getWorker(),
-					workerStorage,
-					config,
-					workers.createQuerySubQueue()
-			);
+				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
+				if (workerStorage == null) {
+					log.warn("No valid WorkerStorage found in {}", directory);
+					return;
+				}
 
-			workers.add(worker);
+				Worker worker = Worker.createWorker(
+						workerStorage.getWorker(),
+						workerStorage,
+						config,
+						workers.createQuerySubQueue()
+				);
+
+				workers.add(worker);
+			});
 		}
 
 		loaders.shutdown();
