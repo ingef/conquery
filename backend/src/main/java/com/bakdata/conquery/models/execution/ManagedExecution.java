@@ -178,6 +178,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : label);
+		status.setPristineLabel(label == null || queryId.toString().equals(label));
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
