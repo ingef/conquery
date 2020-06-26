@@ -69,6 +69,10 @@ const SharePreviousQueryModal = ({
     initialUserGroupsValue
   );
 
+  const onSetUserGroupsValue = (value: UserGroupT[] | null) => {
+    setUserGroupsValue(value ? value : []);
+  };
+
   const dispatch = useDispatch();
 
   if (!previousQuery) {
@@ -109,7 +113,7 @@ const SharePreviousQueryModal = ({
     >
       <QueryName>{previousQuery.label}</QueryName>
       <SxInputMultiSelect
-        input={{ value: userGroupsValue, onChange: setUserGroupsValue }}
+        input={{ value: userGroupsValue, onChange: onSetUserGroupsValue }}
         label={T.translate("sharePreviousQueryModal.groupsLabel")}
         options={userGroupOptions}
       />
