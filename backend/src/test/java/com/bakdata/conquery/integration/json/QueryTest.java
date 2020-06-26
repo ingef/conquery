@@ -1,7 +1,8 @@
 package com.bakdata.conquery.integration.json;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
+
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -50,17 +51,22 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
-		IntegrationUtils.importTables(support, content);
+		importTables(support, content);
 		support.waitUntilWorkDone();
 
-		IntegrationUtils.importConcepts(support, rawConcepts);
+		importConcepts(support, rawConcepts);
 		support.waitUntilWorkDone();
+
+		importTableContents(support, content.getTables());
+		support.waitUntilWorkDone();
+		
+		importIdMapping(support, content);
+		support.waitUntilWorkDone();
+		
+		importPreviousQueries(support, content);
+		support.waitUntilWorkDone();
+		
 		query = IntegrationUtils.parseQuery(support, rawQuery);
-
-		IntegrationUtils.importTableContents(support, Arrays.asList(content.getTables()), support.getDataset());
-		support.waitUntilWorkDone();
-		IntegrationUtils.importIdMapping(support, content);
-		IntegrationUtils.importPreviousQueries(support, content);
 	}
 
 }

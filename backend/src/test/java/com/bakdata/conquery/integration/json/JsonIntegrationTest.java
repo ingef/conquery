@@ -35,7 +35,7 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 		test.importRequiredData(conquery);
 
 		//ensure the metadata is collected
-		for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+		for(SlaveCommand slave : conquery.getSlaves()) {
 			slave.getWorkers().getWorkers().values().forEach(worker -> {
 				worker.getJobManager().addSlowJob(new UpdateMatchingStats(worker));
 			});

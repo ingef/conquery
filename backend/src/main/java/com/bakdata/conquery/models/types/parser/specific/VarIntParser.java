@@ -8,9 +8,10 @@ import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
-
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class VarIntParser extends Parser<Integer> {
 
 	private int maxValue = Integer.MIN_VALUE;

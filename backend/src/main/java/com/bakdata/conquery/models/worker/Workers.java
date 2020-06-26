@@ -102,4 +102,13 @@ public class Workers extends NamespaceCollection implements Closeable {
 			log.info("Waiting for QueryThreadPool to shut down");
 		}
 	}
+
+	public boolean isBusy() {
+		for( Worker worker : workers.values()) {
+			if(worker.isBusy()) {
+				return true;
+			}
+		}
+		return queryThreadPool.getActiveCount() != 0 && queryExecutorQueues.isEmpty();
+	}
 }

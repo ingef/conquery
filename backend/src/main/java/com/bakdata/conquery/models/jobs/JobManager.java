@@ -15,10 +15,10 @@ public class JobManager implements Managed {
 	private final String name;
 
 
-	public JobManager(String labelSuffix) {
-		name = labelSuffix;
-		slowExecutor = new JobExecutor("Job Manager slow " + name);
-		fastExecutor = new JobExecutor("Job Manager lfast " + name);
+	public JobManager(String name) {
+		this.name = name;
+		slowExecutor = new JobExecutor("Job Manager slow " + this.name);
+		fastExecutor = new JobExecutor("Job Manager fast " + this.name);
 	}
 
 	public void addSlowJob(Job job) {

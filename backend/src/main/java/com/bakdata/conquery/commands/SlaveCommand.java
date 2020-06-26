@@ -88,6 +88,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		this.config = config;
 
+		if(config.getStorage().getDirectory().mkdirs()){
+			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
+		}
+
 		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads());
 
 
@@ -276,5 +280,9 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		catch(Exception e) {
 			log.warn("Failed to report job manager status", e);
 		}
+	}
+
+	public boolean isBusy() {
+		return getJobManager().isSlowWorkerBusy() || workers.isBusy();
 	}
 }

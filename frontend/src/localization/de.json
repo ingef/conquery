@@ -325,7 +325,8 @@
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
-    "explanation": "Stellt die ersten {count} Zeilen der Ergebnisse dar",
+    "previewHeadline": "Die ersten {count} Zeilen der Ergebnisse",
+    "statisticsHeadline": "Spaltenstatistik basierend auf den vollständigen Ergebnissen",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
@@ -352,5 +353,9 @@
   },
   "deleteFormConfigModal": {
     "areYouSure": "Diese Konfiguration wirklich löschen?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Zurück zu Standardansicht",
+    "closeAll": "Alle Konzepte schließen"
   }
 }

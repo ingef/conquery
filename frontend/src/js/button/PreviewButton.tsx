@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import T from "i18n-react";
 
@@ -7,20 +7,27 @@ import { openPreview } from "../preview/actions";
 
 import IconButton from "./IconButton";
 import { StateT } from "app-types";
+import { ColumnDescription } from "js/api/types";
 
-type PropsType = {
+interface PropsT {
+  columns: ColumnDescription[];
   url: string;
   className?: string;
-};
+}
 
-const PreviewButton = ({ url, className, ...restProps }: PropsType) => {
+const PreviewButton: FC<PropsT> = ({
+  url,
+  columns,
+  className,
+  ...restProps
+}) => {
   const authToken = getStoredAuthToken();
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.preview.isLoading
   );
 
   const dispatch = useDispatch();
-  const onOpenPreview = (url: string) => dispatch(openPreview(url));
+  const onOpenPreview = (url: string) => dispatch(openPreview(url, columns));
 
   const href = `${url}?access_token=${encodeURIComponent(
     authToken || ""

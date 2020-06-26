@@ -11,6 +11,7 @@ interface PropsT {
   editing: boolean;
   text: string;
   large?: boolean;
+  saveOnClickoutside?: boolean;
   isHighlighted?: boolean;
   selectTextOnMount?: boolean;
   onSubmit: (text: string) => void;
@@ -37,6 +38,7 @@ const EditableText: React.FC<PropsT> = (props) => {
       loading={props.loading}
       text={props.text}
       selectTextOnMount={props.selectTextOnMount}
+      saveOnClickoutside={props.saveOnClickoutside}
       onSubmit={props.onSubmit}
       onCancel={props.onToggleEdit}
     />

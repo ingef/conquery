@@ -61,7 +61,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		final QueryExecutor queryExecutor = new QueryExecutor(queryQueue);
 
-		// Second format-str is used by threadpool.
+		// Second format-str is used by ThreadPool.
 		final ThreadPoolExecutor pool = config.getQueries().getExecutionPool().createService(String.format("Dataset[%s] Worker-Thread %%d", info.getDataset()));
 
 		return new Worker(info, jobManager, storage, queryExecutor, pool);
@@ -80,7 +80,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Override
 	public void close() throws IOException {
 		pool.shutdownNow();
-		queryExecutor.close();
 		storage.close();
 	}
 	
@@ -93,6 +92,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		do{
 			Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
 			log.trace("{} active threads. {} remaining tasks.", getPool().getActiveCount(), getPool().getQueue().size());
-		}while (getPool().getActiveCount() > 0);
+		}while (isBusy());
+	}
+
+	public boolean isBusy() {
+		return pool.getActiveCount() != 0;
 	}
 }
