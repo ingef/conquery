@@ -56,7 +56,7 @@ public class ExecuteQuery extends WorkerMessage {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 			} catch(Exception e) {
-				log.error(String.format("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey()), e );
+				log.error("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
 				sendFailureToMaster(result, execution, context, e);
 			}
 		}

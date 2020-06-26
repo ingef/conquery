@@ -65,7 +65,7 @@ public class JobExecutor extends Thread {
 	}
 	
 	public boolean isBusy() {
-		return busy.get();
+		return busy.get() || !jobs.isEmpty();
 	}
 
 	public void close() {

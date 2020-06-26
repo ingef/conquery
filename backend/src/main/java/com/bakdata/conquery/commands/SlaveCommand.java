@@ -3,6 +3,9 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -16,6 +19,8 @@ import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
+import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -25,10 +30,10 @@ import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.AddSlave;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
-import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.util.RoundRobinQueue;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -52,10 +57,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	private Validator validator;
 	private ConqueryConfig config;
 	private Slave context;
-	private Workers workers = new Workers();
+	private Workers workers;
 	@Setter
 	private String label = "slave";
 	private ScheduledExecutorService scheduler;
+
+
 
 	public SlaveCommand() {
 		super("slave", "Connects this instance as a slave to a running master.");
@@ -68,7 +75,6 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		jobManager = new JobManager(label);
 		synchronized (environment) {
-			environment.lifecycle().manage(jobManager);
 			environment.lifecycle().manage(this);
 			validator = environment.getValidator();
 			
@@ -80,29 +86,42 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
-
 		this.config = config;
 
 		if(config.getStorage().getDirectory().mkdirs()){
 			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
 
-		for(File directory : config.getStorage().getDirectory().listFiles()) {
-			if(directory.getName().startsWith("worker_")) {
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if(workerStorage != null) {
-					Worker worker = new Worker(
-						workerStorage.getWorker(),
-						jobManager,
-						workerStorage,
-						new QueryExecutor(config)
-					);
-					workers.add(worker);
-				}
+		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads());
+
+
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
+
+		File storageDir = config.getStorage().getDirectory();
+		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+
+			WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
+			if (workerStorage == null) {
+				log.warn("No valid WorkerStorage found in {}",directory);
+				continue;
 			}
+
+			Worker worker = Worker.createWorker(
+					workerStorage.getWorker(),
+					workerStorage,
+					config,
+					workers.createQuerySubQueue()
+			);
+
+			workers.add(worker);
 		}
+
+		loaders.shutdown();
+		loaders.awaitTermination(1, TimeUnit.DAYS);
+
+		log.info("All Worker Storages loaded: {}", workers);
 	}
-	
+
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
@@ -178,6 +197,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	
 	@Override
 	public void start() throws Exception {
+		jobManager.start();
+
+		for (Worker value : workers.getWorkers().values()) {
+			value.getJobManager().start();
+		}
+
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		connector.setHandler(this);
@@ -214,9 +239,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void stop() throws Exception {
+		getJobManager().stop();
+
 		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
+				w.getJobManager().stop();
 			}
 			catch(Exception e) {
 				log.error(w+" could not be closed", e);
@@ -229,17 +257,29 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		log.info("Connection was closed by master");
 		connector.dispose();
 	}
+
 	private void reportJobManagerStatus() {
+		if (context == null || !context.isConnected()) {
+			return;
+		}
+
+		// Collect the Slaves and all its workers jobs into a single queue
+		final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
+
+		for (Worker worker : workers.getWorkers().values()) {
+			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
+		}
+
+		jobManagerStatus.getJobs().sort(Comparator.<JobStatus>comparingLong(js -> js.getProgressReporter().getStartTime()).reversed());
+
 		try {
-			if(context!= null && context.isConnected()) {
-				context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
-			}
+			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
 		}
 		catch(Exception e) {
 			log.warn("Failed to report job manager status", e);
 		}
 	}
-	
+
 	public boolean isBusy() {
 		return getJobManager().isSlowWorkerBusy() || workers.isBusy();
 	}

@@ -8,7 +8,11 @@ import lombok.ToString;
 @Getter @Setter @ToString
 public class QueryConfig {
 
+	@Deprecated
 	private ThreadPoolDefinition executionPool = new ThreadPoolDefinition();
+
+	private int roundRobinQueueCapacity = 10;
+	private int nThreads = Runtime.getRuntime().availableProcessors();
 
 	private Duration oldQueriesTime = Duration.days(30);
 }
