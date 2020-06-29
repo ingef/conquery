@@ -3,6 +3,7 @@ import {
   SET_CONCEPT_OPEN,
   CLOSE_ALL_CONCEPT_OPEN,
 } from "./actionTypes";
+import { SEARCH_TREES_SUCCESS } from "../concept-trees/actionTypes";
 
 export type ConceptTreesOpenStateT = {
   [conceptId: string]: boolean;
@@ -25,6 +26,7 @@ const conceptTreesOpen = (
         all[conceptId] = false;
         return all;
       }, {});
+    case SEARCH_TREES_SUCCESS:
     case RESET_ALL_CONCEPT_OPEN:
       return initialState;
     default:
