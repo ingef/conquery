@@ -41,8 +41,6 @@ public class AddWorker extends SlaveMessage.Slow {
 
 		Worker worker = context.getWorkers().createWorker(info, workerStorage);
 
-		worker.getJobManager().start();
-
 		worker.setSession(context.getRawSession());
 		workerStorage.setWorker(info);
 		context.send(new RegisterWorker(worker.getInfo()));
