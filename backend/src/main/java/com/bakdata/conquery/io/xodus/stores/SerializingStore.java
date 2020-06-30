@@ -1,8 +1,13 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.validation.Validator;
 
@@ -14,8 +19,10 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Throwables;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +78,12 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 */
 	private final IStoreInfo storeInfo;
 
+	private int totalProcessed = 0;
+	private int failedKeys = 0;
+	private int failedValues = 0;
+
+	private final File dumpDir;
+
 	@SuppressWarnings("unchecked")
 	public SerializingStore(XodusStore store, Validator validator, IStoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
@@ -94,6 +107,19 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		keyReader = Jackson.BINARY_MAPPER
 							.readerFor(storeInfo.getKeyType())
 							.withView(InternalOnly.class);
+		
+		Optional<File> dumpUnreadable = ConqueryConfig.getInstance().getStorage().getUnreadbleDataDumpDirectory();
+		if(dumpUnreadable.isPresent()) {
+			dumpDir = dumpUnreadable.get();
+			if(!dumpDir.exists()) {
+				dumpDir.mkdirs();
+			}
+			else if(!dumpDir.isDirectory()) {
+				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", dumpDir.getAbsolutePath()));
+			}
+		} else {
+			dumpDir = null;
+		}
 	}
 
 	@Override
@@ -115,22 +141,48 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public VALUE get(KEY key) {
-		return readValue(store.get(writeKey(key)));
+		ByteIterable binValue = store.get(writeKey(key));
+		try {
+			return readValue(binValue);			
+		} catch (Exception e) {
+			if(dumpDir != null) {
+				dumpToFile(binValue, key.toString());
+				return null;
+			}
+			Throwables.throwIfUnchecked(e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+		totalProcessed = 0;
+		failedKeys = 0;
+		failedValues = 0;
 		store.forEach((k, v) -> {
+			totalProcessed++;
 			try {
 				try {
 					consumer.accept(readKey(k), readValue(v), v.getLength());
 				} catch (Exception e) {
-					log.warn("Could not parse value for key " + readKey(k), e);
+					if(dumpDir != null) {						
+						dumpToFile(v, Jackson.BINARY_MAPPER.readerFor(String.class).readValue(k.getBytesUnsafe()));
+					} else {
+						log.warn("Could not parse value for key " + readKey(k), e);						
+					}
+					failedValues++;
 				}
 			} catch (Exception e) {
 				log.warn("Could not parse key " + k, e);
+				failedKeys++;
 			}
 		});
+		log.info(String.format("While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
+			this.storeInfo.getXodusName(),
+			totalProcessed, failedKeys,
+			(float) failedKeys/totalProcessed*100,
+			failedValues,
+			(float) failedValues/totalProcessed*100));
 	}
 
 	@Override
@@ -206,6 +258,28 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
+		}
+	}
+
+	private void dumpToFile(ByteIterable obj, String keyOfDump) {
+		File dumpfile = new File(Path.of(dumpDir.getAbsolutePath(), String.format("%s-%s-%s.json",
+				DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
+				this.storeInfo.getXodusName(),
+				keyOfDump
+				)
+			).toString());
+		if(dumpfile.exists()) {
+			log.warn("Abort dumping of file {} because it already exists.",dumpfile);
+			return;
+		}
+		try {
+			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
+			JsonNode dump = Jackson.BINARY_MAPPER.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
+			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
+		}
+		catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 	}
 

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.config;
 
 import java.io.File;
+import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -26,4 +27,6 @@ public class StorageConfig {
 
 	@Min(1)
 	private int nThreads = Runtime.getRuntime().availableProcessors();
+	
+	private Optional<File> unreadbleDataDumpDirectory = null;
 }
