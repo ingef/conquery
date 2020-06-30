@@ -125,7 +125,7 @@ public abstract class QPParentNode extends QPNode {
 	
 	protected Pair<List<QPNode>, ListMultimap<TableId, QPNode>> createClonedFields(CloneContext ctx) {
 		List<QPNode> clones = new ArrayList<>(getChildren());
-		clones.replaceAll(qp -> ctx.clone(qp));
+		clones.replaceAll(ctx::clone);
 
 		ArrayListMultimap<TableId, QPNode> cloneMap = ArrayListMultimap.create(childMap);
 		

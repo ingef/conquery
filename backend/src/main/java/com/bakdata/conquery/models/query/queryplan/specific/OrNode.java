@@ -24,6 +24,9 @@ public class OrNode extends QPParentNode {
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		Pair<List<QPNode>, ListMultimap<TableId, QPNode>> fields = createClonedFields(ctx);
+		final List<QPNode> alwaysActiveChildren = new ArrayList<>(getAlwaysActiveChildren());
+		alwaysActiveChildren.replaceAll(ctx::clone);
+
 		return new OrNode(fields.getLeft(), fields.getRight(), alwaysActiveChildren);
 	}
 	

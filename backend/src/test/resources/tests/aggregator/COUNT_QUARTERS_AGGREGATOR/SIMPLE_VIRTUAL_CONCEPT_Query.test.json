@@ -23,7 +23,7 @@
   "concepts": [
     {
       "label": "select",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "selects": {
         "name": "count_quarters",
         "type": "COUNT_QUARTERS"
@@ -31,11 +31,11 @@
       "connectors": [
         {
           "label": "connector",
-          "table": "table1",
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
-          }
+          },
+          "column" : "table1.datum"
         }
       ]
     }
@@ -52,7 +52,7 @@
         "columns": [
           {
             "name": "datum",
-            "type": "DATE"
+            "type": "DATE_RANGE"
           }
         ]
       }
