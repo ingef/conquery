@@ -28,5 +28,5 @@ public class StorageConfig {
 	@Min(1)
 	private int nThreads = Runtime.getRuntime().availableProcessors();
 	
-	private Optional<File> unreadbleDataDumpDirectory = null;
+	private Optional<File> unreadbleDataDumpDirectory = Optional.empty();
 }
