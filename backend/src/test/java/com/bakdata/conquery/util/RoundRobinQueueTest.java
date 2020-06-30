@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -56,34 +55,15 @@ class RoundRobinQueueTest {
 		assertThat(queue.contains(2)).isTrue();
 		assertThat(queue.contains(3)).isFalse();
 
-		final Iterator<Integer> iterator = queue.iterator();
 
-		assertThat(iterator.next()).isEqualTo(1);
+		assertThat(queue.poll()).isEqualTo(1);
 		assertThat(first).isEmpty();
-		assertThat(iterator.next()).isEqualTo(2);
+		assertThat(queue.poll()).isEqualTo(2);
 		assertThat(second).isEmpty();
-		assertThat(iterator.next()).isEqualTo(null);
+		assertThat(queue.poll()).isEqualTo(null);
 		assertThat(queue).isEmpty();
 	}
 
-	@Test
-	public void testIterator() {
-		final RoundRobinQueue<Integer> queue = new RoundRobinQueue<>(100);
-
-		final Queue<Integer> first = queue.createQueue();
-		final Queue<Integer> second = queue.createQueue();
-
-		first.add(1);
-		second.add(2);
-
-		final List<Integer> out = new ArrayList<>();
-
-		for (Integer integer : queue) {
-			out.add(integer);
-		}
-
-		assertThat(out).containsExactlyInAnyOrder(1, 2);
-	}
 
 	@Test
 	public void testNewQueue() {
@@ -95,19 +75,15 @@ class RoundRobinQueueTest {
 		first.add(1);
 		second.add(2);
 
-
-		final Iterator<Integer> iterator = queue.iterator();
-
-
-		assertThat(iterator.next()).isEqualTo(1);
-		assertThat(iterator.next()).isEqualTo(2);
-		assertThat(iterator.next()).isEqualTo(null);
+		assertThat(queue.poll()).isEqualTo(1);
+		assertThat(queue.poll()).isEqualTo(2);
+		assertThat(queue.poll()).isEqualTo(null);
 
 		final Queue<Integer> third = queue.createQueue();
 		third.add(3);
 
 
-		assertThat(iterator.next()).isEqualTo(3);
+		assertThat(queue.poll()).isEqualTo(3);
 	}
 
 
@@ -201,7 +177,7 @@ class RoundRobinQueueTest {
 
 	@RepeatedTest(20)
 	public void parPutParTakeRemDelayed() throws InterruptedException {
-		final RoundRobinQueue<Integer> queue = new RoundRobinQueue<>(100);
+		final RoundRobinQueue<Integer> queue = new RoundRobinQueue<>(5);
 
 		final Set<Integer> found = Collections.synchronizedSet(new HashSet<>());
 

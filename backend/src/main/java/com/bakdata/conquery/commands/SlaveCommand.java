@@ -4,8 +4,6 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -20,8 +18,8 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
-import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -92,10 +90,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
 
-		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads());
-
-
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
+		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads(), config.getStorage().getThreads());
 
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
@@ -106,18 +101,13 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				continue;
 			}
 
-			Worker worker = Worker.createWorker(
+			workers.createWorker(
 					workerStorage.getWorker(),
-					workerStorage,
-					config,
-					workers.createQuerySubQueue()
+					workerStorage
 			);
-
-			workers.add(worker);
 		}
 
-		loaders.shutdown();
-		loaders.awaitTermination(1, TimeUnit.DAYS);
+
 
 		log.info("All Worker Storages loaded: {}", workers);
 	}
@@ -197,10 +187,8 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	
 	@Override
 	public void start() throws Exception {
-		jobManager.start();
-
 		for (Worker value : workers.getWorkers().values()) {
-			value.getJobManager().start();
+			value.getJobManager().addSlowJob(new SimpleJob("Update Block Manager", value.getStorage().getBucketManager()::fullUpdate));
 		}
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
@@ -270,7 +258,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
 		}
 
-		jobManagerStatus.getJobs().sort(Comparator.<JobStatus>comparingLong(js -> js.getProgressReporter().getStartTime()).reversed());
+		jobManagerStatus.getJobs().sort(Comparator.comparingDouble(js -> js.getProgressReporter().getProgress()));
 
 		try {
 			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));

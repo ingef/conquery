@@ -2,31 +2,24 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MasterMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import com.google.common.util.concurrent.Uninterruptibles;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 
 	@Getter
@@ -45,27 +38,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
 	@Getter
-	private final ThreadPoolExecutor pool;
+	private final ExecutorService executorService;
 
 	@Setter
 	private NetworkSession session;
 
-
-	public static Worker createWorker(WorkerInformation info, WorkerStorage storage, ConqueryConfig config, Queue<Runnable> queryQueue) {
-		final JobManager jobManager = new JobManager(info.getName());
-		final BucketManager bucketManager = new BucketManager(jobManager, storage, info);
-
-		storage.setBucketManager(bucketManager);
-		jobManager.addSlowJob(new SimpleJob("Update Block Manager", bucketManager::fullUpdate));
-
-
-		final QueryExecutor queryExecutor = new QueryExecutor(queryQueue);
-
-		// Second format-str is used by ThreadPool.
-		final ThreadPoolExecutor pool = config.getQueries().getExecutionPool().createService(String.format("Dataset[%s] Worker-Thread %%d", info.getDataset()));
-
-		return new Worker(info, jobManager, storage, queryExecutor, pool);
-	}
 
 	@Override
 	public NetworkSession getMessageParent() {
@@ -79,7 +56,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	
 	@Override
 	public void close() throws IOException {
-		pool.shutdownNow();
 		storage.close();
 	}
 	
@@ -88,14 +64,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";
 	}
 
-	public void awaitSubJobTermination() {
-		do{
-			Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-			log.trace("{} active threads. {} remaining tasks.", getPool().getActiveCount(), getPool().getQueue().size());
-		}while (pool.getActiveCount() != 0);
-	}
 
 	public boolean isBusy() {
-		return pool.getActiveCount() != 0 || jobManager.isSlowWorkerBusy();
+		return jobManager.isSlowWorkerBusy();
 	}
 }

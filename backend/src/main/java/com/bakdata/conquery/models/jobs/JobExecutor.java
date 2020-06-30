@@ -102,9 +102,13 @@ public class JobExecutor extends Thread {
 
 					}
 					catch (Throwable e) {
+						ConqueryMDC.setLocation(this.getName());
+
 						log.error("Job "+job+" failed", e);
 					}finally {
-						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						ConqueryMDC.setLocation(this.getName());
+
+						log.trace("Finished job {} within {}", job, timer.stop());
 						time.stop();
 					}
 				}

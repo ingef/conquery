@@ -68,7 +68,7 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 
 
 	/**
-	 * Helper class that notifies on {@code signal} when a new object is added to it queue, awakening waiting threads. This effectively implements a semaphore aroud {@code signal} as notify only awakens a single waiting thread.
+	 * Helper class that notifies on {@code signal} when a new object is added to its queue, awakening waiting threads. This effectively implements a semaphore around {@code signal} as notify only awakens a single waiting thread.
 	 */
 	@RequiredArgsConstructor
 	private static class SignallingForwardingQueue<T> extends ForwardingQueue<T> {
@@ -134,7 +134,6 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 			final boolean addAll = super.addAll(collection);
 
 			if (addAll) {
-				//TODO does this cause problems?
 				synchronized (signal) {
 					signal.notifyAll();
 				}
@@ -147,20 +146,22 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	/**
 	 * Create a new queue adding it as sub-queue if there is a slot available.
 	 *
-	 * @return
-	 * @throws IllegalStateException when no more slots are available.
+	 * @return a newly created SubQueue that will be respected in processing.
 	 */
 	public Queue<E> createQueue() {
 		// TODO: 25.06.2020 FK: add supplier as creation parameter
-		final Queue<E> out = new SignallingForwardingQueue<E>(Queues.newConcurrentLinkedQueue(), signal);
-		final int free;
+		final Queue<E> out = new SignallingForwardingQueue<>(Queues.newConcurrentLinkedQueue(), signal);
+		int free;
 
 		synchronized (signal) {
 			free = ArrayUtils.indexOf(queues, null);
 
 			if (free == -1) {
-				log.warn("Growing RoundRobinQueue to new size {}", (int) ((double) getCapacity() * GROWTH_FACTOR));
-				queues = Arrays.copyOf(queues, (int) ((double) getCapacity() * GROWTH_FACTOR));
+				final int newCapacity = (int) ((double) getCapacity() * GROWTH_FACTOR);
+
+				log.warn("Growing RoundRobinQueue to new size {}", newCapacity);
+				free = queues.length;
+				queues = Arrays.copyOf(queues, newCapacity);
 			}
 
 			queues[free] = out;
@@ -250,24 +251,6 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 		return true;
 	}
 
-	/**
-	 * Create an iterator looping until the queues are empty.
-	 */
-	@NotNull
-	@Override
-	public Iterator<E> iterator() {
-		return new Iterator<E>() {
-			@Override
-			public boolean hasNext() {
-				return !isEmpty();
-			}
-
-			@Override
-			public E next() {
-				return poll();
-			}
-		};
-	}
 
 	/**
 	 * Take one element from the queue, blocking until there is a new object available.
@@ -329,7 +312,7 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 		final int begin = cycleIndex.get();
 
 		for (int offset = 0; offset < queues.length; offset++) {
-			final int index = (begin + offset) % (queues.length - 1);
+			final int index = (begin + offset) % queues.length;
 			Queue<E> curr = queues[index];
 
 			if (curr == null) {
@@ -364,8 +347,8 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	public E peek() {
 		final int begin = cycleIndex.get();
 
-		for (int offset = 1; offset < queues.length; offset++) {
-			final int index = (begin + offset) % (queues.length - 1);
+		for (int offset = 0; offset < queues.length; offset++) {
+			final int index = (begin + offset) % queues.length;
 			Queue<E> curr = queues[index];
 
 			if (curr == null) {
@@ -375,7 +358,7 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 			E out = curr.peek();
 
 			if (out != null) {
-				cycleIndex.set(index);
+				cycleIndex.set(index + 1);
 				return out;
 			}
 		}
@@ -388,68 +371,82 @@ public class RoundRobinQueue<E> extends AbstractQueue<E> implements BlockingQueu
 	//=       Unsupported Methods         =
 	//=====================================
 
+	@Deprecated
+	@NotNull
+	@Override
+	public Iterator<E> iterator() {
+		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
+	}
+
+	@Deprecated
 	@Override
 	public int drainTo(@NotNull Collection<? super E> c) {
-		// TODO: 25.06.2020 implement this?
-		return 0;
+		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@Override
 	public int drainTo(@NotNull Collection<? super E> c, int maxElements) {
-		// TODO: 25.06.2020 implement this?
-		return 0;
+		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@NotNull
 	@Override
 	public Object[] toArray() {
-		// TODO: 25.06.2020 implement this?
-		return new Object[0];
+		throw new IllegalStateException("RoundRobinQueue does not support all methods.");
 	}
 
+	@Deprecated
 	@NotNull
 	@Override
 	public <T1> T1[] toArray(@NotNull T1[] a) {
-		// TODO: 25.06.2020 implement this?
-		return null;
+		throw new IllegalStateException("RoundRobinQueue does not support all methods.");
 	}
 
+	@Deprecated
 	@Override
 	public boolean remove(Object o) {
 		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
-
+	@Deprecated
 	@Override
 	public boolean removeAll(@NotNull Collection<?> c) {
 		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@Override
 	public boolean retainAll(@NotNull Collection<?> c) {
 		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@Override
 	public boolean offer(E t) {
 		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@Override
 	public void put(@NotNull E e) throws InterruptedException {
 		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@Override
 	public boolean offer(E e, long timeout, @NotNull TimeUnit unit) throws InterruptedException {
 		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@Override
 	public E remove() {
 		throw new IllegalStateException("Cannot directly mutate RoundRobin Queues");
 	}
 
+	@Deprecated
 	@Override
 	public int remainingCapacity() {
 		return Integer.MAX_VALUE;

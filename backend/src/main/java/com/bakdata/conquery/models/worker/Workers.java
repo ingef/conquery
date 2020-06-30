@@ -6,15 +6,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.util.RoundRobinQueue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -27,20 +31,33 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Workers extends NamespaceCollection implements Closeable {
 
-	private final ThreadPoolExecutor queryThreadPool;
 
+	/**
+	 * ThreadPool dedicated to Queries.
+	 */
+	private final ThreadPoolExecutor queryThreadPool;
 	private final RoundRobinQueue<Runnable> queryExecutorQueues;
 
-	public Workers(@NonNull RoundRobinQueue<Runnable> queues, int threadPoolSize) {
+	@Getter
+	private final ThreadPoolExecutor jobsThreadPool;
+
+	public Workers(@NonNull RoundRobinQueue<Runnable> queues, int queryThreadPoolSize, int jobThreadPoolSize) {
 		super();
 		queryExecutorQueues = queues;
 
-		queryThreadPool = new ThreadPoolExecutor(threadPoolSize, threadPoolSize,
+		queryThreadPool = new ThreadPoolExecutor(queryThreadPoolSize, queryThreadPoolSize,
 												 0L, TimeUnit.MILLISECONDS,
 												 queryExecutorQueues,
 												 new ThreadFactoryBuilder().setNameFormat("QueryExecutor %d").build()
 		);
 		queryThreadPool.prestartAllCoreThreads();
+
+		// TODO: 30.06.2020 build from configuration
+		jobsThreadPool = new ThreadPoolExecutor(jobThreadPoolSize, jobThreadPoolSize,
+												60L, TimeUnit.SECONDS,
+												new SynchronousQueue<>(),
+												new ThreadFactoryBuilder().setNameFormat("Workers Helper %d").build()
+		);
 	}
 
 	@Getter @Setter
@@ -50,11 +67,23 @@ public class Workers extends NamespaceCollection implements Closeable {
 	@JsonIgnore
 	private transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
 
-	public Queue<Runnable> createQuerySubQueue() {
-		return queryExecutorQueues.createQueue();
+
+	public Worker createWorker(WorkerInformation info, WorkerStorage storage) {
+		final JobManager jobManager = new JobManager(info.getName());
+		final BucketManager bucketManager = new BucketManager(jobManager, storage, info);
+
+		storage.setBucketManager(bucketManager);
+
+
+		final QueryExecutor queryExecutor = new QueryExecutor(queryExecutorQueues.createQueue());
+
+		final Worker worker = new Worker(info, jobManager, storage, queryExecutor, jobsThreadPool);
+		addWorker(worker);
+
+		return worker;
 	}
 
-	public void add(Worker worker) {
+	private void addWorker(Worker worker) {
 		nextWorker.incrementAndGet();
 		workers.put(worker.getInfo().getId(), worker);
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
@@ -101,9 +130,10 @@ public class Workers extends NamespaceCollection implements Closeable {
 	@Override
 	public void close() throws IOException {
 		queryThreadPool.shutdown();
-		// TODO: 26.06.2020 this is probably not enough.
-		while (queryThreadPool.awaitTermination(5, TimeUnit.MINUTES)){
-			log.info("Waiting for QueryThreadPool to shut down");
+		jobsThreadPool.shutdown();
+
+		while (queryThreadPool.awaitTermination(2, TimeUnit.MINUTES) || jobsThreadPool.awaitTermination(2, TimeUnit.MINUTES)){
+			log.debug("Waiting for ThreadPools to shut down");
 		}
 	}
 
@@ -113,7 +143,9 @@ public class Workers extends NamespaceCollection implements Closeable {
 				return true;
 			}
 		}
-		return queryThreadPool.getActiveCount() != 0 || !queryExecutorQueues.isEmpty();
+
+		return  jobsThreadPool.getActiveCount() != 0 || !jobsThreadPool.getQueue().isEmpty()
+			   || queryThreadPool.getActiveCount() != 0 || !queryExecutorQueues.isEmpty();
 	}
 
 
