@@ -28,5 +28,8 @@ public class StorageConfig {
 	@Min(1)
 	private int nThreads = Runtime.getRuntime().availableProcessors();
 	
+	/**
+	 * When set, all values that could not be deserialized from the persistent store, are dump into individual files.
+	 */
 	private Optional<File> unreadbleDataDumpDirectory = Optional.empty();
 }
