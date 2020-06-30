@@ -8,6 +8,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class ExecutionStatus {
 
 		private String[] tags;
 		private String label;
+		@JsonProperty("isPristineLabel")
 		private boolean isPristineLabel;
 		private ZonedDateTime createdAt;
 		private ZonedDateTime lastUsed;

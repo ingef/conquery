@@ -30,6 +30,7 @@ export interface PreviousQueryT {
   own: boolean;
   resultUrl: string | null;
   shared: boolean;
+  isPristineLabel?: boolean;
   groups?: UserGroupIdT[];
 }
 
@@ -177,6 +178,7 @@ const previousQueriesReducer = (
           loading: false,
           error: null,
           label: action.payload.label,
+          isPristineLabel: false,
         }),
         names: updateUniqueNames(state.names, action.payload.label),
       };

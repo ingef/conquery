@@ -54,6 +54,8 @@ const ConceptTreeFolder: FC<PropsT> = ({
       ? null
       : sumMatchingEntries(tree.children, tree.matchingEntries);
 
+  const isOpen = open || search.allOpen;
+
   return (
     <Root>
       <ConceptTreeNodeTextContainer
@@ -77,7 +79,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
         onTextClick={onToggleOpen}
         search={search}
       />
-      {open &&
+      {isOpen &&
         tree.children &&
         tree.children.map((childId, i) => {
           const tree = trees[childId];
