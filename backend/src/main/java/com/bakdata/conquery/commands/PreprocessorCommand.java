@@ -77,8 +77,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		group.addArgument("--tag").required(false)
 			 .type(new StringArgumentType())
+			 .setDefault(Collections.singletonList(null))
 			 .nargs("*")
 			 .help("Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
+		group.addArgument("--inext").required(false)
+			 .type(new StringArgumentType())
+			 .setDefault(ConqueryConstants.INPUT_FILE_EXTENSION)
+			 .help("Optional input file extention if it differs from the default '*.csv.gz'");
 
 	}
 
@@ -92,8 +97,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
-
-		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.singletonList(null);
+		// Defaults are set in PreprocessorCommand::configure(Subparser subparser)
+		final List<String> tags = namespace.getList("tag");
+		final String fileExtention = namespace.getString("inext");
 
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
@@ -101,14 +107,14 @@ public class PreprocessorCommand extends ConqueryCommand {
 			for (String tag : tags) {
 				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
 						new PreprocessingDirectories(namespace.get("in"), namespace.get("desc"), namespace.get("out"))
-				}, tag));
+				}, tag, fileExtention));
 			}
 
 		}
 		else {
 			for (String tag : tags) {
 				log.info("Preprocessing from config.json");
-				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag));
+				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag, fileExtention));
 			}
 		}
 
@@ -159,7 +165,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag)
+	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag, String fileExtention)
 			throws IOException {
 		List<TableImportDescriptor> out = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
@@ -173,7 +179,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 				InputFile file = InputFile.fromDescriptionFile(descriptionFile, description, tag);
 				try {
-					TableImportDescriptor descr = file.readDescriptor(validator, tag);
+					TableImportDescriptor descr = file.readDescriptor(validator, tag, fileExtention);
 					descr.setInputFile(file);
 
 					// Override name to tag if present

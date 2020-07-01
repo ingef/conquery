@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
-import static com.bakdata.conquery.ConqueryConstants.*;
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_DESCRIPTION;
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class InputFile implements Serializable {
 	private File descriptionFile;
 	private File preprocessedFile;
 
-	public TableImportDescriptor readDescriptor(Validator validator, String tag) throws IOException, JSONException {
+	public TableImportDescriptor readDescriptor(Validator validator, String tag, String fileExtention) throws IOException, JSONException {
 		try (Reader in = In.file(descriptionFile).withUTF8().asReader()) {
 			TableImportDescriptor descriptor = Jackson.MAPPER.readerFor(TableImportDescriptor.class).readValue(in);
 
@@ -37,7 +38,7 @@ public class InputFile implements Serializable {
 				// TODO: 27.04.2020 Not optimal to be bound to csv.gz
 				inputDescriptor.setSourceFile(Preprocessor.getTaggedVersion(csvDirectory.toPath()
 																						.resolve(inputDescriptor.getSourceFile().toPath())
-																						.toFile(), tag, INPUT_FILE_EXTENSION));
+																						.toFile(), tag, fileExtention));
 			}
 
 			if (validator != null) {
@@ -47,7 +48,7 @@ public class InputFile implements Serializable {
 		}
 	}
 
-	public static InputFile fromDescriptionFile(File descriptionFile, PreprocessingDirectories dirs, String tag) throws IOException {
+	public static InputFile fromDescriptionFile(File descriptionFile, PreprocessingDirectories dirs, String tag) {
 		descriptionFile = descriptionFile.getAbsoluteFile();
 		return fromName(
 				dirs,
