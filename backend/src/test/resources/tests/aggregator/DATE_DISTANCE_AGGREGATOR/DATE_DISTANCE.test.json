@@ -5,35 +5,36 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type": "DATE_RESTRICTION",
-      "dateRange": {
-        "min": "2010-01-01",
-        "max": "2010-03-31"
-      },
-      "child": {
-        "type": "OR",
-        "children": [
-          {
-            "ids": [
-              "${dataset}.con"
-            ],
-            "type": "CONCEPT",
-            "label": "Geschlecht SELECT",
-            "tables": [
-              {
-                "id": "${dataset}.con.geschlecht_connector",
-                "selects": "${dataset}.con.geschlecht_connector.geb"
-              }
+	         "type":"DATE_RESTRICTION",
+         "dateRange":{  
+            "min":"2010-01-01",
+            "max":"2010-03-31"
+         },
+         "child":{  
+            "type":"OR",
+            "children":[  
+               {  
+      "ids": [
+        "${dataset}.con"
+      ],
+      "type": "CONCEPT",
+      "label": "Geschlecht SELECT",
+      "tables": [
+        {
+          "id": "${dataset}.con.geschlecht_connector",
+		  "selects": "${dataset}.con.geschlecht_connector.geb"
+        }
+      ]
+	  
+               }
             ]
-          }
-        ]
-      }
+         }
     }
   },
   "concepts": [
     {
       "label": "Geschlecht SELECT",
-      "name": "con",
+	  "name": "con",
       "type": "VIRTUAL",
       "connectors": [
         {
@@ -43,10 +44,11 @@
             "label": "indexdatum",
             "column": "table1.indexdatum"
           },
-          "selects": {
-            "name": "geb",
-            "type": "DATE_DISTANCE"
-          }
+		  "selects": {
+			"name": "geb",
+			"type": "DATE_DISTANCE", 
+			"column": "table1.geburtsdatum"
+		  }
         }
       ]
     }
@@ -64,6 +66,10 @@
           {
             "name": "indexdatum",
             "type": "DATE_RANGE"
+          },
+		  {
+            "name": "geburtsdatum",
+            "type": "DATE"
           }
         ]
       }

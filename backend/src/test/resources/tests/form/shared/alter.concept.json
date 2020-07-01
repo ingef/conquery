@@ -29,6 +29,7 @@
             "name": "alterseinschränkung",
             "label": "Alterseinschränkung",
             "description": "Alter zur gegebenen Datumseinschränkung",
+            "column": "vers_stamm.geburtsdatum",
             "timeUnit": "YEARS"
         },
         "selects": [
@@ -37,6 +38,7 @@
                 "name": "alter_select",
                 "label": "Ausgabe Alter",
                 "description": "Automatisch erzeugter Zusatzwert.",
+                "column": "vers_stamm.geburtsdatum",
                 "timeUnit": "YEARS",
                 "default": true
             },

@@ -5,7 +5,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +14,7 @@ public abstract class SingleColumnFilter<FE_TYPE> extends Filter<FE_TYPE> implem
 	private Column column;
 	
 	@Override
-	public Column[] getRequiredColumns() {
+	public final Column[] getRequiredColumns() {
 		return new Column[]{getColumn()};
 	}
 }
