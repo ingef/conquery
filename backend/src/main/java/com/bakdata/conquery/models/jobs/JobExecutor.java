@@ -55,9 +55,9 @@ public class JobExecutor extends Thread {
 	}
 
 	public List<Job> getJobs() {
-		List<Job> jobs = new ArrayList<>(this.jobs.size()+1);
+		List<Job> jobs = new ArrayList<>(this.jobs.size() + 1);
 		Job current = currentJob.get();
-		if(current!=null) {
+		if (current != null) {
 			jobs.add(current);
 		}
 		jobs.addAll(this.jobs);

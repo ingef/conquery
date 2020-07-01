@@ -2,27 +2,29 @@ package com.bakdata.conquery.models.jobs;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
 
-@NoArgsConstructor @AllArgsConstructor @Getter @Setter @ToString
+
+@Data
 public class JobManagerStatus {
 	@NonNull @NotNull
-	private LocalDateTime timestamp;
+	private final LocalDateTime timestamp = LocalDateTime.now();
 	@NotNull
-	private List<JobStatus> jobs = Collections.emptyList();
-	
+	private final SortedSet<JobStatus> jobs = new TreeSet<>(Comparator.comparingDouble(job -> job.getProgressReporter().getStartTime()));
+
+	public JobManagerStatus(Collection<? extends JobStatus> jobs){
+		this.jobs.addAll(jobs);
+	}
+
 	public int size() {
 		return jobs.size();
 	}

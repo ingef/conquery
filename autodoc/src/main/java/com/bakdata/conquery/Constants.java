@@ -54,7 +54,6 @@ import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.config.QueryConfig;
 import com.bakdata.conquery.models.config.StandaloneConfig;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;

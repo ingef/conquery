@@ -3,7 +3,6 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -90,7 +89,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
 
-		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads(), config.getStorage().getThreads());
+		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads(), config.getStorage().getNThreads());
 
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
@@ -257,8 +256,6 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		for (Worker worker : workers.getWorkers().values()) {
 			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
 		}
-
-		jobManagerStatus.getJobs().sort(Comparator.comparingDouble(js -> js.getProgressReporter().getProgress()));
 
 		try {
 			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
