@@ -55,9 +55,9 @@ public class JobExecutor extends Thread {
 	}
 
 	public List<Job> getJobs() {
-		List<Job> jobs = new ArrayList<>(this.jobs.size()+1);
+		List<Job> jobs = new ArrayList<>(this.jobs.size() + 1);
 		Job current = currentJob.get();
-		if(current!=null) {
+		if (current != null) {
 			jobs.add(current);
 		}
 		jobs.addAll(this.jobs);
@@ -65,7 +65,7 @@ public class JobExecutor extends Thread {
 	}
 	
 	public boolean isBusy() {
-		return busy.get();
+		return busy.get() || !jobs.isEmpty();
 	}
 
 	public void close() {
@@ -102,9 +102,13 @@ public class JobExecutor extends Thread {
 
 					}
 					catch (Throwable e) {
+						ConqueryMDC.setLocation(this.getName());
+
 						log.error("Job "+job+" failed", e);
 					}finally {
-						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						ConqueryMDC.setLocation(this.getName());
+
+						log.trace("Finished job {} within {}", job, timer.stop());
 						time.stop();
 					}
 				}

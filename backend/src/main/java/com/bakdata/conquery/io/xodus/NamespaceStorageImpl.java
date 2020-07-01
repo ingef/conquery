@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Objects;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.StructureNode;
@@ -12,10 +17,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Objects;
 
 @Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
