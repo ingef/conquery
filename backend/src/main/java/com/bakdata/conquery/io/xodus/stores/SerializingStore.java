@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -289,11 +290,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
-	private void dumpToFile(ByteIterable obj, String keyOfDump) {
+	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName) {
 		// Create dump filehandle
 		File dumpfile = new File(Path.of(unreadableDumpDir.getAbsolutePath(), String.format("%s-%s-%s.json",
 				DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
-				this.storeInfo.getXodusName(),
+				storeName,
 				keyOfDump
 				)
 			).toString());
