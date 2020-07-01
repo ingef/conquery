@@ -160,6 +160,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			}
 			if(removeUnreadablesFromUnderlyingStore) {
 				remove(key);
+				// Null seems to be an acceptable return value in this case
+				return null;
 			}
 			Throwables.throwIfUnchecked(e);
 			throw new RuntimeException(e);
