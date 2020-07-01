@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -34,8 +35,13 @@ public class Namespace {
 
 	@JsonIgnore
 	private transient NamespaceStorage storage;
+
 	@JsonIgnore
 	private transient ExecutionManager queryManager;
+
+	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
+	@JsonIgnore
+	private transient JobManager jobManager;
 
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
@@ -53,6 +59,7 @@ public class Namespace {
 	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
 		this.queryManager = new ExecutionManager(this);
+		this.jobManager = new JobManager(storage.getDataset().getName());
 	}
 
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {
