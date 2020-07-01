@@ -6,7 +6,7 @@ import Modal from "../../modal/Modal";
 import { patchStoredQuery } from "../../api/api";
 import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
-import type { DatasetIdT, UserGroupT } from "js/api/types";
+import type { DatasetIdT, UserGroupT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 import TransparentButton from "../../button/TransparentButton";
 import PrimaryButton from "../../button/PrimaryButton";
@@ -69,6 +69,10 @@ const SharePreviousQueryModal = ({
     initialUserGroupsValue
   );
 
+  const onSetUserGroupsValue = (value: UserGroupT[] | null) => {
+    setUserGroupsValue(value ? value : []);
+  };
+
   const dispatch = useDispatch();
 
   if (!previousQuery) {
@@ -109,7 +113,7 @@ const SharePreviousQueryModal = ({
     >
       <QueryName>{previousQuery.label}</QueryName>
       <SxInputMultiSelect
-        input={{ value: userGroupsValue, onChange: setUserGroupsValue }}
+        input={{ value: userGroupsValue, onChange: onSetUserGroupsValue }}
         label={T.translate("sharePreviousQueryModal.groupsLabel")}
         options={userGroupOptions}
       />

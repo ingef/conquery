@@ -7,7 +7,7 @@ import { openPreview } from "../preview/actions";
 
 import IconButton from "./IconButton";
 import { StateT } from "app-types";
-import { ColumnDescription } from "js/api/types";
+import type { ColumnDescription } from "../api/types";
 
 interface PropsT {
   columns: ColumnDescription[];
