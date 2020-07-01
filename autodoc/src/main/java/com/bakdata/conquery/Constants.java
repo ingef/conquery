@@ -133,7 +133,6 @@ public class Constants {
 			.otherClass(MinaConfig.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(XodusConfig.class)
-			.otherClass(ThreadPoolDefinition.class)
 			.otherClass(PreprocessingDirectories.class)
 			.hide(Charset.class)
 			.hide(Currency.class)
