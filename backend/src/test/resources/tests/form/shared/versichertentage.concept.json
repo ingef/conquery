@@ -17,14 +17,12 @@
         "selects": [
           {
             "type": "DATE_UNION",
-            "column": "vers_tage_range.date",
             "name": "versichertentage_periods",
             "label": "Ausgabe Versichertenzeiträume",
             "description": "Gibt die Versichertentage als Zeiträume aus."
           },
           {
             "type": "DURATION_SUM",
-            "column": "vers_tage_range.date",
             "name": "versichertentage_select",
             "label": "Ausgabe Versichertentage",
             "description": "Automatisch erzeugter Zusatzwert.",
@@ -37,8 +35,7 @@
             "name": "versichertentage",
             "label": "Versichertentage",
             "unit": "Tage",
-            "description": "Versichertentage",
-            "column": "vers_tage_range.date"
+            "description": "Versichertentage"
           }
         ],
         "column": "vers_tage_range.date"
