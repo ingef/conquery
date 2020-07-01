@@ -88,7 +88,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * If set, all values that cannot be read are dumped as single files into this directory.
 	 */
-	private final File unreadableDumpDir;
+	private final File unreadableValuesDumpDir;
 	
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
@@ -121,15 +121,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		// Prepare dump directory if there is one set in the config
 		Optional<File> dumpUnreadable = ConqueryConfig.getInstance().getStorage().getUnreadbleDataDumpDirectory();
 		if(dumpUnreadable.isPresent()) {
-			unreadableDumpDir = dumpUnreadable.get();
-			if(!unreadableDumpDir.exists()) {
-				unreadableDumpDir.mkdirs();
+			unreadableValuesDumpDir = dumpUnreadable.get();
+			if(!unreadableValuesDumpDir.exists()) {
+				unreadableValuesDumpDir.mkdirs();
 			}
-			else if(!unreadableDumpDir.isDirectory()) {
-				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableDumpDir.getAbsolutePath()));
+			else if(!unreadableValuesDumpDir.isDirectory()) {
+				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
 			}
 		} else {
-			unreadableDumpDir = null;
+			unreadableValuesDumpDir = null;
 		}
 	}
 
@@ -156,8 +156,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		try {
 			return readValue(binValue);			
 		} catch (Exception e) {
-			if(unreadableDumpDir != null) {
-				dumpToFile(binValue, key.toString());
+			if(unreadableValuesDumpDir != null) {
+				dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, storeInfo.getXodusName());
 			}
 			if(removeUnreadablesFromUnderlyingStore) {
 				remove(key);
@@ -181,8 +181,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				try {
 					consumer.accept(readKey(k), readValue(v), v.getLength());
 				} catch (Exception e) {
-					if(unreadableDumpDir != null) {						
-						dumpToFile(v, Jackson.BINARY_MAPPER.readerFor(String.class).readValue(k.getBytesUnsafe()));
+					if(unreadableValuesDumpDir != null) {						
+						dumpToFile(v, Jackson.BINARY_MAPPER.readerFor(String.class).readValue(k.getBytesUnsafe()), unreadableValuesDumpDir, storeInfo.getXodusName());
 					} else {
 						log.warn("Could not parse value for key " + readKey(k), e);						
 					}
@@ -290,6 +290,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
+	/**
+	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
+	 * @param obj The object to dump.
+	 * @param keyOfDump The key under which the unreadable value is accessible. It is used for the file name.
+	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
+	 * @param storeName The name of the store which is also used in the dump file name.
+	 */
 	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName) {
 		// Create dump filehandle
 		File dumpfile = new File(Path.of(unreadableDumpDir.getAbsolutePath(), String.format("%s-%s-%s.json",
