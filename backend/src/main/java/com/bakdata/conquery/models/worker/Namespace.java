@@ -47,6 +47,7 @@ public class Namespace {
 	 */
 	@JsonIgnore
 	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
+
 	@JsonIgnore
 	private transient Namespaces namespaces;
 
@@ -107,6 +108,14 @@ public class Namespace {
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);
 		workers = l;
+
+		for (Integer bucket : info.getIncludedBuckets()) {
+			final WorkerInformation old = bucket2WorkerMap.put(bucket.intValue(), info);
+
+			if (old != null && !old.equals(info)) {
+				log.error("Duplicate claims for Bucket[{}] from {} and {}", bucket, old, info);
+			}
+		}
 	}
 
 	@JsonIgnore
