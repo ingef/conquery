@@ -112,8 +112,9 @@ public class Namespace {
 		for (Integer bucket : info.getIncludedBuckets()) {
 			final WorkerInformation old = bucket2WorkerMap.put(bucket.intValue(), info);
 
+			// This is a completely invalid state from which we should not recover even in production settings.
 			if (old != null && !old.equals(info)) {
-				log.error("Duplicate claims for Bucket[{}] from {} and {}", bucket, old, info);
+				throw new IllegalStateException(String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
 			}
 		}
 	}
