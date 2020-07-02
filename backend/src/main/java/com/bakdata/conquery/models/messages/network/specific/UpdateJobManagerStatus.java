@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.messages.network.MasterMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Master;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +16,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="UPDATE_JOB_MANAGER_STATUS", base=NetworkMessage.class)
-@NoArgsConstructor @AllArgsConstructor @Getter @Setter @ToString(of="slaveId", callSuper=true)
+@NoArgsConstructor @AllArgsConstructor @Getter @Setter @ToString(of = "status")
 @Slf4j
 public class UpdateJobManagerStatus extends MasterMessage {
 	@NotNull
@@ -25,14 +24,14 @@ public class UpdateJobManagerStatus extends MasterMessage {
 
 	@Override
 	public void react(Master context) throws Exception {
-		SlaveInformation slave = context
-			.getNamespaces()
-			.getSlaves()
-			.get(context.getRemoteAddress());
-		
-		if(slave == null) {
+		SlaveInformation slave = context.getNamespaces()
+										 .getSlaves()
+										 .get(context.getRemoteAddress());
+
+		if (slave == null) {
 			log.error("Could not find slave {}, I only know of {}", context.getRemoteAddress(), context.getNamespaces().getSlaves().keySet());
-		} else {
+		}
+		else {
 			slave.setJobManagerStatus(status);
 		}
 	}

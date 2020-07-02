@@ -4,7 +4,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import com.bakdata.conquery.io.xodus.ConqueryStorage;
 import com.bakdata.conquery.models.jobs.Job;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.codahale.metrics.Timer;
@@ -22,7 +21,7 @@ public class JobMetrics {
 	}
 
 	public static void createJobQueueGauge(String name, LinkedBlockingDeque<Job> jobs) {
-		SharedMetricRegistries.getDefault().register(MetricRegistry.name(JOBS, QUEUE_SIZE, name), (Gauge<Integer>) jobs::size);
+		SharedMetricRegistries.getDefault().gauge(MetricRegistry.name(JOBS, QUEUE_SIZE, name), () -> jobs::size);
 	}
 
 	public static void removeJobQueueSizeGauge(String name) {

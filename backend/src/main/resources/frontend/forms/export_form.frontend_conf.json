@@ -1,10 +1,10 @@
 {
     "title": {
-        "de": "Exportformular"
+        "de": "Export"
     },
     "type": "EXPORT_FORM",
     "headline": {
-        "de": "Exportformular"
+        "de": "Export"
     },
     "fields": [
         {

@@ -5,9 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URL;
 
-import org.junit.jupiter.api.Test;
-
 import com.github.powerlibraries.io.In;
+import org.junit.jupiter.api.Test;
 
 public class FrontendExistsTest {
 

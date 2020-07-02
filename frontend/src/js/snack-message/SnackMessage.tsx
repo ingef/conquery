@@ -7,7 +7,7 @@ import FaIcon from "../icon/FaIcon";
 
 import { setMessage } from "./actions";
 import { StateT } from "app-types";
-import { useClickOutside } from "js/common/helpers/useClickOutside";
+import { useClickOutside } from "../common/helpers/useClickOutside";
 
 const Root = styled("div")`
   position: fixed;

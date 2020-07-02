@@ -23,6 +23,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
@@ -38,7 +39,9 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.google.common.base.Throwables;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +68,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
-	public void run(ConqueryConfig config, Environment environment) {
+	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
 			.add(NamespaceCollection.class, namespaces);
@@ -79,8 +82,6 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
-		environment.lifecycle().manage(jobManager);
-
 		this.validator = environment.getValidator();
 		this.config = config;
 
@@ -91,25 +92,38 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		environment.lifecycle().manage(this);
 
-		log.info("Started meta storage");
-		for (File directory : config.getStorage().getDirectory().listFiles()) {
-			if (directory.getName().startsWith("dataset_")) {
-				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
-				if (datasetStorage != null) {
-					Namespace ns = new Namespace(datasetStorage);
-					ns.initMaintenance(maintenanceService);
-					namespaces.add(ns);
-				}
-			}
+		if(config.getStorage().getDirectory().mkdirs()){
+			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
+
+		log.info("Started meta storage");
+
+		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {
+			NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
+
+			if (datasetStorage == null) {
+				log.warn("Unable to load a dataset at `{}`", directory);
+				continue;
+			}
+
+			Namespace ns = new Namespace(datasetStorage);
+			ns.initMaintenance(maintenanceService);
+			namespaces.add(ns);
+		}
+
+		log.info("All stores loaded: {}", namespaces);
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
+		log.info("MetaStorage loaded {}", this.storage);
+
 		namespaces.setMetaStorage(this.storage);
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
+
+
 		
 		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();
@@ -135,7 +149,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		// Register an unprotected servlet for logins on the admin port
 		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 
-
+		Task formScanner = new FormScanner();
+		try {
+			formScanner.execute(null, null);
+		}
+		catch (Exception e) {
+			Throwables.throwIfUnchecked(e);
+			throw new RuntimeException(e);
+		}
+		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
 				new QueryCleanupTask(storage, Duration.of(
 						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getQuantity(),
@@ -177,6 +199,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				namespaces
 			));
 
+			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
@@ -203,6 +226,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
+		jobManager.stop();
+		for (Namespace ns : namespaces.getNamespaces()) {
+			ns.getJobManager().stop();
+		}
+
 		try {
 			acceptor.dispose();
 		} catch (Exception e) {

@@ -1,12 +1,13 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.ImmutableCollection;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ResourceList;
 
@@ -22,14 +23,16 @@ public class ResourceFormConfigProvider extends FormFrontendConfigProviderBase{
 	}
 
 	@Override
-	public void accept(Collection<FormFrontendConfigInformation> formConfigInfos) {
+	public void accept(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigInfos) {
 		ResourceList frontendConfigs = CPSTypeIdResolver.SCAN_RESULT
 			.getResourcesMatchingPattern(Pattern.compile(".*\\.frontend_conf\\.json"));
 		
 		for (Resource config : frontendConfigs) {
-			try {
-				JsonNode configTree = reader.readTree(config.open());
-				formConfigInfos.add(new FormFrontendConfigInformation("Resource " + config.getPath(), configTree));
+			try (config){
+				try(InputStream in = config.open()){			
+					JsonNode configTree = reader.readTree(in);
+					formConfigInfos.add(new FormFrontendConfigInformation("Resource " + config.getPath(), configTree));
+				}
 			}
 			catch (IOException e) {
 				throw new IllegalArgumentException(String.format("Could not parse the frontend config: %s", config.getPath()), e);

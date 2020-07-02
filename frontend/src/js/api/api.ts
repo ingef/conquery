@@ -28,7 +28,7 @@ import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 import type {
   FormConfigT,
   BaseFormConfigT,
-} from "js/external-forms/form-configs/reducer";
+} from "../external-forms/form-configs/reducer";
 
 const PROTECTED_PREFIX = "/api";
 

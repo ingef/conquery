@@ -119,7 +119,12 @@
     "addTag": "Schlagwort hinzufügen",
     "share": "Freigeben",
     "shared": "Freigegeben",
-    "loading": "Lade ..."
+    "loading": "Lade ...",
+    "average": "Mittelwert",
+    "median": "Median",
+    "min": "Min",
+    "max": "Max",
+    "std": "Std."
   },
   "tooltip": {
     "headline": "Info",
