@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -143,23 +142,18 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
-
+	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
-		if(columnDescriptions == null) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions();
 		}
-		// Set flag if user can expand the query and in that case also the query
-		super.setAdditionalFieldsForStatusWithSource(storage, url, user, status);
-		if(status.isCanExpand()) {
-			// If the user can expand the query (can use all included concepts), also set the column description
-			status.setColumnDescriptions(columnDescriptions);
-		}
+		status.setColumnDescriptions(columnDescriptions);
 	}
 
 	/**

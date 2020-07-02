@@ -135,9 +135,11 @@ public class AdminProcessor {
 		if (namespaces.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);
 		}
-		jobManager
+
+		namespaces.get(dataset.getId()).getJobManager()
 			.addSlowJob(new SimpleJob("Adding concept " + concept.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(concept)));
-		jobManager
+
+		namespaces.get(dataset.getId()).getJobManager()
 			.addSlowJob(new SimpleJob("sendToAll " + concept.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(concept))));
 		// see #144 check duplicate names
 	}
@@ -170,15 +172,18 @@ public class AdminProcessor {
 			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
+		datasetStorage.updateDataset(dataset);
+
 		Namespace ns = new Namespace(datasetStorage);
 		ns.initMaintenance(maintenanceService);
-		ns.getStorage().updateDataset(dataset);
+
 		namespaces.add(ns);
 
 		// for now we just add one worker to every slave
-		namespaces.getSlaves().values().forEach((slave) -> {
-			this.addWorker(slave, dataset);
-		});
+		for (SlaveInformation slave : namespaces.getSlaves().values()) {
+			addWorker(slave, dataset);
+		}
+
 		return dataset;
 	}
 
@@ -190,7 +195,9 @@ public class AdminProcessor {
 			Table table = dataset.getTables().getOrFail(tableName);
 
 			log.info("Importing {}", selectedFile.getAbsolutePath());
-			jobManager.addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
+
+			namespaces.get(dataset.getId()).getJobManager()
+					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
 		}
 	}
 

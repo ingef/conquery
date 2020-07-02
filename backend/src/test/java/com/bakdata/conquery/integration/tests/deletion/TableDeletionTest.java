@@ -37,7 +37,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
@@ -73,7 +73,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(tableId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -127,7 +127,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().getTable().equals(tableId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -177,7 +177,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.describedAs("Table after re-import.")
 					.isPresent();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -197,7 +197,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-import");
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -232,7 +232,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			{
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
 
-				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 							continue;

@@ -43,7 +43,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
@@ -84,7 +84,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -130,7 +130,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -209,7 +209,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
 						continue;
@@ -245,7 +245,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			{
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
 
-				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker worker : slave.getWorkers().getWorkers().values()) {
 
 						if (!worker.getInfo().getDataset().getDataset().equals(dataset))

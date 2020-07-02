@@ -29,8 +29,9 @@ import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
 import { PreviousQueryT } from "./reducer";
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import type { DatasetIdT } from "js/api/types";
-import { StateT } from "app-types";
+import type { DatasetIdT } from "../../api/types";
+import type { StateT } from "app-types";
+import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
 const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   margin: 0;
@@ -126,6 +127,14 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const onToggleEditPreviousQueryTags = () =>
       dispatch(toggleEditPreviousQueryTags(query.id));
 
+    const { onDeletePreviousQuery } = useDeletePreviousQuery(query.id);
+
+    const mayDeleteQueryRightAway =
+      query.tags.length === 0 && query.isPristineLabel;
+    const onDeleteClick = mayDeleteQueryRightAway
+      ? onDeletePreviousQuery
+      : onIndicateDeletion;
+
     const peopleFound = isEmpty(query.numberOfResults)
       ? T.translate("previousQuery.notExecuted")
       : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
@@ -183,11 +192,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
               ) : (
                 query.own && (
                   <StyledWithTooltip text={T.translate("common.delete")}>
-                    <IconButton
-                      icon="times"
-                      bare
-                      onClick={onIndicateDeletion}
-                    />
+                    <IconButton icon="times" bare onClick={onDeleteClick} />
                   </StyledWithTooltip>
                 )
               )}

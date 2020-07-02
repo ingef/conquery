@@ -8,7 +8,7 @@ import {
 } from "./actionTypes";
 
 import { defaultError } from "../common/actions";
-import { ColumnDescription } from "js/api/types";
+import type { ColumnDescription } from "../api/types";
 
 export function closePreview() {
   return {

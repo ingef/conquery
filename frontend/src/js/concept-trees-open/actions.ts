@@ -1,4 +1,4 @@
-import { ConceptIdT } from "js/api/types";
+import type { ConceptIdT } from "../api/types";
 import {
   SET_CONCEPT_OPEN,
   RESET_ALL_CONCEPT_OPEN,
