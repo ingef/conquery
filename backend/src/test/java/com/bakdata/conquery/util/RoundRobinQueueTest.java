@@ -61,7 +61,8 @@ class RoundRobinQueueTest {
 		assertThat(queue.poll()).isEqualTo(2);
 		assertThat(second).isEmpty();
 		assertThat(queue.poll()).isEqualTo(null);
-		assertThat(queue).isEmpty();
+
+		assertThat(queue.isEmpty()).isTrue();
 	}
 
 
@@ -248,7 +249,7 @@ class RoundRobinQueueTest {
 			thread1.join();
 		}
 
-		assertThat(queue).isEmpty();
+		assertThat(queue.isEmpty()).isTrue();
 	}
 
 
