@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,11 +53,13 @@ public class Workers extends NamespaceCollection implements Closeable {
 		queryThreadPool.prestartAllCoreThreads();
 
 		// TODO: 30.06.2020 build from configuration
-		jobsThreadPool = new ThreadPoolExecutor(jobThreadPoolSize, jobThreadPoolSize,
+		jobsThreadPool = new ThreadPoolExecutor(jobThreadPoolSize / 2, jobThreadPoolSize,
 												60L, TimeUnit.SECONDS,
-												new SynchronousQueue<>(),
+												new LinkedBlockingQueue<>(),
 												new ThreadFactoryBuilder().setNameFormat("Workers Helper %d").build()
 		);
+
+		jobsThreadPool.prestartAllCoreThreads();
 	}
 
 	@Getter @Setter
