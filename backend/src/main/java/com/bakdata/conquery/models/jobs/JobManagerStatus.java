@@ -9,12 +9,14 @@ import java.util.TreeSet;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 
-@Data
+@Data @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class JobManagerStatus {
 	@NonNull @NotNull
 	private final LocalDateTime timestamp = LocalDateTime.now();
