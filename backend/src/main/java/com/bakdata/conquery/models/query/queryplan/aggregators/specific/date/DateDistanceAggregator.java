@@ -20,8 +20,7 @@ public class DateDistanceAggregator implements Aggregator<Long> {
 	private LocalDate reference;
 	private ChronoUnit unit;
 
-	private long result = Long.MAX_VALUE;
-	private boolean hit;
+	private int result = Integer.MIN_VALUE;
 
 	private Column column;
 
@@ -32,7 +31,7 @@ public class DateDistanceAggregator implements Aggregator<Long> {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
-			reference = null;
+			reference = LocalDate.now();
 		}
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
@@ -51,26 +50,16 @@ public class DateDistanceAggregator implements Aggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
-		return result != Long.MAX_VALUE || hit ? result : null;
+		return result == Integer.MIN_VALUE ? null : unit.between(CDate.toLocalDate(result), reference);
 	}
 
 	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
-		if(reference == null) {
-			return;
-		}
-
 		if(!bucket.has(event, column)) {
 			return;
 		}
 
-		hit = true;
-
-		LocalDate date = bucket.getAsDateRange(event, column).getMin();
-
-		final long between = unit.between(date, reference);
-
-		result = Math.min(result, between);
+		result = Math.max(result, bucket.getAsDateRange(event, column).getMinValue());
 	}
 
 	@Override
