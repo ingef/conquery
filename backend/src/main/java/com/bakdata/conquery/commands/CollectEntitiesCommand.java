@@ -58,7 +58,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
 
-		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
 		
 		Collection<EntityExtractor> jobs = findPreprocessedJobs(config);
 		

@@ -68,7 +68,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
-	public void run(ConqueryConfig config, Environment environment) {
+	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
 			.add(NamespaceCollection.class, namespaces);
@@ -81,8 +81,6 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		I18n.init();
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
-
-		environment.lifecycle().manage(jobManager);
 
 		this.validator = environment.getValidator();
 		this.config = config;
@@ -99,24 +97,33 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		}
 
 		log.info("Started meta storage");
-		for (File directory : config.getStorage().getDirectory().listFiles()) {
-			if (directory.getName().startsWith("dataset_")) {
-				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
-				if (datasetStorage != null) {
-					Namespace ns = new Namespace(datasetStorage);
-					ns.initMaintenance(maintenanceService);
-					namespaces.add(ns);
-				}
+
+		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {
+			NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
+
+			if (datasetStorage == null) {
+				log.warn("Unable to load a dataset at `{}`", directory);
+				continue;
 			}
+
+			Namespace ns = new Namespace(datasetStorage);
+			ns.initMaintenance(maintenanceService);
+			namespaces.add(ns);
 		}
+
+		log.info("All stores loaded: {}", namespaces);
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
+		log.info("MetaStorage loaded {}", this.storage);
+
 		namespaces.setMetaStorage(this.storage);
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
+
+
 		
 		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();
@@ -192,6 +199,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				namespaces
 			));
 
+			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
@@ -218,6 +226,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
+		jobManager.stop();
+		for (Namespace ns : namespaces.getNamespaces()) {
+			ns.getJobManager().stop();
+		}
+
 		try {
 			acceptor.dispose();
 		} catch (Exception e) {
