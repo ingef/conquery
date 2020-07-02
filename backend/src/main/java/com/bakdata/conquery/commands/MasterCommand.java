@@ -227,6 +227,9 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	@Override
 	public void stop() throws Exception {
 		jobManager.stop();
+		for (Namespace ns : namespaces.getNamespaces()) {
+			ns.getJobManager().stop();
+		}
 
 		try {
 			acceptor.dispose();
