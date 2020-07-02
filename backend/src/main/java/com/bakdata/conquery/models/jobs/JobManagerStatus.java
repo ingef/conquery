@@ -21,7 +21,7 @@ public class JobManagerStatus {
 	@NonNull @NotNull
 	private final LocalDateTime timestamp = LocalDateTime.now();
 	@NotNull
-	private final SortedSet<JobStatus> jobs = new TreeSet<>(Comparator.comparingDouble(job -> job.getProgressReporter().getStartTime()));
+	private final SortedSet<JobStatus> jobs = new TreeSet<>(Comparator.<JobStatus>comparingDouble(job -> job.getProgressReporter().getStartTime()).reversed());
 
 	public JobManagerStatus(Collection<? extends JobStatus> jobs){
 		this.jobs.addAll(jobs);
