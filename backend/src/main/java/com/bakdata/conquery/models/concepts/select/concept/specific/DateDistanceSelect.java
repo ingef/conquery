@@ -28,6 +28,6 @@ public class DateDistanceSelect extends SingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new DateDistanceAggregator(getTimeUnit());
+		return new DateDistanceAggregator(getColumn(), getTimeUnit());
 	}
 }
