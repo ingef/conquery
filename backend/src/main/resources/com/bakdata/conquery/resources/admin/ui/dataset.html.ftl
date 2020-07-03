@@ -14,9 +14,9 @@
 	<@layout.kc k="IdMapping"><a href="/admin/datasets/${c.ds.id}/mapping">Here</a></@layout.kc>
 	<@layout.kc k="Tables">
 		<ul>
-			<#list c.ds.tables?values?sort_by("label") as table>
+			<#list c.tables?sort_by("label") as table>
 				<li>
-					<a href="/admin/datasets/${c.ds.id}/tables/${table.id}">${table.label}</a> 
+					<a href="/admin/datasets/${c.ds.id}/tables/${table.id}">${table.label} <span>[${table.imports}] (${table.entries})</span></a>
 					<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/tables/${table.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>
