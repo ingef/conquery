@@ -316,7 +316,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {
-			log.warn("Unable to dump unreadable value of key " + keyOfDump + " to file " + dumpfile +".", e);
+			log.error("Unable to dump unreadable value of key `{}` to file `{}`",keyOfDump, dumpfile, e);
 		}
 	}
 
