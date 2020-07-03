@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.jobs;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -21,7 +20,7 @@ public class JobManagerStatus {
 	@NonNull @NotNull
 	private final LocalDateTime timestamp = LocalDateTime.now();
 	@NotNull
-	private final SortedSet<JobStatus> jobs = new TreeSet<>(Comparator.<JobStatus>comparingDouble(job -> job.getProgressReporter().getStartTime()).reversed());
+	private final SortedSet<JobStatus> jobs = new TreeSet<>();
 
 	public JobManagerStatus(Collection<? extends JobStatus> jobs){
 		this.jobs.addAll(jobs);
