@@ -299,12 +299,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 */
 	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName) {
 		// Create dump filehandle
-		File dumpfile = new File(Path.of(unreadableDumpDir.getAbsolutePath(), String.format("%s-%s-%s.json",
-				DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
-				storeName,
-				keyOfDump
-				)
-			).toString());
+		File dumpfile = new File(makeDumpfileName(keyOfDump, unreadableDumpDir, storeName));
 		if(dumpfile.exists()) {
 			log.warn("Abort dumping of file {} because it already exists.",dumpfile);
 			return;
@@ -318,6 +313,14 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		catch (IOException e) {
 			log.error("Unable to dump unreadable value of key `{}` to file `{}`",keyOfDump, dumpfile, e);
 		}
+	}
+
+	private static String makeDumpfileName(String keyOfDump, File unreadableDumpDir, String storeName) {
+		return Path.of(unreadableDumpDir.getAbsolutePath(), String.format("%s-%s-%s.json",
+			DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
+			storeName,
+			keyOfDump
+			)).toString().replaceAll("[\\\\/:*?\"<>|]", "");
 	}
 
 	@Override
