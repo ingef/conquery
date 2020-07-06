@@ -68,7 +68,6 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
@@ -194,7 +193,14 @@ public class AdminProcessor {
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
 
+			final ImportId importId = new ImportId(table.getId(), header.getName());
+
+			if(namespaces.get(dataset.getId()).getStorage().getImport(importId) != null){
+				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
+			}
+
 			log.info("Importing {}", selectedFile.getAbsolutePath());
+
 
 			namespaces.get(dataset.getId()).getJobManager()
 					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
@@ -555,9 +561,7 @@ public class AdminProcessor {
 		jobManager.addSlowJob(new SimpleJob(
 				"Import delete on " + importId,
 				() -> {
-					for (WorkerInformation w : namespace.getWorkers()) {
-						w.send(new RemoveImportJob(importId));
-					}
+					namespace.sendToAll(new RemoveImportJob(importId));
 				}
 		));
 	}
