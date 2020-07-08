@@ -15,7 +15,6 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.DefaultWriteRequest;
 import org.apache.mina.core.write.NothingWrittenException;
 import org.apache.mina.core.write.WriteRequest;
-import org.apache.mina.core.write.WriteRequestWrapper;
 import org.apache.mina.filter.codec.AbstractProtocolDecoderOutput;
 import org.apache.mina.filter.codec.AbstractProtocolEncoderOutput;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
@@ -277,7 +276,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		if (writeRequest instanceof MessageWriteRequest) {
 			MessageWriteRequest wrappedRequest = (MessageWriteRequest) writeRequest;
-			nextFilter.messageSent(session, wrappedRequest.getParentRequest());
+			nextFilter.messageSent(session, wrappedRequest.getOriginalRequest());
 		} else {
 			nextFilter.messageSent(session, writeRequest);
 		}
@@ -389,7 +388,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		}
 	}
 
-	private static class MessageWriteRequest extends WriteRequestWrapper {
+	private static class MessageWriteRequest extends DefaultWriteRequest {
 		public MessageWriteRequest(WriteRequest writeRequest) {
 			super(writeRequest);
 		}
