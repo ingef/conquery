@@ -18,6 +18,6 @@ public class JobStatus implements Comparable<JobStatus> {
 
 	@Override
 	public int compareTo(@NotNull JobStatus o) {
-		return Double.compare(progressReporter.getProgress(), o.progressReporter.getProgress());
+		return Double.compare(o.progressReporter.getProgress(), progressReporter.getProgress());
 	}
 }
