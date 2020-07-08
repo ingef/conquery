@@ -46,7 +46,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.representations.idm.authorization.AuthorizationResponse;
 
 @Slf4j
 @Getter
@@ -100,8 +99,8 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 		if(StringUtils.isBlank(username)) {
 			throw new IllegalStateException("Unable to retrieve a user identifier from validated token. Dismissing the token.");
 		}
-
-		AuthorizationResponse authzResponse = authzClient.authorization((String)token.getCredentials()).authorize();
+// TODO use keycloak lib
+//		AuthorizationResponse authzResponse = authzClient.authorization((String)token.getCredentials()).authorize();
 		
 		UserId userId = new UserId(username);
 		User user = storage.getUser(userId);
