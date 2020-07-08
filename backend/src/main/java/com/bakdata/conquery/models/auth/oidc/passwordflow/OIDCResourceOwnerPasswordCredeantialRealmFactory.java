@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import org.keycloak.authorization.client.Configuration;
 
@@ -24,8 +24,8 @@ public class OIDCResourceOwnerPasswordCredeantialRealmFactory extends Configurat
 //	private Object policyEnforcer;
 
 	@Override
-	public ConqueryAuthenticationRealm createRealm(MasterMetaStorage storage) {
-		return new OIDCResourceOwnerPasswordCredeantialRealm(storage, this);
+	public ConqueryAuthenticationRealm createRealm(AuthorizationController controller) {
+		return new OIDCResourceOwnerPasswordCredeantialRealm(controller.getStorage(), this);
 	}
 
 //	public static class Credentials {
