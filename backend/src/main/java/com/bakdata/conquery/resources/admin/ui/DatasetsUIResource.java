@@ -33,6 +33,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
@@ -40,6 +41,11 @@ import lombok.Setter;
 @Setter
 @Path("datasets/{" + DATASET + "}")
 public class DatasetsUIResource extends HAdmin {
+
+
+	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
+	private static final String ABBREVIATION_MARKER = "\u2026";
+
 
 	@PathParam(DATASET)
 	protected DatasetId datasetId;
@@ -57,7 +63,6 @@ public class DatasetsUIResource extends HAdmin {
 
 	@GET
 	public View getDataset() {
-
 		return new UIView<>(
 				"dataset.html.ftl",
 				processor.getUIContext(),
@@ -68,7 +73,7 @@ public class DatasetsUIResource extends HAdmin {
 								 		table.getId(),
 										table.getName(),
 										table.getLabel(),
-										table.findImports(namespace.getStorage()).stream().map(Import::getName).collect(Collectors.joining(", ")),
+										StringUtils.abbreviate(table.findImports(namespace.getStorage()).stream().map(Import::getName).collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
 										table.findImports(namespace.getStorage()).stream().mapToLong(Import::getNumberOfEntries).sum()
 								 ))
 								 .collect(Collectors.toList()),

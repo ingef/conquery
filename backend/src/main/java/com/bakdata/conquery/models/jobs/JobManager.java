@@ -10,10 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 public class JobManager {
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
+	private final String name;
+
 
 	public JobManager(String name) {
-		slowExecutor = new JobExecutor("Job Manager slow " + name);
-		fastExecutor = new JobExecutor("Job Manager fast " + name);
+		this.name = name;
+		slowExecutor = new JobExecutor("Job Manager slow " + this.name);
+		fastExecutor = new JobExecutor("Job Manager fast " + this.name);
 
 		slowExecutor.start();
 		fastExecutor.start();
