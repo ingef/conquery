@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerSta
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
-import com.bakdata.conquery.util.RoundRobinQueue;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -89,7 +88,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
 
-		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads(), config.getStorage().getNThreads());
+		workers = new Workers(config.getQueries().getExecutionPool(),  config.getStorage().getNThreads());
 
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
