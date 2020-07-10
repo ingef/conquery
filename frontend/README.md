@@ -52,6 +52,8 @@ $ yarn
 $ yarn start
 ```
 
+[Login](http://localhost:8000) with test:test
+
 ## Glossary
 
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.

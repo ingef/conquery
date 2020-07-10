@@ -30,6 +30,8 @@ yarn install
 yarn start
 ```
 
+[Login](http://localhost:8000) with test:test
+
 ## Acknowledgements
 
 This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com) and [Kai Rollmann](https://kairollmann.de/).
