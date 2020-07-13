@@ -196,7 +196,7 @@ public class AdminProcessor {
 
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
-			namespaces.get(dataset.getId()).getJobManager()
+			getJobManager()
 					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
 
 		}
