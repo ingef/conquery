@@ -248,10 +248,6 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 										 .map(ManagedExecution::getState)
 										 .anyMatch(ExecutionState.RUNNING::equals);
 
-				for (Namespace namespace : standaloneCommand.getMaster().getNamespaces().getNamespaces()) {
-					busy |= namespace.getJobManager().isSlowWorkerBusy();
-				}
-
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
 					busy |= slave.isBusy();
 
