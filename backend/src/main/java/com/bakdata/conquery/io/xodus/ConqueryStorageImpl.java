@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -57,20 +58,24 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 
 		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
-			ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(getNThreads()));
+			final ExecutorService delegate = Executors.newFixedThreadPool(getNThreads());
+			ListeningExecutorService pool = MoreExecutors.listeningDecorator(delegate);
 
 			Stopwatch all = Stopwatch.createStarted();
 
 			final List<ListenableFuture<KeyIncludingStore<?,?>>> loaded = createStores(pool);
 
-			pool.shutdown();
-			while(!pool.awaitTermination(1, TimeUnit.MINUTES)){
+			delegate.shutdown();
+			while(!delegate.awaitTermination(1, TimeUnit.MINUTES)){
 				log.debug("Some tasks have not finished loading.");
 			}
 
 			stores.addAll(Futures.allAsList(loaded).get());
-
 			stores.forEach(store -> log.debug("Found loaded store {} of size {}", store, store.getAllKeys().size()));
+
+			if(!delegate.isShutdown()){
+				throw new IllegalStateException("Executor is not shutdown!");
+			}
 
 			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
 		}
