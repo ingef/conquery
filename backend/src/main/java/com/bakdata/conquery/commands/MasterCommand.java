@@ -123,7 +123,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		loaders.shutdown();
 		loaders.awaitTermination(1, TimeUnit.DAYS);
 
-		log.info("All stores loaded: {}", namespaces);
+		log.info("All stores loaded: {}", namespaces.getNamespaces());
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
