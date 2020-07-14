@@ -121,7 +121,9 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 
 		loaders.shutdown();
-		loaders.awaitTermination(1, TimeUnit.DAYS);
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)){
+			log.debug("Still waiting for Namespaces to load. {} already finished.", namespaces.getNamespaces());
+		}
 
 		log.info("All stores loaded: {}", namespaces.getNamespaces());
 		
