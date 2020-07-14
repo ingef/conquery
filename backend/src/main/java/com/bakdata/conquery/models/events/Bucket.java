@@ -1,5 +1,15 @@
 package com.bakdata.conquery.models.events;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.jackson.serializer.BucketDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -20,15 +30,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.PrimitiveIterator;
-import java.util.stream.IntStream;
 
 /**
  * Contains data from possibly multiple entities, loaded in a single import.
@@ -59,14 +60,14 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public BucketId createId() {
 		return new BucketId(imp.getId(), bucket);
 	}
-	
+
 	@Override
 	public PrimitiveIterator.OfInt iterator() {
 		return IntStream
-			.range(0,getBucketSize())
-			.filter(this::containsLocalEntity)
-			.map(this::toGlobal)
-			.iterator();
+					   .range(0, getBucketSize())
+					   .filter(this::containsLocalEntity)
+					   .map(this::toGlobal)
+					   .iterator();
 	}
 
 	public abstract void initFields(int numberOfEntities);

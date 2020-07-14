@@ -5,8 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.allids.AllIdsBucket;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.events.Bucket;
@@ -46,6 +47,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import com.esotericsoftware.kryo.io.ByteBufferOutput;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -55,6 +57,7 @@ import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntLists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -150,8 +153,20 @@ public class ImportJob extends Job {
 					ProgressReporter child = this.progressReporter.subJob(5);
 					child.setMax(primaryMapping.getNumberOfNewIds());
 
+					AllIdsBucket bucket = new AllIdsBucket(allIdsImp, 0, IntLists.EMPTY_LIST);
+
+
+
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
-						Bucket bucket = factory.create(allIdsImp, Collections.singletonList(new Object[0]));
+						final ByteBuffer byteBuffer = ByteBuffer.allocate(Integer.BYTES);
+						final ByteBufferOutput bufferOutput = new ByteBufferOutput(byteBuffer);
+
+
+						bucket.getEntities().clear();
+						bucket.getEntities().add(entityId);
+
+						bucket.writeContent(bufferOutput);
+
 
 						//copy content into ImportBucket
 						int bucketNumber = Entity.getBucket(entityId, bucketSize);
@@ -161,7 +176,7 @@ public class ImportJob extends Job {
 
 						impBucket.getIncludedEntities().add(entityId);
 
-						allIdsBytes.computeIfAbsent(bucketNumber, ArrayList::new).add(null);
+						allIdsBytes.computeIfAbsent(bucketNumber, ArrayList::new).add(byteBuffer.array());
 
 
 						child.report(1);
