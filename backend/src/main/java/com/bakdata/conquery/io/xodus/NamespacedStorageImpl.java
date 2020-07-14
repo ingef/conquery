@@ -131,20 +131,25 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 		pool.submit(() -> {
 			dataset.loadData();
+			log.debug("finished loading dataset");
 			concepts.loadData();
+			log.debug("finished loading concepts");
+
 		}).get();
 
 		return List.of(
-				Futures.immediateFuture(dataset),
-				Futures.immediateFuture(concepts),
 				pool.submit(() -> {
 					dictionaries.loadData();
+					log.debug("Finished loading dictionaries.");
 					return dictionaries;
 				}),
 				pool.submit(() -> {
 					imports.loadData();
+					log.debug("Finished loading imports.");
 					return imports;
-				})
+				}),
+				Futures.immediateFuture(dataset),
+				Futures.immediateFuture(concepts)
 		);
 	}
 

@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -21,7 +22,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
 
 @Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
@@ -59,22 +59,25 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 		idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
 
 
-		return ListUtils.union(
-				stores,
-				List.of(
-						pool.submit(() -> {
-							structure.loadData();
-							return structure;
-						}), pool.submit(() -> {
-							idMapping.loadData();
-							return idMapping;
-						}))
-		);
+		return ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
+					   .addAll(stores)
+					   .add(
+							   pool.submit(() -> {
+								   structure.loadData();
+								   return structure;
+							   }),
+							   pool.submit(() -> {
+								   idMapping.loadData();
+								   return idMapping;
+							   })
+					   )
+					   .build();
+
 	}
 
 	@Override
 	public StructureNode[] getStructure() {
-		return Objects.requireNonNullElseGet(structure.get(), ()->new StructureNode[0]);
+		return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
 	}
 
 	@Override
