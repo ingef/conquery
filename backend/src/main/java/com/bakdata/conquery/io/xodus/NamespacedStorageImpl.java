@@ -44,7 +44,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected IdentifiableStore<Concept<?>> concepts;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator,config,directory);
+		super(validator, config, directory);
 	}
 
 	@Override

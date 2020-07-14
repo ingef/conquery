@@ -91,7 +91,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		}
 
 		workers = new Workers(config.getQueries().getExecutionPool(),  config.getStorage().getNThreads());
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
 
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
@@ -104,14 +104,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 					return;
 				}
 
-				Worker worker = Worker.createWorker(
+				workers.createWorker(
 						workerStorage.getWorker(),
-						workerStorage,
-						config,
-						workers.createQuerySubQueue()
+						workerStorage
 				);
-
-				workers.add(worker);
 			});
 		}
 

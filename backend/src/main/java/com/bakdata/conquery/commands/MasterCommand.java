@@ -101,7 +101,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		log.info("Started meta storage");
 
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getThreads());
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
 
 
 		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {

@@ -41,7 +41,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		this.directory = directory;
 		this.validator = validator;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
-		this.nThreads = config.getThreads();
+		this.nThreads = config.getNThreads();
 	}
 
 	protected abstract List<ListenableFuture<KeyIncludingStore<?,?>>> createStores(ListeningExecutorService pool)
