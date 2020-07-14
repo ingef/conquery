@@ -113,7 +113,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				this,
 				cache.values().size(),
 				BinaryByteUnit.format(totalSize.get()),
-				timer.stop()
+				timer.stop(),
+				new IllegalStateException()
 		);
 	}
 

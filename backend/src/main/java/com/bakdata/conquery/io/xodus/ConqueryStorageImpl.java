@@ -63,15 +63,14 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 			final List<ListenableFuture<KeyIncludingStore<?,?>>> loaded = createStores(pool);
 
-			stores.addAll(Futures.allAsList(loaded).get());
-
-			stores.forEach(store -> log.debug("Found loaded store {} of size {}", store, store.getAllKeys().size()));
-
 			pool.shutdown();
-
 			while(!pool.awaitTermination(1, TimeUnit.MINUTES)){
 				log.debug("Some tasks have not finished loading.");
 			}
+
+			stores.addAll(Futures.allAsList(loaded).get());
+
+			stores.forEach(store -> log.debug("Found loaded store {} of size {}", store, store.getAllKeys().size()));
 
 			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
 		}

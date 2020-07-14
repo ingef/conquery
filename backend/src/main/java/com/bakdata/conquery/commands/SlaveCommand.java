@@ -97,10 +97,11 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
 
 			loaders.submit(() -> {
+				ConqueryMDC.setLocation(directory.toString());
 
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
 				if (workerStorage == null) {
-					log.warn("No valid WorkerStorage found in {}", directory);
+					log.warn("No valid WorkerStorage found.");
 					return;
 				}
 
@@ -108,6 +109,8 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 						workerStorage.getWorker(),
 						workerStorage
 				);
+
+				ConqueryMDC.clearLocation();
 			});
 		}
 
