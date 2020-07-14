@@ -6,7 +6,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +24,6 @@ public class StorageConfig {
 	@NotNull
 	private Duration weakCacheDuration = Duration.hours(48);
 
-	@Min(0)
-	private int threads = Runtime.getRuntime().availableProcessors();
+	@Min(1)
+	private int nThreads = Runtime.getRuntime().availableProcessors();
 }

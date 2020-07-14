@@ -111,37 +111,9 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.1.0</version>
+						<version>3.2.0</version>
 						<inherited>false</inherited>
 						<executions>
-							<execution>
-								<id>regex-property-snapshot-old</id>
-								<goals>
-									<goal>regex-property</goal>
-								</goals>
-								<phase>initialize</phase>
-								<configuration>
-									<name>newVersion</name>
-									<value>${git.commit.id.describe}</value>
-									<regex>^v(\d\.\d\.\d-[\w\d]+(-\d+-[\w\d]+)(-dirty$)?)</regex>
-									<replacement>$1-SNAPSHOT</replacement>
-									<failIfNoMatch>false</failIfNoMatch>
-								</configuration>
-							</execution>
-							<execution>
-								<id>regex-property-old</id>
-								<goals>
-									<goal>regex-property</goal>
-								</goals>
-								<phase>initialize</phase>
-								<configuration>
-									<name>newVersion</name>
-									<value>${newVersion}</value>
-									<regex>^v(\d\.\d\.\d-[\w\d]+)$</regex>
-									<replacement>$1</replacement>
-									<failIfNoMatch>false</failIfNoMatch>
-								</configuration>
-							</execution>
 							<execution>
 								<id>regex-property-snapshot</id>
 								<goals>
@@ -151,8 +123,8 @@
 								<configuration>
 									<name>newVersion</name>
 									<value>${git.commit.id.describe}</value>
-									<regex>^v(\d\-[\w\d]+(-\d+-[\w\d]+)(-dirty$)?)</regex>
-									<replacement>$1-SNAPSHOT</replacement>
+									<regex>^v(\d\.\d\.\d-[\w\d]+-)(.*)</regex>
+									<replacement>$1$2-SNAPSHOT</replacement>
 									<failIfNoMatch>false</failIfNoMatch>
 								</configuration>
 							</execution>
@@ -165,7 +137,7 @@
 								<configuration>
 									<name>newVersion</name>
 									<value>${newVersion}</value>
-									<regex>^v(\d-[\w\d]+)$</regex>
+									<regex>^v(\d\.\d\.\d-[\w\d]+$)</regex>
 									<replacement>$1</replacement>
 									<failIfNoMatch>false</failIfNoMatch>
 								</configuration>

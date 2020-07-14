@@ -34,7 +34,6 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		//ensure the metadata is collected
 		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage());
 
-		Thread.sleep(5);
 		conquery.waitUntilWorkDone();
 		
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();

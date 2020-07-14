@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.MatchingStats;
@@ -16,6 +16,10 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.worker.Worker;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -36,43 +40,46 @@ public class UpdateMatchingStats extends Job {
 			return;
 		}
 
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(worker.getExecutorService());
+
 		progressReporter.setMax(worker.getStorage().getAllConcepts().size());
 
 		log.info("Starting to update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
+		// SubJobs collect into this Map.
+		final Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>(worker.getStorage().getAllConcepts().size() * 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
 
-		List<Future<Map<ConceptElementId<?>, MatchingStats.Entry>>> conceptMatches = new ArrayList<>();
+		List<ListenableFuture<?>> subJobs =
+				worker.getStorage()
+					  .getAllConcepts()
+					  .stream()
+					  .map(concept -> executorService.submit(() -> calculateConceptMatches(concept, messages)))
+					  .collect(Collectors.toList());
 
-		for (Concept<?> concept :worker.getStorage().getAllConcepts()) {
-			conceptMatches.add(worker.getPool().submit(() -> calculateConceptMatches(concept)));
-		}
+		log.debug("All jobs submitted. Waiting for completion.");
 
-		worker.awaitSubJobTermination();
+		Futures.allAsList(subJobs).get();
 
 		log.info("All threads are done.");
 
-		Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
-
-		for (Future<Map<ConceptElementId<?>, MatchingStats.Entry>> conceptMatch : conceptMatches) {
-			messages.putAll(conceptMatch.get());
-		}
-
-
 		if (!messages.isEmpty()) {
 			worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
+		}else {
+			log.warn("Results were empty.");
 		}
 
 		progressReporter.done();
 	}
 
-	public Map<ConceptElementId<?>, MatchingStats.Entry> calculateConceptMatches(Concept<?> concept) {
+	public void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results) {
 
 		Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
 
 		for (CBlock cBlock : new ArrayList<>(worker.getStorage().getAllCBlocks())) {
 
-			if(isCancelled())
-				return null;
+			if(isCancelled()) {
+				return;
+			}
 
 			if(!cBlock.getConnector().getConcept().equals(concept.getId()))
 				continue;
@@ -106,7 +113,10 @@ public class UpdateMatchingStats extends Job {
 
 		progressReporter.report(1);
 
-		return messages;
+
+		synchronized (results){
+			results.putAll(messages);
+		}
 	}
 
 	@Override

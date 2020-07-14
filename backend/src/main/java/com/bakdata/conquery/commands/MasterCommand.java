@@ -85,8 +85,6 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
-		environment.lifecycle().manage(jobManager);
-
 		this.validator = environment.getValidator();
 		this.config = config;
 
@@ -239,6 +237,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
+		jobManager.stop();
+
 		try {
 			acceptor.dispose();
 		} catch (Exception e) {

@@ -39,18 +39,10 @@ public class AddWorker extends SlaveMessage.Slow {
 		workerStorage.updateDataset(dataset);
 
 
-		Worker worker = Worker.createWorker(
-			info,
-			workerStorage,
-			config,
-			context.getWorkers().createQuerySubQueue()
-		);
-
-		worker.getJobManager().start();
+		Worker worker = context.getWorkers().createWorker(info, workerStorage);
 
 		worker.setSession(context.getRawSession());
 		workerStorage.setWorker(info);
-		context.getWorkers().add(worker);
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 

@@ -41,10 +41,12 @@ const FormsNavigation: FC = () => {
   const onItemClick = (form: string) => dispatch(setExternalForm(form));
 
   const locale = getLocale();
-  const options = Object.values(availableForms).map((formType) => ({
-    label: formType.headline[locale],
-    value: formType.type,
-  }));
+  const options = Object.values(availableForms)
+    .map((formType) => ({
+      label: formType.headline[locale]!,
+      value: formType.type,
+    }))
+    .sort((a, b) => (a.label < b.label ? -1 : 1));
 
   return (
     <Root>
