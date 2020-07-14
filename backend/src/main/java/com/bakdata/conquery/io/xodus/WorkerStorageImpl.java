@@ -49,32 +49,25 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 
-		// Load all base data first, then load worker specific data.
-		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
-		Futures.allAsList(stores).get();
-
-
 		worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
 		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
 
+
+		// Load all base data first, then load worker specific data.
+		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
+
+		Futures.allAsList(stores).get();
+		Futures.allAsList(
+				pool.submit(worker::loadData),
+				pool.submit(blocks::loadData),
+				pool.submit(cBlocks::loadData)
+		).get();
+
 		return ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
-					   .addAll(stores)
-					   .add(
-							   pool.submit(() -> {
-								   worker.loadData();
-								   return worker;
-							   }),
-							   pool.submit(() -> {
-								   blocks.loadData();
-								   return blocks;
-							   }),
-							   pool.submit(() -> {
-								   cBlocks.loadData();
-								   return cBlocks;
-							   })
-					   )
-					   .build();
+				.addAll(stores)
+				.add(Futures.immediateFuture(worker), Futures.immediateFuture(blocks), Futures.immediateFuture(cBlocks))
+				.build();
 	}
 
 	@Override
