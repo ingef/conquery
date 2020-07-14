@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -131,7 +132,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 		pool.submit(() -> {
 			dataset.loadData();
-			log.debug("finished loading dataset");
+			log.debug("finished loading dataset {}", new ArrayList<>(dataset.getAllKeys()));
 			concepts.loadData();
 			log.debug("finished loading concepts");
 
@@ -140,7 +141,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		return List.of(
 				pool.submit(() -> {
 					dictionaries.loadData();
-					log.debug("Finished loading dictionaries.");
+					log.debug("Finished loading dictionaries {}.", new ArrayList<>(dictionaries.getAllKeys()));
 					return dictionaries;
 				}),
 				pool.submit(() -> {
