@@ -74,12 +74,9 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		cache = new ConcurrentHashMap<KEY, VALUE>(count);
 		final ProgressBar bar;
 		Stopwatch timer = Stopwatch.createStarted();
-		
-		if(count>100) {
-			synchronized (PROGRESS_BAR) {
-				bar = PROGRESS_BAR;
-				bar.addMaxValue(count);
-			}
+
+		if (count > 100) {
+			bar = new ProgressBar(count, System.out);
 			log.info("\tloading store {}", this);
 		}
 		else {

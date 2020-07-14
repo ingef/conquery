@@ -65,6 +65,8 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 			stores.addAll(Futures.allAsList(loaded).get());
 
+			stores.forEach(store -> log.debug("Found loaded store {}", store));
+
 			pool.shutdown();
 			if(!pool.awaitTermination(1, TimeUnit.DAYS)){
 				throw new IllegalStateException("Some tasks have not finished loading.");
