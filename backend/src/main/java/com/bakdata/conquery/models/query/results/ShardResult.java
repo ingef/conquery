@@ -52,8 +52,15 @@ public class ShardResult {
 			final List<EntityResult> entityResults = Uninterruptibles.getUninterruptibly(future);
 			results = new ArrayList<>(entityResults.size());
 
+			// Filter the results, skipping not contained results and sending failed results when they appear.
 			for (EntityResult entityResult : entityResults) {
-				if (!entityResult.isContained()){
+				// If any Entity breaks the Execution the whole Query is invalid and we abort anyway.
+				if(entityResult.isFailed()) {
+					results.clear();
+					results.add(entityResult);
+					break;
+				}
+				else if (!entityResult.isContained()){
 					continue;
 				}
 
@@ -63,7 +70,7 @@ public class ShardResult {
 			finishTime = LocalDateTime.now();
 			log.info("Finished query {} with {} results within {}", queryId, results.size(), Duration.between(startTime, finishTime));
 		} catch (ExecutionException e) {
-			log.error("Failed query "+queryId, e);
+			log.error("Failed Query[{}]", queryId, e);
 		}
 	}
 

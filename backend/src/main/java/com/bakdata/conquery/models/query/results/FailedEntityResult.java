@@ -23,7 +23,7 @@ public class FailedEntityResult implements SinglelineEntityResult {
 
 	@Override
 	public boolean isContained() {
-		return true;
+		return false;
 	}
 
 	@Override
