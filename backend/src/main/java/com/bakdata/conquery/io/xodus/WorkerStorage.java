@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Collection;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
@@ -10,10 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Collection;
 
 public interface WorkerStorage extends NamespacedStorage {
 	
@@ -31,16 +32,16 @@ public interface WorkerStorage extends NamespacedStorage {
 	void updateCBlock(CBlock cBlock) throws JSONException;
 	void removeCBlock(CBlockId id);
 	Collection<CBlock> getAllCBlocks();
-	
+
 	public static WorkerStorage tryLoad(Validator validator, StorageConfig config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
+		boolean exists = env.computeInTransaction(t -> env.storeExists(StoreInfo.DATASET.getXodusName(), t));
 		env.close();
 
-		if(!exists) {
+		if (!exists) {
 			return null;
 		}
-		
+
 		WorkerStorage storage = new WorkerStorageImpl(validator, config, directory);
 		storage.loadData();
 		return storage;

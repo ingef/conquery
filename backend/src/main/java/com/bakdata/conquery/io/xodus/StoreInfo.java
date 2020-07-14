@@ -49,7 +49,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Enums and helper methods to create stores of a certain kind.
  *
- * Boolean is used as a placeholder value/class for singleton stores.
+ * @implNote Boolean is used as a placeholder value/class for singleton stores.
  */
 @RequiredArgsConstructor
 @Getter
