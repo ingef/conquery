@@ -111,7 +111,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			});
 		}
 
-
+		loaders.shutdown();
+		while (loaders.awaitTermination(1,TimeUnit.MINUTES)){
+			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().keys());
+		}
 
 		log.info("All Worker Storages loaded: {}", workers);
 	}
