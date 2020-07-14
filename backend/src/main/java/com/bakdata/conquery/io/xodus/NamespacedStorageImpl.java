@@ -141,7 +141,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		return List.of(
 				pool.submit(() -> {
 					dictionaries.loadData();
-					log.debug("Finished loading dictionaries {}.", new ArrayList<>(dictionaries.getAllKeys()));
+					log.debug("Finished loading dictionaries {} for {}.", new ArrayList<>(dictionaries.getAllKeys()), this.getClass());
 					return dictionaries;
 				}),
 				pool.submit(() -> {

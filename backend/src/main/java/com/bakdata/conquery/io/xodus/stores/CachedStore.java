@@ -69,6 +69,9 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void fillCache() {
+		log.debug("Filling cache for {}[{}]", this.getClass().getSimpleName(), this);
+
+
 		AtomicLong totalSize = new AtomicLong(0);
 		int count = count();
 		cache = new ConcurrentHashMap<KEY, VALUE>(count);
