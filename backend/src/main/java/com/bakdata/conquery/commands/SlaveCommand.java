@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
 
@@ -93,24 +94,31 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		workers = new Workers(config.getQueries().getExecutionPool(),  config.getStorage().getNThreads());
 		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
 
+		AtomicInteger active = new AtomicInteger();
+
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
 
 			loaders.submit(() -> {
-				ConqueryMDC.setLocation(directory.toString());
+				try {
+					active.incrementAndGet();
+					ConqueryMDC.setLocation(directory.toString());
 
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if (workerStorage == null) {
-					log.warn("No valid WorkerStorage found.");
-					return;
+					WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
+					if (workerStorage == null) {
+						log.warn("No valid WorkerStorage found.");
+						return;
+					}
+
+					workers.createWorker(
+							workerStorage.getWorker(),
+							workerStorage
+					);
+
+					ConqueryMDC.clearLocation();
+				}finally {
+					active.decrementAndGet();
 				}
-
-				workers.createWorker(
-						workerStorage.getWorker(),
-						workerStorage
-				);
-
-				ConqueryMDC.clearLocation();
 			});
 		}
 
@@ -119,7 +127,11 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
 		}
 
-		log.info("All Worker Storages loaded: {}", workers);
+		if(active.get() > 0){
+			throw new IllegalStateException(String.format("Threadpool said it's running but still got %d Workers.", active.get()));
+		}
+
+		log.info("All Worker Storages loaded: {}", workers.getWorkers().size());
 	}
 
 	@Override
