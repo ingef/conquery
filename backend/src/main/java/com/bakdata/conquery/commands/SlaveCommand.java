@@ -17,6 +17,7 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -125,6 +126,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(30,TimeUnit.SECONDS)){
 			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
+		}
+
+		if (!XodusStore.activeThreads.isEmpty()) {
+			for (Thread activeThread : XodusStore.activeThreads) {
+				log.error("{} is still filling caches.", activeThread.getName());
+			}
 		}
 
 		if(active.get() > 0){

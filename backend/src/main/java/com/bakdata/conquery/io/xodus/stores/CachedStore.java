@@ -69,7 +69,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void fillCache() {
-		log.debug("Filling cache for {}[{}]", this.getClass().getSimpleName(), this);
+		log.debug("Filling cache for {}[{}]", this.getClass().getSimpleName(), this, new Exception("STACKTRACE MARKER"));
 
 
 		AtomicLong totalSize = new AtomicLong(0);

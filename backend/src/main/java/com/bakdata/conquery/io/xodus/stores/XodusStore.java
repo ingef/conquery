@@ -2,6 +2,8 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -15,6 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class XodusStore implements Closeable {
+	// STOPSHIP: 15.07.2020 THIS IS JUST FOR TESTING!
+	public static final Collection<Thread> activeThreads = new HashSet<>();
+
 	private final Store store;
 	private final Environment environment;
 	private final long timeout = ConqueryConfig.getInstance().getStorage().getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()/2;
@@ -41,6 +46,7 @@ public class XodusStore implements Closeable {
 	 */
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
 		ByteIterable lastKey = null;
+		activeThreads.add(Thread.currentThread());
 
 		do {
 			// Copy lastKey to guarantee it is unchanged.
@@ -66,9 +72,13 @@ public class XodusStore implements Closeable {
 						consumer.accept(c.getKey(), c.getValue());
 					}
 					return c.getKey();
+				}finally {
+					t.commit();
 				}
 			});
 		} while (lastKey != null);
+
+		activeThreads.remove(Thread.currentThread());
 	}
 
 	public boolean update(ByteIterable key, ByteIterable value) {
