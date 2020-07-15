@@ -65,7 +65,15 @@ public class JobExecutor extends Thread {
 	}
 	
 	public boolean isBusy() {
-		return busy.get() || !jobs.isEmpty();
+		if(busy.get()) {
+			log.trace("JobExecutor {} is still working on a task.", getName());
+			return true;
+		}
+		if(!jobs.isEmpty()) {
+			log.trace("JobExecutor {} has still work in the queue.", getName());
+			return true;
+		}
+		return false;
 	}
 
 	public void close() {
