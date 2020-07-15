@@ -68,7 +68,6 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
@@ -135,11 +134,9 @@ public class AdminProcessor {
 		if (namespaces.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);
 		}
-
-		namespaces.get(dataset.getId()).getJobManager()
+		jobManager
 			.addSlowJob(new SimpleJob("Adding concept " + concept.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(concept)));
-
-		namespaces.get(dataset.getId()).getJobManager()
+		jobManager
 			.addSlowJob(new SimpleJob("sendToAll " + concept.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(concept))));
 		// see #144 check duplicate names
 	}
@@ -172,18 +169,15 @@ public class AdminProcessor {
 			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
-		datasetStorage.updateDataset(dataset);
-
 		Namespace ns = new Namespace(datasetStorage);
 		ns.initMaintenance(maintenanceService);
-
+		ns.getStorage().updateDataset(dataset);
 		namespaces.add(ns);
 
 		// for now we just add one worker to every slave
-		for (SlaveInformation slave : namespaces.getSlaves().values()) {
-			addWorker(slave, dataset);
-		}
-
+		namespaces.getSlaves().values().forEach((slave) -> {
+			this.addWorker(slave, dataset);
+		});
 		return dataset;
 	}
 
@@ -194,10 +188,17 @@ public class AdminProcessor {
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
 
+			final ImportId importId = new ImportId(table.getId(), header.getName());
+
+			if(namespaces.get(dataset.getId()).getStorage().getImport(importId) != null){
+				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
+			}
+
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
-			namespaces.get(dataset.getId()).getJobManager()
+			getJobManager()
 					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
+
 		}
 	}
 
@@ -555,9 +556,7 @@ public class AdminProcessor {
 		jobManager.addSlowJob(new SimpleJob(
 				"Import delete on " + importId,
 				() -> {
-					for (WorkerInformation w : namespace.getWorkers()) {
-						w.send(new RemoveImportJob(importId));
-					}
+					namespace.sendToAll(new RemoveImportJob(importId));
 				}
 		));
 	}
