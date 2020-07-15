@@ -130,7 +130,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		if (!XodusStore.activeThreads.isEmpty()) {
 			for (Thread activeThread : XodusStore.activeThreads) {
-				log.error("{}#{} is still filling caches.", activeThread.getName(), activeThread.getState());
+				log.error("{}#{} at {} is still filling caches.", activeThread.getName(), activeThread.getState(), activeThread.getStackTrace()[0]);
 			}
 		}
 
