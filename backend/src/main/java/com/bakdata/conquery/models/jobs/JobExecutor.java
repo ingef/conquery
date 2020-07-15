@@ -64,6 +64,11 @@ public class JobExecutor extends Thread {
 		return jobs;
 	}
 	
+	/**
+	 * Checks if the executor is currently working on a job or if there are jobs left in its queue.
+	 * If so, the executor is busy.
+	 * @return True if there is work left to do for this executor
+	 */
 	public boolean isBusy() {
 		if(busy.get()) {
 			log.trace("JobExecutor {} is still working on a task.", getName());

@@ -369,6 +369,11 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		}
 	}
 
+	/**
+	 * Wrapper for write request that where filtered by {@link CQProtocolCodecFilter} to recognize the request
+	 * when it's events are bubbled downstream through the filterchain. 
+	 *
+	 */
 	private static class MessageWriteRequest extends DefaultWriteRequest {
 		public MessageWriteRequest(WriteRequest writeRequest) {
 			super(writeRequest, writeRequest.getFuture());
