@@ -306,26 +306,28 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		}
 
 		try {
-			// Now we can try to encode the response
+			// The following encodes the message, chunks the message AND also flushes the chunks to the processor
+			// This is not the way Mina excepts messages to be handled. 
 			encoder.encode(session, message, encoderOut);
 
-			// Send it directly
-			Queue<Object> bufferQueue = ((AbstractProtocolEncoderOutput) encoderOut).getMessageQueue();
-
-			// Write all the encoded messages now
-			while (!bufferQueue.isEmpty()) {
-				Object encodedMessage = bufferQueue.poll();
-
-				if (encodedMessage == null) {
-					break;
-				}
-
-				// Flush only when the buffer has remaining.
-				if (!(encodedMessage instanceof IoBuffer) || ((IoBuffer) encodedMessage).hasRemaining()) {
-					SocketAddress destination = writeRequest.getDestination();
-					WriteRequest encodedWriteRequest = new EncodedWriteRequest(encodedMessage, null, destination);
-
-					nextFilter.filterWrite(session, encodedWriteRequest);
+			{ // This block is basically not used, the forwarding is handled by ProtocolEncoderOutputImpl::flush
+				Queue<Object> bufferQueue = ((AbstractProtocolEncoderOutput) encoderOut).getMessageQueue();
+	
+				// Write all the encoded messages now
+				while (!bufferQueue.isEmpty()) {
+					Object encodedMessage = bufferQueue.poll();
+	
+					if (encodedMessage == null) {
+						break;
+					}
+	
+					// Flush only when the buffer has remaining.
+					if (!(encodedMessage instanceof IoBuffer) || ((IoBuffer) encodedMessage).hasRemaining()) {
+						SocketAddress destination = writeRequest.getDestination();
+						WriteRequest encodedWriteRequest = new EncodedWriteRequest(encodedMessage, null, destination);
+	
+						nextFilter.filterWrite(session, encodedWriteRequest);
+					}
 				}
 			}
 
@@ -390,7 +392,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 	private static class MessageWriteRequest extends DefaultWriteRequest {
 		public MessageWriteRequest(WriteRequest writeRequest) {
-			super(writeRequest);
+			super(writeRequest, writeRequest.getFuture());
 		}
 
 		@Override
