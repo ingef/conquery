@@ -46,39 +46,42 @@ public class XodusStore implements Closeable {
 	 */
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
 		ByteIterable lastKey = null;
-		activeThreads.add(Thread.currentThread());
+		try {
+			activeThreads.add(Thread.currentThread());
 
-		do {
-			// Copy lastKey to guarantee it is unchanged.
-			final ByteIterable _key = lastKey;
-			lastKey = environment.computeInReadonlyTransaction(t -> {
+			do {
+				// Copy lastKey to guarantee it is unchanged.
+				final ByteIterable _key = lastKey;
+				lastKey = environment.computeInReadonlyTransaction(t -> {
 
-				try (Cursor c = store.openCursor(t)) {
-					long start = System.nanoTime();
+					try (Cursor c = store.openCursor(t)) {
+						long start = System.nanoTime();
 
-					// try to load everything in the same transaction
-					// but keep within half of the timeout
+						// try to load everything in the same transaction
+						// but keep within half of the timeout
 
-					// Move cursor to where we left off
-					if (_key != null) {
-						c.getSearchKey(_key);
-					}
-
-					while (System.nanoTime() - start < timeout) {
-						if (!c.getNext()) {
-							return null;
+						// Move cursor to where we left off
+						if (_key != null) {
+							c.getSearchKey(_key);
 						}
 
-						consumer.accept(c.getKey(), c.getValue());
-					}
-					return c.getKey();
-				}finally {
-					t.commit();
-				}
-			});
-		} while (lastKey != null);
+						while (System.nanoTime() - start < timeout) {
+							if (!c.getNext()) {
+								return null;
+							}
 
-		activeThreads.remove(Thread.currentThread());
+							consumer.accept(c.getKey(), c.getValue());
+						}
+						return c.getKey();
+					}
+					finally {
+						t.commit();
+					}
+				});
+			} while (lastKey != null);
+		}finally {
+			activeThreads.remove(Thread.currentThread());
+		}
 	}
 
 	public boolean update(ByteIterable key, ByteIterable value) {
