@@ -307,7 +307,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		try {
 			// The following encodes the message, chunks the message AND also flushes the chunks to the processor
-			// This is not the way Mina excepts messages to be handled. 
+			// See ChunkWriter::finishBuffer and ProtocolEncoderOutputImpl::flush
 			encoder.encode(session, message, encoderOut);
 
 			// Call the next filter
