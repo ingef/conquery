@@ -75,6 +75,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 			executeAndWaitUntilFinish(processor, dataset, query, user, storage);
 		}).doesNotThrowAnyException();
 		
+		conquery.waitUntilWorkDone();
 		// Clean up
 		{
 			storage.removeUser(user.getId());
