@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
@@ -57,29 +56,16 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 
 		// Load all base data first, then load worker specific data.
 		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
+		Futures.allAsList(stores).get();
 
-
-		return Futures.transform(Futures.allAsList(stores),
-								 _stores -> ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
-													.addAll((Iterable<? extends ListenableFuture<KeyIncludingStore<?, ?>>>) _stores.stream()
-																																   .map(Futures::immediateFuture)
-																																   .collect(Collectors.toList()))
-													.add(
-															pool.submit(() -> {
-																worker.loadData();
-																return worker;
-															}),
-															pool.submit(() -> {
-																cBlocks.loadData();
-																return cBlocks;
-															}),
-															pool.submit(() -> {
-																blocks.loadData();
-																return blocks;
-															})
-													)
-													.build(), pool
-		).get();
+		return ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
+					   .addAll(stores)
+					   .add(
+							   pool.submit(blocks::loadData, blocks),
+							   pool.submit(worker::loadData, worker),
+							   pool.submit(cBlocks::loadData, cBlocks)
+					   )
+					   .build();
 	}
 
 	@Override

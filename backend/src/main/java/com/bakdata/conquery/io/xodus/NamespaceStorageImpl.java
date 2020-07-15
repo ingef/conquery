@@ -50,26 +50,19 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	@Override
 	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
 
+		structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
+		idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
+
+
 		// Await super first, then load structure and idmapping
 		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
 		Futures.allAsList(stores).get();
 
-		structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
-
-		idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
-
-
 		return ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
 					   .addAll(stores)
 					   .add(
-							   pool.submit(() -> {
-								   structure.loadData();
-								   return structure;
-							   }),
-							   pool.submit(() -> {
-								   idMapping.loadData();
-								   return idMapping;
-							   })
+							   pool.submit(structure::loadData, structure),
+							   pool.submit(idMapping::loadData, idMapping)
 					   )
 					   .build();
 

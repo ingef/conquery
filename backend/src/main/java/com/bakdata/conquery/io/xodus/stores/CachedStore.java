@@ -69,9 +69,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void fillCache() {
-		log.debug("Filling cache for {}[{}]", this.getClass().getSimpleName(), this, new Exception("STACKTRACE MARKER"));
-
-
 		AtomicLong totalSize = new AtomicLong(0);
 		int count = count();
 		cache = new ConcurrentHashMap<KEY, VALUE>(count);
@@ -108,13 +105,13 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
+
 		log.info(
 				"\tloaded store {}: {} entries, {} within {}",
 				this,
 				cache.values().size(),
 				BinaryByteUnit.format(totalSize.get()),
-				timer.stop(),
-				new IllegalStateException()
+				timer.stop()
 		);
 	}
 
