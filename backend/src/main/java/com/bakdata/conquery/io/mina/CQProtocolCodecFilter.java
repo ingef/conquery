@@ -310,27 +310,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 			// This is not the way Mina excepts messages to be handled. 
 			encoder.encode(session, message, encoderOut);
 
-			{ // This block is basically not used, the forwarding is handled by ProtocolEncoderOutputImpl::flush
-				Queue<Object> bufferQueue = ((AbstractProtocolEncoderOutput) encoderOut).getMessageQueue();
-	
-				// Write all the encoded messages now
-				while (!bufferQueue.isEmpty()) {
-					Object encodedMessage = bufferQueue.poll();
-	
-					if (encodedMessage == null) {
-						break;
-					}
-	
-					// Flush only when the buffer has remaining.
-					if (!(encodedMessage instanceof IoBuffer) || ((IoBuffer) encodedMessage).hasRemaining()) {
-						SocketAddress destination = writeRequest.getDestination();
-						WriteRequest encodedWriteRequest = new EncodedWriteRequest(encodedMessage, null, destination);
-	
-						nextFilter.filterWrite(session, encodedWriteRequest);
-					}
-				}
-			}
-
 			// Call the next filter
 			nextFilter.filterWrite(session, new MessageWriteRequest(writeRequest));
 		} catch (Exception e) {
