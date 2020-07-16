@@ -189,6 +189,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				} else {
 					log.warn("Could not parse key " + k, e);
 				}
+				if(removeUnreadablesFromUnderlyingStore) {
+					unreadables.add(k);
+				}
 				result.incrFailedKeys();
 				return;
 			}
