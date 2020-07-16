@@ -31,6 +31,7 @@ import jetbrains.exodus.env.Environments;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,7 @@ public class SerializingStoreDumpTest {
 	}
 	
 	@Test
-	public void testCorruptValue() throws JSONException, IOException {
+	public void testCorruptValueDump() throws JSONException, IOException {
 		// Open a store and insert a valid key-value pair (UserId & User)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			User user = new User("username","userlabel");
@@ -78,9 +79,46 @@ public class SerializingStoreDumpTest {
 			expectedResult.setTotalProcessed(2);
 			expectedResult.setFailedKeys(0);
 			expectedResult.setFailedValues(1);
+			
+			// Iterate (do nothing with the entries themselves)
 			IterationResult result = store.forEach((k,v,s) -> {});
 			assertThat(result).isEqualTo(expectedResult);
 		}
+		
+		// Test if the correct number of dumpfiles was generated
+		Condition<File> dumpFile = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION) , "dump file");
+		assertThat(tmpDir.listFiles()).areExactly(1, dumpFile);
+	}
+	
+	@Test
+	public void testCorruptKeyDump() throws JSONException, IOException {
+		// Open a store and insert a valid key-value pair (UserId & User)
+		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+			User user = new User("username","userlabel");
+			store.add(new UserId("testU1"), user);
+		}
+		
+		// Open that store again, with a different config to insert a corrupt entry (String & ManagedQuery)
+		try (SerializingStore<String, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, ManagedExecution.class))){
+			ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
+			store.add("not a valid conquery Id", mQuery);
+		}
+		
+		// Reopen the store with the initial value and try to iterate over all entries (this triggers the dump or removal of invalid entries)
+		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+			IterationResult expectedResult = new IterationResult();
+			expectedResult.setTotalProcessed(2);
+			expectedResult.setFailedKeys(1);
+			expectedResult.setFailedValues(0);
+			
+			// Iterate (do nothing with the entries themselves)
+			IterationResult result = store.forEach((k,v,s) -> {});
+			assertThat(result).isEqualTo(expectedResult);
+		}
+		
+		// Test if the correct number of dumpfiles was generated
+		Condition<File> dumpFile = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION) , "dump file");
+		assertThat(tmpDir.listFiles()).areExactly(1, dumpFile);
 	}
 	
 	@RequiredArgsConstructor
@@ -97,14 +135,13 @@ public class SerializingStoreDumpTest {
 
 		@Override
 		public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-			// TODO Auto-generated method stub
+			// nothing to do
 			return null;
 		}
 
 		@Override
 		public void collectResultInfos(ResultInfoCollector collector) {
-			// TODO Auto-generated method stub
-			
+			// nothing to do
 		}
 	}
 

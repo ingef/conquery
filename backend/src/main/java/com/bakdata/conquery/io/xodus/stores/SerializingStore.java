@@ -41,6 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
+	public static final String DUMP_FILE_EXTENTION = "json";
+
 	/**
 	 * Used for serializing keys.
 	 */
@@ -172,24 +174,49 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		ArrayList<ByteIterable> unreadables = new ArrayList<>();
 		store.forEach((k, v) -> {
 			result.incrTotalProcessed();
+			// Try to read the key first
+			KEY key = null;
 			try {
-				try {
-					consumer.accept(readKey(k), readValue(v), v.getLength());
-				} catch (Exception e) {
-					if(unreadableValuesDumpDir != null) {						
-						dumpToFile(v, Jackson.BINARY_MAPPER.readerFor(String.class).readValue(k.getBytesUnsafe()), unreadableValuesDumpDir, storeInfo.getXodusName());
-					} else {
-						log.warn("Could not parse value for key " + readKey(k), e);						
-					}
-					if(removeUnreadablesFromUnderlyingStore) {
-						unreadables.add(k);
-					}
-					result.incrFailedValues();
-				}
+				key = readKey(k);
 			} catch (Exception e) {
-				log.warn("Could not parse key " + k, e);
+				if(unreadableValuesDumpDir != null) {
+					try {
+						dumpToFile(v, Jackson.BINARY_MAPPER.readerFor(String.class).readValue(k.getBytesUnsafe()), unreadableValuesDumpDir, storeInfo.getXodusName());
+					}
+					catch (IOException e1) {
+						log.warn("Cannot dump value for key (Bytes {}) to file because the key could not be parsed to in to a String", k.toString());
+					}
+				} else {
+					log.warn("Could not parse key " + k, e);
+				}
 				result.incrFailedKeys();
+				return;
 			}
+			
+			// Try to read the value
+			VALUE value = null;
+			try {
+				value = readValue(v);
+			} catch (Exception e) {
+				if(unreadableValuesDumpDir != null) {
+					dumpToFile(v, key.toString(), unreadableValuesDumpDir, storeInfo.getXodusName());
+				} else {
+					log.warn("Could not parse value for key " + key, e);						
+				}
+				if(removeUnreadablesFromUnderlyingStore) {
+					unreadables.add(k);
+				}
+				result.incrFailedValues();
+				return;
+			}
+			
+			// Apply the conusmer to key and value
+			try {
+				consumer.accept(key, value, v.getLength());
+			} catch (Exception e) {
+				log.warn("Unable to apply for-each consumer on key[{}]", key, e);
+			}
+
 		});
 		// Print some statistics
 		log.info(String.format("While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
@@ -199,6 +226,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			result.getFailedValues(),
 			(float) result.getFailedValues()/result.getTotalProcessed()*100));
 		
+		// Remove corrupted entries from the store if configured so
 		if(removeUnreadablesFromUnderlyingStore) {
 			log.info("Removing the following unreadable elements from the store {}: {}", storeInfo.getXodusName(), unreadables.stream()
 				.map(ByteIterable::getBytesUnsafe)
@@ -316,10 +344,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * However, it does not ensure that there is no file with such a name.
 	 */
 	private static String makeDumpfileName(String keyOfDump, String storeName) {
-		return String.format("%s-%s-%s.json",
+		return String.format("%s-%s-%s.%s",
 			DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
 			storeName,
-			keyOfDump
+			keyOfDump,
+			DUMP_FILE_EXTENTION
 			).replaceAll("[\\\\/:*?\"<>|]", "");
 	}
 
