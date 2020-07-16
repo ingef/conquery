@@ -44,8 +44,6 @@ public class SerializingStoreDumpTest {
 	@BeforeEach
 	public void init() {
 		tmpDir = Files.createTempDir();
-		ConqueryConfig.getInstance().getStorage().setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
-		ConqueryConfig.getInstance().getStorage().setRemoveUnreadablesFromStore(true);
 		env = Environments.newInstance(tmpDir);
 	}
 	
@@ -59,8 +57,14 @@ public class SerializingStoreDumpTest {
 		return new SerializingStore<>(new XodusStore(environment, storeId), validator, storeId);
 	}
 	
+	/**
+	 * Tests if entries with corrupted values are dumped. The dump itself is not testet. 
+	 */
 	@Test
 	public void testCorruptValueDump() throws JSONException, IOException {
+		// Set dump directory to this tests temp-dir
+		ConqueryConfig.getInstance().getStorage().setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
+		
 		// Open a store and insert a valid key-value pair (UserId & User)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			User user = new User("username","userlabel");
@@ -90,8 +94,15 @@ public class SerializingStoreDumpTest {
 		assertThat(tmpDir.listFiles()).areExactly(1, dumpFile);
 	}
 	
+
+	/**
+	 * Tests if entries with corrupted keys are dumped. The dump itself is not testet. 
+	 */
 	@Test
 	public void testCorruptKeyDump() throws JSONException, IOException {
+		// Set dump directory to this tests temp-dir
+		ConqueryConfig.getInstance().getStorage().setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
+		
 		// Open a store and insert a valid key-value pair (UserId & User)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			User user = new User("username","userlabel");
@@ -121,15 +132,22 @@ public class SerializingStoreDumpTest {
 		assertThat(tmpDir.listFiles()).areExactly(1, dumpFile);
 	}
 	
+
+	/**
+	 * Tests if entries with corrupted are removed from the store if configured so. The dump itself is not testet. 
+	 */
 	@Test
 	public void testCorruptionRemoval() throws JSONException, IOException {
+		// Set config to remove corrupt entries
+		ConqueryConfig.getInstance().getStorage().setRemoveUnreadablesFromStore(true);
+		
 		// Open a store and insert a valid key-value pair (UserId & User)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			User user = new User("username","userlabel");
 			store.add(new UserId("testU1"), user);
 		}
 		
-		{ // Inser two corrupt entries. One with a corrupt key and the other one with a corrupt value			
+		{ // Insert two corrupt entries. One with a corrupt key and the other one with a corrupt value			
 			try (SerializingStore<String, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, ManagedExecution.class))){
 				ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
 				store.add("not a valid conquery Id", mQuery);
