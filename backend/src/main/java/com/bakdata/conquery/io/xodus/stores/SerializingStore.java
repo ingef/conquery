@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
@@ -231,10 +230,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		
 		// Remove corrupted entries from the store if configured so
 		if(removeUnreadablesFromUnderlyingStore) {
-			log.info("Removing the following unreadable elements from the store {}: {}", storeInfo.getXodusName(), unreadables.stream()
-				.map(ByteIterable::getBytesUnsafe)
-				.map(String::new)
-				.collect(Collectors.toList()));
+			log.info("Removing {} unreadable elements from the store {}.", unreadables.size(), storeInfo.getXodusName());
 			unreadables.forEach(store::remove);			
 		}
 		return result;
