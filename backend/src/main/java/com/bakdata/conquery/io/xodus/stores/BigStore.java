@@ -21,6 +21,8 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.xodus.StoreInfo;
+import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationResult;
+import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -54,7 +56,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private int chunkSize = Ints.checkedCast(Size.megabytes(100).toBytes());
 
 
-	public BigStore(Validator validator, Environment env, StoreInfo storeInfo) {
+	public BigStore(StorageConfig config, Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
 
 		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
@@ -64,6 +66,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		);
 
 		metaStore = new SerializingStore<>(
+				config,
 				new XodusStore(env, metaStoreInfo), validator,
 				metaStoreInfo
 		);
@@ -75,6 +78,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		);
 
 		dataStore = new SerializingStore<>(
+				config,
 				new XodusStore(env, dataStoreInfo), validator,
 				dataStoreInfo
 		);
@@ -108,8 +112,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		metaStore.forEach((key, value, length) -> {
+	public IterationResult forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+		return metaStore.forEach((key, value, length) -> {
 			consumer.accept(key, createValue(key, value), length);
 		});
 	}

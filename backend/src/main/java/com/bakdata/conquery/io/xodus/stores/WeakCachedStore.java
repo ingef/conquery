@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationResult;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.google.common.cache.CacheBuilder;
@@ -66,7 +67,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+	public IterationResult forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		throw new UnsupportedOperationException();
 	}
 
