@@ -3,27 +3,25 @@ package com.bakdata.conquery.io.xodus.stores;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationResult;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
 import jetbrains.exodus.env.Environment;
@@ -40,6 +38,10 @@ public class SerializingStoreDumpTest {
 
 	private File tmpDir;
 	private Environment env;
+	
+	// Test data
+	private final ConceptQuery cQuery = new ConceptQuery(new CQReusedQuery(new ManagedExecutionId(new DatasetId("testD"), UUID.randomUUID())));
+	private final User user = new User("username","userlabel");
 	
 	@BeforeEach
 	public void init() {
@@ -58,7 +60,7 @@ public class SerializingStoreDumpTest {
 	}
 	
 	/**
-	 * Tests if entries with corrupted values are dumped. The dump itself is not testet. 
+	 * Tests if entries with corrupted values are dumped.
 	 */
 	@Test
 	public void testCorruptValueDump() throws JSONException, IOException {
@@ -67,14 +69,12 @@ public class SerializingStoreDumpTest {
 		
 		// Open a store and insert a valid key-value pair (UserId & User)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
-			User user = new User("username","userlabel");
-			store.add(new UserId("testU1"), user);
+			store.add(user.getId(), user);
 		}
 		
-		// Open that store again, with a different config to insert a corrupt entry (UserId & ManagedQuery)
-		try (SerializingStore<UserId, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, ManagedExecution.class))){
-			ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
-			store.add(new UserId("testU2"), mQuery);
+		// Open that store again, with a different config to insert a corrupt entry (UserId & ManagedQuery)		
+		try (SerializingStore<UserId, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class))){
+			store.add(new UserId("testU2"), cQuery);
 		}
 		
 		// Reopen the store with the initial value and try to iterate over all entries (this triggers the dump or removal of invalid entries)
@@ -90,13 +90,30 @@ public class SerializingStoreDumpTest {
 		}
 		
 		// Test if the correct number of dumpfiles was generated
-		Condition<File> dumpFile = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION) , "dump file");
-		assertThat(tmpDir.listFiles()).areExactly(1, dumpFile);
+		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION) , "dump file");
+		assertThat(tmpDir.listFiles()).areExactly(1, dumpFileCond);
+		
+		// Test if the dump is correct
+		File dumpFile = getDumpFile(dumpFileCond);
+
+		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
+	}
+
+	private File getDumpFile(Condition<File> dumpFileCond) {
+		File dumpFile = tmpDir.listFiles(new FileFilter() {
+
+			@Override
+			public boolean accept(File pathname) {
+				return dumpFileCond.matches(pathname);
+			}
+			
+		})[0];
+		return dumpFile;
 	}
 	
 
 	/**
-	 * Tests if entries with corrupted keys are dumped. The dump itself is not testet. 
+	 * Tests if entries with corrupted keys are dumped.
 	 */
 	@Test
 	public void testCorruptKeyDump() throws JSONException, IOException {
@@ -105,14 +122,12 @@ public class SerializingStoreDumpTest {
 		
 		// Open a store and insert a valid key-value pair (UserId & User)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
-			User user = new User("username","userlabel");
 			store.add(new UserId("testU1"), user);
 		}
 		
 		// Open that store again, with a different config to insert a corrupt entry (String & ManagedQuery)
-		try (SerializingStore<String, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, ManagedExecution.class))){
-			ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
-			store.add("not a valid conquery Id", mQuery);
+		try (SerializingStore<String, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class))){
+			store.add("not a valid conquery Id", cQuery);
 		}
 		
 		// Reopen the store with the initial value and try to iterate over all entries (this triggers the dump or removal of invalid entries)
@@ -126,10 +141,15 @@ public class SerializingStoreDumpTest {
 			IterationResult result = store.forEach((k,v,s) -> {});
 			assertThat(result).isEqualTo(expectedResult);
 		}
-		
+
 		// Test if the correct number of dumpfiles was generated
-		Condition<File> dumpFile = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION) , "dump file");
-		assertThat(tmpDir.listFiles()).areExactly(1, dumpFile);
+		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION) , "dump file");
+		assertThat(tmpDir.listFiles()).areExactly(1, dumpFileCond);
+		
+		// Test if the dump is correct
+		File dumpFile = getDumpFile(dumpFileCond);
+		
+		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
 	}
 	
 
@@ -143,19 +163,16 @@ public class SerializingStoreDumpTest {
 		
 		// Open a store and insert a valid key-value pair (UserId & User)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
-			User user = new User("username","userlabel");
 			store.add(new UserId("testU1"), user);
 		}
 		
 		{ // Insert two corrupt entries. One with a corrupt key and the other one with a corrupt value			
-			try (SerializingStore<String, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, ManagedExecution.class))){
-				ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
-				store.add("not a valid conquery Id", mQuery);
+			try (SerializingStore<String, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class))){
+				store.add("not a valid conquery Id", cQuery);
 			}
 			
-			try (SerializingStore<UserId, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, ManagedExecution.class))){
-				ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
-				store.add(new UserId("testU2"), mQuery);
+			try (SerializingStore<UserId, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class))){
+				store.add(new UserId("testU2"), cQuery);
 			}
 		}
 		
@@ -191,21 +208,4 @@ public class SerializingStoreDumpTest {
 		private final Class<?> keyType;
 		private final Class<?> valueType;
 	}
-
-	
-	@CPSType(id="STUP", base=CQElement.class)
-	private static class CQStup implements CQElement {
-
-		@Override
-		public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-			// nothing to do
-			return null;
-		}
-
-		@Override
-		public void collectResultInfos(ResultInfoCollector collector) {
-			// nothing to do
-		}
-	}
-
 }
