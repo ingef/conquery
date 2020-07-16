@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -80,9 +81,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 */
 	private final IStoreInfo storeInfo;
 
-	private int totalProcessed = 0;
-	private int failedKeys = 0;
-	private int failedValues = 0;
 
 	/**
 	 * If set, all values that cannot be read are dumped as single files into this directory.
@@ -169,13 +167,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		totalProcessed = 0;
-		failedKeys = 0;
-		failedValues = 0;
+	public IterationResult forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+		IterationResult result = new IterationResult();
 		ArrayList<ByteIterable> unreadables = new ArrayList<>();
 		store.forEach((k, v) -> {
-			totalProcessed++;
+			result.incrTotalProcessed();
 			try {
 				try {
 					consumer.accept(readKey(k), readValue(v), v.getLength());
@@ -188,20 +184,20 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 					if(removeUnreadablesFromUnderlyingStore) {
 						unreadables.add(k);
 					}
-					failedValues++;
+					result.incrFailedValues();
 				}
 			} catch (Exception e) {
 				log.warn("Could not parse key " + k, e);
-				failedKeys++;
+				result.incrFailedKeys();
 			}
 		});
 		// Print some statistics
 		log.info(String.format("While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
 			this.storeInfo.getXodusName(),
-			totalProcessed, failedKeys,
-			(float) failedKeys/totalProcessed*100,
-			failedValues,
-			(float) failedValues/totalProcessed*100));
+			result.getTotalProcessed(), result.getFailedKeys(),
+			(float) result.getFailedKeys()/result.getTotalProcessed()*100,
+			result.getFailedValues(),
+			(float) result.getFailedValues()/result.getTotalProcessed()*100));
 		
 		if(removeUnreadablesFromUnderlyingStore) {
 			log.info("Removing the following unreadable elements from the store {}: {}", storeInfo.getXodusName(), unreadables.stream()
@@ -210,6 +206,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				.collect(Collectors.toList()));
 			unreadables.forEach(store::remove);			
 		}
+		return result;
 	}
 
 	@Override
@@ -353,5 +350,24 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public Collection<KEY> getAllKeys() {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Data
+	public static class IterationResult {
+		private int totalProcessed = 0;
+		private int failedKeys = 0;
+		private int failedValues = 0;
+		
+		public void incrTotalProcessed() {
+			totalProcessed++;
+		}
+		
+		public void incrFailedKeys() {
+			failedKeys++;
+		}
+		
+		public void incrFailedValues() {
+			failedValues++;
+		}
 	}
 }

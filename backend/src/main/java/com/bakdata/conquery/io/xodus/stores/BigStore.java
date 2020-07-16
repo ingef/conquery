@@ -21,6 +21,7 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.xodus.StoreInfo;
+import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationResult;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -108,8 +109,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		metaStore.forEach((key, value, length) -> {
+	public IterationResult forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+		return metaStore.forEach((key, value, length) -> {
 			consumer.accept(key, createValue(key, value), length);
 		});
 	}
