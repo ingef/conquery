@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -91,7 +92,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
 	@SuppressWarnings("unchecked")
-	public SerializingStore(XodusStore store, Validator validator, IStoreInfo storeInfo) {
+	public SerializingStore(StorageConfig config, XodusStore store, Validator validator, IStoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
 		this.store = store;
 		this.validator = validator;
@@ -114,10 +115,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 							.readerFor(storeInfo.getKeyType())
 							.withView(InternalOnly.class);
 		
-		removeUnreadablesFromUnderlyingStore = ConqueryConfig.getInstance().getStorage().isRemoveUnreadablesFromStore();
+		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadablesFromStore();
 		
 		// Prepare dump directory if there is one set in the config
-		Optional<File> dumpUnreadable = ConqueryConfig.getInstance().getStorage().getUnreadbleDataDumpDirectory();
+		Optional<File> dumpUnreadable = config.getUnreadbleDataDumpDirectory();
 		if(dumpUnreadable.isPresent()) {
 			unreadableValuesDumpDir = dumpUnreadable.get();
 			if(!unreadableValuesDumpDir.exists()) {

@@ -15,7 +15,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationResult;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -38,6 +38,7 @@ public class SerializingStoreDumpTest {
 
 	private File tmpDir;
 	private Environment env;
+	private StorageConfig config;
 	
 	// Test data
 	private final ConceptQuery cQuery = new ConceptQuery(new CQReusedQuery(new ManagedExecutionId(new DatasetId("testD"), UUID.randomUUID())));
@@ -47,6 +48,7 @@ public class SerializingStoreDumpTest {
 	public void init() {
 		tmpDir = Files.createTempDir();
 		env = Environments.newInstance(tmpDir);
+		config = new StorageConfig();
 	}
 	
 	@AfterEach
@@ -55,8 +57,8 @@ public class SerializingStoreDumpTest {
 		FileUtils.deleteDirectory(tmpDir);
 	}
 	
-	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(Environment environment, Validator validator, IStoreInfo storeId) {
-		return new SerializingStore<>(new XodusStore(environment, storeId), validator, storeId);
+	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(StorageConfig config, Environment environment, Validator validator, IStoreInfo storeId) {
+		return new SerializingStore<>(config, new XodusStore(environment, storeId), validator, storeId);
 	}
 	
 	/**
@@ -65,20 +67,20 @@ public class SerializingStoreDumpTest {
 	@Test
 	public void testCorruptValueDump() throws JSONException, IOException {
 		// Set dump directory to this tests temp-dir
-		ConqueryConfig.getInstance().getStorage().setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
 		
 		// Open a store and insert a valid key-value pair (UserId & User)
-		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			store.add(user.getId(), user);
 		}
 		
 		// Open that store again, with a different config to insert a corrupt entry (UserId & ManagedQuery)		
-		try (SerializingStore<UserId, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class))){
+		try (SerializingStore<UserId, QueryDescription> store = createSerializedStore(config, env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class))){
 			store.add(new UserId("testU2"), cQuery);
 		}
 		
 		// Reopen the store with the initial value and try to iterate over all entries (this triggers the dump or removal of invalid entries)
-		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			IterationResult expectedResult = new IterationResult();
 			expectedResult.setTotalProcessed(2);
 			expectedResult.setFailedKeys(0);
@@ -118,20 +120,20 @@ public class SerializingStoreDumpTest {
 	@Test
 	public void testCorruptKeyDump() throws JSONException, IOException {
 		// Set dump directory to this tests temp-dir
-		ConqueryConfig.getInstance().getStorage().setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
 		
 		// Open a store and insert a valid key-value pair (UserId & User)
-		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			store.add(new UserId("testU1"), user);
 		}
 		
 		// Open that store again, with a different config to insert a corrupt entry (String & ManagedQuery)
-		try (SerializingStore<String, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class))){
+		try (SerializingStore<String, QueryDescription> store = createSerializedStore(config, env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class))){
 			store.add("not a valid conquery Id", cQuery);
 		}
 		
 		// Reopen the store with the initial value and try to iterate over all entries (this triggers the dump or removal of invalid entries)
-		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			IterationResult expectedResult = new IterationResult();
 			expectedResult.setTotalProcessed(2);
 			expectedResult.setFailedKeys(1);
@@ -159,25 +161,25 @@ public class SerializingStoreDumpTest {
 	@Test
 	public void testCorruptionRemoval() throws JSONException, IOException {
 		// Set config to remove corrupt entries
-		ConqueryConfig.getInstance().getStorage().setRemoveUnreadablesFromStore(true);
+		config.setRemoveUnreadablesFromStore(true);
 		
 		// Open a store and insert a valid key-value pair (UserId & User)
-		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			store.add(new UserId("testU1"), user);
 		}
 		
 		{ // Insert two corrupt entries. One with a corrupt key and the other one with a corrupt value			
-			try (SerializingStore<String, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class))){
+			try (SerializingStore<String, QueryDescription> store = createSerializedStore(config, env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class))){
 				store.add("not a valid conquery Id", cQuery);
 			}
 			
-			try (SerializingStore<UserId, QueryDescription> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class))){
+			try (SerializingStore<UserId, QueryDescription> store = createSerializedStore(config, env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class))){
 				store.add(new UserId("testU2"), cQuery);
 			}
 		}
 		
 		// Reopen the store with correct configuration and try to iterate over all entries (this triggers the dump or removal of invalid entries)
-		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			IterationResult expectedResult = new IterationResult();
 			expectedResult.setTotalProcessed(3);
 			expectedResult.setFailedKeys(1);
@@ -189,7 +191,7 @@ public class SerializingStoreDumpTest {
 		}
 		
 		// Reopen again to check that the corrupted values have been removed previously
-		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
+		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			IterationResult expectedResult = new IterationResult();
 			expectedResult.setTotalProcessed(1);
 			expectedResult.setFailedKeys(0);
