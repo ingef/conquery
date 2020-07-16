@@ -129,18 +129,24 @@ public class SerializingStoreDumpTest {
 			store.add(new UserId("testU1"), user);
 		}
 		
-		// Open that store again, with a different config to insert a corrupt entry (String & ManagedQuery)
-		try (SerializingStore<String, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, ManagedExecution.class))){
-			ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
-			store.add("not a valid conquery Id", mQuery);
+		{ // Inser two corrupt entries. One with a corrupt key and the other one with a corrupt value			
+			try (SerializingStore<String, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, ManagedExecution.class))){
+				ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
+				store.add("not a valid conquery Id", mQuery);
+			}
+			
+			try (SerializingStore<UserId, ManagedExecution<?>> store = createSerializedStore(env, Validators.newValidator(), new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, ManagedExecution.class))){
+				ManagedQuery mQuery = new ManagedQuery(new ConceptQuery(new CQStup()), new UserId("testU"), new DatasetId("testD"));
+				store.add(new UserId("testU2"), mQuery);
+			}
 		}
 		
 		// Reopen the store with correct configuration and try to iterate over all entries (this triggers the dump or removal of invalid entries)
 		try (SerializingStore<UserId, User> store = createSerializedStore(env, Validators.newValidator(), StoreInfo.AUTH_USER)){
 			IterationResult expectedResult = new IterationResult();
-			expectedResult.setTotalProcessed(2);
+			expectedResult.setTotalProcessed(3);
 			expectedResult.setFailedKeys(1);
-			expectedResult.setFailedValues(0);
+			expectedResult.setFailedValues(1);
 			
 			// Iterate (do nothing with the entries themselves)
 			IterationResult result = store.forEach((k,v,s) -> {});
