@@ -1,9 +1,7 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 
 import javax.validation.Validator;
 
@@ -14,10 +12,7 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
+import com.bakdata.conquery.util.functions.Collector;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -47,30 +42,20 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 		this.idMapping.update(idMapping);
 	}
 
+	
 	@Override
-	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
-
+	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
+		super.createStores(collector);
 		structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
 		idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
-
-
-		// Await super first, then load structure and idmapping
-		final List<ListenableFuture<KeyIncludingStore<?, ?>>> stores = super.createStores(pool);
-		Futures.allAsList(stores).get();
-
-		return ImmutableList.<ListenableFuture<KeyIncludingStore<?, ?>>>builder()
-					   .addAll(stores)
-					   .add(
-							   pool.submit(structure::loadData, structure),
-							   pool.submit(idMapping::loadData, idMapping)
-					   )
-					   .build();
-
+		collector
+			.collect(structure)
+			.collect(idMapping);
 	}
 
 	@Override
 	public StructureNode[] getStructure() {
-		return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
+		return Objects.requireNonNullElseGet(structure.get(), ()->new StructureNode[0]);
 	}
 
 	@Override

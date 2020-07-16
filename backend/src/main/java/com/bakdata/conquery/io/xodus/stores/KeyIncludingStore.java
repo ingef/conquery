@@ -6,9 +6,7 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 
 	protected final Store<KEY, VALUE> store;
@@ -53,8 +51,6 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	}
 	
 	public void loadData() {
-		log.debug("Starting to load {}[{}]", this.getClass().getSimpleName(), this);
-
 		store.fillCache();
 		for(VALUE value : getAll()) {
 			added(value);

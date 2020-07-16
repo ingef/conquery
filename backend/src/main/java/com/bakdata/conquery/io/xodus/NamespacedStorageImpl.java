@@ -1,12 +1,9 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 import javax.validation.Validator;
 
@@ -31,9 +28,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
+import com.bakdata.conquery.util.functions.Collector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -45,14 +40,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected IdentifiableStore<Concept<?>> concepts;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator, config, directory);
+		super(validator,config,directory);
 	}
 
 	@Override
-	protected List<ListenableFuture<KeyIncludingStore<?, ?>>> createStores(ListeningExecutorService pool) throws ExecutionException, InterruptedException {
-
-		// Setup dependencies between dataset components.
-
+	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getEnvironment(), getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
@@ -108,6 +100,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			})
 			.onRemove(concept -> {
 				concept.getSelects().forEach(centralRegistry::remove);
+				//see #146  remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
 					c.getSelects().forEach(centralRegistry::remove);
 					c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
@@ -127,27 +120,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			});
 
 
-		// datasets and concepts need to be loaded in order.
-		// Dictionaries and Imports depend on both and need to be loaded after that.
-
-		pool.submit(() -> {
-			dataset.loadData();
-			log.debug("finished loading dataset {}", new ArrayList<>(dataset.getAllKeys()));
-			concepts.loadData();
-			log.debug("finished loading concepts");
-
-		}).get();
-
-		return List.of(
-				pool.submit(imports::loadData, imports),
-				pool.submit(dictionaries::loadData, dictionaries),
-				Futures.immediateFuture(dictionaries),
-				Futures.immediateFuture(dataset),
-				Futures.immediateFuture(concepts)
-		);
+		collector
+			.collect(dataset)
+			.collect(dictionaries)
+			.collect(concepts)
+			.collect(imports);
 	}
-
-
 
 	@Override
 	public Dataset getDataset() {

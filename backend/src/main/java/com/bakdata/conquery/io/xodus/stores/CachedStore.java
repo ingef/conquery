@@ -29,7 +29,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		if(cache.putIfAbsent(key, value)!=null) {
-			throw new IllegalStateException("The id "+key+" is already part of this store");
+			throw new IllegalStateException("The id "+key+" is alread part of this store");
 		}
 		store.add(key, value);
 	}
@@ -74,9 +74,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		cache = new ConcurrentHashMap<KEY, VALUE>(count);
 		final ProgressBar bar;
 		Stopwatch timer = Stopwatch.createStarted();
-
-		if (count > 100) {
-			bar = new ProgressBar(count, System.out);
+		
+		if(count>100) {
+			synchronized (PROGRESS_BAR) {
+				bar = PROGRESS_BAR;
+				bar.addMaxValue(count);
+			}
 			log.info("\tloading store {}", this);
 		}
 		else {
@@ -105,7 +108,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
-
 		log.info(
 				"\tloaded store {}: {} entries, {} within {}",
 				this,

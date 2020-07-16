@@ -8,9 +8,7 @@ import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Accessors(fluent=true) @Setter @Getter
 public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<IId<VALUE>, VALUE> {
 
@@ -59,8 +57,6 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends KeyI
 	
 	@Override
 	public void loadData() {
-		log.debug("Starting to load {}[{}]", this.getClass().getSimpleName(), this);
-
 		store.fillCache();
 		for(IId<VALUE> key : getAllKeys()) {
 			centralRegistry.registerCacheable(key, ()->this.get(key));

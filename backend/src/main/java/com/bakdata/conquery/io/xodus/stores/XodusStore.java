@@ -2,8 +2,8 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -17,9 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class XodusStore implements Closeable {
-	// STOPSHIP: 15.07.2020 THIS IS JUST FOR TESTING!
-	public static final Collection<Thread> activeThreads = new HashSet<>();
-
 	private final Store store;
 	private final Environment environment;
 	private final long timeout = ConqueryConfig.getInstance().getStorage().getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()/2;
@@ -45,42 +42,28 @@ public class XodusStore implements Closeable {
 	 * @param consumer function called for-each key-value pair.
 	 */
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
-		ByteIterable lastKey = null;
-		try {
-			activeThreads.add(Thread.currentThread());
-
-			do {
-				// Copy lastKey to guarantee it is unchanged.
-				final ByteIterable _key = lastKey;
-				lastKey = environment.computeInReadonlyTransaction(t -> {
-
-					try (Cursor c = store.openCursor(t)) {
-						long start = System.nanoTime();
-
-						// try to load everything in the same transaction
-						// but keep within half of the timeout
-
-						// Move cursor to where we left off
-						if (_key != null) {
-							c.getSearchKey(_key);
-						}
-
-						while (System.nanoTime() - start < timeout) {
-							if (!c.getNext()) {
-								return null;
-							}
-
-							consumer.accept(c.getKey(), c.getValue());
-						}
-						return c.getKey();
+		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
+		AtomicBoolean done = new AtomicBoolean(false);
+		while(!done.get()) {
+			environment.executeInReadonlyTransaction(t -> {
+				try(Cursor c = store.openCursor(t)) {
+					//try to load everything in the same transaction
+					//but keep within half of the timeout time
+					long start = System.nanoTime();
+					//search where we left of
+					if(lastKey.get() != null) {
+						c.getSearchKey(lastKey.get());
 					}
-					finally {
-						t.commit();
+					while(System.nanoTime()-start < timeout) {
+						if(!c.getNext()) {
+							done.set(true);
+							return;
+						}
+						lastKey.set(c.getKey());
+						consumer.accept(lastKey.get(), c.getValue());
 					}
-				});
-			} while (lastKey != null);
-		}finally {
-			activeThreads.remove(Thread.currentThread());
+				}
+			});
 		}
 	}
 
