@@ -20,7 +20,12 @@ public class FailedEntityResult implements SinglelineEntityResult {
 	public boolean isFailed() {
 		return true;
 	}
-	
+
+	@Override
+	public boolean isContained() {
+		return false;
+	}
+
 	@Override
 	public FailedEntityResult asFailed() {
 		return this;

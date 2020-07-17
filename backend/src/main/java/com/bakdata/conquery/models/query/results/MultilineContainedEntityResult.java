@@ -9,7 +9,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -32,5 +31,15 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 	@Override
 	public Stream<Object[]> streamValues() {
 		return values.stream();
+	}
+
+	@Override
+	public boolean isFailed() {
+		return false;
+	}
+
+	@Override
+	public boolean isContained() {
+		return true;
 	}
 }
