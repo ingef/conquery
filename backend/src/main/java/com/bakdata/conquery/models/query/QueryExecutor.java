@@ -9,7 +9,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -27,8 +26,8 @@ public class QueryExecutor implements Closeable {
 	private final ThreadPoolExecutor executor;
 	private final ListeningExecutorService pool;
 	
-	public QueryExecutor(ConqueryConfig config) {
-		this.executor = config.getQueries().getExecutionPool().createService("Query Executor %d");
+	public QueryExecutor(ThreadPoolExecutor executor) {
+		this.executor = executor;
 		this.pool = MoreExecutors.listeningDecorator(executor);
 	}
 

@@ -15,7 +15,6 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.DefaultWriteRequest;
 import org.apache.mina.core.write.NothingWrittenException;
 import org.apache.mina.core.write.WriteRequest;
-import org.apache.mina.core.write.WriteRequestWrapper;
 import org.apache.mina.filter.codec.AbstractProtocolDecoderOutput;
 import org.apache.mina.filter.codec.AbstractProtocolEncoderOutput;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
@@ -277,7 +276,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		if (writeRequest instanceof MessageWriteRequest) {
 			MessageWriteRequest wrappedRequest = (MessageWriteRequest) writeRequest;
-			nextFilter.messageSent(session, wrappedRequest.getParentRequest());
+			nextFilter.messageSent(session, wrappedRequest.getOriginalRequest());
 		} else {
 			nextFilter.messageSent(session, writeRequest);
 		}
@@ -307,28 +306,9 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		}
 
 		try {
-			// Now we can try to encode the response
+			// The following encodes the message, chunks the message AND also flushes the chunks to the processor
+			// See ChunkWriter::finishBuffer and ProtocolEncoderOutputImpl::flush
 			encoder.encode(session, message, encoderOut);
-
-			// Send it directly
-			Queue<Object> bufferQueue = ((AbstractProtocolEncoderOutput) encoderOut).getMessageQueue();
-
-			// Write all the encoded messages now
-			while (!bufferQueue.isEmpty()) {
-				Object encodedMessage = bufferQueue.poll();
-
-				if (encodedMessage == null) {
-					break;
-				}
-
-				// Flush only when the buffer has remaining.
-				if (!(encodedMessage instanceof IoBuffer) || ((IoBuffer) encodedMessage).hasRemaining()) {
-					SocketAddress destination = writeRequest.getDestination();
-					WriteRequest encodedWriteRequest = new EncodedWriteRequest(encodedMessage, null, destination);
-
-					nextFilter.filterWrite(session, encodedWriteRequest);
-				}
-			}
 
 			// Call the next filter
 			nextFilter.filterWrite(session, new MessageWriteRequest(writeRequest));
@@ -389,9 +369,14 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		}
 	}
 
-	private static class MessageWriteRequest extends WriteRequestWrapper {
+	/**
+	 * Wrapper for write request that where filtered by {@link CQProtocolCodecFilter} to recognize the request
+	 * when it's events are bubbled downstream through the filterchain. 
+	 *
+	 */
+	private static class MessageWriteRequest extends DefaultWriteRequest {
 		public MessageWriteRequest(WriteRequest writeRequest) {
-			super(writeRequest);
+			super(writeRequest, writeRequest.getFuture());
 		}
 
 		@Override

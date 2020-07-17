@@ -5,12 +5,21 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.config.ThreadPoolDefinition;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +32,40 @@ public class Workers extends NamespaceCollection {
 	private ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
 	@JsonIgnore
 	private transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
+	
+	private final ThreadPoolExecutor jobsThreadPool;
+	private final ThreadPoolDefinition queryThreadPoolDefinition;
+	
+	
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, int jobThreadPoolSize) {
+		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
+		
+		// TODO: 30.06.2020 build from configuration
+		jobsThreadPool = new ThreadPoolExecutor(jobThreadPoolSize / 2, jobThreadPoolSize,
+												60L, TimeUnit.SECONDS,
+												new LinkedBlockingQueue<>(),
+												new ThreadFactoryBuilder().setNameFormat("Workers Helper %d").build()
+		);
 
-	public void add(Worker worker) {
+		jobsThreadPool.prestartAllCoreThreads();
+	}
+	
+	public Worker createWorker(WorkerInformation info, WorkerStorage storage) {
+		final JobManager jobManager = new JobManager(info.getName());
+		final BucketManager bucketManager = new BucketManager(jobManager, storage, info);
+
+		storage.setBucketManager(bucketManager);
+
+
+		final QueryExecutor queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
+
+		final Worker worker = new Worker(info, jobManager, storage, queryExecutor, jobsThreadPool);
+		addWorker(worker);
+
+		return worker;
+	}
+
+	private void addWorker(Worker worker) {
 		nextWorker.incrementAndGet();
 		workers.put(worker.getInfo().getId(), worker);
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);

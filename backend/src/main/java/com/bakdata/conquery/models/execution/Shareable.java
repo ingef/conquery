@@ -46,7 +46,7 @@ public interface  Shareable {
 		return (patch) -> {
 			if(patch != null && patch.getShared() != null) {
 				List<Group> groups;
-				if(patch.getGroups() != null) {
+				if(patch.getGroups() != null && !patch.getGroups().isEmpty()) {
 					// Resolve the provided groups
 					groups = patch.getGroups().stream().map(id -> storage.getGroup(id)).collect(Collectors.toList());
 				}

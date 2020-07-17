@@ -85,7 +85,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		if (pool == null) {
-			pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+			pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
 		}
 
 		final Collection<TableImportDescriptor> descriptors = new ArrayList<>();

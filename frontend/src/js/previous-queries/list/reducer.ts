@@ -16,7 +16,7 @@ import {
   TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
   DELETE_PREVIOUS_QUERY_SUCCESS,
 } from "./actionTypes";
-import type { UserGroupIdT } from "js/api/types";
+import type { UserGroupIdT } from "../../api/types";
 
 export type PreviousQueryIdT = string;
 export interface PreviousQueryT {
@@ -30,6 +30,7 @@ export interface PreviousQueryT {
   own: boolean;
   resultUrl: string | null;
   shared: boolean;
+  isPristineLabel?: boolean;
   groups?: UserGroupIdT[];
 }
 
@@ -177,6 +178,7 @@ const previousQueriesReducer = (
           loading: false,
           error: null,
           label: action.payload.label,
+          isPristineLabel: false,
         }),
         names: updateUniqueNames(state.names, action.payload.label),
       };

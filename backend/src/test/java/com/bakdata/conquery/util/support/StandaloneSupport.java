@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -39,7 +40,7 @@ public class StandaloneSupport implements Closeable {
 	private final AdminProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
-	
+
 	public void waitUntilWorkDone() {
 		testConquery.waitUntilWorkDone();
 	}
@@ -62,11 +63,11 @@ public class StandaloneSupport implements Closeable {
 	public Validator getValidator() {
 		return testConquery.getStandaloneCommand().getMaster().getValidator();
 	}
-	
+
 	public MasterMetaStorage getMasterMetaStorage() {
 		return testConquery.getStandaloneCommand().getMaster().getStorage();
 	}
-	
+
 	public NamespaceStorage getNamespaceStorage() {
 		return testConquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset.getId()).getStorage();
 	}

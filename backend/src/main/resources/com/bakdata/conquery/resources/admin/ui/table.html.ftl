@@ -7,10 +7,10 @@
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="Tags">
 		<ul>
-		<#list c.tags as tag>
+		<#list c.imports as import>
 			<li>
-				<a href="/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${c.table.id}.${tag?replace(".", "$2e")?replace("$", "$24")}">${tag}</a>
-				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.table.dataset.id}/tables/${c.table.id}/imports/${c.table.id}.${tag?replace(".", "$2e")?replace("$", "$24")}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+				<a href="/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${import.id}">${import.name} (${import.numberOfEntries})</a>
+				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.table.dataset.id}/tables/${c.table.id}/imports/${import.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 			</li>
 		</#list>
 		</ul>

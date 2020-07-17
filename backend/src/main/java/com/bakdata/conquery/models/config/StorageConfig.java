@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.config;
 import java.io.File;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import io.dropwizard.util.Duration;
@@ -18,7 +19,11 @@ public class StorageConfig {
 	private boolean validateOnWrite = false;
 	@NotNull @Valid
 	private XodusConfig xodus = new XodusConfig();
+
 	private boolean useWeakDictionaryCaching = true;
 	@NotNull
 	private Duration weakCacheDuration = Duration.hours(48);
+
+	@Min(1)
+	private int nThreads = Runtime.getRuntime().availableProcessors();
 }

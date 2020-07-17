@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
@@ -27,12 +28,18 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final WorkerInformation info;
 	@Setter
 	private NetworkSession session;
+	/**
+	 * Pool that can be used in Jobs to execute a job in parallel.
+	 */
+	@Getter
+	private final ExecutorService executorService;
 	
-	public Worker(WorkerInformation info, JobManager jobManager, WorkerStorage storage, QueryExecutor queryExecutor) {
+	public Worker(WorkerInformation info, JobManager jobManager, WorkerStorage storage, QueryExecutor queryExecutor, ExecutorService executorService) {
 		this.info = info;
 		this.jobManager = jobManager;
 		this.storage = storage;
-		BucketManager bucketManager = new BucketManager(jobManager, storage, this);
+		this.executorService = executorService;
+		BucketManager bucketManager = new BucketManager(jobManager, storage, info);
 		storage.setBucketManager(bucketManager);
 		this.queryExecutor = queryExecutor;
 	}

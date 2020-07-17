@@ -119,7 +119,12 @@
     "addTag": "Add Tag",
     "share": "Share",
     "shared": "Shared",
-    "loading": "Loading ..."
+    "loading": "Loading ...",
+    "average": "Average",
+    "median": "Median",
+    "min": "Min",
+    "max": "Max",
+    "std": "SD"
   },
   "tooltip": {
     "headline": "Info",
