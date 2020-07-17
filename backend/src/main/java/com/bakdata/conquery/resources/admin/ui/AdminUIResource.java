@@ -146,30 +146,25 @@ public class AdminUIResource extends HAdmin {
 	@GET
 	@Path("/jobs/")
 	public View getJobs() {
-		return new UIView<>("jobs.html.ftl", processor.getUIContext(), getJobsAsJSON());
+		final Map<String, JobManagerStatus> jobManagerStatus = ImmutableMap.<String, JobManagerStatus>builder()
+															 .put("Master", processor.getJobManager()
+																					 .reportStatus())
+															 .putAll(
+																	 processor
+																			 .getNamespaces()
+																			 .getSlaves()
+																			 .values()
+																			 .stream()
+																			 .collect(Collectors.toMap(
+																					 si -> Objects.toString(si.getRemoteAddress()),
+																					 SlaveInformation::getJobManagerStatus
+																			 ))
+															 )
+															 .build();
+		return new UIView<>("jobs.html.ftl", processor.getUIContext(), jobManagerStatus);
 	}
 
-	@GET
-	@Path("/jobs/")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Map<String, JobManagerStatus> getJobsAsJSON() {
-		return ImmutableMap.<String, JobManagerStatus>builder()
-					   .put("Master", processor.getJobManager().reportStatus())
-					   .putAll(
-							   processor
-									   .getNamespaces()
-									   .getSlaves()
-									   .values()
-									   .stream()
-									   .collect(Collectors.toMap(
-											   si -> Objects.toString(si.getRemoteAddress()),
-											   SlaveInformation::getJobManagerStatus
-									   ))
-					   )
-					   .build();
-	}
 
-	
 	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDemoJob() {
 		processor.getJobManager().addSlowJob(new Job() {
