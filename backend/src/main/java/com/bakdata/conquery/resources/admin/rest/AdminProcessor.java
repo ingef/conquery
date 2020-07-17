@@ -627,10 +627,9 @@ public class AdminProcessor {
 	}
 
 	public void updateMatchingStats(DatasetId datasetId) {
-		// TODO: 17.07.2020 FK: use Datasets JobQueue instead 
-		Namespace ns = getNamespaces().get(datasetId);
+		final Namespace ns = getNamespaces().get(datasetId);
 
-		getJobManager().addSlowJob(new SimpleJob("Start Update Matching Stats", () -> {
+		ns.getJobManager().addSlowJob(new SimpleJob("Start Update Matching Stats", () -> {
 			ns.sendToAll(new UpdateMatchingStatsMessage());
 		}));
 
