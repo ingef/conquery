@@ -1,28 +1,45 @@
-import React from "react";
-import { connect } from "react-redux";
+import React, { FC } from "react";
+import { useSelector } from "react-redux";
+import styled from "@emotion/styled";
+import type { StateT } from "app-types";
+
 import type { TabT } from "../pane/types";
 
 import Pane from "../pane/Pane";
 
-type PropsType = {
+interface PropsT {
   tabs: TabT[];
-  activeTab: string;
-  selectedDatasetId: string | null;
+}
+
+const Tab = styled("div")<{ isActive: boolean }>`
+  height: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+
+  display: ${({ isActive }) => (isActive ? "flex" : "none")};
+`;
+
+const RightPane: FC<PropsT> = ({ tabs }) => {
+  const activeTab = useSelector<StateT, string>(
+    (state) => state.panes.right.activeTab
+  );
+  const selectedDatasetId = useSelector<StateT, string | null>(
+    (state) => state.datasets.selectedDatasetId
+  );
+
+  return (
+    <Pane right>
+      {tabs.map((tab) => {
+        const isActive = tab.key === activeTab;
+        const tabComponent = React.createElement(tab.component, {
+          selectedDatasetId: selectedDatasetId,
+        });
+
+        return <Tab isActive={isActive}>{tabComponent}</Tab>;
+      })}
+    </Pane>
+  );
 };
 
-const RightPane = ({ tabs, activeTab, selectedDatasetId }: PropsType) => {
-  // Won't be null, since the activeTabs string is built from tabs
-  // during setup
-  const theActiveTab = tabs.find(tab => tab.key === activeTab);
-
-  const tab = React.createElement(theActiveTab.component, {
-    selectedDatasetId: selectedDatasetId
-  });
-
-  return <Pane right>{tab}</Pane>;
-};
-
-export default connect(state => ({
-  activeTab: state.panes.right.activeTab,
-  selectedDatasetId: state.datasets.selectedDatasetId
-}))(RightPane);
+export default RightPane;

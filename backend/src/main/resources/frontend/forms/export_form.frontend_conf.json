@@ -1,10 +1,10 @@
 {
     "title": {
-        "de": "Exportformular"
+        "de": "Export"
     },
     "type": "EXPORT_FORM",
     "headline": {
-        "de": "Exportformular"
+        "de": "Export"
     },
     "fields": [
         {
@@ -64,7 +64,10 @@
                             "type": "DATE_RANGE",
                             "label": {
                                 "de": "Beobachtungszeitraum"
-                            }
+                            },
+                            "validations": [
+                                "NOT_EMPTY"
+                            ]
                         },
                         {
                             "name": "features",

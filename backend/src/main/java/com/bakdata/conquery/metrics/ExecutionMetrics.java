@@ -24,7 +24,9 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import lombok.Data;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ExecutionMetrics {
 
 	private static final String QUERIES = "queries";
@@ -36,42 +38,53 @@ public class ExecutionMetrics {
 	private static final String STATE = "state";
 	private static final String TIME = "time";
 
-	public static Counter getRunningQueriesCounter(String tag) {
-		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, RUNNING, tag));
+	/**
+	 * Add group to name.
+	 */
+	private static String nameWithGroupTag(String name, String group) {
+		return String.format("%s.%s", name, group);
 	}
 
-	public static Histogram getQueriesTimeHistogram(String tag) {
-		return SharedMetricRegistries.getDefault().histogram(MetricRegistry.name(QUERIES, TIME, tag));
+	public static Counter getRunningQueriesCounter(String group) {
+		return SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, RUNNING), group));
 	}
 
-	public static Counter getQueryStateCounter(ExecutionState state, String tag) {
-		return SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, STATE, state.toString(), tag));
+
+
+	public static Histogram getQueriesTimeHistogram(String group) {
+		return SharedMetricRegistries.getDefault().histogram(nameWithGroupTag(MetricRegistry.name(QUERIES, TIME), group));
 	}
 
-	public static void reportQueryClassUsage(Class<? extends QueryDescription> clazz, String tag) {
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, clazz.getSimpleName(), tag)).inc(); // Count usages of different types of Queries
+	public static Counter getQueryStateCounter(ExecutionState state, String group) {
+		return SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, STATE, state.toString()), group));
+	}
+
+	public static void reportQueryClassUsage(Class<? extends QueryDescription> clazz, String group) {
+		SharedMetricRegistries.getDefault()
+							  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, clazz.getSimpleName()), group))
+							  .inc(); // Count usages of different types of Queries
 	}
 
 	/**
 	 * Report all NamespacedIds to the metrics registry.
 	 */
-	public static void reportNamespacedIds(Collection<NamespacedId> foundIds, String tag) {
+	public static void reportNamespacedIds(Collection<NamespacedId> foundIds, String group) {
 		final Set<ConceptId> reportedIds = new HashSet<>(foundIds.size());
 
 		for (NamespacedId id : foundIds) {
 			// We don't want to report the whole tree, as that would be spammy and potentially wrong.
 
-			if (id instanceof ConceptElementId) {
-				reportedIds.add(((ConceptElementId<?>) id).findConcept());
-			}
-			else if (id instanceof ConnectorId) {
-				reportedIds.add(((ConnectorId) id).getConcept());
-			}
-			else if (id instanceof ConceptId) {
+			if (id instanceof ConceptId) {
 				reportedIds.add(((ConceptId) id));
 			}
 			else if (id instanceof ConceptTreeChildId) {
 				reportedIds.add(((ConceptTreeChildId) id).findConcept());
+			}
+			else if (id instanceof ConceptElementId) {
+				reportedIds.add(((ConceptElementId<?>) id).findConcept());
+			}
+			else if (id instanceof ConnectorId) {
+				reportedIds.add(((ConnectorId) id).getConcept());
 			}
 			else if (id instanceof SelectId) {
 				reportedIds.add(((SelectId) id).findConcept());
@@ -79,8 +92,7 @@ public class ExecutionMetrics {
 		}
 
 		for (ConceptId id : reportedIds) {
-
-			SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CONCEPTS, id.toStringWithoutDataset(), tag)).inc();
+			SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CONCEPTS, id.toString()), group)).inc();
 		}
 	}
 
@@ -90,20 +102,25 @@ public class ExecutionMetrics {
 	@Data
 	public static class QueryMetricsReporter implements QueryVisitor {
 
-		private final String tag;
+		private final String group;
 
 		@Override
 		public void accept(Visitable element) {
-
 			if (element instanceof CQElement) {
-				SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, element.getClass().getSimpleName(), tag)).inc();
+				SharedMetricRegistries.getDefault()
+									  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, element.getClass().getSimpleName()), getGroup()))
+									  .inc();
 			}
 
 			if (element instanceof CQConcept) {
 				for (Select select : ((CQConcept) element).getSelects()) {
-					SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName(), tag)).inc();
+					SharedMetricRegistries.getDefault()
+										  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName()), getGroup()))
+										  .inc();
 
-					SharedMetricRegistries.getDefault().counter(MetricRegistry.name(QUERIES, SELECTS, select.getId().toStringWithoutDataset(), tag)).inc();
+					SharedMetricRegistries.getDefault()
+										  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, SELECTS, select.getId().toString()), getGroup()))
+										  .inc();
 				}
 
 				// Report classes and ids used of filters and selects
@@ -111,20 +128,20 @@ public class ExecutionMetrics {
 
 					for (FilterValue<?> filter : table.getFilters()) {
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, CLASSES, filter.getFilter().getClass().getSimpleName(), tag))
+											  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, filter.getFilter().getClass().getSimpleName()), getGroup()))
 											  .inc();
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, FILTERS, filter.getFilter().getId().toStringWithoutDataset(), tag))
+											  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, FILTERS, filter.getFilter().getId().toString()), getGroup()))
 											  .inc();
 					}
 
 					for (Select select : table.getSelects()) {
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName(), tag))
+											  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, select.getClass().getSimpleName()), getGroup()))
 											  .inc();
 
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name(QUERIES, SELECTS, select.getId().toStringWithoutDataset(), tag))
+											  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, SELECTS, select.getId().toString()), getGroup()))
 											  .inc();
 					}
 				}

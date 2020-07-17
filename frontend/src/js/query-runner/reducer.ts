@@ -1,11 +1,11 @@
 import { toUpperCaseUnderscore } from "../common/helpers";
 import * as actionTypes from "./actionTypes";
-import {
+import type {
   DatasetIdT,
   GetQueryResponseDoneT,
   GetQueryResponseT,
   ColumnDescription,
-} from "js/api/types";
+} from "../api/types";
 
 interface APICallType {
   loading?: boolean;
@@ -150,7 +150,8 @@ export default function createQueryRunnerReducer(type: string) {
         };
       case QUERY_RESULT_ERROR:
         const error = getQueryError(
-          action.payload.data,
+          // TODO Clean up. This is just a quick fix to prevent the frontend to fail if the backend sends the status of a failed query
+          {status: action.payload.status}, 
           action.payload.message
         );
 

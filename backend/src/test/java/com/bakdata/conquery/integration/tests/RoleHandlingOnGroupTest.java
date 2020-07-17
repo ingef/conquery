@@ -28,7 +28,7 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 		
 		try {
 			storage.addRole(role);

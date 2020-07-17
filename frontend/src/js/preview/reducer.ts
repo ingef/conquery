@@ -4,7 +4,7 @@ import {
   LOAD_CSV_START,
   LOAD_CSV_ERROR,
 } from "./actionTypes";
-import { ColumnDescription } from "js/api/types";
+import type { ColumnDescription } from "../api/types";
 
 export type PreviewStateT = {
   csv: string[][] | null;

@@ -10,7 +10,7 @@ import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
 import type { PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
 import { StateT } from "app-types";
-import { ColumnDescription, ColumnDescriptionKind } from "js/api/types";
+import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
 import DateCell from "./DateCell";
 import { Cell } from "./Cell";
 import PreviewInfo from "./PreviewInfo";
