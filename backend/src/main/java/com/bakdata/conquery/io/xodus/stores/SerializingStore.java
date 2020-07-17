@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import javax.validation.Validator;
 
@@ -44,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public static final String DUMP_FILE_EXTENTION = "json";
+	public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9\\.\\-]");
 
 	/**
 	 * Used for serializing keys.
@@ -181,43 +183,57 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		ArrayList<ByteIterable> unreadables = new ArrayList<>();
 		store.forEach((k, v) -> {
 			result.incrTotalProcessed();
-			
+
 			// Try to read the key first
-			KEY key = getDeserializedAndDumpFailed(k, this::readKey, () -> new String(k.getBytesUnsafe()), v, "Could not parse key [{}]");
-			if(key == null) {
+			KEY key = getDeserializedAndDumpFailed(
+				k,
+				this::readKey,
+				() -> new String(k.getBytesUnsafe()),
+				v,
+				"Could not parse key [{}]");
+			if (key == null) {
 				unreadables.add(k);
 				result.incrFailedKeys();
 				return;
 			}
-			
+
 			// Try to read the value
-			VALUE value = getDeserializedAndDumpFailed(v, this::readValue, () -> key.toString(), v, "Could not parse value for key [{}]");
-			if(value == null) {
+			VALUE value = getDeserializedAndDumpFailed(
+				v, 
+				this::readValue, 
+				() -> key.toString(),
+				v, 
+				"Could not parse value for key [{}]");
+			if (value == null) {
 				unreadables.add(k);
 				result.incrFailedValues();
 				return;
 			}
-			
+
 			// Apply the conusmer to key and value
 			try {
 				consumer.accept(key, value, v.getLength());
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.warn("Unable to apply for-each consumer on key[{}]", key, e);
 			}
 
 		});
 		// Print some statistics
-		log.info(String.format("While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
-			this.storeInfo.getXodusName(),
-			result.getTotalProcessed(), result.getFailedKeys(),
-			(float) result.getFailedKeys()/result.getTotalProcessed()*100,
-			result.getFailedValues(),
-			(float) result.getFailedValues()/result.getTotalProcessed()*100));
-		
+		log.info(
+			String.format(
+				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
+				this.storeInfo.getXodusName(),
+				result.getTotalProcessed(),
+				result.getFailedKeys(),
+				(float) result.getFailedKeys() / result.getTotalProcessed() * 100,
+				result.getFailedValues(),
+				(float) result.getFailedValues() / result.getTotalProcessed() * 100));
+
 		// Remove corrupted entries from the store if configured so
-		if(removeUnreadablesFromUnderlyingStore) {
+		if (removeUnreadablesFromUnderlyingStore) {
 			log.warn("Removing {} unreadable elements from the store {}.", unreadables.size(), storeInfo.getXodusName());
-			unreadables.forEach(store::remove);			
+			unreadables.forEach(store::remove);
 		}
 		return result;
 	}
@@ -342,12 +358,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * However, it does not ensure that there is no file with such a name.
 	 */
 	private static String makeDumpfileName(String keyOfDump, String storeName) {
-		return String.format("%s-%s-%s.%s",
-			DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
-			storeName,
-			keyOfDump,
-			DUMP_FILE_EXTENTION
-			).replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+		return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(
+			String.format("%s-%s-%s.%s",
+				DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
+				storeName,
+				keyOfDump,
+				DUMP_FILE_EXTENTION
+			)).replaceAll("_");
 	}
 
 	@Override
