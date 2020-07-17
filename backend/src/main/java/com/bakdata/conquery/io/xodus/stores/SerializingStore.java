@@ -189,9 +189,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				} else {
 					log.warn("Could not parse key " + k, e);
 				}
-				if(removeUnreadablesFromUnderlyingStore) {
-					unreadables.add(k);
-				}
+				unreadables.add(k);
 				result.incrFailedKeys();
 				return;
 			}
@@ -206,9 +204,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				} else {
 					log.warn("Could not parse value for key " + key, e);						
 				}
-				if(removeUnreadablesFromUnderlyingStore) {
-					unreadables.add(k);
-				}
+				unreadables.add(k);
 				result.incrFailedValues();
 				return;
 			}
