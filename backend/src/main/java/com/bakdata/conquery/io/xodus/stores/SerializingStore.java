@@ -349,7 +349,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			storeName,
 			keyOfDump,
 			DUMP_FILE_EXTENTION
-			).replaceAll("[\\\\/:*?\"<>|]", "");
+			).replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
 	}
 
 	@Override
