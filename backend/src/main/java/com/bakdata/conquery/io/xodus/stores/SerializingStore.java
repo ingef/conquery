@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
@@ -169,37 +170,29 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
+	/**
+	 * Iterates a given consumer over the entries of this store.
+	 * Depending on the {@link StorageConfig} corrupt entries may be dump to a file and/or removed from the store.
+	 * These entries are not submitted to the consumer.
+	 */
 	@Override
-	public IterationResult forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		IterationResult result = new IterationResult();
+	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+		IterationStatistic result = new IterationStatistic();
 		ArrayList<ByteIterable> unreadables = new ArrayList<>();
 		store.forEach((k, v) -> {
 			result.incrTotalProcessed();
+			
 			// Try to read the key first
-			KEY key = null;
-			try {
-				key = getDeserialized(k, this::readKey);
-			} catch (Exception e) {
-				if(unreadableValuesDumpDir != null) {
-					dumpToFile(v, new String(k.getBytesUnsafe()), unreadableValuesDumpDir, storeInfo.getXodusName());
-				} else {
-					log.warn("Could not parse key " + k, e);
-				}
+			KEY key = getDeserializedAndDumpFailed(k, this::readKey, () -> new String(k.getBytesUnsafe()), v, "Could not parse key [{}]");
+			if(key == null) {
 				unreadables.add(k);
 				result.incrFailedKeys();
 				return;
 			}
 			
 			// Try to read the value
-			VALUE value = null;
-			try {
-				value = getDeserialized(v, this::readValue);
-			} catch (Exception e) {
-				if(unreadableValuesDumpDir != null) {
-					dumpToFile(v, key.toString(), unreadableValuesDumpDir, storeInfo.getXodusName());
-				} else {
-					log.warn("Could not parse value for key " + key, e);						
-				}
+			VALUE value = getDeserializedAndDumpFailed(v, this::readValue, () -> key.toString(), v, "Could not parse value for key [{}]");
+			if(value == null) {
 				unreadables.add(k);
 				result.incrFailedValues();
 				return;
@@ -229,8 +222,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return result;
 	}
 	
-	private <TYPE> TYPE getDeserialized(ByteIterable serial, Function<ByteIterable, TYPE> deserializer){
-		return deserializer.apply(serial);
+	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt ){
+		try {
+			return deserializer.apply(serial);			
+		} catch (Exception e) {
+			if(unreadableValuesDumpDir != null) {
+				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, storeInfo.getXodusName());
+			} else {
+				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -378,7 +380,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 	
 	@Data
-	public static class IterationResult {
+	public static class IterationStatistic {
 		private int totalProcessed = 0;
 		private int failedKeys = 0;
 		private int failedValues = 0;

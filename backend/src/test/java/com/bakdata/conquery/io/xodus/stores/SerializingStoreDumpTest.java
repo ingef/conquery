@@ -13,7 +13,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
-import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationResult;
+import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -83,13 +83,13 @@ public class SerializingStoreDumpTest {
 		
 		// Reopen the store with the initial value and try to iterate over all entries (this triggers the dump or removal of invalid entries)
 		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
-			IterationResult expectedResult = new IterationResult();
+			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(2);
 			expectedResult.setFailedKeys(0);
 			expectedResult.setFailedValues(1);
 			
 			// Iterate (do nothing with the entries themselves)
-			IterationResult result = store.forEach((k,v,s) -> {});
+			IterationStatistic result = store.forEach((k,v,s) -> {});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 		
@@ -136,13 +136,13 @@ public class SerializingStoreDumpTest {
 		
 		// Reopen the store with the initial value and try to iterate over all entries (this triggers the dump or removal of invalid entries)
 		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
-			IterationResult expectedResult = new IterationResult();
+			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(2);
 			expectedResult.setFailedKeys(1);
 			expectedResult.setFailedValues(0);
 			
 			// Iterate (do nothing with the entries themselves)
-			IterationResult result = store.forEach((k,v,s) -> {});
+			IterationStatistic result = store.forEach((k,v,s) -> {});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 
@@ -183,25 +183,25 @@ public class SerializingStoreDumpTest {
 		
 		// Reopen the store with correct configuration and try to iterate over all entries (this triggers the dump or removal of invalid entries)
 		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
-			IterationResult expectedResult = new IterationResult();
+			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(3);
 			expectedResult.setFailedKeys(1);
 			expectedResult.setFailedValues(1);
 			
 			// Iterate (do nothing with the entries themselves)
-			IterationResult result = store.forEach((k,v,s) -> {});
+			IterationStatistic result = store.forEach((k,v,s) -> {});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 		
 		// Reopen again to check that the corrupted values have been removed previously
 		try (SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER)){
-			IterationResult expectedResult = new IterationResult();
+			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(1);
 			expectedResult.setFailedKeys(0);
 			expectedResult.setFailedValues(0);
 			
 			// Iterate (do nothing with the entries themselves)
-			IterationResult result = store.forEach((k,v,s) -> {});
+			IterationStatistic result = store.forEach((k,v,s) -> {});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 	}
