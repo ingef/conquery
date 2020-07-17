@@ -123,7 +123,7 @@ public class AdminUIResource extends HAdmin {
 
 	@POST @Path("/update-matching-stats/{"+ DATASET +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)DatasetId datasetId) throws JSONException {
-		processor.updateMatchingStats(datasetId, this);
+		processor.updateMatchingStats(datasetId);
 	}
 
 	@POST
