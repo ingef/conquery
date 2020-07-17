@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.validation.Validator;
 
@@ -177,15 +178,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			// Try to read the key first
 			KEY key = null;
 			try {
-				key = readKey(k);
+				key = getDeserialized(k, this::readKey);
 			} catch (Exception e) {
 				if(unreadableValuesDumpDir != null) {
-					try {
-						dumpToFile(v, Jackson.BINARY_MAPPER.readerFor(String.class).readValue(k.getBytesUnsafe()), unreadableValuesDumpDir, storeInfo.getXodusName());
-					}
-					catch (IOException e1) {
-						log.warn("Cannot dump value for key (Bytes {}) to file because the key could not be parsed to in to a String", k.toString());
-					}
+					dumpToFile(v, new String(k.getBytesUnsafe()), unreadableValuesDumpDir, storeInfo.getXodusName());
 				} else {
 					log.warn("Could not parse key " + k, e);
 				}
@@ -197,7 +193,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			// Try to read the value
 			VALUE value = null;
 			try {
-				value = readValue(v);
+				value = getDeserialized(v, this::readValue);
 			} catch (Exception e) {
 				if(unreadableValuesDumpDir != null) {
 					dumpToFile(v, key.toString(), unreadableValuesDumpDir, storeInfo.getXodusName());
@@ -231,6 +227,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			unreadables.forEach(store::remove);			
 		}
 		return result;
+	}
+	
+	private <TYPE> TYPE getDeserialized(ByteIterable serial, Function<ByteIterable, TYPE> deserializer){
+		return deserializer.apply(serial);
 	}
 
 	@Override

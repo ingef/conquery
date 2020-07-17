@@ -28,12 +28,14 @@ import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 public class SerializingStoreDumpTest {
 
 	private File tmpDir;
@@ -160,6 +162,7 @@ public class SerializingStoreDumpTest {
 	 */
 	@Test
 	public void testCorruptionRemoval() throws JSONException, IOException {
+		log.info("This test with throw some warnings from the SerializingStore.");
 		// Set config to remove corrupt entries
 		config.setRemoveUnreadablesFromStore(true);
 		
