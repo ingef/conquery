@@ -64,7 +64,10 @@
                             "type": "DATE_RANGE",
                             "label": {
                                 "de": "Beobachtungszeitraum"
-                            }
+                            },
+                            "validations": [
+                                "NOT_EMPTY"
+                            ]
                         },
                         {
                             "name": "features",
