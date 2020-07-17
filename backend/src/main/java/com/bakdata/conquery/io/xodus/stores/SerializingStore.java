@@ -231,7 +231,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		
 		// Remove corrupted entries from the store if configured so
 		if(removeUnreadablesFromUnderlyingStore) {
-			log.info("Removing {} unreadable elements from the store {}.", unreadables.size(), storeInfo.getXodusName());
+			log.warn("Removing {} unreadable elements from the store {}.", unreadables.size(), storeInfo.getXodusName());
 			unreadables.forEach(store::remove);			
 		}
 		return result;
