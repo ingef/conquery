@@ -3,6 +3,8 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +32,6 @@ import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerSta
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
-import com.bakdata.conquery.util.RoundRobinQueue;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -46,7 +47,8 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
-@Slf4j @Getter
+@Slf4j
+@Getter
 public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed {
 
 	private NioSocketConnector connector;
@@ -60,11 +62,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	private ScheduledExecutorService scheduler;
 
 
-
 	public SlaveCommand() {
 		super("slave", "Connects this instance as a slave to a running master.");
 	}
-	
+
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
@@ -74,52 +75,63 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		synchronized (environment) {
 			environment.lifecycle().manage(this);
 			validator = environment.getValidator();
-			
+
 			scheduler = environment
-				.lifecycle()
-				.scheduledExecutorService("Scheduled Messages")
-				.build();
+								.lifecycle()
+								.scheduledExecutorService("Scheduled Messages")
+								.build();
 		}
-		
+
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 		this.config = config;
 
-		if(config.getStorage().getDirectory().mkdirs()){
+		if (config.getStorage().getDirectory().mkdirs()) {
 			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
 
-		workers = new Workers(new RoundRobinQueue<>(config.getQueries().getRoundRobinQueueCapacity()), config.getQueries().getNThreads(), config.getStorage().getNThreads());
+		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads());
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
+
 
 		File storageDir = config.getStorage().getDirectory();
-		for(File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+		for (File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
 
-			WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-			if (workerStorage == null) {
-				log.warn("No valid WorkerStorage found in {}",directory);
-				continue;
-			}
+			loaders.submit(() -> {
+				ConqueryMDC.setLocation(directory.toString());
 
-			workers.createWorker(
-					workerStorage.getWorker(),
-					workerStorage
-			);
+				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
+				if (workerStorage == null) {
+					log.warn("No valid WorkerStorage found.");
+					return;
+				}
+
+				workers.createWorker(
+						workerStorage.getWorker(),
+						workerStorage
+				);
+
+				ConqueryMDC.clearLocation();
+			});
 		}
 
+		loaders.shutdown();
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
+		}
 
-
-		log.info("All Worker Storages loaded: {}", workers);
+		log.info("All Worker Storages loaded: {}", workers.getWorkers().size());
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
-		if(message instanceof SlaveMessage) {
+		if (message instanceof SlaveMessage) {
 			SlaveMessage srm = (SlaveMessage) message;
 			log.trace("Slave recieved {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<SlaveMessage, NetworkMessageContext.Slave> job = new ReactingJob<>(srm, context);
-			
-			if(((Message)message).isSlowMessage()) {
+
+			if (((Message) message).isSlowMessage()) {
 				((SlowMessage) message).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
 			}
@@ -132,13 +144,13 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			return;
 		}
 	}
-	
+
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		setLocation(session);
 		log.error("cought exception", cause);
 	}
-	
+
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
 		setLocation(session);
@@ -150,14 +162,14 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		// Authenticate with Master
 		context.send(new AddSlave());
 
-		for(Worker w:workers.getWorkers().values()) {
+		for (Worker w : workers.getWorkers().values()) {
 			w.setSession(new NetworkSession(session));
 			WorkerInformation info = w.getInfo();
 			log.info("Sending worker identity '{}'", info.getName());
 			networkSession.send(new RegisterWorker(info));
 		}
 	}
-	
+
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		setLocation(session);
@@ -165,25 +177,30 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	}
 
 	@Override
-	public void sessionCreated(IoSession session) throws Exception {}
+	public void sessionCreated(IoSession session) throws Exception {
+	}
 
 	@Override
-	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {}
+	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
+	}
 
 	@Override
-	public void messageSent(IoSession session, Object message) throws Exception {}
+	public void messageSent(IoSession session, Object message) throws Exception {
+	}
 
 	@Override
-	public void inputClosed(IoSession session) throws Exception {}
-	
+	public void inputClosed(IoSession session) throws Exception {
+	}
+
 	@Override
-	public void event(IoSession session, FilterEvent event) throws Exception {}
-	
+	public void event(IoSession session, FilterEvent event) throws Exception {
+	}
+
 	private void setLocation(IoSession session) {
 		String loc = session.getLocalAddress().toString();
 		ConqueryMDC.setLocation(loc);
 	}
-	
+
 	@Override
 	public void start() throws Exception {
 		for (Worker value : workers.getWorkers().values()) {
@@ -194,13 +211,13 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
-		
+
 		InetSocketAddress address = new InetSocketAddress(
 				config.getCluster().getMasterURL().getHostAddress(),
 				config.getCluster().getPort()
 		);
 
-		while(true) {
+		while (true) {
 			try {
 				log.info("Trying to connect to {}", address);
 
@@ -209,7 +226,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 				future.awaitUninterruptibly();
 
-				if(future.isConnected()){
+				if (future.isConnected()) {
 					break;
 				}
 
@@ -218,8 +235,8 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				TimeUnit.SECONDS.sleep(30);
 
 			}
-			catch(RuntimeIoException e) {
-				log.warn("Failed to connect to "+address, e);
+			catch (RuntimeIoException e) {
+				log.warn("Failed to connect to " + address, e);
 			}
 		}
 	}
@@ -228,17 +245,17 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	public void stop() throws Exception {
 		getJobManager().stop();
 
-		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
+		for (Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
 				w.getJobManager().stop();
 			}
-			catch(Exception e) {
-				log.error(w+" could not be closed", e);
+			catch (Exception e) {
+				log.error(w + " could not be closed", e);
 			}
 		}
 		//after the close command was send
-		if(context != null) {
+		if (context != null) {
 			context.awaitClose();
 		}
 		log.info("Connection was closed by master");
@@ -260,7 +277,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		try {
 			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			log.warn("Failed to report job manager status", e);
 		}
 	}

@@ -1,11 +1,11 @@
-import type { StateType } from "../app/reducers";
+import type { StateT } from "../app/reducers";
 import type { PermissionT } from "../api/types";
 
 interface ContextT {
   datasetId?: string;
 }
 
-export function selectPermissions(state: StateType): PermissionT[] | null {
+export function selectPermissions(state: StateT): PermissionT[] | null {
   return !!state.user.me && !!state.user.me.permissions
     ? state.user.me.permissions
     : null;
@@ -37,7 +37,7 @@ function canDoEverything(permissions: PermissionT[], datasetId: string) {
 }
 
 function canDo(
-  state: StateType,
+  state: StateT,
   canDoWithPermissions: (
     permissions: PermissionT[],
     datasetId: string
@@ -62,7 +62,7 @@ function canDo(
   return canDoWithPermissions(permissions, datasetId);
 }
 
-export function canDownloadResult(state: StateType, datasetId?: string) {
+export function canDownloadResult(state: StateT, datasetId?: string) {
   return canDo(
     state,
     (permissions, finalDatasetId) => {
@@ -77,7 +77,7 @@ export function canDownloadResult(state: StateType, datasetId?: string) {
   );
 }
 
-export function canUploadResult(state: StateType) {
+export function canUploadResult(state: StateT) {
   return canDo(state, (permissions, datasetId) => {
     return permissions.some(
       (permission) =>
