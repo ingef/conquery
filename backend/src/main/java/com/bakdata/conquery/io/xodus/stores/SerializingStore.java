@@ -239,14 +239,28 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return result;
 	}
 	
+	/**
+	 * Deserializes the gives serial value (either a key or a value of an store entry) to a concrete object. If that fails the entry-value is dumped if configured so to a file using the entry-key for the filename.
+	 * @param <TYPE> The deserialized object type.
+	 * @param serial The to be deserialized object (key or value of an entry)
+	 * @param deserializer The concrete deserializer to use.
+	 * @param onFailKeyStringSupplier When deserilization failed and dump is enabled this is used in the dump file name.
+	 * @param onFailOrigValue Will be the dumpfile content rendered as a json.
+	 * @param onFailWarnMsgFmt The warn message that will be logged on failure.
+	 * @return
+	 */
 	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt ){
 		try {
 			return deserializer.apply(serial);			
 		} catch (Exception e) {
 			if(unreadableValuesDumpDir != null) {
 				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, storeInfo.getXodusName());
+			}
+			if(log.isTraceEnabled()){
+				// With trace also print the stacktrace
+				log.trace(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
 			} else {
-				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
+				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get());
 			}
 		}
 		return null;

@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.xodus.stores;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -104,15 +103,7 @@ public class SerializingStoreDumpTest {
 	}
 
 	private File getDumpFile(Condition<File> dumpFileCond) {
-		File dumpFile = tmpDir.listFiles(new FileFilter() {
-
-			@Override
-			public boolean accept(File pathname) {
-				return dumpFileCond.matches(pathname);
-			}
-			
-		})[0];
-		return dumpFile;
+		return tmpDir.listFiles((name) -> dumpFileCond.matches(name))[0];
 	}
 	
 
