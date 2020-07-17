@@ -252,7 +252,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void remove(KEY key) {
-		log.trace("Removing value to key {} from store", key, storeInfo.getXodusName());
+		log.trace("Removing value to key {} from Store[{}]", key, storeInfo.getXodusName());
 		store.remove(writeKey(key));
 	}
 
