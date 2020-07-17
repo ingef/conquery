@@ -21,4 +21,14 @@ public class SinglelineContainedEntityResult implements ContainedEntityResult, S
 	public Stream<Object[]> streamValues() {
 		return Stream.ofNullable(values);
 	}
+
+	@Override
+	public boolean isFailed() {
+		return false;
+	}
+
+	@Override
+	public boolean isContained() {
+		return true;
+	}
 }

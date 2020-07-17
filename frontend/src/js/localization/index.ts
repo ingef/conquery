@@ -1,4 +1,6 @@
 import _T from "i18n-react";
+import { Locale } from "date-fns";
+
 
 import { mergeDeep } from "../common/helpers";
 
@@ -11,7 +13,7 @@ let dateFnsLocale: AvailableLocale | null = null;
 
 export const initializeLocalization = (
   locale: AvailableLocale,
-  dateLocale: AvailableLocale,
+  dateLocale: Locale,
   ...texts
 ) => {
   T.setTexts(mergeDeep(...texts));
