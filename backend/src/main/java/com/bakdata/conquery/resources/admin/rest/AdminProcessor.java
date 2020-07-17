@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
@@ -61,6 +63,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -499,7 +502,7 @@ public class AdminProcessor {
 		Group group = Objects.requireNonNull(storage.getGroup(groupId), "The group was not found");
 		return getPermissionOverviewAsCSV(group.getMembers());
 	}
-	
+
 	/**
 	 * Renders the permission overview for certian {@link User} in form of a CSV.
 	 */
@@ -517,7 +520,7 @@ public class AdminProcessor {
 		}
 		return sWriter.toString();
 	}
-	
+
 	/**
 	 * Writes the header of the CSV auth overview to the specified writer.
 	 */
@@ -527,9 +530,9 @@ public class AdminProcessor {
 		headers.addAll(scope);
 		writer.writeHeaders(headers);
 	}
-	
+
 	/**
-	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer. 
+	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer.
 	 */
 	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MasterMetaStorage storage) {
 		// Print the user in the first column
@@ -537,7 +540,7 @@ public class AdminProcessor {
 
 		// Print the permission per domain in the remaining columns
 		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
-		for(String domain : scope) {				
+		for(String domain : scope) {
 			writer.addValue(permissions.get(domain).stream()
 				.map(Object::toString)
 				.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
@@ -621,5 +624,16 @@ public class AdminProcessor {
 										  () -> namespaces.getSlaves().forEach((__, slave) -> slave.send(new RemoveWorker(datasetId))))
 				);
 
+	}
+
+	public void updateMatchingStats(DatasetId datasetId) {
+		// TODO: 17.07.2020 FK: use Datasets JobQueue instead 
+		Namespace ns = getNamespaces().get(datasetId);
+
+		getJobManager().addSlowJob(new SimpleJob("Start Update Matching Stats", () -> {
+			ns.sendToAll(new UpdateMatchingStatsMessage());
+		}));
+
+		FilterSearch.updateSearch(getNamespaces(), Collections.singleton(ns.getDataset()), getJobManager());
 	}
 }

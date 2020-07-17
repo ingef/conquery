@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
-public class UpdateMatchingStatsMessage extends WorkerMessage {
+public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 	@Override
 	public void react(Worker context) throws Exception {
