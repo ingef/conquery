@@ -220,15 +220,16 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		});
 		// Print some statistics
+		int total = result.getTotalProcessed();
 		log.info(
 			String.format(
 				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
 				this.storeInfo.getXodusName(),
-				result.getTotalProcessed(),
+				total,
 				result.getFailedKeys(),
-				(float) result.getFailedKeys() / result.getTotalProcessed() * 100,
+				total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
 				result.getFailedValues(),
-				(float) result.getFailedValues() / result.getTotalProcessed() * 100));
+				total > 0 ? (float) result.getFailedValues() / total * 100 : 0));
 
 		// Remove corrupted entries from the store if configured so
 		if (removeUnreadablesFromUnderlyingStore) {
