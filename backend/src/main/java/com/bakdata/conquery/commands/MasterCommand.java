@@ -5,7 +5,10 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -98,20 +101,31 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		log.info("Started meta storage");
 
+		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
+
+
 		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {
-			NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
+			loaders.submit(() -> {
+				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
 
-			if (datasetStorage == null) {
-				log.warn("Unable to load a dataset at `{}`", directory);
-				continue;
-			}
+				if (datasetStorage == null) {
+					log.warn("Unable to load a dataset at `{}`", directory);
+					return;
+				}
 
-			Namespace ns = new Namespace(datasetStorage);
-			ns.initMaintenance(maintenanceService);
-			namespaces.add(ns);
+				Namespace ns = new Namespace(datasetStorage);
+				ns.initMaintenance(maintenanceService);
+				namespaces.add(ns);
+			});
 		}
 
-		log.info("All stores loaded: {}", namespaces);
+
+		loaders.shutdown();
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)){
+			log.debug("Still waiting for Namespaces to load. {} already finished.", namespaces.getNamespaces());
+		}
+
+		log.info("All stores loaded: {}", namespaces.getNamespaces());
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());

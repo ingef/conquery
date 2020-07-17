@@ -24,7 +24,9 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import lombok.Data;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ExecutionMetrics {
 
 	private static final String QUERIES = "queries";
@@ -37,10 +39,10 @@ public class ExecutionMetrics {
 	private static final String TIME = "time";
 
 	/**
-	 *
+	 * Add group to name.
 	 */
 	private static String nameWithGroupTag(String name, String group) {
-		return name + String.format(";group=%s", group);
+		return String.format("%s.%s", name, group);
 	}
 
 	public static Counter getRunningQueriesCounter(String group) {
@@ -104,7 +106,6 @@ public class ExecutionMetrics {
 
 		@Override
 		public void accept(Visitable element) {
-
 			if (element instanceof CQElement) {
 				SharedMetricRegistries.getDefault()
 									  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, element.getClass().getSimpleName()), getGroup()))
