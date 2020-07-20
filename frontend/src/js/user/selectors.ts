@@ -1,5 +1,6 @@
 import type { StateT } from "../app/reducers";
-import type { PermissionT } from "../api/types";
+import type { PermissionT, GetMeResponseT } from "../api/types";
+import { useSelector } from "react-redux";
 
 interface ContextT {
   datasetId?: string;
@@ -86,4 +87,12 @@ export function canUploadResult(state: StateT) {
         permission.abilities.includes("preserve_id")
     );
   });
+}
+
+export function useHideLogoutButton() {
+  const me = useSelector<StateT, GetMeResponseT | null>(
+    (state) => state.user.me
+  );
+
+  return !!me && !!me.hideLogoutButton;
 }

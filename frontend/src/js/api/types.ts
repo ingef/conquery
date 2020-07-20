@@ -335,6 +335,7 @@ export interface GetMeResponseT {
   userName: string;
   permissions: PermissionT[];
   groups: UserGroupT[];
+  hideLogoutButton?: boolean;
 }
 
 export interface PostLoginResponseT {
