@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,15 +18,12 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.datasets.allids.AllIdsBucket;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
@@ -44,10 +40,8 @@ import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.RangeUtil;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import com.esotericsoftware.kryo.io.ByteBufferOutput;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -57,7 +51,6 @@ import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntLists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -118,14 +111,7 @@ public class ImportJob extends Job {
 
 			//update the allIdsTable
 			log.info("\tupdating id information");
-			Import allIdsImp = new Import();
-			allIdsImp.setName(new ImportId(table, header.getName()).toString());
-			allIdsImp.setTable(new TableId(namespace.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE));
-			allIdsImp.setNumberOfEntries(primaryMapping.getNumberOfNewIds());
-			allIdsImp.setColumns(new ImportColumn[0]);
-			allIdsImp.getBlockFactory(); //so that classes are created before storing/sending
-			namespace.getStorage().updateImport(allIdsImp);
-			namespace.sendToAll(new AddImport(allIdsImp));
+
 			this.progressReporter.report(1);
 
 
@@ -141,47 +127,11 @@ public class ImportJob extends Job {
 			this.progressReporter.report(1);
 			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
 
-			//import the new ids into the ALL_IDS_TABLE
 			if (primaryMapping.getNewIds() != null) {
-
-				BlockFactory factory = allIdsImp.getBlockFactory();
-
-				Int2ObjectMap<ImportBucket> allIdsBuckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-				Int2ObjectMap<List<byte[]>> allIdsBytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-
-				try (Output buffer = new Output(2048)) {
-					ProgressReporter child = this.progressReporter.subJob(5);
-					child.setMax(primaryMapping.getNumberOfNewIds());
-
-					// TODO: 20.07.2020 FK: this is wrong
-					AllIdsBucket bucket = new AllIdsBucket(allIdsImp, 0, IntLists.EMPTY_LIST);
-
-					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
-						final ByteBuffer byteBuffer = ByteBuffer.allocate(Integer.BYTES);
-						final ByteBufferOutput bufferOutput = new ByteBufferOutput(byteBuffer);
-
-
-						bucket.getEntities().clear();
-						bucket.getEntities().add(entityId);
-
-						bucket.writeContent(bufferOutput);
-
-
-						//copy content into ImportBucket
-						int bucketNumber = Entity.getBucket(entityId, bucketSize);
-
-						ImportBucket impBucket = allIdsBuckets
-														 .computeIfAbsent(bucketNumber, b -> new ImportBucket(new BucketId(allIdsImp.getId(), b)));
-
-						impBucket.getIncludedEntities().add(entityId);
-
-						allIdsBytes.computeIfAbsent(bucketNumber, ArrayList::new).add(byteBuffer.array());
-
-
-						child.report(1);
-					}
-				}
-				sendBuckets(primaryMapping, allIdsBuckets, allIdsBytes);
+				log.info("Primary mapping contained {} new Ids", primaryMapping.getNumberOfNewIds());
+			}
+			else {
+				log.warn("Primary mapping contained no new Ids.");
 			}
 
 			//import the actual data

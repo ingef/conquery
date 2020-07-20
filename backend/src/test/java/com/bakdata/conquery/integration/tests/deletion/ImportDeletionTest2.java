@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
-import static com.bakdata.conquery.ConqueryConstants.ALL_IDS_TABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -12,7 +11,6 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -88,14 +86,6 @@ public class ImportDeletionTest2 implements ProgrammaticIntegrationTest {
 		// State after reimport.
 		{
 			log.info("Checking state after re-import");
-
-			// TableId.Parser.INSTANCE.parse(namespace.getDataset().getName() + "." + ALL_IDS_TABLE)
-
-			final long size = namespace.getStorage().getAllImports()
-														.stream()
-														.filter(imp -> imp.getTable().getTable().equalsIgnoreCase(ALL_IDS_TABLE))
-														.mapToLong(Import::getNumberOfEntries)
-							  .sum();
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 

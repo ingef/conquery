@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import static com.bakdata.conquery.ConqueryConstants.ALL_IDS_TABLE;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
@@ -14,7 +12,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.allids.AllIdsBucketFactory;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
 import com.bakdata.conquery.models.events.generation.SafeJavaString;
@@ -91,11 +88,6 @@ public class Import extends NamedImpl<ImportId> {
 	private void generateClasses() {
 		String bucketSource = null;
 		String factorySource = null;
-
-		if(table.getTable().equalsIgnoreCase(ALL_IDS_TABLE)){
-			blockFactory = new AllIdsBucketFactory();
-			return;
-		}
 
 		try {
 			ClassGenerator gen = new ClassGenerator();
