@@ -81,7 +81,11 @@ const Field = ({ field, ...commonProps }: PropsType) => {
     case "HEADLINE":
       return <Headline>{field.label[locale]}</Headline>;
     case "DESCRIPTION":
-      return <Description>{field.label[locale]}</Description>;
+      return (
+        <Description
+          dangerouslySetInnerHTML={{ __html: field.label[locale] || "" }}
+        />
+      );
     case "STRING":
       return (
         <RxFormField
