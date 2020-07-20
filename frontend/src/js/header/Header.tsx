@@ -2,9 +2,11 @@ import React, { FC } from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+
+import { useHideLogoutButton } from "../user/selectors";
 import DatasetSelector from "../dataset/DatasetSelector";
 import LogoutButton from "./LogoutButton";
-import { StateT } from "app-types";
 
 const Root = styled("header")`
   background-color: ${({ theme }) => theme.col.graySuperLight};
@@ -65,6 +67,8 @@ const Header: FC = () => {
     (state) => state.startup.config.version
   );
 
+  const hideLogoutButton = useHideLogoutButton();
+
   return (
     <Root>
       <OverflowHidden>
@@ -74,7 +78,7 @@ const Header: FC = () => {
       </OverflowHidden>
       <Right>
         <DatasetSelector />
-        <LogoutButton />
+        {!hideLogoutButton && <LogoutButton />}
       </Right>
     </Root>
   );
