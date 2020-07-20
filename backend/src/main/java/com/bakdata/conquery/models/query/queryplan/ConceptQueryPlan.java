@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.datasets.allids.AllIdsBucket;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -60,7 +62,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 			return;
 		}
 
-		// TODO: 20.07.2020 FK: Consider making this ThreadLocal, we can allow that much memory overhead.
+		// TODO: 20.07.2020 FK: Consider making this ThreadLocal, we can allow that much memory overhead. To avoid locking
 		synchronized (this) {
 			if (requiredTables != null) {
 				return;
@@ -70,6 +72,10 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 
 			// Assert that all tables are actually present
 			for (TableId table : requiredTables) {
+				if(table.getTable().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE)) {
+					continue;
+				}
+
 				storage.getDataset().getTables().getOrFail(table);
 			}
 		}
@@ -86,8 +92,11 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	
 	protected EntityResult result() {
 		Object[] values = new Object[aggregators.size()];
-		for(int i=0;i<values.length;i++)
+
+		for(int i=0;i<values.length;i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
+		}
+
 		return EntityResult.of(entity.getId(), values);
 	}
 
@@ -100,12 +109,18 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+
 		checkRequiredTables(ctx.getStorage());
 		init(entity);
+
 		if (requiredTables.isEmpty()) {
 			return EntityResult.notContained();
 		}
 
+		// Always do one go-round with ALL_IDS_TABLE.
+		nextTable(ctx, ctx.getStorage().getDataset().getAllIdsTableId());
+		nextBlock(AllIdsBucket.INSTANCE);
+		nextEvent(AllIdsBucket.INSTANCE, 0);
 
 		for(TableId currentTableId : requiredTables) {
 

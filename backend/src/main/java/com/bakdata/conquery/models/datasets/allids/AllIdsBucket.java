@@ -7,76 +7,64 @@ import java.util.PrimitiveIterator;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import lombok.Getter;
 
+//TODO explain this class!
 public class AllIdsBucket extends Bucket {
 
-	@Getter
-	private final IntList entities = new IntArrayList();
+	public static final AllIdsBucket INSTANCE = new AllIdsBucket();
 
-	public AllIdsBucket(Import imp, int bucket, IntList entities) {
-		super(bucket, imp, new int[0]);
-		this.entities.addAll(entities);
+	public AllIdsBucket() {
+		super(0, null, new int[0]);
 	}
 
 	@Override
 	public void initFields(int numberOfEntities) {
-
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public int toGlobal(int entity) {
-		return entity;
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public int toLocal(int entity) {
-		return entity;
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public boolean containsLocalEntity(int localEntity) {
-		// This ensures that all entites are evaluated
-		// TODO: 20.07.2020 FK: get number from somewhere else
-		return getBucket() <= localEntity && localEntity <= getBucket() + ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
-//		return entities.contains(localEntity);
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public void writeContent(Output output) throws IOException {
-		for (Integer entity : entities) {
-			output.writeInt(entity,true);
-		}
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public void read(Input input) throws IOException {
-		while (input.canReadInt()) {
-			entities.add(input.readInt());
-		}
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public PrimitiveIterator.OfInt iterator() {
-		return entities.iterator();
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public int getFirstEventOfLocal(int localEntity) {
-		return 0;
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
 	public int getLastEventOfLocal(int localEntity) {
-		return 1;
+		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 

@@ -12,7 +12,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ConqueryConstants {
 
-	public static final String ALL_IDS_TABLE = null;
+	public static final String ALL_IDS_TABLE = "ALL_IDS";
 	public static final String EXTENSION_PREPROCESSED = ".cqpp";
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
 	public static final SimpleResultInfo DATES_INFO = new SimpleResultInfo("dates", ResultType.STRING);

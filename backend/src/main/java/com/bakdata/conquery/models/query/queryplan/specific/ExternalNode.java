@@ -17,13 +17,17 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
 
-	@Getter @NotEmpty
+	private final TableId allIdsTable;
+	@Getter
+	@NotEmpty
 	private final Map<Integer, CDateSet> includedEntities;
 	private final SpecialDateUnion dateUnionAggregatorNode;
 
 	private CDateSet contained;
-	
-	public ExternalNode(Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnionAggregatorNode) {
+	private CDateSet restricted;
+
+	public ExternalNode(TableId allIdsTable, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnionAggregatorNode) {
+		this.allIdsTable = allIdsTable;
 		this.includedEntities = Objects.requireNonNull(includedEntities);
 		this.dateUnionAggregatorNode = dateUnionAggregatorNode;
 	}
@@ -33,12 +37,12 @@ public class ExternalNode extends QPNode {
 		super.init(entity);
 		contained = includedEntities.get(entity.getId());
 	}
-	
+
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		return new ExternalNode(includedEntities, ctx.clone(dateUnionAggregatorNode));
+		return new ExternalNode(allIdsTable, includedEntities, ctx.clone(dateUnionAggregatorNode));
 	}
-	
+
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if (contained == null) {
@@ -46,25 +50,26 @@ public class ExternalNode extends QPNode {
 			return;
 		}
 
-		CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
-		newSet.retainAll(contained);
-
-
+		restricted = CDateSet.create(ctx.getDateRestriction());
+		restricted.retainAll(contained);
 	}
 
 	@Override
 	public void nextEvent(Bucket bucket, int event) {
-
+		if (restricted == null) {
+			return;
+		}
+		dateUnionAggregatorNode.merge(restricted);
 	}
-	
+
 	@Override
 	public boolean isContained() {
-		return contained != null;
+		return restricted != null && !restricted.isEmpty();
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
-		super.collectRequiredTables(requiredTables);
+		requiredTables.add(allIdsTable);
 	}
 
 	@Override
