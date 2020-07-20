@@ -1,8 +1,10 @@
-import React from "react";
+import React, { FC } from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import DatasetSelector from "../dataset/DatasetSelector";
+import LogoutButton from "./LogoutButton";
+import { StateT } from "app-types";
 
 const Root = styled("header")`
   background-color: ${({ theme }) => theme.col.graySuperLight};
@@ -21,6 +23,12 @@ const Root = styled("header")`
   width: 100%;
   top: 0;
   left: 0;
+`;
+
+const Right = styled("div")`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 `;
 
 const OverflowHidden = styled("div")`
@@ -52,32 +60,24 @@ const Headline = styled("h1")`
   font-weight: 300;
 `;
 
-type PropsType = {
-  version: string;
-  isDevelopment: boolean;
-};
+const Header: FC = () => {
+  const version = useSelector<StateT, string>(
+    (state) => state.startup.config.version
+  );
 
-// TODO: Show version somewhere
-class Header extends React.Component<PropsType> {
-  render() {
-    return (
-      <Root>
-        <OverflowHidden>
-          <Logo title={this.props.version} />
-          <Spacer />
-          <Headline>{T.translate("headline")}</Headline>
-        </OverflowHidden>
+  return (
+    <Root>
+      <OverflowHidden>
+        <Logo title={version} />
+        <Spacer />
+        <Headline>{T.translate("headline")}</Headline>
+      </OverflowHidden>
+      <Right>
         <DatasetSelector />
-      </Root>
-    );
-  }
-}
-
-const mapStateToProps = (state, ownProps) => {
-  return {
-    version: state.startup.config.version,
-    isDevelopment: !state.startup.config.production || false
-  };
+        <LogoutButton />
+      </Right>
+    </Root>
+  );
 };
 
-export default connect(mapStateToProps, {})(Header);
+export default Header;
