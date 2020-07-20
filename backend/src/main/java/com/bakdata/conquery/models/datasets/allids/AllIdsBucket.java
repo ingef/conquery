@@ -44,7 +44,24 @@ public class AllIdsBucket extends Bucket {
 
 	@Override
 	public boolean containsLocalEntity(int localEntity) {
+		// This ensures that all entites are evaluated
+		// TODO: 20.07.2020 FK: get number from somewhere else
 		return getBucket() <= localEntity && localEntity <= getBucket() + ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+//		return entities.contains(localEntity);
+	}
+
+	@Override
+	public void writeContent(Output output) throws IOException {
+		for (Integer entity : entities) {
+			output.writeInt(entity,true);
+		}
+	}
+
+	@Override
+	public void read(Input input) throws IOException {
+		while (input.canReadInt()) {
+			entities.add(input.readInt());
+		}
 	}
 
 	@Override
@@ -61,6 +78,8 @@ public class AllIdsBucket extends Bucket {
 	public int getLastEventOfLocal(int localEntity) {
 		return 1;
 	}
+
+
 
 	@Override
 	public int getBucketSize() {
@@ -142,17 +161,4 @@ public long getMoney(int event, Column column) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 
-	@Override
-	public void writeContent(Output output) throws IOException {
-		for (Integer entity : entities) {
-			output.writeInt(entity,true);
-		}
-	}
-
-	@Override
-	public void read(Input input) throws IOException {
-		while (input.canReadInt()) {
-			entities.add(input.readInt());
-		}
-	}
 }

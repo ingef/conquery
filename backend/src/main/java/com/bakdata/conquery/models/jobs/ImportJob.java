@@ -153,9 +153,8 @@ public class ImportJob extends Job {
 					ProgressReporter child = this.progressReporter.subJob(5);
 					child.setMax(primaryMapping.getNumberOfNewIds());
 
+					// TODO: 20.07.2020 FK: this is wrong
 					AllIdsBucket bucket = new AllIdsBucket(allIdsImp, 0, IntLists.EMPTY_LIST);
-
-
 
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
 						final ByteBuffer byteBuffer = ByteBuffer.allocate(Integer.BYTES);
