@@ -5,10 +5,6 @@ import { deleteStoredAuthToken } from "../authorization/helper";
 import WithTooltip from "../tooltip/WithTooltip";
 import { T } from "../localization";
 
-const SxWithTooltip = styled(WithTooltip)`
-  margin-left: 5px;
-`;
-
 const SxIconButton = styled(IconButton)`
   padding: 10px 6px;
 `;
@@ -17,7 +13,7 @@ interface PropsT {
   className?: string;
 }
 
-const LogoutButton: FC<PropsT> = () => {
+const LogoutButton: FC<PropsT> = ({ className }) => {
   const onLogout = () => {
     deleteStoredAuthToken();
 
@@ -27,9 +23,9 @@ const LogoutButton: FC<PropsT> = () => {
   };
 
   return (
-    <SxWithTooltip text={T.translate("common.logout")}>
+    <WithTooltip className={className} text={T.translate("common.logout")}>
       <SxIconButton frame icon="sign-out-alt" onClick={onLogout} />
-    </SxWithTooltip>
+    </WithTooltip>
   );
 };
 

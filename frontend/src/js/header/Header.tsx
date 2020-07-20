@@ -62,6 +62,10 @@ const Headline = styled("h1")`
   font-weight: 300;
 `;
 
+const SxLogoutButton = styled(LogoutButton)`
+  margin-left: 5px;
+`;
+
 const Header: FC = () => {
   const version = useSelector<StateT, string>(
     (state) => state.startup.config.version
@@ -78,7 +82,7 @@ const Header: FC = () => {
       </OverflowHidden>
       <Right>
         <DatasetSelector />
-        {!hideLogoutButton && <LogoutButton />}
+        {!hideLogoutButton && <SxLogoutButton />}
       </Right>
     </Root>
   );
