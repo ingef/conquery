@@ -139,11 +139,7 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
         </Stats>
       );
     }
-    case "DATE":
-    case "DATE_RANGE":
-    case "STRING":
-    case "ID":
-    case "OTHER":
+    default:
       return null;
   }
 };
