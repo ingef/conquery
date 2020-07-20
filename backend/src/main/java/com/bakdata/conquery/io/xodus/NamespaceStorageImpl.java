@@ -46,8 +46,8 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
-		idMapping = StoreInfo.ID_MAPPING.singleton(getEnvironment(), getValidator());
+		structure = StoreInfo.STRUCTURE.singleton(getConfig(), getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
+		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), getEnvironment(), getValidator());
 		collector
 			.collect(structure)
 			.collect(idMapping);

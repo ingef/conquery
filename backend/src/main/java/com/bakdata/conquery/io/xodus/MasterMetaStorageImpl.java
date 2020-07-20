@@ -83,17 +83,17 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 
-		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
+		meta = StoreInfo.NAMESPACES.singleton(getConfig(), getEnvironment(), getValidator());
 
 		executions = StoreInfo.EXECUTIONS
-			.<ManagedExecution<?>>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces);
-		authRole = StoreInfo.AUTH_ROLE.identifiable(getRolesEnvironment(), getValidator(), getCentralRegistry());
+			.<ManagedExecution<?>>identifiable(getConfig(), getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces);
+		authRole = StoreInfo.AUTH_ROLE.identifiable(getConfig(), getRolesEnvironment(), getValidator(), getCentralRegistry());
 
-		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
+		authUser = StoreInfo.AUTH_USER.identifiable(getConfig(), getUsersEnvironment(), getValidator(), getCentralRegistry());
 
-		authGroup = StoreInfo.AUTH_GROUP.identifiable(getGroupsEnvironment(), getValidator(), getCentralRegistry());
+		authGroup = StoreInfo.AUTH_GROUP.identifiable(getConfig(), getGroupsEnvironment(), getValidator(), getCentralRegistry());
 		
-		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getFormConfigEnvironment(), getValidator(), getCentralRegistry());
+		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getConfig(), getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
 		collector
 			.collect(meta)

@@ -57,8 +57,8 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 		directory = new File(config.getDirectory(), STORE_SUFFIX);
 		directory.deleteOnExit();
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		this.authMandator =  StoreInfo.AUTH_ROLE.identifiable(env, validator, registry);
-		this.authUser = StoreInfo.AUTH_USER.identifiable(env, validator, registry);
+		this.authMandator =  StoreInfo.AUTH_ROLE.identifiable(config, env, validator, registry);
+		this.authUser = StoreInfo.AUTH_USER.identifiable(config, env, validator, registry);
 	}
 	
 	/**

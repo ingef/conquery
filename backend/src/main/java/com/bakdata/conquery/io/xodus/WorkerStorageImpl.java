@@ -44,9 +44,9 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+		worker = StoreInfo.WORKER.singleton(getConfig(), getEnvironment(), getValidator());
+		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
+		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
 		
 		collector
 			.collect(worker)
