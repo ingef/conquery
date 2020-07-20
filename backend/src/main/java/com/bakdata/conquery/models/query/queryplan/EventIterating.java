@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -19,7 +18,7 @@ public interface EventIterating {
 		return out;
 	}
 	
-	default void nextTable(QueryExecutionContext ctx, Table currentTable) {}
+	default void nextTable(QueryExecutionContext ctx, TableId currentTable) {}
 	
 	default void nextBlock(Bucket bucket) {}
 	

@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -25,7 +23,8 @@ import lombok.ToString;
 public class ConceptQueryPlan implements QueryPlan, EventIterating {
 
 	@Getter @Setter
-	private Set<Table> requiredTables;
+	private Set<TableId> requiredTables;
+
 	private QPNode child;
 	@ToString.Exclude
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
@@ -57,14 +56,21 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 	
 	private void checkRequiredTables(WorkerStorage storage) {
-		if(requiredTables == null) {
-			synchronized (this) {
-				if(requiredTables == null) {
-					requiredTables = this.collectRequiredTables()
-						.stream()
-						.map(storage.getDataset().getTables()::getOrFail)
-						.collect(Collectors.toSet());
-				}
+		if (requiredTables != null) {
+			return;
+		}
+
+		// TODO: 20.07.2020 FK: Consider making this ThreadLocal, we can allow that much memory overhead.
+		synchronized (this) {
+			if (requiredTables != null) {
+				return;
+			}
+
+			requiredTables = this.collectRequiredTables();
+
+			// Assert that all tables are actually present
+			for (TableId table : requiredTables) {
+				storage.getDataset().getTables().getOrFail(table);
 			}
 		}
 	}
@@ -100,19 +106,27 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 			return EntityResult.notContained();
 		}
 
-		for(Table currentTable : requiredTables) {
-			nextTable(ctx, currentTable);
-			for(Bucket bucket : entity.getBucket(currentTable.getId())) {
+
+		for(TableId currentTableId : requiredTables) {
+
+			nextTable(ctx, currentTableId);
+
+			for(Bucket bucket : entity.getBucket(currentTableId)) {
 				int localEntity = bucket.toLocal(entity.getId());
-				if(bucket.containsLocalEntity(localEntity)) {
-					if(isOfInterest(bucket)) {
-						nextBlock(bucket);
-						int start = bucket.getFirstEventOfLocal(localEntity);
-						int end = bucket.getLastEventOfLocal(localEntity);
-						for(int event = start; event < end ; event++) {
-							nextEvent(bucket, event);
-						}
-					}
+
+				if (!bucket.containsLocalEntity(localEntity)) {
+					continue;
+				}
+
+				if (!isOfInterest(bucket)) {
+					continue;
+				}
+
+				nextBlock(bucket);
+				int start = bucket.getFirstEventOfLocal(localEntity);
+				int end = bucket.getLastEventOfLocal(localEntity);
+				for (int event = start; event < end; event++) {
+					nextEvent(bucket, event);
 				}
 			}
 		}
@@ -121,7 +135,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		child.nextTable(ctx, currentTable);
 	}
 	

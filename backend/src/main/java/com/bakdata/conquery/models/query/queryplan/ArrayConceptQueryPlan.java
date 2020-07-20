@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
-
 import lombok.Getter;
 import lombok.ToString;
 
@@ -191,7 +189,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		return length;
 	}
 
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		childPlans.forEach(plan -> plan.nextTable(ctx, currentTable));
 	}
 
