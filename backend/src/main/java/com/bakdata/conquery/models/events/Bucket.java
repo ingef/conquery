@@ -1,5 +1,15 @@
 package com.bakdata.conquery.models.events;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.jackson.serializer.BucketDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -20,19 +30,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.PrimitiveIterator;
-import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Contains data from possibly multiple entities, loaded in a single import.
  */
+@Slf4j
 @FieldNameConstants
 @Getter @Setter @ToString @JsonDeserialize(using = BucketDeserializer.class)
 public abstract class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer>, JsonSerializable {
@@ -59,14 +62,20 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public BucketId createId() {
 		return new BucketId(imp.getId(), bucket);
 	}
-	
+
+	public abstract int getBucketSize();
+
 	@Override
 	public PrimitiveIterator.OfInt iterator() {
-		return IntStream
-			.range(0,getBucketSize())
-			.filter(this::containsLocalEntity)
-			.map(this::toGlobal)
-			.iterator();
+		log.info("Bucket[{}] size = {}", getId(), getBucketSize()); // TODO: 21.07.2020 FK: This is just temporary for bug-finding in CI.
+		return IntStream.range(0, getBucketSize())
+						.filter(this::containsLocalEntity)
+						.map(this::toGlobal)
+						.iterator();
+	}
+
+	public boolean containsLocalEntity(int localEntity) {
+		return offsets[localEntity]!=-1;
 	}
 
 	public abstract void initFields(int numberOfEntities);
@@ -79,9 +88,7 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 		return entity + getBucketSize()*bucket;
 	}
 	
-	public boolean containsLocalEntity(int localEntity) {
-		return offsets[localEntity]!=-1;
-	}
+
 	
 	public int getFirstEventOfLocal(int localEntity) {
 		return offsets[localEntity];
@@ -127,7 +134,7 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 			.iterator();
 	}
 
-	public abstract int getBucketSize();
+
 	
 	public boolean has(int event, Column column) {
 		return has(event, column.getPosition());
