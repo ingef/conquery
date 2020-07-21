@@ -30,7 +30,6 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 		return getClass().getSimpleName();
 	}
 	
-	@Override
 	public ColumnAggregator<T> clone(CloneContext ctx) {
 		return ctx.clone(this);
 	}

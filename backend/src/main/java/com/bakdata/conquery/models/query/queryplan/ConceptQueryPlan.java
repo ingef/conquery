@@ -50,10 +50,10 @@ public class ConceptQueryPlan implements QueryPlan {
 		checkRequiredTables(ctx.getStorage());
 		
 		ConceptQueryPlan clone = new ConceptQueryPlan(false);
-		clone.setChild(child.clone(ctx));
+		clone.setChild(ctx.clone((QPNode) child));
 		for(Aggregator<?> agg:aggregators)
-			clone.aggregators.add(agg.clone(ctx));
-		clone.specialDateUnion = specialDateUnion.clone(ctx);
+			clone.aggregators.add(ctx.clone((Aggregator<?>) agg));
+		clone.specialDateUnion = ctx.clone(specialDateUnion);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}

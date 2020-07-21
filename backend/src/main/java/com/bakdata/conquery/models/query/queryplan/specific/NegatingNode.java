@@ -19,7 +19,7 @@ public class NegatingNode extends QPChainNode {
 	
 	@Override
 	public NegatingNode doClone(CloneContext ctx) {
-		return new NegatingNode(getChild().clone(ctx));
+		return new NegatingNode(ctx.clone((QPNode) getChild()));
 	}
 	
 	@Override

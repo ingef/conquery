@@ -51,7 +51,7 @@ public class TemporalQueryNode extends QPNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new TemporalQueryNode(reference.clone(ctx), preceding.clone(ctx), matcher, dateUnion.clone(ctx));
+		return new TemporalQueryNode(ctx.clone((SampledNode) reference), ctx.clone((SampledNode) preceding), matcher, ctx.clone(dateUnion));
 	}
 
 	/**

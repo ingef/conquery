@@ -87,12 +87,12 @@ public class FiltersNode extends QPChainNode {
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
 		List<FilterNode<?>> _filters = new ArrayList<>(filters);
-		_filters.replaceAll(fn -> fn.clone(ctx));
+		_filters.replaceAll(fn -> ctx.clone((FilterNode<?>) fn));
 
 		List<EventFilterNode<?>> _eventFilters = new ArrayList<>(eventFilters);
-		_eventFilters.replaceAll(fn -> (EventFilterNode<?>) fn.clone(ctx));
+		_eventFilters.replaceAll(fn -> (EventFilterNode<?>) ctx.clone((FilterNode<?>) fn));
 
-		return new FiltersNode(_filters, _eventFilters, getChild().clone(ctx));
+		return new FiltersNode(_filters, _eventFilters, ctx.clone((QPNode) getChild()));
 	}
 
 	@Override

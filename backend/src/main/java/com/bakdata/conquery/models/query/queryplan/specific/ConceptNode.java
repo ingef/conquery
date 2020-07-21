@@ -99,7 +99,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, table, getChild().clone(ctx));
+		return new ConceptNode(concepts, requiredBits, table, ctx.clone((QPNode) getChild()));
 	}
 
 	@Override

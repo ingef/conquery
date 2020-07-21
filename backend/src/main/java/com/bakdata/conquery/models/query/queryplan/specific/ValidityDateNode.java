@@ -43,7 +43,7 @@ public class ValidityDateNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ValidityDateNode(validityDateColumn, getChild().clone(ctx));
+		return new ValidityDateNode(validityDateColumn, ctx.clone((QPNode) getChild()));
 	}
 
 	@Override
