@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.models.query.queryplan.specific.AggregatorsNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
@@ -148,7 +147,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	}
 
 	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
-		return new FiltersNode(filters, new AggregatorsNode(aggregators));
+		return new FiltersNode(filters, aggregators);
 	}
 
 	private static List<Aggregator<?>> createConceptAggregators(ConceptQueryPlan plan, List<Select> select) {

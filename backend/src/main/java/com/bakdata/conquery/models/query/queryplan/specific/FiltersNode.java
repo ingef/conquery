@@ -8,22 +8,28 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 
-public class FiltersNode extends QPChainNode {
+@RequiredArgsConstructor
+public class FiltersNode extends QPNode {
+
+	private boolean hit = false;
+
 	@Getter
 	private final List<? extends FilterNode<?>> filters;
-
 	private final List<EventFilterNode<?>> eventFilters;
+	private final List<Aggregator<?>> aggregators;
 
-	public FiltersNode(List<FilterNode<?>> filters, QPNode child) {
-		super(child);
+
+	public FiltersNode(List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		this.aggregators = aggregators;
 		this.filters = filters;
 
 		eventFilters = new ArrayList<>(filters.size());
@@ -37,26 +43,19 @@ public class FiltersNode extends QPChainNode {
 		}
 	}
 
-	protected FiltersNode(List<FilterNode<?>> filters, List<EventFilterNode<?>> eventFilters, QPNode child) {
-		super(child);
-		this.filters = filters;
-		this.eventFilters = eventFilters;
-	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
-		for(FilterNode<?> f:filters) {
-			f.nextTable(ctx, currentTable);
-		}
+		filters.forEach(f -> f.nextTable(ctx, currentTable));
+		aggregators.forEach(a -> a.nextTable(ctx, currentTable));
 	}
 	
 	@Override
 	public void nextBlock(Bucket bucket) {
 		super.nextBlock(bucket);
-		for(FilterNode<?> f:filters) {
-			f.nextBlock(bucket);
-		}
+		filters.forEach(f -> f.nextBlock(bucket));
+		aggregators.forEach(a -> a.nextBlock(bucket));
 	}
 	
 	@Override
@@ -67,11 +66,10 @@ public class FiltersNode extends QPChainNode {
 			}
 		}
 
-		for(FilterNode<?> f : filters) {
-			f.acceptEvent(bucket, event);
-		}
+		filters.forEach(f -> f.acceptEvent(bucket, event));
+		aggregators.forEach(a -> a.acceptEvent(bucket, event));
 
-		getChild().acceptEvent(bucket, event);
+		hit = true;
 	}
 
 	@Override
@@ -81,26 +79,30 @@ public class FiltersNode extends QPChainNode {
 				return false;
 			}
 		}
-		return getChild().isContained();
+
+		return hit;
 	}
 	
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
 		List<FilterNode<?>> _filters = new ArrayList<>(filters);
-		_filters.replaceAll(fn -> ctx.clone((FilterNode<?>) fn));
+		_filters.replaceAll(ctx::clone);
 
 		List<EventFilterNode<?>> _eventFilters = new ArrayList<>(eventFilters);
-		_eventFilters.replaceAll(fn -> (EventFilterNode<?>) ctx.clone((FilterNode<?>) fn));
+		_eventFilters.replaceAll(ctx::clone);
 
-		return new FiltersNode(_filters, _eventFilters, ctx.clone((QPNode) getChild()));
+		List<Aggregator<?>> _aggregators = new ArrayList<>(aggregators);
+		_aggregators.replaceAll(ctx::clone);
+
+		return new FiltersNode(_filters, _eventFilters, _aggregators);
 	}
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		for(FilterNode<?> f:filters) {
-			f.collectRequiredTables(requiredTables);
-		}
+
+		filters.forEach(f -> f.collectRequiredTables(requiredTables));
+		aggregators.forEach(a -> a.collectRequiredTables(requiredTables));
 	}
 	
 	@Override

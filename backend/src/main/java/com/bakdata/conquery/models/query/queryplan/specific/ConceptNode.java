@@ -70,23 +70,25 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (tableActive && interested) {
-			//check concepts
-			int[] mostSpecificChildren;
-			if (currentRow.getCBlock().getMostSpecificChildren() != null
-				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
+		if (!tableActive || !interested) {
+			return;
+		}
 
-				for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
-					if (ce.matchesPrefix(mostSpecificChildren)) {
-						getChild().acceptEvent(bucket, event);
-					}
+		//check concepts
+		int[] mostSpecificChildren;
+		if (currentRow.getCBlock().getMostSpecificChildren() != null
+			&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
+
+			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
+				if (ce.matchesPrefix(mostSpecificChildren)) {
+					getChild().acceptEvent(bucket, event);
 				}
 			}
-			else {
-				for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
-					if (ce.getConcept() == ce) {
-						getChild().acceptEvent(bucket, event);
-					}
+		}
+		else {
+			for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
+				if (ce.getConcept() == ce) {
+					getChild().acceptEvent(bucket, event);
 				}
 			}
 		}
