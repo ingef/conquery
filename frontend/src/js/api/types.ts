@@ -247,7 +247,10 @@ export type ColumnDescriptionKind =
   | "MONEY"
   | "NUMERIC"
   | "DATE"
-  | "DATE_RANGE";
+  | "DATE_RANGE"
+  | "BOOLEAN"
+  | "CATEGORICAL"
+  | "RESOLUTION";
 
 export interface ColumnDescription {
   label: string;
@@ -332,6 +335,7 @@ export interface GetMeResponseT {
   userName: string;
   permissions: PermissionT[];
   groups: UserGroupT[];
+  hideLogoutButton?: boolean;
 }
 
 export interface PostLoginResponseT {

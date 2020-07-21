@@ -102,7 +102,7 @@ const InputMultiSelect = (props: PropsType) => {
 
   const MenuList = ({ children, ...ownProps }) => {
     return (
-      <div>
+      <>
         <Row>
           <InfoText>
             {!!props.options ? props.options.length : 0}{" "}
@@ -123,7 +123,7 @@ const InputMultiSelect = (props: PropsType) => {
           </TransparentButton>
         </Row>
         <components.MenuList {...ownProps}>{children}</components.MenuList>
-      </div>
+      </>
     );
   };
 
