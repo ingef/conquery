@@ -64,7 +64,7 @@ public class IntegrationTests {
 	public Stream<DynamicNode> programmaticTests() {
 		List<Class<?>> programmatic = CPSTypeIdResolver
 			.SCAN_RESULT
-			.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
+			.getClassesImplementing(ProgrammaticIntegrationTest.This.class.getName())
 			.filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
 			.loadClasses();
 

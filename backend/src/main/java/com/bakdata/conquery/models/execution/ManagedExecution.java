@@ -93,7 +93,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
-	protected transient QueryError error;
+	protected transient ExecutionError error;
 
 	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
 		this.owner = owner;
@@ -122,7 +122,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
-	protected void fail(MasterMetaStorage storage, QueryError error) {
+	protected void fail(MasterMetaStorage storage, ExecutionError error) {
 		if(this.error != null) {
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previously error was: {}", getId(), this.error, error);
 		} else {
@@ -200,7 +200,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			isReadyToDownload(url, user)
 				? getDownloadURL(url)
 				: null);
-		status.setError(error);
+		if (status.equals(ExecutionState.FAILED)) {
+			assert(error != null);
+			status.setError(error.asPlain());
+		}
 	}
 
 	/**

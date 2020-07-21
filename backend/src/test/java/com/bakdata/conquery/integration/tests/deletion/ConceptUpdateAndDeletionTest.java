@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * Test if Imports can be deleted and safely queried.
  */
 @Slf4j
-public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest {
+public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest.This {
 
 
 	@Override

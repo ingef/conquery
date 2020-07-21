@@ -32,7 +32,6 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -93,13 +92,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	public void addResult(@NonNull MasterMetaStorage storage, ShardResult result) {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 
-		for (EntityResult er : result.getResults()) {
-			if (er.isFailed() && state == ExecutionState.RUNNING) {
-				fail(storage, result.getError());
-				FailedEntityResult failed = er.asFailed();
-				log.error("Failed Query[{}] at least for the Entity[{}]", queryId, failed.getEntityId(), failed.getThrowable());
-			}
+		if(result.getError().isPresent()) {
+			fail(storage, result.getError().get());
+			log.error("Failed Query[{}]", queryId);
 		}
+
 		synchronized (getExecution()) {
 			executingThreads--;
 			results.addAll(result.getResults());

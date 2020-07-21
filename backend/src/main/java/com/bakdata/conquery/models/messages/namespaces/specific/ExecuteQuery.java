@@ -1,21 +1,20 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.execution.ExecutionError.ConqueryExecutionError;
+import com.bakdata.conquery.models.execution.ExecutionError.UnknownError;
+import com.bakdata.conquery.models.execution.ExecutionException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.execution.QueryError;
-import com.bakdata.conquery.models.execution.QueryError.CQErrorCodes;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -45,12 +44,16 @@ public class ExecuteQuery extends WorkerMessage {
 		// The results are send directly to these ManagesQueries
 		try {
 			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();		
+		} catch (ExecutionException e) {	
+			log.warn("Failed to create query plans for " + execution.getId(), e );
+			ShardResult result = execution.getInitializedShardResult(null);
+			sendFailureToMaster(result, execution, context, e.getCtx());
+			return;
 		} catch (Exception e) {
 			log.error("Failed to create query plans for " + execution.getId(), e );
 			// If one of the plans can not be created (maybe due to a Id that references a non existing concept) fail the whole job.
 			ShardResult result = execution.getInitializedShardResult(null);
-			result.setError(QueryError.builder().code(CQErrorCodes.QUERY_CREATION_PLAN.name()).message("Failed to create query plan.").build());
-			sendFailureToMaster(result, execution, context, e);
+			sendFailureToMaster(result, execution, context, new UnknownError(e));
 			return;
 		}
 		// Execute all plans.
@@ -59,16 +62,19 @@ public class ExecuteQuery extends WorkerMessage {
 			try {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
-			} catch(Exception e) {
+			} catch(ExecutionException e) {
+				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
+				sendFailureToMaster(result, execution, context, e.getCtx());
+			} catch (Exception e) {
 				log.error("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
-				sendFailureToMaster(result, execution, context, e);
+				sendFailureToMaster(result, execution, context, new UnknownError(e));
 			}
 		}
 	}
 
-	private static void sendFailureToMaster(ShardResult result, ManagedExecution<?> execution, Worker context, Exception e) {
-		result.setFinishTime(LocalDateTime.now());
-		result.setResults(Collections.singletonList(EntityResult.failed(-1, e)));
+	private static void sendFailureToMaster(ShardResult result, ManagedExecution<?> execution, Worker context, ConqueryExecutionError error) {
+		result.setError(Optional.of(error));
+		result.finish();
 		context.send(new CollectQueryResult(result));
 	}
 }

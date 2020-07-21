@@ -58,7 +58,7 @@ public class ExecutionStatus {
 		/**
 		 * Is set when the QueryFailed
 		 */
-		private QueryError error;
+		private ExecutionError.PlainContext error;
 		
 		public static enum CreationFlag{
 			WITH_COLUMN_DESCIPTION,
