@@ -6,8 +6,8 @@ import java.util.Set;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.datasets.allids.EmptyBucket;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.generation.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -119,8 +119,8 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 
 		// Always do one go-round with ALL_IDS_TABLE.
 		nextTable(ctx, ctx.getStorage().getDataset().getAllIdsTableId());
-		nextBlock(EmptyBucket.INSTANCE);
-		nextEvent(EmptyBucket.INSTANCE, 0);
+		nextBlock(EmptyBucket.getInstance());
+		nextEvent(EmptyBucket.getInstance(), 0);
 
 		for(TableId currentTableId : requiredTables) {
 

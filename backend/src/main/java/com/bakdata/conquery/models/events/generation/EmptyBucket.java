@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.datasets.allids;
+package com.bakdata.conquery.models.events.generation;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -12,11 +12,15 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import lombok.Getter;
 
-//TODO explain this class!
+/**
+ * This class serves as a not-null placeholder for an empty {@link Bucket}. This avoids verbose null-checking in the QueryEngine.
+ */
 public class EmptyBucket extends Bucket {
 
-	public static final EmptyBucket INSTANCE = new EmptyBucket();
+	@Getter
+	private static final EmptyBucket Instance = new EmptyBucket();
 
 	private EmptyBucket() {
 		super(0, null, new int[0]);
