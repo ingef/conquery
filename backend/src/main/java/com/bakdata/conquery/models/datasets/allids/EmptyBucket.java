@@ -14,12 +14,32 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 //TODO explain this class!
-public class AllIdsBucket extends Bucket {
+public class EmptyBucket extends Bucket {
 
-	public static final AllIdsBucket INSTANCE = new AllIdsBucket();
+	public static final EmptyBucket INSTANCE = new EmptyBucket();
 
-	public AllIdsBucket() {
+	private EmptyBucket() {
 		super(0, null, new int[0]);
+	}
+
+	@Override
+	public boolean has(int event, int columnPosition) {
+		return false;
+	}
+
+	@Override
+	public boolean eventIsContainedIn(int event, Column column, CDateRange dateRange) {
+		return false;
+	}
+
+	@Override
+	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
+		return false;
+	}
+
+	@Override
+	public boolean containsLocalEntity(int localEntity) {
+		return false;
 	}
 
 	@Override
@@ -37,10 +57,6 @@ public class AllIdsBucket extends Bucket {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
-	@Override
-	public boolean containsLocalEntity(int localEntity) {
-		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
-	}
 
 	@Override
 	public void writeContent(Output output) throws IOException {
@@ -68,14 +84,8 @@ public class AllIdsBucket extends Bucket {
 	}
 
 
-
 	@Override
 	public int getBucketSize() {
-		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
-	}
-
-	@Override
-	public boolean has(int event, int columnPosition) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 
@@ -105,9 +115,9 @@ public class AllIdsBucket extends Bucket {
 	}
 
 	@Override
-public long getMoney(int event, Column column) {
+	public long getMoney(int event, Column column) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
-}
+	}
 
 	@Override
 	public int getDate(int event, Column column) {
@@ -126,16 +136,6 @@ public long getMoney(int event, Column column) {
 
 	@Override
 	public Object getAsObject(int event, int columnPosition) {
-		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
-	}
-
-	@Override
-	public boolean eventIsContainedIn(int event, Column column, CDateRange dateRange) {
-		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
-	}
-
-	@Override
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 
