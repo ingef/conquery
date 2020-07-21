@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.filter;
 
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 import lombok.AllArgsConstructor;
@@ -12,10 +11,6 @@ public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxClo
 
 	@Setter @Getter
 	protected FILTER_VALUE filterValue;
-
-	public boolean checkEvent(Bucket bucket, int event) {
-		return true;
-	}
 
 	public abstract boolean isContained();
 	

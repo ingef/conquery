@@ -3,17 +3,16 @@ package com.bakdata.conquery.models.query.filter.event;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnEventFilterNode;
 import com.bakdata.conquery.models.types.specific.AStringType;
 
 
 /**
  * Single events are filtered, and included if they have a selected value. Entity is only included if it has any event with selected value.
  */
-public class SelectFilterNode extends SingleColumnFilterNode<String> {
+public class SelectFilterNode extends SingleColumnEventFilterNode<String> {
 
 	private int selectedId = -1;
-	private boolean hit = false;
 
 	public SelectFilterNode(Column column, String filterValue) {
 		super(column, filterValue);
@@ -42,18 +41,7 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		this.hit = true;
-	}
-
-	@Override
-	public boolean isContained() {
-		return hit;
-	}
-
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return super.isOfInterest(bucket) &&
-			   ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
+		return ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
 	}
 }

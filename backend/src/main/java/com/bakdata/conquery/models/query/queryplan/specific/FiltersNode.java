@@ -11,17 +11,36 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 
 
 public class FiltersNode extends QPChainNode {
 	@Getter
-	private final List<FilterNode<?>> filters;
+	private final List<? extends FilterNode<?>> filters;
+
+	private final List<EventFilterNode<?>> eventFilters;
 
 	public FiltersNode(List<FilterNode<?>> filters, QPNode child) {
 		super(child);
 		this.filters = filters;
+
+		eventFilters = new ArrayList<>(filters.size());
+
+		for (FilterNode<?> filter : filters) {
+			if (!(filter instanceof EventFilterNode)) {
+				continue;
+			}
+
+			eventFilters.add((EventFilterNode<?>) filter);
+		}
+	}
+
+	protected FiltersNode(List<FilterNode<?>> filters, List<EventFilterNode<?>> eventFilters, QPNode child) {
+		super(child);
+		this.filters = filters;
+		this.eventFilters = eventFilters;
 	}
 
 	@Override
@@ -42,7 +61,7 @@ public class FiltersNode extends QPChainNode {
 	
 	@Override
 	public final void acceptEvent(Bucket bucket, int event) {
-		for(FilterNode<?> f : filters) {
+		for(EventFilterNode<?> f : eventFilters) {
 			if (!f.checkEvent(bucket, event)) {
 				return;
 			}
@@ -67,10 +86,13 @@ public class FiltersNode extends QPChainNode {
 	
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
-		List<FilterNode<?>> copy = new ArrayList<>(filters);
-		copy.replaceAll(fn->fn.clone(ctx));
+		List<FilterNode<?>> _filters = new ArrayList<>(filters);
+		_filters.replaceAll(fn -> fn.clone(ctx));
 
-		return new FiltersNode(copy, getChild().clone(ctx));
+		List<EventFilterNode<?>> _eventFilters = new ArrayList<>(eventFilters);
+		_eventFilters.replaceAll(fn -> (EventFilterNode<?>) fn.clone(ctx));
+
+		return new FiltersNode(_filters, _eventFilters, getChild().clone(ctx));
 	}
 
 	@Override
