@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.generation.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -24,8 +24,8 @@ import lombok.ToString;
 @ToString
 public class ConceptQueryPlan implements QueryPlan, EventIterating {
 
-	@Getter @Setter
-	private Set<TableId> requiredTables;
+	@Setter @Getter
+	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
 
 	private QPNode child;
 	@ToString.Exclude
@@ -52,32 +52,27 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		clone.setChild(child.clone(ctx));
 		for(Aggregator<?> agg:aggregators)
 			clone.aggregators.add(agg.clone(ctx));
+
 		clone.specialDateUnion = specialDateUnion.clone(ctx);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
 	
 	private void checkRequiredTables(WorkerStorage storage) {
-		if (requiredTables != null) {
+		if (requiredTables.get() != null) {
 			return;
 		}
 
-		// TODO: 20.07.2020 FK: Consider making this ThreadLocal, we can allow that much memory overhead. To avoid locking
-		synchronized (this) {
-			if (requiredTables != null) {
-				return;
+
+		requiredTables.set(this.collectRequiredTables());
+
+		// Assert that all tables are actually present
+		for (TableId tableId : requiredTables.get()) {
+			if(Dataset.isAllIdsTable(tableId)) {
+				continue;
 			}
 
-			requiredTables = this.collectRequiredTables();
-
-			// Assert that all tables are actually present
-			for (TableId table : requiredTables) {
-				if(table.getTable().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE)) {
-					continue;
-				}
-
-				storage.getDataset().getTables().getOrFail(table);
-			}
+			storage.getDataset().getTables().getOrFail(tableId);
 		}
 	}
 
@@ -113,7 +108,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		checkRequiredTables(ctx.getStorage());
 		init(entity);
 
-		if (requiredTables.isEmpty()) {
+		if (requiredTables.get().isEmpty()) {
 			return EntityResult.notContained();
 		}
 
@@ -122,7 +117,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		nextBlock(EmptyBucket.getInstance());
 		nextEvent(EmptyBucket.getInstance(), 0);
 
-		for(TableId currentTableId : requiredTables) {
+		for(TableId currentTableId : requiredTables.get()) {
 
 			nextTable(ctx, currentTableId);
 

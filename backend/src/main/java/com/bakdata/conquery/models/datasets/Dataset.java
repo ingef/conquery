@@ -22,6 +22,10 @@ public class Dataset extends Labeled<DatasetId> implements Injectable {
 
 	// TODO: 09.01.2020 fk: Maintain concepts in dataset as well, or get rid of tables, but don't do both.
 
+	public static boolean isAllIdsTable(TableId tableId){
+		return tableId.getTable().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
+	}
+
 	@JsonIgnore
 	public TableId getAllIdsTableId() {
 		return new TableId(getId(), ConqueryConstants.ALL_IDS_TABLE);
