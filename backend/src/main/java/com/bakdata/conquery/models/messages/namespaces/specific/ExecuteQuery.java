@@ -7,6 +7,8 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.execution.QueryError;
+import com.bakdata.conquery.models.execution.QueryError.CQErrorCodes;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -46,7 +48,9 @@ public class ExecuteQuery extends WorkerMessage {
 		} catch (Exception e) {
 			log.error("Failed to create query plans for " + execution.getId(), e );
 			// If one of the plans can not be created (maybe due to a Id that references a non existing concept) fail the whole job.
-			sendFailureToMaster(execution.getInitializedShardResult(null), execution, context, e);
+			ShardResult result = execution.getInitializedShardResult(null);
+			result.setError(QueryError.builder().code(CQErrorCodes.QUERY_CREATION_PLAN.name()).message("Failed to create query plan.").build());
+			sendFailureToMaster(result, execution, context, e);
 			return;
 		}
 		// Execute all plans.

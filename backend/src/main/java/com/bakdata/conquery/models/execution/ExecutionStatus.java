@@ -55,6 +55,11 @@ public class ExecutionStatus {
 		 */
 		private QueryDescription query;
 		
+		/**
+		 * Is set when the QueryFailed
+		 */
+		private QueryError error;
+		
 		public static enum CreationFlag{
 			WITH_COLUMN_DESCIPTION,
 			WITH_SOURCE;

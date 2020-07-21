@@ -9,6 +9,8 @@ import java.util.concurrent.ExecutionException;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.mina.MessageSender;
+import com.bakdata.conquery.models.execution.QueryError;
+import com.bakdata.conquery.models.execution.QueryError.CQErrorCodes;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
@@ -32,6 +34,8 @@ public class ShardResult {
 
 	private List<EntityResult> results = new ArrayList<>();
 
+	private QueryError error = null;
+	
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();
 	@ToString.Include
@@ -58,6 +62,7 @@ public class ShardResult {
 				if(entityResult.isFailed()) {
 					results.clear();
 					results.add(entityResult);
+					error = QueryError.builder().code(CQErrorCodes.QUERY_EXECUTION.toString()).message("Failed to execute query.").build();
 					break;
 				}
 				else if (!entityResult.isContained()){

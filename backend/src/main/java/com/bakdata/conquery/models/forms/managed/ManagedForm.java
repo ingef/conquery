@@ -137,7 +137,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	public void addResult(@NonNull MasterMetaStorage storage, FormSharedResult result) {
 		ManagedExecutionId subquery = result.getSubqueryId();
 		if (subquery == null) {
-			fail(storage);
+			fail(storage, result.getError());
 			log.warn(
 				"Form failed in query plan creation. ",
 				new MultiException(result.getResults().stream()
@@ -157,7 +157,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 				break;
 			case FAILED:
 				// Fail the whole execution if a subquery fails
-				fail(storage);
+				fail(storage, result.getError());
 				break;
 			case CANCELED:
 				// Ideally sub queries can not be canceled by a user, so do nothing
