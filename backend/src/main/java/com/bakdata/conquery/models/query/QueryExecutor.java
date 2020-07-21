@@ -2,12 +2,12 @@ package com.bakdata.conquery.models.query;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -43,12 +43,20 @@ public class QueryExecutor implements Closeable {
 		if(entries.isEmpty()) {
 			log.warn("entries for query {} are empty", executionId);
 		}
-		
-		List<ListenableFuture<EntityResult>> futures = entry.getValue()
-			.executeOn(context, entries)
-			.map(executor::submit)
-			.collect(Collectors.toList());
-		
+
+		QueryPlan queryPlan = entry.getValue();
+		List<ListenableFuture<EntityResult>> futures = new ArrayList<>();
+
+		for (Entity entity : entries) {
+			if (!queryPlan.isOfInterest(entity)) {
+				continue;
+			}
+
+			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
+			ListenableFuture<EntityResult> submit = executor.submit(queryJob);
+			futures.add(submit);
+		}
+
 		ListenableFuture<List<EntityResult>> future = Futures.allAsList(futures);
 		result.setFuture(future);
 		future.addListener(result::finish, MoreExecutors.directExecutor());

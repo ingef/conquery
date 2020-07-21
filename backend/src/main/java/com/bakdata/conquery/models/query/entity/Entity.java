@@ -72,6 +72,12 @@ public class Entity {
 		return cBlocks.row(connector);
 	}
 
+	public boolean has(ConnectorId connector) {
+		return cBlocks.containsRow(connector);
+	}
+
+
+
 	/**
 	 * Retrieve the {@link Bucket} containing this entity, for the Table.
 	 */
