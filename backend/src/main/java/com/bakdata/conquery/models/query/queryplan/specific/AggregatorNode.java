@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Set;
+
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -14,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Set;
-
 @RequiredArgsConstructor @Getter @ToString(of = "aggregator")
 public class AggregatorNode<T> extends QPNode  {
 
@@ -24,9 +24,9 @@ public class AggregatorNode<T> extends QPNode  {
 	private boolean triggered = false;
 	
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		triggered = true;
-		aggregator.aggregateEvent(bucket, event);
+		aggregator.acceptEvent(bucket, event);
 	}
 
 	@Override

@@ -69,7 +69,7 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (tableActive && interested) {
 			//check concepts
 			int[] mostSpecificChildren;
@@ -78,14 +78,14 @@ public class ConceptNode extends QPChainNode {
 
 				for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.matchesPrefix(mostSpecificChildren)) {
-						getChild().nextEvent(bucket, event);
+						getChild().acceptEvent(bucket, event);
 					}
 				}
 			}
 			else {
 				for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.getConcept() == ce) {
-						getChild().nextEvent(bucket, event);
+						getChild().acceptEvent(bucket, event);
 					}
 				}
 			}

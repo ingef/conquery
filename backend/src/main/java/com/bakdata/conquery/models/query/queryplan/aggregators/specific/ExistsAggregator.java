@@ -24,7 +24,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	private final Set<FilterNode<?>> filters = new HashSet<>();
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {  }
+	public void acceptEvent(Bucket bucket, int event) {  }
 
 	@Override
 	public Boolean getAggregationResult() {

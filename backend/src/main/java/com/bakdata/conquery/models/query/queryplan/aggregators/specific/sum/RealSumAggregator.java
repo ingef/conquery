@@ -24,7 +24,7 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}

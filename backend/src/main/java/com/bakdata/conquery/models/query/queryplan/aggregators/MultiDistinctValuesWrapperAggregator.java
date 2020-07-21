@@ -5,14 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Helper Aggregator, forwarding only events with distinct values to {@code aggregator}.
@@ -41,13 +39,13 @@ public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregato
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		List<Object> tuple = new ArrayList<>(columns.length);
 		for(Column column : columns) {
 			tuple.add(bucket.getAsObject(event, column));
 		}
 		if (observed.add(tuple)) {
-			aggregator.aggregateEvent(bucket, event);
+			aggregator.acceptEvent(bucket, event);
 		}
 	}
 

@@ -8,16 +8,14 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 
 
-public class FiltersNode extends QPChainNode implements EventIterating {
+public class FiltersNode extends QPChainNode {
 	@Getter
 	private final List<FilterNode<?>> filters;
 
@@ -43,7 +41,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	}
 	
 	@Override
-	public final void nextEvent(Bucket bucket, int event) {
+	public final void acceptEvent(Bucket bucket, int event) {
 		for(FilterNode<?> f : filters) {
 			if (!f.checkEvent(bucket, event)) {
 				return;
@@ -54,7 +52,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 			f.acceptEvent(bucket, event);
 		}
 
-		getChild().nextEvent(bucket, event);
+		getChild().acceptEvent(bucket, event);
 	}
 
 	@Override

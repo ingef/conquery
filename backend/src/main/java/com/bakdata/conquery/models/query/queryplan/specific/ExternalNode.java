@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
@@ -18,8 +16,8 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
+import org.hibernate.validator.constraints.NotEmpty;
 
 public class ExternalNode extends QPChainNode {
 
@@ -64,9 +62,9 @@ public class ExternalNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if(contained != null) {
-			getChild().nextEvent(bucket, event);
+			getChild().acceptEvent(bucket, event);
 		}
 	}
 	

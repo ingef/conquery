@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Set;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -10,8 +12,6 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
-import java.util.Set;
 
 public class SpecialDateUnionAggregatorNode extends AggregatorNode<String> {
 
@@ -44,7 +44,7 @@ public class SpecialDateUnionAggregatorNode extends AggregatorNode<String> {
 	
 	
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		setTriggered(true);
 		if (currentColumn != null) {
 			CDateRange range = bucket.getAsDateRange(event, currentColumn);

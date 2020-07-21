@@ -14,7 +14,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 	private CDateSet set = CDateSet.create();
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		throw new IllegalStateException("SpecialDateUnion should never be used as a normal aggregator");
 	}
 

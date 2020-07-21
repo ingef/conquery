@@ -30,7 +30,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn()) || ! bucket.has(event, validityDateColumn)) {
 			return;
 		}

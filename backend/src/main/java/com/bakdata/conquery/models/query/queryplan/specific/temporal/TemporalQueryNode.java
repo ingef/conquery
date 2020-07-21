@@ -61,8 +61,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {
-		reference.getChild().collectRequiredTables(out);
-		preceding.getChild().collectRequiredTables(out);
+		out.addAll(getReference().getChild().collectRequiredTables());
+		out.addAll(getPreceding().getChild().collectRequiredTables());
 	}
 
 	/**
@@ -80,7 +80,6 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Calls nextBlock on its children.
-	 * @param block the new Block
 	 */
 	@Override
 	public void nextBlock(Bucket bucket) {
@@ -90,8 +89,6 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Calls nextBlock on its children.documentation code for refactored matchers.
-	 * @param ctx The new QueryContext
-	 * @param currentTable the new Table
 	 */
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
@@ -101,12 +98,9 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Delegates aggregation to {@link #reference} and {@link #preceding}.
-	 * @param block the specific Block
-	 * @param event the event to aggregate over
-	 * @return always true.
 	 */
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		reference.getChild().nextEvent(bucket, event);
 		preceding.getChild().nextEvent(bucket, event);
 	}
@@ -131,8 +125,9 @@ public class TemporalQueryNode extends QPNode {
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
 
-		if (!sampledReference.isPresent())
+		if (sampledReference.isEmpty()) {
 			return false;
+		}
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 
