@@ -3,13 +3,13 @@ package com.bakdata.conquery.models.query.filter.event;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnEventFilterNode;
 import com.bakdata.conquery.models.types.specific.AStringType;
 
 /**
  * Event is included when the value in column is one of many selected.
  */
-public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
+public class MultiSelectFilterNode extends SingleColumnEventFilterNode<String[]> {
 
 	private int[] selectedValues;
 	private boolean hit;
@@ -54,23 +54,13 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		this.hit = true;
-	}
-
-	@Override
-	public boolean isContained() {
-		return hit;
-	}
-
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : getFilterValue()) {
-			if(((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(selected) == -1) {
-				return false;
+			if(((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(selected) != -1) {
+				return true;
 			}
 		}
 
-		return super.isOfInterest(bucket);
+		return false;
 	}
 }

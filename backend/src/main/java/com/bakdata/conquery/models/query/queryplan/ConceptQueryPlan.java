@@ -24,7 +24,7 @@ import lombok.ToString;
 
 @Getter @Setter
 @ToString
-public class ConceptQueryPlan implements QueryPlan, EventIterating {
+public class ConceptQueryPlan implements QueryPlan {
 
 	@Getter @Setter
 	private Set<Table> requiredTables;
@@ -50,10 +50,10 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		checkRequiredTables(ctx.getStorage());
 		
 		ConceptQueryPlan clone = new ConceptQueryPlan(false);
-		clone.setChild(child.clone(ctx));
+		clone.setChild(ctx.clone((QPNode) child));
 		for(Aggregator<?> agg:aggregators)
-			clone.aggregators.add(agg.clone(ctx));
-		clone.specialDateUnion = specialDateUnion.clone(ctx);
+			clone.aggregators.add(ctx.clone((Aggregator<?>) agg));
+		clone.specialDateUnion = ctx.clone(specialDateUnion);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
@@ -62,7 +62,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		if(requiredTables == null) {
 			synchronized (this) {
 				if(requiredTables == null) {
-					requiredTables = this.collectRequiredTables()
+					requiredTables = collectRequiredTables()
 						.stream()
 						.map(storage.getDataset().getTables()::getOrFail)
 						.collect(Collectors.toSet());
@@ -77,7 +77,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 
 	public void nextEvent(Bucket bucket, int event) {
-		getChild().nextEvent(bucket, event);
+		getChild().acceptEvent(bucket, event);
 	}
 	
 	protected SinglelineContainedEntityResult result() {
@@ -118,12 +118,10 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return EntityResult.notContained();
 	}
 	
-	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		child.nextTable(ctx, currentTable);
 	}
 	
-	@Override
 	public void nextBlock(Bucket bucket) {
 		child.nextBlock(bucket);
 	}
@@ -145,13 +143,11 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return child.isOfInterest(entity);
 	}
 
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return child.isOfInterest(bucket);
 	}
 	
-	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		child.collectRequiredTables(requiredTables);
+	public Set<TableId> collectRequiredTables() {
+		return child.collectRequiredTables();
 	}
 }

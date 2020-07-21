@@ -1,11 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -15,27 +12,25 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
+import org.hibernate.validator.constraints.NotEmpty;
 
-public class ExternalNode extends QPChainNode {
+public class ExternalNode extends QPNode {
 
+	private SpecialDateUnion dateUnion;
 	@Getter
 	private final DatasetId dataset;
 	@Getter @NotEmpty
 	private final Map<Integer, CDateSet> includedEntities;
 	private CDateSet contained;
 	
-	public ExternalNode(QPNode child, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
-		super(child);
+	public ExternalNode(SpecialDateUnion dateUnion, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
+		this.dateUnion = dateUnion;
 		this.dataset = dataset;
-		this.includedEntities = Objects.requireNonNullElse(
-			includedEntities,
-			Collections.emptyMap()
-		);
+		this.includedEntities = Objects.requireNonNull(includedEntities);
 	}
 
 	@Override
@@ -46,7 +41,7 @@ public class ExternalNode extends QPChainNode {
 	
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		return new ExternalNode(getChild().clone(ctx), dataset, includedEntities);
+		return new ExternalNode(ctx.clone(dateUnion), dataset, includedEntities);
 	}
 	
 	@Override
@@ -54,25 +49,24 @@ public class ExternalNode extends QPChainNode {
 		if(contained != null) {
 			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained);
-			super.nextTable(
-				ctx.withDateRestriction(newSet),
-				currentTable
-			);
+			super.nextTable(ctx.withDateRestriction(newSet),currentTable);
 		}
 		else
 			super.nextTable(ctx, currentTable);
+
+		dateUnion.nextTable(getContext(), currentTable);
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if(contained != null) {
-			getChild().nextEvent(bucket, event);
+			dateUnion.acceptEvent(bucket, event);
 		}
 	}
 	
 	@Override
 	public boolean isContained() {
-		return getChild().isContained();
+		return contained != null && !contained.isEmpty();
 	}
 	
 	@Override

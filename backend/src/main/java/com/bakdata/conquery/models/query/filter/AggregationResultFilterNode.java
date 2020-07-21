@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 
 /**
@@ -45,7 +44,7 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		aggregator.aggregateEvent(bucket, event);
+		aggregator.acceptEvent(bucket, event);
 	}
 
 	@Override

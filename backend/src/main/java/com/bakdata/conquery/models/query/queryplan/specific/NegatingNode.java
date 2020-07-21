@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.NonNull;
 
 public class NegatingNode extends QPChainNode {
@@ -14,13 +13,13 @@ public class NegatingNode extends QPChainNode {
 	}
 	
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
-		getChild().nextEvent(bucket, event);
+	public void acceptEvent(Bucket bucket, int event) {
+		getChild().acceptEvent(bucket, event);
 	}
 	
 	@Override
 	public NegatingNode doClone(CloneContext ctx) {
-		return new NegatingNode(getChild().clone(ctx));
+		return new NegatingNode(ctx.clone((QPNode) getChild()));
 	}
 	
 	@Override

@@ -28,7 +28,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (selectedId == -1) {
 			return;
 		}
