@@ -32,7 +32,6 @@ public class QueryExecutor implements Closeable {
 	}
 
 	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
-
 		return execute(result, context, entry, pool);
 	}
 
@@ -48,10 +47,6 @@ public class QueryExecutor implements Closeable {
 		List<ListenableFuture<EntityResult>> futures = new ArrayList<>();
 
 		for (Entity entity : entries) {
-			if (!queryPlan.isOfInterest(entity)) {
-				continue;
-			}
-
 			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
 			ListenableFuture<EntityResult> submit = executor.submit(queryJob);
 			futures.add(submit);

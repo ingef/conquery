@@ -82,15 +82,23 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	
 	protected SinglelineContainedEntityResult result() {
 		Object[] values = new Object[aggregators.size()];
-		for(int i=0;i<values.length;i++)
+		for (int i = 0; i < values.length; i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
+		}
+
 		return EntityResult.of(entity.getId(), values);
 	}
 
 	@Override
 	public SinglelineEntityResult execute(QueryExecutionContext ctx, Entity entity) {
+
+		if(!isOfInterest(entity)){
+			return EntityResult.notContained();
+		}
+
 		checkRequiredTables(ctx.getStorage());
 		init(entity);
+
 		if (requiredTables.isEmpty()) {
 			return EntityResult.notContained();
 		}
