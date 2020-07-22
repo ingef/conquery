@@ -46,10 +46,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.authorization.client.resource.AuthorizationResource;
-import org.keycloak.authorization.client.resource.PermissionResource;
-import org.keycloak.authorization.client.resource.ProtectionResource;
-import org.keycloak.representations.idm.authorization.AuthorizationResponse;
 
 @Slf4j
 @Getter
@@ -103,13 +99,6 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 		if(StringUtils.isBlank(username)) {
 			throw new IllegalStateException("Unable to retrieve a user identifier from validated token. Dismissing the token.");
 		}
-// TODO use keycloak lib
-		org.keycloak.representations.AccessTokenResponse authzResponse = authzClient.obtainAccessToken();
-		ProtectionResource protection = authzClient.protection();
-		org.keycloak.authorization.client.representation.TokenIntrospectionResponse introsSpectionRes = protection.introspectRequestingPartyToken((String) token.getCredentials());
-		PermissionResource permissionResource = protection.permission();
-		AuthorizationResource authorizationResource = authzClient.authorization();
-		AuthorizationResponse rptPermission = authorizationResource.authorize();
 		
 		UserId userId = new UserId(username);
 		User user = storage.getUser(userId);
@@ -123,7 +112,7 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 				user);
 		}
 
-		return new ConqueryAuthenticationInfo(user.getId(), token, this);
+		return new ConqueryAuthenticationInfo(user.getId(), token, this, false);
 	}
 
 	@Override
