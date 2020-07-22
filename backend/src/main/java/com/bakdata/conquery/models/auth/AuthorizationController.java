@@ -19,8 +19,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.LifecycleUtils;
@@ -98,7 +99,9 @@ public final class AuthorizationController implements Managed{
 	private static void registerShiro(List<Realm> realms) {
 		// Register all realms in Shiro
 		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
-		SecurityManager securityManager = new DefaultSecurityManager(realms);
+		DefaultSecurityManager securityManager = new DefaultSecurityManager(realms);
+		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
+		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
 	}
