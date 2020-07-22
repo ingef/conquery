@@ -102,13 +102,19 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
-			aggregators.stream()
-					   .filter(aggregatorNode -> aggregatorNode instanceof ExistsAggregator)
-					   .forEach(aggregatorNode -> ((ExistsAggregator) aggregatorNode).addFilters(filters));
+
 
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
+
+			final FiltersNode filtersNode = conceptChild(concept, context, filters, aggregators);
+
+			aggregators.stream()
+					   .filter(ExistsAggregator.class::isInstance)
+					   .forEach(agg -> ((ExistsAggregator) agg).setFilters(filtersNode));
+
+
 
 			tableNodes.add(
 				new ConceptNode(
@@ -117,7 +123,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 					table,
 					new ValidityDateNode(
 						selectValidityDateColumn(table),
-						conceptChild(concept, context, filters, aggregators)
+						filtersNode
 					)
 				)
 			);
@@ -146,8 +152,8 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 					.toArray(ConceptElement[]::new);
 	}
 
-	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
-		return new FiltersNode(filters, aggregators);
+	protected FiltersNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		return FiltersNode.create(filters, aggregators);
 	}
 
 	private static List<Aggregator<?>> createConceptAggregators(ConceptQueryPlan plan, List<Select> select) {

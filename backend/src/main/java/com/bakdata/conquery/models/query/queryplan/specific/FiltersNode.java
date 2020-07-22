@@ -10,14 +10,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 
-@RequiredArgsConstructor
 public class FiltersNode extends QPNode {
 
 	private boolean hit = false;
@@ -27,20 +26,32 @@ public class FiltersNode extends QPNode {
 	private final List<EventFilterNode<?>> eventFilters;
 	private final List<Aggregator<?>> aggregators;
 
-
-	public FiltersNode(List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
-		this.aggregators = aggregators;
+	private FiltersNode(List<? extends FilterNode<?>> filters, List<EventFilterNode<?>> eventFilters, List<Aggregator<?>> aggregators) {
 		this.filters = filters;
+		this.eventFilters = eventFilters;
+		this.aggregators = aggregators;
 
-		eventFilters = new ArrayList<>(filters.size());
+		// Exists Aggregators return true when this FiltersNode is true, so they should not have their own logic for it.
+		// This links them up as a back-reference.
+		for (Aggregator<?> aggregator : aggregators) {
+			if (aggregator instanceof ExistsAggregator) {
+				((ExistsAggregator) aggregator).setFilters(this);
+			}
+		}
+	}
+
+	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		final ArrayList<EventFilterNode<?>> _eventFilters = new ArrayList<>(filters.size());
 
 		for (FilterNode<?> filter : filters) {
 			if (!(filter instanceof EventFilterNode)) {
 				continue;
 			}
 
-			eventFilters.add((EventFilterNode<?>) filter);
+			_eventFilters.add((EventFilterNode<?>) filter);
 		}
+
+		return  new FiltersNode(filters, _eventFilters, aggregators);
 	}
 
 
