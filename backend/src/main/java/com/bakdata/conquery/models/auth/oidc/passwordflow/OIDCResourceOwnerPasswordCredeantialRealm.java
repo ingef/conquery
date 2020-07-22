@@ -1,7 +1,11 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
@@ -18,8 +22,12 @@ import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthAdminUnprotect
 import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotectedResourceProvider;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
+import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
@@ -34,7 +42,6 @@ import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
-import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.TypelessAccessToken;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.Getter;
@@ -61,6 +68,10 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 	private ClientAuthentication clientAuthentication;
 	private AuthzClient authzClient;
 	
+	private LoadingCache<JwtToken, TokenIntrospectionSuccessResponse> tokenCache = CacheBuilder.newBuilder()
+		.expireAfterWrite(10, TimeUnit.MINUTES)
+		.build(new TokenValidator());
+	
 	@Override
 	protected void onInit() {
 		super.onInit();
@@ -74,23 +85,8 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 	@Override
 	@SneakyThrows
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		token.getCredentials();
 		
-		URI tokenIntrospectEndpoint =  new URL(new URL(config.getAuthServerUrl()),"realms/EVA/protocol/openid-connect/token/introspect").toURI();
-		TokenIntrospectionRequest request = new TokenIntrospectionRequest(tokenIntrospectEndpoint , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
-		
-		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
-		
-		if (response instanceof TokenIntrospectionErrorResponse) {
-			log.error(((TokenIntrospectionErrorResponse) response).getErrorObject().toString());
-			throw new IllegalStateException("Unable to retrieve access token from auth server.");
-		}
-		else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
-			log.error("Unknown token response {}.", response.getClass().getName());
-			throw new IllegalStateException("Unknown token response. See log.");
-		}
-
-		TokenIntrospectionSuccessResponse successResponse = (TokenIntrospectionSuccessResponse) response;
+		TokenIntrospectionSuccessResponse successResponse = tokenCache.get((JwtToken) token);
 
 		String username = successResponse.getUsername();
 		if(StringUtils.isBlank(username)) {
@@ -113,6 +109,25 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 		}
 
 		return new ConqueryAuthenticationInfo(user.getId(), token, this, false);
+	}
+
+	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws URISyntaxException, MalformedURLException, ParseException, IOException {
+		URI tokenIntrospectEndpoint =  new URL(new URL(config.getAuthServerUrl()),"realms/EVA/protocol/openid-connect/token/introspect").toURI();
+		TokenIntrospectionRequest request = new TokenIntrospectionRequest(tokenIntrospectEndpoint , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
+		
+		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
+		
+		if (response instanceof TokenIntrospectionErrorResponse) {
+			log.error(((TokenIntrospectionErrorResponse) response).getErrorObject().toString());
+			throw new IllegalStateException("Unable to retrieve access token from auth server.");
+		}
+		else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
+			log.error("Unknown token response {}.", response.getClass().getName());
+			throw new IllegalStateException("Unknown token response. See log.");
+		}
+
+		TokenIntrospectionSuccessResponse successResponse = (TokenIntrospectionSuccessResponse) response;
+		return successResponse;
 	}
 
 	@Override
@@ -158,8 +173,17 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 
 		// Get the access token, the server may also return a refresh token
 		AccessToken accessToken = successResponse.getTokens().getAccessToken();
-		RefreshToken refreshToken = successResponse.getTokens().getRefreshToken();
+		//RefreshToken refreshToken = successResponse.getTokens().getRefreshToken();
 		return accessToken.getValue();
+	}
+	
+	private class TokenValidator extends CacheLoader<JwtToken, TokenIntrospectionSuccessResponse>{
+
+		@Override
+		public TokenIntrospectionSuccessResponse load(JwtToken key) throws Exception {
+			return validateToken(key);
+		}
+		
 	}
 
 }
