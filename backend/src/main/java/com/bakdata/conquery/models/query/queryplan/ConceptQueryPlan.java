@@ -22,11 +22,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter
+@Getter
+@Setter
 @ToString
 public class ConceptQueryPlan implements QueryPlan, EventIterating {
 
-	@Setter @Getter
+	@Setter
+	@Getter
 	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
 
 	private QPNode child;
@@ -35,13 +37,13 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
-	
+
 	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
-		if(generateSpecialDateUnion) {
+		if (generateSpecialDateUnion) {
 			aggregators.add(specialDateUnion);
 		}
 	}
-	
+
 	public ConceptQueryPlan(QueryPlanContext ctx) {
 		this(ctx.isGenerateSpecialDateUnion());
 	}
@@ -49,18 +51,19 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
-		
+
 		ConceptQueryPlan clone = new ConceptQueryPlan(false);
 		clone.setChild(child.clone(ctx));
-		for(Aggregator<?> agg:aggregators)
+		for (Aggregator<?> agg : aggregators) {
 			clone.aggregators.add(agg.clone(ctx));
+		}
 
 		clone.specialDateUnion = specialDateUnion.clone(ctx);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
-	
-private void checkRequiredTables(WorkerStorage storage) {
+
+	protected void checkRequiredTables(WorkerStorage storage) {
 		if (requiredTables.get() != null) {
 			return;
 		}
@@ -70,7 +73,7 @@ private void checkRequiredTables(WorkerStorage storage) {
 
 		// Assert that all tables are actually present
 		for (TableId tableId : requiredTables.get()) {
-			if(Dataset.isAllIdsTable(tableId)) {
+			if (Dataset.isAllIdsTable(tableId)) {
 				continue;
 			}
 
@@ -86,11 +89,11 @@ private void checkRequiredTables(WorkerStorage storage) {
 	public void nextEvent(Bucket bucket, int event) {
 		getChild().nextEvent(bucket, event);
 	}
-	
+
 	protected SinglelineContainedEntityResult result() {
 		Object[] values = new Object[aggregators.size()];
 
-		for(int i=0;i<values.length;i++) {
+		for (int i = 0; i < values.length; i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
 		}
 
@@ -111,11 +114,11 @@ private void checkRequiredTables(WorkerStorage storage) {
 		nextBlock(EmptyBucket.getInstance());
 		nextEvent(EmptyBucket.getInstance(), 0);
 
-		for(TableId currentTableId : requiredTables.get()) {
+		for (TableId currentTableId : requiredTables.get()) {
 
 			nextTable(ctx, currentTableId);
 
-			for(Bucket bucket : entity.getBucket(currentTableId)) {
+			for (Bucket bucket : entity.getBucket(currentTableId)) {
 				int localEntity = bucket.toLocal(entity.getId());
 
 				if (!bucket.containsLocalEntity(localEntity)) {
@@ -134,18 +137,18 @@ private void checkRequiredTables(WorkerStorage storage) {
 				}
 			}
 		}
-		
-		if(isContained()) {
+
+		if (isContained()) {
 			return result();
 		}
 		return EntityResult.notContained();
 	}
-	
+
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		child.nextTable(ctx, currentTable);
 	}
-	
+
 	@Override
 	public void nextBlock(Bucket bucket) {
 		child.nextBlock(bucket);
@@ -172,7 +175,7 @@ private void checkRequiredTables(WorkerStorage storage) {
 	public boolean isOfInterest(Bucket bucket) {
 		return child.isOfInterest(bucket);
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		child.collectRequiredTables(requiredTables);
