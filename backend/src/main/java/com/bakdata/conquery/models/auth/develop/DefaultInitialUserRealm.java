@@ -66,7 +66,7 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 			return null;
 		}
 		DevelopmentToken devToken = (DevelopmentToken) token;
-		return new ConqueryAuthenticationInfo(devToken.getPrincipal(), devToken.getCredentials(), this);
+		return new ConqueryAuthenticationInfo(devToken.getPrincipal(), devToken.getCredentials(), this, false);
 	}
 
 	/**
