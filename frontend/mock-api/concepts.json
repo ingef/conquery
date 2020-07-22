@@ -157,6 +157,34 @@
                 {
                   "value": "amazon",
                   "label": "Amazon Video"
+                },
+                {
+                  "value": "amazon2",
+                  "label": "Amazon Video 2"
+                },
+                {
+                  "value": "amazon3",
+                  "label": "Amazon Video 3"
+                },
+                {
+                  "value": "amazon4",
+                  "label": "Amazon Video 4"
+                },
+                {
+                  "value": "amazon5",
+                  "label": "Amazon Video 5"
+                },
+                {
+                  "value": "amazon6",
+                  "label": "Amazon Video 6"
+                },
+                {
+                  "value": "amazon7",
+                  "label": "Amazon Video 7"
+                },
+                {
+                  "value": "amazon8",
+                  "label": "Amazon Video 8"
                 }
               ]
             },

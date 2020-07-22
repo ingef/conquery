@@ -1,6 +1,18 @@
 package com.bakdata.conquery.handler;
 
-import static com.bakdata.conquery.Constants.*;
+import static com.bakdata.conquery.Constants.AUTH;
+import static com.bakdata.conquery.Constants.CONTEXT;
+import static com.bakdata.conquery.Constants.CPS_TYPE;
+import static com.bakdata.conquery.Constants.ID_OF;
+import static com.bakdata.conquery.Constants.ID_REF;
+import static com.bakdata.conquery.Constants.ID_REF_COL;
+import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
+import static com.bakdata.conquery.Constants.JSON_CREATOR;
+import static com.bakdata.conquery.Constants.JSON_IGNORE;
+import static com.bakdata.conquery.Constants.LIST_OF;
+import static com.bakdata.conquery.Constants.PATH;
+import static com.bakdata.conquery.Constants.PATH_PARAM;
+import static com.bakdata.conquery.Constants.RESTS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -23,6 +35,7 @@ import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.PrettyPrinter;
+import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
@@ -292,17 +305,19 @@ public class GroupHandler {
 			if(def == null) {
 				return "\u2400";
 			}
-			else {
-				String json = Jackson.MAPPER.writeValueAsString(def);
-				//we don't want to print defaults if it is a whole object itself
-				if(json.contains("{")) {
-					return "";
-				}
-				//check if file path not not generate absolute paths
-				String localPath = Jackson.MAPPER.writeValueAsString(new File("."));
-				json = StringUtils.replace(json, localPath.substring(1,localPath.length()-2), "./");
-				return code(json);
+			
+			if(field.getAnnotationInfo(VariableDefaultValue.class.getName()) != null) {
+				return "generated default varies";
 			}
+			String json = Jackson.MAPPER.writeValueAsString(def);
+			//we don't want to print defaults if it is a whole object itself
+			if(json.contains("{")) {
+				return "";
+			}
+			//check if file path not not generate absolute paths
+			String localPath = Jackson.MAPPER.writeValueAsString(new File("."));
+			json = StringUtils.replace(json, localPath.substring(1,localPath.length()-2), "./");
+			return code(json);
 		}
 		catch(Exception e) {
 			return "?";
@@ -342,8 +357,8 @@ public class GroupHandler {
 				return code("File");
 			}
 			
-			//Iterable
-			if(Iterable.class.isAssignableFrom(cl)) {
+			//List
+			if(List.class.isAssignableFrom(cl)) {
 				var param = classRef.getTypeArguments().get(0);
 				return LIST_OF+printType(ctx.withGeneric(true), param);
 			}

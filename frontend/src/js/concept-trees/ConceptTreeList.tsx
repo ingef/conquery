@@ -1,10 +1,10 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import { loadTree } from "./actions";
 
-import type { StateType } from "../app/reducers";
+import type { StateT } from "../app/reducers";
 
 import type { TreesT, SearchT } from "./reducer";
 import { getAreTreesAvailable } from "./selectors";
@@ -13,8 +13,10 @@ import EmptyConceptTreeList from "./EmptyConceptTreeList";
 import ConceptTreesLoading from "./ConceptTreesLoading";
 import ProgressBar from "./ProgressBar";
 import ConceptTreeListItem from "./ConceptTreeListItem";
+import type { DatasetIdT } from "../api/types";
+import { useRootConceptIds } from "./useRootConceptIds";
 
-const Root = styled("div")`
+const Root = styled("div")<{ show?: boolean }>`
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 0;
@@ -36,29 +38,40 @@ const Root = styled("div")`
   display: ${({ show }) => (show ? "" : "none")};
 `;
 
-type PropsT = {
-  loading: boolean;
-  trees: TreesT;
-  areTreesAvailable: boolean;
-  areDatasetsPristineOrLoading: boolean;
-  activeTab: string;
-  search: SearchT;
-  onLoadTree: (id: string) => void;
-};
+interface PropsT {
+  datasetId: DatasetIdT;
+}
 
-const ConceptTreeList = ({
-  loading,
-  trees,
-  search,
-  activeTab,
-  areTreesAvailable,
-  areDatasetsPristineOrLoading,
-  onLoadTree
-}: PropsT) => {
+const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
+  const trees = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees
+  );
+  const loading = useSelector<StateT, boolean>(
+    (state) => state.conceptTrees.loading
+  );
+  const areTreesAvailable = useSelector<StateT, boolean>((state) =>
+    getAreTreesAvailable(state)
+  );
+  const areDatasetsPristineOrLoading = useSelector<StateT, boolean>(
+    (state) => state.datasets.pristine || state.datasets.loading
+  );
+  const activeTab = useSelector<StateT, string>(
+    (state) => state.panes.left.activeTab
+  );
+  const search = useSelector<StateT, SearchT>(
+    (state) => state.conceptTrees.search
+  );
+
+  const dispatch = useDispatch();
+
+  const onLoadTree = (id: string) => dispatch(loadTree(datasetId, id));
+
+  const rootConceptIds = useRootConceptIds();
+
   if (search.loading) return null;
 
   const anyTreeLoading = Object.keys(trees).some(
-    treeId => trees[treeId].loading
+    (treeId) => trees[treeId].loading
   );
 
   return (
@@ -69,34 +82,17 @@ const ConceptTreeList = ({
       )}
       {!!anyTreeLoading && <ProgressBar trees={trees} />}
       {!anyTreeLoading &&
-        Object.keys(trees)
-          // Only take those that don't have a parent, they must be root
-          // If they don't have a label, they're loading, or in any other broken state
-          .filter(treeId => !trees[treeId].parent && trees[treeId].label)
-          .map((treeId, i) => (
-            <ConceptTreeListItem
-              key={i}
-              search={search}
-              onLoadTree={onLoadTree}
-              trees={trees}
-              treeId={treeId}
-            />
-          ))}
+        rootConceptIds.map((treeId, i) => (
+          <ConceptTreeListItem
+            key={i}
+            search={search}
+            onLoadTree={onLoadTree}
+            trees={trees}
+            treeId={treeId}
+          />
+        ))}
     </Root>
   );
 };
 
-export default connect(
-  (state: StateType) => ({
-    trees: state.conceptTrees.trees,
-    loading: state.conceptTrees.loading,
-    areTreesAvailable: getAreTreesAvailable(state),
-    areDatasetsPristineOrLoading:
-      state.datasets.pristine || state.datasets.loading,
-    activeTab: state.panes.left.activeTab,
-    search: state.conceptTrees.search
-  }),
-  (dispatch, ownProps) => ({
-    onLoadTree: id => dispatch(loadTree(ownProps.datasetId, id))
-  })
-)(ConceptTreeList);
+export default ConceptTreeList;

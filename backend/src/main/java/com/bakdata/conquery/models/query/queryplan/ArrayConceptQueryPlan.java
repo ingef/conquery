@@ -17,6 +17,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+
 import lombok.Getter;
 import lombok.ToString;
 
@@ -87,7 +89,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		int resultInsertIdx = specialDateUnion ? 1 : 0;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {
-			EntityResult result = child.execute(ctx, entity);
+			SinglelineEntityResult result = child.execute(ctx, entity);
 
 			// Check if child returned a result
 			if (!result.isContained()) {
@@ -97,7 +99,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 				continue;
 			}
 
-			SinglelineContainedEntityResult singleLineResult = SinglelineContainedEntityResult.class.cast(result);
+			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult)result;
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;

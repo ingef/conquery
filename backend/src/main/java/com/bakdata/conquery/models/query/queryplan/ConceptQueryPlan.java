@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -58,7 +60,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return clone;
 	}
 	
-	private void checkRequiredTables(WorkerStorage storage) {
+private void checkRequiredTables(WorkerStorage storage) {
 		if (requiredTables.get() != null) {
 			return;
 		}
@@ -85,7 +87,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		getChild().nextEvent(bucket, event);
 	}
 	
-	protected EntityResult result() {
+	protected SinglelineContainedEntityResult result() {
 		Object[] values = new Object[aggregators.size()];
 
 		for(int i=0;i<values.length;i++) {
@@ -95,16 +97,8 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return EntityResult.of(entity.getId(), values);
 	}
 
-	public EntityResult createResult() {
-		if(isContained()) {
-			return result();
-		}
-		return EntityResult.notContained();
-	}
-	
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-
+	public SinglelineEntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		checkRequiredTables(ctx.getStorage());
 		init(entity);
 
@@ -141,7 +135,10 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 			}
 		}
 		
-		return createResult();
+		if(isContained()) {
+			return result();
+		}
+		return EntityResult.notContained();
 	}
 	
 	@Override

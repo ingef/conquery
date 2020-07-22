@@ -1,15 +1,15 @@
-import * as React from "react";
+import React, { ReactNode, FC } from "react";
 
 import { getStoredAuthToken } from "../authorization/helper";
 
 import IconButton from "./IconButton";
 
-type PropsType = {
+interface PropsT {
   url: string;
   className?: string;
-  children?: React.Node;
+  children?: ReactNode;
   ending: string;
-};
+}
 
 function getIcon(ending: string) {
   return "download";
@@ -25,16 +25,18 @@ function getIcon(ending: string) {
   // }
 }
 
-const DownloadButton = ({
+const DownloadButton: FC<PropsT> = ({
   url,
   className,
   children,
   ending,
   ...restProps
-}: PropsType) => {
+}) => {
   const authToken = getStoredAuthToken();
 
-  const href = `${url}?access_token=${encodeURIComponent(authToken || "")}`;
+  const href = `${url}?access_token=${encodeURIComponent(
+    authToken || ""
+  )}&charset=ISO_8859_1`;
 
   const icon = getIcon(ending);
 

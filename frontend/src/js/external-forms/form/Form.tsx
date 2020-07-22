@@ -10,15 +10,16 @@ import {
   validateRequired,
   validateDateRange,
   validatePositive,
-  validateConceptGroupFilled
+  validateConceptGroupFilled,
+  validateDateRangeRequired,
 } from "../validators";
-import { collectAllFields } from "../helper";
+import { collectAllFormFields, isFormField } from "../helper";
 import { selectReduxFormState } from "../stateSelectors";
 import FormsHeader from "../FormsHeader";
 
 import type {
   Form as FormType,
-  FormField as FormFieldType
+  FormField as FormFieldType,
 } from "../config-types";
 
 import Field from "./Field";
@@ -36,8 +37,8 @@ const DEFAULT_VALUE_BY_TYPE = {
   MULTI_SELECT: null,
   DATE_RANGE: {
     min: null,
-    max: null
-  }
+    max: null,
+  },
 };
 
 const DEFAULT_VALIDATION_BY_TYPE = {
@@ -51,22 +52,28 @@ const DEFAULT_VALIDATION_BY_TYPE = {
   TABS: null,
   DATASET_SELECT: null,
   MULTI_SELECT: null,
-  DATE_RANGE: validateDateRange
+  DATE_RANGE: validateDateRange,
 };
 
+function getNotEmptyValidation(fieldType: string) {
+  switch (fieldType) {
+    case "CONCEPT_LIST":
+      return validateConceptGroupFilled;
+    case "DATE_RANGE":
+      return validateDateRangeRequired;
+    default:
+      return validateRequired;
+  }
+}
+
 function getPossibleValidations(fieldType: string) {
-  const notEmptyValidation =
-    fieldType === "CONCEPT_LIST"
-      ? {
-          NOT_EMPTY: validateConceptGroupFilled
-        }
-      : {
-          NOT_EMPTY: validateRequired
-        };
+  const notEmptyValidation = {
+    NOT_EMPTY: getNotEmptyValidation(fieldType),
+  };
 
   return {
     ...notEmptyValidation,
-    GREATER_THAN_ZERO: validatePositive
+    GREATER_THAN_ZERO: validatePositive,
   };
 }
 
@@ -95,6 +102,7 @@ function getErrorForField(field: FormFieldType, value: any) {
 
 type ConfiguredFormPropsType = {
   config: FormType;
+  selectedDatasetId: DatasetIdT;
 };
 
 type PropsType = {
@@ -117,29 +125,33 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
     onSubmit,
     getFieldValue,
     availableDatasets,
-    selectedDatasetId
+    selectedDatasetId,
   }: PropsType) => {
     const locale = getLocale();
 
     return (
       <form>
         <FormsHeader headline={config.headline[locale]} />
-        {config.fields.map(field => (
-          <Field
-            key={field.name}
-            formType={config.type}
-            getFieldValue={getFieldValue}
-            field={field}
-            selectedDatasetId={selectedDatasetId}
-            availableDatasets={availableDatasets}
-            locale={locale}
-          />
-        ))}
+        {config.fields.map((field, i) => {
+          const key = isFormField(field) ? field.name : field.type + i;
+
+          return (
+            <Field
+              key={key}
+              formType={config.type}
+              getFieldValue={getFieldValue}
+              field={field}
+              selectedDatasetId={selectedDatasetId}
+              availableDatasets={availableDatasets}
+              locale={locale}
+            />
+          );
+        })}
       </form>
     );
   };
 
-  const allFields = collectAllFields(config.fields);
+  const allFields = collectAllFormFields(config.fields);
   const fieldValueSelector = formValueSelector(
     config.type,
     selectReduxFormState
@@ -154,9 +166,9 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
       return allValues;
     }, {}),
     destroyOnUnmount: false,
-    validate: values =>
+    validate: (values) =>
       Object.keys(values).reduce((errors, name) => {
-        const field = allFields.find(field => field.name === name);
+        const field = allFields.find((field) => field.name === name);
 
         // Note: For some reason, redux form understands, that:
         //       EVEN IF we add errors for ALL fields –
@@ -173,15 +185,15 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
         }
 
         return errors;
-      }, {})
+      }, {}),
   })(Form);
 
-  const mapStateToProps = state => ({
-    getFieldValue: field => fieldValueSelector(state, field),
-    availableDatasets: state.datasets.data.map(dataset => ({
+  const mapStateToProps = (state) => ({
+    getFieldValue: (field) => fieldValueSelector(state, field),
+    availableDatasets: state.datasets.data.map((dataset) => ({
       label: dataset.label,
-      value: dataset.id
-    }))
+      value: dataset.id,
+    })),
   });
 
   const ReduxConnectedForm = connect(mapStateToProps)(ReduxFormConnectedForm);

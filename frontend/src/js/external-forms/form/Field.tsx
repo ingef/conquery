@@ -8,7 +8,6 @@ import { nodeIsInvalid } from "../../model/node";
 import InputSelect from "../../form-components/InputSelect";
 import InputText from "../../form-components/InputText";
 import InputDateRange from "../../form-components/InputDateRange";
-import ToggleButton from "../../form-components/ToggleButton";
 import InputCheckbox from "../../form-components/InputCheckbox";
 
 import type { SelectOptionsType } from "../../standard-query-editor/types";
@@ -16,13 +15,27 @@ import type { DatasetIdT } from "../../api/types";
 
 import {
   FormQueryDropzone,
-  FormMultiQueryDropzone
+  FormMultiQueryDropzone,
 } from "../form-query-dropzone";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 
-import type { FormField as FormFieldType } from "../config-types";
+import type { GeneralField } from "../config-types";
 
 import FormField from "../common/FormField";
+import { isFormField } from "../helper";
+import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
+
+const Headline = styled("h3")`
+  font-size: 14px;
+  margin: 10px 0 0;
+`;
+
+const Description = styled("p")`
+  font-size: 14px;
+  margin: 0 0 10px;
+`;
+
+const TabsField = styled("div")``;
 
 // Pre-set field components to avoid re-rendering,
 // => Avoids losing input focus.
@@ -31,9 +44,9 @@ const QueryDropzone = FormField(FormQueryDropzone);
 const MultiQueryDropzone = FormField(FormMultiQueryDropzone);
 const DateRange = FormField(InputDateRange);
 const ConceptGroup = FormField(FormConceptGroup);
-const ToggleBtn = FormField(ToggleButton);
 const Select = FormField(InputSelect);
 const Checkbox = FormField(InputCheckbox);
+const Tabs = FormField(TabsField);
 
 const SxInputSelect = styled(InputSelect)`
   margin-right: 5px;
@@ -41,11 +54,16 @@ const SxInputSelect = styled(InputSelect)`
   max-width: 125px;
 `;
 
+const NestedFields = styled("div")`
+  padding: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+`;
+
 type PropsType = {
   formType: string;
-  field: FormFieldType;
+  field: GeneralField;
   getFieldValue: (fieldName: string) => any;
-  locale: string;
+  locale: "de" | "en";
   availableDatasets: SelectOptionsType;
   selectedDatasetId: DatasetIdT;
 };
@@ -56,10 +74,18 @@ const Field = ({ field, ...commonProps }: PropsType) => {
     locale,
     availableDatasets,
     selectedDatasetId,
-    getFieldValue
+    getFieldValue,
   } = commonProps;
 
   switch (field.type) {
+    case "HEADLINE":
+      return <Headline>{field.label[locale]}</Headline>;
+    case "DESCRIPTION":
+      return (
+        <Description
+          dangerouslySetInnerHTML={{ __html: field.label[locale] || "" }}
+        />
+      );
     case "STRING":
       return (
         <RxFormField
@@ -68,7 +94,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           props={{
             inputType: "text",
             label: field.label[locale],
-            placeholder: (field.placeholder && field.placeholder[locale]) || ""
+            placeholder: (field.placeholder && field.placeholder[locale]) || "",
           }}
         />
       );
@@ -85,8 +111,8 @@ const Field = ({ field, ...commonProps }: PropsType) => {
               step: field.step || "1",
               pattern: field.pattern,
               min: field.min,
-              max: field.max
-            }
+              max: field.max,
+            },
           }}
         />
       );
@@ -97,7 +123,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           component={DateRange}
           props={{
             inline: true,
-            label: field.label[locale]
+            label: field.label[locale],
           }}
         />
       );
@@ -108,7 +134,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           component={QueryDropzone}
           props={{
             label: field.label[locale],
-            dropzoneText: field.dropzoneLabel[locale]
+            dropzoneText: field.dropzoneLabel[locale],
           }}
         />
       );
@@ -119,7 +145,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           component={MultiQueryDropzone}
           props={{
             label: field.label[locale],
-            dropzoneChildren: () => field.dropzoneLabel[locale]
+            dropzoneChildren: () => field.dropzoneLabel[locale],
           }}
         />
       );
@@ -129,7 +155,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           name={field.name}
           component={Checkbox}
           props={{
-            label: field.label[locale]
+            label: field.label[locale],
           }}
         />
       );
@@ -140,10 +166,10 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           component={Select}
           props={{
             label: field.label[locale],
-            options: field.options.map(option => ({
+            options: field.options.map((option) => ({
               label: option.label[locale],
-              value: option.value
-            }))
+              value: option.value,
+            })),
           }}
         />
       );
@@ -154,32 +180,37 @@ const Field = ({ field, ...commonProps }: PropsType) => {
           component={Select}
           props={{
             label: field.label[locale],
-            options: availableDatasets
+            options: availableDatasets,
           }}
         />
       );
     case "TABS":
       const tabToShow = field.tabs.find(
-        tab => tab.name === getFieldValue(field.name)
+        (tab) => tab.name === getFieldValue(field.name)
       );
 
       return (
-        <div>
+        <Tabs>
           <RxFormField
             name={field.name}
-            component={ToggleBtn}
+            component={FormTabNavigation}
             props={{
-              options: field.tabs.map(tab => ({
+              options: field.tabs.map((tab) => ({
                 label: tab.title[locale],
-                value: tab.name
-              }))
+                value: tab.name,
+              })),
             }}
           />
-          {tabToShow &&
-            tabToShow.fields.map(f => (
-              <Field key={f.name} field={f} {...commonProps} />
-            ))}
-        </div>
+          {tabToShow && tabToShow.fields.length > 0 && (
+            <NestedFields>
+              {tabToShow.fields.map((f, i) => {
+                const key = isFormField(f) ? f.name : f.type + i;
+
+                return <Field key={key} field={f} {...commonProps} />;
+              })}
+            </NestedFields>
+          )}
+        </Tabs>
       );
     case "CONCEPT_LIST":
       return (
@@ -218,36 +249,37 @@ const Field = ({ field, ...commonProps }: PropsType) => {
               ? {
                   concepts: [],
                   type: field.rowPrefixField.apiType,
-                  [field.rowPrefixField.name]: field.rowPrefixField.defaultValue
+                  [field.rowPrefixField.name]:
+                    field.rowPrefixField.defaultValue,
                 }
               : { concepts: [] },
             renderRowPrefix:
               field.rowPrefixField &&
               ((input, feature, i) => (
                 <SxInputSelect
-                  options={field.rowPrefixField.options.map(option => ({
+                  options={field.rowPrefixField.options.map((option) => ({
                     label: option.label[locale],
-                    value: option.value
+                    value: option.value,
                   }))}
                   input={{
                     value: feature[field.rowPrefixField.name],
-                    onChange: value =>
+                    onChange: (value) =>
                       input.onChange([
                         ...input.value.slice(0, i),
                         {
                           ...input.value[i],
-                          [field.rowPrefixField.name]: value
+                          [field.rowPrefixField.name]: value,
                         },
-                        ...input.value.slice(i + 1)
-                      ])
+                        ...input.value.slice(i + 1),
+                      ]),
                   }}
                   selectProps={{
                     clearable: false,
                     autosize: true,
-                    searchable: false
+                    searchable: false,
                   }}
                 />
-              ))
+              )),
           }}
         />
       );

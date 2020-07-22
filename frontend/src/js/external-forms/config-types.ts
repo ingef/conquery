@@ -9,12 +9,15 @@ type TranslatableString = {
 export type Forms = Form[];
 
 export type FormField = Field | Tabs;
+export type NonFormField = Headline | Description;
+
+export type GeneralField = FormField | NonFormField;
 
 export type Form = {
   type: string; // Sent to backend API
   title: TranslatableString; // Displayed
   headline: TranslatableString; // Displayed
-  fields: FormField[];
+  fields: GeneralField[];
 };
 
 type Tabs = {
@@ -27,7 +30,7 @@ type Tabs = {
 type Tab = {
   name: string; // // Sent to backend API
   title: TranslatableString;
-  fields: Field[];
+  fields: GeneralField[];
 };
 
 /* ------------------------------ */
@@ -51,10 +54,24 @@ type Field =
   | ConceptListField
   | DateRangeField;
 
-type CommonField = {
+interface CommonField {
   name: string; // Sent to backend API
   label: TranslatableString; // Used to display
-};
+}
+
+/* ------------------------------ */
+
+interface Headline {
+  type: "HEADLINE";
+  label: TranslatableString;
+}
+
+/* ------------------------------ */
+
+interface Description {
+  type: "DESCRIPTION";
+  label: TranslatableString;
+}
 
 /* ------------------------------ */
 

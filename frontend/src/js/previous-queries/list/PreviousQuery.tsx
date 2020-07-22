@@ -1,16 +1,12 @@
 import React from "react";
-import { findDOMNode } from "react-dom";
+import { useSelector, useDispatch } from "react-redux";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 
 import T from "i18n-react";
-import { DragSource } from "react-dnd";
-import { connect } from "react-redux";
 import { parseISO } from "date-fns";
 
 import ErrorMessage from "../../error-message/ErrorMessage";
-import * as dndTypes from "../../common/constants/dndTypes";
-import SelectableLabel from "../../selectable-label/SelectableLabel";
 import { isEmpty } from "../../common/helpers/commonHelper";
 
 import DownloadButton from "../../button/DownloadButton";
@@ -18,48 +14,26 @@ import IconButton from "../../button/IconButton";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
-import EditableText from "../../form-components/EditableText";
 import EditableTags from "../../form-components/EditableTags";
 
-import { deletePreviousQueryModalOpen } from "../delete-modal/actions";
 import { canDownloadResult } from "../../user/selectors";
 
-import type { DraggedQueryType } from "../../standard-query-editor/types";
-
 import {
-  toggleSharePreviousQuery,
   renamePreviousQuery,
   retagPreviousQuery,
   toggleEditPreviousQueryLabel,
-  toggleEditPreviousQueryTags
+  toggleEditPreviousQueryTags,
 } from "./actions";
 
 import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
+import { PreviousQueryT } from "./reducer";
+import PreviousQueriesLabel from "./PreviousQueriesLabel";
+import type { DatasetIdT } from "../../api/types";
+import type { StateT } from "app-types";
+import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
-const nodeSource = {
-  beginDrag(props, monitor, component): DraggedQueryType {
-    const { width, height } = findDOMNode(component).getBoundingClientRect();
-    // Return the data describing the dragged item
-    return {
-      width,
-      height,
-      id: props.query.id,
-      label: props.query.label,
-      isPreviousQuery: true
-    };
-  }
-};
-
-// These props get injected into the component
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
-  };
-}
-
-const Root = styled("div")`
+const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   margin: 0;
   padding: 5px 10px;
   cursor: pointer;
@@ -102,16 +76,6 @@ const SharedIndicator = styled("span")`
   margin-left: 10px;
   color: ${({ theme }) => theme.col.blueGray};
 `;
-const StyledSelectableLabel = styled(SelectableLabel)`
-  margin: 0;
-  font-weight: 400;
-  word-break: break-word;
-`;
-const StyledEditableText = styled(EditableText)`
-  margin: 0;
-  font-weight: 400;
-  word-break: break-word;
-`;
 const MiddleRow = styled("div")`
   display: flex;
   width: 100%;
@@ -130,45 +94,46 @@ const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
 `;
 
-type PropsType = {
-  userCanDownloadResults: boolean;
-  query: {
-    id: number | string;
-    label: string;
-    loading: boolean;
-    numberOfResults: number;
-    createdAt: string;
-    tags: string[];
-    own: boolean;
-    shared: boolean;
-  };
-  onRenamePreviousQuery: () => void;
-  onToggleEditPreviousQueryLabel: () => void;
-  onToggleEditPreviousQueryTags: () => void;
-  onToggleSharePreviousQuery: () => void;
-  onRetagPreviousQuery: () => void;
-  onDeletePreviousQuery: () => void;
-  connectDragSource: () => void;
-  availableTags: string[];
-};
+interface PropsT {
+  query: PreviousQueryT;
+  datasetId: DatasetIdT;
+  onIndicateDeletion: () => void;
+  onIndicateShare: () => void;
+}
 
-// Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
-class PreviousQuery extends React.Component {
-  props: PropsType;
+const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
+  function PreviousQueryComponent(
+    { query, datasetId, onIndicateDeletion, onIndicateShare },
+    ref
+  ) {
+    const availableTags = useSelector<StateT, string[]>(
+      (state) => state.previousQueries.tags
+    );
+    const userCanDownloadResults = useSelector<StateT, boolean>((state) =>
+      canDownloadResult(state)
+    );
 
-  render() {
-    const {
-      query,
-      connectDragSource,
-      availableTags,
-      onRenamePreviousQuery,
-      onDeletePreviousQuery,
-      onToggleEditPreviousQueryTags,
-      onToggleEditPreviousQueryLabel,
-      onRetagPreviousQuery,
-      onToggleSharePreviousQuery,
-      userCanDownloadResults
-    } = this.props;
+    const dispatch = useDispatch();
+
+    const onRenamePreviousQuery = (label: string) =>
+      dispatch(renamePreviousQuery(datasetId, query.id, label));
+
+    const onRetagPreviousQuery = (tags: string[]) =>
+      dispatch(retagPreviousQuery(datasetId, query.id, tags));
+
+    const onToggleEditPreviousQueryLabel = () =>
+      dispatch(toggleEditPreviousQueryLabel(query.id));
+
+    const onToggleEditPreviousQueryTags = () =>
+      dispatch(toggleEditPreviousQueryTags(query.id));
+
+    const { onDeletePreviousQuery } = useDeletePreviousQuery(query.id);
+
+    const mayDeleteQueryRightAway =
+      query.tags.length === 0 && query.isPristineLabel;
+    const onDeleteClick = mayDeleteQueryRightAway
+      ? onDeletePreviousQuery
+      : onIndicateDeletion;
 
     const peopleFound = isEmpty(query.numberOfResults)
       ? T.translate("previousQuery.notExecuted")
@@ -180,13 +145,10 @@ class PreviousQuery extends React.Component {
     );
     const label = query.label || query.id.toString();
     const mayEditQuery = query.own || query.shared;
-    const isNotEditing = !(query.editingLabel || query.editingTags);
 
     return (
       <Root
-        ref={instance => {
-          if (isNotEditing) connectDragSource(instance);
-        }}
+        ref={ref}
         own={!!query.own}
         shared={!!query.shared}
         system={!!query.system || (!query.own && !query.shared)}
@@ -203,10 +165,8 @@ class PreviousQuery extends React.Component {
               peopleFound
             )}
             {query.own && query.shared && (
-              <SharedIndicator
-                onClick={() => onToggleSharePreviousQuery(!query.shared)}
-              >
-                {T.translate("previousQuery.shared")}
+              <SharedIndicator onClick={onIndicateShare}>
+                {T.translate("common.shared")}
               </SharedIndicator>
             )}
             <TopRight>
@@ -214,7 +174,7 @@ class PreviousQuery extends React.Component {
               {mayEditQuery &&
                 !query.editingTags &&
                 (!query.tags || query.tags.length === 0) && (
-                  <StyledWithTooltip text={T.translate("previousQuery.addTag")}>
+                  <StyledWithTooltip text={T.translate("common.addTag")}>
                     <IconButton
                       icon="tags"
                       bare
@@ -223,24 +183,16 @@ class PreviousQuery extends React.Component {
                   </StyledWithTooltip>
                 )}
               {query.own && !query.shared && (
-                <StyledWithTooltip text={T.translate("previousQuery.share")}>
-                  <IconButton
-                    icon="upload"
-                    bare
-                    onClick={() => onToggleSharePreviousQuery(!query.shared)}
-                  />
+                <StyledWithTooltip text={T.translate("common.share")}>
+                  <IconButton icon="upload" bare onClick={onIndicateShare} />
                 </StyledWithTooltip>
               )}
               {query.loading ? (
                 <StyledFaIcon icon="spinner" />
               ) : (
                 query.own && (
-                  <StyledWithTooltip text={T.translate("previousQuery.delete")}>
-                    <IconButton
-                      icon="times"
-                      bare
-                      onClick={onDeletePreviousQuery}
-                    />
+                  <StyledWithTooltip text={T.translate("common.delete")}>
+                    <IconButton icon="times" bare onClick={onDeleteClick} />
                   </StyledWithTooltip>
                 )
               )}
@@ -248,18 +200,15 @@ class PreviousQuery extends React.Component {
           </div>
         </TopInfos>
         <MiddleRow>
-          {mayEditQuery ? (
-            <StyledEditableText
-              loading={!!query.loading}
-              text={label}
-              selectTextOnMount={true}
-              editing={!!query.editingLabel}
-              onSubmit={onRenamePreviousQuery}
-              onToggleEdit={onToggleEditPreviousQueryLabel}
-            />
-          ) : (
-            <StyledSelectableLabel label={label} />
-          )}
+          <PreviousQueriesLabel
+            mayEditQuery={mayEditQuery}
+            loading={!!query.loading}
+            label={label}
+            selectTextOnMount={true}
+            editing={!!query.editingLabel}
+            onSubmit={onRenamePreviousQuery}
+            onToggleEdit={onToggleEditPreviousQueryLabel}
+          />
           <Gray>{query.ownerName}</Gray>
         </MiddleRow>
         {mayEditQuery ? (
@@ -279,65 +228,6 @@ class PreviousQuery extends React.Component {
       </Root>
     );
   }
-}
+);
 
-const mapStateToProps = state => ({
-  availableTags: state.previousQueries.tags,
-  userCanDownloadResults: canDownloadResult(state)
-});
-
-const mapDispatchToProps = dispatch => ({
-  onToggleSharePreviousQuery: (datasetId, queryId, shared) =>
-    dispatch(toggleSharePreviousQuery(datasetId, queryId, shared)),
-
-  onRenamePreviousQuery: (datasetId, queryId, label) =>
-    dispatch(renamePreviousQuery(datasetId, queryId, label)),
-
-  onRetagPreviousQuery: (datasetId, queryId, tags) =>
-    dispatch(retagPreviousQuery(datasetId, queryId, tags)),
-
-  onDeletePreviousQuery: queryId =>
-    dispatch(deletePreviousQueryModalOpen(queryId)),
-
-  onToggleEditPreviousQueryLabel: queryId =>
-    dispatch(toggleEditPreviousQueryLabel(queryId)),
-
-  onToggleEditPreviousQueryTags: queryId =>
-    dispatch(toggleEditPreviousQueryTags(queryId))
-});
-
-const mapProps = (stateProps, dispatchProps, ownProps) => ({
-  ...stateProps,
-  ...dispatchProps,
-  ...ownProps,
-  onToggleSharePreviousQuery: shared =>
-    dispatchProps.onToggleSharePreviousQuery(
-      ownProps.datasetId,
-      ownProps.query.id,
-      shared
-    ),
-  onRenamePreviousQuery: label =>
-    dispatchProps.onRenamePreviousQuery(
-      ownProps.datasetId,
-      ownProps.query.id,
-      label
-    ),
-  onRetagPreviousQuery: tags =>
-    dispatchProps.onRetagPreviousQuery(
-      ownProps.datasetId,
-      ownProps.query.id,
-      tags
-    ),
-  onDeletePreviousQuery: () =>
-    dispatchProps.onDeletePreviousQuery(ownProps.query.id),
-  onToggleEditPreviousQueryLabel: () =>
-    dispatchProps.onToggleEditPreviousQueryLabel(ownProps.query.id),
-  onToggleEditPreviousQueryTags: () =>
-    dispatchProps.onToggleEditPreviousQueryTags(ownProps.query.id)
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mapProps
-)(DragSource(dndTypes.PREVIOUS_QUERY, nodeSource, collect)(PreviousQuery));
+export default PreviousQuery;

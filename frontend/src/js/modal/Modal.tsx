@@ -1,12 +1,12 @@
-import * as React from "react";
+import React, { useRef, FC, ReactNode } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import onClickOutside from "react-onclickoutside";
 import Hotkeys from "react-hot-keys";
 
 import FaIcon from "../icon/FaIcon";
 import TransparentButton from "../button/TransparentButton";
 import WithTooltip from "../tooltip/WithTooltip";
+import { useClickOutside } from "../common/helpers/useClickOutside";
 
 const Root = styled("div")`
   position: fixed;
@@ -47,30 +47,19 @@ const Headline = styled("h3")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-// https://github.com/Pomax/react-onclickoutside
-type ContentPropsT = {
-  children?: React.Node;
-  onClose: () => void;
+const ModalContent: FC<{ onClose: () => void }> = ({ children, onClose }) => {
+  const ref = useRef(null);
+
+  useClickOutside(ref, onClose);
+
+  return <Content ref={ref}>{children}</Content>;
 };
-
-const ModalContentComponent = ({ children, onClose }: ContentPropsT) => {
-  ModalContentComponent.handleClickOutside = onClose;
-
-  return <Content>{children}</Content>;
-};
-
-const ModalContent = onClickOutside(ModalContentComponent, {
-  handleClickOutside: () => ModalContentComponent.handleClickOutside
-});
-// -----------------------------------------------
 
 type PropsT = {
-  children?: React.Node;
   className?: string;
-  headline?: React.Node;
+  headline?: ReactNode;
   doneButton?: boolean;
   closeIcon?: boolean;
-  tabIndex?: number;
   onClose: () => void;
 };
 
@@ -78,15 +67,14 @@ type PropsT = {
 // - a button
 // - click outside
 // - press esc
-const Modal = ({
+const Modal: FC<PropsT> = ({
   className,
   children,
   headline,
-  tabIndex,
   doneButton,
   closeIcon,
-  onClose
-}: PropsT) => {
+  onClose,
+}) => {
   return (
     <Root className={className}>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
@@ -95,22 +83,14 @@ const Modal = ({
           <Headline>{headline}</Headline>
           {closeIcon && (
             <WithTooltip text={T.translate("common.closeEsc")}>
-              <TransparentButton
-                small
-                tabIndex={tabIndex || 0}
-                onClick={onClose}
-              >
+              <TransparentButton small onClick={onClose}>
                 <FaIcon icon="times" />
               </TransparentButton>
             </WithTooltip>
           )}
           {doneButton && (
             <WithTooltip text={T.translate("common.closeEsc")}>
-              <TransparentButton
-                small
-                tabIndex={tabIndex || 0}
-                onClick={onClose}
-              >
+              <TransparentButton small onClick={onClose}>
                 {T.translate("common.done")}
               </TransparentButton>
             </WithTooltip>

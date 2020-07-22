@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -97,6 +98,10 @@ public class Namespaces extends NamespaceCollection {
 
 	public List<Dataset> getAllDatasets() {
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
+	}
+	
+	public <C extends Collection<Dataset>> C getAllDatasets(Supplier<C> collectionSupplier) {
+		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toCollection(collectionSupplier));
 	}
 
 	public Collection<Namespace> getNamespaces() {

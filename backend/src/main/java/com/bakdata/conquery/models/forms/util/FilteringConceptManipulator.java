@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Manipulates a given Concept based on the provided blacklisting or
@@ -28,6 +29,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 @Builder(builderClassName = "ConceptManipulatorInternalBuilder", builderMethodName = "internalBuilder")
 public class FilteringConceptManipulator implements ConceptManipulator{
 
@@ -102,7 +104,7 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 		// Handle tables
 		List<CQTable> tables = concept.getTables();
 		Iterator<CQTable> it = tables.iterator();
-		for (; it.hasNext();) {
+		while(it.hasNext()) {
 			CQTable table = it.next();
 			if (tableBlacklist.contains(table.getId())) {
 				it.remove();
@@ -117,6 +119,9 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 					tableMan.consume(table, namespaces);
 				}
 			}
+		}
+		if(tables.isEmpty()) {
+			throw new IllegalStateException(String.format("After filtering the tables of concept %s, no table was left in the concept. ConceptManipulator: %s", concept, this.toString()));
 		}
 	}
 

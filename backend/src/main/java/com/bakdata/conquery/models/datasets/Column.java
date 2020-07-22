@@ -5,12 +5,12 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -36,6 +36,11 @@ public class Column extends Labeled<ColumnId> {
 	 * if it is of type string, instead of its own dictionary
 	 */
 	private String sharedDictionary;
+	/**
+	 * if this is set this column counts as the secondary id of the given name for this
+	 * table
+	 */
+	private SecondaryId secondaryId;
 
 	@Override
 	public ColumnId createId() {

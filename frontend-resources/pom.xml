@@ -58,7 +58,7 @@
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.9.1</version>
+				<version>1.10.0</version>
 				<executions>
 					<execution>
 						<id>install node and yarn</id>
@@ -104,7 +104,7 @@
 					<installDirectory>${workingDirectory}</installDirectory>
 					<workingDirectory>${workingDirectory}</workingDirectory>
 					<nodeVersion>v10.16.0</nodeVersion>
-					<yarnVersion>v1.16.0</yarnVersion>
+					<yarnVersion>v1.19.0</yarnVersion>
 				</configuration>
 			</plugin>
 			<!-- workaround for https://issues.apache.org/jira/browse/MRESOURCES-236 -->

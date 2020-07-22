@@ -1,19 +1,15 @@
 package com.bakdata.conquery.models.worker;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 
 public class SlaveInformation extends MessageSender.Simple<SlaveMessage> {
 	@JsonIgnore @Getter
-	private transient JobManagerStatus jobManagerStatus = new JobManagerStatus(LocalDateTime.now(),Collections.emptyList());
+	private transient JobManagerStatus jobManagerStatus = new JobManagerStatus();
 	@JsonIgnore
 	private final transient Object jobManagerSync = new Object();
 	

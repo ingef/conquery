@@ -14,14 +14,14 @@ import { openUploadModal, closeUploadModal } from "./actions";
 const { startExternalQuery, queryExternalResultReset } = actions;
 
 type PropsType = {
-  datasetId: DatasetIdT | null,
-  isModalOpen: boolean,
-  loading: boolean,
-  success: Object | null,
-  error: Object | null,
-  onOpenModal: Function,
-  onCloseModal: Function,
-  onUpload: Function
+  datasetId: DatasetIdT | null;
+  isModalOpen: boolean;
+  loading: boolean;
+  success: Object | null;
+  error: Object | null;
+  onOpenModal: Function;
+  onCloseModal: Function;
+  onUpload: Function;
 };
 
 const Root = styled("div")`
@@ -70,7 +70,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onUpload: (datasetId, query) => dispatch(startExternalQuery(datasetId, query))
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(UploadQueryResults);
+export default connect(mapStateToProps, mapDispatchToProps)(UploadQueryResults);

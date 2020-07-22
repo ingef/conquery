@@ -9,8 +9,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -31,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class RelativeFormQuery extends IQuery {
 	@NotNull @Valid
-	private final ConceptQuery query;
+	private final IQuery query;
 	@NotNull @Valid
 	private final ArrayConceptQuery features;
 	@NotNull @Valid
@@ -82,8 +81,8 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		ResultInfoCollector featureHeader = features.collectResultInfos(collector.getSettings());
-		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos(collector.getSettings());
+		ResultInfoCollector featureHeader = features.collectResultInfos();
+		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos();
 		//remove SpecialDateUnion
 		featureHeader.getInfos().remove(0);
 		outcomeHeader.getInfos().remove(0);

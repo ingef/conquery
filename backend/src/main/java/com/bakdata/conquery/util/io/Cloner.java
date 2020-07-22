@@ -1,18 +1,29 @@
 package com.bakdata.conquery.util.io;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Cloner {
-	public static ConqueryConfig clone(ConqueryConfig config) {
+	
+	public static <T> ConqueryConfig clone(ConqueryConfig config, Map<Class<T> , T > injectables) {
 		try {
-			ConqueryConfig clone = Jackson.BINARY_MAPPER.readValue(
+			ObjectMapper mapper = Jackson.BINARY_MAPPER.copy();
+			MutableInjectableValues injectableHolder = ((MutableInjectableValues)Jackson.BINARY_MAPPER.getInjectableValues());
+			for(Entry<Class<T>, T> injectable : injectables.entrySet()) {
+				
+				injectableHolder.add(injectable.getKey(), injectable.getValue());
+			}
+			ConqueryConfig clone = mapper.readValue(
 				Jackson.BINARY_MAPPER.writeValueAsBytes(config),
 				ConqueryConfig.class
 			);

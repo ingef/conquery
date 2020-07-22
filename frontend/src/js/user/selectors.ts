@@ -1,23 +1,24 @@
-import type { StateType } from "../app/reducers";
-import type { Permission } from "../api/types";
+import type { StateT } from "../app/reducers";
+import type { PermissionT, GetMeResponseT } from "../api/types";
+import { useSelector } from "react-redux";
 
 interface ContextT {
-  datasetId?: string
-};
+  datasetId?: string;
+}
 
-export function selectPermissions(state: StateType): Permission[] | null {
+export function selectPermissions(state: StateT): PermissionT[] | null {
   return !!state.user.me && !!state.user.me.permissions
     ? state.user.me.permissions
     : null;
 }
 
-const permissionHasDataset = (permission: Permission) =>
+const permissionHasDataset = (permission: PermissionT) =>
   permission.domains.includes("datasets") || permission.domains.includes("*");
-const permissionFitsTarget = (permission: Permission, datasetId: string) =>
+const permissionFitsTarget = (permission: PermissionT, datasetId: string) =>
   permission.targets.includes(datasetId) || permission.targets.includes("*");
 
-function canDoNothing(permissions: Permission[], datasetId: string) {
-  return permissions.every(permission => {
+function canDoNothing(permissions: PermissionT[], datasetId: string) {
+  return permissions.every((permission) => {
     const hasDataset = permissionHasDataset(permission);
     const fitsTarget = permissionFitsTarget(permission, datasetId);
 
@@ -25,8 +26,8 @@ function canDoNothing(permissions: Permission[], datasetId: string) {
   });
 }
 
-function canDoEverything(permissions: Permission[], datasetId: string) {
-  return permissions.some(permission => {
+function canDoEverything(permissions: PermissionT[], datasetId: string) {
+  return permissions.some((permission) => {
     const hasDataset = permissionHasDataset(permission);
     const fitsTarget = permissionFitsTarget(permission, datasetId);
 
@@ -37,9 +38,9 @@ function canDoEverything(permissions: Permission[], datasetId: string) {
 }
 
 function canDo(
-  state: StateType,
+  state: StateT,
   canDoWithPermissions: (
-    permissions: Permission[],
+    permissions: PermissionT[],
     datasetId: string
   ) => boolean,
   context?: ContextT
@@ -62,12 +63,12 @@ function canDo(
   return canDoWithPermissions(permissions, datasetId);
 }
 
-export function canDownloadResult(state: StateType, datasetId?: string) {
+export function canDownloadResult(state: StateT, datasetId?: string) {
   return canDo(
     state,
     (permissions, finalDatasetId) => {
       return permissions.some(
-        permission =>
+        (permission) =>
           permissionHasDataset(permission) &&
           permissionFitsTarget(permission, finalDatasetId) &&
           permission.abilities.includes("download")
@@ -77,13 +78,21 @@ export function canDownloadResult(state: StateType, datasetId?: string) {
   );
 }
 
-export function canUploadResult(state: StateType) {
+export function canUploadResult(state: StateT) {
   return canDo(state, (permissions, datasetId) => {
     return permissions.some(
-      permission =>
+      (permission) =>
         permissionHasDataset(permission) &&
         permissionFitsTarget(permission, datasetId) &&
         permission.abilities.includes("preserve_id")
     );
   });
+}
+
+export function useHideLogoutButton() {
+  const me = useSelector<StateT, GetMeResponseT | null>(
+    (state) => state.user.me
+  );
+
+  return !!me && !!me.hideLogoutButton;
 }

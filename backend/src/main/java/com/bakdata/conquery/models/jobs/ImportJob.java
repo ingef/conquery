@@ -330,9 +330,7 @@ public class ImportJob extends Job {
 			log.info("Importing {} into {}", header.getName(), table);
 			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
 
-			if (!header.matches(tab)) {
-				throw new IllegalArgumentException("The given header " + header + " does not match the table structure of " + table);
-			}
+			header.assertMatch(tab);
 
 			log.debug("\tparsing dictionaries");
 			header.getPrimaryColumn().getType().readHeader(in);

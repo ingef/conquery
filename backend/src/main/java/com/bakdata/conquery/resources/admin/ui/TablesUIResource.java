@@ -91,13 +91,7 @@ public class TablesUIResource extends HAdmin {
 					.stream()
 					.mapToLong(Import::estimateMemoryConsumption)
 					.sum(),
-					namespace
-					.getStorage()
-					.getAllImports()
-					.stream()
-					.filter(imp -> imp.getTable().equals(table.getId()))
-					.map(imp -> imp.getName())
-					.collect(Collectors.toList())
+					imports
 			)
 		);
 	}

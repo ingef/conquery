@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.bakdata.conquery.metrics.MetricsUtil;
+import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
@@ -25,7 +25,7 @@ public class JobExecutor extends Thread {
 
 	public JobExecutor(String name) {
 		super(name);
-		MetricsUtil.createJobQueueGauge(name, jobs);
+		JobMetrics.createJobQueueGauge(name, jobs);
 	}
 
 	public void add(Job job) {
@@ -55,23 +55,36 @@ public class JobExecutor extends Thread {
 	}
 
 	public List<Job> getJobs() {
-		List<Job> jobs = new ArrayList<>(this.jobs.size()+1);
+		List<Job> jobs = new ArrayList<>(this.jobs.size() + 1);
 		Job current = currentJob.get();
-		if(current!=null) {
+		if (current != null) {
 			jobs.add(current);
 		}
 		jobs.addAll(this.jobs);
 		return jobs;
 	}
 	
+	/**
+	 * Checks if the executor is currently working on a job or if there are jobs left in its queue.
+	 * If so, the executor is busy.
+	 * @return True if there is work left to do for this executor
+	 */
 	public boolean isBusy() {
-		return busy.get();
+		if(busy.get()) {
+			log.trace("JobExecutor {} is still working on a task.", getName());
+			return true;
+		}
+		if(!jobs.isEmpty()) {
+			log.trace("JobExecutor {} has still work in the queue.", getName());
+			return true;
+		}
+		return false;
 	}
 
 	public void close() {
 		closed.set(true);
 		Uninterruptibles.joinUninterruptibly(this);
-		MetricsUtil.removeJobQueueSizeGauge(getName());
+		JobMetrics.removeJobQueueSizeGauge(getName());
 	}
 
 	@Override
@@ -87,7 +100,7 @@ public class JobExecutor extends Thread {
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 
-					final Timer.Context time = MetricsUtil.getJobExecutorTimer(job);
+					final Timer.Context time = JobMetrics.getJobExecutorTimer(job);
 
 					try {
 						if(job.isCancelled()){
@@ -102,9 +115,13 @@ public class JobExecutor extends Thread {
 
 					}
 					catch (Throwable e) {
+						ConqueryMDC.setLocation(this.getName());
+
 						log.error("Job "+job+" failed", e);
 					}finally {
-						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						ConqueryMDC.setLocation(this.getName());
+
+						log.trace("Finished job {} within {}", job, timer.stop());
 						time.stop();
 					}
 				}

@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 // Also, set up the drag and drop context
 import { DndProvider } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
@@ -55,8 +55,8 @@ const generatePreview = (type, item, style) => {
 };
 
 type PropsType = {
-  displayTooltip: boolean,
-  rightTabs: TabT[]
+  displayTooltip: boolean;
+  rightTabs: TabT[];
 };
 
 const CustomHTML5toTouch = {

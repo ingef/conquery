@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter @Setter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 @CPSType(id="FAILED", base=EntityResult.class)
-public class FailedEntityResult implements EntityResult {
+public class FailedEntityResult implements SinglelineEntityResult {
 
 	private final int entityId;
 	@NotEmpty
@@ -20,9 +20,19 @@ public class FailedEntityResult implements EntityResult {
 	public boolean isFailed() {
 		return true;
 	}
-	
+
+	@Override
+	public boolean isContained() {
+		return false;
+	}
+
 	@Override
 	public FailedEntityResult asFailed() {
 		return this;
+	}
+	
+	@Override @JsonIgnore
+	public Object[] getValues() {
+		throw new IllegalStateException("A FAILED result has no values.");
 	}
 }

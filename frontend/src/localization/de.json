@@ -3,12 +3,13 @@
   "headline": "Anfragen und Analyse",
   "leftPane": {
     "conceptTrees": "Konzeptbäume",
-    "previousQueries": "Anfragen"
+    "previousQueries": "Anfragen",
+    "formConfigs": "Formulare"
   },
   "rightPane": {
     "queryEditor": "Editor",
     "timebasedQueryEditor": "Zeit-Editor",
-    "externalForms": "Formulare"
+    "externalForms": "Formular-Editor"
   },
   "conceptTreeList": {
     "loading": "Lade Konzeptbäume",
@@ -92,6 +93,11 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Diese Anfrage wirklich löschen?"
   },
+  "sharePreviousQueryModal": {
+    "headline": "Anfrage freigeben: ",
+    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "unshare": "Freigabe aufheben"
+  },
   "common": {
     "back": "Zurück",
     "any": "Beliebig",
@@ -109,7 +115,17 @@
     "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen",
     "closeEsc": "Schließen (ESC)",
-    "create": "Erstellen"
+    "create": "Erstellen",
+    "addTag": "Schlagwort hinzufügen",
+    "share": "Freigeben",
+    "shared": "Freigegeben",
+    "loading": "Lade ...",
+    "average": "Mittelwert",
+    "median": "Median",
+    "min": "Min",
+    "max": "Max",
+    "std": "Std.",
+    "logout": "Ausloggen"
   },
   "tooltip": {
     "headline": "Info",
@@ -166,10 +182,6 @@
   },
   "previousQuery": {
     "notExecuted": "Noch nicht ausgeführt",
-    "addTag": "Schlagwort hinzufügen",
-    "share": "Freigeben",
-    "shared": "Freigegeben",
-    "delete": "Löschen",
     "downloadResults": "Ergebnisse herunterladen",
     "loadError": "Konnte Anfrage nicht laden",
     "renameError": "Konnte Anfrage nicht umbenennen",
@@ -179,9 +191,12 @@
   },
   "previousQueriesFilter": {
     "all": "Alle",
-    "own": "Selbst erstellt",
+    "own": "Eigene",
     "shared": "Freigegeben",
     "system": "SYSTEM"
+  },
+  "formConfigsFilter": {
+    "activeForm": "Aktives Formular"
   },
   "timebasedQueryEditor": {
     "headline": "Anfragen in Relation",
@@ -202,6 +217,11 @@
   },
   "externalForms": {
     "forms": "Formulare",
+    "config": {
+      "headline": "Formular-Konfiguration",
+      "save": "Speichern",
+      "saveError": "Konnte Formular-Konfiguration nicht speichern"
+    },
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",
@@ -311,7 +331,8 @@
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
-    "explanation": "Stellt die CSV-Datei der Ergebnisse dar",
+    "previewHeadline": "Die ersten {count} Zeilen der Ergebnisse",
+    "statisticsHeadline": "Spaltenstatistik basierend auf den vollständigen Ergebnissen",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
@@ -323,5 +344,24 @@
     "password": "Passwort",
     "error": "Einloggen fehlgeschlagen. Bitte die Eingabe überprüfen.",
     "submit": "Starten"
+  },
+  "formConfigs": {
+    "loading": "Lade Formular-Konfigurationen",
+    "error": "Konnte Formular-Konfigurationen nicht laden",
+    "noneFound": "Keine Formular-Konfigurationen gefunden"
+  },
+  "formConfig": {
+    "loadError": "Konnte Konfiguration nicht laden",
+    "renameError": "Konnte Konfiguration nicht umbenennen",
+    "retagError": "Konnte Schlagwörter nicht speichern",
+    "shareError": "Konnte Konfiguration nicht freigeben",
+    "deleteError": "Konnte Konfiguration nicht löschen"
+  },
+  "deleteFormConfigModal": {
+    "areYouSure": "Diese Konfiguration wirklich löschen?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Zurück zu Standardansicht",
+    "closeAll": "Alle Konzepte schließen"
   }
 }

@@ -135,10 +135,10 @@ public class TemporalQueryNode extends QPNode {
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 
-		OptionalInt sampledPreceding = getReference().getSampler().sample(precedingDurations);
+		OptionalInt sampledPreceding = getPreceding().getSampler().sample(precedingDurations);
 
 		if (matcher.isContained(sampledReference, sampledPreceding)) {
-			dateUnion.merge(precedingDurations);
+			dateUnion.merge(referenceDurations);
 			return true;
 		}
 

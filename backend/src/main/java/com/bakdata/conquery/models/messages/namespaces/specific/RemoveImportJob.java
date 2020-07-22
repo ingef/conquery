@@ -10,17 +10,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
+import lombok.extern.slf4j.Slf4j;
 
 
 @CPSType(id="REMOVE_IMPORT", base= NamespacedMessage.class)
 @AllArgsConstructor(onConstructor_=@JsonCreator)  @Getter @Setter @ToString
+@Slf4j
 public class RemoveImportJob extends WorkerMessage.Slow {
 
 	private ImportId importId;
 
 	@Override
 	public void react(Worker context) throws Exception {
+		log.info("Deleting Import[{}]", importId);
+
 		context.getStorage().removeImport(importId);
 	}
 }

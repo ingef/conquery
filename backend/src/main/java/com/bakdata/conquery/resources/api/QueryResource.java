@@ -2,7 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -21,6 +20,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -28,11 +29,11 @@ import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
@@ -52,18 +53,18 @@ public class QueryResource {
 	}
 
 	@POST
-	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) throws JSONException {
-		authorize(user, datasetId, Ability.READ);
-		// Also look into the query and check the datasets
-		authorizeReadDatasets(user, query);
-		// Do query specific permission checks
-		query.checkPermissions(user);
+	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
+		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
 
-		return processor.postQuery(
+
+		return Response.ok(
+			processor.postQuery(
 			dsUtil.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
-			user);
+			user))
+			.status(Status.CREATED)
+			.build();
 	}
 
 	@DELETE
@@ -83,7 +84,7 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		ManagedExecution query = dsUtil.getManagedQuery(queryId);
+		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
 			dsUtil.getDataset(datasetId),
