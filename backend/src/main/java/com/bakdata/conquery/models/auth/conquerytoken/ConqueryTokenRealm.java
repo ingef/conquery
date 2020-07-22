@@ -86,7 +86,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 			return null;
 		}
 
-		return new ConqueryAuthenticationInfo(userId, token, this);
+		return new ConqueryAuthenticationInfo(userId, token, this, false);
 	}
 	
 

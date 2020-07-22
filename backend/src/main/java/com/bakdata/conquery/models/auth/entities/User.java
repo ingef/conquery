@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -36,6 +37,9 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	private String name;
 	@Getter @Setter @NonNull @NotNull
 	private String label;
+	
+	@Getter @Setter @JsonIgnore
+	private transient boolean hideUserLogout = false;
 
 	public User(String name, String label) {
 		this.name = name;
