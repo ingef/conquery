@@ -83,7 +83,7 @@ public abstract class QPParentNode extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		for (QPNode child : children) {
+		for (QPNode child : currentTableChildren) {
 			if (child.isOfInterest(bucket)) {
 				return true;
 			}
