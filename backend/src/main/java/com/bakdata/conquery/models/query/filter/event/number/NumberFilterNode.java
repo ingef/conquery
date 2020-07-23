@@ -11,12 +11,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Abstract class, filtering single events to be in a specified range. Entity is only included if a single event is in range.
  * There exist type specific implementations.
  * @param <RANGE> Range Type for inclusion test.
  */
+@ToString(of = {"column", "filterValue"})
 public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends EventFilterNode<RANGE> {
 
 

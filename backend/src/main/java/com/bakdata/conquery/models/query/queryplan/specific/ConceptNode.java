@@ -22,7 +22,6 @@ public class ConceptNode extends QPChainNode {
 	private final long requiredBits;
 	private final CQTable table;
 	private boolean tableActive = false;
-	private boolean interested = false;
 	private Map<BucketId, EntityRow> preCurrentRow = null;
 	private EntityRow currentRow = null;
 	
@@ -48,7 +47,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		if (tableActive && interested) {
+		if (tableActive) {
 			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 			super.nextBlock(bucket);
 		}
@@ -56,24 +55,24 @@ public class ConceptNode extends QPChainNode {
 	
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		if (tableActive) {
-			EntityRow row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
-
-			int localEntity = bucket.toLocal(entity.getId());
-			long bits = row.getCBlock().getIncludedConcepts()[localEntity];
-
-			if((bits & requiredBits) != 0L || requiredBits == 0L) {
-				interested = true;
-				return super.isOfInterest(bucket);
-			}
+		if (!tableActive) {
+			return false;
 		}
-		interested = false;
+
+		EntityRow row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+
+		int localEntity = bucket.toLocal(entity.getId());
+		long bits = row.getCBlock().getIncludedConcepts()[localEntity];
+
+		if((bits & requiredBits) != 0L || requiredBits == 0L) {
+			return super.isOfInterest(bucket);
+		}
 		return false;
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (!tableActive || !interested) {
+		if (!tableActive) {
 			return;
 		}
 

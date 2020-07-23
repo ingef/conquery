@@ -10,11 +10,12 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Helper Aggregator, returning if it was used at least once.
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor @ToString(of = {"requiredTables"})
 public class ExistsAggregator implements Aggregator<Boolean> {
 
 	private final Set<TableId> requiredTables;
@@ -42,10 +43,5 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.BOOLEAN;
-	}
-	
-	@Override
-	public String toString(){
-		return getClass().getSimpleName();
 	}
 }

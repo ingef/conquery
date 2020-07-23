@@ -15,8 +15,10 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
+import lombok.ToString;
 
 
+@ToString(of = {"filters", "aggregators"})
 public class FiltersNode extends QPNode {
 
 	private boolean hit = false;
@@ -122,4 +124,6 @@ public class FiltersNode extends QPNode {
 	public boolean isOfInterest(Bucket bucket) {
 		return true;
 	}
+
+
 }
