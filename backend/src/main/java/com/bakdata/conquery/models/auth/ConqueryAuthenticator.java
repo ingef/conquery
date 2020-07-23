@@ -41,7 +41,7 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		
 		if(user != null) {
 			ConqueryMDC.setLocation(user.getId().toString());
-			user.setHideUserLogout(info.isHideUserLogout());
+			user.setDisplayLogout(info.isDisplayLogout());
 		} else {
 			log.trace("The user id {} could not be map to a user.", userId);
 		}

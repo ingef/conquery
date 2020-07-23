@@ -39,7 +39,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	private String label;
 	
 	@Getter @Setter @JsonIgnore
-	private transient boolean hideUserLogout = false;
+	private transient boolean displayLogout = true;
 
 	public User(String name, String label) {
 		this.name = name;
