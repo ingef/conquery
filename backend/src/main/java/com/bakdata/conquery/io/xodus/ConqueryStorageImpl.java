@@ -25,6 +25,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	protected final File directory;
 	protected final Validator validator;
 	protected final Environment environment;
+	protected final StorageConfig config;
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final List<KeyIncludingStore<?,?>> stores = new ArrayList<>();
@@ -33,6 +34,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		this.directory = directory;
 		this.validator = validator;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
+		this.config = config;
 	}
 
 	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {

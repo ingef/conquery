@@ -7,13 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.SequenceInputStream;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
+import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
@@ -23,11 +19,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.google.common.collect.Iterators;
 import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
-
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.Size;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BigStoreTest {
 	
@@ -48,7 +47,7 @@ public class BigStoreTest {
 	
 	@Test
 	public void testFull() throws JSONException, IOException {
-		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
+		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(new StorageConfig(), Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
 			store.setChunkSize(Ints.checkedCast(Size.megabytes(1).toBytes()));
 			
 			Dictionary nDict = new MapDictionary();
@@ -89,7 +88,7 @@ public class BigStoreTest {
 	
 	@Test
 	public void testEmpty() throws JSONException, IOException {
-		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
+		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(new StorageConfig(), Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
 			store.setChunkSize(Ints.checkedCast(Size.megabytes(1).toBytes()));
 			
 			Dictionary nDict = new MapDictionary();

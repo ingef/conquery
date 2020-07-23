@@ -124,7 +124,8 @@
     "median": "Median",
     "min": "Min",
     "max": "Max",
-    "std": "SD"
+    "std": "SD",
+    "logout": "Logout"
   },
   "tooltip": {
     "headline": "Info",

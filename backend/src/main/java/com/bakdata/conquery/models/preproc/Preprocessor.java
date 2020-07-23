@@ -251,6 +251,11 @@ public class Preprocessor {
 			//find the optimal subtypes
 			{
 				log.info("finding optimal column types");
+
+				StringParser parser = (StringParser) result.getPrimaryColumn().getParser();
+				parser.setEncoding(Encoding.UTF8);
+				result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
+
 				log.info(
 						"\t{}.{}: {} -> {}",
 						result.getName(),
@@ -258,10 +263,6 @@ public class Preprocessor {
 						result.getPrimaryColumn().getParser(),
 						result.getPrimaryColumn().getType()
 				);
-
-				StringParser parser = (StringParser) result.getPrimaryColumn().getParser();
-				parser.setEncoding(Encoding.UTF8);
-				result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
 
 				for (PPColumn c : result.getColumns()) {
 					log.trace("Compute best Subtype for  Column[{}] with {}", c.getName(), c.getParser());

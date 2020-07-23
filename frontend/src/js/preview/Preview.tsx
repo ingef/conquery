@@ -66,6 +66,18 @@ const List = styled("div")`
 
 export type ColumnDescriptionType = ColumnDescriptionKind | "OTHER";
 
+const SUPPORTED_COLUMN_DESCRIPTION_KINDS = new Set<ColumnDescriptionKind>([
+  "ID",
+  "INTEGER",
+  "NUMERIC",
+  "MONEY",
+  "DATE",
+  "DATE_RANGE",
+  "STRING",
+  "CATEGORICAL",
+  "RESOLUTION",
+]);
+
 function detectColumnType(
   cell: string,
   resultColumns: ColumnDescription[]
@@ -74,7 +86,7 @@ function detectColumnType(
 
   const maybeColumn = resultColumns.find((column) => column.label === cell);
 
-  if (maybeColumn) {
+  if (maybeColumn && SUPPORTED_COLUMN_DESCRIPTION_KINDS.has(maybeColumn.type)) {
     return maybeColumn.type;
   }
 
