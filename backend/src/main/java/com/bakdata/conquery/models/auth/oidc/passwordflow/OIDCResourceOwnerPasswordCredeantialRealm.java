@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -53,7 +52,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.keycloak.authorization.client.AuthzClient;
+import org.keycloak.authorization.client.representation.ServerConfiguration;
 
+/**
+ * Realm that supports the Open ID Connect Resource-Owner-Password-Credential-Flow with a Keycloak IdP.
+ */
 @Slf4j
 @Getter
 @Setter
@@ -68,6 +71,11 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 	private ClientAuthentication clientAuthentication;
 	private AuthzClient authzClient;
 	
+	private ServerConfiguration serverConf;
+	
+	/**
+	 * We only hold validated Tokens for some minutes to recheck them regulary with Keycloak.
+	 */
 	private LoadingCache<JwtToken, TokenIntrospectionSuccessResponse> tokenCache = CacheBuilder.newBuilder()
 		.expireAfterWrite(10, TimeUnit.MINUTES)
 		.build(new TokenValidator());
@@ -80,6 +88,7 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 		this.clientAuthentication = new ClientSecretBasic(new ClientID(config.getResource()), new Secret((String)config.getCredentials().get("secret")));
 		
 		authzClient = AuthzClient.create(config);
+		serverConf = authzClient.getServerConfiguration();
 	}
 	
 	@Override
@@ -111,9 +120,8 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
 	}
 
-	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws URISyntaxException, MalformedURLException, ParseException, IOException {
-		URI tokenIntrospectEndpoint =  new URL(new URL(config.getAuthServerUrl()),"realms/EVA/protocol/openid-connect/token/introspect").toURI();
-		TokenIntrospectionRequest request = new TokenIntrospectionRequest(tokenIntrospectEndpoint , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
+	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws MalformedURLException, ParseException, IOException {
+		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(serverConf.getTokenIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
 		
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
 		
@@ -153,7 +161,7 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 
 		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
 				
-		URI tokenEndpoint =  new URL(new URL(config.getAuthServerUrl()),"realms/EVA/protocol/openid-connect/token").toURI();
+		URI tokenEndpoint =  new URL(new URL(config.getAuthServerUrl()), serverConf.getTokenEndpoint()).toURI();
 
 		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, clientAuthentication, grant, Scope.parse("openid"));
 		
