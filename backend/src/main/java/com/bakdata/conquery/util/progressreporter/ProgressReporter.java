@@ -30,6 +30,7 @@ public interface ProgressReporter {
 	String getEstimate();
 	void report(double steps);
 	void setMax(double max);
+	double getMax();
 	void done();
 	boolean isDone();
 }

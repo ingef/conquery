@@ -30,6 +30,11 @@ public class NullProgressReporter implements ProgressReporter{
 	}
 
 	@Override
+	public double getMax() {
+		return 0;
+	}
+
+	@Override
 	public void done() {
 	}
 

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.math.DoubleMath;
-
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	@Data
 	public static final class Values {
 		private double progress = 0;
+		private double max = 0;
 		private boolean done = false;
 		private boolean started = false;
 		private long waitedSeconds;
@@ -31,6 +31,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 		values.startTime = DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - pr.getStartTime();
 		values.done = pr.isDone();
 		values.started = pr.isStarted();
+		values.max = pr.getMax();
 		if(!values.started) {
 			values.createdTime = DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - pr.getWaitedSeconds();
 		}
@@ -79,6 +80,11 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	@Override
 	public long getStartTime() {
 		return values.getStartTime();
+	}
+
+	@Override
+	public double getMax() {
+		return values.getMax();
 	}
 
 	@Override

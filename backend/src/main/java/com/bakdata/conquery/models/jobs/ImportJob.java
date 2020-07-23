@@ -127,7 +127,9 @@ public class ImportJob extends Job {
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 
+			this.progressReporter.setMax(this.progressReporter.getMax() + header.getGroups() + 1);
 			ProgressReporter child = this.progressReporter.subJob(header.getGroups());
+			child.setMax(header.getGroups() + 1);
 
 			try (Input in = new Input(file.readContent())) {
 				for (long group = 0; group < header.getGroups(); group++) {
@@ -164,6 +166,7 @@ public class ImportJob extends Job {
 		catch (IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
 		}
+		getProgressReporter().done();
 	}
 
 	private Import createImport(PreprocessedHeader header, boolean useOldType) {

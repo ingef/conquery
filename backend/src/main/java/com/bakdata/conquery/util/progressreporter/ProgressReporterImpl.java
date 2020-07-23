@@ -8,11 +8,11 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.math.DoubleMath;
-
 import lombok.Getter;
 import lombok.Setter;
 
 public class ProgressReporterImpl implements ProgressReporter{
+	@Getter
 	private double max = 1;
 	private double innerProgress = 0;
 	private double reservedForChildren = 0;
@@ -55,7 +55,7 @@ public class ProgressReporterImpl implements ProgressReporter{
 		if(!started) {
 			throw new IllegalStateException("You need to start the Progress Reporter before you can add subjobs");
 		}
-		if(innerProgress+reservedForChildren+steps > max) {
+		if (innerProgress + reservedForChildren + steps > max) {
 			throw new IllegalArgumentException("Progress + Steps is bigger than the Maximum Progress");
 		}
 		reservedForChildren += steps;
@@ -84,12 +84,14 @@ public class ProgressReporterImpl implements ProgressReporter{
 
 	@Override
 	public void setMax(double max) {
-		if(getProgress() != 0) {
+		if(getProgress() > max) {
 			throw new IllegalStateException("No modification of Limits allowed after progress has been made");
 		}
+
 		if(max <= 0) {
 			throw new IllegalArgumentException("Max can not be 0 or less");
 		}
+
 		this.max = max;
 	}
 
@@ -99,9 +101,9 @@ public class ProgressReporterImpl implements ProgressReporter{
 		for (ChildProgressReporter child: children) {
 			if(!child.isDone()) {
 				throw new IllegalStateException("One or more Children are not done yet");
-
 			}
 		}
+
 		innerProgress = max - reservedForChildren;
 		done = true;
 	}
