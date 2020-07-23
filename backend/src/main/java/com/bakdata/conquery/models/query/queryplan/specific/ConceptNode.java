@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -57,15 +56,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		for (ConceptElement<?> element : concepts) {
-			for (Connector connector : element.getConcept().getConnectors()) {
-				if(entity.has(connector.getId())) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return entity.has(table.getId());
 	}
 
 	@Override
