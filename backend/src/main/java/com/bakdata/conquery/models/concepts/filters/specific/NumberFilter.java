@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -47,11 +46,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 			default:
 				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
 		}
-	}
-
-	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn()};
 	}
 
 	@Override

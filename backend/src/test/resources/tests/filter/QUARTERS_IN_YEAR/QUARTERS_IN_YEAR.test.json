@@ -13,10 +13,6 @@
         {
           "name": "behandlungsdatum",
           "type": "DATE"
-        },
-        {
-          "name": "datum",
-          "type": "DATE_RANGE"
         }
       ]
     }
@@ -24,10 +20,9 @@
   "connector": {
     "validityDates": {
       "label": "Datum",
-      "column": "table.datum"
+      "column": "table.behandlungsdatum"
     },
     "filter": {
-      "column": "table.behandlungsdatum",
       "type": "QUARTERS_IN_YEAR"
     }
   },

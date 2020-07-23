@@ -10,34 +10,32 @@
       ],
       "type": "CONCEPT",
       "label": "select",
+      "selects": [
+        "${dataset}.select.count_quarters"
+      ],
       "tables": [
         {
-          "id": "${dataset}.select.connector",
-          "selects": [
-            "${dataset}.select.connector.count_quarters"
-          ]
+          "id": "${dataset}.select.connector"
         }
       ]
-
     }
   },
   "concepts": [
     {
       "label": "select",
-      "type": "VIRTUAL",
+      "type": "TREE",
+      "selects": {
+        "name": "count_quarters",
+        "type": "COUNT_QUARTERS"
+      },
       "connectors": [
         {
           "label": "connector",
-          "table": "table1",
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
           },
-          "selects":         {
-            "name" : "count_quarters",
-            "type": "COUNT_QUARTERS",
-            "column": "table1.behandlungsdatum"
-          }
+          "column" : "table1.datum"
         }
       ]
     }
@@ -52,10 +50,6 @@
           "type": "STRING"
         },
         "columns": [
-          {
-            "name": "behandlungsdatum",
-            "type": "DATE"
-          },
           {
             "name": "datum",
             "type": "DATE_RANGE"

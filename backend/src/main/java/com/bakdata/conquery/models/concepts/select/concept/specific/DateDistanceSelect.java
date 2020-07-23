@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.select.connector.specific;
+package com.bakdata.conquery.models.concepts.select.concept.specific;
 
 import java.time.temporal.ChronoUnit;
 
@@ -8,23 +8,23 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateDistanceAggregator;
-import com.fasterxml.jackson.annotation.JsonCreator;
-
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.date.DateDistanceAggregator;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 @CPSType(id = "DATE_DISTANCE", base = Select.class)
-@Getter @Setter
+@Getter
+@Setter
+@NoArgsConstructor
 public class DateDistanceSelect extends SingleColumnSelect {
 
-	@JsonCreator
-	public DateDistanceSelect(@NsIdRef Column column) {
+	private final ChronoUnit timeUnit = ChronoUnit.YEARS;
+
+	public DateDistanceSelect(@NsIdRef @NonNull Column column) {
 		super(column);
 	}
-
-	private ChronoUnit timeUnit = ChronoUnit.YEARS;
-
 
 	@Override
 	public Aggregator<?> createAggregator() {

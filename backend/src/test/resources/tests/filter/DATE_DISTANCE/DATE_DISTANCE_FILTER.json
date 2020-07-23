@@ -1,22 +1,22 @@
 {
   "type": "FILTER_TEST",
-  "label": "COUNT_QUARTERS Test",
-  "expectedCsv": "tests/filter/COUNT_QUARTERS/expected_COUNT_QUARTERS_Filter.csv",
+  "label": "Date Distance Filter Test",
+  "expectedCsv": "tests/filter/DATE_DISTANCE/expected_NUMBER_Filter.csv",
+  "dateRange" : {
+    "min" : "2000-01-31",
+    "max" : "2010-01-31"
+  },
   "content": {
     "tables": {
-      "csv": "tests/filter/COUNT_QUARTERS/content_COUNT_QUARTERS_Filter.csv",
+      "csv": "tests/filter/DATE_DISTANCE/content_NUMBER_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"
       },
       "columns": [
         {
-          "name": "behandlungsdatum",
-          "type": "DATE"
-        },
-        {
           "name": "datum",
-          "type": "DATE_RANGE"
+          "type": "DATE"
         }
       ]
     }
@@ -27,15 +27,16 @@
       "column": "table.datum"
     },
     "filter": {
-      "column": "table.behandlungsdatum",
-      "type": "COUNT_QUARTERS"
+      "timeUnit" : "DAYS",
+      "column": "table.datum",
+      "type": "DATE_DISTANCE"
     }
   },
   "filterValue": {
     "type": "INTEGER_RANGE",
     "value": {
-      "min": 2,
-      "max": 3
+      "min": 10,
+      "max": 10
     }
   }
 }

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
+package com.bakdata.conquery.models.query.queryplan.aggregators.specific.date;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -20,8 +20,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	private LocalDate reference;
 	private ChronoUnit unit;
 
-	private long result = Long.MAX_VALUE;
-	private boolean hit;
+	private int result = Integer.MIN_VALUE;
 
 	public DateDistanceAggregator(Column column, ChronoUnit unit) {
 		super(column);
@@ -30,8 +29,8 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
-			reference = null;
+		if (ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()) {
+			reference = LocalDate.now();
 		}
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
@@ -45,26 +44,16 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
-		return result != Long.MAX_VALUE || hit ? result : null;
+		return result == Integer.MIN_VALUE ? null : unit.between(CDate.toLocalDate(result), reference);
 	}
 
 	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
-		if(reference == null) {
+		if (!bucket.has(event, column)) {
 			return;
 		}
 
-		if(!bucket.has(event, getColumn())) {
-			return;
-		}
-
-		hit = true;
-
-		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
-
-		final long between = unit.between(date, reference);
-
-		result = Math.min(result, between);
+		result = Math.max(result, bucket.getAsDateRange(event, column).getMinValue());
 	}
 
 	@Override

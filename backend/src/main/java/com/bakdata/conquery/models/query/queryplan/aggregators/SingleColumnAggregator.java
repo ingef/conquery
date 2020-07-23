@@ -9,10 +9,8 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Defines an aggregator over just a single column.
@@ -23,9 +21,8 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 	@Valid
 	@NotNull
 	@Getter
-	@Setter
 	@NsIdRef
-	protected Column column;
+	protected final Column column;
 
 	@Override
 	public final Column[] getRequiredColumns() {

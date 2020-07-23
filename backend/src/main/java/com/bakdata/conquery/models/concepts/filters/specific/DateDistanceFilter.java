@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
 import java.time.temporal.ChronoUnit;
-import java.util.EnumSet;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -11,11 +11,7 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.models.types.MajorTypeId;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -29,26 +25,29 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@NotNull
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
-	
+
 	@Override
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.DATE);
+	public void configureFrontend(FEFilter f) {
+		f.setType(FEFilterType.INTEGER_RANGE);
 	}
-	
-	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-		switch (getColumn().getType()) {
-			case DATE: {
-				f.setType(FEFilterType.INTEGER_RANGE);
-				return;
-			}
-			default:
-				throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + getColumn().getType());
+
+	@Valid()
+	public boolean columnIsDateBased(){
+		if(getColumn() == null){
+			return false;
 		}
+
+		if(!getColumn().getType().isDateCompatible()){
+			log.error("Column[{}] is not date based", getColumn().getId());
+			return false;
+		}
+
+		return true;
 	}
-	
+
+
 	@Override
-	public FilterNode createAggregator(Range.LongRange value) {
-		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
+	public DateDistanceFilterNode createAggregator(Range.LongRange value) {
+		return new DateDistanceFilterNode(timeUnit, value, getColumn());
 	}
 }

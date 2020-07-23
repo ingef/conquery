@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
+package com.bakdata.conquery.models.query.queryplan.aggregators.specific.date;
 
 import java.time.YearMonth;
 import java.time.temporal.ChronoField;
@@ -8,44 +8,58 @@ import java.time.temporal.TemporalAdjuster;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
  */
-public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<Long> {
+public class CountQuartersAggregator implements Aggregator<Long> {
 
 	private final TemporalAdjuster monthInQuarter = QuarterUtils.firstMonthInQuarterAdjuster();
 	private final TemporalAdjuster nextQuarter = QuarterUtils.nextQuarterAdjuster();
 
 	private final IntSet quarters = new IntOpenHashSet();
 
-	public CountQuartersOfDateRangeAggregator(Column column) {
-		super(column);
+	private Column column;
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		this.column = ctx.getValidityDateColumn();
+
+		if(!column.getType().isDateCompatible()){
+			throw new IllegalStateException(String.format("Non date-compatible validityDate-Column[%s]", column));
+		}
 	}
 
 	@Override
-	public CountQuartersOfDateRangeAggregator doClone(CloneContext ctx) {
-		return new CountQuartersOfDateRangeAggregator(getColumn());
+	public CountQuartersAggregator doClone(CloneContext ctx) {
+		return new CountQuartersAggregator();
 	}
 
 	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
-		if (!bucket.has(event, getColumn())) {
+		if (!bucket.has(event, column)) {
 			return;
 		}
 
-		CDateRange dateRange = bucket.getDateRange(event, getColumn());
+		CDateRange dateRange = bucket.getAsDateRange(event, column);
 
 		if (dateRange.isOpen()) {
 			return;
 		}
+
+		if (dateRange.isExactly()){
+			quarters.add(dateRange.getMin().getYear() * 4 + dateRange.getMin().get(IsoFields.QUARTER_OF_YEAR));
+			return;
+		}
+
 
 		YearMonth minQuarter = YearMonth.from(monthInQuarter.adjustInto(dateRange.getMin()));
 		YearMonth maxQuarter = YearMonth.from(monthInQuarter.adjustInto(dateRange.getMax()));

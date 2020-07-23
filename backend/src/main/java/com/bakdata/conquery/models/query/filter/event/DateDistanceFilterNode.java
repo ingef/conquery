@@ -2,12 +2,14 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
@@ -17,11 +19,12 @@ import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode
  */
 public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRange> {
 
+	private final ChronoUnit unit;
+
 	private boolean hit = false;
 	private LocalDate reference;
-	private ChronoUnit unit;
 
-	public DateDistanceFilterNode(Column column, ChronoUnit unit, Range.LongRange filterValue) {
+	public DateDistanceFilterNode(ChronoUnit unit, Range.LongRange filterValue, Column column) {
 		super(column, filterValue);
 		this.unit = unit;
 	}
@@ -38,7 +41,12 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 
 	@Override
 	public DateDistanceFilterNode doClone(CloneContext ctx) {
-		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
+		return new DateDistanceFilterNode(unit, filterValue, getColumn());
+	}
+
+	@Override
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+
 	}
 
 	@Override
@@ -51,7 +59,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 			return false;
 		}
 
-		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
+		LocalDate date = bucket.getAsDateRange(event, getColumn()).getMin();
 
 		final long between = unit.between(date, reference);
 
