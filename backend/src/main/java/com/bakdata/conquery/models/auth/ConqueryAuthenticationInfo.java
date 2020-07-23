@@ -25,11 +25,11 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	/**
 	 * A realm can indicate whether a logout button is shown for the user or not
 	 */
-	private final boolean hideUserLogout; 
+	private final boolean displayLogout; 
 
-	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm, boolean hideUserLogout) {
+	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm, boolean displayLogout) {
 		principals.add(userId, realm.getName());
 		this.credentials = credentials;
-		this.hideUserLogout = hideUserLogout;
+		this.displayLogout = displayLogout;
 	}
 }

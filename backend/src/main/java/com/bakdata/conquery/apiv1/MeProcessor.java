@@ -33,7 +33,7 @@ public class MeProcessor {
 	public FEMeInformation getUserInformation(@NonNull User user){
 		return FEMeInformation.builder()
 			.userName(user.getLabel())
-			.hideUserLogout(user.isHideUserLogout())
+			.hideUserLogout(!user.isDisplayLogout())
 			.groups(FEGroup.from(AuthorizationHelper.getGroupsOf(user, storage)))
 			.permissions( FEPermission.from(AuthorizationHelper.getEffectiveUserPermissions(user.getId(), List.of(DatasetPermission.DOMAIN), storage).values()))
 			.build();
