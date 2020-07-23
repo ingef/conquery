@@ -108,7 +108,7 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 				user);
 		}
 
-		return new ConqueryAuthenticationInfo(user.getId(), token, this, false);
+		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
 	}
 
 	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws URISyntaxException, MalformedURLException, ParseException, IOException {
