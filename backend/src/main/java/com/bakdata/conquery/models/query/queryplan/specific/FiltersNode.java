@@ -41,17 +41,19 @@ public class FiltersNode extends QPNode {
 	}
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
-		final ArrayList<EventFilterNode<?>> _eventFilters = new ArrayList<>(filters.size());
+		final ArrayList<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
 
+
+		// Select only Event Filtering nodes as they are used differently.
 		for (FilterNode<?> filter : filters) {
 			if (!(filter instanceof EventFilterNode)) {
 				continue;
 			}
 
-			_eventFilters.add((EventFilterNode<?>) filter);
+			eventFilters.add((EventFilterNode<?>) filter);
 		}
 
-		return  new FiltersNode(filters, _eventFilters, aggregators);
+		return  new FiltersNode(filters, eventFilters, aggregators);
 	}
 
 
@@ -96,16 +98,16 @@ public class FiltersNode extends QPNode {
 	
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
-		List<FilterNode<?>> _filters = new ArrayList<>(filters);
-		_filters.replaceAll(ctx::clone);
+		List<FilterNode<?>> filters = new ArrayList<>(this.filters);
+		filters.replaceAll(ctx::clone);
 
-		List<EventFilterNode<?>> _eventFilters = new ArrayList<>(eventFilters);
-		_eventFilters.replaceAll(ctx::clone);
+		List<EventFilterNode<?>> eventFilters = new ArrayList<>(this.eventFilters);
+		eventFilters.replaceAll(ctx::clone);
 
-		List<Aggregator<?>> _aggregators = new ArrayList<>(aggregators);
-		_aggregators.replaceAll(ctx::clone);
+		List<Aggregator<?>> aggregators = new ArrayList<>(this.aggregators);
+		aggregators.replaceAll(ctx::clone);
 
-		return new FiltersNode(_filters, _eventFilters, _aggregators);
+		return new FiltersNode(filters, eventFilters, aggregators);
 	}
 
 	@Override
