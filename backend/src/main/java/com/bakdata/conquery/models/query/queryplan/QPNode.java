@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -8,9 +11,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Collections;
-import java.util.List;
 
 @Getter(AccessLevel.PROTECTED) @Setter(AccessLevel.PROTECTED)
 public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
@@ -30,7 +30,8 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 		setContext(ctx);
 	}
 
-	public abstract void nextEvent(Bucket bucket, int event);
+	@Override
+	public abstract void acceptEvent(Bucket bucket, int event);
 
 	public abstract boolean isContained();
 

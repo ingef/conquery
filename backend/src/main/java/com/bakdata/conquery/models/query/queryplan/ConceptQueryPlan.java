@@ -22,11 +22,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter
+@Getter
+@Setter
 @ToString
-public class ConceptQueryPlan implements QueryPlan, EventIterating {
+public class ConceptQueryPlan implements QueryPlan {
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Set<Table> requiredTables;
 	private QPNode child;
 	@ToString.Exclude
@@ -34,13 +36,13 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
-	
+
 	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
-		if(generateSpecialDateUnion) {
+		if (generateSpecialDateUnion) {
 			aggregators.add(specialDateUnion);
 		}
 	}
-	
+
 	public ConceptQueryPlan(QueryPlanContext ctx) {
 		this(ctx.isGenerateSpecialDateUnion());
 	}
@@ -48,24 +50,27 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
-		
+
 		ConceptQueryPlan clone = new ConceptQueryPlan(false);
-		clone.setChild(child.clone(ctx));
-		for(Aggregator<?> agg:aggregators)
-			clone.aggregators.add(agg.clone(ctx));
-		clone.specialDateUnion = specialDateUnion.clone(ctx);
+		clone.setChild(ctx.clone(child));
+
+		for (Aggregator<?> agg : aggregators) {
+			clone.aggregators.add(ctx.clone(agg));
+		}
+
+		clone.specialDateUnion = ctx.clone(specialDateUnion);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
-	
+
 	protected void checkRequiredTables(WorkerStorage storage) {
-		if(requiredTables == null) {
+		if (requiredTables == null) {
 			synchronized (this) {
-				if(requiredTables == null) {
-					requiredTables = this.collectRequiredTables()
-						.stream()
-						.map(storage.getDataset().getTables()::getOrFail)
-						.collect(Collectors.toSet());
+				if (requiredTables == null) {
+					requiredTables = collectRequiredTables()
+											 .stream()
+											 .map(storage.getDataset().getTables()::getOrFail)
+											 .collect(Collectors.toSet());
 				}
 			}
 		}
@@ -77,13 +82,16 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 
 	public void nextEvent(Bucket bucket, int event) {
-		getChild().nextEvent(bucket, event);
+		getChild().acceptEvent(bucket, event);
 	}
-	
+
 	protected SinglelineContainedEntityResult result() {
 		Object[] values = new Object[aggregators.size()];
-		for(int i=0;i<values.length;i++)
+
+		for (int i = 0; i < values.length; i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
+		}
+
 		return EntityResult.of(entity.getId(), values);
 	}
 
@@ -95,35 +103,33 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 			return EntityResult.notContained();
 		}
 
-		for(Table currentTable : requiredTables) {
+		for (Table currentTable : requiredTables) {
 			nextTable(ctx, currentTable);
-			for(Bucket bucket : entity.getBucket(currentTable.getId())) {
+			for (Bucket bucket : entity.getBucket(currentTable.getId())) {
 				int localEntity = bucket.toLocal(entity.getId());
-				if(bucket.containsLocalEntity(localEntity)) {
-					if(isOfInterest(bucket)) {
+				if (bucket.containsLocalEntity(localEntity)) {
+					if (isOfInterest(bucket)) {
 						nextBlock(bucket);
 						int start = bucket.getFirstEventOfLocal(localEntity);
 						int end = bucket.getLastEventOfLocal(localEntity);
-						for(int event = start; event < end ; event++) {
+						for (int event = start; event < end; event++) {
 							nextEvent(bucket, event);
 						}
 					}
 				}
 			}
 		}
-		
-		if(isContained()) {
+
+		if (isContained()) {
 			return result();
 		}
 		return EntityResult.notContained();
 	}
-	
-	@Override
+
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		child.nextTable(ctx, currentTable);
 	}
-	
-	@Override
+
 	public void nextBlock(Bucket bucket) {
 		child.nextBlock(bucket);
 	}
@@ -145,13 +151,11 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return child.isOfInterest(entity);
 	}
 
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return child.isOfInterest(bucket);
 	}
-	
-	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		child.collectRequiredTables(requiredTables);
+
+	public Set<TableId> collectRequiredTables() {
+		return child.collectRequiredTables();
 	}
 }

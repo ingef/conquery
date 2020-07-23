@@ -36,7 +36,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
