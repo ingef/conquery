@@ -35,6 +35,8 @@ const Description = styled("p")`
   margin: 0 0 10px;
 `;
 
+const TabsField = styled("div")``;
+
 // Pre-set field components to avoid re-rendering,
 // => Avoids losing input focus.
 const Text = FormField(InputText);
@@ -44,6 +46,7 @@ const DateRange = FormField(InputDateRange);
 const ConceptGroup = FormField(FormConceptGroup);
 const Select = FormField(InputSelect);
 const Checkbox = FormField(InputCheckbox);
+const Tabs = FormField(TabsField);
 
 const SxInputSelect = styled(InputSelect)`
   margin-right: 5px;
@@ -78,7 +81,11 @@ const Field = ({ field, ...commonProps }: PropsType) => {
     case "HEADLINE":
       return <Headline>{field.label[locale]}</Headline>;
     case "DESCRIPTION":
-      return <Description>{field.label[locale]}</Description>;
+      return (
+        <Description
+          dangerouslySetInnerHTML={{ __html: field.label[locale] || "" }}
+        />
+      );
     case "STRING":
       return (
         <RxFormField
@@ -183,7 +190,7 @@ const Field = ({ field, ...commonProps }: PropsType) => {
       );
 
       return (
-        <div>
+        <Tabs>
           <RxFormField
             name={field.name}
             component={FormTabNavigation}
@@ -194,15 +201,16 @@ const Field = ({ field, ...commonProps }: PropsType) => {
               })),
             }}
           />
-          <NestedFields>
-            {tabToShow &&
-              tabToShow.fields.map((f, i) => {
+          {tabToShow && tabToShow.fields.length > 0 && (
+            <NestedFields>
+              {tabToShow.fields.map((f, i) => {
                 const key = isFormField(f) ? f.name : f.type + i;
 
                 return <Field key={key} field={f} {...commonProps} />;
               })}
-          </NestedFields>
-        </div>
+            </NestedFields>
+          )}
+        </Tabs>
       );
     case "CONCEPT_LIST":
       return (

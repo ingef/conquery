@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -25,6 +27,7 @@ import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
@@ -55,9 +58,9 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	@ToString.Include
 	private String label;
 	@Valid @NotEmpty
-	private List<ConceptElementId<?>> ids;
+	private List<ConceptElementId<?>> ids = Collections.emptyList();
 	@Valid @NotEmpty @JsonManagedReference
-	private List<CQTable> tables;
+	private List<CQTable> tables = Collections.emptyList();
 
 	@Valid @NotNull
 	@NsIdRefCollection
@@ -100,6 +103,10 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
+
+			aggregators.stream()
+					   .filter(aggregatorNode -> aggregatorNode.getAggregator() instanceof ExistsAggregator)
+					   .forEach(aggregatorNode -> ((ExistsAggregator) aggregatorNode.getAggregator()).addFilters(filters));
 
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
@@ -147,17 +154,24 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<AggregatorNode<?>> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
-			result = new FiltersNode(filters, result);
+			return new FiltersNode(filters, result);
 		}
+
 		return result;
 	}
 
 	private static List<AggregatorNode<?>> createConceptAggregators(ConceptQueryPlan plan, List<Select> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
+		List<ExistsAggregator> existsAggregators = new ArrayList<>();
 
 		for (Select s : select) {
 			AggregatorNode<?> agg = new AggregatorNode<>(s.createAggregator());
+
+			if(agg.getAggregator() instanceof ExistsAggregator){
+				existsAggregators.add(((ExistsAggregator) agg.getAggregator()));
+			}
+
 			plan.addAggregator(agg.getAggregator());
 			nodes.add(agg);
 		}
@@ -189,11 +203,10 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	}
 
 	@Override
-	public Set<NamespacedId> collectNamespacedIds() {
-		Set<NamespacedId> namespacedIds = new HashSet<>();
+	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+		checkNotNull(namespacedIds);
 		namespacedIds.addAll(ids);
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
-		return namespacedIds;
 	}
 }

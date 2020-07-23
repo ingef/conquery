@@ -2,8 +2,7 @@ package com.bakdata.conquery.util.support;
 
 import java.io.Closeable;
 import java.io.File;
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -11,16 +10,14 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
-import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 public class StandaloneSupport implements Closeable {
 
 	private final TestConquery testConquery;
-	@Getter
-	private final StandaloneCommand standaloneCommand;
 	@Getter
 	private final Namespace namespace;
 	@Getter
@@ -45,26 +40,8 @@ public class StandaloneSupport implements Closeable {
 	@Getter
 	private final User testUser;
 
-
 	public void waitUntilWorkDone() {
-		log.info("Waiting for jobs to finish");
-		boolean busy;
-		//sample 10 times from the job queues to make sure we are done with everything
-		long started = System.nanoTime();
-		for(int i=0;i<10;i++) {
-			do {
-				busy = false;
-				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
-				for (SlaveCommand slave : standaloneCommand.getSlaves())
-					busy |= slave.getJobManager().isSlowWorkerBusy();
-				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
-				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
-					log.warn("waiting for done work for a long time");
-					started = System.nanoTime();
-				}
-			} while(busy);
-		}
-		log.info("all jobs finished");
+		testConquery.waitUntilWorkDone();
 	}
 
 	public void preprocessTmp() {
@@ -79,13 +56,23 @@ public class StandaloneSupport implements Closeable {
 
 	@Override
 	public void close() {
-		DatasetId dataset = getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
-		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
+		testConquery.closeNamespace(getDataset().getId());
 	}
 
 	public Validator getValidator() {
-		return standaloneCommand.getMaster().getValidator();
+		return testConquery.getStandaloneCommand().getMaster().getValidator();
+	}
+
+	public MasterMetaStorage getMasterMetaStorage() {
+		return testConquery.getStandaloneCommand().getMaster().getStorage();
+	}
+
+	public NamespaceStorage getNamespaceStorage() {
+		return testConquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset.getId()).getStorage();
+	}
+
+	public List<SlaveCommand> getSlaves() {
+		return testConquery.getStandaloneCommand().getSlaves();
 	}
 	
 	/**

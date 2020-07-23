@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,12 +26,11 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
+import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -81,7 +81,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private boolean shared = false;
 
 	protected boolean machineGenerated;
-	
+
 
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
@@ -125,15 +125,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	public void start() {
-		ExecutionMetrics.getRunningQueriesCounter().inc();
-
 		startTime = LocalDateTime.now();
 		state = ExecutionState.RUNNING;
 	}
 
 	protected void finish(MasterMetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW)
-			log.error("Query {} was never run.", getId());
+			log.error("Query[{}] was never run.", getId());
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
@@ -156,10 +154,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				}
 			}
 		}
-
-		ExecutionMetrics.getRunningQueriesCounter().dec();
-		ExecutionMetrics.getQueryStateCounter(getState()).inc();
-		ExecutionMetrics.getQueriesTimeHistogram().update(getExecutionTime().toMillis());
 
 
 		log.info(
@@ -184,6 +178,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : label);
+		status.setPristineLabel(label == null || queryId.toString().equals(label));
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
@@ -205,31 +200,47 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected abstract URL getDownloadURL(URLBuilder url);
 
 	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus status = new ExecutionStatus();
-		setStatusBase(storage, url, user, status);
-		return status;
-		
-		
+		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
+	}
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
 	}
 	
-	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus.WithSingleQuery status = new ExecutionStatus.WithSingleQuery();
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
+		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
-		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		for(CreationFlag flag : creationFlags) {
+			switch (flag) {
+				case WITH_COLUMN_DESCIPTION:
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					break;
+				case WITH_SOURCE:
+					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+					break;
+				default:
+					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
+			}
+		}
 		return status;
+		
+	}
+
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
 		List<Permission> permissions = new ArrayList<>();
 		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
-		
+
 		boolean canExpand = user.isPermittedAll(permissions);
+
 
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);
@@ -243,9 +254,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return url != null && state != ExecutionState.NEW && isPermittedDownload;
+		return url != null && state == ExecutionState.DONE && isPermittedDownload;
 	}
-	
+
 	/**
 	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
 	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.

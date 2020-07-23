@@ -58,7 +58,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
 
-		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
 		
 		Collection<EntityExtractor> jobs = findPreprocessedJobs(config);
 		
@@ -93,7 +93,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 	public List<EntityExtractor> findPreprocessedJobs(ConqueryConfig config) throws IOException, JSONException {
 		List<EntityExtractor> l = new ArrayList<>();
 		for(PreprocessingDirectories directories:config.getPreprocessor().getDirectories()) {
-			File in = directories.getPreprocessedOutput().getAbsoluteFile();
+			File in = directories.getPreprocessedOutputDir().getAbsoluteFile();
 			for(File preprocessedFile:in.listFiles()) {
 				if(preprocessedFile.getName().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
 					try {

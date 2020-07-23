@@ -1,9 +1,10 @@
 package com.bakdata.conquery.metrics;
 
-import java.io.IOException;
 import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -14,13 +15,12 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,57 +34,50 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 	private static final String ACTIVE = "active";
 
 	private final MasterMetaStorage storage;
+	private final Duration activeUserDuration;
 
-	/**
-	 * Google cache managing evicition etc for us.
-	 */
-	private final Cache<User, Boolean> activeUsers = CacheBuilder.newBuilder()
-														   .expireAfterAccess(ConqueryConfig.getInstance().getMetricsConfig().getUserActiveHours(), TimeUnit.HOURS)
-															.removalListener(notification -> decrementPrimaryGroupCount((User) notification.getKey()))
-															.build();
+	private final Table<Group, User, LocalDateTime> activeUsers = HashBasedTable.create();
 
-
-	public void incrementPrimaryGroupCount(User user) {
-		final Optional<Group> primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage);
-		
-		if(primaryGroup.isEmpty()) {
-			return;
-		}
-
-		// Groups with less than three users are not tracked, for privacy reasons.
-		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
-			return;
-
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(USERS, primaryGroup.get().getName(), ACTIVE)).inc();
-	}
-
-	public void decrementPrimaryGroupCount(User user) {
-		final Optional<Group> primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage);
-		
-		if(primaryGroup.isEmpty()) {
-			return;
-		}
-		
-		// Groups with less than three users are not tracked.
-		if(primaryGroup.get().getMembers().size() <= ConqueryConfig.getInstance().getMetricsConfig().getGroupTrackingMinSize())
-			return;
-
-		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(USERS, primaryGroup.get().getName(), ACTIVE)).dec();
-	}
-
-
-	@SneakyThrows
 	@Override
-	public void filter(ContainerRequestContext requestContext) throws IOException {
+	public void filter(ContainerRequestContext requestContext) {
 		final Principal userPrincipal = requestContext.getSecurityContext().getUserPrincipal();
 
-		if(userPrincipal == null){
+		if(!(userPrincipal instanceof User)){
 			return;
 		}
 
-		activeUsers.get((User) userPrincipal, () -> {
-			incrementPrimaryGroupCount((User) userPrincipal);
-			return true;
-		});
+		final User user = (User) userPrincipal;
+		final Optional<Group> groupOptional = AuthorizationHelper.getPrimaryGroup(user, storage);
+
+		if (groupOptional.isEmpty()) {
+			log.debug("{} has no primary group", user);
+			return;
+		}
+
+		final Group group = groupOptional.get();
+
+		activeUsers.put(group, user, LocalDateTime.now());
+
+		final String metricName = MetricRegistry.name(USERS, group.getName(), ACTIVE);
+
+		// This does not register multiple gauges, but reuses them under the hood.
+		SharedMetricRegistries.getDefault().gauge(metricName, () -> activeUsersGauge(group));
+	}
+
+	/**
+	 * Count the number of users who have issued a request in the configured duration.
+	 */
+	private Gauge<Integer> activeUsersGauge(Group group){
+		return () -> {
+			int active = 0;
+			for (Map.Entry<User, LocalDateTime> usageTimes : activeUsers.row(group).entrySet()) {
+				if(usageTimes.getValue().isBefore(LocalDateTime.now().minus(activeUserDuration))){
+					continue;
+				}
+
+				active++;
+			}
+			return active;
+		};
 	}
 }

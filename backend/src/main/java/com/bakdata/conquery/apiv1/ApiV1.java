@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
+import java.time.Duration;
+
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
@@ -38,12 +40,16 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(master.getStorage())).to(MeProcessor.class);
 				bind(new QueryProcessor(namespaces, master.getStorage())).to(QueryProcessor.class);
-				bind(new FormConfigProcessor(master.getStorage())).to(FormConfigProcessor.class);
+				bind(new FormConfigProcessor(master.getValidator(),master.getStorage())).to(FormConfigProcessor.class);
 			}
 		});
 
 		environment.register(new CORSPreflightRequestFilter());
-		environment.register(new ActiveUsersFilter(master.getStorage()));
+
+		environment.register(new ActiveUsersFilter(master.getStorage(), Duration.ofMinutes(master.getConfig()
+																										.getMetricsConfig()
+																										.getUserActiveDuration()
+																										.toMinutes())));
 
 		/*
 		 * Register the authentication filter which protects all resources registered in this servlet.

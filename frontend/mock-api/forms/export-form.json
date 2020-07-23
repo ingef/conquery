@@ -89,7 +89,7 @@
               {
                 "type": "DESCRIPTION",
                 "label": {
-                  "de": "Dies beschreibt die Zeit davor und danach. Das heißt verschiedene Quartals-Zeiträume werden zur Berechnung herangezogen."
+                  "de": "Dies beschreibt die Zeit davor und danach.<br />Das heißt verschiedene Quartals-Zeiträume werden zur Berechnung herangezogen."
                 }
               },
               {

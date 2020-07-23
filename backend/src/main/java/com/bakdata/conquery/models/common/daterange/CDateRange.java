@@ -6,6 +6,7 @@ import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -58,27 +58,23 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 	
 	public static CDateRange of(int min, int max) {
-		if(min == Integer.MIN_VALUE) {
-			if(max == Integer.MAX_VALUE) {
-				return CDateRangeOpen.INSTANCE;
-			}
-			else {
-				return new CDateRangeEnding(max);
-			}
+		if(min == Integer.MIN_VALUE && max == Integer.MAX_VALUE){
+			return CDateRange.all();
 		}
-		else {
-			if(max == Integer.MAX_VALUE) {
-				return new CDateRangeStarting(min);
-			}
-			else {
-				if(min == max) {
-					return new CDateRangeExactly(min);
-				}
-				else {
-					return new CDateRangeClosed(min, max);
-				}
-			}
+
+		if(max == Integer.MAX_VALUE){
+			return atLeast(min);
 		}
+
+		if(min == Integer.MIN_VALUE){
+			return atMost(max);
+		}
+
+		if(min == max){
+			return exactly(min);
+		}
+
+		return new CDateRangeClosed(min, max);
 	}
 
 	/**
@@ -197,6 +193,64 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	@Override
 	public CDateRange span(CDateRange other) {
 		return of(Math.min(getMinValue(), other.getMinValue()), Math.max(getMaxValue(), other.getMaxValue()));
+	}
+
+	/**
+	 * Create a span over ranges ignoring incoming open values, and favoring closed values.
+	 *
+	 * @param other Date range to span over, may be open.
+	 * @return A new closed span.
+	 */
+	public CDateRange spanClosed(CDateRange other) {
+		if(other == null){
+			return this;
+		}
+
+		int min = Integer.MAX_VALUE;
+		{
+			if (getMinValue() != Integer.MIN_VALUE) {
+				min = Math.min(min, getMinValue());
+			}
+
+			if (other.getMinValue() != Integer.MIN_VALUE) {
+				min = Math.min(min, other.getMinValue());
+			}
+
+			min = Math.min(min, getMaxValue());
+			min = Math.min(min, other.getMaxValue());
+
+			if (min == Integer.MAX_VALUE) {
+				min = Integer.MIN_VALUE;
+			}
+		}
+
+		int max = Integer.MIN_VALUE;
+		{
+			if (getMaxValue() != Integer.MAX_VALUE) {
+				max = Math.max(max, getMaxValue());
+			}
+
+			if (other.getMaxValue() != Integer.MAX_VALUE) {
+				max = Math.max(max, other.getMaxValue());
+			}
+
+			max = Math.max(max, getMinValue());
+			max = Math.max(max, other.getMinValue());
+
+			if (max == Integer.MIN_VALUE) {
+				max = Integer.MAX_VALUE;
+			}
+		}
+
+		if(min == Integer.MIN_VALUE && max != Integer.MAX_VALUE){
+			min = max;
+		}
+
+		if(max == Integer.MAX_VALUE && min != Integer.MIN_VALUE){
+			max = min;
+		}
+
+		return of(min, max);
 	}
 
 	public static CDateRange spanOf(CDateRange a, CDateRange b) {
@@ -320,6 +374,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return The years as date ranges, from the first date in range to the last in ascending order.
 	 */
 	public List<CDateRange> getCoveredYears() {
+		if(isOpen()){
+			// TODO: 22.04.2020 throw exceptiopn?
+			return Collections.emptyList();
+		}
+
 		int startYear = this.getMin().getYear();
 		int endYear = this.getMax().getYear();
 
@@ -352,6 +411,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredQuarters() {
+		if(isOpen()){
+			// TODO: 22.04.2020 throw exceptiopn?
+			return Collections.emptyList();
+		}
+
 		List<CDateRange> ranges = new ArrayList<>();
 		
 		// First quarter begins with this range
@@ -385,6 +449,10 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredDays() {
+		if(isOpen()){
+			// TODO: 22.04.2020 throw exception?
+			return Collections.emptyList();
+		}
 
 		List<CDateRange> ranges = new ArrayList<>();
 		for(int i = this.getMinValue(); i <= this.getMaxValue(); i++) {
@@ -399,6 +467,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	public boolean isSingleQuarter() {
+		if(isOpen()){
+			return false;
+		}
+
+
 		int quarterStart = CDate.ofLocalDate(QuarterUtils.getFirstDayOfQuarter(getMinValue()));
 		return getMinValue() == quarterStart && getMaxValue() == CQuarter.getLastDay(quarterStart);
 	}
