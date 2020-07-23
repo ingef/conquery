@@ -85,6 +85,6 @@ public class DateRestrictingNode extends QPChainNode {
 	
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new DateRestrictingNode(restriction, ctx.clone((QPNode) getChild()));
+		return new DateRestrictingNode(restriction, ctx.clone(getChild()));
 	}
 }

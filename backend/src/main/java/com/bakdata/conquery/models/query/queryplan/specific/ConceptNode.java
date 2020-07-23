@@ -49,6 +49,7 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		if (tableActive && interested) {
+			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 			super.nextBlock(bucket);
 		}
 	}
@@ -56,9 +57,11 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		if (tableActive) {
-			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+			EntityRow row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+
 			int localEntity = bucket.toLocal(entity.getId());
-			long bits = currentRow.getCBlock().getIncludedConcepts()[localEntity];
+			long bits = row.getCBlock().getIncludedConcepts()[localEntity];
+
 			if((bits & requiredBits) != 0L || requiredBits == 0L) {
 				interested = true;
 				return super.isOfInterest(bucket);
@@ -101,7 +104,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, table, ctx.clone((QPNode) getChild()));
+		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()));
 	}
 
 	@Override

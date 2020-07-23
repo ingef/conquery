@@ -6,7 +6,6 @@ public abstract class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VA
 
 	private boolean hit = false;
 
-
 	public EventFilterNode(FILTER_VALUE filterValue) {
 		super(filterValue);
 	}

@@ -1,21 +1,33 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnEventFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Event is included when the value in column is one of many selected.
  */
-public class MultiSelectFilterNode extends SingleColumnEventFilterNode<String[]> {
+public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
-	private int[] selectedValues;
-	private boolean hit;
+	private final int[] selectedValues;
+
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
 
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
-		super(column, filterValue);
+		super(filterValue);
+		this.column = column;
 		this.selectedValues = new int[filterValue.length];
 	}
 
@@ -63,4 +75,10 @@ public class MultiSelectFilterNode extends SingleColumnEventFilterNode<String[]>
 
 		return false;
 	}
+
+	@Override
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
+	}
+
 }

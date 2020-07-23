@@ -2,26 +2,38 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnEventFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Entity is included as long as Dates are within a certain range.
  */
-public class DateDistanceFilterNode extends SingleColumnEventFilterNode<Range.LongRange> {
+public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 	private LocalDate reference;
 	private ChronoUnit unit;
 
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
+
 	public DateDistanceFilterNode(Column column, ChronoUnit unit, Range.LongRange filterValue) {
-		super(column, filterValue);
+		super(filterValue);
+		this.column = column;
 		this.unit = unit;
 	}
 
@@ -55,5 +67,10 @@ public class DateDistanceFilterNode extends SingleColumnEventFilterNode<Range.Lo
 		final long between = unit.between(date, reference);
 
 		return filterValue.contains(between);
+	}
+
+	@Override
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
 	}
 }

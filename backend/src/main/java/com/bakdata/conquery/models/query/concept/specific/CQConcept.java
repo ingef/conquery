@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
@@ -102,19 +101,11 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
-
-
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
 			final FiltersNode filtersNode = conceptChild(concept, context, filters, aggregators);
-
-			aggregators.stream()
-					   .filter(ExistsAggregator.class::isInstance)
-					   .forEach(agg -> ((ExistsAggregator) agg).setFilters(filtersNode));
-
-
 
 			tableNodes.add(
 				new ConceptNode(
