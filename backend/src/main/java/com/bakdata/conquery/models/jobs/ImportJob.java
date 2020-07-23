@@ -66,27 +66,24 @@ public class ImportJob extends Job {
 
 	@Override
 	public void execute() throws JSONException {
-		this.progressReporter.setMax(16);
+		this.progressReporter.setMax(7);
+
 		try (HCFile file = new HCFile(importFile, false)) {
 
 			if (log.isInfoEnabled()) {
-				log.info(
-						"Reading HCFile {}:\n\theader size: {}\n\tcontent size: {}",
-						importFile,
-						BinaryByteUnit.format(file.getHeaderSize()),
-						BinaryByteUnit.format(file.getContentSize())
-				);
+				log.info("Reading HCFile {}: header size: {}  content size: {}", importFile, BinaryByteUnit.format(file.getHeaderSize()), BinaryByteUnit.format(file.getContentSize()));
 			}
-			PreprocessedHeader header = readHeader(file);
 
-			//see #161  match to table check if it exists and columns are of the right type
+			PreprocessedHeader header = readHeader(file);
 
 			//check that all workers are connected
 			namespace.checkConnections();
 
 			//update primary dictionary
 			boolean mappingRequired = createMappings(header);
+
 			this.progressReporter.report(1);
+
 			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
 
 			// Distribute the new IDs between the slaves
@@ -108,40 +105,29 @@ public class ImportJob extends Job {
 				}
 			}
 
-
-			//update the allIdsTable
-			log.info("\tupdating id information");
-
-			this.progressReporter.report(1);
-
-
 			//create data import and store/send it
 			log.info("\tupdating import information");
 			//if mapping is not required we can also use the old infos here
 			Import outImport = createImport(header, !mappingRequired);
 			Import inImport = createImport(header, true);
+
 			inImport.setSuffix(inImport.getSuffix() + "_old");
+
 			namespace.getStorage().updateImport(outImport);
 			namespace.sendToAll(new AddImport(outImport));
 
 			this.progressReporter.report(1);
-			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
 
-			if (primaryMapping.getNewIds() != null) {
-				log.info("Primary mapping contained {} new Ids", primaryMapping.getNumberOfNewIds());
-			}
-			else {
-				log.warn("Primary mapping contained no new Ids.");
-			}
 
 			//import the actual data
 			log.info("\timporting");
 
+			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 
-			ProgressReporter child = this.progressReporter.subJob(5);
-			child.setMax(header.getGroups() + 1);
+			ProgressReporter child = this.progressReporter.subJob(header.getGroups());
 
 			try (Input in = new Input(file.readContent())) {
 				for (long group = 0; group < header.getGroups(); group++) {
@@ -167,13 +153,12 @@ public class ImportJob extends Job {
 
 					bucket.getIncludedEntities().add(entityId);
 
-					bytes
-							.computeIfAbsent(bucketNumber, i -> new ArrayList<>())
-							.add(data);
+					bytes.computeIfAbsent(bucketNumber, i -> new ArrayList<>()).add(data);
 
 					child.report(1);
 				}
 			}
+
 			sendBuckets(primaryMapping, buckets, bytes);
 		}
 		catch (IOException e) {
@@ -249,19 +234,27 @@ public class ImportJob extends Job {
 		}
 		//but if there are new ids we have to
 		else {
-			log.debug("\t\tnew ids {}", primaryMapping.getNewIds());
-			log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
+			log.debug("\t\t {} new ids {}", primaryMapping.getNumberOfNewIds(), primaryMapping.getNewIds());
+			log.debug("\t\texample of new id: {}", new String(primaryDict.getElement(primaryMapping.getNewIds().getMin())));
 			log.debug("\t\tstoring");
+
 			namespace.getStorage().updateDictionary(primaryDict);
+
 			this.progressReporter.report(1);
+
 			log.debug("\t\tsending");
+
 			namespace.sendToAll(new UpdateDictionary(primaryDict));
+
 			this.progressReporter.report(1);
 		}
 
 		boolean mappingRequired = false;
+
 		log.debug("\tsending secondary dictionaries");
+
 		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
+
 		for (int colPos = 0; colPos < header.getColumns().length; colPos++) {
 			PPColumn col = header.getColumns()[colPos];
 			Column tableCol = table.getColumns()[colPos];
