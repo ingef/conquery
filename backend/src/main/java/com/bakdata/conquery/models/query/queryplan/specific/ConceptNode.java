@@ -56,7 +56,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return entity.has(table.getId());
+		return entity.hasConnector(table.getId());
 	}
 
 	@Override
