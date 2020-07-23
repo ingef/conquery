@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -16,6 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
+import lombok.NonNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
@@ -23,14 +23,14 @@ public class ExternalNode extends QPNode {
 	private SpecialDateUnion dateUnion;
 	@Getter
 	private final DatasetId dataset;
-	@Getter @NotEmpty
+	@Getter @NotEmpty @NonNull
 	private final Map<Integer, CDateSet> includedEntities;
 	private CDateSet contained;
 	
-	public ExternalNode(SpecialDateUnion dateUnion, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
+	public ExternalNode(SpecialDateUnion dateUnion, DatasetId dataset, @NonNull Map<Integer, CDateSet> includedEntities) {
 		this.dateUnion = dateUnion;
 		this.dataset = dataset;
-		this.includedEntities = Objects.requireNonNull(includedEntities);
+		this.includedEntities = includedEntities;
 	}
 
 	@Override
@@ -49,11 +49,10 @@ public class ExternalNode extends QPNode {
 		if(contained != null) {
 			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained);
-			super.nextTable(ctx.withDateRestriction(newSet),currentTable);
+			ctx = ctx.withDateRestriction(newSet);
 		}
-		else
-			super.nextTable(ctx, currentTable);
 
+		super.nextTable(ctx, currentTable);
 		dateUnion.nextTable(getContext(), currentTable);
 	}
 
