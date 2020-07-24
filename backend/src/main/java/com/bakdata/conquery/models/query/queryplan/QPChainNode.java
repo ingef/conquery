@@ -4,13 +4,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
-
 import lombok.Getter;
 
 public abstract class QPChainNode extends QPNode {
@@ -40,7 +38,7 @@ public abstract class QPChainNode extends QPNode {
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
 		child.nextTable(ctx, currentTable);
 	}

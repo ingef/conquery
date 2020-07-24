@@ -2,13 +2,11 @@ package com.bakdata.conquery.models.query.filter;
 
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 
 /**
@@ -32,7 +30,7 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
 		aggregator.nextTable(ctx, currentTable);
 	}

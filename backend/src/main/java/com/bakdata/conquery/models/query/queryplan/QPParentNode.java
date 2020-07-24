@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -17,11 +14,11 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Getter @Setter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -66,9 +63,9 @@ public abstract class QPParentNode extends QPNode {
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
-		currentTableChildren = childMap.get(currentTable.getId());
+		currentTableChildren = childMap.get(currentTable);
 		for(int i=0,size=currentTableChildren.size();i<size;i++) {
 			currentTableChildren.get(i).nextTable(ctx, currentTable);
 		}

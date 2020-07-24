@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
@@ -27,8 +25,5 @@ public class RemoveImportJob extends WorkerMessage.Slow {
 		log.info("Deleting Import[{}]", importId);
 
 		context.getStorage().removeImport(importId);
-
-		// Remove associated ALL_IDs-Import
-		context.getStorage().removeImport(new ImportId(new TableId(context.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
 	}
 }

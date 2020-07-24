@@ -19,8 +19,10 @@ import javax.validation.Validator;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.FilterSearch;
+
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
@@ -67,7 +69,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingSt
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
@@ -148,22 +149,6 @@ public class AdminProcessor {
 		// create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
-
-		// add allIds table
-		Table allIdsTable = new Table();
-		{
-			allIdsTable.setName(ConqueryConstants.ALL_IDS_TABLE);
-			allIdsTable.setDataset(dataset);
-			Column primaryColumn = new Column();
-			{
-				primaryColumn.setName(ConqueryConstants.ALL_IDS_TABLE___ID);
-				primaryColumn.setPosition(0);
-				primaryColumn.setTable(allIdsTable);
-				primaryColumn.setType(MajorTypeId.STRING);
-			}
-			allIdsTable.setPrimaryColumn(primaryColumn);
-		}
-		dataset.getTables().add(allIdsTable);
 
 		// store dataset in own storage
 		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
@@ -552,7 +537,6 @@ public class AdminProcessor {
 				"Delete Import" + importId,
 				() -> {
 					namespace.getStorage().removeImport(importId);
-					namespace.getStorage().removeImport(new ImportId(new TableId(importId.getDataset(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
 				}
 		));
 

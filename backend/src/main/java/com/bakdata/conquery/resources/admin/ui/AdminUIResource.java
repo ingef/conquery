@@ -171,11 +171,15 @@ public class AdminUIResource extends HAdmin {
 			private final UUID id = UUID.randomUUID();
 			@Override
 			public void execute() {
+				progressReporter.setMax(100);
+
 				while(!progressReporter.isDone() && !isCancelled()) {
-					progressReporter.report(0.01d);
-					if(progressReporter.getProgress()>=1) {
+					progressReporter.report(1);
+
+					if(progressReporter.getProgress() >= 100) {
 						progressReporter.done();
 					}
+
 					Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.MILLISECONDS);
 				}
 			}

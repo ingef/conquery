@@ -1,12 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Map;
+import java.util.Objects;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
@@ -14,9 +17,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Map;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -32,7 +32,7 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		//if there was no date restriction we can just use the restriction CDateSet
 		if(ctx.getDateRestriction().isAll()) {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
