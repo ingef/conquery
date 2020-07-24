@@ -64,7 +64,7 @@ public abstract class QPParentNode extends QPNode {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
 		currentTableChildren = childMap.get(currentTable.getId());
 

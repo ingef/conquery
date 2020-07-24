@@ -4,7 +4,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -91,7 +90,7 @@ public class TemporalQueryNode extends QPNode {
 	 * Calls nextBlock on its children.documentation code for refactored matchers.
 	 */
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		reference.getChild().nextTable(ctx, currentTable);
 		preceding.getChild().nextTable(ctx, currentTable);
 	}

@@ -237,7 +237,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Checking state after re-start");
 
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
 				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
