@@ -146,24 +146,31 @@ public class AdminUIResource extends HAdmin {
 	@GET
 	@Path("/jobs/")
 	public View getJobs() {
-		final Map<String, JobManagerStatus> jobManagerStatus = ImmutableMap.<String, JobManagerStatus>builder()
-															 .put("Master", processor.getJobManager()
-																					 .reportStatus())
-															 .putAll(
-																	 processor
-																			 .getNamespaces()
-																			 .getSlaves()
-																			 .values()
-																			 .stream()
-																			 .collect(Collectors.toMap(
-																					 si -> Objects.toString(si.getRemoteAddress()),
-																					 SlaveInformation::getJobManagerStatus
-																			 ))
-															 )
-															 .build();
-		return new UIView<>("jobs.html.ftl", processor.getUIContext(), jobManagerStatus);
+		Map<String, JobManagerStatus> status =
+				ImmutableMap.<String, JobManagerStatus>builder()
+						.put("Master", processor.getJobManager().reportStatus())
+						// Namespace JobManagers on Master
+						.putAll(
+								processor.getNamespaces().getNamespaces().stream()
+										 .collect(Collectors.toMap(
+												 ns -> String.format("Master::%s", ns.getDataset().getId()),
+												 ns -> ns.getJobManager().reportStatus()
+										 )))
+						// Remote Worker JobManagers
+						.putAll(
+								processor
+										.getNamespaces()
+										.getSlaves()
+										.values()
+										.stream()
+										.collect(Collectors.toMap(
+												si -> Objects.toString(si.getRemoteAddress()),
+												SlaveInformation::getJobManagerStatus
+										))
+						)
+						.build();
+		return new UIView<>("jobs.html.ftl", processor.getUIContext(), status);
 	}
-
 
 	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDemoJob() {
