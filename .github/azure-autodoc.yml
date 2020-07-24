@@ -35,6 +35,6 @@ steps:
         git config --global user.name "bakdata-bot"
         git add *
         git commit --message "automatic update to docs"
-        git push origin HEAD:$(System.PullRequest.SourceBranch)
+        git push origin --set-upstream $(System.PullRequest.SourceBranch)
         exit -1
       }
