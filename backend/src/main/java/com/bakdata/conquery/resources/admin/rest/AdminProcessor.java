@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
@@ -244,8 +245,8 @@ public class AdminProcessor {
 		AuthorizationHelper.deleteRole(storage, roleId);
 	}
 
-	public List<Role> getAllRoles() {
-		return new ArrayList<>(storage.getAllRoles());
+	public TreeSet<Role> getAllRoles() {
+		return new TreeSet<>(storage.getAllRoles());
 	}
 
 	public List<User> getUsers(Role role) {
@@ -334,8 +335,8 @@ public class AdminProcessor {
 		return new UIContext(namespaces, ResourceConstants.getAsTemplateModel());
 	}
 
-	public List<User> getAllUsers() {
-		return new ArrayList<>(storage.getAllUsers());
+	public TreeSet<User> getAllUsers() {
+		return new TreeSet<>(storage.getAllUsers());
 	}
 
 	public FEUserContent getUserContent(UserId userId) {
@@ -377,8 +378,8 @@ public class AdminProcessor {
 		}
 	}
 
-	public Collection<Group> getAllGroups() {
-		return storage.getAllGroups();
+	public TreeSet<Group> getAllGroups() {
+		return new TreeSet<>(storage.getAllGroups());
 	}
 
 	public FEGroupContent getGroupContent(GroupId groupId) {
@@ -459,7 +460,7 @@ public class AdminProcessor {
 	}
 
 	public FEAuthOverview getAuthOverview() {
-		Collection<OverviewRow> overview = new ArrayList<>();
+		Collection<OverviewRow> overview = new TreeSet<>();
 		for (User user : storage.getAllUsers()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
 			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
