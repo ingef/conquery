@@ -29,7 +29,7 @@ public class ConceptQueryPlan implements QueryPlan {
 
 	@Getter
 	@Setter
-	private ThreadLocal<Set<TableId>> requiredTables;
+	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
 	private QPNode child;
 	@ToString.Exclude
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
