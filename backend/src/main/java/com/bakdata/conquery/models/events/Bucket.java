@@ -30,10 +30,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Contains data from possibly multiple entities, loaded in a single import.
  */
+@Slf4j
 @FieldNameConstants
 @Getter @Setter @ToString @JsonDeserialize(using = BucketDeserializer.class)
 public abstract class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer>, JsonSerializable {
@@ -68,6 +70,21 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 					   .filter(this::containsLocalEntity)
 					   .map(this::toGlobal)
 					   .iterator();
+  }
+
+  public abstract int getBucketSize();
+
+	@Override
+	public PrimitiveIterator.OfInt iterator() {
+		log.info("Bucket[{}] size = {}", getId(), getBucketSize()); // TODO: 21.07.2020 FK: This is just temporary for bug-finding in CI.
+		return IntStream.range(0, getBucketSize())
+						.filter(this::containsLocalEntity)
+						.map(this::toGlobal)
+						.iterator();
+	}
+
+	public boolean containsLocalEntity(int localEntity) {
+		return offsets[localEntity]!=-1;
 	}
 
 	public abstract void initFields(int numberOfEntities);
@@ -80,9 +97,7 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 		return entity + getBucketSize()*bucket;
 	}
 	
-	public boolean containsLocalEntity(int localEntity) {
-		return offsets[localEntity]!=-1;
-	}
+
 	
 	public int getFirstEventOfLocal(int localEntity) {
 		return offsets[localEntity];
@@ -128,7 +143,7 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 			.iterator();
 	}
 
-	public abstract int getBucketSize();
+
 	
 	public boolean has(int event, Column column) {
 		return has(event, column.getPosition());
