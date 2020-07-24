@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -113,6 +114,10 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.deleteGroup(groupToDelete.getId());
 		}
 
+		// TODO: 21.07.2020 FK: This is temporary logging for finding a bug in CI.
+		final int entityBucketSizeBeforeRestart = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+		log.info("Configured bucket size = {}", entityBucketSizeBeforeRestart);
+
 		testConquery.shutdown(conquery);
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
@@ -123,6 +128,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport support = testConquery.openDataset(dataset);
 
 		test.executeTest(support);
+
+		assertThat(entityBucketSizeBeforeRestart).isEqualTo(ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
 
 		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
