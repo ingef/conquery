@@ -8,13 +8,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class ProgressReporterTest {
@@ -37,11 +35,13 @@ public class ProgressReporterTest {
 		Thread.sleep(2_000);
 		
 		pr.start();
-		pr.setMax(100d);
-		pr.report(1d);
+		pr.setMax(100);
+		pr.report(1);
+
 		List<Integer> occurenceOfHour = allOccurencesOf(pr.getEstimate(), "h");
+
 		for (int i = 0; i < 10; i++) {
-			pr.report(1d);
+			pr.report(1);
 			Thread.sleep(100);
 			assertThat(occurenceOfHour).isEqualTo(allOccurencesOf(pr.getEstimate(), "h"));
 		}
@@ -51,18 +51,17 @@ public class ProgressReporterTest {
 	@Test
 	public void basicTest() throws IOException, InterruptedException {
 		
-		ProgressReporterImpl pr = (ProgressReporterImpl)ProgressReporter.createStarted();
-		pr.setMax(100d);
+		ProgressReporter pr = ProgressReporter.createStarted();
+		pr.setMax(100);
 		assertThat(pr.getEstimate()).contains(UNKNOWN);
-		log.info(pr.getStopwatch().toString());
 		Thread.sleep(100);
-		log.info(pr.getStopwatch().toString());
 
 		pr.report(1);
 		
 		log.info(pr.getEstimate());
 		pr.report(99);
 		assertThat(pr.isDone()).isFalse();
+		pr.report(1);
 		pr.done();
 		
 		assertThat(pr.isDone()).isTrue();
@@ -72,7 +71,7 @@ public class ProgressReporterTest {
 	@Test
 	public void serialisationTest() throws JsonProcessingException, InterruptedException {
 		ProgressReporterImpl pr = (ProgressReporterImpl)ProgressReporter.createStarted();
-		pr.setMax(100d);
+		pr.setMax(100);
 		assertThat(pr.getEstimate()).contains(UNKNOWN);
 		Thread.sleep(100);
 		pr.report(1);
