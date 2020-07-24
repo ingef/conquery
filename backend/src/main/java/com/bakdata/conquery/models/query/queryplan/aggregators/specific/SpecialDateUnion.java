@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -24,7 +24,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table table) {
+	public void nextTable(QueryExecutionContext ctx, TableId table) {
 		currentColumn = ctx.getValidityDateColumn();
 		dateRestriction = ctx.getDateRestriction();
 	}

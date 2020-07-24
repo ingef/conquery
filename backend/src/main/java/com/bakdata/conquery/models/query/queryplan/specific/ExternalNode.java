@@ -3,11 +3,8 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Map;
 import java.util.Set;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -20,17 +17,18 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
 
+	private final TableId tableId;
 	private SpecialDateUnion dateUnion;
-	@Getter
-	private final DatasetId dataset;
+
 	@Getter @NotEmpty @NonNull
 	private final Map<Integer, CDateSet> includedEntities;
+
 	private CDateSet contained;
-	
-	public ExternalNode(SpecialDateUnion dateUnion, DatasetId dataset, @NonNull Map<Integer, CDateSet> includedEntities) {
+
+	public ExternalNode(TableId tableId, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnion) {
 		this.dateUnion = dateUnion;
-		this.dataset = dataset;
 		this.includedEntities = includedEntities;
+		this.tableId = tableId;
 	}
 
 	@Override
@@ -41,11 +39,11 @@ public class ExternalNode extends QPNode {
 	
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		return new ExternalNode(ctx.clone(dateUnion), dataset, includedEntities);
+		return new ExternalNode(tableId, includedEntities, ctx.clone(dateUnion));
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if(contained != null) {
 			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained);
@@ -72,11 +70,6 @@ public class ExternalNode extends QPNode {
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
 		//add the allIdsTable
-		requiredTables.add(
-			new TableId(
-				dataset,
-				ConqueryConstants.ALL_IDS_TABLE
-			)
-		);
+		requiredTables.add(tableId);
 	}
 }
