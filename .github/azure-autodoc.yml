@@ -29,14 +29,17 @@ steps:
     targetType: inline
     workingDirectory: docs/
     script: |
+      echo "Diffing the generated docs with the previous state"
       git diff --quiet HEAD || \
       {
         echo "Documentation needs updated"
+        git fetch
+        git checkout $(System.PullRequest.SourceBranch)
         git config --global user.email "bot@bakdata.com"
         git config --global user.name "bakdata-bot"
         git add *
         git commit --message "automatic update to docs"
-        git push origin --set-upstream $(System.PullRequest.SourceBranch)
+        git push
         echo "Documentation updated"
         exit -1
       }
