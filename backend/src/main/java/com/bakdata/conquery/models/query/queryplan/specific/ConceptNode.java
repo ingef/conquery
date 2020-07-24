@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -17,7 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class ConceptNode extends QPChainNode {
 
-	private final ConceptElement[] concepts;
+	private final ConceptElement<?>[] concepts;
 	private final long requiredBits;
 	private final CQTable table;
 	private boolean tableActive = false;
@@ -51,7 +52,12 @@ public class ConceptNode extends QPChainNode {
 			super.nextBlock(bucket);
 		}
 	}
-	
+
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return entity.hasConnector(table.getId());
+	}
+
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		if (tableActive) {

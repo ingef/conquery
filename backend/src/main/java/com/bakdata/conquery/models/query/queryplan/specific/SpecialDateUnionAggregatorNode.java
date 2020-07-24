@@ -55,7 +55,7 @@ public class SpecialDateUnionAggregatorNode extends AggregatorNode<String> {
 			}
 		}
 		
-		if(dateRestriction.countDays() != null) {
+		if(!dateRestriction.isEmpty()) {
 			((SpecialDateUnion) getAggregator()).getResultSet().addAll(dateRestriction);
 		}
 	}

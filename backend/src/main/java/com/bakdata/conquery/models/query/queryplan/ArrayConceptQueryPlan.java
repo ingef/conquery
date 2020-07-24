@@ -83,6 +83,11 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+		if(!isOfInterest(entity)){
+			return EntityResult.notContained();
+		}
+
+
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
 		CDateSet dateSet = CDateSet.create();

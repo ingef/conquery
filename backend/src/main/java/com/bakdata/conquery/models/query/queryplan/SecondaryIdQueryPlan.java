@@ -70,9 +70,14 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 */
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+		if(!query.isOfInterest(entity)){
+			return EntityResult.notContained();
+		}
+
 		query.checkRequiredTables(ctx.getStorage());
 		query.init(entity);
-		if (query.getRequiredTables().get().isEmpty()) {
+
+    if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
 		}
 
