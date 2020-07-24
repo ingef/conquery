@@ -61,7 +61,6 @@ public class ProgressReporterTest {
 		log.info(pr.getEstimate());
 		pr.report(99);
 		assertThat(pr.isDone()).isFalse();
-		pr.report(1);
 		pr.done();
 		
 		assertThat(pr.isDone()).isTrue();
