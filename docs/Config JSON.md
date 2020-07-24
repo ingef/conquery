@@ -74,12 +74,12 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L28-L30) | storeName | `String` | `"authenticationStore"` |  | The name of the folder the store lives in. | 
 </p></details>
 
-### OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/passwordflow/OIDCResourceOwnerPasswordCredeantialRealmFactory.java#L9)</sup></sub></sup>
+### OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/passwordflow/OIDCResourceOwnerPasswordCredentialRealmFactory.java#L9)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredeantialRealmFactory`
+Java Type: `com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealmFactory`
 
 Supported Fields:
 
