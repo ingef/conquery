@@ -31,10 +31,12 @@ steps:
     script: |
       git diff --quiet HEAD || \
       {
+        echo "Documentation needs updated"
         git config --global user.email "bot@bakdata.com"
         git config --global user.name "bakdata-bot"
         git add *
         git commit --message "automatic update to docs"
         git push origin --set-upstream $(System.PullRequest.SourceBranch)
+        echo "Documentation updated"
         exit -1
       }
