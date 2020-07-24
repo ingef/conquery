@@ -7,10 +7,10 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import org.keycloak.authorization.client.Configuration;
 
 @CPSType(base = AuthenticationConfig.class, id = "OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION")
-public class OIDCResourceOwnerPasswordCredeantialRealmFactory extends Configuration implements AuthenticationConfig {
+public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configuration implements AuthenticationConfig {
 
 	@Override
 	public ConqueryAuthenticationRealm createRealm(AuthorizationController controller) {
-		return new OIDCResourceOwnerPasswordCredeantialRealm(controller.getStorage(), this);
+		return new OIDCResourceOwnerPasswordCredentialRealm(controller.getStorage(), this);
 	}
 }

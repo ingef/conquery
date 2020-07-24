@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -29,8 +28,6 @@ import com.nimbusds.oauth2.sdk.AuthorizationGrant;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
 import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.TokenErrorResponse;
-import com.nimbusds.oauth2.sdk.TokenIntrospectionErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionRequest;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionResponse;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionSuccessResponse;
@@ -51,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.representation.ServerConfiguration;
 
@@ -61,12 +59,12 @@ import org.keycloak.authorization.client.representation.ServerConfiguration;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthenticationRealm implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
+public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthenticationRealm implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 	
 	private final MasterMetaStorage storage;
-	private final OIDCResourceOwnerPasswordCredeantialRealmFactory config;
+	private final OIDCResourceOwnerPasswordCredentialRealmFactory config;
 	
 	private ClientAuthentication clientAuthentication;
 	private AuthzClient authzClient;
@@ -96,6 +94,13 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		
 		TokenIntrospectionSuccessResponse successResponse = tokenCache.get((JwtToken) token);
+// TODO check why the tokens are expired (possible time skrew)
+//		LocalDateTime expTime = successResponse.getExpirationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+//		LocalDateTime now = LocalDateTime.now();
+//		if(expTime.isBefore(now)){
+//			tokenCache.invalidate(token);
+//			throw new ExpiredCredentialsException();
+//		}
 
 		String username = successResponse.getUsername();
 		if(StringUtils.isBlank(username)) {
@@ -120,21 +125,24 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
 	}
 
-	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws MalformedURLException, ParseException, IOException {
+	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws ParseException, IOException {
 		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(serverConf.getTokenIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
-		
+				
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
 		
-		if (response instanceof TokenIntrospectionErrorResponse) {
-			log.error(((TokenIntrospectionErrorResponse) response).getErrorObject().toString());
-			throw new IllegalStateException("Unable to retrieve access token from auth server.");
+		if (!response.indicatesSuccess()) {
+			log.error(response.toErrorResponse().getErrorObject().toString());
+			throw new AuthenticationException("Unable to retrieve access token from auth server.");
 		}
 		else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
 			log.error("Unknown token response {}.", response.getClass().getName());
 			throw new IllegalStateException("Unknown token response. See log.");
 		}
 
-		TokenIntrospectionSuccessResponse successResponse = (TokenIntrospectionSuccessResponse) response;
+		TokenIntrospectionSuccessResponse successResponse = response.toSuccessResponse();
+		if(!successResponse.isActive()) {
+			throw new ExpiredCredentialsException();
+		}
 		return successResponse;
 	}
 
@@ -168,8 +176,8 @@ public class OIDCResourceOwnerPasswordCredeantialRealm extends ConqueryAuthentic
 		
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
-		if (response instanceof TokenErrorResponse) {
-			log.error(((TokenErrorResponse) response).getErrorObject().toString());
+		if (!response.indicatesSuccess()) {
+			log.error( response.toErrorResponse().getErrorObject().toString());
 			throw new IllegalStateException("Unable to retrieve access token from auth server.");
 		}
 		else if (!(response instanceof AccessTokenResponse)) {
