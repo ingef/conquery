@@ -16,7 +16,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	@Data
 	public static final class Values {
 		private double progress = 0;
-		private int max = 0;
+		private long max = 0;
 		private boolean done = false;
 		private boolean started = false;
 		private long waitedSeconds;
@@ -58,7 +58,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	}
 
 	@Override
-	public ProgressReporter subJob(int steps) {
+	public ProgressReporter subJob(long steps) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -68,7 +68,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	}
 
 	@Override
-	public void setMax(int max) {
+	public void setMax(long max) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -83,7 +83,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	}
 
 	@Override
-	public int getMax() {
+	public long getMax() {
 		return values.getMax();
 	}
 

@@ -127,9 +127,9 @@ public class ImportJob extends Job {
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 
-			this.progressReporter.setMax(this.progressReporter.getMax() + (int) header.getGroups());
-			ProgressReporter child = this.progressReporter.subJob((int) header.getGroups());
-			child.setMax((int) header.getGroups());
+			this.progressReporter.setMax(this.progressReporter.getMax() + header.getGroups());
+			ProgressReporter child = this.progressReporter.subJob(header.getGroups());
+			child.setMax(header.getGroups());
 
 			try (Input in = new Input(file.readContent())) {
 				for (long group = 0; group < header.getGroups(); group++) {

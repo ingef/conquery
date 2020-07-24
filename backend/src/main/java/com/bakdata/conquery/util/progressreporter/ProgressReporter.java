@@ -30,13 +30,13 @@ public interface ProgressReporter {
 
 	double getProgress();
 
-	ProgressReporter subJob(int steps);
+	ProgressReporter subJob(long steps);
 	String getEstimate();
 
 	void report(int steps);
 
-	void setMax(int max);
-	int getMax();
+	void setMax(long max);
+	long getMax();
 
 	void done();
 	boolean isDone();

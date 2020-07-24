@@ -12,10 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 public class ProgressReporterImpl implements ProgressReporter {
 
 
-	@Getter
-	private int max = 1;
-	private int innerProgress = 0;
-	private int reservedForChildren = 0;
+	@Getter(onMethod_ = @Override)
+	private long max = 1;
+	private long innerProgress = 0;
+	private long reservedForChildren = 0;
 	private final List<ChildProgressReporter> children = new ArrayList<ChildProgressReporter>();
 
 	private final long waitBegin;
@@ -25,8 +25,6 @@ public class ProgressReporterImpl implements ProgressReporter {
 	public ProgressReporterImpl(){
 		waitBegin = System.currentTimeMillis();
 	}
-
-
 
 	@Override
 	public void start() {
@@ -50,7 +48,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	@Override
 	/*Value between zero and one*/
 	public double getProgress() {
-		int realProgress = innerProgress;
+		long realProgress = innerProgress;
 
 		for (ChildProgressReporter child : children) {
 			realProgress += child.getProgress() * child.externalSteps;
@@ -60,7 +58,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	}
 
 	@Override
-	public ProgressReporter subJob(int steps) {
+	public ProgressReporter subJob(long steps) {
 		if (!isStarted()) {
 			throw new IllegalStateException("You need to start the Progress Reporter before you can add subjobs");
 		}
@@ -91,7 +89,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	}
 
 	@Override
-	public void setMax(int max) {
+	public void setMax(long max) {
 		if (getProgress() > max) {
 			throw new IllegalStateException("Max cannot be less than already made progress.");
 		}
@@ -124,7 +122,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 	@Data
 	private static class ChildProgressReporter extends ProgressReporterImpl {
-		private int externalSteps;
+		private long externalSteps;
 	}
 
 	@Override
