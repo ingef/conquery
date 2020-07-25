@@ -1,6 +1,10 @@
 {
   "locale": "en",
   "headline": "Queries and Analyses",
+  "errorCodes": {
+    "EXAMPLE_ERROR": "This is an example error",
+    "EXAMPLE_ERROR_INTERPOLATED": "This is a {adjective} example error"
+  },
   "leftPane": {
     "conceptTrees": "Concepts",
     "previousQueries": "Queries",
