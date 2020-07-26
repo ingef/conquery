@@ -32,6 +32,17 @@ const CustomHTML5toTouch = {
   ],
 };
 
+// Helper function to calculate Touch backend preview width and height
+// To use on begin drag
+export function getWidthAndHeight(ref: React.RefObject<HTMLElement | null>) {
+  const rect = ref.current?.getBoundingClientRect();
+
+  return {
+    width: rect?.width || 0,
+    height: rect?.height || 0,
+  };
+}
+
 const DndPreview: FC = () => {
   const { display, item, style } = usePreview();
 
