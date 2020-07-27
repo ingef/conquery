@@ -151,7 +151,7 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		}
 		else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
 			log.error("Unknown token response {}.", response.getClass().getName());
-			throw new IllegalStateException("Unknown token response. See log.");
+			throw new AuthenticationException("Unknown token response. See log.");
 		}
 
 		TokenIntrospectionSuccessResponse successResponse = response.toSuccessResponse();
