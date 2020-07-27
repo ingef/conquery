@@ -11,7 +11,9 @@ import com.bakdata.conquery.models.types.specific.RealTypeFloat;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @ToString(callSuper = true)
 public class RealParser extends Parser<Double> {
 
@@ -29,6 +31,8 @@ public class RealParser extends Parser<Double> {
 
 	@Override
 	protected Decision<Double, ?, ? extends CType<Double, ?>> decideType() {
+		// TODO: 27.07.2020 FK: Make this configurable
+		log.debug("Max Float ULP = {}", floatULP);
 
 		if(floatULP < 1e-4){
 			return new Decision<>(
