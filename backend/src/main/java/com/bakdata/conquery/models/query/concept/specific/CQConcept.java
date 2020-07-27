@@ -105,7 +105,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
-			final FiltersNode filtersNode = conceptChild(concept, context, filters, aggregators);
+			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
 
 			tableNodes.add(
 				new ConceptNode(
@@ -143,7 +143,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 					.toArray(ConceptElement[]::new);
 	}
 
-	protected FiltersNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
 		return FiltersNode.create(filters, aggregators);
 	}
 
