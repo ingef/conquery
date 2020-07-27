@@ -1,12 +1,10 @@
 package com.bakdata.conquery.util.progressreporter;
 
-import java.math.RoundingMode;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.math.DoubleMath;
-
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	@Data
 	public static final class Values {
 		private double progress = 0;
+		private long max = 0;
 		private boolean done = false;
 		private boolean started = false;
 		private long waitedSeconds;
@@ -28,18 +27,20 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	public ImmutableProgressReporter(ProgressReporter pr) {
 		values = new Values();
 		values.progress = pr.getProgress();
-		values.startTime = DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - pr.getStartTime();
+		values.startTime = pr.getStartTime();
 		values.done = pr.isDone();
 		values.started = pr.isStarted();
+		values.max = pr.getMax();
+
 		if(!values.started) {
-			values.createdTime = DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - pr.getWaitedSeconds();
+			values.createdTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - pr.getWaitedSeconds();
 		}
 	}
 
 	@Override
 	public String getEstimate() {
-		long elapsed = System.nanoTime() - values.startTime;
-		return ProgressReporterUtil.buildProgressReportString(values.done, values.progress, elapsed, values.waitedSeconds * 1_000_000_000);
+		long elapsed = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - values.startTime;
+		return ProgressReporterUtil.buildProgressReportString(values.done, values.progress, elapsed, values.waitedSeconds);
 	}
 	
 	@Override @JsonProperty
@@ -47,7 +48,7 @@ public class ImmutableProgressReporter implements ProgressReporter{
 		if(values.started) {
 			return values.waitedSeconds;
 		} else {
-			return DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - values.createdTime;
+			return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - values.createdTime;
 		}
 	}
 	
@@ -57,17 +58,17 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	}
 
 	@Override
-	public ProgressReporter subJob(double steps) {
+	public ProgressReporter subJob(long steps) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void report(double steps) {
+	public void report(int steps) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setMax(double max) {
+	public void setMax(long max) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -79,6 +80,11 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	@Override
 	public long getStartTime() {
 		return values.getStartTime();
+	}
+
+	@Override
+	public long getMax() {
+		return values.getMax();
 	}
 
 	@Override

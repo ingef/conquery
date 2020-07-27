@@ -123,7 +123,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 			// We have deleted an import now there should be two less!
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 2);
+			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 1);
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
@@ -243,7 +243,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-start");
 
 			{
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
 				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker worker : slave.getWorkers().getWorkers().values()) {

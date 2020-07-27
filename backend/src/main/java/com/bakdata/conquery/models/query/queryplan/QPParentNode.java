@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Table;
+
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -33,7 +34,7 @@ public abstract class QPParentNode extends QPNode {
 
 	protected List<QPNode> currentTableChildren;
 
-	
+
 	public QPParentNode(List<QPNode> children) {
 		if(children == null || children.isEmpty()) {
 			throw new IllegalArgumentException("A ParentAggregator needs at least one child.");
@@ -71,7 +72,7 @@ public abstract class QPParentNode extends QPNode {
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
 
 

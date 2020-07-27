@@ -7,7 +7,6 @@ import java.util.Set;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -30,7 +29,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
 			reference = null;
 		}

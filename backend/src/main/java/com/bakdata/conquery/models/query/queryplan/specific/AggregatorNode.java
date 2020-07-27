@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-// TODO: 16.06.2020 FK: Remove this class and flatten QPNode/EventIterating; this class doesn't do much beyond adding complexity.
 @RequiredArgsConstructor @Getter @ToString(of = "aggregator")
 public class AggregatorNode<T> extends QPNode  {
 
@@ -51,7 +49,7 @@ public class AggregatorNode<T> extends QPNode  {
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		aggregator.nextTable(ctx, currentTable);
 	}
 	

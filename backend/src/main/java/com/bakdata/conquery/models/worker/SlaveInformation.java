@@ -16,18 +16,18 @@ public class SlaveInformation extends MessageSender.Simple<SlaveMessage> {
 	public SlaveInformation(NetworkSession session) {
 		super(session);
 	}
-	
+
 	public void setJobManagerStatus(JobManagerStatus status) {
 		this.jobManagerStatus = status;
-		if(status.size()<100) {
+		if (status.size() < 100) {
 			synchronized (jobManagerSync) {
 				jobManagerSync.notifyAll();
 			}
 		}
 	}
-	
+
 	public void waitForFreeJobqueue() throws InterruptedException {
-		if(jobManagerStatus.size()>=100) {
+		if (jobManagerStatus.size() >= 100) {
 			synchronized (jobManagerSync) {
 				jobManagerSync.wait();
 			}
