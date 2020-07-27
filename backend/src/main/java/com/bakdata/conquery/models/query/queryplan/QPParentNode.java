@@ -7,8 +7,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.datasets.Table;
-
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -77,7 +75,7 @@ public abstract class QPParentNode extends QPNode {
 
 
 		currentTableChildren = ImmutableList.<QPNode>builder()
-											.addAll(childMap.get(currentTable.getId()))
+											.addAll(childMap.get(currentTable))
 											.addAll(alwaysActiveChildren)
 											.build();
 
