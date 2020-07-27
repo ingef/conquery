@@ -1,0 +1,162 @@
+package com.bakdata.conquery.models.error;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.validation.constraints.NotNull;
+
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.util.VariableDefaultValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.map.Flat3Map;
+import org.apache.commons.text.StringSubstitutor;
+import org.hibernate.validator.constraints.NotEmpty;
+
+/**
+ * Base class for errors that are thrown within Conquery and can be serialized
+ * and deserialized to allow transportation between nodes.
+ */
+@Getter
+@Setter
+@RequiredArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "code")
+@CPSBase
+@ToString(onlyExplicitlyIncluded = true)
+public abstract class ConqueryError implements ConqueryErrorInfo {
+
+	@VariableDefaultValue
+	@NotNull
+	@ToString.Include
+	private UUID id = UUID.randomUUID();
+	@NotEmpty
+	private final String messageTemplate;
+	private final Map<String, String> context;
+
+	@Override
+	@JsonIgnore
+	@ToString.Include
+	public String getMessage() {
+		return new StringSubstitutor(context).replace(messageTemplate);
+	}
+
+	@Override
+	public PlainError asPlain() {
+		return new PlainError(getId(), getCode(), getMessage(), getContext());
+	}
+
+	public ConqueryException asException() {
+		return new ConqueryException(this);
+	}
+
+	@Override
+	@JsonIgnore // The code is the type information, so we do not need to serialize it
+	public String getCode() {
+		return this.getClass().getAnnotation(CPSType.class).id();
+	}
+
+	public static abstract class NoContextError extends ConqueryError {
+
+		public NoContextError(String message) {
+			super(message, Collections.emptyMap());
+		}
+	}
+
+	public static abstract class ContextError extends ConqueryError {
+
+		public ContextError(String code, String messageTemplate) {
+			super(messageTemplate, new Flat3Map<>());
+		}
+	}
+
+	@Slf4j
+	@CPSType(base = ConqueryError.class, id = "CQ_UNKNOWN_ERROR")
+	public static class UnknownError extends NoContextError {
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private UnknownError() {
+			super("An unknown error occured");
+		}
+
+		public UnknownError(Throwable e) {
+			this();
+			log.error("Encountered unknown error [{}]", this.getId(), e);
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE")
+	public static class ExecutionCreationResolveError extends ContextError {
+
+		private final static String FAILED_ELEMENT = "ELEMENT";
+		private final static String FAILED_ELEMENT_CLASS = "ELEMENT_CLASS";
+		private final static String TEMPLATE = "Could not find an ${" + FAILED_ELEMENT_CLASS + "} element called '${" + FAILED_ELEMENT + "}'";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExecutionCreationResolveError() {
+			super(ExecutionCreationResolveError.class.getAnnotation(CPSType.class).id(), TEMPLATE);
+		}
+
+		public ExecutionCreationResolveError(IId<?> unresolvableElementId) {
+			this();
+			getContext().put(FAILED_ELEMENT, unresolvableElementId.toString());
+			getContext().put(FAILED_ELEMENT_CLASS, unresolvableElementId.getClass().getSimpleName());
+		}
+	}
+
+	/**
+	 * Unspecified error during {@link QueryPlan}-creation.
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_PLAN")
+	public static class ExecutionCreationPlanError extends NoContextError {
+
+		public ExecutionCreationPlanError() {
+			super("Unable to resolve query elements.");
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION")
+	public static class ExecutionCreationErrorUnspecified extends NoContextError {
+
+		public ExecutionCreationErrorUnspecified() {
+			super("Failure during execution creation.");
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL")
+	public static class ExternalResolveError extends ContextError {
+
+		private final static String FORMAT_ROW_LENGTH = "formatRowLength";
+		private final static String DATA_ROW_LENGTH = "dataRowLength";
+		private final static String TEMPLATE = "There are ${" + FORMAT_ROW_LENGTH + "} columns in the format but ${" + DATA_ROW_LENGTH + "} in at least one row";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExternalResolveError() {
+			super(ExternalResolveError.class.getAnnotation(CPSType.class).id(), TEMPLATE);
+		}
+
+		public ExternalResolveError(int formatRowLength, int dataRowLength) {
+			this();
+			getContext().put(FORMAT_ROW_LENGTH, Integer.toString(formatRowLength));
+			getContext().put(DATA_ROW_LENGTH, Integer.toString(dataRowLength));
+		}
+	}
+}

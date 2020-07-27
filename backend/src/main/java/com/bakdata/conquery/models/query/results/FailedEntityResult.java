@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.results;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.execution.ExecutionError.ConqueryExecutionError;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -15,7 +15,7 @@ public class FailedEntityResult implements SinglelineEntityResult {
 
 	private final int entityId;
 	@NotEmpty
-	private final ConqueryExecutionError error;
+	private final ConqueryError error;
 		
 	@JsonIgnore @Override
 	public boolean isFailed() {

@@ -13,9 +13,9 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
-import com.bakdata.conquery.models.execution.ExecutionError;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessorImpl;
@@ -80,7 +80,7 @@ public class CQExternal implements CQElement {
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
 			if (row.length != format.size()) {
-				throw new ExecutionError.ExternalResolveError(format.size(), row.length).asException();
+				throw new ConqueryError.ExternalResolveError(format.size(), row.length).asException();
 			}
 
 			//read the dates from the row

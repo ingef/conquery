@@ -5,9 +5,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.execution.ExecutionError.ConqueryExecutionError;
-import com.bakdata.conquery.models.execution.ExecutionError.UnknownError;
-import com.bakdata.conquery.models.execution.ExecutionException;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.error.ConqueryException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
@@ -44,7 +43,7 @@ public class ExecuteQuery extends WorkerMessage {
 		// The results are send directly to these ManagesQueries
 		try {
 			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();		
-		} catch (ExecutionException e) {	
+		} catch (ConqueryException e) {	
 			log.warn("Failed to create query plans for " + execution.getId(), e );
 			ShardResult result = execution.getInitializedShardResult(null);
 			sendFailureToMaster(result, execution, context, e.getCtx());
@@ -53,7 +52,7 @@ public class ExecuteQuery extends WorkerMessage {
 			log.error("Failed to create query plans for " + execution.getId(), e );
 			// If one of the plans can not be created (maybe due to a Id that references a non existing concept) fail the whole job.
 			ShardResult result = execution.getInitializedShardResult(null);
-			sendFailureToMaster(result, execution, context, new UnknownError(e));
+			sendFailureToMaster(result, execution, context, new ConqueryError.UnknownError(e));
 			return;
 		}
 		// Execute all plans.
@@ -62,17 +61,17 @@ public class ExecuteQuery extends WorkerMessage {
 			try {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
-			} catch(ExecutionException e) {
+			} catch(ConqueryException e) {
 				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
 				sendFailureToMaster(result, execution, context, e.getCtx());
 			} catch (Exception e) {
 				log.error("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
-				sendFailureToMaster(result, execution, context, new UnknownError(e));
+				sendFailureToMaster(result, execution, context, new ConqueryError.UnknownError(e));
 			}
 		}
 	}
 
-	private static void sendFailureToMaster(ShardResult result, ManagedExecution<?> execution, Worker context, ConqueryExecutionError error) {
+	private static void sendFailureToMaster(ShardResult result, ManagedExecution<?> execution, Worker context, ConqueryError error) {
 		result.setError(Optional.of(error));
 		result.finish();
 		context.send(new CollectQueryResult(result));

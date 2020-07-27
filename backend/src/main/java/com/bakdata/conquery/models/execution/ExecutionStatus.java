@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
@@ -58,7 +59,7 @@ public class ExecutionStatus {
 		/**
 		 * Is set when the QueryFailed
 		 */
-		private ExecutionError.PlainContext error;
+		private ConqueryErrorInfo error;
 		
 		public static enum CreationFlag{
 			WITH_COLUMN_DESCIPTION,

@@ -9,9 +9,8 @@ import java.util.Optional;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.mina.MessageSender;
-import com.bakdata.conquery.models.execution.ExecutionError;
-import com.bakdata.conquery.models.execution.ExecutionError.ConqueryExecutionError;
-import com.bakdata.conquery.models.execution.ExecutionException;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.error.ConqueryException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
@@ -42,7 +41,7 @@ public class ShardResult {
 	@JsonIgnore
 	private ListenableFuture<List<EntityResult>> future;
 	
-	private Optional<ConqueryExecutionError> error = Optional.empty();
+	private Optional<ConqueryError> error = Optional.empty();
 	
 	public synchronized void addResult(EntityResult result) {
 		results.add(result);
@@ -78,10 +77,10 @@ public class ShardResult {
 				results.add(entityResult);
 			}
 
-		} catch (ExecutionException e) {
+		} catch (ConqueryException e) {
 			error = Optional.of(e.getCtx());
 		} catch (Exception e) {
-			error = Optional.of(new ExecutionError.UnknownError(e));
+			error = Optional.of(new ConqueryError.UnknownError(e));
 		}
 		setFinishTime();
 	}

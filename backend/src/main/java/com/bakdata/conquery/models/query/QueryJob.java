@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.query;
 
 import java.util.concurrent.Callable;
 
-import com.bakdata.conquery.models.execution.ExecutionError;
-import com.bakdata.conquery.models.execution.ExecutionException;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.error.ConqueryException;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -25,13 +25,13 @@ public class QueryJob implements Callable<EntityResult> {
 			
 			return queryPlan.execute(ctx, entity);
 		}
-		catch (ExecutionException e) {
+		catch (ConqueryException e) {
 			// Catch known errors (where the user can possibly fix something)
 			return EntityResult.failed(entity.getId(), e.getCtx());
 		}
 		catch (Exception e) {
 			// Catch unspecified errors, log them with their id and forward them as unknown errors.
-			return EntityResult.failed(entity.getId(), new ExecutionError.UnknownError(e));
+			return EntityResult.failed(entity.getId(), new ConqueryError.UnknownError(e));
 		}
 	}
 }
