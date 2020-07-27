@@ -123,6 +123,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
+	/**
+	 * Fails the execution and log the occurred error.
+	 */
 	protected void fail(MasterMetaStorage storage, ConqueryErrorInfo error) {
 		if(this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
@@ -207,6 +210,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				: null);
 		if (state.equals(ExecutionState.FAILED)) {
 			assert(error != null);
+			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
 	}
