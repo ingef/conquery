@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -19,6 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+
 import lombok.Getter;
 import lombok.ToString;
 
@@ -83,6 +83,11 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+		if(!isOfInterest(entity)){
+			return EntityResult.notContained();
+		}
+
+
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
 		CDateSet dateSet = CDateSet.create();
@@ -191,7 +196,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		return length;
 	}
 
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		childPlans.forEach(plan -> plan.nextTable(ctx, currentTable));
 	}
 

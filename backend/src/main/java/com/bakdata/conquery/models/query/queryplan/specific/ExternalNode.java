@@ -1,41 +1,35 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
+import org.hibernate.validator.constraints.NotEmpty;
 
-public class ExternalNode extends QPChainNode {
+public class ExternalNode extends QPNode {
 
+	private final TableId allIdsTable;
 	@Getter
-	private final DatasetId dataset;
-	@Getter @NotEmpty
+	@NotEmpty
 	private final Map<Integer, CDateSet> includedEntities;
+	private final SpecialDateUnion dateUnionAggregatorNode;
+
 	private CDateSet contained;
-	
-	public ExternalNode(QPNode child, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
-		super(child);
-		this.dataset = dataset;
-		this.includedEntities = Objects.requireNonNullElse(
-			includedEntities,
-			Collections.emptyMap()
-		);
+	private CDateSet restricted;
+
+	public ExternalNode(TableId allIdsTable, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnionAggregatorNode) {
+		this.allIdsTable = allIdsTable;
+		this.includedEntities = Objects.requireNonNull(includedEntities);
+		this.dateUnionAggregatorNode = dateUnionAggregatorNode;
 	}
 
 	@Override
@@ -43,47 +37,48 @@ public class ExternalNode extends QPChainNode {
 		super.init(entity);
 		contained = includedEntities.get(entity.getId());
 	}
-	
+
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		return new ExternalNode(getChild().clone(ctx), dataset, includedEntities);
+		return new ExternalNode(allIdsTable, includedEntities, ctx.clone(dateUnionAggregatorNode));
 	}
-	
+
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		if(contained != null) {
-			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
-			newSet.retainAll(contained);
-			super.nextTable(
-				ctx.withDateRestriction(newSet),
-				currentTable
-			);
-		}
-		else
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+		if (contained == null) {
 			super.nextTable(ctx, currentTable);
+			return;
+		}
+
+		restricted = CDateSet.create(ctx.getDateRestriction());
+		restricted.retainAll(contained);
 	}
 
 	@Override
 	public void nextEvent(Bucket bucket, int event) {
-		if(contained != null) {
-			getChild().nextEvent(bucket, event);
+		if (restricted == null) {
+			return;
 		}
+		dateUnionAggregatorNode.merge(restricted);
 	}
-	
+
 	@Override
 	public boolean isContained() {
-		return getChild().isContained();
+		return restricted != null && !restricted.isEmpty();
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
-		super.collectRequiredTables(requiredTables);
-		//add the allIdsTable
-		requiredTables.add(
-			new TableId(
-				dataset,
-				ConqueryConstants.ALL_IDS_TABLE
-			)
-		);
+		requiredTables.add(allIdsTable);
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
+
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return includedEntities.containsKey(entity.getId());
 	}
 }
