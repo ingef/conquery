@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -94,13 +96,12 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		
 		TokenIntrospectionSuccessResponse successResponse = tokenCache.get((JwtToken) token);
-// TODO check why the tokens are expired (possible time skrew)
-//		LocalDateTime expTime = successResponse.getExpirationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-//		LocalDateTime now = LocalDateTime.now();
-//		if(expTime.isBefore(now)){
-//			tokenCache.invalidate(token);
-//			throw new ExpiredCredentialsException();
-//		}
+		
+		
+		if(isExpired(successResponse)){
+			tokenCache.invalidate(token);
+			throw new ExpiredCredentialsException();
+		}
 
 		String username = successResponse.getUsername();
 		if(StringUtils.isBlank(username)) {
@@ -124,7 +125,21 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 
 		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
 	}
+	
+	private boolean isExpired(TokenIntrospectionSuccessResponse tokenInstrospection) {
+		LocalDateTime expTime = tokenInstrospection.getExpirationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		LocalDateTime now = LocalDateTime.now();
+		
+		boolean result = expTime.isBefore(now);
+		if(result) {
+			log.debug("Provided token expired at {} ( now is {})", expTime, now);
+		}
+		return result;
+	}
 
+	/**
+	 * Is called by the CacheLoader, so the Token is not validated on every request.
+	 */
 	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws ParseException, IOException {
 		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(serverConf.getTokenIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
 				
