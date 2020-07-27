@@ -1,16 +1,18 @@
-import { toUpperCaseUnderscore } from "../common/helpers";
-import * as actionTypes from "./actionTypes";
 import type {
+  ColumnDescription,
   DatasetIdT,
   GetQueryResponseDoneT,
-  GetQueryResponseT,
-  ColumnDescription,
+  ErrorResponseT,
 } from "../api/types";
+import { toUpperCaseUnderscore } from "../common/helpers";
+import { getErrorCodeMessageKey } from "../api/errorCodes";
+import * as actionTypes from "./actionTypes";
 
 interface APICallType {
   loading?: boolean;
   success?: boolean;
   error?: string;
+  errorContext?: Record<string, string>;
 }
 
 export interface QueryRunnerStateT {
@@ -68,19 +70,21 @@ export default function createQueryRunnerReducer(type: string) {
     };
   };
 
-  const getQueryError = (
-    data: GetQueryResponseT,
-    message: string | null
-  ): string => {
-    if (message) {
-      return message;
-    }
-
-    if (data.status === "CANCELED") {
+  const getQueryError = ({
+    status,
+    error,
+  }: {
+    status: "CANCELED" | "FAILED";
+    error: ErrorResponseT | null;
+  }): string => {
+    if (status === "CANCELED") {
       return "queryRunner.queryCanceled";
     }
 
-    return "queryRunner.queryFailed";
+    return (
+      (error && error.code && getErrorCodeMessageKey(error.code)) ||
+      "queryRunner.queryFailed"
+    );
   };
 
   return (
@@ -149,11 +153,9 @@ export default function createQueryRunnerReducer(type: string) {
           queryRunning: false,
         };
       case QUERY_RESULT_ERROR:
-        const error = getQueryError(
-          // TODO Clean up. This is just a quick fix to prevent the frontend to fail if the backend sends the status of a failed query
-          {status: action.payload.status}, 
-          action.payload.message
-        );
+        const { payload } = action;
+        const error = getQueryError(payload);
+        const errorContext = (payload.error && payload.error.context) || {};
 
         return {
           ...state,
@@ -162,6 +164,7 @@ export default function createQueryRunnerReducer(type: string) {
           queryResult: {
             loading: false,
             error,
+            errorContext,
           },
         };
       default:
