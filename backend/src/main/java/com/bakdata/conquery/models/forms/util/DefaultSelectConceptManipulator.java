@@ -57,8 +57,8 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 		switch(method) {
 			
 			case ADD_TO_COMPLETE_EMPTY:
-				Optional<Boolean> tablesEmpty = concept.getTables().stream().map(CQTable::getSelects).map(List::isEmpty).reduce(Boolean::logicalOr);
-				if(!(concept.getSelects().isEmpty() && tablesEmpty.orElse(true /* No table present -> signal empty tables*/))) {
+				Optional<Boolean> allTablesEmpty = concept.getTables().stream().map(CQTable::getSelects).map(List::isEmpty).reduce(Boolean::logicalAnd);
+				if(!(concept.getSelects().isEmpty() && allTablesEmpty.orElse(true /* No table present -> signal empty tables*/))) {
 					// Don't fill if there are any selects on concept level or on any table level
 					break;
 				}

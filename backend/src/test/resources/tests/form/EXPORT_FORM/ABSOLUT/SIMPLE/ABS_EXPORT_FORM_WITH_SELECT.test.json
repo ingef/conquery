@@ -1,8 +1,8 @@
 {
     "type": "FORM_TEST",
-    "label": "ABS-EXPORT-FORM ADD DEFAULT SELECT Test",
+    "label": "ABS-EXPORT-FORM WITH SELECT SET Test",
     "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected.csv"
+        "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected_with_select.csv"
     },
     "form": {
         "type": "EXPORT_FORM",
@@ -13,14 +13,17 @@
             "features": [
                 {
                     "ids": [
-                        "${dataset}.alter"
+                        "${dataset}.two_connector"
                     ],
                     "type": "CONCEPT",
-                    "label": "Alter",
+                    "label": "explicitly set select",
                     "tables": [
                         {
-                            "id": "${dataset}.alter.alter",
-                            "filters": []
+                            "id": "${dataset}.two_connector.table1",
+                            "selects": "${dataset}.two_connector.table1.liste_geburtsdatum"
+                        },                        
+                        {
+                            "id": "${dataset}.two_connector.table2"
                         }
                     ]
                 }
@@ -32,7 +35,7 @@
         }
     },
     "concepts": [
-        "/tests/form/shared/alter.concept.json"
+        "/tests/form/shared/two_connector.concept.json"
     ],
     "content": {
         "tables": [
