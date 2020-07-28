@@ -35,10 +35,10 @@ public class ResultInfoCollector {
 	public void addAll(List<ResultInfo> newInfos) {
 		for(ResultInfo info : newInfos) {
 			if(info instanceof SelectResultInfo) {
-				add((SelectResultInfo)info);
+				add(info);
 			}
 			else {
-				add((SimpleResultInfo)info);
+				add(info);
 			}
 		}
 	}

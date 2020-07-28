@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -31,7 +30,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
@@ -168,16 +166,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 				.type(ConqueryConstants.ID_TYPE)
 				.build());
 		}
-		// Then all columns that originate from selects
+		// Then all columns that originate from selects and static aggregators
 		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
-		columnDescriptions.addAll(
-			collectResultInfos().getInfos().stream()
-				.map(i -> ColumnDescriptor.builder()
-					.label(i.getUniqueName(settings))
-					.type(i.getType().toString())
-					.selectId(i instanceof SelectResultInfo ? ((SelectResultInfo)i).getSelect().getId() : null)
-					.build())
-				.collect(Collectors.toList()));
+		collectResultInfos().getInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;
 	}
 

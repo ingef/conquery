@@ -5,6 +5,7 @@ package com.bakdata.conquery.models.query.resultinfo;
 import java.util.HashMap;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ClassToInstanceMap;
@@ -48,12 +49,19 @@ public abstract class ResultInfo {
 		return (postfix > 0) ? name + "_" + postfix : name;
 	}
 	
-	public abstract String getName(PrintSettings settings);
+	protected abstract String getName(PrintSettings settings);
 	
 	@ToString.Include
 	public abstract ResultType getType();
 	
 	public <T> void addAppendix(Class<T> cl, T obj) {
 		appendices.putInstance(cl, obj);
+	}
+	
+	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
+		return ColumnDescriptor.builder()
+			.label(getUniqueName(settings))
+			.type(getType().toString())
+			.build();
 	}
 }
