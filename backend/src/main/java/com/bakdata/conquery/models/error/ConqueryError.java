@@ -163,6 +163,17 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 	}
 	
 	/**
+	 * Unspecified execution processing error.
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING")
+	public static class ExecutionProcessingError extends NoContextError {
+
+		public ExecutionProcessingError() {
+			super("The an unexpected error occured during the execution.");
+		}
+	}
+	
+	/**
 	 * Timeout during processing.
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING_TIMEOUT")
