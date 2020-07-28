@@ -1,6 +1,10 @@
 {
   "locale": "de",
   "headline": "Anfragen und Analyse",
+  "errorCodes": {
+    "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
+    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {adjective} Beispiel-Fehlermeldung"
+  },
   "leftPane": {
     "conceptTrees": "Konzeptbäume",
     "previousQueries": "Anfragen",

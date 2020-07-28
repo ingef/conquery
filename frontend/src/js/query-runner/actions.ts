@@ -1,14 +1,20 @@
-import api from "../api";
-
-import { defaultSuccess, defaultError } from "../common/actions";
-
+import {
+  deleteQuery,
+  getQuery,
+  postFormQueries,
+  postQueries,
+} from "../api/api";
+import type {
+  DatasetIdT,
+  GetQueryErrorResponseT,
+  GetQueryResponseDoneT,
+  QueryIdT,
+} from "../api/types";
+import { defaultError, defaultSuccess } from "../common/actions";
 import { capitalize, toUpperCaseUnderscore } from "../common/helpers";
-
 import { loadPreviousQueries } from "../previous-queries/list/actions";
-
 import * as actionTypes from "./actionTypes";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
-import type { DatasetIdT, GetQueryResponseDoneT, QueryIdT } from "../api/types";
 
 /*
   This implements a polling mechanism,
@@ -58,8 +64,8 @@ export default function createQueryRunnerActions(
       dispatch(startQueryStart());
 
       const apiMethod = isExternalForm
-        ? (...args) => api.postFormQueries(...args, formQueryTransformation)
-        : api.postQueries;
+        ? (...args) => postFormQueries(...args, formQueryTransformation)
+        : postQueries;
 
       return apiMethod(datasetId, query, type, version).then(
         (r) => {
@@ -81,7 +87,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(stopQueryStart());
 
-      return api.deleteQuery(datasetId, queryId).then(
+      return deleteQuery(datasetId, queryId).then(
         (r) => dispatch(stopQuerySuccess(r)),
         (e) => dispatch(stopQueryError(e))
       );
@@ -90,7 +96,15 @@ export default function createQueryRunnerActions(
 
   const queryResultStart = () => ({ type: QUERY_RESULT_START });
   const queryResultReset = () => ({ type: QUERY_RESULT_RESET });
-  const queryResultError = (err) => defaultError(QUERY_RESULT_ERROR, err);
+  const queryResultError = (e: GetQueryErrorResponseT | Error) => {
+    if (e instanceof Error) return defaultError(QUERY_RESULT_ERROR, e);
+
+    // TODO: Refactor and get rid of defaultError, it's too generic
+    return defaultError(QUERY_RESULT_ERROR, e, {
+      error: e.error,
+    });
+  };
+
   const queryResultSuccess = (
     res: GetQueryResponseDoneT,
     datasetId: DatasetIdT
@@ -99,7 +113,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(queryResultStart());
 
-      return api.getQuery(datasetId, queryId).then(
+      return getQuery(datasetId, queryId).then(
         (r) => {
           // Indicate that looking for the result has stopped,
           // but not necessarily succeeded
@@ -126,7 +140,7 @@ export default function createQueryRunnerActions(
             );
           }
         },
-        (e) => dispatch(queryResultError(e))
+        (e: Error) => dispatch(queryResultError(e))
       );
     };
   };
