@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
@@ -25,7 +24,7 @@ public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long>
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}

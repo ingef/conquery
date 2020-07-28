@@ -22,7 +22,6 @@ public class ConceptNode extends QPChainNode {
 	private final long requiredBits;
 	private final CQTable table;
 	private boolean tableActive = false;
-	private boolean interested = false;
 	private Map<BucketId, EntityRow> preCurrentRow = null;
 	private EntityRow currentRow = null;
 	
@@ -48,7 +47,8 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		if (tableActive && interested) {
+		if (tableActive) {
+			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 			super.nextBlock(bucket);
 		}
 	}
@@ -60,38 +60,42 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		if (tableActive) {
-			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
-			int localEntity = bucket.toLocal(entity.getId());
-			long bits = currentRow.getCBlock().getIncludedConcepts()[localEntity];
-			if((bits & requiredBits) != 0L || requiredBits == 0L) {
-				interested = true;
-				return super.isOfInterest(bucket);
-			}
+		if (!tableActive) {
+			return false;
 		}
-		interested = false;
+
+		EntityRow row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+
+		int localEntity = bucket.toLocal(entity.getId());
+		long bits = row.getCBlock().getIncludedConcepts()[localEntity];
+
+		if((bits & requiredBits) != 0L || requiredBits == 0L) {
+			return super.isOfInterest(bucket);
+		}
 		return false;
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
-		if (tableActive && interested) {
-			//check concepts
-			int[] mostSpecificChildren;
-			if (currentRow.getCBlock().getMostSpecificChildren() != null
-				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!tableActive) {
+			return;
+		}
 
-				for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
-					if (ce.matchesPrefix(mostSpecificChildren)) {
-						getChild().nextEvent(bucket, event);
-					}
+		//check concepts
+		int[] mostSpecificChildren;
+		if (currentRow.getCBlock().getMostSpecificChildren() != null
+			&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
+
+			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
+				if (ce.matchesPrefix(mostSpecificChildren)) {
+					getChild().acceptEvent(bucket, event);
 				}
 			}
-			else {
-				for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
-					if (ce.getConcept() == ce) {
-						getChild().nextEvent(bucket, event);
-					}
+		}
+		else {
+			for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
+				if (ce.getConcept() == ce) {
+					getChild().acceptEvent(bucket, event);
 				}
 			}
 		}
@@ -104,7 +108,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, table, getChild().clone(ctx));
+		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()));
 	}
 
 	@Override

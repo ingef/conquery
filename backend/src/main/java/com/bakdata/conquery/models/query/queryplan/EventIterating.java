@@ -21,8 +21,11 @@ public interface EventIterating {
 	default void nextTable(QueryExecutionContext ctx, TableId currentTable) {}
 	
 	default void nextBlock(Bucket bucket) {}
+
+	void acceptEvent(Bucket bucket, int event);
+
+
+	default boolean isOfInterest(Bucket bucket){ return true; }
 	
-	boolean isOfInterest(Bucket bucket);
-	
-	boolean isOfInterest(Entity entity);
+	default boolean isOfInterest(Entity entity){ return true; }
 }
