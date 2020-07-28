@@ -164,7 +164,6 @@ public class Preprocessed {
 					event[ic.getPosition()] = transformer.transform(event[ic.getPosition()]);
 				}
 			}
-			transformer.finishTransform();
 		}
 		
 		Bucket bucket = imp.getBlockFactory().create(imp, events);
