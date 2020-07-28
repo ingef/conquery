@@ -74,7 +74,6 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 						"com.auth0",
 						"com.esotericsoftware",
 						"org.glassfish"
-
 				)
 				.scan();
 		
