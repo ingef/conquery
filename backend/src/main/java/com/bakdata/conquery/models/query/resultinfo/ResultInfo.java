@@ -16,9 +16,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter @ToString @EqualsAndHashCode
 @RequiredArgsConstructor
+@Slf4j
 public abstract class ResultInfo {
 	private final static int UNSET_PREFIX = -1;
 	/**
@@ -45,6 +47,10 @@ public abstract class ResultInfo {
 			if(postfix == UNSET_PREFIX) {
 				postfix = ocurrenceCounter.compute(name, (k, v) -> (v == null) ? 0 : ++v );
 			}
+		}
+		String uniqueName = (postfix > 0) ? name + "_" + postfix : name;
+		if(ocurrenceCounter.containsKey(uniqueName)) {
+			log.warn("Even with postfixing the result will contain column name duplicates. This might be caused by another column that is having a number postfix by default.");
 		}
 		return (postfix > 0) ? name + "_" + postfix : name;
 	}
