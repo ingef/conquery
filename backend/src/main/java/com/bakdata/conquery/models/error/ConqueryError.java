@@ -97,6 +97,15 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 		}
 	}
 
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION")
+	public static class ExecutionCreationErrorUnspecified extends NoContextError {
+
+		public ExecutionCreationErrorUnspecified() {
+			super("Failure during execution creation.");
+		}
+	}
+
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE")
 	public static class ExecutionCreationResolveError extends ContextError {
 
@@ -119,24 +128,6 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 		}
 	}
 
-	/**
-	 * Unspecified error during {@link QueryPlan}-creation.
-	 */
-	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_PLAN")
-	public static class ExecutionCreationPlanError extends NoContextError {
-
-		public ExecutionCreationPlanError() {
-			super("Unable to resolve query elements.");
-		}
-	}
-
-	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION")
-	public static class ExecutionCreationErrorUnspecified extends NoContextError {
-
-		public ExecutionCreationErrorUnspecified() {
-			super("Failure during execution creation.");
-		}
-	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL")
 	public static class ExternalResolveError extends ContextError {
@@ -157,6 +148,28 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 			this();
 			getContext().put(FORMAT_ROW_LENGTH, Integer.toString(formatRowLength));
 			getContext().put(DATA_ROW_LENGTH, Integer.toString(dataRowLength));
+		}
+	}
+
+	/**
+	 * Unspecified error during {@link QueryPlan}-creation.
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_PLAN")
+	public static class ExecutionCreationPlanError extends NoContextError {
+
+		public ExecutionCreationPlanError() {
+			super("Unable to resolve query elements.");
+		}
+	}
+	
+	/**
+	 * Timeout during processing.
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING_TIMEOUT")
+	public static class ExecutionProcessingTimeoutError extends NoContextError {
+
+		public ExecutionProcessingTimeoutError() {
+			super("The execution tooked too long to finish.");
 		}
 	}
 }
