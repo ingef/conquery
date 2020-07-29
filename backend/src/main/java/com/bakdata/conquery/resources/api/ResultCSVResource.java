@@ -53,6 +53,7 @@ public class ResultCSVResource {
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCsv(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @QueryParam("charset") String queryCharset, @HeaderParam("user-agent") String userAgent) {
+		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, user.getId(), user.getName());
 		return getResult(user, datasetId, queryId, userAgent, queryCharset, namespaces, config).build();
 	}
 
