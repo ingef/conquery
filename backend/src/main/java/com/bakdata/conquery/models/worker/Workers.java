@@ -12,12 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
-import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
@@ -50,16 +47,9 @@ public class Workers extends NamespaceCollection {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 	
-	public Worker createWorker(WorkerInformation info, WorkerStorage storage) {
-		final JobManager jobManager = new JobManager(info.getName());
-		final BucketManager bucketManager = new BucketManager(jobManager, storage, info);
-
-		storage.setBucketManager(bucketManager);
-
-
-		final QueryExecutor queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
-
-		final Worker worker = new Worker(info, jobManager, storage, queryExecutor, jobsThreadPool);
+	public Worker createWorker(WorkerInformation info, WorkerStorage storage) {		
+		final Worker worker = new Worker(info, storage, queryThreadPoolDefinition, jobsThreadPool);
+		
 		addWorker(worker);
 
 		return worker;
@@ -111,5 +101,12 @@ public class Workers extends NamespaceCollection {
 			}
 		}
 		return false;
+	}
+	
+	public void stop() {
+		jobsThreadPool.shutdown();
+		for (Worker w : workers.values()) {
+			w.close();
+		}
 	}
 }

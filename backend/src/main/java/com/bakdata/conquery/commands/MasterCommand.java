@@ -240,21 +240,16 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
-		jobManager.stop();
+		jobManager.close();
 
+		namespaces.close();
+		
 		try {
 			acceptor.dispose();
 		} catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
-		for (Namespace namespace : namespaces.getNamespaces()) {
-			try {
-				namespace.getStorage().close();
-			} catch (Exception e) {
-				log.error(namespace + " could not be closed", e);
-			}
-
-		}
+		
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();
