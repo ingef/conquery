@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
-
 import lombok.Getter;
 import lombok.ToString;
 
@@ -27,7 +25,7 @@ import lombok.ToString;
  */
 @Getter
 @ToString
-public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
+public class ArrayConceptQueryPlan implements QueryPlan {
 
 	private List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
@@ -41,7 +39,6 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		this(context.isGenerateSpecialDateUnion());
 	}
 
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (ConceptQueryPlan child : childPlans) {
 			if (child.isOfInterest(bucket)) {
@@ -58,7 +55,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 			childPlanClones.add(child.clone(ctx));
 		}
 		ArrayConceptQueryPlan aqClone = new ArrayConceptQueryPlan(specialDateUnion);
-		aqClone.childPlans = new ArrayList<ConceptQueryPlan>(childPlanClones);
+		aqClone.childPlans = new ArrayList<>(childPlanClones);
 		return aqClone;
 	}
 
@@ -144,12 +141,6 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		return false;
 	}
 
-	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		for (ConceptQueryPlan child : childPlans) {
-			child.collectRequiredTables(requiredTables);
-		}
-	}
 
 	public int getAggregatorSize() {
 		int size = 0;

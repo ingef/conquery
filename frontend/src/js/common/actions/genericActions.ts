@@ -6,34 +6,34 @@ export interface ActionT {
   };
 }
 
-interface ErrorObject {
-  message: string;
-  status: string;
+export interface ErrorObject {
+  message?: string;
+  status?: string;
 }
 
 export const defaultError = (
   type: string,
   error: ErrorObject,
-  payload?: Object
+  context?: Record<string, any>
 ): ActionT => ({
   type,
   error: true,
   payload: {
     message: error.message,
     status: error.status,
-    ...payload,
+    ...context,
   },
 });
 
 export const defaultSuccess = (
   type: string,
   results: any,
-  payload?: Object
+  context?: Record<string, any>
 ): ActionT => ({
   type,
   payload: {
     data: results,
     receivedAt: Date.now(),
-    ...payload,
+    ...context,
   },
 });

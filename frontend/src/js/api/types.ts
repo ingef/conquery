@@ -4,6 +4,7 @@
 
 import type { Forms } from "./form-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
+import { SupportedErrorCodesT } from "./errorCodes";
 
 export type DatasetIdT = string;
 export interface DatasetT {
@@ -257,6 +258,7 @@ export interface ColumnDescription {
   selectId: string | null;
   type: ColumnDescriptionKind;
 }
+
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE";
@@ -265,11 +267,20 @@ export interface GetQueryResponseDoneT {
   columnDescriptions: ColumnDescription[];
 }
 
-export type GetQueryResponseT =
-  | GetQueryResponseDoneT
-  | {
-      status: "FAILED" | "CANCELED";
-    };
+// TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
+export interface GetQueryErrorResponseT {
+  status: "FAILED" | "CANCELED";
+  error: ErrorResponseT | null;
+}
+
+export interface ErrorResponseT {
+  id?: string;
+  code: SupportedErrorCodesT; // To translate to localized messages
+  message?: string; // For developers / debugging only
+  context?: Record<string, string>; // More information to maybe display in translated messages
+}
+
+export type GetQueryResponseT = GetQueryResponseDoneT | GetQueryErrorResponseT;
 
 export interface GetStoredQueryResponseT {
   id: QueryIdT;

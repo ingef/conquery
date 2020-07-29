@@ -25,12 +25,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ConceptQueryPlan implements QueryPlan, EventIterating {
+public class ConceptQueryPlan implements QueryPlan {
 
-	@Setter
 	@Getter
+	@Setter
 	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
-
 	private QPNode child;
 	@ToString.Exclude
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
@@ -53,12 +52,13 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		checkRequiredTables(ctx.getStorage());
 
 		ConceptQueryPlan clone = new ConceptQueryPlan(false);
-		clone.setChild(child.clone(ctx));
+		clone.setChild(ctx.clone(child));
+
 		for (Aggregator<?> agg : aggregators) {
-			clone.aggregators.add(agg.clone(ctx));
+			clone.aggregators.add(ctx.clone(agg));
 		}
 
-		clone.specialDateUnion = specialDateUnion.clone(ctx);
+		clone.specialDateUnion = ctx.clone(specialDateUnion);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
@@ -87,12 +87,12 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 
 	public void nextEvent(Bucket bucket, int event) {
-		getChild().nextEvent(bucket, event);
+		getChild().acceptEvent(bucket, event);
 	}
 
 	protected SinglelineContainedEntityResult result() {
 		Object[] values = new Object[aggregators.size()];
- 
+
 		for (int i = 0; i < values.length; i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
 		}
@@ -149,12 +149,10 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return EntityResult.notContained();
 	}
 
-	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		child.nextTable(ctx, currentTable);
 	}
 
-	@Override
 	public void nextBlock(Bucket bucket) {
 		child.nextBlock(bucket);
 	}
@@ -176,13 +174,11 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		return child.isOfInterest(entity);
 	}
 
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return child.isOfInterest(bucket);
 	}
 
-	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		child.collectRequiredTables(requiredTables);
+	public Set<TableId> collectRequiredTables() {
+		return child.collectRequiredTables();
 	}
 }

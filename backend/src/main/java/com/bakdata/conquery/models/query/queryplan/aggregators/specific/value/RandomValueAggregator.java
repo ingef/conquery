@@ -36,7 +36,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	 * @param event
 	 */
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
