@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
@@ -31,18 +29,15 @@ public class AddWorker extends SlaveMessage.Slow {
 		ConqueryConfig config = context.getConfig();
 		File dir = createWorkerName(context);
 		WorkerInformation info = new WorkerInformation();
-		info.setDataset(dataset.getId());
+		info.setDataset(dataset);
 		info.setIncludedBuckets(new IntArrayList());
 		info.setName(dir.getName());
-		WorkerStorage workerStorage = new WorkerStorageImpl(context.getValidator(), config.getStorage(), dir);
-		workerStorage.loadData();
-		workerStorage.updateDataset(dataset);
 
 
-		Worker worker = context.getWorkers().createWorker(info, workerStorage);
+		Worker worker = context.getWorkers().createWorker(info, config.getStorage(), createWorkerName(context), context.getValidator());
 
 		worker.setSession(context.getRawSession());
-		workerStorage.setWorker(info);
+		
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 

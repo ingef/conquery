@@ -89,7 +89,7 @@ public class Namespaces extends NamespaceCollection implements Closeable {
 			workers.add(info);
 		}
 
-		Namespace ns = datasets.get(info.getDataset());
+		Namespace ns = datasets.get(info.getDataset().getId());
 		if (ns == null) {
 			throw new NoSuchElementException(
 				"Trying to register a worker for unknown dataset '" + info.getDataset() + "'. I only know " + datasets.keySet());

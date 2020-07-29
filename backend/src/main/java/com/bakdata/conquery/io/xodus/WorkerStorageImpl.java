@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.functions.Collector;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -111,7 +112,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void setWorker(WorkerInformation worker) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void setWorker(WorkerInformation worker) {
 		this.worker.add(worker);
 	}
 
