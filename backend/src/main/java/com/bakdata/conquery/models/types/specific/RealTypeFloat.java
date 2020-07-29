@@ -13,7 +13,7 @@ public class RealTypeFloat extends CType<Double, Float> {
 
 	@Override
 	public boolean canStoreNull() {
-		return false;
+		return true;
 	}
 	
 	@Override
