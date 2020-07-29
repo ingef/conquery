@@ -110,10 +110,11 @@ public class Namespaces extends NamespaceCollection implements Closeable {
 	}
 	
 	public void close() {
-		for(Namespace namespace : datasets.values()) {
+		for (Namespace namespace : datasets.values()) {
 			try {
-				namespace.close();				
-			}catch (Exception e) {
+				namespace.close();
+			}
+			catch (Exception e) {
 				log.error("Unable to close namespace {}", namespace, e);
 			}
 		}

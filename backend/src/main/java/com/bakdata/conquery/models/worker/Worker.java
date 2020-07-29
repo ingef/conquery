@@ -57,6 +57,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d")),
 			storage.getWorker(),
 			executorService);
+		
 		storage.setBucketManager(new BucketManager(this.jobManager, this.storage, this.info));
 		
 	}
@@ -71,13 +72,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
 		if (workerStorage != null) {
-			throw new IllegalStateException(String.format("Cannot create a new worker %s, becaus the storage directory already exists: %s", info, directory));
+			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", info, directory));
 		}
 		
 		workerStorage = new WorkerStorageImpl(validator, config, directory);
 		workerStorage.loadData();
 		workerStorage.updateDataset(info.getDataset());
-		
 		workerStorage.setWorker(info);
 
 		return new Worker(queryThreadPoolDefinition, executorService, workerStorage);
@@ -102,11 +102,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		catch (IOException e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
+		
 		try {
 			jobManager.close();
 		}catch (Exception e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
+		
 		try {
 			storage.close();
 		}

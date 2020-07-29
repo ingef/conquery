@@ -134,11 +134,13 @@ public class Namespace implements Closeable {
 	}
 	
 	public void close() {
-		try {			
+		try {
 			jobManager.close();
-		}catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
+		
 		try {
 			storage.close();
 		}
