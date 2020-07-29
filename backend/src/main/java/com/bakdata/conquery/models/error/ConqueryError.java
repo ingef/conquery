@@ -169,7 +169,7 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 	public static class ExecutionProcessingError extends NoContextError {
 
 		public ExecutionProcessingError() {
-			super("The an unexpected error occured during the execution.");
+			super("An unexpected error occured during the execution.");
 		}
 	}
 	
