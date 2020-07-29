@@ -57,6 +57,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Override
 	public void close() throws IOException {
 		queryExecutor.close();
+		try {
+			jobManager.close();
+		}catch (Exception e) {
+			log.error("Unable to close worker query executor of {}.", this, e);
+		}
 		storage.close();
 	}
 	
