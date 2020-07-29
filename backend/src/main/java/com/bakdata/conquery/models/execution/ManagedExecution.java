@@ -129,7 +129,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected void fail(MasterMetaStorage storage, ConqueryErrorInfo error) {
 		if(this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
-			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previously error was: {}", getId(), this.error, error);
+			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
 		} else {
 			this.error = error;
 			// Log the error, so its id is atleast once in the logs
