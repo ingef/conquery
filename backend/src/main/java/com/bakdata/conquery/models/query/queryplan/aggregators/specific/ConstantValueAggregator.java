@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -31,7 +30,7 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {}
+	public void acceptEvent(Bucket bucket, int event) {}
 	
 	@Override
 	public ResultType getResultType() {

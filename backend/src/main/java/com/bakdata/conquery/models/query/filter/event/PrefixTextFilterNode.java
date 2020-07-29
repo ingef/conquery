@@ -1,19 +1,30 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Single events are filtered, and included if they start with a given prefix. Entity is only included if it has any event with prefix.
  */
-public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
+public class PrefixTextFilterNode extends EventFilterNode<String> {
 
-	private boolean hit;
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
 
 	public PrefixTextFilterNode(Column column, String filterValue) {
-		super(column, filterValue);
+		super(filterValue);
+		this.column = column;
 	}
 
 	@Override
@@ -36,12 +47,8 @@ public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		this.hit = true;
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
 	}
 
-	@Override
-	public boolean isContained() {
-		return hit;
-	}
 }

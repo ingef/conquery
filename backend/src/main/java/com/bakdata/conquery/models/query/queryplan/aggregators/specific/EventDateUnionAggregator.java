@@ -54,7 +54,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}

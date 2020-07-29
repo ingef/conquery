@@ -86,4 +86,9 @@ public class Column extends Labeled<ColumnId> {
 		}
 		return position;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("Column[%s](type = %s)",getId(), getType());
+	}
 }
