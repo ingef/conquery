@@ -208,8 +208,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			isReadyToDownload(url, user)
 				? getDownloadURL(url)
 				: null);
-		if (state.equals(ExecutionState.FAILED)) {
-			assert(error != null);
+		if (state.equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
