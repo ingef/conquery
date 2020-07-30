@@ -6,14 +6,13 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@RequiredArgsConstructor
 @NoArgsConstructor
 public abstract class SingleColumnSelect extends Select {
 

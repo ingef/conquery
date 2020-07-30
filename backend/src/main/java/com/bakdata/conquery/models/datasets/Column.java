@@ -13,11 +13,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
 public class Column extends Labeled<ColumnId> {
 
 	public static final int UNKNOWN_POSITION = -1;
@@ -25,7 +23,6 @@ public class Column extends Labeled<ColumnId> {
 
 	@JsonBackReference
 	@NotNull
-	@ToString.Exclude
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
@@ -85,5 +82,10 @@ public class Column extends Labeled<ColumnId> {
 			}
 		}
 		return position;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Column[%s](type=%s)", getId(), type);
 	}
 }

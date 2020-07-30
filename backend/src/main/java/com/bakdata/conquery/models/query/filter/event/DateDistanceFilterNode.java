@@ -26,6 +26,10 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 	public DateDistanceFilterNode(ChronoUnit unit, Range.LongRange filterValue, Column column) {
 		super(column, filterValue);
 		this.unit = unit;
+
+		if(!column.getType().isDateCompatible()){
+			throw new IllegalArgumentException(String.format("DateDistanceFilterNode requires Column to be Date compatible, but is %s", column));
+		}
 	}
 
 	@Override
