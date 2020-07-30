@@ -159,7 +159,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	public static class ExecutionCreationPlanError extends NoContextError {
 
 		public ExecutionCreationPlanError() {
-			super("Unable to resolve query elements.");
+			super("Unable to generate query plan.");
 		}
 	}
 	
