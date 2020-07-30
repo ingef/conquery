@@ -53,7 +53,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@ToString.Include
 	public String getMessage() {
 		String message = new StringSubstitutor(context).replace(messageTemplate);
-		return message != null ? message : "Unable to provide error message. No message template as provided by error.";
+		return message != null ? message : "Unable to provide error message. No message template was provided by error.";
 	}
 
 	@Override

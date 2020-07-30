@@ -42,32 +42,32 @@ public class ExecuteQuery extends WorkerMessage {
 		// The results are send directly to these ManagesQueries
 		try {
 			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();		
-		} catch (ConqueryError e) {	
+		} catch (Exception e) {	
 			log.warn("Failed to create query plans for " + execution.getId(), e );
 			ShardResult result = execution.getInitializedShardResult(null);
-			sendFailureToMaster(result, execution, context, e);
-			return;
-		} catch (Exception e) {
-			log.error("Failed to create query plans for " + execution.getId(), e );
-			// If one of the plans can not be created (maybe due to a Id that references a non existing concept) fail the whole job.
-			ShardResult result = execution.getInitializedShardResult(null);
-			sendFailureToMaster(result, execution, context, new ConqueryError.UnknownError(e));
+			sendFailureToMaster(result, execution, context, asConqueryError(e));
 			return;
 		}
+		
 		// Execute all plans.
 		for(Entry<ManagedExecutionId, QueryPlan> entry : plans) {
 			ShardResult result = execution.getInitializedShardResult(entry);
 			try {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
-			} catch(ConqueryError e) {
+			} catch(Exception e) {
 				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
-				sendFailureToMaster(result, execution, context, e);
-			} catch (Exception e) {
-				log.error("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
-				sendFailureToMaster(result, execution, context, new ConqueryError.UnknownError(e));
+				sendFailureToMaster(result, execution, context,  asConqueryError(e));
+				return;
 			}
 		}
+	}
+	
+	/**
+	 * Wraps the {@link Throwable} into an {@link ConqueryError}.
+	 */
+	private static ConqueryError asConqueryError(Throwable t) {
+		return t instanceof ConqueryError ? (ConqueryError) t : new ConqueryError.UnknownError(t);
 	}
 
 	private static void sendFailureToMaster(ShardResult result, ManagedExecution<?> execution, Worker context, ConqueryError error) {
