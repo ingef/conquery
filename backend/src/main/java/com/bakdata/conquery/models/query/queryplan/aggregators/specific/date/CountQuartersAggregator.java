@@ -20,7 +20,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 /**
  * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
  */
-public class CountQuartersAggregator implements Aggregator<Long> {
+public class CountQuartersAggregator extends Aggregator<Long> {
 
 	private final TemporalAdjuster monthInQuarter = QuarterUtils.firstMonthInQuarterAdjuster();
 	private final TemporalAdjuster nextQuarter = QuarterUtils.nextQuarterAdjuster();
@@ -44,8 +44,8 @@ public class CountQuartersAggregator implements Aggregator<Long> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
-		if (!bucket.has(event, column)) {
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 

@@ -43,7 +43,7 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		aggregator.aggregateEvent(bucket, event);
+		aggregator.acceptEvent(bucket, event);
 	}
 
 	@Override

@@ -72,9 +72,9 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
-			getChild().nextEvent(bucket, event);
+			getChild().acceptEvent(bucket, event);
 		}
 	}
 
@@ -85,6 +85,6 @@ public class DateRestrictingNode extends QPChainNode {
 	
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new DateRestrictingNode(restriction, getChild().clone(ctx));
+		return new DateRestrictingNode(restriction, ctx.clone(getChild()));
 	}
 }

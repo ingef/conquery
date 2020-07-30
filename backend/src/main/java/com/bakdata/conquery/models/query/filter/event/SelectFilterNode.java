@@ -1,22 +1,33 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
  * Single events are filtered, and included if they have a selected value. Entity is only included if it has any event with selected value.
  */
-public class SelectFilterNode extends SingleColumnFilterNode<String> {
+public class SelectFilterNode extends EventFilterNode<String> {
 
 	private int selectedId = -1;
-	private boolean hit = false;
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
 
 	public SelectFilterNode(Column column, String filterValue) {
-		super(column, filterValue);
+		super(filterValue);
+		this.column = column;
 	}
 
 	@Override
@@ -42,18 +53,13 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		this.hit = true;
-	}
-
-	@Override
-	public boolean isContained() {
-		return hit;
-	}
-
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return super.isOfInterest(bucket) &&
-			   ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
+		return ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
 	}
+
+	@Override
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
+	}
+
 }

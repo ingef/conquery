@@ -32,7 +32,6 @@ public abstract class QPParentNode extends QPNode {
 
 	protected List<QPNode> currentTableChildren;
 
-
 	public QPParentNode(List<QPNode> children) {
 		if(children == null || children.isEmpty()) {
 			throw new IllegalArgumentException("A ParentAggregator needs at least one child.");
@@ -53,25 +52,26 @@ public abstract class QPParentNode extends QPNode {
 									   .filter(c -> c.collectRequiredTables().isEmpty())
 									   .collect(Collectors.toList());
 	}
-	
+
 	@Override
 	public void init(Entity entity) {
 		super.init(entity);
-		for(int i=0,size=children.size();i<size;i++) {
-			children.get(i).init(entity);
+		for (QPNode child : children) {
+			child.init(entity);
 		}
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
-		for(int i=0,size=children.size();i<size;i++) {
-			children.get(i).collectRequiredTables(requiredTables);
+		for (QPNode child : children) {
+			child.collectRequiredTables(requiredTables);
 		}
 	}
-	
+
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
+		currentTableChildren = childMap.get(currentTable);
 
 
 		currentTableChildren = ImmutableList.<QPNode>builder()
@@ -83,53 +83,56 @@ public abstract class QPParentNode extends QPNode {
 			currentTableChild.nextTable(ctx, currentTable);
 		}
 	}
-	
+
 	@Override
 	public void nextBlock(Bucket bucket) {
 		for (QPNode currentTableChild : currentTableChildren) {
 			currentTableChild.nextBlock(bucket);
 		}
 	}
-	
+
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		boolean interest = false;
-		for(int i=0,size=currentTableChildren.size();i<size;i++) {
-			interest |= currentTableChildren.get(i).isOfInterest(bucket);
+		for (QPNode child : currentTableChildren) {
+			if (child.isOfInterest(bucket)) {
+				return true;
+			}
 		}
-		return interest;
+
+		return false;
 	}
-	
+
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		boolean interest = false;
-		for(int i=0,size=children.size();i<size;i++) {
-			interest |= children.get(i).isOfInterest(entity);
+		for (QPNode child : children) {
+			if (child.isOfInterest(entity)) {
+				return true;
+			}
 		}
-		return interest;
+		return false;
 	}
-	
+
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
-		for(int i=0,size=currentTableChildren.size();i<size;i++) {
-			currentTableChildren.get(i).nextEvent(bucket, event);
+	public void acceptEvent(Bucket bucket, int event) {
+		for (QPNode currentTableChild : currentTableChildren) {
+			currentTableChild.acceptEvent(bucket, event);
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return super.toString()+"[children = "+children+"]";
 	}
-	
+
 	protected Pair<List<QPNode>, ListMultimap<TableId, QPNode>> createClonedFields(CloneContext ctx) {
 		List<QPNode> clones = new ArrayList<>(getChildren());
 		clones.replaceAll(ctx::clone);
 
 		ArrayListMultimap<TableId, QPNode> cloneMap = ArrayListMultimap.create(childMap);
-		
+
 		for(Entry<TableId, Collection<QPNode>> e : cloneMap.asMap().entrySet()) {
-			((List<QPNode>)e.getValue()).replaceAll(v->ctx.clone(v));
+			((List<QPNode>)e.getValue()).replaceAll(ctx::clone);
 		}
 		return Pair.of(clones, cloneMap);
 	}

@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
 
 /**
@@ -39,7 +38,7 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
 			return;
 		}

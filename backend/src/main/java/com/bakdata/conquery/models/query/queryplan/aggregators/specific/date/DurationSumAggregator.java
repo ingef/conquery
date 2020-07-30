@@ -30,8 +30,8 @@ public class DurationSumAggregator implements Aggregator<Long> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
-		if (!bucket.has(event, column)) {
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 

@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -11,20 +14,27 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Entity is included as long as Dates are within a certain range.
  */
-public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRange> {
+public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 	private final ChronoUnit unit;
 
-	private boolean hit = false;
 	private LocalDate reference;
 
-	public DateDistanceFilterNode(ChronoUnit unit, Range.LongRange filterValue, Column column) {
-		super(column, filterValue);
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
+
+	public DateDistanceFilterNode(Column column, ChronoUnit unit, Range.LongRange filterValue) {
+		super(filterValue);
+		this.column = column;
 		this.unit = unit;
 
 		if(!column.getType().isDateCompatible()){
@@ -70,14 +80,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		//Base class for event based filter nodes to reduce repetition?
-		this.hit = true;
-
-	}
-
-	@Override
-	public boolean isContained() {
-		return hit;
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
 	}
 }

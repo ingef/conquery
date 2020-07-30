@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -13,23 +12,23 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.date.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
+import lombok.NonNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
 
-	private final TableId allIdsTable;
-	@Getter
-	@NotEmpty
+	private final TableId tableId;
+	private SpecialDateUnion dateUnion;
+
+	@Getter @NotEmpty @NonNull
 	private final Map<Integer, CDateSet> includedEntities;
-	private final SpecialDateUnion dateUnionAggregatorNode;
 
 	private CDateSet contained;
-	private CDateSet restricted;
 
-	public ExternalNode(TableId allIdsTable, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnionAggregatorNode) {
-		this.allIdsTable = allIdsTable;
-		this.includedEntities = Objects.requireNonNull(includedEntities);
-		this.dateUnionAggregatorNode = dateUnionAggregatorNode;
+	public ExternalNode(TableId tableId, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnion) {
+		this.dateUnion = dateUnion;
+		this.includedEntities = includedEntities;
+		this.tableId = tableId;
 	}
 
 	@Override
@@ -37,48 +36,40 @@ public class ExternalNode extends QPNode {
 		super.init(entity);
 		contained = includedEntities.get(entity.getId());
 	}
-
+	
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		return new ExternalNode(allIdsTable, includedEntities, ctx.clone(dateUnionAggregatorNode));
+		return new ExternalNode(tableId, includedEntities, ctx.clone(dateUnion));
 	}
-
+	
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		if (contained == null) {
-			super.nextTable(ctx, currentTable);
-			return;
+		if(contained != null) {
+			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
+			newSet.retainAll(contained);
+			ctx = ctx.withDateRestriction(newSet);
 		}
 
-		restricted = CDateSet.create(ctx.getDateRestriction());
-		restricted.retainAll(contained);
+		super.nextTable(ctx, currentTable);
+		dateUnion.nextTable(getContext(), currentTable);
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
-		if (restricted == null) {
-			return;
+	public void acceptEvent(Bucket bucket, int event) {
+		if(contained != null) {
+			dateUnion.acceptEvent(bucket, event);
 		}
-		dateUnionAggregatorNode.merge(restricted);
 	}
-
+	
 	@Override
 	public boolean isContained() {
-		return restricted != null && !restricted.isEmpty();
+		return contained != null && !contained.isEmpty();
 	}
-
+	
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.add(allIdsTable);
-	}
-
-	@Override
-	public boolean isOfInterest(Bucket bucket) {
-		return true;
-	}
-
-	@Override
-	public boolean isOfInterest(Entity entity) {
-		return includedEntities.containsKey(entity.getId());
+		super.collectRequiredTables(requiredTables);
+		//add the allIdsTable
+		requiredTables.add(tableId);
 	}
 }

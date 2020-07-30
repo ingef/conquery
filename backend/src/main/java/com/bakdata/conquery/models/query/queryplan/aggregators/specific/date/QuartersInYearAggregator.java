@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.query.queryplan.aggregators.specific.date;
+package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -10,9 +10,7 @@ import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -20,31 +18,32 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 /**
  * Aggregator counting the number of quarters in a year, returning the maximum number of quarters present.
  */
-public class QuartersInYearAggregator implements Aggregator<Long> {
+public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
 	private final Int2ObjectMap<EnumSet<Month>> quartersInYear = new Int2ObjectOpenHashMap<>();
 
-	private Column column;
-
-	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		column = ctx.getValidityDateColumn();
-
-		if(!column.getType().isDateCompatible()){
-			throw new IllegalStateException(String.format("Non date-compatible validityDate-Column[%s]", column));
-		}
+	public QuartersInYearAggregator(Column column) {
+		super(column);
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
-		if (!bucket.has(event, column)) {
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
-		LocalDate date = CDate.toLocalDate(bucket.getDate(event, column));
+		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
 
-		EnumSet<Month> months = quartersInYear.computeIfAbsent(date.getYear(), y -> EnumSet.noneOf(Month.class));
-		months.add(QuarterUtils.getFirstMonthOfQuarter(date.get(IsoFields.QUARTER_OF_YEAR)));
+		EnumSet<Month> months = quartersInYear.get(date.getYear());
+		int quarter = date.get(IsoFields.QUARTER_OF_YEAR);
+
+		if (months == null) {
+			months = EnumSet.of(QuarterUtils.getFirstMonthOfQuarter(quarter));
+			quartersInYear.put(date.getYear(), months);
+		}
+		else {
+			months.add(QuarterUtils.getFirstMonthOfQuarter(quarter));
+		}
 	}
 
 	@Override
@@ -67,7 +66,7 @@ public class QuartersInYearAggregator implements Aggregator<Long> {
 
 	@Override
 	public QuartersInYearAggregator doClone(CloneContext ctx) {
-		return new QuartersInYearAggregator();
+		return new QuartersInYearAggregator(getColumn());
 	}
 	
 	@Override
