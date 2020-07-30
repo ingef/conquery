@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.error;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.UUID;
-
-import com.google.common.collect.ComparisonChain;
 
 /**
  * Base interface for errors that should be displayed as an info in the Frontend
@@ -31,9 +30,9 @@ public interface ConqueryErrorInfo {
 	 * Method to check if two errors are basically the same, by not checking the id and the context (which possibly checks on hashcode basis).
 	 */
 	default boolean equalsRegardingCodeAndMessage(ConqueryErrorInfo other) {
-		return ComparisonChain.start()
-			.compare(getCode(), other.getCode())
-			.compare(getMessage(), other.getMessage())
-			.result() == 0;
+		return Comparator
+			.comparing(ConqueryErrorInfo::getCode)
+			.thenComparing(ConqueryErrorInfo::getMessage)
+			.compare(this, other) == 0;
 	}
 }
