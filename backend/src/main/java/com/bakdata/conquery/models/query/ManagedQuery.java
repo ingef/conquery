@@ -94,7 +94,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 		if(result.getError().isPresent()) {
 			fail(storage, result.getError().get());
-			log.error("Failed Query[{}]", queryId);
 		}
 
 		synchronized (getExecution()) {
