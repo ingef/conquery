@@ -80,7 +80,7 @@ public class CQExternal implements CQElement {
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
 			if (row.length != format.size()) {
-				throw new ConqueryError.ExternalResolveError(format.size(), row.length).asException();
+				throw new ConqueryError.ExternalResolveError(format.size(), row.length);
 			}
 
 			//read the dates from the row

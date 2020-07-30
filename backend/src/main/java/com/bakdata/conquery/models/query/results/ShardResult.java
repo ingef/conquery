@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.error.ConqueryException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
@@ -77,8 +76,8 @@ public class ShardResult {
 				results.add(entityResult);
 			}
 
-		} catch (ConqueryException e) {
-			error = Optional.of(e.getCtx());
+		} catch (ConqueryError e) {
+			error = Optional.of(e);
 		} catch (Exception e) {
 			error = Optional.of(new ConqueryError.UnknownError(e));
 		}

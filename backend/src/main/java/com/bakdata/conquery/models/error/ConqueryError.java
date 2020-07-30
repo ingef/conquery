@@ -15,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -27,22 +26,28 @@ import org.hibernate.validator.constraints.NotEmpty;
  * Base class for errors that are thrown within Conquery and can be serialized
  * and deserialized to allow transportation between nodes.
  */
+@SuppressWarnings("serial")
 @Getter
 @Setter
-@RequiredArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "code")
 @CPSBase
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class ConqueryError implements ConqueryErrorInfo {
-
+public abstract class ConqueryError extends RuntimeException implements ConqueryErrorInfo {
+	
 	@VariableDefaultValue
 	@NotNull
 	@ToString.Include
 	private UUID id = UUID.randomUUID();
 	@NotEmpty
-	private final String messageTemplate;
-	private final Map<String, String> context;
-
+	private String messageTemplate;
+	private Map<String, String> context;
+	
+	
+	public ConqueryError(String messageTemplate, Map<String, String> context) {
+		this.messageTemplate = messageTemplate;
+		this.context = context;
+	}
+	
 	@Override
 	@JsonIgnore
 	@ToString.Include
@@ -53,10 +58,6 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 	@Override
 	public PlainError asPlain() {
 		return new PlainError(getId(), getCode(), getMessage(), getContext());
-	}
-
-	public ConqueryException asException() {
-		return new ConqueryException(this);
 	}
 
 	@Override
@@ -74,7 +75,7 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 
 	public static abstract class ContextError extends ConqueryError {
 
-		public ContextError(String code, String messageTemplate) {
+		public ContextError(String messageTemplate) {
 			super(messageTemplate, new Flat3Map<>());
 		}
 	}
@@ -118,7 +119,7 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 		 */
 		@JsonCreator
 		private ExecutionCreationResolveError() {
-			super(ExecutionCreationResolveError.class.getAnnotation(CPSType.class).id(), TEMPLATE);
+			super(TEMPLATE);
 		}
 
 		public ExecutionCreationResolveError(IId<?> unresolvableElementId) {
@@ -141,7 +142,7 @@ public abstract class ConqueryError implements ConqueryErrorInfo {
 		 */
 		@JsonCreator
 		private ExternalResolveError() {
-			super(ExternalResolveError.class.getAnnotation(CPSType.class).id(), TEMPLATE);
+			super(TEMPLATE);
 		}
 
 		public ExternalResolveError(int formatRowLength, int dataRowLength) {

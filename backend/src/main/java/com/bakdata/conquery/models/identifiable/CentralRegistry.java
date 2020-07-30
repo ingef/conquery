@@ -36,7 +36,7 @@ public class CentralRegistry implements Injectable {
 		}
 		Supplier<Identifiable<?>> supplier = cacheables.get(name);
 		if(supplier == null) {
-			throw new ExecutionCreationResolveError(name).asException();
+			throw new ExecutionCreationResolveError(name);
 		}
 		return (T)supplier.get();
 	}

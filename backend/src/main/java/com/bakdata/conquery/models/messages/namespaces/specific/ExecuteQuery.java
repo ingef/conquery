@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.error.ConqueryException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
@@ -43,10 +42,10 @@ public class ExecuteQuery extends WorkerMessage {
 		// The results are send directly to these ManagesQueries
 		try {
 			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();		
-		} catch (ConqueryException e) {	
+		} catch (ConqueryError e) {	
 			log.warn("Failed to create query plans for " + execution.getId(), e );
 			ShardResult result = execution.getInitializedShardResult(null);
-			sendFailureToMaster(result, execution, context, e.getCtx());
+			sendFailureToMaster(result, execution, context, e);
 			return;
 		} catch (Exception e) {
 			log.error("Failed to create query plans for " + execution.getId(), e );
@@ -61,9 +60,9 @@ public class ExecuteQuery extends WorkerMessage {
 			try {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
-			} catch(ConqueryException e) {
+			} catch(ConqueryError e) {
 				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
-				sendFailureToMaster(result, execution, context, e.getCtx());
+				sendFailureToMaster(result, execution, context, e);
 			} catch (Exception e) {
 				log.error("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), e );
 				sendFailureToMaster(result, execution, context, new ConqueryError.UnknownError(e));
