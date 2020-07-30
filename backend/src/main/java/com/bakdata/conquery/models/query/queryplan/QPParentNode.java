@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import lombok.AccessLevel;
@@ -74,27 +73,38 @@ public abstract class QPParentNode extends QPNode {
 		currentTableChildren = childMap.get(currentTable);
 
 
-		currentTableChildren = ImmutableList.<QPNode>builder()
-											.addAll(childMap.get(currentTable))
-											.addAll(alwaysActiveChildren)
-											.build();
+		currentTableChildren = childMap.get(currentTable);
 
-		for (QPNode currentTableChild : currentTableChildren) {
-			currentTableChild.nextTable(ctx, currentTable);
+		for (QPNode child : getCurrentTableChildren()) {
+			child.nextTable(ctx, currentTable);
+		}
+
+		for (QPNode child : getAlwaysActiveChildren()) {
+			child.nextTable(ctx, currentTable);
 		}
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		for (QPNode currentTableChild : currentTableChildren) {
-			currentTableChild.nextBlock(bucket);
+		for (QPNode child : getCurrentTableChildren()) {
+			child.nextBlock(bucket);
+		}
+
+		for (QPNode child : getAlwaysActiveChildren()) {
+			child.nextBlock(bucket);
 		}
 	}
 
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		for (QPNode child : currentTableChildren) {
+		for (QPNode child : getCurrentTableChildren()) {
+			if (child.isOfInterest(bucket)) {
+				return true;
+			}
+		}
+
+		for (QPNode child : getAlwaysActiveChildren()) {
 			if (child.isOfInterest(bucket)) {
 				return true;
 			}
@@ -115,7 +125,11 @@ public abstract class QPParentNode extends QPNode {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		for (QPNode currentTableChild : currentTableChildren) {
+		for (QPNode currentTableChild : getCurrentTableChildren()) {
+			currentTableChild.acceptEvent(bucket, event);
+		}
+
+		for (QPNode currentTableChild : getAlwaysActiveChildren()) {
 			currentTableChild.acceptEvent(bucket, event);
 		}
 	}
