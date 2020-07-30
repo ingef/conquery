@@ -136,7 +136,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		ManagedExecutionId subquery = result.getSubqueryId();
 		if(result.getError().isPresent()) {
 			fail(storage, result.getError().get());
-			log.warn("Form failed in query plan creation. {}", result.getError().get());
 			return;			
 		}
 		ManagedQuery subQuery = flatSubQueries.get(subquery);

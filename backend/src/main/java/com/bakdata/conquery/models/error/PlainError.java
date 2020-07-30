@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Base class, that is intended for external serialization, without type information.
@@ -17,6 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode
+@ToString
 public class PlainError implements ConqueryErrorInfo {
 	private final UUID id;
 	private final String code;
