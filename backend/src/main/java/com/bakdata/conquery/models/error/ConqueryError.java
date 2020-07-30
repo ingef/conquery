@@ -52,7 +52,8 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@JsonIgnore
 	@ToString.Include
 	public String getMessage() {
-		return new StringSubstitutor(context).replace(messageTemplate);
+		String message = new StringSubstitutor(context).replace(messageTemplate);
+		return message != null ? message : "Unable to provide error message. No message template as provided by error.";
 	}
 
 	@Override
