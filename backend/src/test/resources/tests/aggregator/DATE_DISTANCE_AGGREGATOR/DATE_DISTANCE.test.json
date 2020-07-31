@@ -58,7 +58,7 @@
         "columns": [
           {
             "name": "indexdatum",
-            "type": "DATE_RANGE"
+            "type": "DATE"
           }
         ]
       }
