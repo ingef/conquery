@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth.entities;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +12,6 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ComparisonChain;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -141,11 +141,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	
 	
 	@Override
-	public int compareTo(PermissionOwner<?> o) {
-		return ComparisonChain.start()
-			.compare(label, o.label)
-			.compare(getId().toString(), o.getId().toString())
-			.result();
+	public int compareTo(PermissionOwner<?> other) {
+		return Comparator
+			.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel)
+			.thenComparing(po -> po.getId().toString())
+			.compare(this, other);
 	}
 
 }
