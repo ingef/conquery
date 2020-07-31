@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
@@ -57,8 +56,12 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 		switch(method) {
 			
 			case ADD_TO_COMPLETE_EMPTY:
-				Optional<Boolean> allTablesEmpty = concept.getTables().stream().map(CQTable::getSelects).map(List::isEmpty).reduce(Boolean::logicalAnd);
-				if(!(concept.getSelects().isEmpty() && allTablesEmpty.orElse(true /* No table present -> signal empty tables*/))) {
+				Boolean allTablesEmpty = concept.getTables().stream()
+					.map(CQTable::getSelects)
+					.map(List::isEmpty)
+					.reduce(Boolean::logicalAnd)
+					.orElse(true /* No table present -> signal empty tables*/);
+				if(!(concept.getSelects().isEmpty() && allTablesEmpty)) {
 					// Don't fill if there are any selects on concept level or on any table level
 					break;
 				}
