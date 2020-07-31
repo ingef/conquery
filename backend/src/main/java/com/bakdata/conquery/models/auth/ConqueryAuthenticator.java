@@ -11,7 +11,6 @@ import io.dropwizard.auth.Authenticator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 
 /**
@@ -33,7 +32,7 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 	@Override
 	public Optional<User> authenticate(AuthenticationToken token) {
 		// Submit the token to Shiro (to all realms that were registered)
-		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
+		ConqueryAuthenticationInfo info = (ConqueryAuthenticationInfo) SecurityUtils.getSecurityManager().authenticate(token);
 		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
@@ -42,6 +41,7 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		
 		if(user != null) {
 			ConqueryMDC.setLocation(user.getId().toString());
+			user.setDisplayLogout(info.isDisplayLogout());
 		} else {
 			log.trace("The user id {} could not be map to a user.", userId);
 		}

@@ -36,11 +36,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
+import lombok.extern.slf4j.Slf4j;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
-
+@Slf4j
 public class QueryResource {
 	
 	private QueryProcessor processor;
@@ -55,7 +56,7 @@ public class QueryResource {
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
 		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
-
+		log.info("Query posted on dataset {} by user {} ({}).", datasetId, user.getId(), user.getName());
 
 		return Response.ok(
 			processor.postQuery(
