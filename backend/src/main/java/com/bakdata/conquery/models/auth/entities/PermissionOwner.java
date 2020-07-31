@@ -28,6 +28,8 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @Slf4j
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
+	
+	private static final Comparator<PermissionOwner<?>> COMPARATOR = Comparator.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
 
 	@Getter
 	@Setter
@@ -142,10 +144,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	
 	@Override
 	public int compareTo(PermissionOwner<?> other) {
-		return Comparator
-			.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel)
-			.thenComparing(po -> po.getId().toString())
-			.compare(this, other);
+		return COMPARATOR.compare(this, other);
 	}
 
 }
