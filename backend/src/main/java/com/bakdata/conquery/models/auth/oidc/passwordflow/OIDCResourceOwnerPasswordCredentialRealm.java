@@ -2,12 +2,12 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -118,9 +118,7 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 			String userLabel = successResponse.getStringParameter("name");
 			user = new User(username, userLabel != null ?  userLabel : username);
 			storage.addUser(user);
-			log.info(
-				"Created new user: {}",
-				user);
+			log.info("Created new user: {}", user);
 		}
 
 		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
@@ -130,11 +128,11 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		LocalDateTime expTime = tokenInstrospection.getExpirationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 		LocalDateTime now = LocalDateTime.now();
 		
-		boolean result = expTime.isBefore(now);
-		if(result) {
+		if(expTime.isBefore(now)) {
 			log.debug("Provided token expired at {} ( now is {})", expTime, now);
+			return false;
 		}
-		return result;
+		return true;
 	}
 
 	/**
@@ -183,8 +181,10 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		Secret passwordSecret = new Secret(new String(password));
 
 		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
+		
+		UriBuilder.fromUri(serverConf.getTokenEndpoint()).build();
 				
-		URI tokenEndpoint =  new URL(new URL(config.getAuthServerUrl()), serverConf.getTokenEndpoint()).toURI();
+		URI tokenEndpoint =  UriBuilder.fromUri(serverConf.getTokenEndpoint()).build();
 
 		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, clientAuthentication, grant, Scope.parse("openid"));
 		
