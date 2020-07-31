@@ -8,6 +8,18 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 
+/***
+ * Any object that iterates events in the QueryEngine.
+ *
+ * Methods are invoked in the following order:
+ * 	- {@link EventIterating::isOfInterest(Entity)}
+ * 	- {@link EventIterating::nextTable}
+ * 	- {@link EventIterating::isOfInterest(Bucket)}
+ * 	- {@link EventIterating::nextBlock}
+ * 	- {@link EventIterating::acceptEvent}
+ *
+ * 	none of the isOfInterest methods may 
+ */
 public interface EventIterating {
 	
 	default void collectRequiredTables(Set<TableId> requiredTables) {}
