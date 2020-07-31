@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -13,8 +12,8 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -26,30 +25,33 @@ import org.apache.commons.lang3.tuple.Pair;
 public abstract class QPParentNode extends QPNode {
 
 	private final List<QPNode> children;
-	private final ListMultimap<TableId, QPNode> childMap;
+	private final Multimap<TableId, QPNode> childMap;
 	protected final List<QPNode> alwaysActiveChildren;
 
-	protected List<QPNode> currentTableChildren;
+	protected Collection<QPNode> currentTableChildren;
 
 	public QPParentNode(List<QPNode> children) {
+
 		if(children == null || children.isEmpty()) {
 			throw new IllegalArgumentException("A ParentAggregator needs at least one child.");
 		}
-		this.children = children;
-		this.childMap = children
-				.stream()
-				.flatMap(
-					c -> c.collectRequiredTables()
-						.stream()
-						.map(t -> Pair.of(t, c))
-				)
-				.collect(ImmutableListMultimap
-					.toImmutableListMultimap(Pair::getLeft, Pair::getRight)
-				);
 
-		alwaysActiveChildren = children.stream()
-									   .filter(c -> c.collectRequiredTables().isEmpty())
-									   .collect(Collectors.toList());
+		this.children = children;
+		childMap = ArrayListMultimap.create(children.size(),2);
+		alwaysActiveChildren = new ArrayList<>(children.size());
+
+		for (QPNode child : children) {
+			final Set<TableId> requiredTables = child.collectRequiredTables();
+
+			if(requiredTables.isEmpty()){
+				alwaysActiveChildren.add(child);
+				continue;
+			}
+
+			for (TableId requiredTable : requiredTables) {
+				childMap.put(requiredTable, child);
+			}
+		}
 	}
 
 	@Override
@@ -115,7 +117,7 @@ public abstract class QPParentNode extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		for (QPNode child : children) {
+		for (QPNode child : getChildren()) {
 			if (child.isOfInterest(entity)) {
 				return true;
 			}
