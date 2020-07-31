@@ -10,16 +10,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ResultInfoCollector {
 	
+	/**
+	 * Is used to track possible name duplicates for column names and provide an index to enumerate these.
+	 * This lowers the risk of duplicate column names in the result.
+	 * 
+	 */
 	@Getter
 	private final HashMap<String, Integer> ocurrenceCounter = new HashMap<>();
 	@Getter
 	private final List<ResultInfo> infos = new ArrayList<>();
 	
 	public void add(ResultInfo info) {
-		infos.add(info);
-	}
-	
-	public void add(SelectResultInfo info) {
 		info.setOcurrenceCounter(ocurrenceCounter);
 		infos.add(info);
 	}
@@ -33,13 +34,6 @@ public class ResultInfoCollector {
 	}
 
 	public void addAll(List<ResultInfo> newInfos) {
-		for(ResultInfo info : newInfos) {
-			if(info instanceof SelectResultInfo) {
-				add((SelectResultInfo)info);
-			}
-			else {
-				add((SimpleResultInfo)info);
-			}
-		}
+		newInfos.forEach(this::add);
 	}
 }
