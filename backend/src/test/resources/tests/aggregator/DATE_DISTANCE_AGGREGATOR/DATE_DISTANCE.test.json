@@ -17,8 +17,8 @@
         "type": "CONCEPT",
         "tables": [
           {
-            "id": "${dataset}.con.geschlecht_connector",
-            "selects": "${dataset}.con.geschlecht_connector.geb"
+            "id": "${dataset}.con.con",
+            "selects": "${dataset}.con.con.geb"
           }
         ]
       }
@@ -31,17 +31,17 @@
       "type": "VIRTUAL",
       "connectors": [
         {
-          "label": "geschlecht_connector",
+          "label": "con",
           "table": "table1",
           "validityDates": {
             "label": "indexdatum",
-            "column": "table1.geburtsdatum"
+            "column": "table1.indexdatum"
           },
-          "selects": {
-            "name": "geb",
-            "type": "DATE_DISTANCE",
-            "column": "table1.geburtsdatum"
-          }
+		  "selects": {
+			"name": "geb",
+			"type": "DATE_DISTANCE",
+			"column": "table1.indexdatum"
+		  }
         }
       ]
     }
@@ -57,8 +57,8 @@
         },
         "columns": [
           {
-            "name": "geburtsdatum",
-            "type": "DATE"
+            "name": "indexdatum",
+            "type": "DATE_RANGE"
           }
         ]
       }

@@ -11,7 +11,7 @@
       },
       "columns": [
         {
-          "name": "behandlungsdatum",
+          "name": "datum",
           "type": "DATE_RANGE"
         }
       ]
@@ -20,7 +20,7 @@
   "connector": {
     "validityDates": {
       "label": "Datum",
-      "column": "table.behandlungsdatum"
+      "column": "table.datum"
     },
     "filter": {
       "type": "COUNT_QUARTERS"
