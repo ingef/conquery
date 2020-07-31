@@ -17,6 +17,7 @@ public class DurationSumAggregator implements Aggregator<Long> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
+
 	private Column column;
 
 	@Override
@@ -31,7 +32,7 @@ public class DurationSumAggregator implements Aggregator<Long> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (!bucket.has(event, getColumn())) {
+		if (!bucket.has(event, column)) {
 			return;
 		}
 

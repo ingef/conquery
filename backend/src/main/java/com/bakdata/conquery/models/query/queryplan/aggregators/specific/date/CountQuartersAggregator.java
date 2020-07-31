@@ -16,17 +16,19 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.Getter;
 
 /**
- * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
+ * Count the number of distinct quarters for all validity dates.
  */
-public class CountQuartersAggregator extends Aggregator<Long> {
+public class CountQuartersAggregator implements Aggregator<Long> {
 
 	private final TemporalAdjuster monthInQuarter = QuarterUtils.firstMonthInQuarterAdjuster();
 	private final TemporalAdjuster nextQuarter = QuarterUtils.nextQuarterAdjuster();
 
 	private final IntSet quarters = new IntOpenHashSet();
 
+	@Getter
 	private Column column;
 
 	@Override

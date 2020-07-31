@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
-
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.CDate;
@@ -54,13 +53,9 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 	@Override
 	public DateDistanceFilterNode doClone(CloneContext ctx) {
-		return new DateDistanceFilterNode(unit, filterValue, getColumn());
+		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
 	}
 
-	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-
-	}
 
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
@@ -81,6 +76,6 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.add(column.getTable().getId());
+		requiredTables.add(getColumn().getTable().getId());
 	}
 }
