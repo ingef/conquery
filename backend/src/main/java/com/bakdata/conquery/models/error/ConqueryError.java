@@ -182,7 +182,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	public static class ExecutionProcessingTimeoutError extends NoContextError {
 
 		public ExecutionProcessingTimeoutError() {
-			super("The execution tooked too long to finish.");
+			super("The execution took too long to finish.");
 		}
 	}
 }
