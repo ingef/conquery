@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -20,10 +21,7 @@ import javax.validation.Validator;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.FilterSearch;
-
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
@@ -245,7 +243,7 @@ public class AdminProcessor {
 		AuthorizationHelper.deleteRole(storage, roleId);
 	}
 
-	public TreeSet<Role> getAllRoles() {
+	public SortedSet<Role> getAllRoles() {
 		return new TreeSet<>(storage.getAllRoles());
 	}
 
