@@ -43,10 +43,11 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		final Environment environment = new Environment(
 			bootstrap.getApplication().getName(),
 			bootstrap.getObjectMapper(),
-			bootstrap.getValidatorFactory().getValidator(),
+			bootstrap.getValidatorFactory(),
 			bootstrap.getMetricRegistry(),
 			bootstrap.getClassLoader(),
-			bootstrap.getHealthCheckRegistry());
+			bootstrap.getHealthCheckRegistry(),
+			configuration);
 		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
 		configuration.getServerFactory().configure(environment);
 

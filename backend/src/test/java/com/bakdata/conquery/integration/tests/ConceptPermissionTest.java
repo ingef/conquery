@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.UnauthorizedException;
 
 @Slf4j
-public class ConceptPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
+public class ConceptPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest.This {
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {

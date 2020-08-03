@@ -1,14 +1,13 @@
 package com.bakdata.conquery.resources.admin;
 
 import java.io.PrintWriter;
-
-import org.eclipse.jetty.server.Server;
-
-import com.google.common.collect.ImmutableMultimap;
+import java.util.List;
+import java.util.Map;
 
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.server.Server;
 
 @Slf4j
 public class ShutdownTask extends Task implements ServerLifecycleListener {
@@ -20,7 +19,12 @@ public class ShutdownTask extends Task implements ServerLifecycleListener {
 	}
 
 	@Override
-	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+	public void serverStarted(Server server) {
+		this.server = server;
+	}
+
+	@Override
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
 		if(server == null) {
 			output.print("Server not yet started");
 		}
@@ -39,11 +43,6 @@ public class ShutdownTask extends Task implements ServerLifecycleListener {
 				}
 			}.start();
 		}
-	}
-
-	@Override
-	public void serverStarted(Server server) {
-		this.server = server;
 	}
 
 }
