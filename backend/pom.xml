@@ -112,6 +112,7 @@
 			<version>4.4</version>
 		</dependency>
 		<dependency>
+			<!-- Override the managed dependency because this version cannot be set by a property. -->
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
 			<version>1.8</version>
