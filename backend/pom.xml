@@ -77,10 +77,6 @@
 			<artifactId>dropwizard-auth</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.dropwizard</groupId>
-			<artifactId>dropwizard-assets</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-parameter-names</artifactId>
 		</dependency>
@@ -186,17 +182,6 @@
 			<artifactId>urlrewritefilter</artifactId>
 			<version>4.0.4</version>
 		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jaxb</groupId>
-			<artifactId>jaxb-runtime</artifactId>
-			<version>2.3.3</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-		<!-- end required until Dropwizard 2.0.0 -->
 		<dependency>
 			<groupId>com.jakewharton.byteunits</groupId>
 			<artifactId>byteunits</artifactId>
