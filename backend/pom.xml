@@ -51,6 +51,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <!-- Override io.dropwizard.dropwizard-project's defaults -->
                 <executions>
                     <execution>
                         <id>analyze</id>
