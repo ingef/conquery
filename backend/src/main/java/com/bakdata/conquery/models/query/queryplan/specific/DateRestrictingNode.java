@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -24,7 +23,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	protected final CDateSet restriction;
 	protected Column validityDateColumn;
-	protected Map<BucketId, EntityRow> preCurrentRow = null;
+	protected Map<BucketId, CBlock> preCurrentRow = null;
 
 	public DateRestrictingNode(CDateSet restriction, QPNode child) {
 		super(child);
@@ -55,8 +54,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		EntityRow currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
-		CBlock cBlock = currentRow.getCBlock();
+		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 		int localId = bucket.toLocal(entity.getId());
 		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
 			return false;

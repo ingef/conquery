@@ -1,7 +1,11 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
@@ -20,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -37,6 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BucketManager {
 
+	private final int bucketSize;
+
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
@@ -47,7 +54,16 @@ public class BucketManager {
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 	private final WorkerInformation workerInformation;
 
-	public BucketManager(JobManager jobManager, WorkerStorage storage, WorkerInformation workerInformation) {
+
+	/**
+	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
+	 */
+	//TODO pull these numbers from a running instance.
+	private final Map<ConnectorId, Int2ObjectMap<CBlock>> connectorCBlocks = new HashMap<>(150);
+
+
+	public BucketManager(int bucketSize, JobManager jobManager, WorkerStorage storage, WorkerInformation workerInformation) {
+		this.bucketSize = bucketSize;
 		this.jobManager = jobManager;
 		this.storage = storage;
 		this.concepts.addAll(storage.getAllConcepts());
@@ -93,8 +109,7 @@ public class BucketManager {
 
 	private void registerBucket(Bucket bucket) {
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(bucket))
-					.addBucket(storage.getCentralRegistry().resolve(bucket.getImp().getTable()).getId(), bucket);
+			entities.computeIfAbsent(entity, createEntityFor(bucket));
 		}
 	}
 
@@ -120,11 +135,7 @@ public class BucketManager {
 		for (int entity : bucket) {
 			entities.computeIfAbsent(entity, createEntityFor(cBlock))
 					.addCBlock(
-							storage.getCentralRegistry().resolve(cBlock.getConnector()),
-							storage.getImport(cBlock.getBucket().getImp()),
-							storage.getCentralRegistry().resolve(cBlock.getBucket().getImp().getTable()),
-							bucket,
-							cBlock
+							storage.getCentralRegistry().resolve(cBlock.getConnector()).getId(), bucket.getId(), cBlock
 					);
 		}
 	}
@@ -311,5 +322,27 @@ public class BucketManager {
 
 	public boolean hasBucket(BucketId id) {
 		return buckets.containsKey(id);
+	}
+
+	public Bucket getBucket(BucketId id) {
+		return buckets.get(id);
+	}
+
+	public Stream<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+		return storage.getTableImports(tableId).stream()
+					  .map(imp -> new BucketId(imp, bucketId))
+					  .map(this::getBucket)
+					  .filter(Objects::nonNull);
+	}
+
+
+
+
+	public CBlock getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+
+		return connectorCBlocks.computeIfAbsent(connectorId, id -> new Int2ObjectAVLTreeMap<>())
+							   .get(bucketId);
 	}
 }

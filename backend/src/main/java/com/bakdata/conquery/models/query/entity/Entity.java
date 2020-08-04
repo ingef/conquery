@@ -1,19 +1,12 @@
 package com.bakdata.conquery.models.query.entity;
 
-import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ListMultimap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -28,16 +21,12 @@ import lombok.ToString;
 public class Entity {
 	@Getter
 	private final int id;
-	private final ListMultimap<TableId, Bucket> buckets = ArrayListMultimap.create();
-	private final HashBasedTable<ConnectorId, BucketId, EntityRow> cBlocks = HashBasedTable.create();
+	private final HashBasedTable<ConnectorId, BucketId, CBlock> cBlocks = HashBasedTable.create();
 
-	public void addBucket(TableId id, Bucket bucket) {
-		buckets.put(id, bucket);
-	}
 
-	public void addCBlock(Connector con, Import imp, Table table, Bucket bucket, CBlock cBlock) {
-		if (cBlocks.put(con.getId(), bucket.getId(), new EntityRow(bucket, cBlock, con, imp, table)) != null) {
-			throw new IllegalStateException("multiple CBlocks for block " + bucket + " & connector " + con);
+	public void addCBlock(ConnectorId connectorId, BucketId bucketId, CBlock cBlock) {
+		if (cBlocks.put(connectorId, bucketId, cBlock) != null) {
+			throw new IllegalStateException(String.format("Multiple CBlocks for Bucket[%s]/Connector[%s]", bucketId, connectorId));
 		}
 	}
 
@@ -45,11 +34,11 @@ public class Entity {
 	 * Test if there is any known associated data to the Entity.
 	 */
 	public boolean isEmpty() {
-		return cBlocks.isEmpty() && buckets.isEmpty();
+		return cBlocks.isEmpty();
 	}
 
 	public void removeBucket(BucketId id) {
-		buckets.values().removeIf(b -> b.getId().equals(id));
+		// TODO: 04.08.2020 cleanup logic (for isEmpty) is still missing
 	}
 
 	public void removeCBlock(ConnectorId connector, BucketId bucket) {
@@ -63,12 +52,9 @@ public class Entity {
 		return entityId / entityBucketSize;
 	}
 
-	public EntityRow getCBlock(ConnectorId connector, BucketId bucket) {
-		return cBlocks.get(connector, bucket);
-	}
 
 	// TODO: 24.01.2020 What does this do?
-	public Map<BucketId, EntityRow> getCBlockPreSelect(ConnectorId connector) {
+	public Map<BucketId, CBlock> getCBlockPreSelect(ConnectorId connector) {
 		return cBlocks.row(connector);
 	}
 
@@ -76,10 +62,4 @@ public class Entity {
 		return cBlocks.containsRow(connector);
 	}
 
-	/**
-	 * Retrieve the {@link Bucket} containing this entity, for the Table.
-	 */
-	public List<Bucket> getBucket(TableId id) {
-		return buckets.get(id);
-	}
 }

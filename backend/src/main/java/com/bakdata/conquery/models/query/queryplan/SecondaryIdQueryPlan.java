@@ -86,7 +86,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 			currentSecondaryIdColumn = findSecondaryIdColumn(currentTable, ctx.getStorage());
 			nextTable(ctx, currentTable);
 
-			for(Bucket bucket : entity.getBucket(currentTable)) {
+			for(Bucket bucket : ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity, currentTable)) {
 				int localEntity = bucket.toLocal(entity.getId());
 				AStringType<?> secondaryIdType = (AStringType<?>)currentSecondaryIdColumn.getTypeFor(bucket);
 				nextBlock(bucket);

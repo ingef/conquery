@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
@@ -18,8 +19,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.functions.Collector;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +36,10 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	private IdentifiableStore<CBlock> cBlocks;
 	@Getter
 	private BucketManager bucketManager;
-	
+
+	@JsonIgnore
+	private final ListMultimap<TableId, ImportId> tableImports = ArrayListMultimap.create();
+
 	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
 	}
@@ -138,12 +146,27 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		}
 	}
 
+
+	@Override
+	public void addImport(Import imp) throws JSONException {
+		super.addImport(imp);
+
+		tableImports.put(imp.getTable(),imp.getId());
+	}
+
 	@Override
 	public void removeImport(ImportId id){
-		imports.remove(id);
+		super.removeImport(id);
+
+		tableImports.remove(id.getTable(), id);
 
 		if (bucketManager != null){
 			bucketManager.removeImport(id);
 		}
 	}
+
+	public Collection<ImportId> getTableImports(TableId tableId) {
+		return this.tableImports.get(tableId);
+	}
+
 }

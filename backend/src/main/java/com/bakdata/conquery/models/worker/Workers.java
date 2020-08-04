@@ -52,7 +52,7 @@ public class Workers extends NamespaceCollection {
 	
 	public Worker createWorker(WorkerInformation info, WorkerStorage storage) {
 		final JobManager jobManager = new JobManager(info.getName());
-		final BucketManager bucketManager = new BucketManager(jobManager, storage, info);
+		final BucketManager bucketManager = new BucketManager(bucketSize, jobManager, storage, info);
 
 		storage.setBucketManager(bucketManager);
 

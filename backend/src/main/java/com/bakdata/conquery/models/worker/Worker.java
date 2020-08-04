@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
@@ -39,7 +40,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.jobManager = jobManager;
 		this.storage = storage;
 		this.executorService = executorService;
-		BucketManager bucketManager = new BucketManager(jobManager, storage, info);
+		BucketManager bucketManager = new BucketManager(ConqueryConfig.getInstance().getCluster().getEntityBucketSize(), jobManager, storage, info);
 		storage.setBucketManager(bucketManager);
 		this.queryExecutor = queryExecutor;
 	}
