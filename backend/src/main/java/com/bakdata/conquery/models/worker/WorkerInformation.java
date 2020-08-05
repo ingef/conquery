@@ -3,14 +3,13 @@ package com.bakdata.conquery.models.worker;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.MessageSender;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +17,7 @@ import lombok.Setter;
 @Getter @Setter
 public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, SlaveMessage> {
 	@NotNull
-	private DatasetId dataset;
+	private Dataset dataset;
 	@NotNull
 	private IntArrayList includedBuckets = new IntArrayList();
 	@JsonIgnore
@@ -26,7 +25,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Override
 	public WorkerId createId() {
-		return new WorkerId(dataset, getName());
+		return new WorkerId(dataset.getId(), getName());
 	}
 	
 	@JsonIgnore

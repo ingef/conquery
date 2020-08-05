@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -31,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Getter
 @NoArgsConstructor
-public class Namespace {
+public class Namespace implements Closeable {
 
 	@JsonIgnore
 	private transient NamespaceStorage storage;
@@ -129,5 +131,21 @@ public class Namespace {
 	@JsonIgnore
 	public Dataset getDataset() {
 		return storage.getDataset();
+	}
+	
+	public void close() {
+		try {
+			jobManager.close();
+		}
+		catch (Exception e) {
+			log.error("Unable to close namespace jobmanager of {}", this, e);
+		}
+		
+		try {
+			storage.close();
+		}
+		catch (IOException e) {
+			log.error("Unable to close namespace storage of {}.", this, e);
+		}
 	}
 }

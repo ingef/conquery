@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +25,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Namespaces extends NamespaceCollection {
+public class Namespaces extends NamespaceCollection implements Closeable {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
@@ -88,7 +89,7 @@ public class Namespaces extends NamespaceCollection {
 			workers.add(info);
 		}
 
-		Namespace ns = datasets.get(info.getDataset());
+		Namespace ns = datasets.get(info.getDataset().getId());
 		if (ns == null) {
 			throw new NoSuchElementException(
 				"Trying to register a worker for unknown dataset '" + info.getDataset() + "'. I only know " + datasets.keySet());
@@ -106,5 +107,16 @@ public class Namespaces extends NamespaceCollection {
 
 	public Collection<Namespace> getNamespaces() {
 		return datasets.values();
+	}
+	
+	public void close() {
+		for (Namespace namespace : datasets.values()) {
+			try {
+				namespace.close();
+			}
+			catch (Exception e) {
+				log.error("Unable to close namespace {}", namespace, e);
+			}
+		}
 	}
 }
