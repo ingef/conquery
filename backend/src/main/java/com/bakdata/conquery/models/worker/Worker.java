@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
@@ -20,14 +21,13 @@ import com.bakdata.conquery.models.messages.network.MasterMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 	@Getter
 	private final JobManager jobManager;
@@ -35,8 +35,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final WorkerStorage storage;
 	@Getter
 	private final QueryExecutor queryExecutor;
-	@Getter
-	private final WorkerInformation info;
 	@Setter
 	private NetworkSession session;
 	/**
@@ -46,24 +44,30 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final ExecutorService executorService;
 	
 	
-	public Worker(
+	private Worker(
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService executorService,
-		@NonNull WorkerStorage storage
+		@NonNull WorkerStorage storage,
+		@NonNull ExecutorService executorService
 		) {
-		this(
-			new JobManager(storage.getWorker().getName()),
-			storage,
-			new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d")),
-			storage.getWorker(),
-			executorService);
+		this.jobManager = new JobManager(storage.getWorker().getName());
+		this.storage = storage;
+		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
+		this.executorService = executorService;
 		
-		storage.setBucketManager(new BucketManager(this.jobManager, this.storage, this.info));
+		storage.setBucketManager(new BucketManager(this.jobManager, this.storage, getInfo()));
 		
 	}
 	
 	public static Worker newWorker(
-		@NonNull WorkerInformation info,
+		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+		@NonNull ExecutorService executorService,
+		@NonNull WorkerStorage storage) {
+			
+		return new Worker(queryThreadPoolDefinition, storage, executorService);
+	}
+	
+	public static Worker newWorker(
+		@NonNull Dataset dataset,
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull ExecutorService executorService,
 		@NonNull StorageConfig config,
@@ -72,15 +76,25 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
 		if (workerStorage != null) {
-			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", info, directory));
+			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
 		}
+		
+
+		WorkerInformation info = new WorkerInformation();
+		info.setDataset(dataset.getId());
+		info.setIncludedBuckets(new IntArrayList());
+		info.setName(directory.getName());
 		
 		workerStorage = new WorkerStorageImpl(validator, config, directory);
 		workerStorage.loadData();
-		workerStorage.updateDataset(info.getDataset());
+		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 
-		return new Worker(queryThreadPoolDefinition, executorService, workerStorage);
+		return new Worker(queryThreadPoolDefinition, workerStorage, executorService);
+	}
+	
+	public WorkerInformation getInfo() {
+		return storage.getWorker();
 	}
 
 	@Override
@@ -90,7 +104,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	@Override
 	public MasterMessage transform(NamespaceMessage message) {
-		return new ForwardToNamespace(info.getDataset().getId(), message);
+		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
 	
 	@Override
@@ -119,7 +133,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	
 	@Override
 	public String toString() {
-		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";
+		return "Worker[" + getInfo().getId() + ", " + session.getLocalAddress() + "]";
 	}
 	public boolean isBusy() {
 		return queryExecutor.isBusy();

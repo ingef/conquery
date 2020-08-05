@@ -142,6 +142,7 @@ public class Namespace implements Closeable {
 		}
 		
 		try {
+			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
 			storage.close();
 		}
 		catch (IOException e) {

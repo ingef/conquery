@@ -16,6 +16,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -53,15 +54,15 @@ public class Workers extends NamespaceCollection {
 	}
 	
 	public Worker createWorker(WorkerStorage storage) {
-		final Worker worker = new Worker(queryThreadPoolDefinition, jobsThreadPool, storage);
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage);
 		
 		addWorker(worker);
 
 		return worker;
 	}
 	
-	public Worker createWorker(WorkerInformation info, StorageConfig storageConfig, @NonNull File directory, Validator validator) {
-		final Worker worker = Worker.newWorker(info, queryThreadPoolDefinition, jobsThreadPool, storageConfig, directory, validator);
+	public Worker createWorker(Dataset dataset, StorageConfig storageConfig, @NonNull File directory, Validator validator) {
+		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, directory, validator);
 		
 		addWorker(worker);
 
