@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -52,7 +53,7 @@ public class Workers extends NamespaceCollection {
 	
 	public Worker createWorker(WorkerInformation info, WorkerStorage storage) {
 		final JobManager jobManager = new JobManager(info.getName());
-		final BucketManager bucketManager = new BucketManager(bucketSize, jobManager, storage, info);
+		final BucketManager bucketManager = new BucketManager(ConqueryConfig.getInstance().getCluster().getEntityBucketSize(), jobManager, storage, info);
 
 		storage.setBucketManager(bucketManager);
 

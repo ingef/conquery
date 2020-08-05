@@ -1,13 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -15,6 +13,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 public class ConceptNode extends QPChainNode {
 
@@ -22,7 +21,7 @@ public class ConceptNode extends QPChainNode {
 	private final long requiredBits;
 	private final CQTable table;
 	private boolean tableActive = false;
-	private Map<BucketId, CBlock> preCurrentRow = null;
+	private Int2ObjectMap<CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 	
 	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child) {
@@ -31,12 +30,13 @@ public class ConceptNode extends QPChainNode {
 		this.requiredBits = requiredBits;
 		this.table = table;
 	}
-	
+
 	@Override
-	protected void init() {
-		preCurrentRow = entity.getCBlockPreSelect(table.getResolvedConnector().getId());
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+		preCurrentRow = context.getStorage().getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
 	}
-	
+
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable);

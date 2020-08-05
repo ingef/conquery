@@ -1,11 +1,15 @@
 package com.bakdata.conquery.models.events;
 
+import static com.google.common.collect.Iterators.filter;
+import static com.google.common.collect.Iterators.transform;
+
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
@@ -56,10 +60,11 @@ public class BucketManager {
 
 
 	/**
+	 * Connector :: Bucket :: [CBlock]
 	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
 	 */
 	//TODO pull these numbers from a running instance.
-	private final Map<ConnectorId, Int2ObjectMap<CBlock>> connectorCBlocks = new HashMap<>(150);
+	private final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks = new HashMap<>(150);
 
 
 	public BucketManager(int bucketSize, JobManager jobManager, WorkerStorage storage, WorkerInformation workerInformation) {
@@ -328,21 +333,15 @@ public class BucketManager {
 		return buckets.get(id);
 	}
 
-	public Stream<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
+	public Iterable<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
 		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
-		return storage.getTableImports(tableId).stream()
-					  .map(imp -> new BucketId(imp, bucketId))
-					  .map(this::getBucket)
-					  .filter(Objects::nonNull);
+		final Iterator<ImportId> iterator = storage.getTableImports(tableId).iterator();
+
+		return () -> filter(transform(iterator, imp -> getBucket(new BucketId(imp, bucketId))), Objects::nonNull);
 	}
 
-
-
-
-	public CBlock getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
+	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
 		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
-
-		return connectorCBlocks.computeIfAbsent(connectorId, id -> new Int2ObjectAVLTreeMap<>())
-							   .get(bucketId);
+		return connectorCBlocks.computeIfAbsent(connectorId, id -> new Int2ObjectAVLTreeMap<>()).getOrDefault(bucketId, Collections.emptyMap());
 	}
 }

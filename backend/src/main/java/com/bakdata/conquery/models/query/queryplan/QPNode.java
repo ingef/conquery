@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import com.bakdata.conquery.models.datasets.Table;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,12 +18,9 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 	protected QueryExecutionContext context;
 	protected Entity entity;
 
-	public void init(Entity entity) {
-		this.entity = entity;
-		init();
-	}
-
-	protected void init() {
+	public void init(Entity entity, QueryExecutionContext context) {
+		setEntity(entity);
+		setContext(context);
 	}
 
 	@Override
