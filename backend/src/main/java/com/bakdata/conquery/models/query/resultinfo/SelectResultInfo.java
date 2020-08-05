@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.resultinfo;
 
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import lombok.EqualsAndHashCode;
@@ -28,5 +29,15 @@ public class SelectResultInfo extends ResultInfo {
 	@Override
 	public String getName(PrintSettings settings) {
 		return settings.columnName(this);
+	}
+	
+	@Override
+	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
+		return ColumnDescriptor.builder()
+			.label(getUniqueName(settings))
+			.userConceptLabel(cqConcept.getLabel())
+			.type(getType().toString())
+			.selectId(select.getId())
+			.build();
 	}
 }
