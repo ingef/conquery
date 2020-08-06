@@ -30,6 +30,11 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	}
 
 	@Override
+	public final boolean isAlwaysActive() {
+		return aggregator.isAlwaysActive();
+	}
+
+	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
 		aggregator.nextTable(ctx, currentTable);

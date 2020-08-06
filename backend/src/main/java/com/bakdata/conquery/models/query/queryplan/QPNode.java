@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import com.bakdata.conquery.models.datasets.Table;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,6 +15,7 @@ import lombok.Setter;
 
 @Getter(AccessLevel.PROTECTED) @Setter(AccessLevel.PROTECTED)
 public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
+
 	protected QueryExecutionContext context;
 	protected Entity entity;
 
@@ -36,6 +36,16 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 	public abstract void acceptEvent(Bucket bucket, int event);
 
 	public abstract boolean isContained();
+
+	public boolean isAlwaysActive() {
+		for (QPNode child : getChildren()) {
+			if (child.isAlwaysActive()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	public List<QPNode> getChildren() {
 		return Collections.emptyList();

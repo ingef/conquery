@@ -38,6 +38,15 @@ public interface EventIterating {
 	}
 
 	/**
+	 * Indicate if this or any elements below this element are always active.
+	 *
+	 * @implNote This is used to have Aggregators without specific Tables/Columns that receive every entry irr
+	 */
+	default boolean isAlwaysActive(){
+		return false;
+	}
+
+	/**
 	 * Check if the Entity has relevant data. This method is used as early exit for queries to avoid unnecessary computation.
 	 *
 	 * @implNote you may want to create some indices in the Entity to facilitate this object, but consider the additional memory overhead first.

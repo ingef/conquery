@@ -32,6 +32,11 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	}
 
 	@Override
+	public boolean isAlwaysActive() {
+		return false;
+	}
+
+	@Override
 	public void nextBlock(Bucket bucket) {
 		AStringType type = (AStringType) getColumn().getTypeFor(bucket);
 

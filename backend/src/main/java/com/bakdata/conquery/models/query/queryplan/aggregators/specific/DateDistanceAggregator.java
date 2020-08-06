@@ -1,11 +1,10 @@
-package com.bakdata.conquery.models.query.queryplan.aggregators.specific.date;
+package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;

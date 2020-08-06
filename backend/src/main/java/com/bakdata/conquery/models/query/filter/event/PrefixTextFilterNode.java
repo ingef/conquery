@@ -33,6 +33,11 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 	}
 
 	@Override
+	public boolean isAlwaysActive() {
+		return false;
+	}
+
+	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return false;

@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.UniversalAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.date.EventDateUnionAggregator;
 
 /**
@@ -36,7 +36,7 @@ public class EventDateUnionSelect extends UniversalSelect {
 	}
 
 	@Override
-	public Aggregator<?> createAggregator() {
+	public UniversalAggregator<?> createAggregator() {
 		return new EventDateUnionAggregator(this.getHolder().findConcept().getConnectors().stream().map(Connector::getTable).map(Table::getId).collect(Collectors.toSet()));
 	}
 }

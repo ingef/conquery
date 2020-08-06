@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.UniversalAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -21,7 +21,7 @@ import lombok.Getter;
 /**
  * Count the number of distinct quarters for all validity dates.
  */
-public class CountQuartersAggregator implements Aggregator<Long> {
+public class CountQuartersAggregator implements UniversalAggregator<Long> {
 
 	private final TemporalAdjuster monthInQuarter = QuarterUtils.firstMonthInQuarterAdjuster();
 	private final TemporalAdjuster nextQuarter = QuarterUtils.nextQuarterAdjuster();

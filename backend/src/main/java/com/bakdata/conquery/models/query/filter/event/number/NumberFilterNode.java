@@ -33,6 +33,11 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Event
 	}
 
 	@Override
+	public boolean isAlwaysActive() {
+		return false;
+	}
+
+	@Override
 	public final boolean checkEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return false;

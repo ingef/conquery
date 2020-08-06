@@ -25,6 +25,11 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	@Setter
 	private Column column;
 
+	@Override
+	public boolean isAlwaysActive() {
+		return false;
+	}
+
 	public SelectFilterNode(Column column, String filterValue) {
 		super(filterValue);
 		this.column = column;

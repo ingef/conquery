@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.date.DateDistanceAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateDistanceAggregator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;

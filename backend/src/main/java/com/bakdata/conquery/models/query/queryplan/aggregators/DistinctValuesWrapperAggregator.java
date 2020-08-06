@@ -17,6 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 
 	private final ColumnAggregator<VALUE> aggregator;
+	// TODO: 06.08.2020 FK: consider creating different sets based on Column.getType
 	private Set<Object> observed = new HashSet<>();
 
 	@Getter

@@ -1,11 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.util.Set;
-
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import lombok.RequiredArgsConstructor;
@@ -15,29 +11,28 @@ import lombok.ToString;
 /**
  * Helper Aggregator, returning if it was used at least once.
  */
-@RequiredArgsConstructor @ToString(of = {"requiredTables"})
-public class ExistsAggregator implements Aggregator<Boolean> {
+@RequiredArgsConstructor @ToString(of = {"parent"})
+public class ExistsAggregator implements UniversalAggregator<Boolean> {
 
-	private final Set<TableId> requiredTables;
 	@Setter
-	private FiltersNode filters;
+	private FiltersNode parent;
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {  }
 
 	@Override
-	public Boolean getAggregationResult() {
-		return filters.isContained();
+	public boolean isAlwaysActive() {
+		return false;
 	}
-	
+
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.addAll(this.requiredTables);
+	public Boolean getAggregationResult() {
+		return parent.isContained();
 	}
 
 	@Override
 	public ExistsAggregator doClone(CloneContext ctx) {
-		return new ExistsAggregator(requiredTables);
+		return new ExistsAggregator();
 	}
 	
 	@Override

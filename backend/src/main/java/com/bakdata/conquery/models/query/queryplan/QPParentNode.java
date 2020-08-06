@@ -25,9 +25,11 @@ import org.apache.commons.lang3.tuple.Pair;
 public abstract class QPParentNode extends QPNode {
 
 	private final List<QPNode> children;
-	private final Multimap<TableId, QPNode> childMap;
-	protected final List<QPNode> alwaysActiveChildren;
 
+	
+	private final Multimap<TableId, QPNode> childMap;
+
+	protected final List<QPNode> alwaysActiveChildren;
 	protected Collection<QPNode> currentTableChildren;
 
 	public QPParentNode(List<QPNode> children) {
@@ -41,14 +43,12 @@ public abstract class QPParentNode extends QPNode {
 		alwaysActiveChildren = new ArrayList<>(children.size());
 
 		for (QPNode child : children) {
-			final Set<TableId> requiredTables = child.collectRequiredTables();
-
-			if(requiredTables.isEmpty()){
+			if(child.isAlwaysActive()){
 				alwaysActiveChildren.add(child);
 				continue;
 			}
 
-			for (TableId requiredTable : requiredTables) {
+			for (TableId requiredTable : child.collectRequiredTables()) {
 				childMap.put(requiredTable, child);
 			}
 		}

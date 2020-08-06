@@ -31,6 +31,11 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	@Setter
 	private Column column;
 
+	@Override
+	public boolean isAlwaysActive() {
+		return false;
+	}
+
 	public DateDistanceFilterNode(Column column, ChronoUnit unit, Range.LongRange filterValue) {
 		super(filterValue);
 		this.column = column;

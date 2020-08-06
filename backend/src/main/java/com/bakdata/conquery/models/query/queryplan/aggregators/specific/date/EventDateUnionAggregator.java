@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.UniversalAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<String> {
+public class EventDateUnionAggregator implements UniversalAggregator<String> {
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
@@ -40,7 +41,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 		}
 		
 		dateRestriction = ctx.getDateRestriction();
-		Aggregator.super.nextTable(ctx, currentTable);
+		UniversalAggregator.super.nextTable(ctx, currentTable);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.UniversalAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -36,7 +37,7 @@ public class FiltersNode extends QPNode {
 		// This links them up as a back-reference.
 		for (Aggregator<?> aggregator : aggregators) {
 			if (aggregator instanceof ExistsAggregator) {
-				((ExistsAggregator) aggregator).setFilters(this);
+				((ExistsAggregator) aggregator).setParent(this);
 			}
 		}
 	}
@@ -124,5 +125,14 @@ public class FiltersNode extends QPNode {
 		return true;
 	}
 
+	@Override
+	public boolean isAlwaysActive() {
+		for (Aggregator<?> aggregator : aggregators) {
+			if (aggregator instanceof UniversalAggregator) {
+				return true;
+			}
+		}
 
+		return false;
+	}
 }
