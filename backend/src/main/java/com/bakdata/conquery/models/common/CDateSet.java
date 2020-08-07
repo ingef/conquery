@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
-
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
@@ -69,7 +68,7 @@ public class CDateSet {
 		this.rangesByLowerBound = rangesByLowerCut;
 	}
 
-	public Set<CDateRange> asRanges() {
+	public Collection<CDateRange> asRanges() {
 		Set<CDateRange> result = asRanges;
 		return (result == null) ? asRanges = new AsRanges(rangesByLowerBound.values()) : result;
 	}
