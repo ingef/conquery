@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.MetricRegistry;
@@ -88,7 +87,6 @@ public class AuthServlet {
 
 		RESTServer.configure(config, jerseyConfig);
 
-		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
 
 		servletEnvironment.addServlet("auth", servletContainerHolder.getContainer()).addMapping("/auth/*");

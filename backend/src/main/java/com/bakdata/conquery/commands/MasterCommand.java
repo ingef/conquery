@@ -155,7 +155,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		}
 
 		admin = new AdminServlet();
-		admin.register(this, authController);
+		admin.register(this);
 
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
