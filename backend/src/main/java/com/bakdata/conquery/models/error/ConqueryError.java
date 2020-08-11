@@ -34,6 +34,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class ConqueryError extends RuntimeException implements ConqueryErrorInfo {
 	
+	private static final String NO_MEASSAGE = "Unable to provide error message. No message template was provided by error.";
+	
 	@VariableDefaultValue
 	@NotNull
 	@ToString.Include
@@ -52,8 +54,10 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@JsonIgnore
 	@ToString.Include
 	public String getMessage() {
-		String message = new StringSubstitutor(context).replace(messageTemplate);
-		return message != null ? message : "Unable to provide error message. No message template was provided by error.";
+		if(messageTemplate == null) {
+			return NO_MEASSAGE;
+		}
+		return new StringSubstitutor(context).replace(messageTemplate);
 	}
 
 	@Override
