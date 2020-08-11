@@ -70,6 +70,13 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	public final String getCode() {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
+	
+	/**
+	 * Wraps the {@link Throwable} into an {@link ConqueryError}.
+	 */
+	public static ConqueryError asConqueryError(Throwable t) {
+		return t instanceof ConqueryError ? (ConqueryError) t : new ConqueryError.UnknownError(t);
+	}
 
 	public static abstract class NoContextError extends ConqueryError {
 

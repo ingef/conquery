@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
+
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -63,13 +65,6 @@ public class ExecuteQuery extends WorkerMessage {
 				return;
 			}
 		}
-	}
-	
-	/**
-	 * Wraps the {@link Throwable} into an {@link ConqueryError}.
-	 */
-	private static ConqueryError asConqueryError(Throwable t) {
-		return t instanceof ConqueryError ? (ConqueryError) t : new ConqueryError.UnknownError(t);
 	}
 
 	private static void sendFailureToMaster(ShardResult result, ManagedExecution<?> execution, Worker context, ConqueryError error) {
