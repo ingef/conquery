@@ -67,7 +67,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@Override
 	@JsonIgnore // The code is the type information, so we do not need to serialize it
-	public String getCode() {
+	public final String getCode() {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
 
