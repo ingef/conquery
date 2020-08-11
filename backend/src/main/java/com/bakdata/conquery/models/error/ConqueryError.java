@@ -95,7 +95,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 		public UnknownError(Throwable e) {
 			this();
-			log.error("Encountered unknown error [{}]", this.getId(), e);
+			log.error("Encountered unknown Error[{}]", this.getId(), e);
 		}
 	}
 
