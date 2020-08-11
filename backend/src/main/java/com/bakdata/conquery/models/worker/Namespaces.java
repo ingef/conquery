@@ -31,7 +31,7 @@ public class Namespaces extends NamespaceCollection implements Closeable {
 	@NotNull
 	@Getter
 	@Setter
-	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
+	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>(); // TODO remove this and take it from Namespaces.datasets
 	@Getter
 	@JsonIgnore
 	private transient ConcurrentMap<SocketAddress, SlaveInformation> slaves = new ConcurrentHashMap<>();
