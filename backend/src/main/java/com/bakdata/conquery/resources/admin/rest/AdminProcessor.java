@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -271,7 +272,7 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private TreeSet<FEPermission> wrapInFEPermission(Collection<Permission> permissions) {
+	private SortedSet<FEPermission> wrapInFEPermission(Collection<Permission> permissions) {
 		TreeSet<FEPermission> fePermissions = new TreeSet<>();
 
 		for (Permission permission : permissions) {
