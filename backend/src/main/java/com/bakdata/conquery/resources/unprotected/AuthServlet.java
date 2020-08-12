@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import freemarker.template.Configuration;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
@@ -93,12 +94,9 @@ public class AuthServlet {
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(objectMapper));
 		// freemarker support
-		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer();
+		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer(Configuration.VERSION_2_3_30);
 		freemarker.configure(Freemarker.asMap());
 		jerseyConfig.register(new ViewMessageBodyWriter(metrics, Collections.singleton(freemarker)));
-
-		jerseyConfig.register(CORSPreflightRequestFilter.class);
-		jerseyConfig.register(CORSResponseFilter.class);
 		return jerseyConfig;
 	}
 }

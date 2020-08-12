@@ -11,6 +11,9 @@
         </thead>
         <tbody>
             <#list permissions as permission>
+                <#assign domains=permission.getLeft().getDomains()>
+                <#assign abilities=permission.getLeft().getAbilities()>
+                <#assign targets=permission.getLeft().getTargets()>
                 <tr>
                     <td>
                         <#if permission.domains?has_content>
