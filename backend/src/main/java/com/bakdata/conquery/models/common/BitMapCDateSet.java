@@ -86,134 +86,26 @@ public class BitMapCDateSet implements ICDateSet {
 		if (openMin && openMax && out.isEmpty()) {
 			out.add(CDateRange.all());
 		}
-		if (openMin && openMax && out.size() == 1) {
+		else if (openMin && openMax && out.size() == 1) {
 			final CDateRange middle = out.get(0);
 
 			out.clear();
 			out.add(CDateRange.atMost(middle.getMinValue()));
 			out.add(CDateRange.atLeast(middle.getMaxValue()));
 		}
-		else if (openMin) {
-			out.set(0, CDateRange.atMost(out.get(0).getMaxValue()));
-		}
-		else if (openMax) {
-			final int last = out.size() - 1;
+		else {
+			if (openMin) {
+				out.set(0, CDateRange.atMost(out.get(0).getMaxValue()));
+			}
+			if (openMax) {
+				final int last = out.size() - 1;
 
-			out.set(last, CDateRange.atLeast(out.get(last).getMinValue()));
+				out.set(last, CDateRange.atLeast(out.get(last).getMinValue()));
+			}
 		}
 
 		return out;
 	}
-
-	public Collection<CDateRange> asRanges1() {
-		final List<CDateRange> out = new ArrayList<>();
-
-		int highestNegative = Integer.MAX_VALUE;
-		int highestPositive = Integer.MAX_VALUE;
-
-		int lowestNegative = 1;
-		int lowestPositive = 0;
-
-
-		final CDateRange left, right, middle;
-
-		if (openMin) {
-			int lowerLimit;
-
-			if (!negativeBits.isEmpty()) {
-				lowerLimit = -negativeBits.previousClearBit(negativeBits.length());
-				highestNegative = -lowerLimit;
-
-				if (lowerLimit == -1) {
-					lowerLimit = positiveBits.nextClearBit(0);
-					lowestPositive = lowerLimit + 1;
-				}
-			}
-			else {
-				lowerLimit = positiveBits.nextSetBit(0);
-				lowestPositive = lowerLimit + 1;
-			}
-
-
-			left = CDateRange.of(Integer.MIN_VALUE, lowerLimit);
-		}
-		else {
-			left = null;
-		}
-
-		if (openMax) {
-			int upperLimit;
-
-			if (!positiveBits.isEmpty()) {
-				upperLimit = positiveBits.previousClearBit(positiveBits.length() - 1) + 1;
-				highestPositive = upperLimit - 1;
-			}
-			else {
-				upperLimit = -negativeBits.nextSetBit(1);
-				lowestNegative = -upperLimit + 1;
-			}
-
-			right = CDateRange.of(upperLimit, Integer.MAX_VALUE);
-		}
-		else {
-			right = null;
-		}
-
-		// bit 0 is not set for negative bits as it overlaps with bit 0 of positive bits, which makes code easier to read
-		if (negativeBits.get(1) && positiveBits.get(0)) {
-			lowestPositive = positiveBits.nextClearBit(0);
-			lowestNegative = negativeBits.nextClearBit(1);
-
-			middle = CDateRange.of(-lowestNegative, lowestPositive - 1);
-			lowestNegative = negativeBits.nextSetBit(lowestNegative);
-			lowestPositive = positiveBits.nextSetBit(lowestPositive);
-		}
-		else {
-			middle = null;
-		}
-
-		if (!negativeBits.isEmpty() && lowestNegative != -1) {
-
-			int start = negativeBits.nextSetBit(lowestNegative);
-
-			while (start != -1 && start < highestNegative) {
-				int end = negativeBits.nextClearBit(start);
-
-				out.add(CDateRange.of(-(end - 1), -start));
-
-				start = negativeBits.nextSetBit(end);
-			}
-		}
-
-		if (left != null) {
-			out.add(left);
-		}
-
-		Collections.reverse(out);
-
-		if (middle != null) {
-			out.add(middle);
-		}
-
-		if (!positiveBits.isEmpty() && lowestPositive != -1) {
-			int start = positiveBits.nextSetBit(lowestPositive);
-
-
-			while (start != -1 && start < highestPositive) {
-				int end = positiveBits.nextClearBit(start);
-				out.add(CDateRange.of(start, end - 1));
-
-				start = positiveBits.nextSetBit(end);
-			}
-		}
-
-		if (right != null) {
-			out.add(right);
-		}
-
-		return out;
-	}
-
 
 	public CDateRange rangeContaining(int value) {
 		if (!contains(value)) {
@@ -305,7 +197,7 @@ public class BitMapCDateSet implements ICDateSet {
 
 		if (from < 0) {
 			from = -from;
-			to = -Math.min(-1, to);
+			to = Math.max(1, -to);
 
 			negativeBits.set(to, from + 1);
 		}
@@ -314,21 +206,21 @@ public class BitMapCDateSet implements ICDateSet {
 	private void clearRange(int from, int to) {
 
 		// if that range is beyond our highest bit but inside the range, we need to extend it first
-		if (openMax && to > positiveBits.length()) {
+		if (openMax && to >= positiveBits.length()) {
 			positiveBits.set(positiveBits.length(), to + 1);
 		}
 
-		if (openMin && from < 0 && -from > negativeBits.length()) {
-			negativeBits.set(negativeBits.length(), -from + 1);
+		if (openMin && from <= 0 && -from >= negativeBits.length()) {
+			negativeBits.set(Math.max(1, negativeBits.length()), -from + 2);
 		}
 
 		positiveBits.clear(Math.max(0, from), Math.max(0, to));
 
 		if (from < 0) {
 			from = -from;
-			to = -Math.min(-1, to);
+			to = Math.max(1, -to);
 
-			negativeBits.clear(to, Math.min(from + 1, positiveBits.length()));
+			negativeBits.clear(to, from + 1);
 		}
 	}
 
@@ -467,7 +359,7 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public boolean isAll() {
-		return openMax && openMin;
+		return openMax && openMin && positiveBits.isEmpty() && negativeBits.isEmpty();
 	}
 
 

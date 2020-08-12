@@ -169,13 +169,14 @@ public class BitMapCDateSetTest {
 							   , Arguments.of(
 									   "{-∞/1969-12-31}",
 									   new CDateRange[]{
-											   CDateRange.of(Integer.MIN_VALUE, -1)
+											   CDateRange.atMost(-1)
 									   }
 							   )
 							   , Arguments.of(
 									   "{-∞/1969-12-31}",
 									   new CDateRange[]{
-											   CDateRange.of(Integer.MIN_VALUE, -1)
+											   CDateRange.of(9, 10),
+											   CDateRange.atMost(5),
 									   }
 							   )
 					   );
@@ -233,6 +234,12 @@ public class BitMapCDateSetTest {
 		}
 
 		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+
+			assertThat(set.asRanges()).containsExactly(CDateRange.all());
+		}
+
+		{
 			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
 			set.remove(CDateRange.of(10,10));
 
@@ -251,6 +258,27 @@ public class BitMapCDateSetTest {
 			set.remove(CDateRange.atMost(-5));
 
 			assertThat(set.asRanges()).containsExactly(CDateRange.of(-4, 10));
+		}
+
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+			set.remove(CDateRange.atLeast(5));
+
+			assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 4));
+		}
+
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+			set.remove(CDateRange.all());
+
+			assertThat(set.asRanges()).isEmpty();
+		}
+
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+			set.remove(CDateRange.of(-1,1));
+
+			assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-2), CDateRange.atLeast(2));
 		}
 
 		{
