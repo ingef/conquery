@@ -26,12 +26,9 @@ import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
-import freemarker.template.Configuration;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
-import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.views.ViewMessageBodyWriter;
-import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.realm.Realm;
@@ -64,16 +61,11 @@ public class AdminServlet {
 
 		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);
 
-		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
-
-		masterCommand.getEnvironment().admin().addServlet("admin", servletContainerHolder.getContainer()).addMapping("/admin/*");
+		masterCommand.getEnvironment().admin().addServlet("admin", new ServletContainer(jerseyConfig)).addMapping("/admin/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(masterCommand.getEnvironment().getObjectMapper()));
 		// freemarker support
-		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer(Configuration.VERSION_2_3_30);
-		freemarker.configure(Freemarker.asMap());
-		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(freemarker)));
-		//jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)));
+		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
 
 		adminProcessor = new AdminProcessor(
 			masterCommand.getConfig(),
