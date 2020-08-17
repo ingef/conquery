@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import java.util.OptionalInt;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.ICDateSet;
 
 /**
  * Interface for handling of TemporalQuery logic.
@@ -14,7 +14,7 @@ public interface PrecedenceMatcher {
 	 * @param preceding the set to manipulate
 	 * @param sample the last {@link com.bakdata.conquery.models.common.CDate} to be included.
 	 */
-	void removePreceding(CDateSet preceding, int sample);
+	void removePreceding(ICDateSet preceding, int sample);
 
 	/**
 	 * Tests if {@code preceding} matches {@code reference} according to the implementation classes specific criteria.

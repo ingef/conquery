@@ -5,13 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.ICDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 public class CDateSetTest {
 
@@ -83,7 +83,7 @@ public class CDateSetTest {
 	
 	@ParameterizedTest(name="{0}") @MethodSource("arguments")
 	public void testAddMerging(String expected, CDateRange[] ranges) {
-		CDateSet set = CDateSet.create();
+		ICDateSet set = CDateSet.create();
 		for(CDateRange range: ranges) {
 			set.add(range);
 		}
@@ -92,7 +92,7 @@ public class CDateSetTest {
 	
 	@Test
 	public void testRemove() {
-		CDateSet set = CDateSet.create();
+		ICDateSet set = CDateSet.create();
 		set.add(CDateRange.of(
 			LocalDate.of(2000, 01, 01),
 			LocalDate.of(2000, 12, 31)
@@ -106,12 +106,12 @@ public class CDateSetTest {
 	
 	@Test
 	public void testRetain() {
-		CDateSet set = CDateSet.create();
+		ICDateSet set = CDateSet.create();
 		set.add(CDateRange.of(
 			LocalDate.of(2000, 01, 01),
 			LocalDate.of(2000, 12, 31)
 		));
-		CDateSet retain = CDateSet.create();
+		ICDateSet retain = CDateSet.create();
 		retain.add(CDateRange.of(
 			LocalDate.of(2000, 06, 01),
 			LocalDate.of(2000, 06, 20)

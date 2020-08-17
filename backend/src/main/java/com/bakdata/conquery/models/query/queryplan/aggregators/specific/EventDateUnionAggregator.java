@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -24,8 +25,8 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
-	private CDateSet set = CDateSet.create();
-	private CDateSet dateRestriction;
+	private ICDateSet set = CDateSet.create();
+	private ICDateSet dateRestriction;
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
@@ -58,7 +59,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}
-		CDateSet validtyDate = CDateSet.create(bucket.getAsDateRange(event, validityDateColumn));
+		ICDateSet validtyDate = CDateSet.create(bucket.getAsDateRange(event, validityDateColumn));
 		validtyDate.retainAll(dateRestriction);
 		set.addAll(validtyDate);
 	}

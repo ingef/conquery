@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
@@ -65,7 +66,7 @@ public class CQExternal implements CQElement {
 												.collect(MoreCollectors.toOptional());
 		int[] dateIndices = format.stream().filter(fc -> fc.getDateFormat() != null).mapToInt(format::indexOf).toArray();
 
-		Int2ObjectMap<CDateSet> includedEntities = new Int2ObjectOpenHashMap<>();
+		Int2ObjectMap<ICDateSet> includedEntities = new Int2ObjectOpenHashMap<>();
 
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
@@ -84,7 +85,7 @@ public class CQExternal implements CQElement {
 
 			//read the dates from the row
 			try {
-				CDateSet dates = dateFormat.map(df -> {
+				ICDateSet dates = dateFormat.map(df -> {
 					try {
 						return df.readDates(dateIndices, row);
 					}
@@ -129,13 +130,13 @@ public class CQExternal implements CQElement {
 	public enum DateFormat {
 		EVENT_DATE {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+			public ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]]))));
 			}
 		},
 		START_END_DATE {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+			public ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.parseToLocalDate(row[dateIndices[0]]);
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
 					null :
@@ -160,18 +161,18 @@ public class CQExternal implements CQElement {
 		},
 		DATE_RANGE {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+			public ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]])));
 			}
 		},
 		DATE_SET {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+			public ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.parse(row[dateIndices[0]]);
 			}
 		};
 
-		public abstract CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException;
+		public abstract ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException;
 	}
 
 	@RequiredArgsConstructor

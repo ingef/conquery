@@ -4,6 +4,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -107,7 +108,7 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * Retrieves the {@link ConceptQueryPlan#getSpecialDateUnion()} ()} time of {@link #reference} and {@link #preceding}.
 	 * Then tests whether they match the specific criteria for inclusion.
-	 * If the criteria are met, the matching {@link CDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
+	 * If the criteria are met, the matching {@link ICDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
 	 *
 	 * @return true, iff the Events match the specific criteria.
 	 */
@@ -117,9 +118,9 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
+		ICDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
+		ICDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);

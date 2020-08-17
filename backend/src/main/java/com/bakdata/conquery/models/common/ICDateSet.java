@@ -10,7 +10,6 @@ public interface ICDateSet {
 	
 	Collection<CDateRange> asRanges();
 
-	CDateRange rangeContaining(int value);
 
 	boolean contains(LocalDate value);
 
@@ -20,21 +19,11 @@ public interface ICDateSet {
 
 	void clear();
 
-	boolean enclosesAll(ICDateSet other);
-
 	void addAll(ICDateSet other);
-
-	void removeAll(ICDateSet other);
-
-	boolean enclosesAll(Iterable<CDateRange> other);
 
 	void addAll(Iterable<CDateRange> ranges);
 
-	void removeAll(Iterable<CDateRange> ranges);
-
 	boolean intersects(CDateRange range);
-
-	boolean encloses(CDateRange range);
 
 	CDateRange span();
 

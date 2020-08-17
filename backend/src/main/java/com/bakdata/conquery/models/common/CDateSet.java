@@ -25,11 +25,12 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.NotImplementedException;
 
 @EqualsAndHashCode
-@JsonSerialize(using=CDateSetSerializer.class)
-@JsonDeserialize(using=CDateSetDeserializer.class)
-public class CDateSet {
+@JsonSerialize(using= CDateSetSerializer.class)
+@JsonDeserialize(using= CDateSetDeserializer.class)
+public class CDateSet implements ICDateSet{
 
 	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
 	private final NavigableMap<Integer, CDateRange> rangesByLowerBound;
@@ -44,6 +45,10 @@ public class CDateSet {
 		CDateSet set = new CDateSet(new TreeMap<>());
 		set.add(CDateRange.all());
 		return set;
+	}
+
+	public static CDateSet create(ICDateSet rangeSet) {
+		return create(((CDateSet) rangeSet));
 	}
 
 	public static CDateSet create(CDateSet rangeSet) {
@@ -162,7 +167,7 @@ public class CDateSet {
 		return enclosesAll(other.asRanges());
 	}
 	
-	public void addAll(CDateSet other) {
+	public void addAll(ICDateSet other) {
 		addAll(other.asRanges());
 	}
 	
@@ -298,6 +303,11 @@ public class CDateSet {
 			return false;
 		}
 		return this.rangesByLowerBound.values().iterator().next().isAll();
+	}
+
+	public void retainAll(ICDateSet retained) {
+		throw new NotImplementedException(""); //TODO
+
 	}
 
 	public void retainAll(CDateSet retained) {

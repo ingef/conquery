@@ -33,7 +33,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		//if there was no date restriction we can just use the restriction CDateSet
+		//if there was no date restriction we can just use the restriction ICDateSet
 		if(ctx.getDateRestriction().isAll()) {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
 		}

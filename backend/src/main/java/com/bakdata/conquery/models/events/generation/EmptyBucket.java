@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.PrimitiveIterator;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
@@ -37,7 +37,7 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
+	public boolean eventIsContainedIn(int event, Column column, ICDateSet dateRanges) {
 		return false;
 	}
 

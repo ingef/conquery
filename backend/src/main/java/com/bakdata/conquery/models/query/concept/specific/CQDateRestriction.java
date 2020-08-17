@@ -51,8 +51,8 @@ public class CQDateRestriction implements CQElement {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
 
 				validityDateNode.setChild(new DateRestrictingNode(
-					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
-					validityDateNode.getChild()
+						CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+						validityDateNode.getChild()
 				));
 			}
 			else if(current instanceof NegatingNode) {
