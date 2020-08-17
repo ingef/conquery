@@ -45,6 +45,7 @@ public class BitMapCDateSet implements ICDateSet {
 	public Collection<CDateRange> asRanges() {
 		final List<CDateRange> out = new ArrayList<>();
 
+		// Iterate negative ranges first
 		if (!negativeBits.isEmpty()) {
 			int start = negativeBits.nextSetBit(0);
 
@@ -57,11 +58,13 @@ public class BitMapCDateSet implements ICDateSet {
 			}
 		}
 
+		// Then reverse their order as they are starting at zero
 		Collections.reverse(out);
 
 		// this is the Range in the middle, we might need this if negative and positive bits are connected.
 		int center = out.size() - 1;
 
+		// Then iterate positive ranges
 		if (!positiveBits.isEmpty()) {
 			int start = positiveBits.nextSetBit(0);
 
@@ -73,6 +76,8 @@ public class BitMapCDateSet implements ICDateSet {
 			}
 		}
 
+		// Now handle special cases related to infinities and connectedness of the bitsets
+
 		// they are indeed connected
 		if (positiveBits.get(0) && negativeBits.get(1)) {
 			final CDateRange centerFromLeft = out.get(center);
@@ -83,12 +88,13 @@ public class BitMapCDateSet implements ICDateSet {
 			out.set(center, CDateRange.of(centerFromLeft.getMinValue(), centerFromRight.getMaxValue()));
 		}
 
-		if (openMin && openMax && out.isEmpty()) {
+
+		if (isAll()) {
 			out.add(CDateRange.all());
 		}
 		else if (openMin && openMax && out.size() == 1) {
 			final CDateRange middle = out.get(0);
-
+			//todo I think  this might actually be an invalid range
 			out.clear();
 			out.add(CDateRange.atMost(middle.getMinValue()));
 			out.add(CDateRange.atLeast(middle.getMaxValue()));
@@ -112,6 +118,21 @@ public class BitMapCDateSet implements ICDateSet {
 			return null;
 		}
 
+		// TODO: 13.08.2020 fk: still missing infinities
+
+		if(value < 0){
+			final int left = -negativeBits.nextClearBit(-value) + 1;
+
+			int right = negativeBits.previousClearBit(-value);
+
+			if(right != -1){
+				return CDateRange.of(left, -right + 1);
+			}
+
+			return CDateRange.of(left, positiveBits.nextClearBit(value) - 1);
+		}
+
+		// TODO: 13.08.2020 this is missing negative bits
 		return CDateRange.of(positiveBits.previousClearBit(value) + 1, positiveBits.nextClearBit(value) - 1);
 	}
 
@@ -121,18 +142,43 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 
+	public int getMaxRealValue() {
+		return Math.max(-negativeBits.nextSetBit(1),positiveBits.length());
+	}
+
+	public int getMinRealValue() {
+		return Math.min(positiveBits.nextSetBit(0),- (negativeBits.length() - 1));
+	}
+
 	public boolean contains(int value) {
-		return positiveBits.get(value);
+		if(value >= 0 && positiveBits.get(value)){
+			return true;
+		}
+
+		if(value < 0 && negativeBits.get(-value)){
+			return true;
+		}
+
+		if(openMax && value >= getMaxRealValue()){
+			return true;
+		}
+
+		if(openMin && value <= getMinRealValue()){
+			return true;
+		}
+
+		return false;
 	}
 
 
 	public boolean isEmpty() {
-		return positiveBits.isEmpty();
+		return positiveBits.isEmpty() && negativeBits.isEmpty() && !openMin && !openMax;
 	}
 
 
 	public void clear() {
 		positiveBits.clear();
+		negativeBits.clear();
 	}
 
 
@@ -141,6 +187,9 @@ public class BitMapCDateSet implements ICDateSet {
 			positiveBits.or(((BitMapCDateSet) other).positiveBits);
 			negativeBits.or(((BitMapCDateSet) other).negativeBits);
 		}
+		else if(other instanceof CDateSet){
+			addAll(other.asRanges());
+		}
 	}
 
 
@@ -148,6 +197,9 @@ public class BitMapCDateSet implements ICDateSet {
 		if (other instanceof BitMapCDateSet) {
 			positiveBits.andNot(((BitMapCDateSet) other).positiveBits);
 			negativeBits.andNot(((BitMapCDateSet) other).negativeBits);
+		}
+		else if(other instanceof CDateSet){
+			addAll(other.asRanges());
 		}
 	}
 
@@ -177,17 +229,38 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public boolean intersects(CDateRange range) {
-		return !positiveBits.get(range.getMinValue(), range.getMaxValue()).isEmpty();
+
+		// TODO: 13.08.2020 infinites of incoming range are missing
+		// TODO: 13.08.2020 infinities are missing!
+
+		if(range.getMinValue() < 0) {
+			int intersection = negativeBits.previousSetBit(-range.getMinValue());
+
+			if (intersection == -1) {
+				return positiveBits.nextSetBit(0) <= range.getMaxValue();
+			}
+
+			return range.getMaxValue() >= -intersection;
+		}
+
+		int intersection = negativeBits.previousSetBit(range.getMinValue());
+
+		return intersection != -1 && intersection <= range.getMaxValue();
 	}
 
 
 	public boolean encloses(CDateRange range) {
-		final BitSet hits = positiveBits.get(range.getMinValue(), range.getMaxValue());
-		return hits.size() - 1 == hits.cardinality();
+		final CDateRange rangeContaining = rangeContaining(range.getMinValue());
+		// todo inline rangeContaining to not waste that range in the call
+		return rangeContaining != null && rangeContaining.contains(range.getMaxValue());
 	}
 
 
 	public CDateRange span() {
+		if(isEmpty()){
+			return null;
+		}
+
 		return CDateRange.of(getMinValue(), getMaxValue());
 	}
 
@@ -267,7 +340,8 @@ public class BitMapCDateSet implements ICDateSet {
 			positiveBits.set(value, maxValue);
 		}
 		else if (value < 0 && value > minValue) {
-			negativeBits.set(-value, -minValue);
+			// TODO: 13.08.2020 this does not look right?
+			negativeBits.set(-value, Math.max(-value + 1, Math.min(-minValue, negativeBits.size())));
 		}
 	}
 
@@ -372,11 +446,8 @@ public class BitMapCDateSet implements ICDateSet {
 
 
 	public void retainAll(CDateRange retained) {
-		positiveBits.clear(0, Math.max(0, retained.getMinValue()));
-		positiveBits.clear(Math.max(0, retained.getMaxValue()), positiveBits.length());
-
-		negativeBits.clear(0, -Math.max(-1, retained.getMinValue()));
-		negativeBits.clear(-Math.max(-1, retained.getMaxValue()), positiveBits.length());
+		remove(CDateRange.atMost(retained.getMinValue()));
+		remove(CDateRange.atLeast(retained.getMaxValue()));
 	}
 
 

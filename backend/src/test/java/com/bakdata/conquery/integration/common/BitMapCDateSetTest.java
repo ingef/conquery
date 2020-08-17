@@ -173,11 +173,19 @@ public class BitMapCDateSetTest {
 									   }
 							   )
 							   , Arguments.of(
-									   "{-∞/1969-12-31}",
+									   "{-∞/1970-01-11}",
 									   new CDateRange[]{
 											   CDateRange.of(9, 10),
 											   CDateRange.atMost(5),
-									   }
+											   }
+							   )
+
+							   , Arguments.of(
+									   "{-∞/1970-01-11}",
+									   new CDateRange[]{
+											   CDateRange.of(-10, 10),
+											   CDateRange.atMost(-5),
+											   }
 							   )
 					   );
 	}
@@ -289,5 +297,98 @@ public class BitMapCDateSetTest {
 		}
 	}
 
+	@Test
+	public void contains() {
+		assertThat(BitMapCDateSet.create(CDateRange.of(1,1)))
+				.matches(set -> set.contains(1))
+				.matches(set -> !set.contains(-1));
 
+		assertThat(BitMapCDateSet.create(CDateRange.atLeast(1)))
+				.matches(set -> set.contains(1))
+				.matches(set -> set.contains(2))
+				.matches(set -> !set.contains(-1));
+
+		assertThat(BitMapCDateSet.create(CDateRange.atMost(1)))
+				.matches(set -> set.contains(1))
+				.matches(set -> !set.contains(2))
+				.matches(set -> set.contains(-1))
+				.matches(set -> set.contains(-1000))
+		;
+
+
+		assertThat(BitMapCDateSet.create(CDateRange.atMost(1), CDateRange.atLeast(1)))
+				.matches(set -> set.contains(1))
+				.matches(set -> set.contains(2))
+				.matches(set -> set.contains(-1))
+				.matches(set -> set.contains(-1000));
+
+		assertThat(BitMapCDateSet.create(CDateRange.atMost(-10), CDateRange.of(5,10)))
+				.matches(set -> set.contains(7))
+				.matches(set -> set.contains(6))
+
+				.matches(set -> !set.contains(-1))
+				.matches(set -> set.contains(-11));
+
+
+
+		assertThat(BitMapCDateSet.create(CDateRange.of(-10,-5), CDateRange.of(5,10)))
+				.matches(set -> set.contains(7))
+				.matches(set -> set.contains(6))
+
+				.matches(set -> set.contains(-7))
+				.matches(set -> set.contains(-6))
+
+				.matches(set -> !set.contains(0))
+				.matches(set -> !set.contains(100))
+				.matches(set -> !set.contains(-100))
+
+		;
+	}
+
+	@Test
+	public void encloses() {
+		assertThat(BitMapCDateSet.create(CDateRange.of(-10,-5), CDateRange.of(5,10)))
+				.matches(set -> !set.encloses(CDateRange.of(-6,6)))
+				.matches(set -> !set.encloses(CDateRange.of(-1,1)))
+
+				.matches(set -> set.encloses(CDateRange.of(9, 10)))
+				.matches(set -> set.encloses(CDateRange.of(-10,-9)))
+		;
+
+	}
+
+	@Test
+	public void intersects() {
+		assertThat(BitMapCDateSet.create(CDateRange.of(-10,-5), CDateRange.of(5,10)))
+				.matches(set -> set.intersects(CDateRange.of(-6,6)))
+				.matches(set -> !set.intersects(CDateRange.of(-1,1)))
+
+				//				.matches(set -> set.intersects(CDateRange.atLeast(-6)))
+				//				.matches(set -> set.intersects(CDateRange.atMost(-6)))
+				//
+				//				.matches(set -> set.intersects(CDateRange.atLeast(6)))
+				//				.matches(set -> set.intersects(CDateRange.atMost(6)))
+
+				.matches(set -> !set.intersects(CDateRange.of(-12,-11)))
+
+		;
+
+
+		assertThat(BitMapCDateSet.create(CDateRange.exactly(-7), CDateRange.exactly(7), CDateRange.atMost(-5), CDateRange.atLeast(5)))
+				.matches(set -> set.intersects(CDateRange.of(-6,6)))
+
+				.matches(set -> !set.intersects(CDateRange.of(-1,1)))
+
+
+
+				//				.matches(set -> set.intersects(CDateRange.atLeast(-6)))
+				//				.matches(set -> set.intersects(CDateRange.atMost(-6)))
+				//
+				//				.matches(set -> set.intersects(CDateRange.atLeast(6)))
+				//				.matches(set -> set.intersects(CDateRange.atMost(6)))
+
+				.matches(set -> !set.intersects(CDateRange.of(-12,-11)))
+		;
+
+	}
 }
