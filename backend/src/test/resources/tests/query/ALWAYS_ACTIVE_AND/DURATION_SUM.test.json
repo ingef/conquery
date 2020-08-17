@@ -1,0 +1,133 @@
+{
+  "type": "QUERY_TEST",
+  "label": "isAlwaysActive QPParentNode Test",
+  "expectedCsv": "tests/query/ALWAYS_ACTIVE_AND/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "${dataset}.select"
+          ],
+          "type": "CONCEPT",
+          "label": "select",
+          "tables": [
+            {
+              "id": "${dataset}.select.connector1"
+            },
+            {
+              "id": "${dataset}.select.connector2"
+            }
+          ],
+          "selects": [
+            "${dataset}.select.select"
+          ]
+        },
+        {
+          "type": "OR",
+          "children": [
+            {
+              "ids": [
+                "${dataset}.select"
+              ],
+              "type": "CONCEPT",
+              "label": "select",
+              "tables": [
+                {
+                  "id": "${dataset}.select.connector1",
+                  "selects": [
+                    "${dataset}.select.connector1.date_distance"
+                  ]
+                }
+              ]
+            },
+            {
+              "ids": [
+                "${dataset}.select"
+              ],
+              "type": "CONCEPT",
+              "label": "select",
+              "tables": [
+                {
+                  "id": "${dataset}.select.connector2"
+                }
+              ],
+              "selects": [
+                "${dataset}.select.select"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "select",
+      "type": "VIRTUAL",
+      "selects": [
+        {
+          "type": "DURATION_SUM",
+          "name": "select"
+        }
+      ],
+      "connectors": [
+        {
+          "label": "connector1",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "selects": {
+            "type": "DATE_DISTANCE",
+            "name": "date_distance",
+            "column": "table1.datum"
+          }
+        },
+        {
+          "label": "connector2",
+          "table": "table2",
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/ALWAYS_ACTIVE_AND/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/ALWAYS_ACTIVE_AND/content2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}
