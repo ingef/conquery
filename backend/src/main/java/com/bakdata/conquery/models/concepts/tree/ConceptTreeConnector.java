@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,8 +22,12 @@ import lombok.Setter;
 public class ConceptTreeConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
-	
-	@NotNull @NsIdRef
+
+	@NsIdRef @Nullable
+	private Table table;
+
+	@Nullable
+	@NsIdRef
 	private Column column;
 
 	private CTCondition condition;
@@ -30,9 +35,23 @@ public class ConceptTreeConnector extends Connector {
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();
 
+	@ValidationMethod(message = "Column.Table and Table must be equal")
+	public boolean tableEqualsColumnTable() {
+		if(table != null && column != null){
+			return column.getTable().getId() == table.getId();
+		}
+
+		return table != null || column != null;
+	}
+
+
 	@Override @JsonIgnore
 	public Table getTable() {
-		return column.getTable();
+		if(column != null){
+			return column.getTable();
+		}
+
+		return table;
 	}
 
 	@Override
