@@ -35,12 +35,11 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Calculate CBlocks, ie the Connection between a Concept and a Bucket.
- *
+ * <p>
  * If a Bucket x Connector has a CBlock, the ConceptNode will rely on that to iterate events. If not, it will fall back onto equality checks.
- *
- *
  */
-@RequiredArgsConstructor @Slf4j
+@RequiredArgsConstructor
+@Slf4j
 public class CalculateCBlocksJob extends Job {
 
 	private final List<CalculationInformation> infos = new ArrayList<>();
@@ -72,18 +71,22 @@ public class CalculateCBlocksJob extends Job {
 				cBlock.initIndizes(info.getBucket().getBucketSize());
 				if (connector.getConcept() instanceof TreeConcept) {
 
+					final ConceptTreeConnector treeConnector = (ConceptTreeConnector) connector;
+
 					// if any of these conditions are met, the concept/connector only need to be filtered, instead of walked.
 					boolean isFilteredOnly =
-							connector.getConcept().countElements() == 1
-							|| ((ConceptTreeConnector) connector).getColumn() == null
-							|| ((ConceptTreeConnector) connector).getColumn().getType() != MajorTypeId.STRING
-							;
+							treeConnector.getCondition() != null
+							&& (
+									treeConnector.getConcept().countElements() == 1
+									|| treeConnector.getColumn() == null
+									|| treeConnector.getColumn().getType() != MajorTypeId.STRING
+							);
 
-					if(isFilteredOnly){
-						calculateCBlockForCondition(cBlock, ((ConceptTreeConnector) connector),info);
+					if (isFilteredOnly) {
+						calculateCBlockForCondition(cBlock, treeConnector, info);
 					}
-					else {
-						calculateCBlock(cBlock, (ConceptTreeConnector) connector, info);
+					else if(treeConnector.getColumn() != null) {
+						calculateCBlock(cBlock, treeConnector, info);
 					}
 				}
 				else {
@@ -127,10 +130,9 @@ public class CalculateCBlocksJob extends Job {
 
 				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
 
-				cBlock.getMinDate()[entry.getLocalEntity()] = Math
-					.min(cBlock.getMinDate()[entry.getLocalEntity()], range.getMinValue());
-				cBlock.getMaxDate()[entry.getLocalEntity()] = Math
-					.max(cBlock.getMaxDate()[entry.getLocalEntity()], range.getMaxValue());
+				cBlock.getMinDate()[entry.getLocalEntity()] = Math.min(cBlock.getMinDate()[entry.getLocalEntity()], range.getMinValue());
+
+				cBlock.getMaxDate()[entry.getLocalEntity()] = Math.max(cBlock.getMaxDate()[entry.getLocalEntity()], range.getMaxValue());
 			}
 		}
 	}
@@ -142,7 +144,8 @@ public class CalculateCBlocksJob extends Job {
 	/**
 	 * No CBlocks for VirtualConcepts
 	 */
-	private void calculateCBlock(CBlock cBlock, VirtualConceptConnector connector, CalculationInformation info) {}
+	private void calculateCBlock(CBlock cBlock, VirtualConceptConnector connector, CalculationInformation info) {
+	}
 
 
 	private void calculateCBlock(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
@@ -170,6 +173,8 @@ public class CalculateCBlocksJob extends Job {
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 
+		final int[] root = connector.getConcept().getPrefix();
+
 		for (BucketEntry entry : bucket.entries()) {
 			try {
 				final int event = entry.getEvent();
@@ -177,7 +182,7 @@ public class CalculateCBlocksJob extends Job {
 				// Events without values are skipped
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (!bucket.has(event, connector.getColumn())) {
-					cBlock.getMostSpecificChildren().add(null);
+					cBlock.getMostSpecificChildren().add(root);
 					continue;
 				}
 
@@ -188,8 +193,8 @@ public class CalculateCBlocksJob extends Job {
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
 
 
-				if((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))){
-					cBlock.getMostSpecificChildren().add(null);
+				if ((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))) {
+					cBlock.getMostSpecificChildren().add(root);
 					continue;
 				}
 
@@ -206,7 +211,7 @@ public class CalculateCBlocksJob extends Job {
 				}
 				else {
 					// see #174 improve handling by copying the relevant things from the old project
-					cBlock.getMostSpecificChildren().add(null);
+					cBlock.getMostSpecificChildren().add(root);
 				}
 			}
 			catch (ConceptConfigurationException ex) {
@@ -216,12 +221,13 @@ public class CalculateCBlocksJob extends Job {
 
 		// see #175 metrics candidate
 		log
-			.trace(
-				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-				cache.getHits(),
-				cache.getMisses(),
-				(double) cache.getHits() / cache.getMisses(),
-				(double) cache.getHits() / (cache.getHits() + cache.getMisses()));
+				.trace(
+						"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+						cache.getHits(),
+						cache.getMisses(),
+						(double) cache.getHits() / cache.getMisses(),
+						(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+				);
 	}
 
 	private void calculateCBlockForCondition(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
@@ -235,12 +241,14 @@ public class CalculateCBlocksJob extends Job {
 		if (column != null) {
 			final CType<?, ?> cType = info.getImp().getColumns()[column.getPosition()].getType();
 
-			if(cType instanceof AStringType){
+			if (cType instanceof AStringType) {
 				stringType = (AStringType<?>) cType;
 			}
 		}
 
 		cBlock.setMostSpecificChildren(new ArrayList<>(bucket.getNumberOfEvents()));
+
+		int[] none = new int[] { -1 };
 
 		for (BucketEntry entry : bucket.entries()) {
 			try {
@@ -249,7 +257,7 @@ public class CalculateCBlocksJob extends Job {
 				// Events without values are skipped
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (column != null && !bucket.has(event, column)) {
-					cBlock.getMostSpecificChildren().add(null);
+					cBlock.getMostSpecificChildren().add(none);
 					continue;
 				}
 
@@ -260,8 +268,8 @@ public class CalculateCBlocksJob extends Job {
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
 
 
-				if((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))){
-					cBlock.getMostSpecificChildren().add(null);
+				if ((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))) {
+					cBlock.getMostSpecificChildren().add(none);
 					continue;
 				}
 

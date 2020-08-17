@@ -35,13 +35,9 @@ public class ConceptTreeConnector extends Connector {
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();
 
-	@ValidationMethod(message = "Column.Table and Table must be equal")
-	public boolean tableEqualsColumnTable() {
-		if(table != null && column != null){
-			return column.getTable().getId() == table.getId();
-		}
-
-		return table != null || column != null;
+	@ValidationMethod(message = "Table and Column usage are exclusive")
+	public boolean tableXOrColumn() {
+		return table == null ^ column == null;
 	}
 
 
