@@ -78,6 +78,8 @@ public class BitMapCDateSet implements ICDateSet {
 	public Collection<CDateRange> asRanges() {
 		final List<CDateRange> out = new ArrayList<>();
 
+		//TODO implement this using higherSetBit etc.
+
 		// Iterate negative ranges first
 		if (!negativeBits.isEmpty()) {
 			int start = negativeBits.nextSetBit(0);
@@ -177,6 +179,7 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 
+	// TODO: 19.08.2020 these waste cycles if the value lengths are known
 	public int getMaxRealValue() {
 		return Math.max(-negativeBits.nextSetBit(1), positiveBits.length());
 	}
@@ -611,7 +614,15 @@ public class BitMapCDateSet implements ICDateSet {
 			return;
 		}
 
+		// trivial but common case
+		if(toAdd instanceof CDateRangeExactly && mask.contains(toAdd.getMinValue())){
+			add(toAdd);
+			return;
+		}
+
+
 		BitMapCDateSet _mask = (BitMapCDateSet) mask;
+
 
 		// from min
 		{

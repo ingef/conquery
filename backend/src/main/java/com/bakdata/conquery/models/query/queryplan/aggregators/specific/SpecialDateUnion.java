@@ -73,7 +73,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 		return set.toString();
 	}
 	
-	public ICDateSet getResultSet() {
+	public BitMapCDateSet getResultSet() {
 		return set;
 	}
 	
