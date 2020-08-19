@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Map;
 import java.util.Objects;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -22,11 +22,11 @@ import lombok.Setter;
 @Setter
 public class DateRestrictingNode extends QPChainNode {
 
-	protected final CDateSet restriction;
+	protected final BitMapCDateSet restriction;
 	protected Column validityDateColumn;
 	protected Map<BucketId, EntityRow> preCurrentRow = null;
 
-	public DateRestrictingNode(CDateSet restriction, QPNode child) {
+	public DateRestrictingNode(BitMapCDateSet restriction, QPNode child) {
 		super(child);
 		this.restriction = restriction;
 	}
@@ -35,10 +35,10 @@ public class DateRestrictingNode extends QPChainNode {
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		//if there was no date restriction we can just use the restriction ICDateSet
 		if(ctx.getDateRestriction().isAll()) {
-			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
+			ctx = ctx.withDateRestriction(BitMapCDateSet.create(restriction));
 		}
 		else {
-			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			BitMapCDateSet dateRestriction = BitMapCDateSet.create(ctx.getDateRestriction());
 			dateRestriction.retainAll(restriction);
 			ctx = ctx.withDateRestriction(dateRestriction);
 		}

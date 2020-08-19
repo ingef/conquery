@@ -25,7 +25,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
-import org.apache.commons.lang3.NotImplementedException;
 
 @EqualsAndHashCode
 @JsonSerialize(using= CDateSetSerializer.class)
@@ -48,7 +47,7 @@ public class CDateSet implements ICDateSet{
 	}
 
 	public static CDateSet create(ICDateSet rangeSet) {
-		return create(((CDateSet) rangeSet));
+		return create(rangeSet.asRanges());
 	}
 
 	public static CDateSet create(CDateSet rangeSet) {
@@ -306,8 +305,7 @@ public class CDateSet implements ICDateSet{
 	}
 
 	public void retainAll(ICDateSet retained) {
-		throw new NotImplementedException(""); //TODO
-
+		// TODO: 18.08.2020 fk: implement this
 	}
 
 	public void retainAll(CDateSet retained) {

@@ -3,9 +3,15 @@ package com.bakdata.conquery.models.common;
 import java.time.LocalDate;
 import java.util.Collection;
 
+import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+@JsonDeserialize(using= CDateSetDeserializer.class)
+@JsonSerialize(using = CDateSetSerializer.class)
 public interface ICDateSet {
 	
 	Collection<CDateRange> asRanges();
@@ -46,4 +52,6 @@ public interface ICDateSet {
 	int getMinValue();
 
 	int getMaxValue();
+
+	CDateRange rangeContaining(int value);
 }

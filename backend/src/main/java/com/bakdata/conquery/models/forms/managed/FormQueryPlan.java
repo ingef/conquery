@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.forms.managed;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -36,7 +36,7 @@ public class FormQueryPlan implements QueryPlan {
 						
 			ArrayConceptQueryPlan subPlan = features.clone(clCtx);
 	
-			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			BitMapCDateSet dateRestriction = BitMapCDateSet.create(ctx.getDateRestriction());
 			dateRestriction.retainAll(dateContext.getDateRange());
 			EntityResult subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
 			

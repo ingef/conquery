@@ -176,7 +176,9 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
 
-	public abstract boolean eventIsContainedIn(int event, Column column, ICDateSet dateRanges);
+	public boolean eventIsContainedIn(int event, Column column, ICDateSet dateRanges) {
+		return dateRanges.intersects(getAsDateRange(event, column));
+	}
 
 	public abstract CDateRange getAsDateRange(int event, Column currentColumn);
 

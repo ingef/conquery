@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import java.time.LocalDate;
+
+import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -18,9 +21,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SpecialDateUnion implements Aggregator<String> {
 
-	private ICDateSet set = CDateSet.create();
+	private BitMapCDateSet set = BitMapCDateSet.create(
+			CDate.ofLocalDate(LocalDate.of(1950, 01, 01)),
+			CDate.ofLocalDate(LocalDate.now())
+	);
 
 	private Column currentColumn;
+
 	private ICDateSet dateRestriction;
 
 
@@ -32,19 +39,20 @@ public class SpecialDateUnion implements Aggregator<String> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (currentColumn != null) {
-			CDateRange range = bucket.getAsDateRange(event, currentColumn);
-			if(range != null) {
-				ICDateSet add = CDateSet.create(dateRestriction);
-				add.retainAll(CDateSet.create(range));
-				getResultSet().addAll(add);
-				return;
+		if (currentColumn == null) {
+			if(!dateRestriction.isEmpty()) {
+				getResultSet().addAll(dateRestriction);
 			}
+			return;
 		}
 
-		if(!dateRestriction.isEmpty()) {
-			getResultSet().addAll(dateRestriction);
+		CDateRange range = bucket.getAsDateRange(event, currentColumn);
+
+		if (range == null) {
+			return;
 		}
+
+		set.maskedAdd(range, dateRestriction);
 	}
 
 	/**
