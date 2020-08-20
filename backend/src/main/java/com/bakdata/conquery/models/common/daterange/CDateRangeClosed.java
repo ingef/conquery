@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.common.daterange;
 
 import com.bakdata.conquery.models.common.CDate;
-import lombok.experimental.Wither;
+import lombok.With;
 
-@Wither
+@With
 public class CDateRangeClosed extends CDateRange {
 
 	private final int min;
