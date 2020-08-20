@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.common.daterange;
 
 import com.bakdata.conquery.models.common.CDate;
-
 import lombok.experimental.Wither;
 
 @Wither
@@ -32,7 +31,7 @@ public class CDateRangeClosed extends CDateRange {
 	
 	@Override
 	public String toString() {
-		return String.format("%s/%s", getMin(), getMax());
+		return getMin() + "/" + getMax();
 	}
 	
 	@Override

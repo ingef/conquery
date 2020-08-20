@@ -17,7 +17,8 @@ public class CDateRangeExactly extends CDateRange {
 	
 	@Override
 	public String toString() {
-		return String.format("%s/%s", getMin(), getMax());
+		final String str = getMin().toString();
+		return str + "/" + str;
 	}
 	
 	@Override

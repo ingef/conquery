@@ -17,7 +17,7 @@ public class CDateRangeEnding extends CDateRange {
 	
 	@Override
 	public String toString() {
-		return String.format("-∞/%s", getMax());
+		return "-∞/" + getMax();
 	}
 	
 	@Override

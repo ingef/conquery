@@ -17,7 +17,7 @@ public class CDateRangeStarting extends CDateRange {
 	
 	@Override
 	public String toString() {
-		return String.format("%s/+∞", getMin());
+		return getMin() + "/+∞";
 	}
 
 	@Override
