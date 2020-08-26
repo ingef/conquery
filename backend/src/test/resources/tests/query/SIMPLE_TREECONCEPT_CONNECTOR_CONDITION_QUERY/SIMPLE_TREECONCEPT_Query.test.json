@@ -27,9 +27,8 @@
           "column": "include",
           "values": "1"
         },
-        "label": "tree_label",
         "name": "test_column",
-        "column": "test_table.test_column",
+        "table": "test_table",
         "validityDates": {
           "label": "datum",
           "column": "test_table.datum"
@@ -50,10 +49,6 @@
           {
             "name": "datum",
             "type": "DATE"
-          },
-          {
-            "name": "test_column",
-            "type": "STRING"
           },
           {
             "name": "include",

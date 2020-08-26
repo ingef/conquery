@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -50,8 +51,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
 	 */
-	@Valid
-	private List<int[]> mostSpecificChildren;
+	@Valid @NonNull
+	private List<int[]> mostSpecificChildren = null;
 	
 	public CBlock(BucketId bucket, ConnectorId connector) {
 		this.bucket = bucket;

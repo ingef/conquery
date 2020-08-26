@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -23,14 +23,13 @@ public class ConceptTreeConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
 
-	@NsIdRef @Nullable
+	@NsIdRef @CheckForNull
 	private Table table;
 
-	@Nullable
-	@NsIdRef
-	private Column column;
+	@NsIdRef @CheckForNull
+	private Column column = null;
 
-	private CTCondition condition;
+	private CTCondition condition = null;
 
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();

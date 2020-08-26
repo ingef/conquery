@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
@@ -41,6 +40,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CalculateCBlocksJob extends Job {
+
+	private static final int[] NOT_CONTAINED = new int[]{-1};
 
 	private final List<CalculationInformation> infos = new ArrayList<>();
 	private final WorkerStorage storage;
@@ -70,24 +71,8 @@ public class CalculateCBlocksJob extends Job {
 				CBlock cBlock = createCBlock(connector, info);
 				cBlock.initIndizes(info.getBucket().getBucketSize());
 				if (connector.getConcept() instanceof TreeConcept) {
-
 					final ConceptTreeConnector treeConnector = (ConceptTreeConnector) connector;
-
-					// if any of these conditions are met, the concept/connector only need to be filtered, instead of walked.
-					boolean isFilteredOnly =
-							treeConnector.getCondition() != null
-							&& (
-									treeConnector.getConcept().countElements() == 1
-									|| treeConnector.getColumn() == null
-									|| treeConnector.getColumn().getType() != MajorTypeId.STRING
-							);
-
-					if (isFilteredOnly) {
-						calculateCBlockForCondition(cBlock, treeConnector, info);
-					}
-					else if(treeConnector.getColumn() != null) {
-						calculateCBlock(cBlock, treeConnector, info);
-					}
+					calculateCBlock(cBlock, treeConnector, info);
 				}
 				else {
 					calculateCBlock(cBlock, (VirtualConceptConnector) connector, info);
@@ -152,24 +137,37 @@ public class CalculateCBlocksJob extends Job {
 
 		Bucket bucket = info.getBucket();
 
-		CType<?, ?> cType = info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
+		final Column column = connector.getColumn();
 
-		if (!(cType instanceof AStringType)) {
-			log.warn("Column[{}] is not of String type, but `{}`", connector.getColumn().getId(), cType);
-			return;
-		}
-		AStringType<?> stringType = (AStringType<?>) cType;
 
 		final TreeConcept treeConcept = connector.getConcept();
 
 		final ImportId importId = info.getImp().getId();
 
-		// Create index and insert into Tree.
-		TreeChildPrefixIndex.putIndexInto(treeConcept);
+		final AStringType<?> stringType;
 
-		treeConcept.initializeIdCache(stringType, importId);
 
-		cBlock.setMostSpecificChildren(new ArrayList<>(bucket.getNumberOfEvents()));
+		if (column != null) {
+
+			CType<?, ?> cType = info.getImp().getColumns()[column.getPosition()].getType();
+
+			if (!(cType instanceof AStringType)) {
+				log.warn("Column[{}] is not of String type, but `{}`", column.getId(), cType);
+				return;
+			}
+			stringType = (AStringType<?>) cType;
+
+			// Create index and insert into Tree.
+			TreeChildPrefixIndex.putIndexInto(treeConcept);
+
+			treeConcept.initializeIdCache(stringType, importId);
+		}
+		else {
+			stringType = null;
+		}
+
+
+		final List<int[]> mostSpecificChildren = new ArrayList<>(bucket.getNumberOfEvents());
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 
@@ -179,108 +177,66 @@ public class CalculateCBlocksJob extends Job {
 			try {
 				final int event = entry.getEvent();
 
-				// Events without values are skipped
-				// Events can also be filtered, allowing a single table to be used by multiple connectors.
-				if (!bucket.has(event, connector.getColumn())) {
-					cBlock.getMostSpecificChildren().add(root);
-					continue;
-				}
-
-				int valueIndex = bucket.getString(event, connector.getColumn());
-				final String stringValue = stringType.getElement(valueIndex);
-
-				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
-
-
-				if ((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))) {
-					cBlock.getMostSpecificChildren().add(root);
-					continue;
-				}
-
-				ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
-
-				// Add all Concepts and their path to the root to the CBlock
-				if (child != null) {
-					cBlock.getMostSpecificChildren().add(child.getPrefix());
-					ConceptTreeNode<?> it = child;
-					while (it != null) {
-						cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
-						it = it.getParent();
-					}
-				}
-				else {
-					// see #174 improve handling by copying the relevant things from the old project
-					cBlock.getMostSpecificChildren().add(root);
-				}
-			}
-			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event " + bucket + "-" + entry.getEvent() + " against concept " + connector, ex);
-			}
-		}
-
-		// see #175 metrics candidate
-		log
-				.trace(
-						"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-						cache.getHits(),
-						cache.getMisses(),
-						(double) cache.getHits() / cache.getMisses(),
-						(double) cache.getHits() / (cache.getHits() + cache.getMisses())
-				);
-	}
-
-	private void calculateCBlockForCondition(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
-
-		Bucket bucket = info.getBucket();
-
-		final Column column = connector.getColumn();
-
-		AStringType<?> stringType = null;
-
-		if (column != null) {
-			final CType<?, ?> cType = info.getImp().getColumns()[column.getPosition()].getType();
-
-			if (cType instanceof AStringType) {
-				stringType = (AStringType<?>) cType;
-			}
-		}
-
-		cBlock.setMostSpecificChildren(new ArrayList<>(bucket.getNumberOfEvents()));
-
-		int[] none = new int[] { -1 };
-
-		for (BucketEntry entry : bucket.entries()) {
-			try {
-				final int event = entry.getEvent();
-
-				// Events without values are skipped
+				// Events without values are omitted
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (column != null && !bucket.has(event, column)) {
-					cBlock.getMostSpecificChildren().add(none);
+					mostSpecificChildren.add(NOT_CONTAINED);
 					continue;
 				}
+				String stringValue = "";
+				int valueIndex = -1;
 
-				int valueIndex = column != null ? bucket.getString(event, column) : -1;
-				final String stringValue = stringType != null && valueIndex > 0 ? stringType.getElement(valueIndex) : "";
+				if (stringType != null) {
+					valueIndex = bucket.getString(event, column);
+					stringValue = stringType.getElement(valueIndex);
+				}
 
 				// Lazy evaluation of map to avoid allocations if possible.
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
 
 
 				if ((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))) {
-					cBlock.getMostSpecificChildren().add(none);
+					mostSpecificChildren.add(NOT_CONTAINED);
 					continue;
 				}
 
-				// It's either the root or nothing
-				cBlock.getMostSpecificChildren().add(connector.getConcept().getPrefix());
+				ConceptTreeChild child = cache == null
+										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
+										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+
+				// Add all Concepts and their path to the root to the CBlock
+				if (child == null) {
+					// see #174 improve handling by copying the relevant things from the old project
+					mostSpecificChildren.add(root);
+					continue;
+				}
+
+				mostSpecificChildren.add(child.getPrefix());
+				ConceptTreeNode<?> it = child;
+				while (it != null) {
+					cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
+					it = it.getParent();
+				}
 			}
 			catch (ConceptConfigurationException ex) {
 				log.error("Failed to resolve event " + bucket + "-" + entry.getEvent() + " against concept " + connector, ex);
 			}
 		}
+
+		cBlock.setMostSpecificChildren(mostSpecificChildren);
+
+
+		if (cache != null) {
+			log.trace(
+					"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+					cache.getHits(),
+					cache.getMisses(),
+					(double) cache.getHits() / cache.getMisses(),
+					(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+			);
+		}
 	}
+
 
 	public boolean isEmpty() {
 		return infos.isEmpty();
