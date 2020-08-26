@@ -16,7 +16,7 @@ import theme from "./app-theme";
 import "./app-styles.sass";
 
 const isProduction = process.env.NODE_ENV === "production";
-const disableLogin = !!process.env.REACT_APP_DISABLE_LOGIN;
+const disableLogin = false;
 const LANG = process.env.REACT_APP_LANG;
 
 if (!LANG || LANG === "de") {
