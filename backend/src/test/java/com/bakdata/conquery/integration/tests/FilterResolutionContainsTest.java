@@ -52,8 +52,7 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 		
 		test.importRequiredData(conquery);
-		FilterSearch
-			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
+		FilterSearch.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
 
 		conquery.waitUntilWorkDone();
 

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,7 +20,6 @@ import com.bakdata.conquery.util.search.QuickSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -37,8 +35,8 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 * user given mapping from the values in the CSVs to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
-	
-	protected Set<String> values = Collections.emptySet();
+
+	protected Set<String> values;
 	@JsonIgnore
 	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
@@ -71,12 +69,11 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			f.setType(FEFilterType.BIG_MULTI_SELECT);
 		}
 
-		if(this.filterType != FEFilterType.BIG_MULTI_SELECT) {
+		if (this.filterType != FEFilterType.BIG_MULTI_SELECT) {
 			f.setOptions(
-				values
-					.stream()
-					.map(v->new FEValue(getLabelFor(v), v))
-					.collect(Collectors.toList())
+					values.stream()
+						  .map(v -> new FEValue(getLabelFor(v), v))
+						  .collect(Collectors.toList())
 			);
 		}
 	}
@@ -86,20 +83,31 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		if (values == null) {
 			values = new HashSet<>();
 		}
-		values.addAll(Sets.newHashSet(((AStringType) getColumn().getTypeFor(imp)).iterator()));
+
+		for (String value : ((AStringType<?>) getColumn().getTypeFor(imp))) {
+			values.add(value);
+		}
 	}
 
 	public String getLabelFor(String value) {
 		return labels.getOrDefault(value, value);
 	}
-	
+
 	public String getValueFor(String label) {
 		String value = labels.inverse().get(label);
-		if(value == null && values != null) {
-			if(values.contains(label)) {
-				return label;
-			}
+
+		if (value != null) {
+			return value;
 		}
-		return null;
+
+		if(values == null){
+			return null;
+		}
+
+		if (!values.contains(label)) {
+			return null;
+		}
+
+		return label;
 	}
 }
