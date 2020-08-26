@@ -464,12 +464,17 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public void remove(CDateRangeStarting range) {
-		clearRange(range.getMinValue(), getMaxValue() + 1);
+		if(range.getMinValue() < getMaxRealValue()) {
+			clearRange(range.getMinValue(), getMaxRealValue() + 1);
+		}
 		openMax = false;
 	}
 
 	public void remove(CDateRangeEnding range) {
-		clearRange(getMinValue(), range.getMaxValue());
+		if(range.getMaxValue() > getMinRealValue()) {
+			clearRange(getMinRealValue(), range.getMaxValue());
+		}
+
 		openMin = false;
 	}
 
