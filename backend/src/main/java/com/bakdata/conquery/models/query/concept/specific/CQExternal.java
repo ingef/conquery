@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -92,7 +92,8 @@ public class CQExternal implements CQElement {
 					catch (Exception e) {
 						throw new RuntimeException(e);
 					}
-				}).orElseGet(CDateSet::createFull);
+				})
+											.orElseGet(BitMapCDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
 				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.selectIdFields(row, format));
 
@@ -131,7 +132,7 @@ public class CQExternal implements CQElement {
 		EVENT_DATE {
 			@Override
 			public ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]]))));
+				return BitMapCDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]]))));
 			}
 		},
 		START_END_DATE {
@@ -156,19 +157,19 @@ public class CQExternal implements CQElement {
 					return null;
 				}
 
-				return CDateSet.create(Collections.singleton(range));
+				return BitMapCDateSet.create(Collections.singleton(range));
 			}
 		},
 		DATE_RANGE {
 			@Override
 			public ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]])));
+				return BitMapCDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]])));
 			}
 		},
 		DATE_SET {
 			@Override
 			public ICDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.parse(row[dateIndices[0]]);
+				return BitMapCDateSet.parse(row[dateIndices[0]]);
 			}
 		};
 

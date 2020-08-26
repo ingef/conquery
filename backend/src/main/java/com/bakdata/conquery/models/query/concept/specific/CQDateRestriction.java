@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.time.LocalDate;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Queue;
 import java.util.function.Consumer;
 
@@ -50,7 +51,7 @@ public class CQDateRestriction implements CQElement {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
 
 				validityDateNode.setChild(new DateRestrictingNode(
-						BitMapCDateSet.create(CDateRange.of(dateRange)),
+						BitMapCDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
 						validityDateNode.getChild()
 				));
 			}

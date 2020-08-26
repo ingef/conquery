@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
 
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -24,7 +25,7 @@ public class CDateSetDeserializer extends StdDeserializer<ICDateSet> {
 		if (p.currentToken() == JsonToken.START_ARRAY) {
 			int[] ints = p.readValueAs(int[].class);
 			
-			ICDateSet set = CDateSet.create();
+			ICDateSet set = BitMapCDateSet.create();
 			for(int i=0; i<ints.length; i+=2) {
 				set.add(CDateRange.of(ints[i], ints[i+1]));
 			}

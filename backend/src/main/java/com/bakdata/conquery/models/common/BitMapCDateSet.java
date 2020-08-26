@@ -6,6 +6,8 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.common.daterange.CDateRangeClosed;
@@ -13,6 +15,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRangeEnding;
 import com.bakdata.conquery.models.common.daterange.CDateRangeExactly;
 import com.bakdata.conquery.models.common.daterange.CDateRangeOpen;
 import com.bakdata.conquery.models.common.daterange.CDateRangeStarting;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.google.common.base.Joiner;
 import lombok.NonNull;
 
@@ -30,6 +33,30 @@ public class BitMapCDateSet implements ICDateSet {
 
 	public static BitMapCDateSet create() {
 		return new BitMapCDateSet();
+	}
+
+	public static BitMapCDateSet createFull() {
+		final BitMapCDateSet set = new BitMapCDateSet();
+		set.add(CDateRange.all());
+		return set;
+	}
+
+	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
+
+	public static BitMapCDateSet parse(String value) {
+		List<CDateRange> ranges = PARSE_PATTERN
+										  .matcher(value)
+										  .results()
+										  .map(mr -> {
+											  try {
+												  return DateRangeParser.parseISORange(mr.group(2));
+											  }
+											  catch (Exception e) {
+												  throw new RuntimeException(e);
+											  }
+										  })
+										  .collect(Collectors.toList());
+		return BitMapCDateSet.create(ranges);
 	}
 
 	public static BitMapCDateSet create(BitMapCDateSet orig) {
@@ -56,6 +83,16 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public static BitMapCDateSet create(CDateRange... dates) {
+		final BitMapCDateSet out = new BitMapCDateSet();
+
+		for (CDateRange date : dates) {
+			out.add(date);
+		}
+
+		return out;
+	}
+
+	public static BitMapCDateSet create(Iterable<CDateRange> dates) {
 		final BitMapCDateSet out = new BitMapCDateSet();
 
 		for (CDateRange date : dates) {
@@ -464,14 +501,14 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public void remove(CDateRangeStarting range) {
-		if(range.getMinValue() < getMaxRealValue()) {
+		if (range.getMinValue() < getMaxRealValue()) {
 			clearRange(range.getMinValue(), getMaxRealValue() + 1);
 		}
 		openMax = false;
 	}
 
 	public void remove(CDateRangeEnding range) {
-		if(range.getMaxValue() > getMinRealValue()) {
+		if (range.getMaxValue() > getMinRealValue()) {
 			clearRange(getMinRealValue(), range.getMaxValue());
 		}
 
@@ -485,8 +522,22 @@ public class BitMapCDateSet implements ICDateSet {
 
 	public void retainAll(ICDateSet retained) {
 		if (retained instanceof BitMapCDateSet) {
-			negativeBits.and(((BitMapCDateSet) retained).negativeBits);
-			positiveBits.and(((BitMapCDateSet) retained).positiveBits);
+			final BitMapCDateSet dateSet = (BitMapCDateSet) retained;
+
+			// expand both ways to make anding even possible
+			if(dateSet.getMaxRealValue() > getMaxRealValue() && openMax) {
+				setRange(getMaxRealValue(), dateSet.getMaxRealValue());
+			}
+
+			if(dateSet.getMinRealValue() < getMinValue() && openMin) {
+				setRange(dateSet.getMinRealValue(), getMinRealValue());
+			}
+
+			negativeBits.and(dateSet.negativeBits);
+			positiveBits.and(dateSet.positiveBits);
+
+			openMin = dateSet.openMin;
+			openMax = dateSet.openMax;
 		}
 	}
 
@@ -620,7 +671,7 @@ public class BitMapCDateSet implements ICDateSet {
 		}
 
 		// trivial but common case
-		if(toAdd instanceof CDateRangeExactly && mask.contains(toAdd.getMinValue())){
+		if (toAdd instanceof CDateRangeExactly && mask.contains(toAdd.getMinValue())) {
 			add(toAdd);
 			return;
 		}

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -18,11 +19,15 @@ public class CDateSetSerializer extends StdSerializer<ICDateSet> {
 
 	@Override
 	public void serialize(ICDateSet value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-		gen.writeStartArray(value.asRanges().size()*2);
-		for(CDateRange range : value.asRanges()) {
+		final Collection<CDateRange> ranges = value.asRanges();
+
+		gen.writeStartArray(ranges.size() * 2);
+
+		for(CDateRange range : ranges) {
 			gen.writeNumber(range.getMinValue());
 			gen.writeNumber(range.getMaxValue());
 		}
+
 		gen.writeEndArray();
 	}
 }
