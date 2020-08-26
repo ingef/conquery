@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +38,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 	
-	protected Set<String> values;
+	protected Set<String> values = Collections.emptySet();
 	@JsonIgnore
 	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
@@ -54,7 +55,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		return EnumSet.of(MajorTypeId.STRING);
 	}
 
-	public FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.EXACT;
+	private FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.EXACT;
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
@@ -94,7 +95,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	
 	public String getValueFor(String label) {
 		String value = labels.inverse().get(label);
-		if(value == null) {
+		if(value == null && values != null) {
 			if(values.contains(label)) {
 				return label;
 			}

@@ -46,25 +46,26 @@ public class ConceptResource extends HConcepts {
 			&& result.getCacheId().equals(EntityTag.valueOf(request.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
 			return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 		}
-		return Response.ok(result).tag(result.getCacheId()).build();
 
+		return Response.ok(result).tag(result.getCacheId()).build();
 	}
 
 	@POST
 	@Path("resolve")
 	public ResolvedConceptsResult resolve(@NotNull ConceptCodeList conceptCodes) {
+
+		if (!(concept instanceof TreeConcept)) {
+			throw new WebApplicationException("can only resolved elements on tree concepts", Status.BAD_REQUEST);
+		}
+
 		List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
 
-		if (concept instanceof TreeConcept) {
-			return processor.resolveConceptElements((TreeConcept) concept, codes);
-		}
-		throw new WebApplicationException("can only resolved elements on tree concepts", Status.BAD_REQUEST);
+		return processor.resolveConceptElements((TreeConcept) concept, codes);
 	}
 
 	@Getter
 	@Setter
 	public static class ConceptCodeList {
-
 		private List<String> concepts;
 	}
 }
