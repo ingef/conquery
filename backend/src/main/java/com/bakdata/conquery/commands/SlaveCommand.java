@@ -86,11 +86,13 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 		this.config = config;
 
+
+
 		if (config.getStorage().getDirectory().mkdirs()) {
 			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
 
-		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads());
+		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads(), config.getCluster().getEntityBucketSize());
 		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
 
 
