@@ -151,18 +151,31 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void addImport(Import imp) throws JSONException {
 		super.addImport(imp);
 
-		tableImports.put(imp.getTable(),imp.getId());
+		registerTableImport(imp.getId());
+	}
+
+	@Override
+	public void updateImport(Import imp) throws JSONException {
+		super.updateImport(imp);
 	}
 
 	@Override
 	public void removeImport(ImportId id){
 		super.removeImport(id);
 
-		tableImports.remove(id.getTable(), id);
+		unregisterTableImport(id);
 
 		if (bucketManager != null){
 			bucketManager.removeImport(id);
 		}
+	}
+
+	public void registerTableImport(ImportId impId) {
+		tableImports.put(impId.getTable(),impId);
+	}
+
+	public void unregisterTableImport(ImportId impId) {
+		tableImports.remove(impId.getTable(), impId);
 	}
 
 	public Collection<ImportId> getTableImports(TableId tableId) {

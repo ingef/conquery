@@ -35,7 +35,11 @@ public interface WorkerStorage extends NamespacedStorage {
 	void removeCBlock(CBlockId id);
 	Collection<CBlock> getAllCBlocks();
 	public Collection<ImportId> getTableImports(TableId tableId);
-	
+
+	// todo consider moving this to BucketManager as that already contains such logic.
+	public void registerTableImport(ImportId impId) ;
+	public void unregisterTableImport(ImportId impId) ;
+
 	public static WorkerStorage tryLoad(Validator validator, StorageConfig config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
 		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));

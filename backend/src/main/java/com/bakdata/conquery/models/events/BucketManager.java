@@ -39,6 +39,7 @@ import com.google.common.collect.HashBasedTable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.map.Flat3Map;
 
@@ -67,31 +68,45 @@ public class BucketManager {
 		this.bucketSize = bucketSize;
 		this.jobManager = jobManager;
 		this.storage = storage;
+		this.workerInformation = workerInformation;
+
 		this.concepts.addAll(storage.getAllConcepts());
 		this.buckets.addAll(storage.getAllBuckets());
 		this.cBlocks.addAll(storage.getAllCBlocks());
-		this.workerInformation = workerInformation;
 	}
 
+	@SneakyThrows
 	public void fullUpdate() {
 		for (Concept<?> c : concepts) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
+
 					Table t = con.getTable();
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 					ConnectorId conName = con.getId();
+
 					for (Import imp : t.findImports(storage)) {
+
+						storage.registerTableImport(imp.getId());
+
 						for (int bucketNumber : workerInformation.getIncludedBuckets()) {
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 							Optional<Bucket> bucket = buckets.getOptional(bucketId);
-							if (bucket.isPresent()) {
-								CBlockId cBlockId = new CBlockId(bucketId, conName);
-								if (!cBlocks.getOptional(cBlockId).isPresent()) {
-									job.addCBlock(imp, bucket.get(), cBlockId);
-								}
+
+							if (bucket.isEmpty()) {
+								continue;
 							}
+
+							CBlockId cBlockId = new CBlockId(bucketId, conName);
+
+							if (cBlocks.getOptional(cBlockId).isPresent()) {
+								continue;
+							}
+
+							job.addCBlock(imp, bucket.get(), cBlockId);
 						}
 					}
+
 					if (!job.isEmpty()) {
 						jobManager.addSlowJob(job);
 					}
@@ -134,23 +149,20 @@ public class BucketManager {
 	private void registerCBlock(CBlock cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(cBlock))
-					.addCBlock(
-							storage.getCentralRegistry().resolve(cBlock.getConnector()).getId(), bucket.getId(), cBlock
-					);
+			entities.computeIfAbsent(entity, createEntityFor(cBlock));
 		}
+
+		List<CBlock> connectorCBlocks = this.connectorCBlocks.get(cBlock.getConnector(), cBlock.getBucket().getBucket());
+
+		if (connectorCBlocks == null) {
+			connectorCBlocks = new ArrayList<>(3);
+			this.connectorCBlocks.put(storage.getCentralRegistry().resolve(cBlock.getConnector()).getId(), cBlock.getBucket().getBucket(), connectorCBlocks);
+		}
+
+		connectorCBlocks.add(cBlock);
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
-		List<CBlock> cBlocks = connectorCBlocks.get(cBlock.getConnector(), cBlock.getBucket().getBucket());
-
-		if(cBlocks == null){
-			cBlocks = new ArrayList<>(3);
-			connectorCBlocks.put(cBlock.getConnector(), cBlock.getBucket().getBucket(), cBlocks);
-		}
-
-		cBlocks.add(cBlock);
-
 		cBlocks.add(cBlock);
 		registerCBlock(cBlock);
 	}
@@ -228,9 +240,8 @@ public class BucketManager {
 		}
 	}
 
-	private void deregisterCBlock(CBlockId cBlock) {
-		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
-
+	private void deregisterCBlock(CBlockId cBlockId) {
+		Bucket bucket = buckets.getOrFail(cBlockId.getBucket());
 
 		for (int entityId : bucket) {
 			final Entity entity = entities.get(entityId);
@@ -238,13 +249,16 @@ public class BucketManager {
 			if(entity == null)
 				continue;
 
-			entity.removeCBlock(cBlock.getConnector(), cBlock.getBucket());
+			entity.removeCBlock(cBlockId.getConnector(), cBlockId.getBucket());
 
 			//TODO Verify that this is enough.
 			if(entity.isEmpty()) {
 				entities.remove(entityId);
 			}
 		}
+
+		connectorCBlocks.get(cBlockId.getConnector(), cBlockId.getBucket().getBucket())
+						.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
 	}
 
 	public void removeBucket(BucketId bucketId) {
@@ -273,9 +287,6 @@ public class BucketManager {
 		}
 
 		deregisterCBlock(cBlockId);
-
-		connectorCBlocks.get(cBlockId.getConnector(), cBlockId.getBucket().getBucket())
-						.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
 
 		cBlocks.remove(cBlockId);
 		storage.removeCBlock(cBlockId);

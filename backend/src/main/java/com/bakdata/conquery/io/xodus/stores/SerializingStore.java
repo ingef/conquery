@@ -221,7 +221,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		});
 		// Print some statistics
 		int total = result.getTotalProcessed();
-		log.info(
+		log.debug(
 			String.format(
 				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
 				this.storeInfo.getXodusName(),
@@ -359,7 +359,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		// Write dump
 		try {
-			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
+			log.warn("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
 			JsonNode dump = Jackson.BINARY_MAPPER.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
