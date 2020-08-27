@@ -19,10 +19,7 @@ import javax.validation.Validator;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.FilterSearch;
-
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
@@ -108,6 +105,7 @@ public class AdminProcessor {
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
+	private final int entityBucketSize;
 
 	public void addTable(Dataset dataset, Table table) throws JSONException {
 		Objects.requireNonNull(dataset);
@@ -190,7 +188,7 @@ public class AdminProcessor {
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			namespaces.get(dataset.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
+					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile, entityBucketSize));
 		}
 	}
 

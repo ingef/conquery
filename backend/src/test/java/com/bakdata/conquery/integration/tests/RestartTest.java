@@ -38,7 +38,10 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
-		//read test sepcification
+
+		final int entityBucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+
+		//read test specification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
@@ -49,13 +52,13 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		MasterCommand master = testConquery.getStandaloneCommand().getMaster();
 		AdminProcessor adminProcessor = new AdminProcessor(
-
 				master.getConfig(),
 				master.getStorage(),
 				master.getNamespaces(),
 				master.getJobManager(),
 				master.getMaintenanceService(),
-				master.getValidator()
+				master.getValidator(),
+				entityBucketSize // todo this is unhealthy
 		);
 
 
@@ -115,7 +118,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		}
 
 		// TODO: 21.07.2020 FK: This is temporary logging for finding a bug in CI.
-		final int entityBucketSizeBeforeRestart = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+		final int entityBucketSizeBeforeRestart = entityBucketSize;
 		log.info("Configured bucket size = {}", entityBucketSizeBeforeRestart);
 
 		testConquery.shutdown(conquery);
@@ -129,7 +132,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(support);
 
-		assertThat(entityBucketSizeBeforeRestart).isEqualTo(ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
+		assertThat(entityBucketSizeBeforeRestart).isEqualTo(entityBucketSize);
 
 		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 

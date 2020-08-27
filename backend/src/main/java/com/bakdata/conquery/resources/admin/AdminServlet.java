@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
@@ -81,12 +82,14 @@ public class AdminServlet {
 		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(freemarker)));
 
 		adminProcessor = new AdminProcessor(
-			masterCommand.getConfig(),
-			masterCommand.getStorage(),
-			masterCommand.getNamespaces(),
-			masterCommand.getJobManager(),
-			masterCommand.getMaintenanceService(),
-			masterCommand.getValidator());
+				masterCommand.getConfig(),
+				masterCommand.getStorage(),
+				masterCommand.getNamespaces(),
+				masterCommand.getJobManager(),
+				masterCommand.getMaintenanceService(),
+				masterCommand.getValidator(),
+				ConqueryConfig.getInstance().getCluster().getEntityBucketSize()
+		);
 
 		// inject required services
 		jerseyConfig.register(new AbstractBinder() {
