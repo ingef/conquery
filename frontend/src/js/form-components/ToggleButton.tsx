@@ -6,7 +6,7 @@ const Root = styled("p")`
   margin: 0;
 `;
 
-const Option = styled("span")`
+const Option = styled("span")<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.xs};
   display: inline-block;
   padding: 2px 8px;
@@ -38,12 +38,12 @@ const Option = styled("span")`
 `;
 
 type OptionsType = {
-  label: string,
-  value: string
+  label: string;
+  value: string;
 };
 
 type PropsType = FieldPropsType & {
-  options: OptionsType[]
+  options: OptionsType[];
 };
 
 const ToggleButton = (props: PropsType) => {

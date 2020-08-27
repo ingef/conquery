@@ -1,4 +1,4 @@
-import Papa from "papaparse";
+import Papa, { ParseResult } from "papaparse";
 
 export function parseCSV(file: File, delimiter?: string) {
   return new Promise((resolve, reject) => {
@@ -9,14 +9,16 @@ export function parseCSV(file: File, delimiter?: string) {
       complete: (results, file) =>
         resolve({
           result: results,
-          file
-        })
+          file,
+        }),
     });
   });
 }
 
-export function loadCSV(url: String) {
-  return new Promise((resolve, reject) => {
+export function loadCSV(
+  url: string
+): Promise<{ result: ParseResult; file?: File }> {
+  return new Promise((resolve) => {
     Papa.parse(url, {
       download: true,
       delimiter: ";",
@@ -24,8 +26,8 @@ export function loadCSV(url: String) {
       complete: (results, file) =>
         resolve({
           result: results,
-          file
-        })
+          file,
+        }),
     });
   });
 }

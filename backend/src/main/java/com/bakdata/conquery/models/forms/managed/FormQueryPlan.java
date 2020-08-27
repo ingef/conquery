@@ -24,6 +24,10 @@ public class FormQueryPlan implements QueryPlan {
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+		if(!isOfInterest(entity)){
+			return EntityResult.notContained();
+		}
+
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
 		
 		for(DateContext dateContext : dateContexts) {
@@ -75,6 +79,6 @@ public class FormQueryPlan implements QueryPlan {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return true;
+		return features.isOfInterest(entity);
 	}
 }

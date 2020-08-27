@@ -30,20 +30,23 @@ import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroup from "./QueryGroup";
 
 type PropsT = {
-  query: StandardQueryType,
-  isEmptyQuery: boolean,
-  dropAndNode: (node: DraggedNodeType | DraggedQueryType, range: DateRangeT | null) => void,
-  dropOrNode: (node: DraggedNodeType | DraggedQueryType, idx: number) => void,
-  deleteNode: Function,
-  deleteGroup: Function,
-  dropConceptListFile: Function,
-  toggleExcludeGroup: Function,
-  expandPreviousQuery: Function,
-  loadPreviousQuery: Function,
-  selectNodeForEditing: Function,
-  queryGroupModalSetNode: Function,
-  toggleTimestamps: Function,
-  dateRange: Object
+  query: StandardQueryType;
+  isEmptyQuery: boolean;
+  dropAndNode: (
+    node: DraggedNodeType | DraggedQueryType,
+    range: DateRangeT | null
+  ) => void;
+  dropOrNode: (node: DraggedNodeType | DraggedQueryType, idx: number) => void;
+  deleteNode: Function;
+  deleteGroup: Function;
+  dropConceptListFile: Function;
+  toggleExcludeGroup: Function;
+  expandPreviousQuery: Function;
+  loadPreviousQuery: Function;
+  selectNodeForEditing: Function;
+  queryGroupModalSetNode: Function;
+  toggleTimestamps: Function;
+  dateRange: Object;
 };
 
 const Container = styled("div")`
@@ -125,7 +128,7 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = dispatch => ({
   dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
   dropConceptListFile: (file, andIdx) =>
     dispatch(openQueryUploadConceptListModal(andIdx, file)),
@@ -158,8 +161,4 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
     )
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
-)(Query);
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(Query);

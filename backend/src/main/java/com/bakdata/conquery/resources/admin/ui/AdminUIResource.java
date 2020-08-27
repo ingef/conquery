@@ -5,7 +5,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.net.SocketAddress;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -24,7 +23,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -33,9 +31,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -127,13 +123,7 @@ public class AdminUIResource extends HAdmin {
 
 	@POST @Path("/update-matching-stats/{"+ DATASET +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)DatasetId datasetId) throws JSONException {
-
-		Namespace ns = processor.getNamespaces().get(datasetId);
-		ns.sendToAll(new UpdateMatchingStatsMessage());
-
-
-
-		FilterSearch.updateSearch(processor.getNamespaces(), Collections.singleton(ns.getDataset()), processor.getJobManager());
+		processor.updateMatchingStats(datasetId);
 	}
 
 	@POST
@@ -156,35 +146,47 @@ public class AdminUIResource extends HAdmin {
 	@GET
 	@Path("/jobs/")
 	public View getJobs() {
-		Map<String, JobManagerStatus> status = ImmutableMap
-			.<String, JobManagerStatus>builder()
-			.put("Master", processor.getJobManager().reportStatus())
-			.putAll(
-				processor
-					.getNamespaces()
-					.getSlaves()
-					.values()
-					.stream()
-					.collect(Collectors.toMap(
-						si -> Objects.toString(si.getRemoteAddress()),
-						SlaveInformation::getJobManagerStatus
-					))
-			)
-			.build();
+		Map<String, JobManagerStatus> status =
+				ImmutableMap.<String, JobManagerStatus>builder()
+						.put("Master", processor.getJobManager().reportStatus())
+						// Namespace JobManagers on Master
+						.putAll(
+								processor.getNamespaces().getNamespaces().stream()
+										 .collect(Collectors.toMap(
+												 ns -> String.format("Master::%s", ns.getDataset().getId()),
+												 ns -> ns.getJobManager().reportStatus()
+										 )))
+						// Remote Worker JobManagers
+						.putAll(
+								processor
+										.getNamespaces()
+										.getSlaves()
+										.values()
+										.stream()
+										.collect(Collectors.toMap(
+												si -> Objects.toString(si.getRemoteAddress()),
+												SlaveInformation::getJobManagerStatus
+										))
+						)
+						.build();
 		return new UIView<>("jobs.html.ftl", processor.getUIContext(), status);
 	}
-	
+
 	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDemoJob() {
 		processor.getJobManager().addSlowJob(new Job() {
 			private final UUID id = UUID.randomUUID();
 			@Override
 			public void execute() {
+				progressReporter.setMax(100);
+
 				while(!progressReporter.isDone() && !isCancelled()) {
-					progressReporter.report(0.01d);
-					if(progressReporter.getProgress()>=1) {
+					progressReporter.report(1);
+
+					if(progressReporter.getProgress() >= 100) {
 						progressReporter.done();
 					}
+
 					Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.MILLISECONDS);
 				}
 			}

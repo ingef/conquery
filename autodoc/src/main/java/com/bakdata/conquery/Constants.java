@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.IdLabel;
+import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
@@ -53,16 +54,18 @@ import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.config.QueryConfig;
 import com.bakdata.conquery.models.config.StandaloneConfig;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
+import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
@@ -101,9 +104,9 @@ public class Constants {
 			.build(),
 		Group.builder().name("Import JSONs")
 			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
-			.base(new Base(Output.class, ""))
-			.otherClass(ImportDescriptor.class)
-			.otherClass(Input.class)
+			.base(new Base(OutputDescription.class, ""))
+			.otherClass(TableImportDescriptor.class)
+			.otherClass(TableInputDescriptor.class)
 			.hide(AutoOutput.class)
 			.build(),
 		Group.builder().name("Table JSONs")
@@ -130,7 +133,6 @@ public class Constants {
 			.otherClass(MinaConfig.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(XodusConfig.class)
-			.otherClass(ThreadPoolDefinition.class)
 			.otherClass(PreprocessingDirectories.class)
 			.hide(Charset.class)
 			.hide(Currency.class)
@@ -160,7 +162,7 @@ public class Constants {
 			.otherClass(FERoot.class)
 			.otherClass(FEValue.class)
 			.otherClass(FilterResource.FilterValues.class)
-			.otherClass(StoredQueriesResource.QueryPatch.class)
+			.otherClass(MetaDataPatch.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(ConceptsProcessor.ResolvedFilterResult.class)
 			.otherClass(FilterResource.StringContainer.class)
@@ -169,9 +171,12 @@ public class Constants {
 			.otherClass(ConceptResource.ConceptCodeList.class)
 			.otherClass(CQTable.class)
 			.otherClass(CQTable.ValidityDateColumn.class)
+			.otherClass(FormConfig.class)
+			.otherClass(FormConfigOverviewRepresentation.class)
+			.otherClass(FormConfigFullRepresentation.class)
 			.build()
 	};
-	
+
 	public static final String JSON_CREATOR = JsonCreator.class.getName();
 	public static final String CPS_TYPE = CPSType.class.getName();
 	public static final Set<String> ID_REF = Set.of(NsIdRef.class.getName(), MetaIdRef.class.getName());

@@ -11,15 +11,20 @@ import { isNodeInSearchResult } from "./selectors";
 
 import type { TreesT, SearchT } from "./reducer";
 
-type PropsT = {
+interface PropsT {
   trees: TreesT;
   tree: ConceptT;
   treeId: ConceptIdT;
   search: SearchT;
   onLoadTree: (id: string) => void;
-};
+}
 
-export default ({ trees, treeId, search, onLoadTree }: PropsT) => {
+const ConceptTreeListItem: React.FC<PropsT> = ({
+  trees,
+  treeId,
+  search,
+  onLoadTree,
+}) => {
   const tree = trees[treeId];
 
   if (!isNodeInSearchResult(treeId, tree.children, search)) return null;
@@ -30,7 +35,7 @@ export default ({ trees, treeId, search, onLoadTree }: PropsT) => {
     treeId,
     search,
     onLoadTree,
-    depth: 0
+    depth: 0,
   };
 
   return tree.detailsAvailable ? (
@@ -53,3 +58,5 @@ export default ({ trees, treeId, search, onLoadTree }: PropsT) => {
     />
   );
 };
+
+export default ConceptTreeListItem;

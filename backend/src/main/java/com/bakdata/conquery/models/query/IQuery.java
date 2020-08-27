@@ -15,7 +15,9 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.MoreCollectors;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 public abstract class IQuery implements QueryDescription {
 
 	public abstract QueryPlan createQueryPlan(QueryPlanContext context);
@@ -31,8 +33,8 @@ public abstract class IQuery implements QueryDescription {
 		return set;
 	}
 
-	public ResultInfoCollector collectResultInfos(PrintSettings config) {
-		ResultInfoCollector collector = new ResultInfoCollector(config);
+	public ResultInfoCollector collectResultInfos() {
+		ResultInfoCollector collector = new ResultInfoCollector();
 		collectResultInfos(collector);
 		return collector;
 	}

@@ -1,7 +1,7 @@
 import React from "react";
 import Select from "react-select";
 import Creatable from "react-select/creatable";
-import { withTheme } from "emotion-theming";
+import { withTheme } from "@emotion/react";
 
 // Helps to have a common ground for styling selects
 const stylesFromTheme = (theme, changed, small) => ({

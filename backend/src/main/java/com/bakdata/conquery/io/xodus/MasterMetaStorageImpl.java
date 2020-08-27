@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -39,6 +41,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution<?>> executions;
+	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
@@ -48,6 +51,9 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 	@Getter
 	private final Environment executionsEnvironment;
+
+	@Getter
+	private final Environment formConfigEnvironment;
 
 	@Getter
 	private final Environment usersEnvironment;
@@ -63,6 +69,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 		executionsEnvironment = Environments.newInstance(new File(config.getDirectory(), "executions"), config.getXodus().createConfig());
 
+		formConfigEnvironment = Environments.newInstance(new File(config.getDirectory(), "formConfigs"), config.getXodus().createConfig());
+
 		usersEnvironment = Environments.newInstance(new File(config.getDirectory(), "users"), config.getXodus().createConfig());
 
 		rolesEnvironment = Environments.newInstance(new File(config.getDirectory(), "roles"), config.getXodus().createConfig());
@@ -75,19 +83,26 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 
-		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
+		meta = StoreInfo.NAMESPACES.singleton(getConfig(), getEnvironment(), getValidator());
 
 		executions = StoreInfo.EXECUTIONS
-			.<ManagedExecution<?>>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces);
-		authRole = StoreInfo.AUTH_ROLE.identifiable(getRolesEnvironment(), getValidator(), getCentralRegistry());
+			.<ManagedExecution<?>>identifiable(getConfig(), getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces);
+		authRole = StoreInfo.AUTH_ROLE.identifiable(getConfig(), getRolesEnvironment(), getValidator(), getCentralRegistry());
 
-		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
+		authUser = StoreInfo.AUTH_USER.identifiable(getConfig(), getUsersEnvironment(), getValidator(), getCentralRegistry());
 
-		authGroup = StoreInfo.AUTH_GROUP.identifiable(getGroupsEnvironment(), getValidator(), getCentralRegistry());
+		authGroup = StoreInfo.AUTH_GROUP.identifiable(getConfig(), getGroupsEnvironment(), getValidator(), getCentralRegistry());
+		
+		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getConfig(), getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
-		collector.collect(meta).collect(authRole)
+		collector
+			.collect(meta)
+			.collect(authRole)
 			// load users before queries
-			.collect(authUser).collect(authGroup).collect(executions);
+			.collect(authUser)
+			.collect(authGroup)
+			.collect(executions)
+			.collect(formConfigs);
 	}
 
 	@Override
@@ -197,10 +212,38 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	public void updateGroup(Group group) {
 		authGroup.update(group);
 	}
+
+	@Override
+	public FormConfig getFormConfig(FormConfigId id) {
+		return formConfigs.get(id);
+	}
+
+	@Override
+	public Collection<FormConfig> getAllFormConfigs() {
+		return formConfigs.getAll();
+	}
+
+	@Override
+	public void removeFormConfig(FormConfigId id) {
+		formConfigs.remove(id);
+	}
+
+	@Override
+	@SneakyThrows
+	public void updateFormConfig(FormConfig formConfig) {
+		formConfigs.update(formConfig);
+	}
+	
+	@Override
+	@SneakyThrows
+	public void addFormConfig(FormConfig formConfig) {
+		formConfigs.add(formConfig);
+	}
 	
 	@Override
 	public void close() throws IOException {
 		getExecutionsEnvironment().close();
+		getFormConfigEnvironment().close();
 		getGroupsEnvironment().close();
 		getUsersEnvironment().close();
 		getRolesEnvironment().close();

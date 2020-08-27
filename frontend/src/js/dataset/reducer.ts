@@ -9,19 +9,19 @@ import {
 } from "./actionTypes";
 
 export type DatasetT = {
-  id: DatasetIdT,
-  label: string
+  id: DatasetIdT;
+  label: string;
 };
 
-export type StateType = {
-  pristine: boolean,
-  loading: boolean,
-  error: string | null,
-  data: DatasetT[],
-  selectedDatasetId: DatasetIdT | null
+export type DatasetStateT = {
+  pristine: boolean;
+  loading: boolean;
+  error: string | null;
+  data: DatasetT[];
+  selectedDatasetId: DatasetIdT | null;
 };
 
-const initialState: StateType = {
+const initialState: DatasetStateT = {
   pristine: true,
   loading: false,
   error: null,
@@ -29,7 +29,7 @@ const initialState: StateType = {
   selectedDatasetId: null
 };
 
-const saveQuery = (state: StateType, action: Object): StateType => {
+const saveQuery = (state: DatasetStateT, action: Object): DatasetStateT => {
   const { query, previouslySelectedDatasetId } = action.payload;
 
   if (!query || query.length === 0) return state;
@@ -57,9 +57,9 @@ const saveQuery = (state: StateType, action: Object): StateType => {
 };
 
 const datasets = (
-  state: StateType = initialState,
+  state: DatasetStateT = initialState,
   action: Object
-): StateType => {
+): DatasetStateT => {
   switch (action.type) {
     case LOAD_DATASETS_START:
       return { ...state, loading: true, pristine: false };

@@ -10,10 +10,10 @@ import type { QueryRunnerStateT } from "../query-runner/reducer";
 
 const queryRunnerReducer = createQueryRunnerReducer("standard");
 
-export type StandardQueryEditorStateT = {
-  query: StandardQueryStateT,
-  queryRunner: QueryRunnerStateT
-};
+export interface StandardQueryEditorStateT {
+  query: StandardQueryStateT;
+  queryRunner: QueryRunnerStateT;
+}
 
 const Tab: TabT = {
   key: "queryEditor",

@@ -1,6 +1,6 @@
 import * as React from "react";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 
 import T from "i18n-react";
 import type { FieldPropsType } from "redux-form";
@@ -9,7 +9,7 @@ import {
   formatDateFromState,
   parseDate,
   parseDateToState,
-  getDateStringFromShortcut
+  getDateStringFromShortcut,
 } from "../common/helpers/dateHelper";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
@@ -43,12 +43,12 @@ const StyledLabeled = styled(Labeled)`
 `;
 
 type PropsType = FieldPropsType & {
-  label?: React.Node,
-  labelSuffix?: React.Node,
-  className?: string,
-  inline?: boolean,
-  large?: boolean,
-  center?: boolean
+  label?: React.Node;
+  labelSuffix?: React.Node;
+  className?: string;
+  inline?: boolean;
+  large?: boolean;
+  center?: boolean;
 };
 
 function getDisplayDate(what, value, displayDateFormat) {
@@ -58,14 +58,14 @@ function getDisplayDate(what, value, displayDateFormat) {
 }
 
 const InputDateRange = (props: PropsType) => {
-  const onSetDate = date => {
+  const onSetDate = (date) => {
     props.input.onChange(date);
   };
 
   const onSetWhatDate = (what, value) => {
     props.input.onChange({
       ...props.input.value,
-      [what]: value
+      [what]: value,
     });
   };
 
@@ -101,7 +101,7 @@ const InputDateRange = (props: PropsType) => {
     center,
     label,
     labelSuffix,
-    input: { value }
+    input: { value },
   } = props;
 
   // To display the date depending on the locale
@@ -127,9 +127,9 @@ const InputDateRange = (props: PropsType) => {
             inputType="text"
             value={min}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={value => onChangeRaw("min", value, displayDateFormat)}
-            onBlur={e => applyDate("min", e.target.value, displayDateFormat)}
-            inputProps={{ tabIndex: 1, autoFocus: true }}
+            onChange={(value) => onChangeRaw("min", value, displayDateFormat)}
+            onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
+            inputProps={{ autoFocus: true }}
           />
         </StyledLabeled>
         <StyledLabeled label={T.translate("inputDateRange.to")}>
@@ -137,9 +137,8 @@ const InputDateRange = (props: PropsType) => {
             inputType="text"
             value={max}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={value => onChangeRaw("max", value, displayDateFormat)}
-            onBlur={e => applyDate("max", e.target.value, displayDateFormat)}
-            inputProps={{ tabIndex: 2 }}
+            onChange={(value) => onChangeRaw("max", value, displayDateFormat)}
+            onBlur={(e) => applyDate("max", e.target.value, displayDateFormat)}
           />
         </StyledLabeled>
       </Pickers>

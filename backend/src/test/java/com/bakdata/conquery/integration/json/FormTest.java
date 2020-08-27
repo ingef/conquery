@@ -89,7 +89,7 @@ public class FormTest extends ConqueryTestSpec {
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
-		LoadingUtil.importTableContents(support, content);
+		LoadingUtil.importTableContents(support, content.getTables());
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
 		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());

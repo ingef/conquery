@@ -22,7 +22,7 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 		
 		try {
 			user1.addRole(storage, mandator1);

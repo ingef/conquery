@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -34,8 +35,13 @@ public class Namespace {
 
 	@JsonIgnore
 	private transient NamespaceStorage storage;
+
 	@JsonIgnore
 	private transient ExecutionManager queryManager;
+
+	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
+	@JsonIgnore
+	private transient JobManager jobManager;
 
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
@@ -47,12 +53,14 @@ public class Namespace {
 	 */
 	@JsonIgnore
 	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
+
 	@JsonIgnore
 	private transient Namespaces namespaces;
 
 	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
 		this.queryManager = new ExecutionManager(this);
+		this.jobManager = new JobManager(storage.getDataset().getName());
 	}
 
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {
@@ -107,6 +115,15 @@ public class Namespace {
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);
 		workers = l;
+
+		for (Integer bucket : info.getIncludedBuckets()) {
+			final WorkerInformation old = bucket2WorkerMap.put(bucket.intValue(), info);
+
+			// This is a completely invalid state from which we should not recover even in production settings.
+			if (old != null && !old.equals(info)) {
+				throw new IllegalStateException(String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
+			}
+		}
 	}
 
 	@JsonIgnore

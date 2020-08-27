@@ -6,25 +6,32 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
+import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
+import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkerStorage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -104,14 +111,13 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 		localTmpDir.mkdir();
-		ConqueryConfig localCfg = Cloner.clone(config);
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getMaster().getEnvironment().getValidator()));
 		localCfg
 			.getPreprocessor()
 			.setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir) });
 
 		StandaloneSupport support = new StandaloneSupport(
 			this,
-			standaloneCommand,
 			ns,
 			ns.getStorage().getDataset(),
 			localTmpDir,
@@ -133,21 +139,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 
 		DatasetId dataset = support.getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new SlaveMessage() {
-			@Override
-			public void react(NetworkMessageContext.Slave context) throws Exception {
-				context.getWorkers().getWorkers().values().stream()
-					   .filter(worker -> worker.getInfo().getDataset().equals(dataset))
-					   .forEach(worker -> {
-						   try {
-							   worker.getStorage().close();
-						   } catch (IOException e) {
-							   log.error("Failed closing down worker", e);
-						   }
-					   });
 
-			}
-		}));
+		standaloneCommand.getMaster().getNamespaces().get(dataset).sendToAll(new ShutdownWorkerStorage());
+
 		try {
 			standaloneCommand.getMaster().getStorage().close();
 		} catch (IOException e) {
@@ -234,5 +228,46 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 			it.remove();
 		}
+	}
+	
+
+
+
+	public void waitUntilWorkDone() {
+		log.info("Waiting for jobs to finish");
+		boolean busy;
+		//sample 10 times from the job queues to make sure we are done with everything
+		long started = System.nanoTime();
+		for(int i=0;i<10;i++) {
+			do {
+				busy = standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
+				busy |= standaloneCommand.getMaster()
+										 .getStorage()
+										 .getAllExecutions()
+										 .stream()
+										 .map(ManagedExecution::getState)
+										 .anyMatch(ExecutionState.RUNNING::equals);
+
+				for (Namespace namespace : standaloneCommand.getMaster().getNamespaces().getNamespaces()) {
+					busy |= namespace.getJobManager().isSlowWorkerBusy();
+				}
+
+				for (SlaveCommand slave : standaloneCommand.getSlaves())
+					busy |= slave.isBusy();
+
+				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
+					log.warn("waiting for done work for a long time");
+					started = System.nanoTime();
+				}
+
+			} while(busy);
+		}
+		log.info("all jobs finished");
+	}
+	
+	public void closeNamespace(DatasetId dataset) {
+		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 	}
 }

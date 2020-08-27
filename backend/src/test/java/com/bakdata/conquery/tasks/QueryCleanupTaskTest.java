@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -125,6 +126,19 @@ class QueryCleanupTaskTest {
 		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
 
 		assertThat(executions.values()).containsExactlyInAnyOrder(managedQuery);
+	}
+
+	@Test
+	void singleNamedButUUID() throws Exception {
+		assertThat(storageMock.getAllExecutions()).isEmpty();
+
+		final ManagedQuery managedQuery = createManagedQuery();
+
+		managedQuery.setLabel(UUID.randomUUID().toString());
+
+		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+
+		assertThat(executions.values()).isEmpty();
 	}
 
 	@Test

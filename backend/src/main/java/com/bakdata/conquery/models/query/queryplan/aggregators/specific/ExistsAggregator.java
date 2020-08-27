@@ -7,26 +7,27 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
+import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Helper Aggregator, returning if it was used at least once.
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor @ToString(of = {"requiredTables"})
 public class ExistsAggregator implements Aggregator<Boolean> {
 
 	private final Set<TableId> requiredTables;
-	private boolean hit = false;
+	@Setter
+	private FiltersNode filters;
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
-		hit = true;
-	}
+	public void acceptEvent(Bucket bucket, int event) {  }
 
 	@Override
 	public Boolean getAggregationResult() {
-		return hit;
+		return filters.isContained();
 	}
 	
 	@Override
@@ -42,10 +43,5 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.BOOLEAN;
-	}
-	
-	@Override
-	public String toString(){
-		return getClass().getSimpleName();
 	}
 }

@@ -8,7 +8,7 @@ import java.util.List;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
-import com.bakdata.conquery.metrics.MetricsUtil;
+import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.util.functions.Collector;
@@ -25,6 +25,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	protected final File directory;
 	protected final Validator validator;
 	protected final Environment environment;
+	protected final StorageConfig config;
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final List<KeyIncludingStore<?,?>> stores = new ArrayList<>();
@@ -33,6 +34,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		this.directory = directory;
 		this.validator = validator;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
+		this.config = config;
 	}
 
 	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
@@ -46,7 +48,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		createStores(stores::add);
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 
-		try (final Timer.Context timer = MetricsUtil.getStoreLoadingTimer()) {
+		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
 			Stopwatch all = Stopwatch.createStarted();
 			for (KeyIncludingStore<?, ?> store : stores) {
 				store.loadData();

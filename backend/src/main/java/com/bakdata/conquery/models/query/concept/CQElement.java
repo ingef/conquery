@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -34,8 +33,8 @@ public interface CQElement extends Visitable {
 		return set;
 	}
 
-	default ResultInfoCollector collectResultInfos(PrintSettings config) {
-		ResultInfoCollector collector = new ResultInfoCollector(config);
+	default ResultInfoCollector collectResultInfos() {
+		ResultInfoCollector collector = new ResultInfoCollector();
 		collectResultInfos(collector);
 		return collector;
 	}

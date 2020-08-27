@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,10 @@ import javax.validation.Validator;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.FilterSearch;
+
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
@@ -61,14 +65,13 @@ import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
@@ -83,6 +86,7 @@ import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -127,15 +131,19 @@ public class AdminProcessor {
 		// see #143 check duplicate names
 	}
 
-	public void addConcept(Dataset dataset, Concept<?> c) {
-		c.setDataset(dataset.getId());
-		if (namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
-			throw new WebApplicationException("Can't replace already existing concept " + c.getId(), Status.CONFLICT);
+	public void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
+		concept.setDataset(dataset.getId());
+		ValidatorHelper.failOnError(log, validator.validate(concept));
+		// Register the Concept in the Master and Workers
+		if (namespaces.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);
 		}
-		jobManager
-			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
-		jobManager
-			.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
+
+		namespaces.get(dataset.getId()).getJobManager()
+			.addSlowJob(new SimpleJob("Adding concept " + concept.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(concept)));
+
+		namespaces.get(dataset.getId()).getJobManager()
+			.addSlowJob(new SimpleJob("sendToAll " + concept.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(concept))));
 		// see #144 check duplicate names
 	}
 
@@ -144,22 +152,6 @@ public class AdminProcessor {
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
 
-		// add allIds table
-		Table allIdsTable = new Table();
-		{
-			allIdsTable.setName(ConqueryConstants.ALL_IDS_TABLE);
-			allIdsTable.setDataset(dataset);
-			Column primaryColumn = new Column();
-			{
-				primaryColumn.setName(ConqueryConstants.ALL_IDS_TABLE___ID);
-				primaryColumn.setPosition(0);
-				primaryColumn.setTable(allIdsTable);
-				primaryColumn.setType(MajorTypeId.STRING);
-			}
-			allIdsTable.setPrimaryColumn(primaryColumn);
-		}
-		dataset.getTables().add(allIdsTable);
-
 		// store dataset in own storage
 		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
 			storage.getValidator(),
@@ -167,15 +159,18 @@ public class AdminProcessor {
 			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
+		datasetStorage.updateDataset(dataset);
+
 		Namespace ns = new Namespace(datasetStorage);
 		ns.initMaintenance(maintenanceService);
-		ns.getStorage().updateDataset(dataset);
+
 		namespaces.add(ns);
 
 		// for now we just add one worker to every slave
-		namespaces.getSlaves().values().forEach((slave) -> {
-			this.addWorker(slave, dataset);
-		});
+		for (SlaveInformation slave : namespaces.getSlaves().values()) {
+			addWorker(slave, dataset);
+		}
+
 		return dataset;
 	}
 
@@ -186,8 +181,16 @@ public class AdminProcessor {
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
 
+			final ImportId importId = new ImportId(table.getId(), header.getName());
+
+			if(namespaces.get(dataset.getId()).getStorage().getImport(importId) != null){
+				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
+			}
+
 			log.info("Importing {}", selectedFile.getAbsolutePath());
-			jobManager.addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
+
+			namespaces.get(dataset.getId()).getJobManager()
+					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
 		}
 	}
 
@@ -484,7 +487,7 @@ public class AdminProcessor {
 		Group group = Objects.requireNonNull(storage.getGroup(groupId), "The group was not found");
 		return getPermissionOverviewAsCSV(group.getMembers());
 	}
-	
+
 	/**
 	 * Renders the permission overview for certian {@link User} in form of a CSV.
 	 */
@@ -502,7 +505,7 @@ public class AdminProcessor {
 		}
 		return sWriter.toString();
 	}
-	
+
 	/**
 	 * Writes the header of the CSV auth overview to the specified writer.
 	 */
@@ -512,9 +515,9 @@ public class AdminProcessor {
 		headers.addAll(scope);
 		writer.writeHeaders(headers);
 	}
-	
+
 	/**
-	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer. 
+	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer.
 	 */
 	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MasterMetaStorage storage) {
 		// Print the user in the first column
@@ -522,7 +525,7 @@ public class AdminProcessor {
 
 		// Print the permission per domain in the remaining columns
 		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
-		for(String domain : scope) {				
+		for(String domain : scope) {
 			writer.addValue(permissions.get(domain).stream()
 				.map(Object::toString)
 				.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
@@ -538,16 +541,13 @@ public class AdminProcessor {
 				"Delete Import" + importId,
 				() -> {
 					namespace.getStorage().removeImport(importId);
-					namespace.getStorage().removeImport(new ImportId(new TableId(importId.getDataset(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
 				}
 		));
 
 		jobManager.addSlowJob(new SimpleJob(
 				"Import delete on " + importId,
 				() -> {
-					for (WorkerInformation w : namespace.getWorkers()) {
-						w.send(new RemoveImportJob(importId));
-					}
+					namespace.sendToAll(new RemoveImportJob(importId));
 				}
 		));
 	}
@@ -608,5 +608,15 @@ public class AdminProcessor {
 										  () -> namespaces.getSlaves().forEach((__, slave) -> slave.send(new RemoveWorker(datasetId))))
 				);
 
+	}
+
+	public void updateMatchingStats(DatasetId datasetId) {
+		final Namespace ns = getNamespaces().get(datasetId);
+
+		ns.getJobManager().addSlowJob(new SimpleJob("Start Update Matching Stats", () -> {
+			ns.sendToAll(new UpdateMatchingStatsMessage());
+		}));
+
+		FilterSearch.updateSearch(getNamespaces(), Collections.singleton(ns.getDataset()), getJobManager());
 	}
 }

@@ -1,11 +1,15 @@
 package com.bakdata.conquery.apiv1;
 
+import java.time.Duration;
+
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.api.APIResource;
@@ -14,6 +18,7 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConfigResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.api.FilterResource;
+import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
@@ -36,11 +41,16 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(master.getStorage())).to(MeProcessor.class);
 				bind(new QueryProcessor(namespaces, master.getStorage())).to(QueryProcessor.class);
+				bind(new FormConfigProcessor(master.getValidator(),master.getStorage())).to(FormConfigProcessor.class);
 			}
 		});
 
 		environment.register(new CORSPreflightRequestFilter());
-		environment.register(new ActiveUsersFilter(master.getStorage()));
+
+		environment.register(new ActiveUsersFilter(master.getStorage(), Duration.ofMinutes(master.getConfig()
+																										.getMetricsConfig()
+																										.getUserActiveDuration()
+																										.toMinutes())));
 
 		/*
 		 * Register the authentication filter which protects all resources registered in this servlet.
@@ -54,6 +64,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(CORSResponseFilter.class);
 		environment.register(new ConfigResource(master.getConfig()));
+		environment.register(FormConfigResource.class);
 
 		environment.register(APIResource.class);
 		environment.register(ConceptResource.class);

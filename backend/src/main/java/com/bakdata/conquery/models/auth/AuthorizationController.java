@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -18,8 +19,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.LifecycleUtils;
@@ -37,6 +39,8 @@ import org.apache.shiro.util.LifecycleUtils;
 @RequiredArgsConstructor
 public final class AuthorizationController implements Managed{
 	
+	public static AuthorizationController INSTANCE;
+	
 	@NonNull
 	private final AuthorizationConfig authorizationConfig;
 	@NonNull
@@ -46,6 +50,8 @@ public final class AuthorizationController implements Managed{
 	private final MasterMetaStorage storage;
 
 	@Getter
+	private ConqueryTokenRealm centralTokenRealm;
+	@Getter
 	private List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
 	@Getter
 	private AuthFilter<AuthenticationToken, User> authenticationFilter;
@@ -53,13 +59,28 @@ public final class AuthorizationController implements Managed{
 	private List<Realm> realms = new ArrayList<>();
 	
 	public void init() {
-		initializeRealms(storage, authenticationConfigs, authenticationRealms, realms);
+		// Add the central authentication realm
+		centralTokenRealm = new ConqueryTokenRealm(storage);
+		authenticationRealms.add(centralTokenRealm);
+		realms.add(centralTokenRealm);
+		
+		// Add the central authorization realm
+		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
+		realms.add(authorizingRealm);
+
+		// Init authentication realms provided by with the config.
+		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
+			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(this);
+			authenticationRealms.add(realm);
+			realms.add(realm);
+		}
 		
 		registerShiro(realms);
 		
 		// Create Jersey filter for authentication
 		this.authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
-		
+
+		INSTANCE = this;
 	}
 	
 	@Override
@@ -77,22 +98,12 @@ public final class AuthorizationController implements Managed{
 	
 	private static void registerShiro(List<Realm> realms) {
 		// Register all realms in Shiro
-		log.info("Registering the following realms to Shiro:\n\t", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
-		SecurityManager securityManager = new DefaultSecurityManager(realms);
+		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
+		DefaultSecurityManager securityManager = new DefaultSecurityManager(realms);
+		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
+		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
-	}
-
-	private static void initializeRealms(MasterMetaStorage storage, List<AuthenticationConfig> config, List<ConqueryAuthenticationRealm> authenticationRealms, List<Realm> realms) {
-		// Init authentication realms provided by with the config.
-		for (AuthenticationConfig authenticationConf : config) {
-			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
-			authenticationRealms.add(realm);
-			realms.add(realm);
-		}
-		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
-		realms.add(authorizingRealm);
-
 	}
 
 	/**

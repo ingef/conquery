@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import T from "i18n-react";
 
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
@@ -23,10 +23,13 @@ interface PropsT {
 const DROP_TYPES = [
   dndTypes.CONCEPT_TREE_NODE,
   dndTypes.QUERY_NODE,
-  dndTypes.PREVIOUS_QUERY
+  dndTypes.PREVIOUS_QUERY,
 ];
 
-const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
+const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
+  isInitial?: boolean;
+  isAnd?: boolean;
+}>`
   ${({ isInitial }) =>
     isInitial &&
     css`
@@ -83,7 +86,7 @@ const QueryEditorDropzone: React.FC<PropsT> = ({
   isInitial,
   onLoadPreviousQuery,
   onDropFile,
-  onDropNode
+  onDropNode,
 }) => {
   const onDrop = (props, monitor) => {
     const item = monitor.getItem();

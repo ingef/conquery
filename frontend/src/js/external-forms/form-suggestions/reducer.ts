@@ -78,6 +78,9 @@ const loadFormFilterSuggestionsError = (
   return updateFormFilterProperty(state, action, { isLoading: false });
 };
 
+// TODO: SPEC THIS OUT!
+export type FormSuggestionsStateT = Object;
+
 export const createFormSuggestionsReducer = (
   formType: string,
   fieldNames: string[]
@@ -94,7 +97,10 @@ export const createFormSuggestionsReducer = (
     })
     .reduce((acc, handlers) => ({ ...acc, ...handlers }), {});
 
-  return (state: Object = {}, action: Object): Object => {
+  return (
+    state: FormSuggestionsStateT = {},
+    action: Object
+  ): FormSuggestionsStateT => {
     if (reducerHandlers[action.type])
       return reducerHandlers[action.type](state, action);
 

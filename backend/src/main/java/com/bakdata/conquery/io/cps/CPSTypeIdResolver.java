@@ -1,30 +1,29 @@
 package com.bakdata.conquery.io.cps;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.Traverser;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
 @Slf4j
 public class CPSTypeIdResolver implements TypeIdResolver {
+
+	public static final String ATTRIBUTE_SUB_TYPE = "subType";
+	public static final String SEPARATOR_SUB_TYPE = "@";
 
 	private static HashMap<Class<?>, CPSMap> globalMap;
 
@@ -62,19 +61,21 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	static {
 		log.info("Scanning Classpath");
 		//scan classpaths for annotated child classes
-		
+
 		SCAN_RESULT = new ClassGraph()
-			.enableClassInfo()
-			.enableAnnotationInfo()
-			//blacklist some packages that contain large libraries
-			.blacklistPackages(
-				"groovy",
-				"org.codehaus.groovy",
-				"org.apache",
-				"org.eclipse",
-				"com.google"
-			)
-			.scan();
+				.enableClassInfo()
+				.enableAnnotationInfo().rejectPackages(
+						"groovy",
+						"org.codehaus.groovy",
+						"org.apache",
+						"org.eclipse",
+						"com.google",
+						"io",
+						"com.auth0",
+						"com.esotericsoftware",
+						"org.glassfish"
+				)
+				.scan();
 		
 		log.info("Scanned: {} classes in classpath", SCAN_RESULT.getAllClasses().size());
 		Set<Class<?>> types = new HashSet<>();
@@ -94,6 +95,9 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 				}
 				if(!anno.base().isAssignableFrom(type)) {
 					throw new IllegalStateException("The class "+anno.base()+" is used as a CPSBase in "+type+" but type is no subclass of it.");
+				}
+				if(anno.subTyped() && !SubTyped.class.isAssignableFrom(type)) {
+					throw new IllegalStateException("The class "+type+" is flagged to support a subtyping information but does not implement "+ SubTyped.class.getName());
 				}
 				
 				map.add(anno.id(), type);
@@ -119,13 +123,40 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 
 	@Override
 	public JavaType typeFromId(DatabindContext context, String id) {
-		Class<?> result = cpsMap.getClassFromId(id);
+		Class<?> result = cpsMap.getClassFromId(truncateSubTypeInformation(id));
 		if(result == null) {
 			throw new IllegalStateException("There is no type "+id+" for "+baseType.getTypeName()+". Try: "+getDescForKnownTypeIds());
 		}
-		else {
-			return TypeFactory.defaultInstance().constructSpecializedType(baseType, result);
+		String subTypeInfo = extractSubTypeInformation(id);
+		if(!Strings.isNullOrEmpty(subTypeInfo)) {
+			
+			context.setAttribute(ATTRIBUTE_SUB_TYPE, subTypeInfo);
 		}
+		return TypeFactory.defaultInstance().constructSpecializedType(baseType, result);
+	}
+	
+	public static String truncateSubTypeInformation(@NonNull String fullType) {
+		int seperatorIndex = fullType.indexOf(SEPARATOR_SUB_TYPE);
+		if(seperatorIndex < 0) {
+			// Separator not found
+			return fullType;
+		}
+		return fullType.substring(0, seperatorIndex);
+	}
+	
+	public static String extractSubTypeInformation(@NonNull String fullType) {
+		int seperatorIndex = fullType.indexOf(SEPARATOR_SUB_TYPE);
+		if(seperatorIndex < 0) {
+			// Separator not found
+			return null;
+		}
+		// +1 because we want to skip the separator
+		return fullType.substring(seperatorIndex+1);
+		
+	}
+	
+	public static String createSubTyped(@NonNull String type,@NonNull  String sub) {
+		return String.join(SEPARATOR_SUB_TYPE, type, sub);
 	}
 	
 	public static <T> Set<Class<? extends T>> listImplementations(Class<T> base) {
@@ -134,9 +165,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			log.warn("No implementations for {}", base);
 			return Collections.emptySet();
 		}
-		else {
-			return (Set<Class<? extends T>>)(Set)map.getClasses();
-		}
+		return (Set<Class<? extends T>>)(Set)map.getClasses();
 	}
 	
 	public static Set<Pair<Class<?>, Class<?>>> listImplementations() {
@@ -160,12 +189,13 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			CPSType anno = value.getClass().getAnnotation(CPSType.class);
 			if(anno == null)
 				throw new IllegalStateException("There is no id for the class "+suggestedType+" for "+baseType.getTypeName()+".");
-			else
-				return anno.id();
+			return anno.id();
 		}
-		else {
-			return result;
+		CPSType anno = suggestedType.getAnnotation(CPSType.class);
+		if(anno != null && anno.subTyped()) {
+			return createSubTyped(result, ((SubTyped)value).getSubType());
 		}
+		return result;
 	}
 	
 	@Override
