@@ -69,7 +69,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.stream()
 				.filter(EntityResult::isFailed)
 				.map(FailedEntityResult.class::cast)
-				.forEach(r->log.error("Failure in query " + managed.getId(), r.getThrowable()));
+				.forEach(r->log.error("Failure in Query[{}]", managed.getId(), r.getThrowable()));
 			fail("Query failed (see above)");
 		}
 		

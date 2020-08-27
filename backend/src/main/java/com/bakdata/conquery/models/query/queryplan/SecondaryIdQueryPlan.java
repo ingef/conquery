@@ -56,7 +56,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 */
 	private ConceptQueryPlan createChild(Object key, QueryExecutionContext currentContext, Bucket currentBucket) {
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
-		plan.init(query.getEntity());
+		plan.init(query.getEntity(), currentContext);
 		plan.nextTable(currentContext, currentSecondaryIdColumn.getId().getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
@@ -75,7 +75,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		}
 
 		query.checkRequiredTables(ctx.getStorage());
-		query.init(entity);
+		query.init(entity, ctx);
 
     if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();

@@ -81,9 +81,9 @@ public class ConceptQueryPlan implements QueryPlan {
 		}
 	}
 
-	public void init(Entity entity) {
+	public void init(Entity entity, QueryExecutionContext ctx) {
 		this.entity = entity;
-		child.init(entity);
+		child.init(entity, ctx);
 	}
 
 	public void nextEvent(Bucket bucket, int event) {
@@ -108,7 +108,7 @@ public class ConceptQueryPlan implements QueryPlan {
 		}
 
 		checkRequiredTables(ctx.getStorage());
-		init(entity);
+		init(entity, ctx);
 
 		if (requiredTables.get().isEmpty()) {
 			return EntityResult.notContained();

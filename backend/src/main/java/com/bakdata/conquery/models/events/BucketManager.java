@@ -3,9 +3,10 @@ package com.bakdata.conquery.models.events;
 import static com.google.common.collect.Iterators.filter;
 import static com.google.common.collect.Iterators.transform;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,10 +35,12 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.google.common.collect.HashBasedTable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.map.Flat3Map;
 
 /**
  *
@@ -58,13 +61,6 @@ public class BucketManager {
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 	private final WorkerInformation workerInformation;
 
-
-	/**
-	 * Connector :: Bucket :: [CBlock]
-	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
-	 */
-	//TODO pull these numbers from a running instance.
-	private final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks = new HashMap<>(150);
 
 
 	public BucketManager(int bucketSize, JobManager jobManager, WorkerStorage storage, WorkerInformation workerInformation) {
@@ -146,6 +142,15 @@ public class BucketManager {
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
+		List<CBlock> cBlocks = connectorCBlocks.get(cBlock.getConnector(), cBlock.getBucket().getBucket());
+
+		if(cBlocks == null){
+			cBlocks = new ArrayList<>(3);
+			connectorCBlocks.put(cBlock.getConnector(), cBlock.getBucket().getBucket(), cBlocks);
+		}
+
+		cBlocks.add(cBlock);
+
 		cBlocks.add(cBlock);
 		registerCBlock(cBlock);
 	}
@@ -217,7 +222,6 @@ public class BucketManager {
 
 			entity.removeBucket(bucket.getId());
 
-			//TODO Verify that this is enough.
 			if(entity.isEmpty()) {
 				entities.remove(entityId);
 			}
@@ -226,6 +230,8 @@ public class BucketManager {
 
 	private void deregisterCBlock(CBlockId cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
+
+
 		for (int entityId : bucket) {
 			final Entity entity = entities.get(entityId);
 
@@ -267,6 +273,9 @@ public class BucketManager {
 		}
 
 		deregisterCBlock(cBlockId);
+
+		connectorCBlocks.get(cBlockId.getConnector(), cBlockId.getBucket().getBucket())
+						.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
 
 		cBlocks.remove(cBlockId);
 		storage.removeCBlock(cBlockId);
@@ -340,8 +349,31 @@ public class BucketManager {
 		return () -> filter(transform(iterator, imp -> getBucket(new BucketId(imp, bucketId))), Objects::nonNull);
 	}
 
+
+	/**
+	 * Connector :: Bucket :: [CBlock]
+	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
+	 */
+	//TODO pull these numbers from a running instance.
+
+	private final com.google.common.collect.Table<ConnectorId, Integer, List<CBlock>> connectorCBlocks = HashBasedTable.create(1500, 3);
+
+
 	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
 		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
-		return connectorCBlocks.computeIfAbsent(connectorId, id -> new Int2ObjectAVLTreeMap<>()).getOrDefault(bucketId, Collections.emptyMap());
+
+		final List<CBlock> cBlocks = connectorCBlocks.get(connectorId, bucketId);
+
+		if(cBlocks == null){
+			return Collections.emptyMap();
+		}
+
+		final Flat3Map out = new Flat3Map();
+
+		for (CBlock cBlock : cBlocks) {
+			out.put(cBlock.getBucket(),cBlock);
+		}
+
+		return out;
 	}
 }
