@@ -98,7 +98,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java#L20) | values | `HashSet<String>` | `null` |  |  | 
 </p></details>
 
-### EQUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java#L14-L16)</sup></sub></sup>
+### EQUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java#L12-L14)</sup></sub></sup>
 This condition requires each value to be exactly as given in the list.
 
 <details><summary>Details</summary><p>
