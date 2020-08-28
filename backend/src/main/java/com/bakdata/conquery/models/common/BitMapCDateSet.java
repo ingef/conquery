@@ -227,19 +227,23 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public boolean contains(int value) {
-		if (value >= 0 && positiveBits.get(value)) {
-			return true;
-		}
-
-		if (value < 0 && negativeBits.get(-value)) {
-			return true;
-		}
-
 		if (openMax && value >= getMaxRealValue()) {
 			return true;
 		}
 
 		if (openMin && value <= getMinRealValue()) {
+			return true;
+		}
+
+		if(value == Integer.MIN_VALUE || value == Integer.MAX_VALUE){
+			return false;
+		}
+
+		if (value >= 0 && positiveBits.get(value)) {
+			return true;
+		}
+
+		if (value < 0 && negativeBits.get(-value)) {
 			return true;
 		}
 
@@ -499,24 +503,26 @@ public class BitMapCDateSet implements ICDateSet {
 
 
 	public void retainAll(ICDateSet retained) {
-		if (retained instanceof BitMapCDateSet) {
-			final BitMapCDateSet dateSet = (BitMapCDateSet) retained;
-
-			// expand both ways to make anding even possible
-			if(dateSet.getMaxRealValue() > getMaxRealValue() && openMax) {
-				setRange(getMaxRealValue(), dateSet.getMaxRealValue());
-			}
-
-			if(dateSet.getMinRealValue() < getMinValue() && openMin) {
-				setRange(dateSet.getMinRealValue(), getMinRealValue());
-			}
-
-			negativeBits.and(dateSet.negativeBits);
-			positiveBits.and(dateSet.positiveBits);
-
-			openMin = dateSet.openMin;
-			openMax = dateSet.openMax;
+		if (!(retained instanceof BitMapCDateSet)) {
+			return;
 		}
+
+		final BitMapCDateSet dateSet = (BitMapCDateSet) retained;
+
+		// expand both ways to make anding even possible
+		if(dateSet.getMaxRealValue() > getMaxRealValue() && openMax) {
+			setRange(getMaxRealValue(), dateSet.getMaxRealValue());
+		}
+
+		if(dateSet.getMinRealValue() < getMinValue() && openMin) {
+			setRange(dateSet.getMinRealValue(), getMinRealValue());
+		}
+
+		negativeBits.and(dateSet.negativeBits);
+		positiveBits.and(dateSet.positiveBits);
+
+		openMin = openMin && dateSet.openMin;
+		openMax = openMax && dateSet.openMax;
 	}
 
 
