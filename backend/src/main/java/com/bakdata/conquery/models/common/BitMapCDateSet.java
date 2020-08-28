@@ -185,30 +185,7 @@ public class BitMapCDateSet implements ICDateSet {
 		return out;
 	}
 
-	public CDateRange rangeContaining(int value) {
-		if (!contains(value)) {
-			return null;
-		}
 
-		// TODO: 13.08.2020 fk: still missing infinities
-
-		if (value < 0) {
-			final int left = -negativeBits.nextClearBit(-value) + 1;
-
-			int right = negativeBits.previousClearBit(-value);
-
-			if (right != -1) {
-				return CDateRange.of(left, -right + 1);
-			}
-
-			// TODO: 18.08.2020 fk  this can actually also be invalid!
-
-			return CDateRange.of(left, positiveBits.nextClearBit(value) - 1);
-		}
-
-		// TODO: 13.08.2020 this is missing negative bits
-		return CDateRange.of(positiveBits.previousClearBit(value) + 1, positiveBits.nextClearBit(value) - 1);
-	}
 
 
 	public boolean contains(LocalDate value) {
@@ -216,13 +193,37 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 
-	// TODO: 19.08.2020 these waste cycles if the value lengths are known
-	public int getMaxRealValue() {
-		return Math.max(-negativeBits.nextSetBit(1), positiveBits.length());
+	private int getMaxRealValue() {
+		int positiveMax = positiveBits.length();
+
+		if(positiveMax != 0){
+			return positiveMax;
+		}
+
+
+		int negativeMax = negativeBits.nextSetBit(1);
+
+		if(negativeMax != -1) {
+			return -negativeMax;
+		}
+
+		return 0;
 	}
 
-	public int getMinRealValue() {
-		return Math.min(positiveBits.nextSetBit(0), -(negativeBits.length() - 1));
+	private int getMinRealValue() {
+		int negativeMin = negativeBits.length();
+
+		if(negativeMin != 0) {
+			return -negativeMin;
+		}
+
+		int positiveMax = positiveBits.nextSetBit(0);
+
+		if(positiveMax != -1){
+			return positiveMax;
+		}
+
+		return 0;
 	}
 
 	public boolean contains(int value) {
@@ -279,17 +280,6 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 
-	public boolean enclosesAll(Iterable<CDateRange> other) {
-		for (CDateRange cDateRange : other) {
-			if (!encloses(cDateRange)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-
 	public void addAll(Iterable<CDateRange> ranges) {
 		for (CDateRange range : ranges) {
 			add(range);
@@ -297,11 +287,6 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 
-	public void removeAll(Iterable<CDateRange> ranges) {
-		for (CDateRange range : ranges) {
-			remove(range);
-		}
-	}
 
 	public boolean intersects(CDateRange range) {
 		// trivial case
@@ -324,13 +309,6 @@ public class BitMapCDateSet implements ICDateSet {
 		int intersection = positiveBits.nextSetBit(range.getMinValue());
 
 		return intersection != -1 && intersection <= range.getMaxValue();
-	}
-
-
-	public boolean encloses(CDateRange range) {
-		final CDateRange rangeContaining = rangeContaining(range.getMinValue());
-		// todo inline rangeContaining to not waste that range in the call
-		return rangeContaining != null && rangeContaining.contains(range.getMaxValue());
 	}
 
 

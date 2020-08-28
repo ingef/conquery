@@ -53,5 +53,4 @@ public interface ICDateSet {
 
 	int getMaxValue();
 
-	CDateRange rangeContaining(int value);
 }

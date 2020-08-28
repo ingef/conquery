@@ -346,18 +346,6 @@ public class BitMapCDateSetTest {
 	}
 
 	@Test
-	public void encloses() {
-		assertThat(BitMapCDateSet.create(CDateRange.of(-10,-5), CDateRange.of(5,10)))
-				.matches(set -> !set.encloses(CDateRange.of(-6,6)))
-				.matches(set -> !set.encloses(CDateRange.of(-1,1)))
-
-				.matches(set -> set.encloses(CDateRange.of(9, 10)))
-				.matches(set -> set.encloses(CDateRange.of(-10,-9)))
-		;
-
-	}
-
-	@Test
 	public void intersects() {
 		assertThat(BitMapCDateSet.create(CDateRange.of(-10,-5), CDateRange.of(5,10)))
 				.matches(set -> set.intersects(CDateRange.of(-6,6)))
