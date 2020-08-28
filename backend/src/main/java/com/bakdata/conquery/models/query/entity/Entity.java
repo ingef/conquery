@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.query.entity;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.BucketManager;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -21,17 +19,11 @@ public class Entity {
 
 
 	/**
-	 * Test if there is any known associated data to the Entity.
+	 * Test if there is any known associated data to the Entity in the {@link BucketManager}
 	 * @param bucketManager
 	 */
 	public boolean isEmpty(BucketManager bucketManager) {
-
-
-		return false;
-	}
-
-	public void removeBucket(BucketId id) {
-		// TODO: 04.08.2020 cleanup logic (for isEmpty) is still missing
+		return !bucketManager.hasBucket(getBucket(id, bucketManager.getBucketSize()));
 	}
 
 
@@ -41,11 +33,4 @@ public class Entity {
 	public static int getBucket(int entityId, int entityBucketSize) {
 		return entityId / entityBucketSize;
 	}
-
-
-	public boolean hasConnector(ConnectorId connector) {
-		// todo implement this!
-		return true;
 	}
-
-}

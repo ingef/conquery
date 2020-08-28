@@ -103,14 +103,15 @@ public class ConceptQueryPlan implements QueryPlan {
 	@Override
 	public SinglelineEntityResult execute(QueryExecutionContext ctx, Entity entity) {
 
-		if(!isOfInterest(entity)){
+ 		checkRequiredTables(ctx.getStorage());
+
+		if (requiredTables.get().isEmpty()) {
 			return EntityResult.notContained();
 		}
 
-		checkRequiredTables(ctx.getStorage());
 		init(entity, ctx);
 
-		if (requiredTables.get().isEmpty()) {
+		if(!isOfInterest(entity)){
 			return EntityResult.notContained();
 		}
 

@@ -46,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BucketManager {
 
+	@Getter
 	private final int bucketSize;
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
@@ -348,6 +349,10 @@ public class BucketManager {
 		return buckets.containsKey(id);
 	}
 
+	public boolean hasBucket(int id) {
+		return  buckets.keySet().stream().map(BucketId::getBucket).anyMatch(bucket -> bucket == id);
+	}
+
 	public Bucket getBucket(BucketId id) {
 		return buckets.get(id);
 	}
@@ -377,6 +382,21 @@ public class BucketManager {
 	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
 	 */
 	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
+
+	public boolean hasEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
+
+		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(connectorId);
+
+		if(forConnector == null){
+			return false;
+		}
+
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+
+		final List<CBlock> forBucket = forConnector.get(bucketId);
+
+		return forBucket != null;
+	}
 
 
 	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
