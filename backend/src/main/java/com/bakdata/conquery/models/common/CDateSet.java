@@ -299,7 +299,9 @@ public class CDateSet implements ICDateSet{
 	}
 
 	public void retainAll(ICDateSet retained) {
-		// TODO: 18.08.2020 fk: implement this
+		if(retained instanceof CDateSet){
+			retainAll(((CDateSet) retained));
+		}
 	}
 
 	public void retainAll(CDateSet retained) {
