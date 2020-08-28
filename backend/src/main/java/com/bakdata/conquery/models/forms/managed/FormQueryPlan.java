@@ -24,6 +24,9 @@ public class FormQueryPlan implements QueryPlan {
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+
+		features.init(ctx,entity);
+
 		if(!isOfInterest(entity)){
 			return EntityResult.notContained();
 		}
