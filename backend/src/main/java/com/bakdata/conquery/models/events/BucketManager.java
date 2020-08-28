@@ -1,14 +1,11 @@
 package com.bakdata.conquery.models.events;
 
-import static com.google.common.collect.Iterators.filter;
-import static com.google.common.collect.Iterators.transform;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
@@ -35,13 +32,12 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.google.common.collect.HashBasedTable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.map.Flat3Map;
 
 /**
  *
@@ -152,14 +148,11 @@ public class BucketManager {
 			entities.computeIfAbsent(entity, createEntityFor(cBlock));
 		}
 
-		List<CBlock> connectorCBlocks = this.connectorCBlocks.get(cBlock.getConnector(), cBlock.getBucket().getBucket());
+		List<CBlock> forCBlock = connectorCBlocks
+										 .computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
+										 .computeIfAbsent(bucket.getId().getBucket(), bucketId -> new ArrayList<>(3));
 
-		if (connectorCBlocks == null) {
-			connectorCBlocks = new ArrayList<>(3);
-			this.connectorCBlocks.put(storage.getCentralRegistry().resolve(cBlock.getConnector()).getId(), cBlock.getBucket().getBucket(), connectorCBlocks);
-		}
-
-		connectorCBlocks.add(cBlock);
+		forCBlock.add(cBlock);
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
@@ -232,9 +225,7 @@ public class BucketManager {
 			if(entity == null)
 				continue;
 
-			entity.removeBucket(bucket.getId());
-
-			if(entity.isEmpty()) {
+			if(entity.isEmpty(this)) {
 				entities.remove(entityId);
 			}
 		}
@@ -249,16 +240,25 @@ public class BucketManager {
 			if(entity == null)
 				continue;
 
-			entity.removeCBlock(cBlockId.getConnector(), cBlockId.getBucket());
-
 			//TODO Verify that this is enough.
-			if(entity.isEmpty()) {
+			if(entity.isEmpty(this)) {
 				entities.remove(entityId);
 			}
 		}
 
-		connectorCBlocks.get(cBlockId.getConnector(), cBlockId.getBucket().getBucket())
-						.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
+		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(cBlockId.getConnector());
+
+		if(forConnector == null){
+			return;
+		}
+
+		final List<CBlock> forBucket = forConnector.get(cBlockId.getBucket().getBucket());
+
+		if(forBucket == null){
+			return;
+		}
+
+		forBucket.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
 	}
 
 	public void removeBucket(BucketId bucketId) {
@@ -309,7 +309,6 @@ public class BucketManager {
 						continue;
 					}
 
-
 					removeCBlock(new CBlockId(bucketId, con.getId()));
 				}
 			}
@@ -353,36 +352,53 @@ public class BucketManager {
 		return buckets.get(id);
 	}
 
-	public Iterable<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
+	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
 		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
-		final Iterator<ImportId> iterator = storage.getTableImports(tableId).iterator();
+		final Collection<ImportId> imports = storage.getTableImports(tableId);
 
-		return () -> filter(transform(iterator, imp -> getBucket(new BucketId(imp, bucketId))), Objects::nonNull);
+		final List<Bucket> buckets = new ArrayList<>();
+
+		for (ImportId impId : imports) {
+			final Bucket bucket = getBucket(new BucketId(impId, bucketId));
+
+			if(bucket == null){
+				continue;
+			}
+
+			buckets.add(bucket);
+		}
+
+		return buckets;
 	}
 
 
 	/**
-	 * Connector :: Bucket :: [CBlock]
+	 * Connector -> Bucket -> [CBlock]
 	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
 	 */
-	//TODO pull these numbers from a running instance.
-
-	private final com.google.common.collect.Table<ConnectorId, Integer, List<CBlock>> connectorCBlocks = HashBasedTable.create(1500, 3);
+	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
 
 
 	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
-		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
 
-		final List<CBlock> cBlocks = connectorCBlocks.get(connectorId, bucketId);
+		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(connectorId);
 
-		if(cBlocks == null){
+		if(forConnector == null){
 			return Collections.emptyMap();
 		}
 
-		final Flat3Map out = new Flat3Map();
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
 
-		for (CBlock cBlock : cBlocks) {
-			out.put(cBlock.getBucket(),cBlock);
+		final List<CBlock> forBucket = forConnector.get(bucketId);
+
+		if(forBucket == null){
+			return Collections.emptyMap();
+		}
+
+		Map<BucketId, CBlock> out = new Object2ObjectArrayMap<>(forBucket.size());
+
+		for (CBlock cBlock : this.cBlocks) {
+			out.put(cBlock.getBucket(), cBlock);
 		}
 
 		return out;

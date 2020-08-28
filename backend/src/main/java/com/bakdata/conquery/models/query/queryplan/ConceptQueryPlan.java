@@ -125,7 +125,9 @@ public class ConceptQueryPlan implements QueryPlan {
 
 			nextTable(ctx, currentTableId);
 
-			for (Bucket bucket : ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity,currentTableId)) {
+			final List<Bucket> tableBuckets = ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity, currentTableId);
+
+			for (Bucket bucket : tableBuckets) {
 
 				if(bucket == null){
 					continue;
