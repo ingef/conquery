@@ -77,17 +77,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// Check if the result if of an processible type (multiline or not contained)
-		if (!(featureResult instanceof MultilineContainedEntityResult) || !featureResult.isContained()) {
-			throw new IllegalStateException(String.format(
-				"The relative form query plan only handles MultilineContainedEntityResult and NotContainedEntityResults. Was %s",
-				featureResult.getClass()));
-		}
-
-		if (!(outcomeResult instanceof MultilineContainedEntityResult) || !outcomeResult.isContained()) {
-			throw new IllegalStateException(String.format(
-				"The relative form query plan only handles MultilineContainedEntityResult and NotContainedEntityResults. Was %s",
-				outcomeResult.getClass()));
-		}
+		checkIfResultProcessible(featureResult);
+		checkIfResultProcessible(outcomeResult);
 
 		if (!featureResult.isContained() && !outcomeResult.isContained()) {
 			// if both, feature and outcome are not contained fast quit.
@@ -95,19 +86,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// determine result length and check against aggregators in query
-		int featureLength = featureSubquery.columnCount();
-		int featureResultColumnCount;
-		if (featureResult.isContained() && (featureResultColumnCount = featureResult.asContained().columnCount()) != featureLength) {
-			throw new IllegalStateException(String
-				.format("Feature aggregator number (%d) and result number (%d) are not the same", featureLength, featureResultColumnCount));
-		}
-
-		int outcomeLength = outcomeSubquery.columnCount();
-		int outcomeResultColumnCount;
-		if (outcomeResult.isContained() && (outcomeResultColumnCount = outcomeResult.asContained().columnCount()) != outcomeLength) {
-			throw new IllegalStateException(String
-				.format("Outcome aggregator number (%d) and result number (%d) are not the same", outcomeLength, outcomeResultColumnCount));
-		}
+		int featureLength = determineResultWithAndCheck(featureSubquery, featureResult);
+		int outcomeLength = determineResultWithAndCheck(outcomeSubquery, outcomeResult);
 
 		/*
 		 * Whole result is the concatenation of the subresults. The final output format
@@ -160,6 +140,24 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			}
 		}
 		return EntityResult.multilineOf(entity.getId(), values);
+	}
+
+	private int determineResultWithAndCheck(FormQueryPlan subquery, EntityResult subResult) {
+		int featureLength = subquery.columnCount();
+		int featureResultColumnCount;
+		if (subResult.isContained() && (featureResultColumnCount = subResult.asContained().columnCount()) != featureLength) {
+			throw new IllegalStateException(String
+				.format("Aggregator number (%d) and result number (%d) are not the same", featureLength, featureResultColumnCount));
+		}
+		return featureLength;
+	}
+
+	private void checkIfResultProcessible(EntityResult result) {
+		if (!(result instanceof MultilineContainedEntityResult) && result.isContained()) {
+			throw new IllegalStateException(String.format(
+				"The relative form queryplan only handles MultilineContainedEntityResult and NotContainedEntityResults. Was %s",
+				result.getClass()));
+		}
 	}
 
 	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
