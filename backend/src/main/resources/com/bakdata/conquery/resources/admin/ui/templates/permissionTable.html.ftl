@@ -13,21 +13,21 @@
             <#list permissions as permission>
                 <tr>
                     <td>
-                        <#if permission.left.domains?has_content>
-                            <#list permission.left.domains as domain>${domain} </#list>
+                        <#if permission.domains?has_content>
+                            <#list permission.domains as domain>${domain} </#list>
                         </#if>
                     <td>
-                        <#if permission.left.abilities?has_content>
-                            <#list permission.left.abilities as ability>${ability} </#list>
+                        <#if permission.abilities?has_content>
+                            <#list permission.abilities as ability>${ability} </#list>
                         </#if>
                     </td>
                     <td>
-                        <#if permission.left.targets?has_content>
-                            <#list permission.left.targets as target> ${target} </#list>
+                        <#if permission.targets?has_content>
+                            <#list permission.targets as target> ${target} </#list>
                         </#if>
                     </td>
-                    <td>${permission.left.creationTime}</td>
-                    <td><a href="#" onclick="handleDeletePermission('${permission.right}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
+                    <td>${permission.creationTime}</td>
+                    <td><a href="#" onclick="handleDeletePermission('${permission.rawPermission}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
                 </tr>
             </#list>
         </tbody>
