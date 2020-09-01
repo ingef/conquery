@@ -1,11 +1,11 @@
 package com.bakdata.conquery.util.functions;
 
 @FunctionalInterface
-public interface Collector<VALUE> {
-	void accept(VALUE value);
+public interface Collector<KEY, VALUE> {
+	void accept(KEY key, VALUE value);
 	
-	default Collector<VALUE> collect(VALUE value) {
-		accept(value);
+	default Collector<KEY, VALUE> collect(KEY key,VALUE value) {
+		accept(key, value);
 		return this;
 	}
 }

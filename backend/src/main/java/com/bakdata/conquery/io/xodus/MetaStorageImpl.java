@@ -1,14 +1,12 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
-import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -39,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage, ConqueryStorage {
 
-	private SingletonStore<DatasetRegistry> meta;
 	private IdentifiableStore<ManagedExecution<?>> executions;
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
@@ -65,7 +62,7 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 	private final Environment groupsEnvironment;
 
 	public MetaStorageImpl(DatasetRegistry datasets, Validator validator, StorageConfig config) {
-		super(validator, config, new File(config.getDirectory(), "meta"));
+		super(validator, config);
 
 		executionsEnvironment = Environments.newInstance(new File(config.getDirectory(), "executions"), config.getXodus().createConfig());
 
@@ -81,9 +78,7 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-
-		meta = StoreInfo.NAMESPACES.singleton(getConfig(), getEnvironment(), getValidator());
+	protected void createStores(Collector<Environment, KeyIncludingStore<?, ?>> collector) {
 
 		executions = StoreInfo.EXECUTIONS
 			.<ManagedExecution<?>>identifiable(getConfig(), getExecutionsEnvironment(), getValidator(), getCentralRegistry(), datasetRegistry);
@@ -96,18 +91,17 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getConfig(), getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
 		collector
-			.collect(meta)
-			.collect(authRole)
+			.collect(rolesEnvironment, authRole)
 			// load users before queries
-			.collect(authUser)
-			.collect(authGroup)
-			.collect(executions)
-			.collect(formConfigs);
+			.collect(usersEnvironment,authUser)
+			.collect(groupsEnvironment,authGroup)
+			.collect(executionsEnvironment, executions)
+			.collect(formConfigEnvironment, formConfigs);
 	}
 
 	@Override
 	@SneakyThrows(JSONException.class)
-	public void addExecution(ManagedExecution query) {
+	public void addExecution(ManagedExecution<?> query) {
 		executions.add(query);
 	}
 
@@ -239,15 +233,9 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 	public void addFormConfig(FormConfig formConfig) {
 		formConfigs.add(formConfig);
 	}
-	
+
 	@Override
-	public void close() throws IOException {
-		getExecutionsEnvironment().close();
-		getFormConfigEnvironment().close();
-		getGroupsEnvironment().close();
-		getUsersEnvironment().close();
-		getRolesEnvironment().close();
-		
-		super.close();
+	public String getStorageOrigin() {
+		return config.getDirectory().getPath();
 	}
 }

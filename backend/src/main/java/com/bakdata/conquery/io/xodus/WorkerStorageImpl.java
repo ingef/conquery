@@ -22,9 +22,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.functions.Collector;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -51,16 +51,16 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
+	protected void createStores(Collector<Environment, KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		worker = StoreInfo.WORKER.singleton(getConfig(), getEnvironment(), getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
+		worker = StoreInfo.WORKER.singleton(getConfig(), environment, getValidator());
+		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
+		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 		
 		collector
-			.collect(worker)
-			.collect(blocks)
-			.collect(cBlocks);
+			.collect(environment, worker)
+			.collect(environment, blocks)
+			.collect(environment, cBlocks);
 	}
 	
 	@Override

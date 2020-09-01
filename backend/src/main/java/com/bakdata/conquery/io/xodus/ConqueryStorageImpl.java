@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,63 +13,84 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.util.functions.Collector;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import jetbrains.exodus.env.Environment;
-import jetbrains.exodus.env.Environments;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Base class of persistent storages to uniformly handle load of data and closing of storages.
+ */
 @Getter @Slf4j
 public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
-	protected final File directory;
 	protected final Validator validator;
-	protected final Environment environment;
 	protected final StorageConfig config;
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final List<KeyIncludingStore<?,?>> stores = new ArrayList<>();
+	
+	private final Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores = MultimapBuilder.linkedHashKeys().arrayListValues().build();
 
-	public ConqueryStorageImpl(Validator validator, StorageConfig config, File directory) {
-		this.directory = directory;
+	public ConqueryStorageImpl(Validator validator, StorageConfig config) {
 		this.validator = validator;
-		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
 		this.config = config;
 	}
 
-	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
-	}
+	/**
+	 * Stores can contain of multiple environments, whose themselves can consist of multiple stores.
+	 * This method collects this information as a mapping that is used to load and later close the stores.
+	 * The environments should be collected in the order the stores should be loaded.
+	 */
+	abstract protected void createStores(Collector<Environment,KeyIncludingStore<?,?>> collector);
 
 	/**
 	 * Load all stores from disk.
 	 */
 	@Override
 	public void loadData() {
-		createStores(stores::add);
-		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
-
-		try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
-			Stopwatch all = Stopwatch.createStarted();
-			for (KeyIncludingStore<?, ?> store : stores) {
-				store.loadData();
+		createStores(environmentToStores::put);
+		for(Environment environment : environmentToStores.keySet()) {
+			log.info("Loading storage {} from {}", this.getClass().getSimpleName(), environment.getLocation());
+			
+			try (final Timer.Context timer = JobMetrics.getStoreLoadingTimer()) {
+				Stopwatch all = Stopwatch.createStarted();
+				for (KeyIncludingStore<?, ?> store : environmentToStores.get(environment)) {
+					store.loadData();
+				}
+				log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
 			}
-			log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
 		}
-
 	}
+	
 
 	@Override
 	public void close() throws IOException {
-		for(KeyIncludingStore<?, ?> store : stores) {
-			store.close();
+		for(Environment environment : environmentToStores.keySet()) {
+			log.info("Closing stores of environment {}", environment.getLocation());
+			for (KeyIncludingStore<?, ?> store : environmentToStores.get(environment)) {
+				log.info("Closing store {}", store.toString());
+				store.close();
+				log.info("Closed store {}", store.toString());
+			}
+			environment.close();
+			log.info("Closed environment {}", environment.getLocation());
 		}
-		environment.close();
 	}
+	
+
 
 	/**
 	 * Clears the environment then closes it.
 	 */
+	@Override
 	public void remove() throws IOException {
-		environment.clear();
+		for(Environment environment : environmentToStores.keySet()) {
+			log.info("Clearing environment {}", environment.getLocation());
+			environment.clear();
+			log.info("Cleared environment {}", environment.getLocation());
+		}
 		close();
 	}
 }

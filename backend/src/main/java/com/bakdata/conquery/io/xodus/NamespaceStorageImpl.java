@@ -13,12 +13,11 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.functions.Collector;
+import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
 	
 	@Getter @Setter @NonNull
@@ -44,13 +43,13 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 
 	
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
+	protected void createStores(Collector<Environment, KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(getConfig(), getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
-		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), getEnvironment(), getValidator());
+		structure = StoreInfo.STRUCTURE.singleton(getConfig(), environment, getValidator(), new SingletonNamespaceCollection(centralRegistry));
+		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), environment, getValidator());
 		collector
-			.collect(structure)
-			.collect(idMapping);
+			.collect(environment, structure)
+			.collect(environment, idMapping);
 	}
 
 	@Override
