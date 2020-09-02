@@ -76,7 +76,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			return outcomeResult;
 		}
 
-		// Check if the result if of an processible type (multiline or not contained)
+		// Check if the result is processible (type is multiline or not contained)
 		checkIfResultProcessible(featureResult);
 		checkIfResultProcessible(outcomeResult);
 
