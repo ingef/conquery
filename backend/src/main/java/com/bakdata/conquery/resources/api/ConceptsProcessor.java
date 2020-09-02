@@ -96,20 +96,16 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
 		//search in the full text engine
-		Set<String> searchResult = Collections.emptySet();
+		Set<String> searchResult = new HashSet<>(searchTerms.size());
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 
 		// If we have a QuickSearch, use that for resolving first.
 		if (search != null) {
 			List<FilterSearchItem> result = search.findAllItems(searchTerms, filter.getSearchType()::score);
 
-			List<FEValue> res = result.stream()
-									  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-									  .collect(Collectors.toList());
-
-			searchResult = res.stream()
-							  .map(FEValue::getValue)
-							  .collect(Collectors.toSet());
+			for (FilterSearchItem searchItem : result) {
+				searchResult.add(searchItem.getValue());
+			}
 		}
 
 
