@@ -59,7 +59,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 				for (KeyIncludingStore<?, ?> store : environmentToStores.get(environment)) {
 					store.loadData();
 				}
-				log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
+				log.info("Loading of environment {} completed within {}", environment.getLocation(), all.stop());
 			}
 		}
 	}
