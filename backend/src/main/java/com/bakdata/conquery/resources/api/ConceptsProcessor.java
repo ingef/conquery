@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -96,7 +97,7 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
 		//search in the full text engine
-		Set<String> searchResult = new HashSet<>(searchTerms.size());
+		Map<String, FEValue> searchResult = new HashMap<>(searchTerms.size());
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 
 		// If we have a QuickSearch, use that for resolving first.
@@ -104,27 +105,27 @@ public class ConceptsProcessor {
 			List<FilterSearchItem> result = search.findAllItems(searchTerms, filter.getSearchType()::score);
 
 			for (FilterSearchItem searchItem : result) {
-				searchResult.add(searchItem.getValue());
+				searchResult.put(searchItem.getValue(), new FEValue(searchItem.getLabel(), searchItem.getValue()));
 			}
 		}
 
 
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
-		openSearchTerms.removeAll(searchResult);
+		openSearchTerms.removeAll(searchResult.keySet());
 
 		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext(); ) {
 			String searchTerm = it.next();
 			// Test if any of the values occurs directly in the filter's values or their labels (for when we don't have a provided file).
 			if (filter.getValues() != null && filter.getValues().contains(searchTerm)) {
-				searchResult.add(searchTerm);
+				searchResult.put(searchTerm, new FEValue(filter.getLabelFor(searchTerm), searchTerm));
 				it.remove();
 			}
 			else {
 				String matchingValue = filter.getLabels().inverse().get(searchTerm);
 
 				if (matchingValue != null) {
-					searchResult.add(matchingValue);
+					searchResult.put(matchingValue, new FEValue(filter.getLabelFor(matchingValue), matchingValue));
 					it.remove();
 				}
 			}
@@ -135,10 +136,7 @@ public class ConceptsProcessor {
 				new ResolvedFilterResult(
 						filter.getConnector().getId(),
 						filter.getId(),
-						searchResult
-								.stream()
-								.map(v -> new FEValue(filter.getLabelFor(v), v))
-								.collect(Collectors.toList())
+						new ArrayList<>(searchResult.values())
 				),
 				openSearchTerms
 		);
