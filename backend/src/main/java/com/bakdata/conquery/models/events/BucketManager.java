@@ -226,7 +226,7 @@ public class BucketManager {
 			if(entity == null)
 				continue;
 
-			if(entity.isEmpty(this)) {
+			if(isEntityEmpty(entity)) {
 				entities.remove(entityId);
 			}
 		}
@@ -242,7 +242,7 @@ public class BucketManager {
 				continue;
 
 			//TODO Verify that this is enough.
-			if(entity.isEmpty(this)) {
+			if(isEntityEmpty(entity)) {
 				entities.remove(entityId);
 			}
 		}
@@ -422,5 +422,13 @@ public class BucketManager {
 		}
 
 		return out;
+	}
+
+	/**
+	 * Test if there is any known associated data to the Entity in the {@link BucketManager}
+	 * @param entity
+	 */
+	public boolean isEntityEmpty(Entity entity) {
+		return !hasBucket(Entity.getBucket(entity.getId(), getBucketSize()));
 	}
 }

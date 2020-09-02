@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.entity;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.BucketManager;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -16,15 +15,6 @@ import lombok.ToString;
 public class Entity {
 	@Getter
 	private final int id;
-
-
-	/**
-	 * Test if there is any known associated data to the Entity in the {@link BucketManager}
-	 * @param bucketManager
-	 */
-	public boolean isEmpty(BucketManager bucketManager) {
-		return !bucketManager.hasBucket(getBucket(id, bucketManager.getBucketSize()));
-	}
 
 
 	/**

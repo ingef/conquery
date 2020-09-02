@@ -88,7 +88,7 @@ public class AdminServlet {
 				masterCommand.getJobManager(),
 				masterCommand.getMaintenanceService(),
 				masterCommand.getValidator(),
-				ConqueryConfig.getInstance().getCluster().getEntityBucketSize()
+				masterCommand.getConfig().getCluster().getEntityBucketSize()
 		);
 
 		// inject required services
