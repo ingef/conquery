@@ -183,6 +183,20 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java#L21) | min | `String` | `null` |  |  | 
 </p></details>
 
+### PRESENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/IsPresentCondition.java#L11-L13)</sup></sub></sup>
+This condition requires that the selected Column has a value.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.concepts.conditions.IsPresentCondition`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/IsPresentCondition.java#L17) | column | `String` | `null` |  |  | 
+</p></details>
+
 
 
 ---

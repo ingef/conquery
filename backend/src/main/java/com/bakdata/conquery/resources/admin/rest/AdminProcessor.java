@@ -269,12 +269,12 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private List<Pair<FEPermission, String>> wrapInFEPermission(Collection<Permission> permissions) {
-		List<Pair<FEPermission, String>> fePermissions = new ArrayList<>();
+	private SortedSet<FEPermission> wrapInFEPermission(Collection<Permission> permissions) {
+		TreeSet<FEPermission> fePermissions = new TreeSet<>();
 
 		for (Permission permission : permissions) {
 			if (permission instanceof ConqueryPermission) {
-				fePermissions.add(Pair.of(FEPermission.from((ConqueryPermission)permission), permission.toString()));
+				fePermissions.add(FEPermission.from((ConqueryPermission)permission));
 
 			}
 			else {
