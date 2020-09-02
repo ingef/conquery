@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationException;
@@ -11,9 +13,6 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.ExecutionException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
-
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Class to filter all unused functionality from the actual User class to keep it more compact and clean.
@@ -23,6 +22,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class FilteredUser<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends PermissionOwner<T> implements Subject {
 
+
+	public FilteredUser(String name, String label) {
+		super(name, label);
+	}
 
 	@Override
 	public boolean isPermitted(String permission) {
