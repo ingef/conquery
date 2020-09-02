@@ -77,8 +77,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// Check if the result is processible (type is multiline or not contained)
-		checkIfResultProcessible(featureResult);
-		checkIfResultProcessible(outcomeResult);
+		assertProcessible(featureResult);
+		assertProcessible(outcomeResult);
 
 		if (!featureResult.isContained() && !outcomeResult.isContained()) {
 			// if both, feature and outcome are not contained fast quit.
@@ -156,7 +156,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return resultWidth;
 	}
 
-	private void checkIfResultProcessible(EntityResult result) {
+	private void assertProcessible(EntityResult result) {
 		if (!(result instanceof MultilineContainedEntityResult) && result.isContained()) {
 			throw new IllegalStateException(String.format(
 				"The relative form queryplan only handles MultilineContainedEntityResult and NotContainedEntityResults. Was %s",
