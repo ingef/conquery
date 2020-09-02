@@ -86,8 +86,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// determine result length and check against aggregators in query
-		int featureLength = determineResultWithAndCheck(featureSubquery, featureResult);
-		int outcomeLength = determineResultWithAndCheck(outcomeSubquery, outcomeResult);
+		int featureLength = determineResultWidth(featureSubquery, featureResult);
+		int outcomeLength = determineResultWidth(outcomeSubquery, outcomeResult);
 
 		/*
 		 * Whole result is the concatenation of the subresults. The final output format
@@ -142,14 +142,18 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return EntityResult.multilineOf(entity.getId(), values);
 	}
 
-	private int determineResultWithAndCheck(FormQueryPlan subquery, EntityResult subResult) {
-		int featureLength = subquery.columnCount();
-		int featureResultColumnCount;
-		if (subResult.isContained() && (featureResultColumnCount = subResult.asContained().columnCount()) != featureLength) {
-			throw new IllegalStateException(String
-				.format("Aggregator number (%d) and result number (%d) are not the same", featureLength, featureResultColumnCount));
+	private int determineResultWidth(FormQueryPlan subquery, EntityResult subResult) {
+		// This is sufficient for NOT_CONTAINTED subresults
+		int resultWidth = subquery.columnCount();
+		// When it's a contained result also check whether the result really has the awaited width
+		if (subResult.isContained()) {
+			int resultColumnCount = subResult.asContained().columnCount();
+			if(resultColumnCount != resultWidth) {				
+				throw new IllegalStateException(String
+					.format("Aggregator number (%d) and result number (%d) are not the same", resultWidth, resultColumnCount));
+			}
 		}
-		return featureLength;
+		return resultWidth;
 	}
 
 	private void checkIfResultProcessible(EntityResult result) {
