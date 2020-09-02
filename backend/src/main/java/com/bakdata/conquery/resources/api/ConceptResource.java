@@ -55,7 +55,7 @@ public class ConceptResource extends HConcepts {
 	public ResolvedConceptsResult resolve(@NotNull ConceptCodeList conceptCodes) {
 
 		if (!(concept instanceof TreeConcept)) {
-			throw new WebApplicationException("can only resolved elements on tree concepts", Status.BAD_REQUEST);
+			throw new WebApplicationException("Can only resolve elements on tree concepts", Status.BAD_REQUEST);
 		}
 
 		List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
