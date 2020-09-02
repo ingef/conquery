@@ -70,15 +70,18 @@ public class CalculateCBlocksJob extends Job {
 
 				CBlock cBlock = createCBlock(connector, info);
 				cBlock.initIndizes(info.getBucket().getBucketSize());
-				if (connector.getConcept() instanceof TreeConcept) {
+				if (connector instanceof ConceptTreeConnector) {
 					final ConceptTreeConnector treeConnector = (ConceptTreeConnector) connector;
 					calculateCBlock(cBlock, treeConnector, info);
 				}
-				else {
+				else if (connector instanceof VirtualConceptConnector) {
 					calculateCBlock(cBlock, (VirtualConceptConnector) connector, info);
 				}
+				else {
+					throw new IllegalArgumentException(String.format("Don't know how to handle connectors of type %s", connector.getClass()));
+				}
 
-				setDateRangeIndex(cBlock, info);
+				calculateEntityDateIndices(cBlock, info.getBucket());
 				bucketManager.addCalculatedCBlock(cBlock);
 				storage.addCBlock(cBlock);
 			}
@@ -100,8 +103,10 @@ public class CalculateCBlocksJob extends Job {
 		progressReporter.done();
 	}
 
-	private void setDateRangeIndex(CBlock cBlock, CalculationInformation info) {
-		Bucket bucket = info.getBucket();
+	/**
+	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
+	 */
+	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
 		Table table = storage.getDataset().getTables().get(bucket.getImp().getTable());
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
@@ -122,7 +127,7 @@ public class CalculateCBlocksJob extends Job {
 		}
 	}
 
-	private CBlock createCBlock(Connector connector, CalculationInformation info) {
+	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
 		return new CBlock(info.getBucket().getId(), connector.getId());
 	}
 
@@ -164,6 +169,10 @@ public class CalculateCBlocksJob extends Job {
 		}
 		else {
 			stringType = null;
+
+			if(treeConcept.countElements() != 1){
+				throw new IllegalStateException(String.format("Cannot build tree over Connector[%s] without Column", connector.getId()));
+			}
 		}
 
 

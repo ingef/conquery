@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
@@ -85,7 +84,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	@Override
-	public ConceptTreeNode getParent() {
+	public ConceptTreeNode<?> getParent() {
 		return null;
 	}
 
@@ -208,12 +207,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return allChildren.getOrFail(conceptTreeChildId);
 	}
 
-	/*
-	public Stream<ConceptTreeChild> streamTreeChildren() {
-		return getAllNodes().stream()
-			.filter(ConceptTreeChild.class::isInstance)
-			.map(ConceptTreeChild.class::cast);
-	}*/
 
 	public void initializeIdCache(AStringType<?> type, ImportId importId) {
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));

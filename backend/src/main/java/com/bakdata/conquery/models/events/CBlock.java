@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.events;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -18,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -39,7 +39,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
 	 */
 	private long[] includedConcepts;
-	
+
+	// TODO: 02.09.2020 FK: Make chop this onto a per-column basis
 	/**
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
@@ -51,7 +52,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
 	 */
-	@Valid @NonNull
+	@Nullable
 	private List<int[]> mostSpecificChildren = null;
 	
 	public CBlock(BucketId bucket, ConnectorId connector) {
