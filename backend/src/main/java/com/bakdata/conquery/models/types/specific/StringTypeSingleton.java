@@ -4,10 +4,12 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.BooleanStore;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import jersey.repackaged.com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +24,11 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 	public StringTypeSingleton(String singleValue) {
 		super(boolean.class);
 		this.singleValue = singleValue;
+	}
+
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		return new BooleanStore(column, null); // todo
 	}
 
 	@Override

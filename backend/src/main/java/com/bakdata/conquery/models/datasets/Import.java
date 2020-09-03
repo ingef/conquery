@@ -71,11 +71,7 @@ public class Import extends NamedImpl<ImportId> {
 
 	@JsonIgnore
 	public synchronized BlockFactory getBlockFactory() {
-		if(blockFactory == null) {
-			generateClasses();
-		}
-
-		return blockFactory;
+		return new BlockFactory();
 	}
 
 	public synchronized String getSuffix() {

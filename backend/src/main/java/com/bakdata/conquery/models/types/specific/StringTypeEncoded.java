@@ -10,13 +10,14 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.io.BaseEncoding;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,12 @@ public class StringTypeEncoded extends AStringType<Number> {
 		this.subType=subType;
 		this.encoding = encoding;
 	}
-	
+
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		return subType.createStore(column, objects);
+	}
+
 	@Override
 	public String getElement(int value) {
 		return encoding.encode(subType.getElement(value));

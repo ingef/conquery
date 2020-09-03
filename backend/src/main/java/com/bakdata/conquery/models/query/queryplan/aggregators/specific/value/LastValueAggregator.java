@@ -39,7 +39,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 		if (next > date) {
 			date = next;
-			value = bucket.getRaw(event, getColumn());
+			value = bucket.getAsObject(event, getColumn());
 			this.bucket = bucket;
 		}
 	}

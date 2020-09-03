@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events.generation;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.PrimitiveIterator;
@@ -10,8 +9,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import com.bakdata.conquery.models.events.ColumnStore;
 import lombok.Getter;
 
 /**
@@ -23,18 +21,9 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	private EmptyBucket() {
-		super(0, null, new int[0]);
+		super(0, null, new ColumnStore[0], new int[0], new int[0]);
 	}
 
-	@Override
-	public boolean has(int event, int columnPosition) {
-		return false;
-	}
-
-	@Override
-	public boolean eventIsContainedIn(int event, Column column, CDateRange dateRange) {
-		return false;
-	}
 
 	@Override
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
@@ -42,7 +31,7 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public boolean containsLocalEntity(int localEntity) {
+	public boolean containsEntity(int localEntity) {
 		return false;
 	}
 
@@ -51,26 +40,6 @@ public class EmptyBucket extends Bucket {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
-	@Override
-	public int toGlobal(int entity) {
-		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
-	}
-
-	@Override
-	public int toLocal(int entity) {
-		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
-	}
-
-
-	@Override
-	public void writeContent(Output output) throws IOException {
-		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
-	}
-
-	@Override
-	public void read(Input input) throws IOException {
-		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
-	}
 
 	@Override
 	public PrimitiveIterator.OfInt iterator() {
@@ -130,16 +99,6 @@ public class EmptyBucket extends Bucket {
 
 	@Override
 	public CDateRange getDateRange(int event, Column column) {
-		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
-	}
-
-	@Override
-	public Object getRaw(int event, int columnPosition) {
-		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
-	}
-
-	@Override
-	public Object getAsObject(int event, int columnPosition) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 

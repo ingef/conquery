@@ -2,9 +2,10 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,11 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 
 	public DateRangeTypeDateRange() {
 		super(MajorTypeId.DATE_RANGE, CDateRange.class);
+	}
+
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		return null; // TODO
 	}
 
 	@Override

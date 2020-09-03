@@ -7,14 +7,15 @@ import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.math.LongMath;
 import com.google.common.primitives.Primitives;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,10 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 	private long nullLines = 0;
 
 	public void init(DatasetId dataset) {}
-	
+
+	public abstract ColumnStore createStore(ImportColumn column, Object[] objects);
+
+
 	public Object createScriptValue(JAVA_TYPE value) {
 		return value;
 	}
@@ -78,4 +82,5 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 	public long estimateTypeSize() {
 		return 0;
 	}
+
 }

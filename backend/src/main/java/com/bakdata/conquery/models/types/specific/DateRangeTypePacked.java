@@ -1,11 +1,15 @@
 package com.bakdata.conquery.models.types.specific;
 
+import java.util.Arrays;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.util.PackedUnsigned1616;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +22,12 @@ public class DateRangeTypePacked extends CType<CDateRange, Integer> {
 	public DateRangeTypePacked() {
 		super(MajorTypeId.DATE_RANGE, int.class);
 	}
-	
+
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		return new IntegerStore(column, Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), maxValue + 1);
+	}
+
 	@Override
 	public Object createPrintValue(Integer value) {
 		if (value == null) {

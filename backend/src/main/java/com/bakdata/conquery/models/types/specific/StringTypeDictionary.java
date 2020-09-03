@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonParser;
-
 import jersey.repackaged.com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,6 +48,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 		dictionaryId = new DictionaryId(dataset, dictionaryId.getDictionary());
 		dictionary.setDataset(dataset);
 	}
+
 
 	@Override
 	public byte[] createScriptValue(Number value) {

@@ -57,7 +57,7 @@ public class DateRestrictingNode extends QPChainNode {
 	public boolean isOfInterest(Bucket bucket) {
 		EntityRow currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 		CBlock cBlock = currentRow.getCBlock();
-		int localId = bucket.toLocal(entity.getId());
+		int localId = entity.getId();
 		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
 			return false;
 		}

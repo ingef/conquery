@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.dictionary;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Iterator;
 
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.LongStore;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-
 import jersey.repackaged.com.google.common.collect.Iterators;
 
 public class DirectDictionary extends AStringType<Integer> {
@@ -15,6 +18,10 @@ public class DirectDictionary extends AStringType<Integer> {
 	public DirectDictionary(Dictionary dict) {
 		super(int.class);
 		this.dict = dict;
+	}
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		return new LongStore(column, Arrays.stream(objects).mapToLong(Long.class::cast).toArray(), Integer.MAX_VALUE);
 	}
 	
 	@Override

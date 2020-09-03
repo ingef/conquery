@@ -1,12 +1,42 @@
 package com.bakdata.conquery.models.events.stores;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
-@RequiredArgsConstructor
-public class IntegerStore extends ColumnStoreAdapter {
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.events.ColumnStore;
+
+
+public class IntegerStore extends ColumnStoreAdapter<IntegerStore> {
 
 	private final int nullValue;
 	private final int[] values;
+
+	public IntegerStore(ImportColumn column, int[] values, int nullValue) {
+		super(column);
+		this.nullValue = nullValue;
+		this.values = values;
+	}
+
+	@Override
+	public IntegerStore merge(List<? extends ColumnStore<?>> stores) {
+		if (!stores.stream().allMatch(store -> store.getColumn().equals(getColumn()))) {
+			throw new IllegalArgumentException("Not all stores belong to the same Column");
+		}
+
+		final int newSize = stores.stream().map(IntegerStore.class::cast).mapToInt(store -> store.values.length).sum();
+		final int[] mergedValues = new int[newSize];
+
+		int start = 0;
+
+		for (ColumnStore<?> store : stores) {
+			final IntegerStore doubleStore = (IntegerStore) store;
+
+			System.arraycopy(doubleStore.values, 0, mergedValues, start, doubleStore.values.length);
+			start += doubleStore.values.length;
+		}
+
+		return new IntegerStore(getColumn(), mergedValues, nullValue);
+	}
 
 	@Override
 	public boolean has(int event) {
@@ -16,5 +46,10 @@ public class IntegerStore extends ColumnStoreAdapter {
 	@Override
 	public long getInteger(int event) {
 		return (long) values[event];
+	}
+
+	@Override
+	public Object getAsObject(int event) {
+		return getInteger(event);
 	}
 }

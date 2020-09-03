@@ -124,9 +124,9 @@ public class ConceptQueryPlan implements QueryPlan {
 			nextTable(ctx, currentTableId);
 
 			for (Bucket bucket : entity.getBucket(currentTableId)) {
-				int localEntity = bucket.toLocal(entity.getId());
+				int localEntity = entity.getId();
 
-				if (!bucket.containsLocalEntity(localEntity)) {
+				if (!bucket.containsEntity(localEntity)) {
 					continue;
 				}
 

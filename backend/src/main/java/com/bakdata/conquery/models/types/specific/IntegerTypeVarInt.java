@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +16,8 @@ public class IntegerTypeVarInt extends CTypeVarInt<Long> {
 	public IntegerTypeVarInt(VarIntType numberType) {
 		super(MajorTypeId.INTEGER, numberType);
 	}
-	
+
+
 	@Override
 	public Long createScriptValue(Number value) {
 		return numberType.createScriptValue(value).longValue();

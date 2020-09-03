@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.events;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.BucketDeserializer;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -23,9 +23,9 @@ import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.tomgibara.bits.BitStore;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -40,27 +40,37 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString
-@JsonDeserialize(using = BucketDeserializer.class)
-public abstract class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer>, JsonSerializable {
+public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer>, JsonSerializable {
 
 	@Min(0)
 	private int bucket;
 	@NotNull
 	@NsIdRef
 	private Import imp;
-	@Min(0)
-	private int numberOfEvents;
-	@ToString.Exclude
-	private int[] offsets;
-	@NotNull
-	@Setter
-	@ToString.Exclude
-	protected BitStore nullBits;
 
-	public Bucket(int bucket, Import imp, int[] offsets) {
+	@Min(0)
+	private int numberOfEvents = 1; // todo
+
+	private final ColumnStore[] stores;
+
+	// todo these three can be combined
+	private final Int2IntMap start = new Int2IntArrayMap();
+	private final Int2IntMap end;
+
+	@Getter
+	private final int bucketSize = start.size();
+
+
+	public Bucket(int bucket, Import imp, ColumnStore[] stores, int[] entities, int[] ends) {
 		this.bucket = bucket;
 		this.imp = imp;
-		this.offsets = offsets;
+		this.stores = stores;
+
+		for (int index = 1; index < entities.length; index++) {
+			start.put(ends[index], ends[index]);
+		}
+
+		end = new Int2IntArrayMap(entities, ends);
 	}
 
 	@Override
@@ -68,126 +78,120 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 		return new BucketId(imp.getId(), bucket);
 	}
 
-
-	public abstract int getBucketSize();
-
+	/**
+	 * Iterate entities
+	 * @return
+	 */
 	@Override
 	public PrimitiveIterator.OfInt iterator() {
-		log.info("Bucket[{}] size = {}", getId(), getBucketSize()); // TODO: 21.07.2020 FK: This is just temporary for bug-finding in CI.
-		return IntStream.range(0, getBucketSize())
-						.filter(this::containsLocalEntity)
-						.map(this::toGlobal)
-						.iterator();
+		return start.keySet().iterator();
 	}
 
-	public boolean containsLocalEntity(int localEntity) {
-		return offsets[localEntity] != -1;
+	public boolean containsEntity(int localEntity) {
+		return start.containsKey(localEntity);
 	}
 
-	public abstract void initFields(int numberOfEntities);
-
-	public int toLocal(int entity) {
-		return entity - getBucketSize() * bucket;
+	public void initFields(int numberOfEntities) {
+		// TODO
 	}
-
-	public int toGlobal(int entity) {
-		return entity + getBucketSize() * bucket;
-	}
-
 
 	public int getFirstEventOfLocal(int localEntity) {
-		return offsets[localEntity];
+		return start.get(localEntity);
 	}
 
 	public int getLastEventOfLocal(int localEntity) {
-		for (localEntity++; localEntity < offsets.length; localEntity++) {
-			if (offsets[localEntity] != -1) {
-				return offsets[localEntity];
-			}
-		}
-		return numberOfEvents;
+		return end.get(localEntity);
 	}
 
 	@Override
 	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		gen.writeObject(this);
+	}
 
-		java.io.OutputStream outputStream = baos;
-		try (Output output = new Output(outputStream)) {
-			writeContent(output);
-		}
-		byte[] content = baos.toByteArray();
-		gen.writeStartObject();
-		gen.writeNumberField(Fields.bucket, bucket);
-		gen.writeStringField(Fields.imp, imp.getId().toString());
-		gen.writeNumberField(Fields.numberOfEvents, numberOfEvents);
-		gen.writeFieldName(Fields.offsets);
-		gen.writeArray(offsets, 0, offsets.length);
-		gen.writeBinaryField("content", content);
-		gen.writeEndObject();
+	public void read(Input input) {
+
 	}
 
 	public Iterable<BucketEntry> entries() {
-		return () -> IntStream
-							 .range(0, getBucketSize())
-							 .filter(this::containsLocalEntity)
-							 .boxed()
-							 .flatMap(le -> IntStream
-													.range(getFirstEventOfLocal(le), getLastEventOfLocal(le))
-													.mapToObj(e -> new BucketEntry(le, e))
+		return () -> start.keySet().stream()
+							 .flatMap(entity -> IntStream
+													.range(getFirstEventOfLocal(entity), getLastEventOfLocal(entity))
+													.mapToObj(e -> new BucketEntry(entity, e))
 							 )
 							 .iterator();
 	}
 
 
-	public boolean has(int event, Column column) {
-		return has(event, column.getPosition());
+	public final boolean has(int event, Column column) {
+		return stores[column.getPosition()].has(event);
 	}
 
-	public abstract boolean has(int event, int columnPosition);
-
-	public abstract int getString(int event, Column column);
-
-	public abstract long getInteger(int event, Column column);
-
-	public abstract boolean getBoolean(int event, Column column);
-
-	public abstract double getReal(int event, Column column);
-
-	public abstract BigDecimal getDecimal(int event, Column column);
-
-	public abstract long getMoney(int event, Column column);
-
-	public abstract int getDate(int event, Column column);
-
-	public abstract CDateRange getDateRange(int event, Column column);
-
-	public Object getRaw(int event, Column column) {
-		return getRaw(event, column.getPosition());
+	public int getString(int event, Column column) {
+		return stores[column.getPosition()].getString(event);
 	}
 
-	public abstract Object getRaw(int event, int columnPosition);
+	public long getInteger(int event, Column column) {
+		return stores[column.getPosition()].getInteger(event);
+	}
+
+	public boolean getBoolean(int event, Column column){
+		return stores[column.getPosition()].getBoolean(event);
+	}
+
+	public double getReal(int event, Column column){
+		return stores[column.getPosition()].getReal(event);
+	}
+
+	public BigDecimal getDecimal(int event, Column column){
+		return stores[column.getPosition()].getDecimal(event);
+	}
+
+	public long getMoney(int event, Column column){
+		return stores[column.getPosition()].getMoney(event);
+	}
+
+	public int getDate(int event, Column column){
+		return stores[column.getPosition()].getDate(event);
+	}
+
+	public CDateRange getDateRange(int event, Column column){
+		return stores[column.getPosition()].getDateRange(event);
+	}
+
+	public CDateRange getAsDateRange(int event, Column currentColumn){
+		return getDateRange(event, currentColumn);
+	}
+
 
 	public Object getAsObject(int event, Column column) {
-		return getAsObject(event, column.getPosition());
+		return stores[column.getPosition()].getAsObject(event);
 	}
 
-	public abstract Object getAsObject(int event, int columnPosition);
+	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges){
+		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
+	}
 
-	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
-
-	public abstract boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges);
-
-	public abstract CDateRange getAsDateRange(int event, Column currentColumn);
 
 	@Override
 	public void serializeWithType(JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
 		this.serialize(gen, serializers);
 	}
 
-	public abstract Map<String, Object> calculateMap(int event, Import imp);
+	public Map<String, Object> calculateMap(int event, Import imp) {
+		Map<String, Object> out = new HashMap<>(stores.length);
 
-	public abstract void writeContent(Output output) throws IOException;
+		for (ColumnStore store : stores) {
+			if (!store.has(event)) {
+				continue;
+			}
 
-	public abstract void read(Input input) throws IOException;
+			out.put(store.getColumn().getName(), store.getAsObject(event));
+		}
+
+		return out;
+	}
+
+	public final void writeContent(Output output) throws IOException {
+		Jackson.BINARY_MAPPER.writeValue(output, this);
+	}
 }

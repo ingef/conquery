@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.IntStream;
 
@@ -7,10 +8,12 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,7 +32,12 @@ public class StringTypeNumber extends AStringType<Number> {
 		this.range = range;
 		this.numberType = numberType;
 	}
-	
+
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		return new IntegerStore(column, Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), Integer.MAX_VALUE);
+	}
+
 	@Override
 	public boolean canStoreNull() {
 		return numberType.canStoreNull();

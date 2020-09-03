@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +18,7 @@ public class DateTypeVarInt extends CTypeVarInt<Integer> {
 	public DateTypeVarInt(VarIntType numberType) {
 		super(MajorTypeId.DATE, numberType);
 	}
-	
+
 	@Override
 	public LocalDate createScriptValue(Number value) {
 		return CDate.toLocalDate(numberType.toInt(value));

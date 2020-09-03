@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ByteStore;
 import com.bakdata.conquery.models.types.CType;
-
 import lombok.Getter;
 
 @CPSType(base=CType.class, id="VAR_INT_BYTE")
@@ -21,6 +23,17 @@ public class VarIntTypeByte extends VarIntType {
 	@Override
 	public int toInt(Number value) {
 		return value.byteValue();
+	}
+
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		byte[] values = new byte[objects.length];
+
+		for (int index = 0; index < objects.length; index++) {
+			values[index] = ((Number) objects[index]).byteValue();
+		}
+
+		return new ByteStore(column, values, Byte.MAX_VALUE);
 	}
 
 	@Override

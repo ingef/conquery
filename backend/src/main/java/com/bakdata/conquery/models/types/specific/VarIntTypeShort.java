@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ShortStore;
 import com.bakdata.conquery.models.types.CType;
-
 import lombok.Getter;
 
 @CPSType(base=CType.class, id="VAR_INT_INT16")
@@ -16,6 +18,18 @@ public class VarIntTypeShort extends VarIntType {
 		super(short.class);
 		this.minValue = minValue;
 		this.maxValue = maxValue;
+	}
+
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+		// TODO: 03.09.2020 short store
+		short[] values = new short[objects.length];
+
+		for (int index = 0; index < objects.length; index++) {
+			values[index] = ((Number) objects[index]).shortValue();
+		}
+
+		return new ShortStore(column, values, Short.MAX_VALUE);
 	}
 
 	@Override

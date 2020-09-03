@@ -66,7 +66,7 @@ public class ConceptNode extends QPChainNode {
 
 		EntityRow row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 
-		int localEntity = bucket.toLocal(entity.getId());
+		int localEntity = entity.getId();
 		long bits = row.getCBlock().getIncludedConcepts()[localEntity];
 
 		if((bits & requiredBits) != 0L || requiredBits == 0L) {
