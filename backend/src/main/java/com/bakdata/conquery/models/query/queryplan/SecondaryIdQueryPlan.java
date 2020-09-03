@@ -76,7 +76,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 
-
 		init(ctx, entity);
 
 		if (!query.isOfInterest(entity)) {
@@ -84,7 +83,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		}
 
 		query.checkRequiredTables(ctx.getStorage());
-		query.init(entity, ctx);
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
