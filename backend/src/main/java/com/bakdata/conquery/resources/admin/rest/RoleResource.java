@@ -39,7 +39,7 @@ public class RoleResource extends HAdmin {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Role> getRoles() {
+	public Collection<Role> getRoles() {
 		return processor.getAllRoles();
 	}
 
