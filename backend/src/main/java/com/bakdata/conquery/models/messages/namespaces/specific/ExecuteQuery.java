@@ -48,7 +48,7 @@ public class ExecuteQuery extends WorkerMessage {
 			ConqueryError err = asConqueryError(e);
 			log.warn("Failed to create query plans for {}.", execution.getId(), err );
 			ShardResult result = execution.getInitializedShardResult(null);
-			sendFailureToMaster(result, execution, context, err);
+			sendFailureToMaster(result, context, err);
 			return;
 		}
 		
@@ -57,17 +57,18 @@ public class ExecuteQuery extends WorkerMessage {
 			ShardResult result = execution.getInitializedShardResult(entry);
 			try {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
+				// Set result back
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 			} catch(Exception e) {
 				ConqueryError err = asConqueryError(e);
 				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), err );
-				sendFailureToMaster(result, execution, context,  asConqueryError(err));
+				sendFailureToMaster(result, context,  asConqueryError(err));
 				return;
 			}
 		}
 	}
 
-	private static void sendFailureToMaster(ShardResult result, ManagedExecution<?> execution, Worker context, ConqueryError error) {
+	private static void sendFailureToMaster(ShardResult result,Worker context, ConqueryError error) {
 		result.setError(Optional.of(error));
 		result.finish();
 		context.send(new CollectQueryResult(result));
