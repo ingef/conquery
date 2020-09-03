@@ -20,10 +20,6 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializable;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import lombok.Getter;
@@ -40,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString
-public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer>, JsonSerializable {
+public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer> {
 
 	@Min(0)
 	private int bucket;
@@ -103,10 +99,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 		return end.get(localEntity);
 	}
 
-	@Override
-	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		gen.writeObject(this);
-	}
 
 	public void read(Input input) {
 
@@ -172,9 +164,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	}
 
 
-	@Override
-	public void serializeWithType(JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
-		this.serialize(gen, serializers);
+	public final void writeContent(Output output) throws IOException {
+		Jackson.BINARY_MAPPER.writeValue(output, this);
 	}
 
 	public Map<String, Object> calculateMap(int event, Import imp) {
@@ -191,7 +182,5 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 		return out;
 	}
 
-	public final void writeContent(Output output) throws IOException {
-		Jackson.BINARY_MAPPER.writeValue(output, this);
-	}
+
 }
