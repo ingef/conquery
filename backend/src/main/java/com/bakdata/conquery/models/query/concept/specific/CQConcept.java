@@ -4,9 +4,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -103,9 +105,15 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 
 			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, resolvedSelects);
 
-
+			List<ExistsAggregator> existsAggregators = connectorAggregators.stream()
+																		   .filter(ExistsAggregator.class::isInstance)
+																		   .map(ExistsAggregator.class::cast)
+																		   .collect(Collectors.toList());
 
 			aggregators.addAll(connectorAggregators);
+
+			aggregators.removeIf(ExistsAggregator.class::isInstance);
+
 
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(plan.getSpecialDateUnion());
@@ -113,11 +121,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 
 			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
 
-			for (Aggregator<?> aggregator : connectorAggregators) {
-				if (aggregator instanceof ExistsAggregator) {
-					((ExistsAggregator) aggregator).setReference(filtersNode);
-				}
-			}
+			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
 
 			tableNodes.add(
 				new ConceptNode(
@@ -138,9 +142,11 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 
 		final QPNode outNode = OrNode.of(tableNodes);
 
-		for (Aggregator<?> aggregator : conceptAggregators) {
+		for (Iterator<Aggregator<?>> iterator = conceptAggregators.iterator(); iterator.hasNext(); ) {
+			Aggregator<?> aggregator = iterator.next();
 			if (aggregator instanceof ExistsAggregator) {
 				((ExistsAggregator) aggregator).setReference(outNode);
+				iterator.remove();
 			}
 		}
 

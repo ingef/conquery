@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -20,7 +19,11 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 
 	private final Set<TableId> requiredTables;
 
-	@Setter
+
+	public void setReference(QPNode ref) {
+		this.reference = ref;
+	}
+
 	private QPNode reference;
 
 	@Override
@@ -38,7 +41,11 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 
 	@Override
 	public ExistsAggregator doClone(CloneContext ctx) {
-		return new ExistsAggregator(requiredTables);
+		final ExistsAggregator existsAggregator = new ExistsAggregator(requiredTables);
+
+		existsAggregator.setReference(ctx.clone(reference));
+
+		return existsAggregator;
 	}
 	
 	@Override
