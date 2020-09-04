@@ -51,7 +51,7 @@ public abstract class ResultInfo {
 			}
 		}
 		String uniqueName = (postfix > 0) ? name + "_" + postfix : name;
-		if (ocurrenceCounter.containsKey(uniqueName)) {
+		if (ocurrenceCounter.containsKey(uniqueName) && ocurrenceCounter.get(uniqueName) > 0) {
 			log.warn(
 				"Even with postfixing the result will contain column name duplicates. This might be caused by another column that is having a number postfix by default.");
 		}
