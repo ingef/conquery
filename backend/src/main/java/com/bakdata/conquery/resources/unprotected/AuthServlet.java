@@ -4,9 +4,6 @@ import java.util.Collections;
 
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.RESTServer;
-import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
-import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.MetricRegistry;
@@ -16,7 +13,6 @@ import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.views.ViewMessageBodyWriter;
-import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.experimental.UtilityClass;
 import org.apache.shiro.realm.Realm;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -88,19 +84,13 @@ public class AuthServlet {
 
 		RESTServer.configure(config, jerseyConfig);
 
-		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
 
 		servletEnvironment.addServlet("auth", servletContainerHolder.getContainer()).addMapping("/auth/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(objectMapper));
 		// freemarker support
-		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer();
-		freemarker.configure(Freemarker.asMap());
-		jerseyConfig.register(new ViewMessageBodyWriter(metrics, Collections.singleton(freemarker)));
-
-		jerseyConfig.register(CORSPreflightRequestFilter.class);
-		jerseyConfig.register(CORSResponseFilter.class);
+		jerseyConfig.register(new ViewMessageBodyWriter(metrics, Collections.singleton(Freemarker.HTML_RENDERER)));
 		return jerseyConfig;
 	}
 }

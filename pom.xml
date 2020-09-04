@@ -9,7 +9,12 @@
 
 	<packaging>pom</packaging>
 	<name>Conquery Parent</name>
-
+	
+	<parent>
+  		<groupId>io.dropwizard</groupId>
+  		<artifactId>dropwizard-dependencies</artifactId>
+  		<version>2.0.12</version>
+	</parent>
 
 	<properties>
 		<java.required>11</java.required>
@@ -28,23 +33,10 @@
 		<module>autodoc</module>
 	</modules>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>io.dropwizard</groupId>
-				<artifactId>dropwizard-bom</artifactId>
-				<version>1.3.16</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<version>5.6.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -54,7 +46,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
 				<configuration>
 					<source>${java.required}</source>
 					<target>${java.required}</target>
@@ -64,7 +55,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
 					<argLine>-Xmx4G</argLine>
@@ -76,6 +66,23 @@
 					</properties>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <!-- Override io.dropwizard.dropwizard-project's defaults -->
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                        	<!-- Allow transitive dependencies for now -->
+                            <failOnWarning>false</failOnWarning>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 

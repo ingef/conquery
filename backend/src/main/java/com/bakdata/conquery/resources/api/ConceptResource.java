@@ -42,8 +42,8 @@ public class ConceptResource extends HConcepts {
 		FEList result = processor.getNode(concept);
 
 		// check if browser still has this version cached
-		if (request.getHeader(HttpHeaders.IF_NONE_MATCH) != null
-			&& result.getCacheId().equals(EntityTag.valueOf(request.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
+		if (request.getHeaderString(HttpHeaders.IF_NONE_MATCH) != null
+			&& result.getCacheId().equals(EntityTag.valueOf(request.getHeaderString(HttpHeaders.IF_NONE_MATCH)))) {
 			return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 		}
 		return Response.ok(result).tag(result.getCacheId()).build();

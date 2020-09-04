@@ -14,13 +14,15 @@ import java.util.Map.Entry;
 
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
 import com.google.common.collect.ImmutableMap;
-
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
+import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Freemarker {
+	
+	public static final FreemarkerViewRenderer HTML_RENDERER = rendererForHtml();
 
 	public static Configuration createForJavaTemplates() {
 		Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
@@ -36,7 +38,13 @@ public class Freemarker {
 		return cfg;
 	}
 	
-	public static Map<String, String> asMap() {
+	private static FreemarkerViewRenderer rendererForHtml() {
+		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer(Configuration.VERSION_2_3_27);
+		freemarker.configure(Freemarker.asMap());
+		return freemarker;
+	}
+	
+	private static Map<String, String> asMap() {
 		return ImmutableMap
 			.<String, String>builder()
 			.put(DEFAULT_ENCODING_KEY_CAMEL_CASE, StandardCharsets.UTF_8.name())

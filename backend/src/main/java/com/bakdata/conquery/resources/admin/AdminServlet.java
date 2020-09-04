@@ -1,17 +1,12 @@
 package com.bakdata.conquery.resources.admin;
 
 import java.util.Collections;
-import java.util.ServiceLoader;
 
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
-import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
-import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -33,10 +28,7 @@ import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
-import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.views.ViewMessageBodyWriter;
-import io.dropwizard.views.ViewRenderer;
-import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.realm.Realm;
@@ -63,22 +55,17 @@ public class AdminServlet {
 	private AdminProcessor adminProcessor;
 	private DropwizardResourceConfig jerseyConfig;
 
-	public void register(MasterCommand masterCommand, AuthorizationController controller) {
+	public void register(MasterCommand masterCommand) {
 		jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 
 		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);
 
-		JettyConfigurationUtil.configure(jerseyConfig);
-		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
-
-		masterCommand.getEnvironment().admin().addServlet("admin", servletContainerHolder.getContainer()).addMapping("/admin/*");
+		masterCommand.getEnvironment().admin().addServlet("admin", new ServletContainer(jerseyConfig)).addMapping("/admin/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(masterCommand.getEnvironment().getObjectMapper()));
 		// freemarker support
-		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer();
-		freemarker.configure(Freemarker.asMap());
-		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(freemarker)));
+		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
 
 		adminProcessor = new AdminProcessor(
 			masterCommand.getConfig(),
@@ -117,8 +104,8 @@ public class AdminServlet {
 			.register(AuthOverviewUIResource.class)
 			.register(AuthOverviewResource.class);
 
-		// Scan calsspath for Admin side plugins and register them.
-		for ( Realm realm : controller.getRealms()) {
+		// Scan classpath for Admin side plugins and register them.
+		for ( Realm realm : masterCommand.getAuthController().getRealms()) {
 			if(realm instanceof AuthAdminResourceProvider) {
 				((AuthAdminResourceProvider)realm).registerAuthenticationAdminResources(jerseyConfig);
 			}
@@ -127,11 +114,8 @@ public class AdminServlet {
 		// register features
 		jerseyConfig
 			.register(new MultiPartFeature())
-			.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)))
-			.register(new CORSPreflightRequestFilter())
 			.register(masterCommand.getAuthController().getAuthenticationFilter())
 			.register(IdParamConverter.Provider.INSTANCE)
-			.register(CORSResponseFilter.class)
 			.register(AuthCookieFilter.class);
 	}
 }
