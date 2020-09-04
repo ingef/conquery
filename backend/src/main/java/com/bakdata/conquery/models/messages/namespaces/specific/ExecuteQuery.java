@@ -57,7 +57,7 @@ public class ExecuteQuery extends WorkerMessage {
 			ShardResult result = execution.getInitializedShardResult(entry);
 			try {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
-				// Set result back
+				// Send result back
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 			} catch(Exception e) {
 				ConqueryError err = asConqueryError(e);

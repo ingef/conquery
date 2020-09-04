@@ -45,6 +45,7 @@ public abstract class ResultInfo {
 		if (ocurrenceCounter == null) {
 			return name;
 		}
+		// lookup if prefix is needed and computed it if necessary
 		synchronized (ocurrenceCounter) {
 			if (postfix == UNSET_PREFIX) {
 				postfix = ocurrenceCounter.compute(name, (k, v) -> (v == null) ? 0 : ++v);
@@ -55,7 +56,7 @@ public abstract class ResultInfo {
 			log.warn(
 				"Even with postfixing the result will contain column name duplicates. This might be caused by another column that is having a number postfix by default.");
 		}
-		return (postfix > 0) ? name + "_" + postfix : name;
+		return uniqueName;
 	}
 
 	protected abstract String getName(PrintSettings settings);
