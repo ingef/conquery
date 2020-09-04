@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -31,14 +30,6 @@ public class FiltersNode extends QPNode {
 		this.filters = filters;
 		this.eventFilters = eventFilters;
 		this.aggregators = aggregators;
-
-		// Exists Aggregators return true when this FiltersNode is true, so they should not have their own logic for it.
-		// This links them up as a back-reference.
-		for (Aggregator<?> aggregator : aggregators) {
-			if (aggregator instanceof ExistsAggregator) {
-				((ExistsAggregator) aggregator).setFilters(this);
-			}
-		}
 	}
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
