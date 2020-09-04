@@ -53,6 +53,6 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return aggregator.getResultType();
 	}
 }
