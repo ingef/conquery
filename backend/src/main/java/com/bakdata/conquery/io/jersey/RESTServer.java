@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.jersey;
 
 import com.bakdata.conquery.io.jackson.PathParamInjector;
+import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
@@ -36,6 +37,7 @@ public class RESTServer {
 		//allow cross origin
 		if(config.getApi().isAllowCORSRequests()) {
 			jersey.register(CORSResponseFilter.class);
+			jersey.register(new CORSPreflightRequestFilter());
 		}
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);

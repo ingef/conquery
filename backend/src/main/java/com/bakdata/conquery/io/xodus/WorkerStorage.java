@@ -19,7 +19,7 @@ import jetbrains.exodus.env.Environments;
 public interface WorkerStorage extends NamespacedStorage {
 	
 	WorkerInformation getWorker();
-	void setWorker(WorkerInformation worker) throws JSONException;
+	void setWorker(WorkerInformation worker);
 	void updateWorker(WorkerInformation worker) throws JSONException;
 	
 	void addBucket(Bucket bucket) throws JSONException;

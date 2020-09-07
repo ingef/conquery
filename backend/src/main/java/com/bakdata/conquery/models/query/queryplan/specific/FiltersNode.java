@@ -7,6 +7,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
@@ -118,10 +119,39 @@ public class FiltersNode extends QPNode {
 		filters.forEach(f -> f.collectRequiredTables(requiredTables));
 		aggregators.forEach(a -> a.collectRequiredTables(requiredTables));
 	}
-	
+
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return true;
+		for (FilterNode<?> filter : filters) {
+			if(filter.isOfInterest(bucket)){
+				return true;
+			}
+		}
+
+		for (Aggregator<?> aggregator : aggregators) {
+			if (aggregator.isOfInterest(bucket)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		for (FilterNode<?> filter : filters) {
+			if(filter.isOfInterest(entity)){
+				return true;
+			}
+		}
+
+		for (Aggregator<?> aggregator : aggregators) {
+			if (aggregator.isOfInterest(entity)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 
