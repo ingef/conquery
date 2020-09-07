@@ -9,41 +9,38 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 
 @ToString(of = {"filters", "aggregators"})
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FiltersNode extends QPNode {
 
 	private boolean hit = false;
 
-	@Getter
-	private final List<? extends FilterNode<?>> filters;
-	private final List<EventFilterNode<?>> eventFilters;
-	private final List<Aggregator<?>> aggregators;
+	@Getter @Setter(AccessLevel.PRIVATE)
+	private List<? extends FilterNode<?>> filters;
 
-	private FiltersNode(List<? extends FilterNode<?>> filters, List<EventFilterNode<?>> eventFilters, List<Aggregator<?>> aggregators) {
-		this.filters = filters;
-		this.eventFilters = eventFilters;
-		this.aggregators = aggregators;
+	@Setter(AccessLevel.PRIVATE)
+	private List<Aggregator<?>> aggregators;
 
-		// Exists Aggregators return true when this FiltersNode is true, so they should not have their own logic for it.
-		// This links them up as a back-reference.
-		for (Aggregator<?> aggregator : aggregators) {
-			if (aggregator instanceof ExistsAggregator) {
-				((ExistsAggregator) aggregator).setFilters(this);
-			}
-		}
-	}
+	@Setter(AccessLevel.PRIVATE)
+	private List<EventFilterNode<?>> eventFilters;
+
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		if(filters.isEmpty() && aggregators.isEmpty()) {
+			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
+		}
+		
 		final ArrayList<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
-
 
 		// Select only Event Filtering nodes as they are used differently.
 		for (FilterNode<?> filter : filters) {
@@ -54,7 +51,12 @@ public class FiltersNode extends QPNode {
 			eventFilters.add((EventFilterNode<?>) filter);
 		}
 
-		return  new FiltersNode(filters, eventFilters, aggregators);
+		final FiltersNode filtersNode = new FiltersNode();
+		filtersNode.setAggregators(aggregators);
+		filtersNode.setFilters(filters);
+		filtersNode.setEventFilters(eventFilters);
+
+		return filtersNode;
 	}
 
 
@@ -99,16 +101,23 @@ public class FiltersNode extends QPNode {
 	
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
+		final FiltersNode clone = new FiltersNode();
+
 		List<FilterNode<?>> filters = new ArrayList<>(this.filters);
 		filters.replaceAll(ctx::clone);
 
+		clone.setFilters(filters);
+
 		List<EventFilterNode<?>> eventFilters = new ArrayList<>(this.eventFilters);
 		eventFilters.replaceAll(ctx::clone);
+		clone.setEventFilters(eventFilters);
 
 		List<Aggregator<?>> aggregators = new ArrayList<>(this.aggregators);
 		aggregators.replaceAll(ctx::clone);
 
-		return new FiltersNode(filters, eventFilters, aggregators);
+		clone.setAggregators(aggregators);
+
+		return clone;
 	}
 
 	@Override
