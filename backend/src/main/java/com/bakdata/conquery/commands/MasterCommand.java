@@ -40,6 +40,7 @@ import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
+import com.bakdata.conquery.tasks.ClearFilterSourceSearch;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Throwables;
@@ -177,6 +178,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getQuantity(),
 						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
+		environment.admin().addTask(new ClearFilterSourceSearch());
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
