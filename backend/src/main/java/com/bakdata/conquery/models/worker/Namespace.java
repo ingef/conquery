@@ -149,4 +149,9 @@ public class Namespace implements Closeable {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + '[' + storage.getEnvironment().getLocation() + ']';
+	}
 }
