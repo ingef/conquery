@@ -20,7 +20,7 @@ import lombok.ToString;
 
 
 @ToString(of = {"filters", "aggregators"})
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FiltersNode extends QPNode {
 
 	private boolean hit = false;
@@ -36,8 +36,11 @@ public class FiltersNode extends QPNode {
 
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		if(filters.isEmpty() && aggregators.isEmpty()) {
+			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
+		}
+		
 		final ArrayList<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
-
 
 		// Select only Event Filtering nodes as they are used differently.
 		for (FilterNode<?> filter : filters) {
