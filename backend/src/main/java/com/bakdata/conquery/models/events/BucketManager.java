@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  *
- * @implNote This class is only used per {@link Worker}. And NOT in the Master.
+ * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
 public class BucketManager {

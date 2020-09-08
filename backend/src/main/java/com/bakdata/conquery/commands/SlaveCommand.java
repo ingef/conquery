@@ -62,7 +62,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 
 	public SlaveCommand() {
-		super("slave", "Connects this instance as a slave to a running master.");
+		super("slave", "Connects this instance as a slave to a running ManagerNode.");
 	}
 
 
@@ -155,9 +155,9 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		NetworkSession networkSession = new NetworkSession(session);
 
 		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, config, validator);
-		log.info("Connected to master @ {}", session.getRemoteAddress());
+		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
-		// Authenticate with Master
+		// Authenticate with ManagerNode
 		context.send(new AddSlave());
 
 		for (Worker w : workers.getWorkers().values()) {
@@ -171,7 +171,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		setLocation(session);
-		log.info("Disconnected from master");
+		log.info("Disconnected from ManagerNode");
 	}
 
 	@Override
@@ -211,7 +211,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 
 		InetSocketAddress address = new InetSocketAddress(
-				config.getCluster().getMasterURL().getHostAddress(),
+				config.getCluster().getManagerURL().getHostAddress(),
 				config.getCluster().getPort()
 		);
 
@@ -249,7 +249,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		if (context != null) {
 			context.awaitClose();
 		}
-		log.info("Connection was closed by master");
+		log.info("Connection was closed by ManagerNode");
 		connector.dispose();
 	}
 

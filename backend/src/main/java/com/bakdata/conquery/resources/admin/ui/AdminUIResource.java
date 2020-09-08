@@ -148,12 +148,12 @@ public class AdminUIResource extends HAdmin {
 	public View getJobs() {
 		Map<String, JobManagerStatus> status =
 				ImmutableMap.<String, JobManagerStatus>builder()
-						.put("Master", processor.getJobManager().reportStatus())
-						// Namespace JobManagers on Master
+						.put("ManagerNode", processor.getJobManager().reportStatus())
+						// Namespace JobManagers on ManagerNode
 						.putAll(
 								processor.getNamespaces().getNamespaces().stream()
 										 .collect(Collectors.toMap(
-												 ns -> String.format("Master::%s", ns.getDataset().getId()),
+												 ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
 												 ns -> ns.getJobManager().reportStatus()
 										 )))
 						// Remote Worker JobManagers

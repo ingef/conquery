@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Message that allows salves to safely disconnect from Master node.
+ * Message that allows salves to safely disconnect from ManagerNode node.
  *
  * @deprecated Doesn't do much at this moment (and is not stable at this moment), as the data is distributed ahead of time, but it can later be used.
  */

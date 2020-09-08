@@ -132,7 +132,7 @@ public class AdminProcessor {
 	public void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
 		concept.setDataset(dataset.getId());
 		ValidatorHelper.failOnError(log, validator.validate(concept));
-		// Register the Concept in the Master and Workers
+		// Register the Concept in the ManagerNode and Workers
 		if (namespaces.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);
 		}

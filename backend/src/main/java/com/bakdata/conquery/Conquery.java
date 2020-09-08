@@ -7,7 +7,7 @@ import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
-import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
-	private MasterCommand master;
+	private ManagerNode manager;
 
 	public Conquery() {
 		this("Conquery");
@@ -100,8 +100,8 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		master = new MasterCommand();
-		master.run(configuration, environment);
+		manager = new ManagerNode();
+		manager.run(configuration, environment);
 	}
 
 	public static void main(String... args) throws Exception {

@@ -56,7 +56,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 @Slf4j
 @Getter
-public class MasterCommand extends IoHandlerAdapter implements Managed {
+public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private IoAcceptor acceptor;
 	private MasterMetaStorage storage;
@@ -78,7 +78,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			.add(NamespaceCollection.class, namespaces);
 
 
-		this.jobManager = new JobManager("master");
+		this.jobManager = new JobManager("ManagerNode");
 		this.environment = environment;
 		
 		// Initialization of internationalization
@@ -187,28 +187,28 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
+		ConqueryMDC.setLocation("ManagerNode["+session.getLocalAddress().toString()+"]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.error("caught exception", cause);
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		if (message instanceof MasterMessage) {
 			MasterMessage mrm = (MasterMessage) message;
-			log.trace("Master received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master(
 				jobManager,
 				new NetworkSession(session),
@@ -237,7 +237,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
-		log.info("Started master @ {}", acceptor.getLocalAddress());
+		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
 	}
 
 	@Override

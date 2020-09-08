@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -47,15 +47,15 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		PersistentIdMap persistentIdMap = IdMapSerialisationTest
 												  .createTestPersistentMap();
 
-		MasterCommand master = testConquery.getStandaloneCommand().getMaster();
+		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
 		AdminProcessor adminProcessor = new AdminProcessor(
 
-				master.getConfig(),
-				master.getStorage(),
-				master.getNamespaces(),
-				master.getJobManager(),
-				master.getMaintenanceService(),
-				master.getValidator()
+				manager.getConfig(),
+				manager.getStorage(),
+				manager.getNamespaces(),
+				manager.getJobManager(),
+				manager.getMaintenanceService(),
+				manager.getValidator()
 		);
 
 

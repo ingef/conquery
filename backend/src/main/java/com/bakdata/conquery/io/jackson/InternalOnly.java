@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.annotation.JsonView;
 
-/** Jackson view for fields only used in the master slave connection **/
+/** Jackson view for fields only used in the manager slave connection **/
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotationsInside
 @JsonView(InternalOnly.class)

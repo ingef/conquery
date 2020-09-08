@@ -2,7 +2,7 @@ package com.bakdata.conquery.apiv1;
 
 import java.time.Duration;
 
-import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
@@ -30,24 +30,24 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 public class ApiV1 implements ResourcesProvider {
 
 	@Override
-	public void registerResources(MasterCommand master) {
-		Namespaces namespaces = master.getNamespaces();
-		JerseyEnvironment environment = master.getEnvironment().jersey();
+	public void registerResources(ManagerNode manager) {
+		Namespaces namespaces = manager.getNamespaces();
+		JerseyEnvironment environment = manager.getEnvironment().jersey();
 
 		//inject required services
 		environment.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
-				bind(new MeProcessor(master.getStorage())).to(MeProcessor.class);
-				bind(new QueryProcessor(namespaces, master.getStorage())).to(QueryProcessor.class);
-				bind(new FormConfigProcessor(master.getValidator(),master.getStorage())).to(FormConfigProcessor.class);
+				bind(new ConceptsProcessor(manager.getNamespaces())).to(ConceptsProcessor.class);
+				bind(new MeProcessor(manager.getStorage())).to(MeProcessor.class);
+				bind(new QueryProcessor(namespaces, manager.getStorage())).to(QueryProcessor.class);
+				bind(new FormConfigProcessor(manager.getValidator(),manager.getStorage())).to(FormConfigProcessor.class);
 			}
 		});
 
 		environment.register(new CORSPreflightRequestFilter());
 
-		environment.register(new ActiveUsersFilter(master.getStorage(), Duration.ofMinutes(master.getConfig()
+		environment.register(new ActiveUsersFilter(manager.getStorage(), Duration.ofMinutes(manager.getConfig()
 																										.getMetricsConfig()
 																										.getUserActiveDuration()
 																										.toMinutes())));
@@ -57,13 +57,13 @@ public class ApiV1 implements ResourcesProvider {
 		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single
 		 * point for authentication.
 		 */
-		environment.register(master.getAuthController().getAuthenticationFilter());
+		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
+		environment.register(new ResultCSVResource(namespaces, manager.getConfig()));
 		environment.register(new StoredQueriesResource(namespaces));
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(CORSResponseFilter.class);
-		environment.register(new ConfigResource(master.getConfig()));
+		environment.register(new ConfigResource(manager.getConfig()));
 		environment.register(FormConfigResource.class);
 
 		environment.register(APIResource.class);

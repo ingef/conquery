@@ -29,7 +29,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryConfig> {
 
 	private final Conquery conquery;
-	private MasterCommand master;
+	private ManagerNode manager;
 	private final List<SlaveCommand> slaves = new Vector<>();
 
 	public StandaloneCommand(Conquery conquery) {
@@ -56,13 +56,13 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 	}
 
 	protected void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		// start master
-		ConqueryMDC.setLocation("Master");
-		log.debug("Starting Master");
-		ConqueryConfig masterConfig = Cloner.clone(config, Map.of(Validator.class, environment.getValidator()));
-		masterConfig.getStorage().setDirectory(new File(masterConfig.getStorage().getDirectory(), "master"));
-		masterConfig.getStorage().getDirectory().mkdir();
-		conquery.run(masterConfig, environment);
+		// start ManagerNode
+		ConqueryMDC.setLocation("ManagerNode");
+		log.debug("Starting ManagerNode");
+		ConqueryConfig managerConfig = Cloner.clone(config, Map.of(Validator.class, environment.getValidator()));
+		managerConfig.getStorage().setDirectory(new File(managerConfig.getStorage().getDirectory(), "manager"));
+		managerConfig.getStorage().getDirectory().mkdir();
+		conquery.run(managerConfig, environment);
 		
 		//create thread pool to start multiple slaves at the same time
 		ExecutorService starterPool = Executors.newFixedThreadPool(
@@ -92,7 +92,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 				return sc;
 			}));
 		}
-		ConqueryMDC.setLocation("Master");
+		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Waiting for slaves to start");
 		starterPool.shutdown();
 		starterPool.awaitTermination(1, TimeUnit.HOURS);
@@ -115,6 +115,6 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);
-		master = conquery.getMaster();
+		manager = conquery.getManager();
 	}
 }

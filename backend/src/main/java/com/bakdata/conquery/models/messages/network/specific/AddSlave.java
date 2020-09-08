@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Dummy message that is sent to Master, to authenticate the connection as a Slave connection.
+ * Dummy message that is sent to ManagerNode, to authenticate the connection as a Slave connection.
  * This helps to avoids retaining connections from non-slaves.
  */
 @CPSType(id="ADD_SLAVE", base=NetworkMessage.class)

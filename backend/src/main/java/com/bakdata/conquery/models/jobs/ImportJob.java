@@ -268,7 +268,7 @@ public class ImportJob extends Job {
 				mappingRequired |= createSharedDictionary(col, tableCol);
 			}
 
-			//store external infos into master and slaves
+			//store external infos into ManagerNode and slaves
 			col.getType().storeExternalInfos(
 					namespace.getStorage(),
 					(Consumer<Dictionary>) (dict -> {

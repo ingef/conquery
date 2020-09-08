@@ -300,7 +300,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public abstract void addResult(@NonNull MasterMetaStorage storage, R result);
 
 	/**
-	 * Initializes the result that is send from a worker to the Master.
+	 * Initializes the result that is send from a worker to the ManagerNode.
 	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
 	 * matched to its subqueries.
 	 */

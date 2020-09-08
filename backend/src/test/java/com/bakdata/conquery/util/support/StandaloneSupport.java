@@ -60,15 +60,15 @@ public class StandaloneSupport implements Closeable {
 	}
 
 	public Validator getValidator() {
-		return testConquery.getStandaloneCommand().getMaster().getValidator();
+		return testConquery.getStandaloneCommand().getManager().getValidator();
 	}
 
 	public MasterMetaStorage getMasterMetaStorage() {
-		return testConquery.getStandaloneCommand().getMaster().getStorage();
+		return testConquery.getStandaloneCommand().getManager().getStorage();
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset.getId()).getStorage();
+		return testConquery.getStandaloneCommand().getManager().getNamespaces().get(dataset.getId()).getStorage();
 	}
 
 	public List<SlaveCommand> getSlaves() {
