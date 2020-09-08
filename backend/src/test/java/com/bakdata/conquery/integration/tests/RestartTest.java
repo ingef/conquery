@@ -7,7 +7,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -131,7 +131,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		assertThat(entityBucketSizeBeforeRestart).isEqualTo(ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
 
-		MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		MetaStorage storage = conquery.getMetaStorage();
 
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());

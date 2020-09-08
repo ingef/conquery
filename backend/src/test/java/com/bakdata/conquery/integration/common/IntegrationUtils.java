@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.common;
 import java.io.IOException;
 
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -22,7 +22,7 @@ public class IntegrationUtils {
 	/**
 	 * Load the constellation of roles, users and permissions into the provided storage.
 	 */
-	public static void importPermissionConstellation(MasterMetaStorage storage, Role[] roles,  RequiredUser[] rUsers) {
+	public static void importPermissionConstellation(MetaStorage storage, Role[] roles,  RequiredUser[] rUsers) {
 
 		for (Role role : roles) {
 			storage.addRole(role);
@@ -41,7 +41,7 @@ public class IntegrationUtils {
 	}
 
 
-	public static void clearAuthStorage(MasterMetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
+	public static void clearAuthStorage(MetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
 		// Clear MasterStorage
 		for (Role mandator : roles) {
 			storage.removeRole(mandator.getId());

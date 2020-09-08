@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -43,7 +43,7 @@ public class QueryProcessor {
 
 	@Getter
 	private final Namespaces namespaces;
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the

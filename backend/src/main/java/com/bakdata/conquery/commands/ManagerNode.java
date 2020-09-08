@@ -21,8 +21,8 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
+import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -59,7 +59,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private IoAcceptor acceptor;
-	private MasterMetaStorage storage;
+	private MetaStorage storage;
 	private JobManager jobManager;
 	private Validator validator;
 	private ConqueryConfig config;
@@ -129,7 +129,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		log.info("All stores loaded: {}", namespaces.getNamespaces());
 		
 		
-		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
+		this.storage = new MetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 

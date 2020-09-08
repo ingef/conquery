@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -15,7 +16,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
 
-public interface MasterMetaStorage extends ConqueryStorage {
+/**
+ * Interface for the persistent data of the {@link ManagerNode} 
+ */
+public interface MetaStorage extends ConqueryStorage {
 
 	void addExecution(ManagedExecution<?> query);
 	ManagedExecution getExecution(ManagedExecutionId id);

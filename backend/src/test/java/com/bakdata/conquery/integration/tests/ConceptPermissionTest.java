@@ -13,7 +13,7 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
@@ -33,7 +33,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		final MetaStorage storage = conquery.getMetaStorage();
 		final Dataset dataset = conquery.getDataset();
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset.getId(), testJson);
@@ -82,7 +82,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		}
 	}
 	
-	public static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MasterMetaStorage storage ) {
+	public static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MetaStorage storage ) {
 		ExecutionStatus status = processor.postQuery(dataset, query, null, user);
 		Objects.requireNonNull(storage.getExecution(status.getId()), "Execution was not found in storage, even though it was startet")
 			.awaitDone(2, TimeUnit.MINUTES);

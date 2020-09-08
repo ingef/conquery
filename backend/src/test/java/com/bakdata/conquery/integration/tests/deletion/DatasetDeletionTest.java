@@ -11,7 +11,7 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -39,7 +39,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		StandaloneSupport conquery = testConquery.getSupport(name);
-		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		final MetaStorage storage = conquery.getMetaStorage();
 		final Dataset dataset = conquery.getDataset();
 		Namespace namespace = storage.getNamespaces().get(dataset.getId());
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();

@@ -26,7 +26,7 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -100,7 +100,7 @@ import org.apache.shiro.authz.Permission;
 public class AdminProcessor {
 
 	private final ConqueryConfig config;
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 	private final Namespaces namespaces;
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
@@ -517,7 +517,7 @@ public class AdminProcessor {
 	/**
 	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer.
 	 */
-	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MasterMetaStorage storage) {
+	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MetaStorage storage) {
 		// Print the user in the first column
 		writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 

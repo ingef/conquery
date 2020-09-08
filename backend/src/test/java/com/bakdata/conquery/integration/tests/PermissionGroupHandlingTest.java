@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -27,7 +27,7 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 	 */
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		MetaStorage storage = conquery.getMetaStorage();
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
 		ManagedExecutionId query1 = new ManagedExecutionId(dataset1.getId(), UUID.randomUUID());

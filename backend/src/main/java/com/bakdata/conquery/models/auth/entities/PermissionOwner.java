@@ -7,7 +7,7 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
@@ -63,7 +63,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *            The permission to add.
 	 * @return Returns the added Permission
 	 */
-	public Set<ConqueryPermission> addPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) {
+	public Set<ConqueryPermission> addPermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		HashSet<ConqueryPermission> addedPermissions = new HashSet<>();
 		for (ConqueryPermission permission : permissions) {
 			addedPermissions.add(addPermission(storage, permission));
@@ -71,7 +71,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		return addedPermissions;
 	}
 
-	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) {
+	public ConqueryPermission addPermission(MetaStorage storage, ConqueryPermission permission) {
 		if (permissions.add(permission)) {
 			updateStorage(storage);
 			log.trace("Added permission {} to owner {}", permission, getId());
@@ -88,13 +88,13 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *            The permission to add.
 	 * @return Returns the added Permission
 	 */
-	public void removePermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) {
+	public void removePermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		for (ConqueryPermission permission : permissions) {
 			removePermission(storage, permission);
 		}
 	}
 
-	public void removePermission(MasterMetaStorage storage, Permission delPermission) {
+	public void removePermission(MetaStorage storage, Permission delPermission) {
 		if (permissions.remove(delPermission)) {
 			this.updateStorage(storage);
 			log.trace("Removed permission {} from owner {}", delPermission, getId());
@@ -130,16 +130,16 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		this.permissions.addAll(permissions);
 	}
 
-	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) {
+	public void setPermissions(MetaStorage storage, Set<ConqueryPermission> permissionsNew) {
 		permissions.clear();
 		permissions.addAll(permissionsNew);
 		updateStorage(storage);
 	}
 
 	/**
-	 * Update this instance in the {@link MasterMetaStorage}.
+	 * Update this instance in the {@link MetaStorage}.
 	 */
-	protected abstract void updateStorage(MasterMetaStorage storage);
+	protected abstract void updateStorage(MetaStorage storage);
 	
 	
 	@Override

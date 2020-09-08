@@ -10,7 +10,7 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -63,7 +63,7 @@ public class StandaloneSupport implements Closeable {
 		return testConquery.getStandaloneCommand().getManager().getValidator();
 	}
 
-	public MasterMetaStorage getMasterMetaStorage() {
+	public MetaStorage getMetaStorage() {
 		return testConquery.getStandaloneCommand().getManager().getStorage();
 	}
 

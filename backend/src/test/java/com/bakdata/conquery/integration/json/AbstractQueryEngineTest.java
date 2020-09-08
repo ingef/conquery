@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -44,7 +44,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		Namespaces namespaces = standaloneSupport.getNamespace().getNamespaces();
-		MasterMetaStorage storage = standaloneSupport.getNamespace().getStorage().getMetaStorage();
+		MetaStorage storage = standaloneSupport.getNamespace().getStorage().getMetaStorage();
 		UserId userId = standaloneSupport.getTestUser().getId();
 		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();
 		

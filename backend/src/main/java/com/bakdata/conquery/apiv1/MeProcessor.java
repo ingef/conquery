@@ -3,7 +3,7 @@ package com.bakdata.conquery.apiv1;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -23,7 +23,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class MeProcessor {
 
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 	
 	/**
 	 * Generates a summary of a user. It contains its name, the groups it belongs to and its permissions on a dataset.

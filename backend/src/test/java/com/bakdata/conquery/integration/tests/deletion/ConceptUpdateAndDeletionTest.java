@@ -10,7 +10,7 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -44,7 +44,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		final MetaStorage storage = conquery.getMetaStorage();
 
 		// Read two JSONs with different Trees
 		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
@@ -256,7 +256,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 	 */
 	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState state) {
 		Namespaces namespaces = conquery.getNamespace().getNamespaces();
-		MasterMetaStorage storage = conquery.getNamespace().getStorage().getMetaStorage();
+		MetaStorage storage = conquery.getNamespace().getStorage().getMetaStorage();
 		UserId userId = conquery.getTestUser().getId();
 		DatasetId dataset = conquery.getNamespace().getDataset().getId();
 		

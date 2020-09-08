@@ -22,7 +22,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -67,7 +67,7 @@ import org.mockito.Mockito;
 @TestInstance(Lifecycle.PER_CLASS)
 public class FormConfigTest {
 	
-	private MasterMetaStorage storageMock;
+	private MetaStorage storageMock;
 	private Namespaces namespacesMock;
 	
 	private Map<FormConfigId, FormConfig> configs = new ConcurrentHashMap<>();
@@ -87,7 +87,7 @@ public class FormConfigTest {
 	@BeforeAll
 	public void setupTestClass() throws Exception{
 		SharedMetricRegistries.setDefault(FormConfigTest.class.getName());
-		storageMock = Mockito.mock(MasterMetaStorage.class);
+		storageMock = Mockito.mock(MetaStorage.class);
 
 		dataset.setName("test");
 		dataset1.setName("test1");

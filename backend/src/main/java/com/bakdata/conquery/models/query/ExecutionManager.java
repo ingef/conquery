@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -62,7 +62,7 @@ public class ExecutionManager {
 
 		execution.start();
 
-		final MasterMetaStorage storage = namespaces.getMetaStorage();
+		final MetaStorage storage = namespaces.getMetaStorage();
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
@@ -88,7 +88,7 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
-		final MasterMetaStorage storage = namespace.getNamespaces().getMetaStorage();
+		final MetaStorage storage = namespace.getNamespaces().getMetaStorage();
 
 		final E query = (E) getQuery(result.getQueryId());
 		query.addResult(storage, result);

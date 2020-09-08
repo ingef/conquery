@@ -16,7 +16,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -89,7 +89,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	public void addResult(@NonNull MasterMetaStorage storage, ShardResult result) {
+	public void addResult(@NonNull MetaStorage storage, ShardResult result) {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 
 		if(result.getError().isPresent()) {
@@ -120,7 +120,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
+	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
 		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
 
 		super.finish(storage, executionState);
@@ -136,13 +136,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, URLBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions();

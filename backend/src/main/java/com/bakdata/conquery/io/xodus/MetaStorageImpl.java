@@ -31,13 +31,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementation of the {@link MasterMetaStorage} using {@link XodusStore}s
+ * Implementation of the {@link MetaStorage} using {@link XodusStore}s
  * under the hood. All elements are stored as binary JSON in the Smile format.
  * The {@link JSONException}s that can be thrown by this serdes process are sneakily
  * converted into {@link RuntimeException}s by this implementation.
  */
 @Slf4j
-public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
+public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage, ConqueryStorage {
 
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution<?>> executions;
@@ -64,7 +64,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Getter
 	private final Environment groupsEnvironment;
 
-	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
+	public MetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
 		super(validator, config, new File(config.getDirectory(), "meta"));
 
 		executionsEnvironment = Environments.newInstance(new File(config.getDirectory(), "executions"), config.getXodus().createConfig());
