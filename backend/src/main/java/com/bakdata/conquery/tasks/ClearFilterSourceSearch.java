@@ -1,11 +1,10 @@
 package com.bakdata.conquery.tasks;
 
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
+import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 
 /**
@@ -21,7 +20,7 @@ public class ClearFilterSourceSearch extends Task {
 	}
 
 	@Override
-	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
 		FilterSearch.clear();
 	}
 
