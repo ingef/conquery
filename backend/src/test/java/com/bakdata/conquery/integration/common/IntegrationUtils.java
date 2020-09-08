@@ -42,7 +42,7 @@ public class IntegrationUtils {
 
 
 	public static void clearAuthStorage(MetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
-		// Clear MasterStorage
+		// Clear MetaStorage
 		for (Role mandator : roles) {
 			storage.removeRole(mandator.getId());
 		}

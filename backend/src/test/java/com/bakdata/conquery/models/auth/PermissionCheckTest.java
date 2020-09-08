@@ -61,7 +61,7 @@ public class PermissionCheckTest extends ConqueryTestSpec  {
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 		storage = support.getMetaStorage();
 
-		// Clear MasterStorage
+		// Clear MetaStorage
 		clearAuthStorage(storage, roles, rUsers);
 		
 		importPermissionConstellation(storage, roles, rUsers);
@@ -136,7 +136,7 @@ public class PermissionCheckTest extends ConqueryTestSpec  {
 		assertThat(getGrantedElementwiseCheck()).as("permissions individually checked on users").containsAllEntriesOf(getExpected());
 		assertThat(getGrantedListedCheck()).as("list of permission checked on user").containsAnyElementsOf(getExpectedAllGranted());
 
-		// Clear MasterStorage
+		// Clear MetaStorage
 		clearAuthStorage(storage, roles, rUsers);
 	}
 }

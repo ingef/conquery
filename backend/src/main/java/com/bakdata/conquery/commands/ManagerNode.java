@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.NamespaceCollection;
@@ -206,10 +206,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		if (message instanceof MasterMessage) {
-			MasterMessage mrm = (MasterMessage) message;
+		if (message instanceof MessageToManagerNode) {
+			MessageToManagerNode mrm = (MessageToManagerNode) message;
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master(
+			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeRxTxContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeRxTxContext(
 				jobManager,
 				new NetworkSession(session),
 				namespaces

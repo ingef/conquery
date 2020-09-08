@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,10 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Getter
 @Slf4j
-public class RemoveSlave extends MasterMessage {
+public class RemoveSlave extends MessageToManagerNode {
 
 	@Override
-	public void react(NetworkMessageContext.Master context) throws Exception {
+	public void react(NetworkMessageContext.ManagerNodeRxTxContext context) throws Exception {
 		log.info("Slave {} unregistered.", context.getRemoteAddress());
 		context.getNamespaces().getSlaves().remove(context.getRemoteAddress());
 	}

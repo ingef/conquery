@@ -25,7 +25,7 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	}
 
 	@Getter
-	public static class Slave extends NetworkMessageContext<MasterMessage> {
+	public static class Slave extends NetworkMessageContext<MessageToManagerNode> {
 		
 		private final Workers workers;
 		private final ConqueryConfig config;
@@ -42,11 +42,11 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	}
 	
 	@Getter
-	public static class Master extends NetworkMessageContext<SlaveMessage> {
+	public static class ManagerNodeRxTxContext extends NetworkMessageContext<SlaveMessage> {
 
 		private final Namespaces namespaces;
 		
-		public Master(JobManager jobManager, NetworkSession session, Namespaces namespaces) {
+		public ManagerNodeRxTxContext(JobManager jobManager, NetworkSession session, Namespaces namespaces) {
 			super(jobManager, session);
 			this.namespaces = namespaces;
 		}

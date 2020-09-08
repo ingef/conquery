@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.messages.network.specific;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Master;
+import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeRxTxContext;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.Wait;
@@ -17,12 +17,12 @@ import lombok.Setter;
 
 @CPSType(id="UPDATE_SLAVE_IDENTITY", base=NetworkMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter
-public class RegisterWorker extends MasterMessage {
+public class RegisterWorker extends MessageToManagerNode {
 
 	private WorkerInformation info;
 	
 	@Override
-	public void react(Master context) throws Exception {
+	public void react(ManagerNodeRxTxContext context) throws Exception {
 		SlaveInformation slave = getSlave(context);
 		Wait
 			.builder()
@@ -44,7 +44,7 @@ public class RegisterWorker extends MasterMessage {
 	 * @param context the network context
 	 * @return the found slave or null if none was found
 	 */
-	private SlaveInformation getSlave(Master context) {
+	private SlaveInformation getSlave(ManagerNodeRxTxContext context) {
 		return context.getNamespaces()
 			.getSlaves()
 			.get(context.getRemoteAddress());
