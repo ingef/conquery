@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="UPDATE_SLAVE_IDENTITY", base=NamespacedMessage.class) @Slf4j
+@CPSType(id="UPDATE_SHARD_WORKER_IDENTITY", base=NamespacedMessage.class) @Slf4j
 @RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter
 public class UpdateWorkerBucket extends WorkerMessage {
 

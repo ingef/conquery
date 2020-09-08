@@ -86,7 +86,7 @@ public class ImportJob extends Job {
 
 			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
 
-			// Distribute the new IDs between the slaves
+			// Distribute the new IDs between the ShardNodes
 			log.debug("\tpartition new IDs");
 
 			// Allocate a responsibility for all yet unassigned buckets.
@@ -212,7 +212,7 @@ public class ImportJob extends Job {
 				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
 			}
 			try {
-				responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
+				responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
 			}
 			catch (InterruptedException e) {
 				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
@@ -268,7 +268,7 @@ public class ImportJob extends Job {
 				mappingRequired |= createSharedDictionary(col, tableCol);
 			}
 
-			//store external infos into ManagerNode and slaves
+			//store external infos into ManagerNode and ShardNodes
 			col.getType().storeExternalInfos(
 					namespace.getStorage(),
 					(Consumer<Dictionary>) (dict -> {

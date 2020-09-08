@@ -21,7 +21,7 @@ public class UIContext {
 	public final TemplateModel staticUriElem = STAIC_URI_ELEMENTS;
 
 	public boolean[] getWorkerStatuses() {
-		boolean[] result = new boolean[namespaces.getSlaves().values().size()];
+		boolean[] result = new boolean[namespaces.getShardNodes().values().size()];
 		int id = 0;
 		for(WorkerInformation wi:namespaces.getWorkers().values()) {
 			result[id++] = wi.isConnected();

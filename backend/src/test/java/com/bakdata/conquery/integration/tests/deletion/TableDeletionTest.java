@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -73,7 +73,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(tableId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -127,7 +127,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().getTable().equals(tableId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -177,7 +177,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.describedAs("Table after re-import.")
 					.isPresent();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -197,7 +197,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-import");
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -232,7 +232,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			{
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (SlaveCommand slave : conquery2.getSlaves()) {
+				for (ShardNode slave : conquery2.getShardNodes()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;

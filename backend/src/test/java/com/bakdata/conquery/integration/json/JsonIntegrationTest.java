@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -35,7 +35,7 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 		test.importRequiredData(conquery);
 
 		//ensure the metadata is collected
-		for(SlaveCommand slave : conquery.getSlaves()) {
+		for(ShardNode slave : conquery.getShardNodes()) {
 			slave.getWorkers().getWorkers().values().forEach(worker -> {
 				worker.getJobManager().addSlowJob(new UpdateMatchingStats(worker));
 			});

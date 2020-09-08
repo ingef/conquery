@@ -9,13 +9,12 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Manage
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.Wait;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@CPSType(id="UPDATE_SLAVE_IDENTITY", base=NetworkMessage.class)
+@CPSType(id="REGISTER_SHARD_WORKER_IDENTITY", base=NetworkMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter
 public class RegisterWorker extends MessageToManagerNode {
 
@@ -23,19 +22,19 @@ public class RegisterWorker extends MessageToManagerNode {
 	
 	@Override
 	public void react(ManagerNodeRxTxContext context) throws Exception {
-		SlaveInformation slave = getSlave(context);
+		SlaveInformation slave = getShardNode(context);
 		Wait
 			.builder()
 			.attempts(6)
 			.stepTime(1)
 			.stepUnit(TimeUnit.SECONDS)
 			.build()
-			.until(()->getSlave(context));
+			.until(()->getShardNode(context));
 		
 		if(slave == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
 		}
-		info.setConnectedSlave(slave);
+		info.setConnectedShardNode(slave);
 		context.getNamespaces().register(slave, info);
 	}
 
@@ -44,9 +43,9 @@ public class RegisterWorker extends MessageToManagerNode {
 	 * @param context the network context
 	 * @return the found slave or null if none was found
 	 */
-	private SlaveInformation getSlave(ManagerNodeRxTxContext context) {
+	private SlaveInformation getShardNode(ManagerNodeRxTxContext context) {
 		return context.getNamespaces()
-			.getSlaves()
+			.getShardNodes()
 			.get(context.getRemoteAddress());
 	}
 }

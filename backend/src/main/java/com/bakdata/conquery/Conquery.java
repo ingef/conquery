@@ -9,7 +9,7 @@ import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.PreprocessorCommand;
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -50,7 +50,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
-		bootstrap.addCommand(new SlaveCommand());
+		bootstrap.addCommand(new ShardNode());
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));

@@ -48,7 +48,7 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 @Slf4j
 @Getter
-public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed {
+public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	private NioSocketConnector connector;
 	private JobManager jobManager;
@@ -57,20 +57,24 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	private Slave context;
 	private Workers workers;
 	@Setter
-	private String label = "slave";
 	private ScheduledExecutorService scheduler;
 
-
-	public SlaveCommand() {
-		super("slave", "Connects this instance as a slave to a running ManagerNode.");
+	public ShardNode() {
+		this("shard-node");
 	}
+
+	public ShardNode(String name) {
+		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");		
+	}
+	
+
 
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		connector = new NioSocketConnector();
 
-		jobManager = new JobManager(label);
+		jobManager = new JobManager(getName());
 		synchronized (environment) {
 			environment.lifecycle().manage(this);
 			validator = environment.getValidator();
@@ -126,7 +130,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		setLocation(session);
 		if (message instanceof SlaveMessage) {
 			SlaveMessage srm = (SlaveMessage) message;
-			log.trace("Slave recieved {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+			log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<SlaveMessage, NetworkMessageContext.Slave> job = new ReactingJob<>(srm, context);
 
 			if (((Message) message).isSlowMessage()) {
@@ -258,7 +262,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			return;
 		}
 
-		// Collect the Slaves and all its workers jobs into a single queue
+		// Collect the ShardNode and all its workers jobs into a single queue
 		final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
 
 		for (Worker worker : workers.getWorkers().values()) {

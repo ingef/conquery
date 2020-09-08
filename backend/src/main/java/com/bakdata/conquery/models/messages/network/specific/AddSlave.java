@@ -12,8 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Dummy message that is sent to ManagerNode, to authenticate the connection as a Slave connection.
- * This helps to avoids retaining connections from non-slaves.
+ * Dummy message that is sent to ManagerNode, to authenticate the connection as a ShardNode connection.
+ * This helps to avoids retaining connections from non-ShardNodes.
  */
 @CPSType(id="ADD_SLAVE", base=NetworkMessage.class)
 @RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Slf4j
@@ -21,8 +21,8 @@ public class AddSlave extends MessageToManagerNode {
 
 	@Override
 	public void react(NetworkMessageContext.ManagerNodeRxTxContext context) throws Exception {
-		context.getNamespaces().getSlaves().put(context.getRemoteAddress(), new SlaveInformation(new NetworkSession(context.getSession().getSession())));
+		context.getNamespaces().getShardNodes().put(context.getRemoteAddress(), new SlaveInformation(new NetworkSession(context.getSession().getSession())));
 
-		log.info("Slave {} registered.", context.getRemoteAddress());
+		log.info("ShardNode {} registered.", context.getRemoteAddress());
 	}
 }

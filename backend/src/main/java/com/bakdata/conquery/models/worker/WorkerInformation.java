@@ -21,7 +21,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	@NotNull
 	private IntHashSet includedBuckets = new IntHashSet();
 	@JsonIgnore
-	private transient SlaveInformation connectedSlave;
+	private transient SlaveInformation connectedShardNode;
 
 	@Override
 	public WorkerId createId() {
@@ -41,7 +41,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Override
 	public SlaveInformation getMessageParent() {
-		return connectedSlave;
+		return connectedShardNode;
 	}
 
 	@Override

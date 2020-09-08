@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -84,7 +84,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -130,7 +130,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -209,7 +209,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -245,7 +245,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			{
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (SlaveCommand slave : conquery2.getSlaves()) {
+				for (ShardNode slave : conquery2.getShardNodes()) {
 					for (Worker worker : slave.getWorkers().getWorkers().values()) {
 
 						if (!worker.getInfo().getDataset().equals(dataset.getId()))

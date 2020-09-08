@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
-import java.net.SocketAddress;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
@@ -133,8 +132,7 @@ public class AdminUIResource extends HAdmin {
 
 		processor.getJobManager().cancelJob(jobId);
 
-		for (Map.Entry<SocketAddress, SlaveInformation> entry : processor.getNamespaces().getSlaves().entrySet()) {
-			SlaveInformation info = entry.getValue();
+		for (SlaveInformation info : processor.getNamespaces().getShardNodes().values()) {
 			info.send(new CancelJobMessage(jobId));
 		}
 
@@ -160,7 +158,7 @@ public class AdminUIResource extends HAdmin {
 						.putAll(
 								processor
 										.getNamespaces()
-										.getSlaves()
+										.getShardNodes()
 										.values()
 										.stream()
 										.collect(Collectors.toMap(

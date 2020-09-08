@@ -34,7 +34,7 @@ public class Namespaces extends NamespaceCollection implements Closeable {
 	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>(); // TODO remove this and take it from Namespaces.datasets
 	@Getter
 	@JsonIgnore
-	private transient ConcurrentMap<SocketAddress, SlaveInformation> slaves = new ConcurrentHashMap<>();
+	private transient ConcurrentMap<SocketAddress, SlaveInformation> shardNodes = new ConcurrentHashMap<>();
 	@Getter @Setter @JsonIgnore
 	private transient MetaStorage metaStorage;
 
@@ -82,10 +82,10 @@ public class Namespaces extends NamespaceCollection implements Closeable {
 		WorkerInformation old = workers.getOptional(info.getId()).orElse(null);
 		if (old != null) {
 			old.setIncludedBuckets(info.getIncludedBuckets());
-			old.setConnectedSlave(slave);
+			old.setConnectedShardNode(slave);
 		}
 		else {
-			info.setConnectedSlave(slave);
+			info.setConnectedShardNode(slave);
 			workers.add(info);
 		}
 

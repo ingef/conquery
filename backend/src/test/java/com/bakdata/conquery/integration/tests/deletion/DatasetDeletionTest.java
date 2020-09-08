@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -71,7 +71,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(dataset.getId()))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -136,7 +136,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().getTable().getDataset().equals(dataset.getId()))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
@@ -212,10 +212,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
+			for (ShardNode slave : conquery.getShardNodes()) {
 				assertThat(slave.getWorkers().getWorkers().values())
 						.filteredOn(w -> w.getInfo().getDataset().equals(dataset.getId()))
-						.describedAs("Workers for slave {}", slave.getLabel())
+						.describedAs("Workers for slave {}", slave.getName())
 						.isNotEmpty();
 			}
 
@@ -238,7 +238,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (SlaveCommand slave : conquery2.getSlaves()) {
+				for (ShardNode slave : conquery2.getShardNodes()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;

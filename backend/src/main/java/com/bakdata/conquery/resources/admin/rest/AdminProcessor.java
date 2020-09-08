@@ -165,7 +165,7 @@ public class AdminProcessor {
 		namespaces.add(ns);
 
 		// for now we just add one worker to every slave
-		for (SlaveInformation slave : namespaces.getSlaves().values()) {
+		for (SlaveInformation slave : namespaces.getShardNodes().values()) {
 			addWorker(slave, dataset);
 		}
 
@@ -604,7 +604,7 @@ public class AdminProcessor {
 				.addSlowJob(new SimpleJob("Removing dataset " + datasetId, () -> namespaces.removeNamespace(datasetId)));
 		getJobManager()
 				.addSlowJob(new SimpleJob("sendToAll: remove " + datasetId,
-										  () -> namespaces.getSlaves().forEach((__, slave) -> slave.send(new RemoveWorker(datasetId))))
+										  () -> namespaces.getShardNodes().values().forEach( shardNode -> shardNode.send(new RemoveWorker(datasetId))))
 				);
 
 	}

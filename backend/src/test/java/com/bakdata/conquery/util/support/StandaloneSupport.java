@@ -9,7 +9,7 @@ import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -71,8 +71,8 @@ public class StandaloneSupport implements Closeable {
 		return testConquery.getStandaloneCommand().getManager().getNamespaces().get(dataset.getId()).getStorage();
 	}
 
-	public List<SlaveCommand> getSlaves() {
-		return testConquery.getStandaloneCommand().getSlaves();
+	public List<ShardNode> getShardNodes() {
+		return testConquery.getStandaloneCommand().getShardNodes();
 	}
 	
 	/**

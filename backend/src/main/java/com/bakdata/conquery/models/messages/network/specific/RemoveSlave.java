@@ -24,6 +24,6 @@ public class RemoveSlave extends MessageToManagerNode {
 	@Override
 	public void react(NetworkMessageContext.ManagerNodeRxTxContext context) throws Exception {
 		log.info("Slave {} unregistered.", context.getRemoteAddress());
-		context.getNamespaces().getSlaves().remove(context.getRemoteAddress());
+		context.getNamespaces().getShardNodes().remove(context.getRemoteAddress());
 	}
 }

@@ -70,7 +70,7 @@ public class Namespace implements Closeable {
 
 	public void checkConnections() {
 		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w -> w.getConnectedSlave() != null);
+		l.removeIf(w -> w.getConnectedShardNode() != null);
 
 		if (!l.isEmpty()) {
 			throw new IllegalStateException("Not all known slaves are connected. Missing " + l);
@@ -112,7 +112,7 @@ public class Namespace implements Closeable {
 	}
 
 	public synchronized void addWorker(WorkerInformation info) {
-		Objects.requireNonNull(info.getConnectedSlave(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
+		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);

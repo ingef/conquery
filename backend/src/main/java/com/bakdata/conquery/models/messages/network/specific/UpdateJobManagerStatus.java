@@ -25,11 +25,11 @@ public class UpdateJobManagerStatus extends MessageToManagerNode {
 	@Override
 	public void react(ManagerNodeRxTxContext context) throws Exception {
 		SlaveInformation slave = context.getNamespaces()
-										 .getSlaves()
+										 .getShardNodes()
 										 .get(context.getRemoteAddress());
 
 		if (slave == null) {
-			log.error("Could not find slave {}, I only know of {}", context.getRemoteAddress(), context.getNamespaces().getSlaves().keySet());
+			log.error("Could not find ShardNode {}, I only know of {}", context.getRemoteAddress(), context.getNamespaces().getShardNodes().keySet());
 		}
 		else {
 			slave.setJobManagerStatus(status);

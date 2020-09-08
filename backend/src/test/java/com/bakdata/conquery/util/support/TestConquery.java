@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
@@ -106,7 +106,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		Namespaces namespaces = standaloneCommand.getManager().getNamespaces();
 		Namespace ns = namespaces.get(datasetId);
 
-		assertThat(namespaces.getSlaves()).hasSize(2);
+		assertThat(namespaces.getShardNodes()).hasSize(2);
 
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
@@ -126,7 +126,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			// Getting the User from AuthorizationConfig
 			standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
 
-		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
+		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getShardNodes().size());
 
 		support.waitUntilWorkDone();
 		openSupports.add(support);
@@ -154,7 +154,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		config.getStorage().setDirectory(tmpDir);
-		config.getStandalone().setNumberOfSlaves(2);
+		config.getStandalone().setNumberOfShardNodes(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());
 
@@ -224,7 +224,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 			log.info("Tearing down dataset");
 			DatasetId dataset = openSupport.getDataset().getId();
-			standaloneCommand.getManager().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+			standaloneCommand.getManager().getNamespaces().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
 			standaloneCommand.getManager().getNamespaces().removeNamespace(dataset);
 			it.remove();
 		}
@@ -252,7 +252,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 					busy |= namespace.getJobManager().isSlowWorkerBusy();
 				}
 
-				for (SlaveCommand slave : standaloneCommand.getSlaves())
+				for (ShardNode slave : standaloneCommand.getShardNodes())
 					busy |= slave.isBusy();
 
 				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
@@ -267,7 +267,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 	
 	public void closeNamespace(DatasetId dataset) {
-		standaloneCommand.getManager().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getManager().getNamespaces().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
 		standaloneCommand.getManager().getNamespaces().removeNamespace(dataset);
 	}
 }

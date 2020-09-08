@@ -65,7 +65,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
 	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the ManagerNode)
-	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the slaves, so this is a problem.
+	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
 	private static final File STORE_DIR = ConqueryConfig.getInstance().getStorage().getDirectory();
 
 	private final XodusConfig passwordStoreConfig;
