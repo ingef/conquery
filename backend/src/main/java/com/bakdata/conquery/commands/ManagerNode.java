@@ -34,7 +34,7 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
@@ -75,7 +75,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
-			.add(NamespaceCollection.class, namespaces);
+			.add(IdResolveContext.class, namespaces);
 
 
 		this.jobManager = new JobManager("ManagerNode");

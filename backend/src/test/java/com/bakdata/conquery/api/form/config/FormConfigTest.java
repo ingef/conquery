@@ -43,7 +43,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -187,7 +187,7 @@ public class FormConfigTest {
 		
 
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
-		.add(NamespaceCollection.class, namespacesMock);
+		.add(IdResolveContext.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storageMock);
 		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(), Collections.emptyList(), storageMock);
 		controller.init();
