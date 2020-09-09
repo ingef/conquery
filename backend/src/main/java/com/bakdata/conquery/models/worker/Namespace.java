@@ -57,7 +57,7 @@ public class Namespace implements Closeable {
 	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
 
 	@JsonIgnore
-	private transient Namespaces namespaces;
+	private transient DatasetRegistry namespaces;
 
 	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;

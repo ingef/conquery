@@ -42,9 +42,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,7 +68,7 @@ import org.mockito.Mockito;
 public class FormConfigTest {
 	
 	private MetaStorage storageMock;
-	private Namespaces namespacesMock;
+	private DatasetRegistry namespacesMock;
 	
 	private Map<FormConfigId, FormConfig> configs = new ConcurrentHashMap<>();
 	private Map<UserId, User> users = new HashedMap<>();
@@ -161,8 +161,8 @@ public class FormConfigTest {
 		}).when(storageMock).removeGroup(any());
 		when(storageMock.getAllGroups()).thenReturn(groups.values());
 		
-		// Mock namespaces for translation
-		namespacesMock = Mockito.mock(Namespaces.class);
+		// Mock DatasetRegistry for translation
+		namespacesMock = Mockito.mock(DatasetRegistry.class);
 		doAnswer(invocation -> {
 			throw new UnsupportedOperationException("Not yet implemented");
 		}).when(namespacesMock).getOptional(any());
@@ -183,7 +183,7 @@ public class FormConfigTest {
 		when(namespacesMock.getAllDatasets()).thenReturn(List.of(dataset,dataset1));
 		when(namespacesMock.injectInto(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
-		when(storageMock.getNamespaces()).thenReturn(namespacesMock);
+		when(storageMock.getDatasetRegistry()).thenReturn(namespacesMock);
 		
 
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())

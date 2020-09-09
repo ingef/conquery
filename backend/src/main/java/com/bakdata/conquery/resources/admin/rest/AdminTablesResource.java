@@ -1,6 +1,8 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.*;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.TABLE;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +47,7 @@ public class AdminTablesResource extends HAdmin {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.table = namespace.getDataset().getTables().getOrFail(tableId);
 		if (this.table == null) {
 			throw new WebApplicationException("Could not find table " + tableId, Status.NOT_FOUND);

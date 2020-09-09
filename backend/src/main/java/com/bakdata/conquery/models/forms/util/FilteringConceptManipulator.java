@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -86,7 +86,7 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 		}
 	}
 
-	public void consume(CQConcept concept, Namespaces namespaces) {
+	public void consume(CQConcept concept, DatasetRegistry namespaces) {
 
 		List<Select> selects = concept.getSelects();
 		if (!selectBlacklist.isEmpty()) {

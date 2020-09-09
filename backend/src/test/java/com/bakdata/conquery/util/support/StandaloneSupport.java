@@ -68,7 +68,7 @@ public class StandaloneSupport implements Closeable {
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getManager().getNamespaces().get(dataset.getId()).getStorage();
+		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry().get(dataset.getId()).getStorage();
 	}
 
 	public List<ShardNode> getShardNodes() {

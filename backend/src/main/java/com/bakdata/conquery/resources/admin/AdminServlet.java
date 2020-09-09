@@ -70,7 +70,7 @@ public class AdminServlet {
 		adminProcessor = new AdminProcessor(
 			manager.getConfig(),
 			manager.getStorage(),
-			manager.getNamespaces(),
+			manager.getDatasetRegistry(),
 			manager.getJobManager(),
 			manager.getMaintenanceService(),
 			manager.getValidator());

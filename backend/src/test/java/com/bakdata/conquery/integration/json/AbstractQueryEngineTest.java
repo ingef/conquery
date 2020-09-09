@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -43,7 +43,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
-		Namespaces namespaces = standaloneSupport.getNamespace().getNamespaces();
+		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
 		MetaStorage storage = standaloneSupport.getNamespace().getStorage().getMetaStorage();
 		UserId userId = standaloneSupport.getTestUser().getId();
 		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();

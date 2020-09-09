@@ -33,8 +33,8 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
@@ -86,11 +86,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public void initExecutable(@NonNull Namespaces namespaces) {
+	public void initExecutable(@NonNull DatasetRegistry datasets) {
 		// init all subqueries
 		synchronized (getExecution()) {
-			subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
-			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(namespaces));
+			subQueries = submittedForm.createSubQueries(datasets, super.getOwner(), super.getDataset());
+			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasets));
 		}
 	}
 	
@@ -194,9 +194,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
-	public Set<Namespace> getRequiredNamespaces() {
+	public Set<Namespace> getRequiredDatasets() {
 		return flatSubQueries.values().stream()
-			.map(ManagedQuery::getRequiredNamespaces)
+			.map(ManagedQuery::getRequiredDatasets)
 			.flatMap(Set::stream)
 			.collect(Collectors.toSet());
 	}
@@ -223,7 +223,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
 			// If subqueries was not set the Execution was not initialized
-			this.initExecutable(storage.getNamespaces());
+			this.initExecutable(storage.getDatasetRegistry());
 		}
 		if(subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported

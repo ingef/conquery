@@ -8,7 +8,7 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Workers;
 import lombok.Getter;
 
@@ -51,9 +51,9 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	@Getter
 	public static class ManagerNodeNetworkContext extends NetworkMessageContext<MessageToShardNode> {
 
-		private final Namespaces namespaces;
+		private final DatasetRegistry namespaces;
 		
-		public ManagerNodeNetworkContext(JobManager jobManager, NetworkSession session, Namespaces namespaces) {
+		public ManagerNodeNetworkContext(JobManager jobManager, NetworkSession session, DatasetRegistry namespaces) {
 			super(jobManager, session);
 			this.namespaces = namespaces;
 		}

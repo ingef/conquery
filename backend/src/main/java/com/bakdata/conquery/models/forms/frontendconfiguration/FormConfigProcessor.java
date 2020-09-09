@@ -92,7 +92,7 @@ public class FormConfigProcessor {
 	public FormConfigId addConfig(User user, DatasetId targetDataset, FormConfigAPI config) {
 		user.checkPermission(DatasetPermission.onInstance(Ability.READ.asSet(), targetDataset));
 
-		List<DatasetId> translateToDatasets = storage.getNamespaces().getAllDatasets().stream()
+		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets().stream()
 			.map(Identifiable::getId)
 			.filter(dId -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dId)))
 			.collect(Collectors.toList());

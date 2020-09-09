@@ -1,6 +1,8 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.*;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.TABLE;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,7 +52,7 @@ public class TablesUIResource extends HAdmin {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.table = namespace
 			.getStorage()
 			.getDataset()

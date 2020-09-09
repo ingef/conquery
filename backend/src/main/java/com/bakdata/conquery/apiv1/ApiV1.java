@@ -8,9 +8,8 @@ import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.api.APIResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
@@ -31,16 +30,16 @@ public class ApiV1 implements ResourcesProvider {
 
 	@Override
 	public void registerResources(ManagerNode manager) {
-		Namespaces namespaces = manager.getNamespaces();
+		DatasetRegistry datasets = manager.getDatasetRegistry();
 		JerseyEnvironment environment = manager.getEnvironment().jersey();
 
 		//inject required services
 		environment.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(new ConceptsProcessor(manager.getNamespaces())).to(ConceptsProcessor.class);
+				bind(new ConceptsProcessor(manager.getDatasetRegistry())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(manager.getStorage())).to(MeProcessor.class);
-				bind(new QueryProcessor(namespaces, manager.getStorage())).to(QueryProcessor.class);
+				bind(new QueryProcessor(datasets, manager.getStorage())).to(QueryProcessor.class);
 				bind(new FormConfigProcessor(manager.getValidator(),manager.getStorage())).to(FormConfigProcessor.class);
 			}
 		});
@@ -59,8 +58,8 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(new ResultCSVResource(namespaces, manager.getConfig()));
-		environment.register(new StoredQueriesResource(namespaces));
+		environment.register(new ResultCSVResource(datasets, manager.getConfig()));
+		environment.register(new StoredQueriesResource(datasets));
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(CORSResponseFilter.class);
 		environment.register(new ConfigResource(manager.getConfig()));

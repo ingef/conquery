@@ -28,7 +28,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -42,7 +42,7 @@ public class StoredQueriesResource {
 	private final StoredQueriesProcessor processor;
 	private final ResourceUtil dsUtil;
 
-	public StoredQueriesResource(Namespaces namespaces) {
+	public StoredQueriesResource(DatasetRegistry namespaces) {
 		this.processor = new StoredQueriesProcessor(namespaces);
 		this.dsUtil = new ResourceUtil(namespaces);
 	}

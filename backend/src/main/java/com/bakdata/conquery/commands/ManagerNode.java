@@ -33,9 +33,9 @@ import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
@@ -68,14 +68,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private AuthServlet authServletApp;
 	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
-	private Namespaces namespaces = new Namespaces();
+	private DatasetRegistry datasetRegistry = new DatasetRegistry();
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
-		//inject namespaces into the objectmapper
+		//inject datasets into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
-			.add(IdResolveContext.class, namespaces);
+			.add(IdResolveContext.class, datasetRegistry);
 
 
 		this.jobManager = new JobManager("ManagerNode");
@@ -116,25 +116,25 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 				Namespace ns = new Namespace(datasetStorage);
 				ns.initMaintenance(maintenanceService);
-				namespaces.add(ns);
+				datasetRegistry.add(ns);
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)){
-			log.debug("Still waiting for Namespaces to load. {} already finished.", namespaces.getNamespaces());
+			log.debug("Still waiting for Datasets to load. {} already finished.", datasetRegistry.getDatasets());
 		}
 
-		log.info("All stores loaded: {}", namespaces.getNamespaces());
+		log.info("All stores loaded: {}", datasetRegistry.getDatasets());
 		
 		
-		this.storage = new MetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
+		this.storage = new MetaStorageImpl(datasetRegistry, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 
-		namespaces.setMetaStorage(this.storage);
-		for (Namespace sn : namespaces.getNamespaces()) {
+		datasetRegistry.setMetaStorage(this.storage);
+		for (Namespace sn : datasetRegistry.getDatasets()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
 
@@ -212,7 +212,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
 				jobManager,
 				new NetworkSession(session),
-				namespaces
+				datasetRegistry
 			));
 
 			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
@@ -232,7 +232,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(namespaces, validator);
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
@@ -244,7 +244,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void stop() throws Exception {
 		jobManager.close();
 
-		namespaces.close();
+		datasetRegistry.close();
 		
 		try {
 			acceptor.dispose();

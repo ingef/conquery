@@ -50,6 +50,6 @@ public class AdminResource extends HAdmin {
 	@GET
 	@Path("datasets")
 	public List<DatasetId> listDatasets() {
-		return processor.getNamespaces().getAllDatasets().stream().map(Dataset::getId).collect(Collectors.toList());
+		return processor.getDatasetRegistry().getAllDatasets().stream().map(Dataset::getId).collect(Collectors.toList());
 	}
 }

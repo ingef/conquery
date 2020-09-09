@@ -42,7 +42,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
-		final Namespace namespace = storage.getNamespaces().get(dataset.getId());
+		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 
 		final TableId tableId = TableId.Parser.INSTANCE.parse(dataset.getName(), "test_table2");
 

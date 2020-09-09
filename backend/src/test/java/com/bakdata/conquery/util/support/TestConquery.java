@@ -26,8 +26,8 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkerStorage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.io.Files;
@@ -103,10 +103,10 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
-		Namespaces namespaces = standaloneCommand.getManager().getNamespaces();
-		Namespace ns = namespaces.get(datasetId);
+		DatasetRegistry datasets = standaloneCommand.getManager().getDatasetRegistry();
+		Namespace ns = datasets.get(datasetId);
 
-		assertThat(namespaces.getShardNodes()).hasSize(2);
+		assertThat(datasets.getShardNodes()).hasSize(2);
 
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
@@ -140,7 +140,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 		DatasetId dataset = support.getDataset().getId();
 
-		standaloneCommand.getManager().getNamespaces().get(dataset).sendToAll(new ShutdownWorkerStorage());
+		standaloneCommand.getManager().getDatasetRegistry().get(dataset).sendToAll(new ShutdownWorkerStorage());
 
 		try {
 			standaloneCommand.getManager().getStorage().close();
@@ -224,8 +224,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 			log.info("Tearing down dataset");
 			DatasetId dataset = openSupport.getDataset().getId();
-			standaloneCommand.getManager().getNamespaces().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
-			standaloneCommand.getManager().getNamespaces().removeNamespace(dataset);
+			closeNamespace(dataset);
 			it.remove();
 		}
 	}
@@ -248,7 +247,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 										 .map(ManagedExecution::getState)
 										 .anyMatch(ExecutionState.RUNNING::equals);
 
-				for (Namespace namespace : standaloneCommand.getManager().getNamespaces().getNamespaces()) {
+				for (Namespace namespace : standaloneCommand.getManager().getDatasetRegistry().getDatasets()) {
 					busy |= namespace.getJobManager().isSlowWorkerBusy();
 				}
 
@@ -267,7 +266,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 	
 	public void closeNamespace(DatasetId dataset) {
-		standaloneCommand.getManager().getNamespaces().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
-		standaloneCommand.getManager().getNamespaces().removeNamespace(dataset);
+		standaloneCommand.getManager().getDatasetRegistry().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(dataset);
 	}
 }

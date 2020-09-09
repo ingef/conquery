@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,7 +51,7 @@ public class TableManipulator {
 
 	}
 
-	public void consume(CQTable table, Namespaces namespaces) {
+	public void consume(CQTable table, DatasetRegistry namespaces) {
 
 		List<Select> selects = table.getSelects();
 		if (!selectBlacklist.isEmpty()) {

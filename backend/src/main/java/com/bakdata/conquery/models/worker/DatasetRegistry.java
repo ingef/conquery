@@ -25,7 +25,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Namespaces extends IdResolveContext implements Closeable {
+public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
@@ -105,7 +105,7 @@ public class Namespaces extends IdResolveContext implements Closeable {
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toCollection(collectionSupplier));
 	}
 
-	public Collection<Namespace> getNamespaces() {
+	public Collection<Namespace> getDatasets() {
 		return datasets.values();
 	}
 	

@@ -25,12 +25,12 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 	private final ObjectWriter writer;
 	private final ObjectReader reader;
 
-	public BinaryJacksonCoder(IdResolveContext namespaces, Validator validator) {
+	public BinaryJacksonCoder(IdResolveContext datasets, Validator validator) {
 		this.validator = validator;
 		this.writer = Jackson.BINARY_MAPPER
 			.writerFor(NetworkMessage.class)
 			.withView(InternalOnly.class);
-		this.reader = namespaces
+		this.reader = datasets
 				.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class))
 				.without(Feature.AUTO_CLOSE_SOURCE)
 				.withView(InternalOnly.class);

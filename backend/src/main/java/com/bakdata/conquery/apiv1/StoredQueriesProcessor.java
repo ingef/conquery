@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -23,7 +21,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,12 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 public class StoredQueriesProcessor {
 
 	@Getter
-	private final Namespaces namespaces;
+	private final DatasetRegistry datasets;
 	private final MetaStorage storage;
 
-	public StoredQueriesProcessor(Namespaces namespaces) {
-		this.namespaces = namespaces;
-		this.storage = namespaces.getMetaStorage();
+	public StoredQueriesProcessor(DatasetRegistry datasets) {
+		this.datasets = datasets;
+		this.storage = datasets.getMetaStorage();
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
@@ -82,8 +80,8 @@ public class StoredQueriesProcessor {
 		storage.updateExecution(execution);
 		
 		// Patch this query in other datasets
-		List<Dataset> remainingDatasets = namespaces.getAllDatasets(() -> new ArrayList<>());
-		remainingDatasets.remove(namespaces.get(executionId.getDataset()).getDataset());
+		List<Dataset> remainingDatasets = datasets.getAllDatasets(() -> new ArrayList<>());
+		remainingDatasets.remove(datasets.get(executionId.getDataset()).getDataset());
 		for(Dataset dataset : remainingDatasets) {
 			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(),executionId.getExecution());
 			execution = storage.getExecution(id);

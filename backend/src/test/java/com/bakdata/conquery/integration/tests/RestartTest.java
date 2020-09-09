@@ -52,7 +52,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 				manager.getConfig(),
 				manager.getStorage(),
-				manager.getNamespaces(),
+				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
 				manager.getValidator()

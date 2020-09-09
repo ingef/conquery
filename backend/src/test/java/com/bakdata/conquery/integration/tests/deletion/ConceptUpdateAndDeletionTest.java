@@ -22,8 +22,8 @@ import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -51,7 +51,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
-		final Namespace namespace = storage.getNamespaces().get(dataset.getId());
+		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 
@@ -255,7 +255,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
 	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState state) {
-		Namespaces namespaces = conquery.getNamespace().getNamespaces();
+		DatasetRegistry namespaces = conquery.getNamespace().getNamespaces();
 		MetaStorage storage = conquery.getNamespace().getStorage().getMetaStorage();
 		UserId userId = conquery.getTestUser().getId();
 		DatasetId dataset = conquery.getNamespace().getDataset().getId();

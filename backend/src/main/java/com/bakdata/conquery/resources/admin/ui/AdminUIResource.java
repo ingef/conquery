@@ -102,7 +102,7 @@ public class AdminUIResource extends HAdmin {
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
-		groovy.setProperty("namespaces", processor.getNamespaces());
+		groovy.setProperty("datasetRegistry", processor.getDatasetRegistry());
 		groovy.setProperty("jobManager", processor.getJobManager());
 
 		try {
@@ -117,7 +117,7 @@ public class AdminUIResource extends HAdmin {
 	@GET
 	@Path("datasets")
 	public View getDatasets() {
-		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getNamespaces().getAllDatasets());
+		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getDatasetRegistry().getAllDatasets());
 	}
 
 	@POST @Path("/update-matching-stats/{"+ DATASET +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -132,7 +132,7 @@ public class AdminUIResource extends HAdmin {
 
 		processor.getJobManager().cancelJob(jobId);
 
-		for (ShardNodeInformation info : processor.getNamespaces().getShardNodes().values()) {
+		for (ShardNodeInformation info : processor.getDatasetRegistry().getShardNodes().values()) {
 			info.send(new CancelJobMessage(jobId));
 		}
 
@@ -149,7 +149,7 @@ public class AdminUIResource extends HAdmin {
 						.put("ManagerNode", processor.getJobManager().reportStatus())
 						// Namespace JobManagers on ManagerNode
 						.putAll(
-								processor.getNamespaces().getNamespaces().stream()
+								processor.getDatasetRegistry().getDatasets().stream()
 										 .collect(Collectors.toMap(
 												 ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
 												 ns -> ns.getJobManager().reportStatus()
@@ -157,7 +157,7 @@ public class AdminUIResource extends HAdmin {
 						// Remote Worker JobManagers
 						.putAll(
 								processor
-										.getNamespaces()
+										.getDatasetRegistry()
 										.getShardNodes()
 										.values()
 										.stream()
