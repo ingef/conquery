@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
-import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
@@ -132,7 +132,7 @@ public class AdminUIResource extends HAdmin {
 
 		processor.getJobManager().cancelJob(jobId);
 
-		for (SlaveInformation info : processor.getNamespaces().getShardNodes().values()) {
+		for (ShardNodeInformation info : processor.getNamespaces().getShardNodes().values()) {
 			info.send(new CancelJobMessage(jobId));
 		}
 
@@ -163,7 +163,7 @@ public class AdminUIResource extends HAdmin {
 										.stream()
 										.collect(Collectors.toMap(
 												si -> Objects.toString(si.getRemoteAddress()),
-												SlaveInformation::getJobManagerStatus
+												ShardNodeInformation::getJobManagerStatus
 										))
 						)
 						.build();

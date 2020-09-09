@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeRxTxContext;
+import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeNetworkContext;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
@@ -24,7 +24,7 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 	private final NamespaceMessage message;
 	
 	@Override
-	public void react(ManagerNodeRxTxContext context) throws Exception {
+	public void react(ManagerNodeNetworkContext context) throws Exception {
 		Namespace ns = Objects.requireNonNull(context.getNamespaces().get(datasetId));
 		ConqueryMDC.setLocation(ns.getStorage().getDataset().toString());
 		message.react(ns);

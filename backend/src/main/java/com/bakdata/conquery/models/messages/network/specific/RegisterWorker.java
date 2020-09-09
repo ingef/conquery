@@ -5,8 +5,8 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeRxTxContext;
-import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeNetworkContext;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.Wait;
 import lombok.AllArgsConstructor;
@@ -21,8 +21,8 @@ public class RegisterWorker extends MessageToManagerNode {
 	private WorkerInformation info;
 	
 	@Override
-	public void react(ManagerNodeRxTxContext context) throws Exception {
-		SlaveInformation slave = getShardNode(context);
+	public void react(ManagerNodeNetworkContext context) throws Exception {
+		ShardNodeInformation node = getShardNode(context);
 		Wait
 			.builder()
 			.attempts(6)
@@ -31,11 +31,11 @@ public class RegisterWorker extends MessageToManagerNode {
 			.build()
 			.until(()->getShardNode(context));
 		
-		if(slave == null) {
+		if(node == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
 		}
-		info.setConnectedShardNode(slave);
-		context.getNamespaces().register(slave, info);
+		info.setConnectedShardNode(node);
+		context.getNamespaces().register(node, info);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class RegisterWorker extends MessageToManagerNode {
 	 * @param context the network context
 	 * @return the found slave or null if none was found
 	 */
-	private SlaveInformation getShardNode(ManagerNodeRxTxContext context) {
+	private ShardNodeInformation getShardNode(ManagerNodeNetworkContext context) {
 		return context.getNamespaces()
 			.getShardNodes()
 			.get(context.getRemoteAddress());

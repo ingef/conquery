@@ -23,9 +23,9 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Slave;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
-import com.bakdata.conquery.models.messages.network.specific.AddSlave;
+import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardNodeNetworkContext;
+import com.bakdata.conquery.models.messages.network.MessageToShardNode;
+import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
 import com.bakdata.conquery.models.worker.Worker;
@@ -54,7 +54,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	private JobManager jobManager;
 	private Validator validator;
 	private ConqueryConfig config;
-	private Slave context;
+	private ShardNodeNetworkContext context;
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
@@ -128,10 +128,10 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
-		if (message instanceof SlaveMessage) {
-			SlaveMessage srm = (SlaveMessage) message;
+		if (message instanceof MessageToShardNode) {
+			MessageToShardNode srm = (MessageToShardNode) message;
 			log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<SlaveMessage, NetworkMessageContext.Slave> job = new ReactingJob<>(srm, context);
+			ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
 
 			if (((Message) message).isSlowMessage()) {
 				((SlowMessage) message).setProgressReporter(job.getProgressReporter());
@@ -158,11 +158,11 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, config, validator);
+		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
-		context.send(new AddSlave());
+		context.send(new AddShardNode());
 
 		for (Worker w : workers.getWorkers().values()) {
 			w.setSession(new NetworkSession(session));

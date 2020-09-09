@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jetbrains.exodus.core.dataStructures.hash.IntHashSet;
@@ -15,13 +15,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, SlaveMessage> {
+public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, MessageToShardNode> {
 	@NotNull
 	private DatasetId dataset;
 	@NotNull
 	private IntHashSet includedBuckets = new IntHashSet();
 	@JsonIgnore
-	private transient SlaveInformation connectedShardNode;
+	private transient ShardNodeInformation connectedShardNode;
 
 	@Override
 	public WorkerId createId() {
@@ -40,12 +40,12 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	}
 
 	@Override
-	public SlaveInformation getMessageParent() {
+	public ShardNodeInformation getMessageParent() {
 		return connectedShardNode;
 	}
 
 	@Override
-	public SlaveMessage transform(WorkerMessage message) {
+	public MessageToShardNode transform(WorkerMessage message) {
 		return new ForwardToWorker(getId(), message);
 	}
 }

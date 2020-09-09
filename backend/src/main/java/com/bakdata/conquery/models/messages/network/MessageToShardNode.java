@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class SlaveMessage extends NetworkMessage<NetworkMessageContext.Slave> {
+public abstract class MessageToShardNode extends NetworkMessage<NetworkMessageContext.ShardNodeNetworkContext> {
 
-	public static abstract class Slow extends SlaveMessage implements SlowMessage {
+	public static abstract class Slow extends MessageToShardNode implements SlowMessage {
 		@JsonIgnore @Getter @Setter
 		private ProgressReporter progressReporter;
 	}

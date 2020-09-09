@@ -35,8 +35,8 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 		test.importRequiredData(conquery);
 
 		//ensure the metadata is collected
-		for(ShardNode slave : conquery.getShardNodes()) {
-			slave.getWorkers().getWorkers().values().forEach(worker -> {
+		for(ShardNode node : conquery.getShardNodes()) {
+			node.getWorkers().getWorkers().values().forEach(worker -> {
 				worker.getJobManager().addSlowJob(new UpdateMatchingStats(worker));
 			});
 		}

@@ -71,8 +71,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(dataset.getId()))
 					.isNotEmpty();
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -136,8 +136,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().getTable().getDataset().equals(dataset.getId()))
 					.isEmpty();
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -212,10 +212,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				assertThat(slave.getWorkers().getWorkers().values())
+			for (ShardNode node : conquery.getShardNodes()) {
+				assertThat(node.getWorkers().getWorkers().values())
 						.filteredOn(w -> w.getInfo().getDataset().equals(dataset.getId()))
-						.describedAs("Workers for slave {}", slave.getName())
+						.describedAs("Workers for node {}", node.getName())
 						.isNotEmpty();
 			}
 
@@ -238,8 +238,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (ShardNode slave : conquery2.getShardNodes()) {
-					for (Worker value : slave.getWorkers().getWorkers().values()) {
+				for (ShardNode node : conquery2.getShardNodes()) {
+					for (Worker value : node.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
 						}

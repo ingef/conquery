@@ -15,15 +15,15 @@ import lombok.extern.slf4j.Slf4j;
  * @deprecated Doesn't do much at this moment (and is not stable at this moment), as the data is distributed ahead of time, but it can later be used.
  */
 @Deprecated
-@CPSType(id = "REMOVE_SLAVE", base = NetworkMessage.class)
+@CPSType(id = "REMOVE_SHARD_NODE", base = NetworkMessage.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Getter
 @Slf4j
-public class RemoveSlave extends MessageToManagerNode {
+public class RemoveShardNode extends MessageToManagerNode {
 
 	@Override
-	public void react(NetworkMessageContext.ManagerNodeRxTxContext context) throws Exception {
-		log.info("Slave {} unregistered.", context.getRemoteAddress());
+	public void react(NetworkMessageContext.ManagerNodeNetworkContext context) throws Exception {
+		log.info("ShardNode {} unregistered.", context.getRemoteAddress());
 		context.getNamespaces().getShardNodes().remove(context.getRemoteAddress());
 	}
 }

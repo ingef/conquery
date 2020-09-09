@@ -87,9 +87,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset)) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -136,9 +136,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isEmpty();
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset)) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -182,9 +182,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset)) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -226,9 +226,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 						.isNotEmpty();
 
-				for (ShardNode slave : conquery2.getShardNodes()) {
-					for (Worker value : slave.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().equals(dataset)) {
+				for (ShardNode node : conquery2.getShardNodes()) {
+					for (Worker value : node.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
 						}
 

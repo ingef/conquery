@@ -70,7 +70,7 @@ import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
 import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
@@ -164,9 +164,9 @@ public class AdminProcessor {
 
 		namespaces.add(ns);
 
-		// for now we just add one worker to every slave
-		for (SlaveInformation slave : namespaces.getShardNodes().values()) {
-			addWorker(slave, dataset);
+		// for now we just add one worker to every ShardNode
+		for (ShardNodeInformation node : namespaces.getShardNodes().values()) {
+			addWorker(node, dataset);
 		}
 
 		return dataset;
@@ -192,8 +192,8 @@ public class AdminProcessor {
 		}
 	}
 
-	public void addWorker(SlaveInformation slave, Dataset dataset) {
-		slave.send(new AddWorker(dataset));
+	public void addWorker(ShardNodeInformation node, Dataset dataset) {
+		node.send(new AddWorker(dataset));
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {

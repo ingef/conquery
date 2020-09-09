@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * Keep track of all data assigned to a single dataset. Each Slave has one {@link Worker} per {@link Dataset} / {@link Namespace}.
+ * Keep track of all data assigned to a single dataset. Each ShardNode has one {@link Worker} per {@link Dataset} / {@link Namespace}.
  * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
  */
 @Slf4j
@@ -73,7 +73,7 @@ public class Namespace implements Closeable {
 		l.removeIf(w -> w.getConnectedShardNode() != null);
 
 		if (!l.isEmpty()) {
-			throw new IllegalStateException("Not all known slaves are connected. Missing " + l);
+			throw new IllegalStateException("Not all known ShardNodes are connected. Missing " + l);
 		}
 	}
 

@@ -209,7 +209,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		if (message instanceof MessageToManagerNode) {
 			MessageToManagerNode mrm = (MessageToManagerNode) message;
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeRxTxContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeRxTxContext(
+			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
 				jobManager,
 				new NetworkSession(session),
 				namespaces

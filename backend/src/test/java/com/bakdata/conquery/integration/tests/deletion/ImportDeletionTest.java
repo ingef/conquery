@@ -84,8 +84,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
 					.isNotEmpty();
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker worker : slave.getWorkers().getWorkers().values()) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker worker : node.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -130,8 +130,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().equals(importId))
 					.isEmpty();
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker worker : slave.getWorkers().getWorkers().values()) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker worker : node.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -209,8 +209,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (ShardNode slave : conquery.getShardNodes()) {
-				for (Worker worker : slave.getWorkers().getWorkers().values()) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker worker : node.getWorkers().getWorkers().values()) {
 					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -245,8 +245,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			{
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (ShardNode slave : conquery2.getShardNodes()) {
-					for (Worker worker : slave.getWorkers().getWorkers().values()) {
+				for (ShardNode node : conquery2.getShardNodes()) {
+					for (Worker worker : node.getWorkers().getWorkers().values()) {
 
 						if (!worker.getInfo().getDataset().equals(dataset.getId()))
 							continue;
