@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,6 @@ public class UpdateWorkerBucket extends WorkerMessage {
 	@Override
 	public void react(Worker context) throws Exception {
 		//new included buckets from master
-		context.getInfo().setIncludedBuckets(info.getIncludedBuckets());
 		context.getStorage().updateWorker(info);
 	}
 }

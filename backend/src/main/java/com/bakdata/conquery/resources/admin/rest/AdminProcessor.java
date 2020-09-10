@@ -532,6 +532,7 @@ public class AdminProcessor {
 	}
 
 	public void deleteImport(ImportId importId) {
+		// TODO explain when the includedBucket Information is updated/cleared in the WorkerInformation
 
 		final Namespace namespace = namespaces.get(importId.getDataset());
 

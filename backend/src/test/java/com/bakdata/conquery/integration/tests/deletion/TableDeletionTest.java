@@ -75,7 +75,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -129,7 +129,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -179,7 +179,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -199,7 +199,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -234,7 +234,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().equals(dataset)) {
+						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
 						}
 

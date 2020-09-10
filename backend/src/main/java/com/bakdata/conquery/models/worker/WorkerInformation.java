@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import jetbrains.exodus.core.dataStructures.hash.IntHashSet;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +19,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	@NotNull
 	private DatasetId dataset;
 	@NotNull
-	private IntArrayList includedBuckets = new IntArrayList();
+	private IntHashSet includedBuckets = new IntHashSet();
 	@JsonIgnore
 	private transient SlaveInformation connectedSlave;
 
@@ -31,9 +31,9 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	@JsonIgnore
 	public int findLargestEntityId() {
 		int max = -1;
-		for(int i=includedBuckets.size() - 1; i>=0; i--) {
-			if(includedBuckets.getInt(i) > max) {
-				max = includedBuckets.getInt(i);
+		for(Integer bucket : includedBuckets) {			
+			if(bucket > max) {
+				max = bucket;
 			}
 		}
 		return max;

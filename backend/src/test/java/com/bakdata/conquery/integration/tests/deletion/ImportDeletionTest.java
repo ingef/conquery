@@ -86,7 +86,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset)) {
+					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -132,7 +132,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset)) {
+					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -211,7 +211,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker worker : slave.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset)) {
+					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -248,7 +248,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker worker : slave.getWorkers().getWorkers().values()) {
 
-						if (!worker.getInfo().getDataset().equals(dataset))
+						if (!worker.getInfo().getDataset().equals(dataset.getId()))
 							continue;
 
 						final WorkerStorage workerStorage = worker.getStorage();
