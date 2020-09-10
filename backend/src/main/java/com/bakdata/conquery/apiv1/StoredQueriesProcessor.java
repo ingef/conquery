@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,14 +38,14 @@ public class StoredQueriesProcessor {
 		this.storage = datasets.getMetaStorage();
 	}
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
+	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return allQueries
 			.stream()
 			// to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
-			.filter(q -> q.getDataset().equals(dataset.getId()))
+			.filter(q -> q.getDataset().equals(namespace.getDataset().getId()))
 			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
 			.flatMap(mq -> {
 				try {
@@ -61,11 +62,11 @@ public class StoredQueriesProcessor {
 			});
 	}
 
-	public void deleteQuery(Dataset dataset, ManagedExecution<?> query) {
-		storage.removeExecution(query.getId());
+	public void deleteQuery(Namespace namespace, ManagedExecutionId queryId) {
+		storage.removeExecution(queryId);
 	}
 
-	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId, User user) {
+	public ExecutionStatus getQueryWithSource(ManagedExecutionId queryId, User user) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
 			return null;

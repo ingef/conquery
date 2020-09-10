@@ -41,6 +41,7 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new MeProcessor(manager.getStorage())).to(MeProcessor.class);
 				bind(new QueryProcessor(datasets, manager.getStorage())).to(QueryProcessor.class);
 				bind(new FormConfigProcessor(manager.getValidator(),manager.getStorage())).to(FormConfigProcessor.class);
+				bind(new StoredQueriesProcessor(manager.getDatasetRegistry())).to(StoredQueriesProcessor.class);
 			}
 		});
 
@@ -59,7 +60,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
 		environment.register(new ResultCSVResource(datasets, manager.getConfig()));
-		environment.register(new StoredQueriesResource(datasets));
+		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(CORSResponseFilter.class);
 		environment.register(new ConfigResource(manager.getConfig()));

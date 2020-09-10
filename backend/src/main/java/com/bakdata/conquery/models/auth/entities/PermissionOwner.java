@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -17,7 +18,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * The base class of security subjects in this project. Used to represent
