@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Manipulates a given Table based on the provided blacklisting or whitelisting
+ * Manipulates a given Table based on the provided blocklisting or allowlisting
  * for {@link ConnectorSelectId}s. After this filtering, the defined default
  * values are added if the corresponding list is empty.
  */
@@ -24,29 +24,29 @@ import lombok.Setter;
 public class TableManipulator {
 
 	@Builder.Default
-	private List<ConnectorSelectId> selectBlacklist = Collections.emptyList();
+	private List<ConnectorSelectId> selectBlockList = Collections.emptyList();
 	@Builder.Default
-	private List<ConnectorSelectId> selectWhitelist = Collections.emptyList();
+	private List<ConnectorSelectId> selectAllowList = Collections.emptyList();
 	@Builder.Default
 	private List<ConnectorSelectId> selectDefault = Collections.emptyList();
 
 	private void init() {
 
-		if (!selectBlacklist.isEmpty() && !selectWhitelist.isEmpty()) {
-			throw new IllegalArgumentException("Either blacklist or whitelist needs to be empty.");
+		if (!selectBlockList.isEmpty() && !selectAllowList.isEmpty()) {
+			throw new IllegalArgumentException("Either blacklist or allowlist needs to be empty.");
 		}
 
-		Set<ConnectorSelectId> blackDefaultIntersection = selectBlacklist
+		Set<ConnectorSelectId> blockDefaultIntersection = selectBlockList
 			.stream()
 			.distinct()
 			.filter(selectDefault::contains)
 			.collect(Collectors.toSet());
-		if (!blackDefaultIntersection.isEmpty()) {
+		if (!blockDefaultIntersection.isEmpty()) {
 			throw new IllegalArgumentException(
 				String
 					.format(
-						"The list of default selects intersects with the blacklist. Intersecting Elements:\t",
-						blackDefaultIntersection.toString()));
+						"The list of default selects intersects with the blocklist. Intersecting Elements:\t",
+						blockDefaultIntersection.toString()));
 		}
 
 	}
@@ -54,11 +54,11 @@ public class TableManipulator {
 	public void consume(CQTable table, DatasetRegistry namespaces) {
 
 		List<Select> selects = table.getSelects();
-		if (!selectBlacklist.isEmpty()) {
-			selects.removeIf(s -> selectBlacklist.contains(s.getId()));
+		if (!selectBlockList.isEmpty()) {
+			selects.removeIf(s -> selectBlockList.contains(s.getId()));
 		}
-		else if (!selectWhitelist.isEmpty()) {
-			selects.removeIf(s -> !selectWhitelist.contains(s.getId()));
+		else if (!selectAllowList.isEmpty()) {
+			selects.removeIf(s -> !selectAllowList.contains(s.getId()));
 		}
 
 		// Add default selects if none is present anymore
