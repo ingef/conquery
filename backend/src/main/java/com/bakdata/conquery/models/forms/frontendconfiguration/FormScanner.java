@@ -19,13 +19,12 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FormScanner extends Task{
+public class FormScanner extends Task {
 
 	public FormScanner() {
 		super("form-scanner");
@@ -136,9 +135,8 @@ public class FormScanner extends Task{
 	}
 
 	@Override
-	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
 		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
-		
 	}
 
 }

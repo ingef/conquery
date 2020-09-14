@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.functions.Collector;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -133,7 +134,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateDataset(Dataset dataset) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
 

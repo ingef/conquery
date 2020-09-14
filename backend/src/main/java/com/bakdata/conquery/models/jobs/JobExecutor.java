@@ -82,6 +82,7 @@ public class JobExecutor extends Thread {
 	}
 
 	public void close() {
+		log.info("Closing {}", getName());
 		closed.set(true);
 		Uninterruptibles.joinUninterruptibly(this);
 		JobMetrics.removeJobQueueSizeGauge(getName());
