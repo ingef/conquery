@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -8,6 +7,7 @@ import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.NamespaceCollection;
@@ -36,7 +36,7 @@ public class CentralRegistry implements Injectable {
 		}
 		Supplier<Identifiable<?>> supplier = cacheables.get(name);
 		if(supplier == null) {
-			throw new NoSuchElementException("Could not find an "+name.getClass().getSimpleName()+" element called '"+name+"'");
+			throw new ExecutionCreationResolveError(name);
 		}
 		return (T)supplier.get();
 	}

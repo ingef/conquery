@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -10,17 +11,19 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
-import com.bakdata.conquery.models.events.BucketManager;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,16 +53,17 @@ public class Workers extends NamespaceCollection {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 	
-	public Worker createWorker(WorkerInformation info, WorkerStorage storage) {
-		final JobManager jobManager = new JobManager(info.getName());
-		final BucketManager bucketManager = new BucketManager(jobManager, storage, info);
+	public Worker createWorker(WorkerStorage storage) {
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage);
+		
+		addWorker(worker);
 
-		storage.setBucketManager(bucketManager);
-
-
-		final QueryExecutor queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
-
-		final Worker worker = new Worker(info, jobManager, storage, queryExecutor, jobsThreadPool);
+		return worker;
+	}
+	
+	public Worker createWorker(Dataset dataset, StorageConfig storageConfig, @NonNull File directory, Validator validator) {
+		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, directory, validator);
+		
 		addWorker(worker);
 
 		return worker;
@@ -111,5 +115,12 @@ public class Workers extends NamespaceCollection {
 			}
 		}
 		return false;
+	}
+	
+	public void stop() {
+		jobsThreadPool.shutdown();
+		for (Worker w : workers.values()) {
+			w.close();
+		}
 	}
 }

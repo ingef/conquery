@@ -81,19 +81,19 @@ public class LoadingUtil {
 		}
 	}
 	
-	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables, Dataset dataset) throws IOException {
+	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables, Dataset dataset) throws Exception {
 		importTableContents(support, Arrays.asList(tables), dataset);
 	}
 	
-	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws IOException {
+	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
 		importTableContents(support, Arrays.asList(tables), support.getDataset());
 	}
 	
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws IOException {
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
 		importTableContents(support, tables, support.getDataset());
 	}
 	
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException {
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws Exception {
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : tables) {

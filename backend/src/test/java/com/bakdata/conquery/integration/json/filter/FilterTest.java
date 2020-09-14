@@ -68,7 +68,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	private VirtualConcept concept;
 
 	@Override
-	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
+	public void importRequiredData(StandaloneSupport support) throws Exception {
 
 		((ObjectNode) rawContent.get("tables")).put("name", "table");
 

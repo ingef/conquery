@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMENT;
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
 import java.util.Collection;
@@ -18,9 +19,10 @@ import javax.ws.rs.core.Response;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.resources.hierarchies.HRoles;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
-public class RoleResource extends HRoles {
+@Path(ROLES_PATH_ELEMENT)
+public class RoleResource extends HAdmin {
 
 	@POST
 	public Response postRole(Role role) throws JSONException {

@@ -4,19 +4,21 @@ import java.util.Collection;
 
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-
+import com.bakdata.conquery.resources.ResourceConstants;
 import freemarker.template.TemplateModel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class UIContext {
+	
+	private static final TemplateModel STAIC_URI_ELEMENTS = ResourceConstants.getAsTemplateModel();
 
 	@Getter
 	private final Namespaces namespaces;
 
 	@Getter
-	public final TemplateModel staticUriElem;
+	public final TemplateModel staticUriElem = STAIC_URI_ELEMENTS;
 
 	public boolean[] getWorkerStatuses() {
 		boolean[] result = new boolean[namespaces.getSlaves().values().size()];

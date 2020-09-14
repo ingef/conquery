@@ -71,7 +71,6 @@ import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
 import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
@@ -330,7 +329,7 @@ public class AdminProcessor {
 	}
 
 	public UIContext getUIContext() {
-		return new UIContext(namespaces, ResourceConstants.getAsTemplateModel());
+		return new UIContext(namespaces);
 	}
 
 	public TreeSet<User> getAllUsers() {
