@@ -1,7 +1,10 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -15,6 +18,7 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -68,7 +72,7 @@ public class StoredQueriesProcessor {
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatusWithSource(storage, null, user);
+		return query.buildStatus(storage, null, user, EnumSet.of(CreationFlag.WITH_COLUMN_DESCIPTION, CreationFlag.WITH_SOURCE));
 	}
 
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -22,7 +23,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.QueryUtils;
-import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -56,7 +56,7 @@ public class QueryCleanupTask extends Task {
 	}
 
 	@Override
-	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
 
 	    Duration queryExpiration = this.queryExpiration;
 
@@ -65,7 +65,7 @@ public class QueryCleanupTask extends Task {
 	            log.warn("Will not respect more than one expiration time. Have `{}`",parameters.get(EXPIRATION_PARAM));
             }
 
-            queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).asList().get(0));
+            queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).get(0));
         }
 
 	    if(queryExpiration == null){

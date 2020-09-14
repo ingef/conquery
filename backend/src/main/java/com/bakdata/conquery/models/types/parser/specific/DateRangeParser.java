@@ -2,11 +2,8 @@ package com.bakdata.conquery.models.types.parser.specific;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.NoopTransformer;
@@ -15,85 +12,98 @@ import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
+import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.PackedUnsigned1616;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
+@Slf4j
+@ToString(callSuper = true)
 public class DateRangeParser extends Parser<CDateRange> {
 
 	private boolean onlyQuarters = true;
+	private boolean anyOpen = false;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
-	
+
 	@Override
 	protected CDateRange parseValue(@Nonnull String value) throws ParsingException {
 		return DateRangeParser.parseISORange(value);
 	}
-	
+
 	@Override
 	protected void registerValue(CDateRange v) {
-		if(!v.isSingleQuarter()) {
-			onlyQuarters = false;
-		}
-		if(v.getMaxValue() > maxValue) {
-			maxValue = v.getMaxValue();
-		}
-		if(v.getMinValue() < minValue) {
-			minValue = v.getMinValue();
+		onlyQuarters = onlyQuarters && v.isSingleQuarter();
+		anyOpen = anyOpen || v.isOpen();
+
+		if (!anyOpen) {
+			maxValue = Math.max(maxValue, v.getMaxValue());
+			minValue = Math.min(minValue, v.getMinValue());
 		}
 	}
 
 	public static CDateRange parseISORange(String value) throws ParsingException {
-		if(value==null) {
+		if (value == null) {
 			return null;
 		}
 		String[] parts = StringUtils.split(value, '/');
-		if(parts.length!=2) {
+		if (parts.length != 2) {
 			throw ParsingException.of(value, "daterange");
 		}
-		DateFormats formats = DateFormats.instance();
-
 
 		return CDateRange.of(
-				formats.parseToLocalDate(parts[0]),
-				formats.parseToLocalDate(parts[1])
+				DateFormats.parseToLocalDate(parts[0]),
+				DateFormats.parseToLocalDate(parts[1])
 		);
 	}
-	
+
 	@Override
 	protected Decision<CDateRange, ?, ? extends CType<CDateRange, ?>> decideType() {
-		if(onlyQuarters) {
-			DateRangeTypeQuarter type = new DateRangeTypeQuarter();
+		// We cannot yet do meaningful compression for open dateranges.
+		// TODO: 27.04.2020 consider packed compression with extra value as null value.
+		if (anyOpen) {
 			return new Decision<>(
-				new Transformer<CDateRange, Integer>() {
-					@Override
-					public Integer transform(CDateRange value) {
-						return ((CDateRange)value).getMinValue();
-					}
-				},
-				type
+					new NoopTransformer<>(),
+					new DateRangeTypeDateRange()
 			);
 		}
-		if(maxValue - minValue <PackedUnsigned1616.MAX_VALUE) {
+
+		if (onlyQuarters) {
+			DateRangeTypeQuarter type = new DateRangeTypeQuarter();
+			return new Decision<>(
+					new Transformer<CDateRange, Integer>() {
+						@Override
+						public Integer transform(CDateRange value) {
+							return value.getMinValue();
+						}
+					},
+					type
+			);
+		}
+		// min or max can be Integer.MIN/MAX_VALUE when this happens, the left expression overflows causing it to be true when it is not.
+		// We allow this exception to happen as it would imply erroneous data.
+		if (Math.subtractExact(maxValue, minValue) < PackedUnsigned1616.MAX_VALUE) {
 			DateRangeTypePacked type = new DateRangeTypePacked();
 			type.setMinValue(minValue);
 			type.setMaxValue(maxValue);
+
+			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
+
 			return new Decision<>(
-				new Transformer<CDateRange, Integer>() {
-					@Override
-					public Integer transform(CDateRange value) {
-						CDateRange v = (CDateRange) value;
-						if(v.getMaxValue()>Integer.MAX_VALUE || v.getMinValue()<Integer.MIN_VALUE) {
-							throw new IllegalArgumentException(value+" is out of range");
+					new Transformer<CDateRange, Integer>() {
+						@Override
+						public Integer transform(CDateRange value) {
+							return PackedUnsigned1616.pack(value.getMinValue() - minValue, value.getMaxValue() - minValue);
 						}
-						return PackedUnsigned1616.pack(v.getMinValue()-minValue, v.getMaxValue()-minValue);
-					}
-				},
-				type
-			);	
+					},
+					type
+			);
 		}
-		
+
 		return new Decision<>(
-			new NoopTransformer<>(),
-			new DateRangeTypeDateRange()
+				new NoopTransformer<>(),
+				new DateRangeTypeDateRange()
 		);
 	}
 }

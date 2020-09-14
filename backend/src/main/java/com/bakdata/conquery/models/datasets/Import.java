@@ -53,7 +53,7 @@ public class Import extends NamedImpl<ImportId> {
 	public ImportId createId() {
 		return new ImportId(table, getName());
 	}
-	
+
 	@JsonIgnore
 	public int getNullWidth() {
 		//count the columns which can not store null
@@ -74,23 +74,24 @@ public class Import extends NamedImpl<ImportId> {
 		if(blockFactory == null) {
 			generateClasses();
 		}
-		
+
 		return blockFactory;
 	}
-	
+
 	public synchronized String getSuffix() {
 		if(suffix == null) {
 			suffix = UUID.randomUUID().toString().replace('-', '_')+"_"+ConqueryJavaEscape.escape(table.getTable())+"_"+ConqueryJavaEscape.escape(getName());
 		}
 		return suffix;
 	}
-	
+
 	private void generateClasses() {
 		String bucketSource = null;
 		String factorySource = null;
+
 		try {
 			ClassGenerator gen = new ClassGenerator();
-			
+
 			addClass(
 				gen,
 				"com.bakdata.conquery.models.events.generation.Bucket_"+getSuffix(),
@@ -102,7 +103,7 @@ public class Import extends NamedImpl<ImportId> {
 				"BlockFactoryTemplate.ftl"
 			);
 			gen.compile();
-			
+
 			blockFactory = (BlockFactory) gen
 				.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+getSuffix())
 				.getConstructor()
@@ -122,9 +123,9 @@ public class Import extends NamedImpl<ImportId> {
 	private String applyTemplate(String templateName) {
 		try(Reader reader = In.resource(BlockFactory.class, templateName).withUTF8().asReader();
 				StringWriter writer = new StringWriter()) {
-			
+
 			Configuration cfg = Freemarker.createForJavaTemplates();
-	
+
 			new Template("template_"+templateName, reader, cfg)
 				.process(
 					ImmutableMap
@@ -138,7 +139,7 @@ public class Import extends NamedImpl<ImportId> {
 						.build(),
 					writer
 			);
-			
+
 			writer.close();
 			return writer.toString();
 		} catch (TemplateException | IOException e) {
@@ -160,10 +161,10 @@ public class Import extends NamedImpl<ImportId> {
 			impCols[c] = col;
 		}
 		imp.setColumns(impCols);
-		
+
 		return imp;
 	}
-	
+
 	public long estimateMemoryConsumption() {
 		long mem = 0;
 		for(ImportColumn col:columns) {
@@ -171,4 +172,5 @@ public class Import extends NamedImpl<ImportId> {
 		}
 		return mem;
 	}
+
 }

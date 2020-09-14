@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -32,7 +32,7 @@ public class Table extends Labeled<TableId> {
 		return new TableId(Preconditions.checkNotNull(dataset.getId()), getName());
 	}
 
-	public List<Import> findImports(WorkerStorage storage) {
+	public List<Import> findImports(NamespacedStorage storage) {
 		return storage
 			.getAllImports()
 			.stream()

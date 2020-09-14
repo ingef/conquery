@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.Setter;

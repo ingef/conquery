@@ -2,16 +2,17 @@ package com.bakdata.conquery.integration.tests.deletion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -43,14 +44,14 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
 		// Read two JSONs with different Trees
 		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
-		final Namespace namespace = storage.getNamespaces().get(dataset);
+		final Dataset dataset = conquery.getDataset();
+		final Namespace namespace = storage.getNamespaces().get(dataset.getId());
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 
@@ -63,13 +64,13 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			IntegrationUtils.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -86,9 +87,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -135,9 +136,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -165,7 +166,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// Load a different concept with the same id (it has different children "C1" that are more than "A1")
 		{
 			// only import the deleted concept
-			IntegrationUtils.importConcepts(conquery, test2.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test2.getRawConcepts());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -181,9 +182,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -212,7 +213,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
+			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
 
 			log.info("Checking state after re-start");
 
@@ -225,9 +226,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 						.isNotEmpty();
 
-				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+						if (!value.getInfo().getDataset().equals(dataset)) {
 							continue;
 						}
 

@@ -1,41 +1,34 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
+import lombok.NonNull;
+import org.hibernate.validator.constraints.NotEmpty;
 
-public class ExternalNode extends QPChainNode {
+public class ExternalNode extends QPNode {
 
-	@Getter
-	private final DatasetId dataset;
-	@Getter @NotEmpty
+	private final TableId tableId;
+	private SpecialDateUnion dateUnion;
+
+	@Getter @NotEmpty @NonNull
 	private final Map<Integer, CDateSet> includedEntities;
+
 	private CDateSet contained;
-	
-	public ExternalNode(QPNode child, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
-		super(child);
-		this.dataset = dataset;
-		this.includedEntities = Objects.requireNonNullElse(
-			includedEntities,
-			Collections.emptyMap()
-		);
+
+	public ExternalNode(TableId tableId, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnion) {
+		this.dateUnion = dateUnion;
+		this.includedEntities = includedEntities;
+		this.tableId = tableId;
 	}
 
 	@Override
@@ -46,44 +39,37 @@ public class ExternalNode extends QPChainNode {
 	
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		return new ExternalNode(getChild().clone(ctx), dataset, includedEntities);
+		return new ExternalNode(tableId, includedEntities, ctx.clone(dateUnion));
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if(contained != null) {
 			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained);
-			super.nextTable(
-				ctx.withDateRestriction(newSet),
-				currentTable
-			);
+			ctx = ctx.withDateRestriction(newSet);
 		}
-		else
-			super.nextTable(ctx, currentTable);
+
+		super.nextTable(ctx, currentTable);
+		dateUnion.nextTable(getContext(), currentTable);
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if(contained != null) {
-			getChild().nextEvent(bucket, event);
+			dateUnion.acceptEvent(bucket, event);
 		}
 	}
 	
 	@Override
 	public boolean isContained() {
-		return getChild().isContained();
+		return contained != null && !contained.isEmpty();
 	}
 	
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
 		//add the allIdsTable
-		requiredTables.add(
-			new TableId(
-				dataset,
-				ConqueryConstants.ALL_IDS_TABLE
-			)
-		);
+		requiredTables.add(tableId);
 	}
 }

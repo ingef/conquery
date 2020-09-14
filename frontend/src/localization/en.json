@@ -1,6 +1,10 @@
 {
   "locale": "en",
   "headline": "Queries and Analyses",
+  "errorCodes": {
+    "EXAMPLE_ERROR": "This is an example error",
+    "EXAMPLE_ERROR_INTERPOLATED": "This is a {adjective} example error"
+  },
   "leftPane": {
     "conceptTrees": "Concepts",
     "previousQueries": "Queries",
@@ -119,7 +123,13 @@
     "addTag": "Add Tag",
     "share": "Share",
     "shared": "Shared",
-    "loading": "Loading ..."
+    "loading": "Loading ...",
+    "average": "Average",
+    "median": "Median",
+    "min": "Min",
+    "max": "Max",
+    "std": "SD",
+    "logout": "Logout"
   },
   "tooltip": {
     "headline": "Info",
@@ -325,7 +335,8 @@
   "preview": {
     "preview": "Preview",
     "headline": "Results preview",
-    "explanation": "Visualizes the CSV file for the results",
+    "previewHeadline": "The first {count} lines from the results",
+    "statisticsHeadline": "Statistics by column based on the full results",
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
@@ -349,5 +360,12 @@
     "retagError": "Could not save tags",
     "shareError": "Could not share form configuration",
     "deleteError": "Could not delete form configuration"
+  },
+  "deleteFormConfigModal": {
+    "areYouSure": "Are you sure you want to delete this form configuration?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Back to default view",
+    "closeAll": "Close all concepts"
   }
 }

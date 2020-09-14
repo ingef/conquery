@@ -11,22 +11,26 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
+import com.bakdata.conquery.util.io.ConqueryFileUtil;
+import lombok.Getter;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 
-import com.bakdata.conquery.util.io.ConqueryFileUtil;
-
+// TODO: 27.04.2020 This whole class is a mess. The random access file is only ever used to read just the header and the ability to write the header after the body. Both parts are read/written linearly.
 public class HCFile implements Closeable {
 	
 	private RandomAccessFile raf;
 	private File tmpFile;
 	private BufferedOutputStream tmpOut;
-	
+	@Getter
+	private final boolean write;
+
 	public HCFile(File f, boolean write) throws IOException {
+		this.write = write;
 		this.raf = new RandomAccessFile(f, write?"rw":"r");
-		
+
 		//if write we reserve space for the content starting position
 		if(write) {
 			raf.writeLong(-1);

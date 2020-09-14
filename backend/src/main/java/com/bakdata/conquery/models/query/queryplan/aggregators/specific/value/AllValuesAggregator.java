@@ -22,7 +22,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.has(event, getColumn())) {
 			entries.add((VALUE) getColumn().getTypeFor(bucket).createPrintValue(bucket.getRaw(event, getColumn())));
 		}

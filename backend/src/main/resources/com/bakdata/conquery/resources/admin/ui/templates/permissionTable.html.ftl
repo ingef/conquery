@@ -11,23 +11,26 @@
         </thead>
         <tbody>
             <#list permissions as permission>
+                <#assign domains=permission.getDomains()>
+                <#assign abilities=permission.getAbilities()>
+                <#assign targets=permission.getTargets()>
                 <tr>
                     <td>
-                        <#if permission.left.domains?has_content>
-                            <#list permission.left.domains as domain>${domain} </#list>
+                        <#if domains?has_content>
+                            <#list domains as domain>${domain} </#list>
                         </#if>
                     <td>
-                        <#if permission.left.abilities?has_content>
-                            <#list permission.left.abilities as ability>${ability} </#list>
+                        <#if abilities?has_content>
+                            <#list abilities as ability>${ability} </#list>
                         </#if>
                     </td>
                     <td>
-                        <#if permission.left.targets?has_content>
-                            <#list permission.left.targets as target> ${target} </#list>
+                        <#if targets?has_content>
+                            <#list targets as target> ${target} </#list>
                         </#if>
                     </td>
-                    <td>${permission.left.creationTime}</td>
-                    <td><a href="#" onclick="handleDeletePermission('${permission.right}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
+                    <td>${permission.creationTime}</td>
+                    <td><a href="#" onclick="handleDeletePermission('${permission.rawPermission}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
                 </tr>
             </#list>
         </tbody>

@@ -22,7 +22,7 @@ public class GroupHandlingTest extends IntegrationTest.Simple implements Program
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 		
 		try {
 			storage.addGroup(group1);

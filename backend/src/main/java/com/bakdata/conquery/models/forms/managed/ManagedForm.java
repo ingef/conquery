@@ -19,7 +19,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ExecutionStatus.WithSingleQuery;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -32,7 +32,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -48,7 +47,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.hk2.api.MultiException;
 
 /**
  * Internal runtime representation of a form query.
@@ -136,16 +134,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public void addResult(@NonNull MasterMetaStorage storage, FormSharedResult result) {
 		ManagedExecutionId subquery = result.getSubqueryId();
-		if (subquery == null) {
-			fail(storage);
-			log.warn(
-				"Form failed in query plan creation. ",
-				new MultiException(result.getResults().stream()
-					.filter(r -> (r instanceof FailedEntityResult))
-					.map(FailedEntityResult.class::cast)
-					.map(FailedEntityResult::getThrowable)
-					.collect(Collectors.toList())));
-			return;
+		if(result.getError().isPresent()) {
+			fail(storage, result.getError().get());
+			return;			
 		}
 		ManagedQuery subQuery = flatSubQueries.get(subquery);
 		subQuery.addResult(storage, result);
@@ -157,7 +148,10 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 				break;
 			case FAILED:
 				// Fail the whole execution if a subquery fails
-				fail(storage);
+				fail(storage, result.getError().orElseThrow(
+						() -> new IllegalStateException(String.format("Query [%s] failed but no error was set.",getId()))
+					)
+				);
 				break;
 			case CANCELED:
 				// Ideally sub queries can not be canceled by a user, so do nothing
@@ -224,8 +218,8 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, WithSingleQuery status) {
-		super.setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
 			// If subqueries was not set the Execution was not initialized
@@ -246,7 +240,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			return;
 		}
 		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions());
-		
 	}
 
 

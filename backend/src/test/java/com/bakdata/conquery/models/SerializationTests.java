@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -24,8 +23,10 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
@@ -206,5 +207,23 @@ public class SerializationTests {
 		SerializationTestUtil
 			.forType(ManagedExecution.class)
 			.test(execution);
+	}
+	
+	@Test
+	public void executionCreationPlanError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
+		
+		SerializationTestUtil
+			.forType(ConqueryError.class)
+			.test(error);
+	}
+	
+	@Test
+	public void executionCreationResolveError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test"));
+		
+		SerializationTestUtil
+			.forType(ConqueryError.class)
+			.test(error);
 	}
 }

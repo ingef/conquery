@@ -3,20 +3,20 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -37,12 +37,12 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
-		final Namespace namespace = storage.getNamespaces().get(dataset);
+		final Dataset dataset = conquery.getDataset();
+		final Namespace namespace = storage.getNamespaces().get(dataset.getId());
 
 		final TableId tableId = TableId.Parser.INSTANCE.parse(dataset.getName(), "test_table2");
 
@@ -53,13 +53,13 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			IntegrationUtils.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -73,9 +73,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(tableId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -120,16 +120,16 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 			// We have deleted an import now there should be two less!
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 2);
+			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 1);
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
 					.filteredOn(imp -> imp.getId().getTable().equals(tableId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -160,26 +160,26 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Load the same import into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), Arrays.stream(test.getContent().getTables())
+			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), test.getContent().getTables().stream()
 																				   .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
 																				   .map(RequiredTable::toTable).findFirst().get());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables().stream()
 																 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
 																 .collect(Collectors.toList()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 
-			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
+			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			assertThat(namespace.getDataset().getTables().getOptional(tableId))
 					.describedAs("Table after re-import.")
 					.isPresent();
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -197,9 +197,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after re-import");
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -225,16 +225,16 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
+			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
 
 			log.info("Checking state after re-start");
 
 			{
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+						if (!value.getInfo().getDataset().equals(dataset)) {
 							continue;
 						}
 

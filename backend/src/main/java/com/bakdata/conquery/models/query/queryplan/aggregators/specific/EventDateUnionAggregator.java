@@ -5,7 +5,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -34,7 +33,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		validityDateColumn = Objects.requireNonNull(ctx.getValidityDateColumn());
 		if (!validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
@@ -55,7 +54,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 	}
 
 	@Override
-	public void aggregateEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}

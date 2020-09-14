@@ -2,13 +2,16 @@ package com.bakdata.conquery.util.progressreporter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 @JsonDeserialize(as = ImmutableProgressReporter.class)
 public interface ProgressReporter {
+
 	public static ProgressReporter createStarted() {
 		ProgressReporter pr = new ProgressReporterImpl();
 		pr.start();
 		return pr;
 	}
+
 	public static ProgressReporter createWaiting() {
 		return new ProgressReporterImpl();
 	}
@@ -23,13 +26,18 @@ public interface ProgressReporter {
 	long getWaitedSeconds();
 	long getStartTime();
 	boolean isStarted();
-	
-	
+
+
 	double getProgress();
-	ProgressReporter subJob(double steps);
+
+	ProgressReporter subJob(long steps);
 	String getEstimate();
-	void report(double steps);
-	void setMax(double max);
+
+	void report(int steps);
+
+	void setMax(long max);
+	long getMax();
+
 	void done();
 	boolean isDone();
 }

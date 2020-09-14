@@ -16,7 +16,7 @@ public final class PackedUnsigned1616 {
 
     private void check(int v) {
 		if(v < 0 || v > MAX_VALUE) {
-			throw new IllegalArgumentException("Packed unsigned16 must be in [0;"+MAX_VALUE+"]");
+			throw new IllegalArgumentException(String.format("Packed unsigned16 must be in [0;%d], but %d is not.", MAX_VALUE, v));
 		}
 	}
 

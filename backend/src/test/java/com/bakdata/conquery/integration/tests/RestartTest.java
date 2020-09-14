@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -69,7 +70,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		test.executeTest(conquery);
 
 		// IDMapping Testing
-		NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
+		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 
 		namespaceStorage.updateIdMapping(persistentIdMap);
 
@@ -113,6 +114,10 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.deleteGroup(groupToDelete.getId());
 		}
 
+		// TODO: 21.07.2020 FK: This is temporary logging for finding a bug in CI.
+		final int entityBucketSizeBeforeRestart = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+		log.info("Configured bucket size = {}", entityBucketSizeBeforeRestart);
+
 		testConquery.shutdown(conquery);
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
@@ -124,7 +129,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(support);
 
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		assertThat(entityBucketSizeBeforeRestart).isEqualTo(ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
+
+		MasterMetaStorage storage = conquery.getMasterMetaStorage();
 
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());
@@ -145,11 +152,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		}
 
-		PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
-															  .getMaster()
-															  .getNamespaces()
-															  .get(dataset)
-															  .getStorage()
+		PersistentIdMap persistentIdMapAfterRestart = conquery.getNamespaceStorage()
 															  .getIdMapping();
 		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 	}
