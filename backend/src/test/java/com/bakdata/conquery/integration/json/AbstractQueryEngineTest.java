@@ -23,8 +23,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -64,12 +62,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		if (managed.getState() == ExecutionState.FAILED) {
-			managed
-				.getResults()
-				.stream()
-				.filter(EntityResult::isFailed)
-				.map(FailedEntityResult.class::cast)
-				.forEach(r->log.error("Failure in query " + managed.getId(), r.getThrowable()));
+			log.error("Failure in query {}. The error was: {}" + managed.getId(),managed.getError());
 			fail("Query failed (see above)");
 		}
 		

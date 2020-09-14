@@ -5,8 +5,7 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-
-import jersey.repackaged.com.google.common.collect.Iterators;
+import com.google.common.collect.Iterators;
 
 public class DirectDictionary extends AStringType<Integer> {
 

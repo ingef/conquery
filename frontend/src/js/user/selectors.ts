@@ -94,5 +94,5 @@ export function useHideLogoutButton() {
     (state) => state.user.me
   );
 
-  return !!me && !!me.hideLogoutButton;
+  return !!me && (me.hideLogoutButton === undefined || !!me.hideLogoutButton);
 }

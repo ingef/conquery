@@ -1,14 +1,22 @@
 <#macro entityOverview pathBase entities entityName>
     <div class="row">
 		<div class="col">
-			<ul>
-			<#list entities as entity>
-				<li>
-					<a href="${pathBase}${entity.id}">${entity.label}</a> 
-					<a href="" onclick="event.preventDefault(); fetch('${pathBase}${entity.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-				</li>
-			</#list>
-			</ul>
+            <table class="table table-striped">
+                <thead>
+                    <td>Label</td>
+                    <td>Id</td>
+                    <td></td>
+                </thead>
+                <tbody>
+                <#list entities as entity>
+                    <tr>
+                        <td><a href="${pathBase}${entity.id}">${entity.label}</a></td>
+                        <td><a href="${pathBase}${entity.id}">${entity.name}</a></td>
+                        <td><a href="" onclick="deleteEntity('${entity.id}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
+                    </tr>
+                </#list>
+                </tbody>
+            </table>
 			<button class="btn btn-primary" onclick="downloadEntities()">Download</button>
 			<form>
 				<div class="form-group">
@@ -49,6 +57,12 @@
                 uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(json));
                 newWindow = window.open(uriContent, 'entities');
                 });
+        }
+
+        function deleteEntity(entityId){
+            event.preventDefault();
+            fetch('${pathBase}'+entityId, {method: 'delete'})
+                .then(function(){location.reload();});
         }
 	
 	</script>
