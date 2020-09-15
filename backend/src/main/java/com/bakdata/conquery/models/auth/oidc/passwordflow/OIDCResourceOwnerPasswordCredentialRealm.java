@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
@@ -128,11 +129,11 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		LocalDateTime expTime = tokenInstrospection.getExpirationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 		LocalDateTime now = LocalDateTime.now();
 		
-		if(expTime.isBefore(now)) {
+		boolean result = expTime.isBefore(now);
+		if(result) {
 			log.debug("Provided token expired at {} ( now is {})", expTime, now);
-			return false;
 		}
-		return true;
+		return result;
 	}
 
 	/**
@@ -182,8 +183,6 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 
 		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
 		
-		UriBuilder.fromUri(serverConf.getTokenEndpoint()).build();
-				
 		URI tokenEndpoint =  UriBuilder.fromUri(serverConf.getTokenEndpoint()).build();
 
 		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, clientAuthentication, grant, Scope.parse("openid"));
