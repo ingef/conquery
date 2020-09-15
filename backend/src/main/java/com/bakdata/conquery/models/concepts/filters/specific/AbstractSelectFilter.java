@@ -37,7 +37,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 	
-	protected Set<String> values;
+	protected Set<String> values = new HashSet<>();
 	@JsonIgnore
 	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
@@ -61,7 +61,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		f.setTemplate(getTemplate());
 		f.setType(filterType);
 
-		if (values == null) {
+		if (values == null || values.isEmpty()) {
 			return;
 		}
 
