@@ -4,16 +4,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * A group consists of users and permissions. The permissions held by the group
@@ -24,27 +18,13 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Slf4j
 public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
-	@Getter
-	@Setter
-	@NonNull
-	@NotNull
-	@NotEmpty
-	private String name;
-	@Getter
-	@Setter
-	@NonNull
-	@NotNull
-	@NotEmpty
-	private String label;
-
 	@MetaIdRefCollection
 	private Set<User> members = Collections.synchronizedSet(new HashSet<>());
 	@MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet(new HashSet<>());
 
 	public Group(String name, String label) {
-		this.name = name;
-		this.label = label;
+		super(name, label);
 	}
 
 	@Override
@@ -96,5 +76,4 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public Set<Role> getRoles() {
 		return Collections.unmodifiableSet(roles);
 	}
-
 }

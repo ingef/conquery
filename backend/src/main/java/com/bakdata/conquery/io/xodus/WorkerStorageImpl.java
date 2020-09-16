@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -119,7 +120,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void setWorker(WorkerInformation worker) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void setWorker(WorkerInformation worker) {
 		this.worker.add(worker);
 	}
 

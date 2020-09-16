@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -7,7 +8,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JobManager {
+public class JobManager implements Closeable{
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
 
@@ -32,11 +33,6 @@ public class JobManager {
 		return slowExecutor.getJobs();
 	}
 
-	public void stop() throws Exception {
-		fastExecutor.close();
-		slowExecutor.close();
-	}
-
 	public JobManagerStatus reportStatus() {
 		return new JobManagerStatus(
 				getSlowJobs()
@@ -52,5 +48,11 @@ public class JobManager {
 
 	public boolean cancelJob(UUID jobId) {
 		return fastExecutor.cancelJob(jobId) || slowExecutor.cancelJob(jobId);
+	}
+
+	@Override
+	public void close() {
+		fastExecutor.close();
+		slowExecutor.close();
 	}
 }

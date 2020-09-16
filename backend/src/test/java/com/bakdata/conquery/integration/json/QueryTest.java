@@ -2,8 +2,6 @@ package com.bakdata.conquery.integration.json;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
-import java.io.IOException;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -11,8 +9,6 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -50,7 +46,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 	}
 
 	@Override
-	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
+	public void importRequiredData(StandaloneSupport support) throws Exception {
 		importTables(support, content);
 		support.waitUntilWorkDone();
 

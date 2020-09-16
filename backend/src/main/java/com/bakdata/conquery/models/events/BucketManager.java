@@ -74,7 +74,7 @@ public class BucketManager {
 
 	@SneakyThrows
 	public void fullUpdate() {
-		for (Concept<?> c : concepts) {
+		for (Concept<?> c : concepts.values()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 
@@ -111,11 +111,11 @@ public class BucketManager {
 			}
 		}
 
-		for (Bucket bucket : buckets) {
+		for (Bucket bucket : buckets.values()) {
 			registerBucket(bucket);
 		}
 
-		for (CBlock cBlock : cBlocks) {
+		for (CBlock cBlock : cBlocks.values()) {
 			registerCBlock(cBlock);
 		}
 	}
@@ -165,7 +165,7 @@ public class BucketManager {
 		buckets.add(bucket);
 		registerBucket(bucket);
 
-		for (Concept<?> c : concepts) {
+		for (Concept<?> c : concepts.values()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());

@@ -12,6 +12,7 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -49,8 +50,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
-		final Namespace namespace = storage.getNamespaces().get(dataset);
+		final Dataset dataset = conquery.getDataset();
+		final Namespace namespace = storage.getNamespaces().get(dataset.getId());
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 
@@ -88,7 +89,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -137,7 +138,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -183,7 +184,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			for (SlaveCommand slave : conquery.getSlaves()) {
 				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -212,7 +213,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
+			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
 
 			log.info("Checking state after re-start");
 
@@ -227,7 +228,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				for (SlaveCommand slave : conquery2.getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+						if (!value.getInfo().getDataset().equals(dataset)) {
 							continue;
 						}
 
