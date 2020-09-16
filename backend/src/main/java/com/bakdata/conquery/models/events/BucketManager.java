@@ -383,21 +383,6 @@ public class BucketManager {
 	 */
 	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
 
-	public boolean hasEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
-
-		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(connectorId);
-
-		if(forConnector == null){
-			return false;
-		}
-
-		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
-
-		final List<CBlock> forBucket = forConnector.get(bucketId);
-
-		return forBucket != null;
-	}
-
 
 	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
 
