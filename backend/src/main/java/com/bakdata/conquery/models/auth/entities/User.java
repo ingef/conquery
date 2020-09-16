@@ -26,7 +26,6 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	@MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
 
-	
 	@Getter @Setter @JsonIgnore
 	private transient boolean displayLogout = true;
 

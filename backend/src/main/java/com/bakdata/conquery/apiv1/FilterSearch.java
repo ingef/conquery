@@ -162,4 +162,8 @@ public class FilterSearch {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
 		}
 	}
+	
+	public static void clear() {
+		search.clear();
+	}
 }
