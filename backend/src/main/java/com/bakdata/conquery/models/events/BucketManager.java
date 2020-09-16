@@ -402,7 +402,7 @@ public class BucketManager {
 
 		Map<BucketId, CBlock> out = new Object2ObjectArrayMap<>(forBucket.size());
 
-		for (CBlock cBlock : this.cBlocks) {
+		for (CBlock cBlock : this.cBlocks.values()) {
 			out.put(cBlock.getBucket(), cBlock);
 		}
 
