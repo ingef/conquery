@@ -13,6 +13,9 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Helper class for preprocessed files when they are imported and need to be initialied in a dataset.
+ */
 @Slf4j
 public class InitializablePreprocessedHeader extends PreprocessedHeader {
 	
