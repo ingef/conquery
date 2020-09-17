@@ -79,7 +79,6 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
-import com.esotericsoftware.kryo.io.Input;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Multimap;
 import com.jakewharton.byteunits.BinaryByteUnit;
@@ -110,7 +109,7 @@ public class AdminProcessor {
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final int entityBucketSize;
 
-	public void addTable(Dataset dataset, Table table) throws JSONException {
+	public void addTable(Dataset dataset, Table table) {
 		Objects.requireNonNull(dataset);
 		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
@@ -148,7 +147,7 @@ public class AdminProcessor {
 		// see #144 check duplicate names
 	}
 
-	public Dataset addDataset(String name) throws JSONException {
+	public Dataset addDataset(String name) {
 		// create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);

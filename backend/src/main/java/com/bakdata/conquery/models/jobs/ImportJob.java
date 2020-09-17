@@ -2,6 +2,19 @@ package com.bakdata.conquery.models.jobs;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+
+import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.HCFile;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -49,7 +62,6 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 @Slf4j
 public class ImportJob extends Job {
-
 	private final Namespace namespace;
 	private final File importFile;
 	private final int entityBucketSize;
