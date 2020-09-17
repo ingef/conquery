@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,46 +63,106 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		List<DateContext> contexts = DateContext
 			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
 
-		SubResult featureResult = executeSubQuery(ctx, FeatureGroup.FEATURE, entity, contexts);
-		SubResult outcomeResult = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
+		FormQueryPlan featureSubquery = executeSubQuery(ctx, FeatureGroup.FEATURE, entity, contexts);
+		FormQueryPlan outcomeSubquery = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
 
-		List<Object[]> values = new ArrayList<>();
-		// We look at the first result line to determine the length of the subresult
-		int featureLength = featureResult.getValues().get(0).length;
-		int outcomeLength = outcomeResult.getValues().get(0).length;
-		
+		EntityResult featureResult = featureSubquery.execute(ctx, entity);
+		EntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
+
+		// on fail return failed result
+		if (featureResult.isFailed()) {
+			return featureResult;
+		}
+		if (outcomeResult.isFailed()) {
+			return outcomeResult;
+		}
+
+		// Check if the result is processible (type is multiline or not contained)
+		assertProcessible(featureResult);
+		assertProcessible(outcomeResult);
+
+		if (!featureResult.isContained() && !outcomeResult.isContained()) {
+			// if both, feature and outcome are not contained fast quit.
+			return EntityResult.notContained();
+		}
+
+		// determine result length and check against aggregators in query
+		int featureLength = determineResultWidth(featureSubquery, featureResult);
+		int outcomeLength = determineResultWidth(outcomeSubquery, outcomeResult);
+
 		/*
-		 *  Whole result is the concatenation of the subresults. The final output format combines resolution info, index and eventdate of both sub queries.
-		 *  The feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... 
-		 *  The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 * Whole result is the concatenation of the subresults. The final output format
+		 * combines resolution info, index and eventdate of both sub queries. The
+		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX],
+		 * [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... The wanted
+		 * format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR],
+		 * [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
 		 */
-		int size = featureLength + outcomeLength - 3/*= [RESOLUTION], [INDEX], [EVENTDATE]*/;
+		int size = featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 
 		int resultStartIndex = 0;
-		if(hasCompleteDateContexts(contexts)) {
-			// merge a line for the complete daterange, when two dateContext were generated that don't target the same feature group,
+		List<Object[]> values = new ArrayList<>();
+		if (hasCompleteDateContexts(contexts)) {
+			// merge a line for the complete daterange, when two dateContext were generated
+			// that don't target the same feature group,
 			// which would be a mistake by the generation
-			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE is the coarsed resolution it must be at the first
+			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE
+			// is the coarsed resolution it must be at the first
 			// to indexes of the list.
 			Object[] mergedFull = new Object[size];
-			setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
-			setOutcomeValues(mergedFull, outcomeResult.getValues().get(resultStartIndex), featureLength);
+			if (featureResult.isContained()) {
+				setFeatureValues(mergedFull, ((MultilineContainedEntityResult) featureResult).getValues().get(resultStartIndex));
+			}
+			if (outcomeResult.isContained()) {
+				setOutcomeValues(
+					mergedFull,
+					((MultilineContainedEntityResult) outcomeResult).getValues().get(resultStartIndex),
+					featureLength);
+			}
 			values.add(mergedFull);
 			resultStartIndex++;
 		}
 
 		// append all other lines directly
-		for (int i = resultStartIndex; i < featureResult.getValues().size(); i++) {
-			Object[] result = new Object[size];
-			setFeatureValues(result, featureResult.getValues().get(i));
-			values.add(result);
+		if (featureResult.isContained()) {
+			MultilineContainedEntityResult multiresult = ((MultilineContainedEntityResult) featureResult);
+			for (int i = resultStartIndex; i < multiresult.getValues().size(); i++) {
+				Object[] result = new Object[size];
+				setFeatureValues(result, multiresult.getValues().get(i));
+				values.add(result);
+			}
 		}
-		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
-			Object[] result = new Object[size];
-			setOutcomeValues(result, outcomeResult.getValues().get(i), featureLength);
-			values.add(result);
+		if (outcomeResult.isContained()) {
+			MultilineContainedEntityResult multiresult = ((MultilineContainedEntityResult) outcomeResult);
+			for (int i = resultStartIndex; i < multiresult.getValues().size(); i++) {
+				Object[] result = new Object[size];
+				setOutcomeValues(result, multiresult.getValues().get(i), featureLength);
+				values.add(result);
+			}
 		}
 		return EntityResult.multilineOf(entity.getId(), values);
+	}
+
+	private int determineResultWidth(FormQueryPlan subquery, EntityResult subResult) {
+		// This is sufficient for NOT_CONTAINTED subresults
+		int resultWidth = subquery.columnCount();
+		// When it's a contained result also check whether the result really has the awaited width
+		if (subResult.isContained()) {
+			int resultColumnCount = subResult.asContained().columnCount();
+			if(resultColumnCount != resultWidth) {				
+				throw new IllegalStateException(String
+					.format("Aggregator number (%d) and result number (%d) are not the same", resultWidth, resultColumnCount));
+			}
+		}
+		return resultWidth;
+	}
+
+	private void assertProcessible(EntityResult result) {
+		if (!(result instanceof MultilineContainedEntityResult) && result.isContained()) {
+			throw new IllegalStateException(String.format(
+				"The relative form queryplan only handles MultilineContainedEntityResult and NotContainedEntityResults. Was %s",
+				result.getClass()));
+		}
 	}
 
 	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
@@ -113,14 +172,13 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
 	}
 
-	private SubResult executeSubQuery(QueryExecutionContext ctx, FeatureGroup featureGroup, Entity entity, List<DateContext> contexts) {
+	private FormQueryPlan executeSubQuery(QueryExecutionContext ctx, FeatureGroup featureGroup, Entity entity, List<DateContext> contexts) {
 		List<DateContext> list = new ArrayList<>(contexts);
 		list.removeIf(dctx -> dctx.getFeatureGroup() != featureGroup);
 
 		ArrayConceptQueryPlan subPlan = featureGroup == FeatureGroup.FEATURE ? featurePlan : outcomePlan;
 
-		FormQueryPlan sub = new FormQueryPlan(list,subPlan);
-		return new SubResult((MultilineContainedEntityResult) sub.execute(ctx, entity));
+		return new FormQueryPlan(list,subPlan);
 	}
 	
 	private void setFeatureValues(Object[] result, Object[] value) {
@@ -161,16 +219,6 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return query.isOfInterest(entity);
+		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity) || outcomePlan.isOfInterest(entity);
 	}
-	
-	@AllArgsConstructor
-	private static class SubResult {
-		private MultilineContainedEntityResult result;
-		
-		public List<Object[]> getValues() {
-			return result.getValues();
-		}
-	}
-
 }

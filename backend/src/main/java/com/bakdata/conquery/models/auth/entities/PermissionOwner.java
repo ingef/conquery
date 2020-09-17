@@ -1,16 +1,23 @@
 package com.bakdata.conquery.models.auth.entities;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * The base class of security subjects in this project. Used to represent
@@ -20,10 +27,31 @@ import org.apache.shiro.authz.Permission;
  *            The id type by which an instance is identified
  */
 @Slf4j
-public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> {
+public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
+	
+	private static final Comparator<PermissionOwner<?>> COMPARATOR = Comparator.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
 
+	@Getter
+	@Setter
+	@NonNull
+	@NotNull
+	@NotEmpty
+	protected String name;
+	
+	@Getter
+	@Setter
+	@NonNull
+	@NotNull
+	@NotEmpty
+	protected String label;
 	
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
+	
+	
+	public PermissionOwner(String name, String label) {
+		this.name = name;
+		this.label = label;
+	}
 	
 
 	/**
@@ -112,5 +140,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * Update this instance in the {@link MasterMetaStorage}.
 	 */
 	protected abstract void updateStorage(MasterMetaStorage storage);
+	
+	
+	@Override
+	public int compareTo(PermissionOwner<?> other) {
+		return COMPARATOR.compare(this, other);
+	}
 
 }

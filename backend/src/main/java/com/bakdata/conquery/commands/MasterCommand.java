@@ -40,6 +40,7 @@ import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
+import com.bakdata.conquery.tasks.ClearFilterSourceSearch;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Throwables;
@@ -155,7 +156,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		}
 
 		admin = new AdminServlet();
-		admin.register(this, authController);
+		admin.register(this);
 
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
@@ -177,6 +178,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getQuantity(),
 						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
+		environment.admin().addTask(new ClearFilterSourceSearch());
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
@@ -240,21 +242,16 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
-		jobManager.stop();
+		jobManager.close();
 
+		namespaces.close();
+		
 		try {
 			acceptor.dispose();
 		} catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
-		for (Namespace namespace : namespaces.getNamespaces()) {
-			try {
-				namespace.getStorage().close();
-			} catch (Exception e) {
-				log.error(namespace + " could not be closed", e);
-			}
-
-		}
+		
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();

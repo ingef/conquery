@@ -31,4 +31,9 @@ public class SinglelineContainedEntityResult implements ContainedEntityResult, S
 	public boolean isContained() {
 		return true;
 	}
+
+	@Override
+	public int columnCount() {
+		return values.length;
+	}
 }
