@@ -402,11 +402,19 @@ public class BucketManager {
 
 		Map<BucketId, CBlock> out = new Object2ObjectArrayMap<>(forBucket.size());
 
-		for (CBlock cBlock : this.cBlocks.values()) {
+		for (CBlock cBlock : forBucket) {
 			out.put(cBlock.getBucket(), cBlock);
 		}
 
 		return out;
+	}
+
+	public boolean hasEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
+
+		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(connectorId);
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+
+		return forConnector != null && forConnector.containsKey(bucketId);
 	}
 
 	/**

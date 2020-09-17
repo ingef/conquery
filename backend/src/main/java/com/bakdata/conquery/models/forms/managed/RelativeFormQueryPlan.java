@@ -62,8 +62,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		List<DateContext> contexts = DateContext
 			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
 
-		FormQueryPlan featureSubquery = executeSubQuery(ctx, FeatureGroup.FEATURE, entity, contexts);
-		FormQueryPlan outcomeSubquery = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
+		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
+		FormQueryPlan outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
 
 		EntityResult featureResult = featureSubquery.execute(ctx, entity);
 		EntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
@@ -171,13 +171,11 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
 	}
 
-	private FormQueryPlan executeSubQuery(QueryExecutionContext ctx, FeatureGroup featureGroup, Entity entity, List<DateContext> contexts) {
+	private FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {
 		List<DateContext> list = new ArrayList<>(contexts);
 		list.removeIf(dctx -> dctx.getFeatureGroup() != featureGroup);
 
-		ArrayConceptQueryPlan subPlan = featureGroup == FeatureGroup.FEATURE ? featurePlan : outcomePlan;
-
-		return new FormQueryPlan(list,subPlan);
+		return new FormQueryPlan(list, subPlan);
 	}
 	
 	private void setFeatureValues(Object[] result, Object[] value) {
