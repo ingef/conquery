@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ComparisonChain;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -48,10 +49,10 @@ public class Column extends Labeled<ColumnId> {
 	}
 
 	public boolean matches(PPColumn column) {
-		if (!this.getName().equals(column.getName())) {
-			return false;
-		}
-		return this.getType().equals(column.getType().getTypeId());
+		return ComparisonChain.start()
+			.compare(this.getName(), column.getName())
+			.compare(this.getType(), column.getType().getTypeId())
+			.result() == 0;
 	}
 
 	public CType getTypeFor(Bucket bucket) {

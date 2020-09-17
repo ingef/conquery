@@ -1,16 +1,7 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.function.Consumer;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -21,12 +12,13 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
+import com.bakdata.conquery.models.preproc.InitializablePreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -42,9 +34,6 @@ import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -52,33 +41,44 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.*;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 @RequiredArgsConstructor
 @Slf4j
 public class ImportJob extends Job {
 
-	private final ObjectReader headerReader = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class);
-
 	private final Namespace namespace;
-	private final TableId table;
 	private final File importFile;
 	private final int entityBucketSize;
 
+	private transient String targetTable = "not yet determined";
+
 	@Override
-	public void execute() throws JSONException {
+	public void execute() throws JSONException, IOException {
 		getProgressReporter().setMax(7);
 
-		try (HCFile file = new HCFile(importFile, false)) {
+		try (HCFile hcFile = new HCFile(importFile, false)) {
+			InitializablePreprocessedHeader header = hcFile.readHeader();
+			header.initDataset(namespace);
+			targetTable = header.getTargetTable().toString();
 
-			if (log.isInfoEnabled()) {
-				log.info("Reading HCFile {}: header size: {}  content size: {}", importFile, BinaryByteUnit.format(file.getHeaderSize()), BinaryByteUnit.format(file.getContentSize()));
+			final ImportId importId = header.generateImportId();
+
+			if (namespace.getStorage().getImport(importId) != null) {
+				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
 			}
 
-			PreprocessedHeader header = readHeader(file);
-			
-			//check that there is acually data to import
+			log.info("Importing {}", importFile.getAbsolutePath());
+
+			log.info("Reading HCFile {}: header size: {}  content size: {}", importFile, BinaryByteUnit.format(hcFile.getHeaderSize()), BinaryByteUnit.format(hcFile.getContentSize()));
+
+			//check that there is actually data to import
 			long countImportGroups = header.getGroups();
-			if(countImportGroups <= 0) {
-				log.info("Skipping bucket creation for {} because it contianed {} groups for importing.", importFile, countImportGroups);
+			if (countImportGroups <= 0) {
+				log.info("Skipping bucket creation for {} because it contained {} groups for importing.", importFile, countImportGroups);
 				getProgressReporter().done();
 				return;
 			}
@@ -129,7 +129,6 @@ public class ImportJob extends Job {
 			//import the actual data
 			log.info("\timporting");
 
-			int bucketSize = entityBucketSize;
 
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
@@ -139,11 +138,11 @@ public class ImportJob extends Job {
 			ProgressReporter child = getProgressReporter().subJob(countImportGroups);
 			child.setMax(countImportGroups);
 
-			try (Input in = new Input(file.readContent())) {
-				for (long group = 0; group < countImportGroups; group++) {
+			try (Input in = new Input(hcFile.readContent())) {
+				for (long group = 0; group < header.getGroups(); group++) {
 					int entityId = primaryMapping.source2Target(in.readInt(true));
 					int size = in.readInt(true);
-					int bucketNumber = Entity.getBucket(entityId, bucketSize);
+					int bucketNumber = Entity.getBucket(entityId, entityBucketSize);
 					ImportBucket bucket = buckets.computeIfAbsent(bucketNumber, b -> new ImportBucket(new BucketId(outImport.getId(), b)));
 
 					byte[] data = in.readBytes(size);
@@ -157,6 +156,8 @@ public class ImportJob extends Job {
 								result.writeContent(sOut);
 							}
 							data = out.toByteArray();
+						} catch (IOException e) {
+							throw new IllegalStateException("Failed to load the file " + importFile, e);
 						}
 					}
 
@@ -170,19 +171,16 @@ public class ImportJob extends Job {
 
 				child.done();
 			}
-
 			sendBuckets(primaryMapping, buckets, bytes);
-			getProgressReporter().done();
 		}
-		catch (IOException e) {
-			throw new IllegalStateException("Failed to load the file " + importFile, e);
-		}
+
+		getProgressReporter().done();
 	}
 
-	private Import createImport(PreprocessedHeader header, boolean useOldType, int entityBucketSize) {
+	private Import createImport(InitializablePreprocessedHeader header, boolean useOldType, int entityBucketSize) {
 		Import imp = new Import(entityBucketSize);
 		imp.setName(header.getName());
-		imp.setTable(table);
+		imp.setTable(header.getTargetTable().getId());
 		imp.setNumberOfEntries(header.getRows());
 		imp.setSuffix(header.getSuffix());
 		imp.setColumns(new ImportColumn[header.getColumns().length]);
@@ -238,7 +236,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private boolean createMappings(PreprocessedHeader header) throws JSONException {
+	private boolean createMappings(InitializablePreprocessedHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
 		Dictionary entities = ((StringTypeEncoded) header.getPrimaryColumn().getType()).getSubType().getDictionary();
 		getProgressReporter().report(1);
@@ -275,7 +273,7 @@ public class ImportJob extends Job {
 
 		log.debug("\tsending secondary dictionaries");
 
-		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
+		Table table = header.getTargetTable();
 
 		for (int colPos = 0; colPos < header.getColumns().length; colPos++) {
 			PPColumn col = header.getColumns()[colPos];
@@ -337,33 +335,9 @@ public class ImportJob extends Job {
 		return true;
 	}
 
-	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
-		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
-			PreprocessedHeader header = headerReader.readValue(in);
-
-			log.info("Importing {} into {}", header.getName(), table);
-			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
-
-			header.assertMatch(tab);
-
-			log.debug("\tparsing dictionaries");
-			header.getPrimaryColumn().getType().readHeader(in);
-			for (PPColumn col : header.getColumns()) {
-				col.getType().readHeader(in);
-			}
-
-			header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
-			for (PPColumn col : header.getColumns()) {
-				col.getType().init(namespace.getStorage().getDataset().getId());
-			}
-
-			return header;
-		}
-	}
-
 	@Override
 	public String getLabel() {
-		return "Importing into " + table + " from " + importFile;
+		return "Importing " + importFile + " into " + targetTable;
 	}
 
 }

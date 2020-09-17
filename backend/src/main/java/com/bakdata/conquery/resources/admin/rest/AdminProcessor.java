@@ -67,8 +67,8 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
-import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.preproc.InitializablePreprocessedHeader;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
@@ -79,8 +79,10 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.esotericsoftware.kryo.io.Input;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Multimap;
+import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.Getter;
@@ -174,23 +176,11 @@ public class AdminProcessor {
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException {
-		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
-			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
-
-			TableId tableName = new TableId(dataset.getId(), header.getTable());
-			Table table = dataset.getTables().getOrFail(tableName);
-
-			final ImportId importId = new ImportId(table.getId(), header.getName());
-
-			if(datasetRegistry.get(dataset.getId()).getStorage().getImport(importId) != null){
-				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
-			}
-
-			log.info("Importing {}", selectedFile.getAbsolutePath());
+		log.info("Received import for dataset {}: {}", dataset, selectedFile);
 
 			datasetRegistry.get(dataset.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(dataset.getId()), table.getId(), selectedFile, entityBucketSize));
-		}
+					  .addSlowJob(new ImportJob(datasetRegistry.get(dataset.getId()), selectedFile, entityBucketSize));
+
 	}
 
 	public void addWorker(ShardNodeInformation node, Dataset dataset) {

@@ -11,15 +11,26 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.preproc.InitializablePreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.Getter;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 
+@Slf4j
 // TODO: 27.04.2020 This whole class is a mess. The random access file is only ever used to read just the header and the ability to write the header after the body. Both parts are read/written linearly.
 public class HCFile implements Closeable {
+
+	private final static ObjectReader HEAD_READER = Jackson.BINARY_MAPPER.readerFor(InitializablePreprocessedHeader.class);
 	
 	private RandomAccessFile raf;
 	private File tmpFile;
@@ -47,7 +58,7 @@ public class HCFile implements Closeable {
 		);
 	}
 	
-	public InputStream readHeader() throws IOException {
+	private InputStream _readHeader() throws IOException {
 		raf.seek(0);
 		long pos = raf.readLong();
 		return new BufferedInputStream(
@@ -60,11 +71,30 @@ public class HCFile implements Closeable {
 		);
 	}
 	
-	public OutputStream writeContent() throws IOException {
+
+
+	public InitializablePreprocessedHeader readHeader() throws JsonParseException, IOException {
+		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(_readHeader())) {
+			InitializablePreprocessedHeader header = HEAD_READER.readValue(in);
+
+			log.debug("\tparsing dictionaries");
+			header.getPrimaryColumn().getType().readHeader(in);
+			for (PPColumn col : header.getColumns()) {
+				col.getType().readHeader(in);
+			}
+
+			return header;
+		}
+	}
+	
+	
+	
+	public OutputStream writeContent() {
 		return new CloseShieldOutputStream(tmpOut);
 	}
 	
-	public InputStream readContent() throws IOException {
+	@SneakyThrows(IOException.class)
+	public InputStream readContent() {
 		raf.seek(0);
 		long pos = raf.readLong();
 		raf.seek(pos);

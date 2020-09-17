@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,10 +61,9 @@ public class Preprocessor {
 
 			int currentHash = descriptor.calculateValidityHash();
 
-			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false);
-				 InputStream is = outFile.readHeader()) {
+			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false)) {
 
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
+				PreprocessedHeader header = outFile.readHeader();
 
 				if (header.getValidityHash() == currentHash) {
 					log.info("\tHASH STILL VALID");
