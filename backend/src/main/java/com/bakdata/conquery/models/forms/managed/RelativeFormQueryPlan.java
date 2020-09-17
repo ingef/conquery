@@ -44,6 +44,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		EntityResult preResult = query.execute(ctx, entity);
+
 		if (preResult.isFailed() || !preResult.isContained()) {
 			return preResult;
 		}
@@ -53,7 +54,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
 		// dateset is empty or sampling failed.
-		if (!sampled.isPresent()) {
+		if (sampled.isEmpty()) {
 			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
 			return preResult;
 		}
@@ -65,8 +66,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
 		FormQueryPlan outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
 
-		EntityResult featureResult = featureSubquery.execute(ctx, entity);
-		EntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
+		MultilineContainedEntityResult featureResult = featureSubquery.execute(ctx, entity);
+		MultilineContainedEntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
 
 		// on fail return failed result
 		if (featureResult.isFailed()) {
@@ -74,15 +75,6 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		if (outcomeResult.isFailed()) {
 			return outcomeResult;
-		}
-
-		// Check if the result is processible (type is multiline or not contained)
-		assertProcessible(featureResult);
-		assertProcessible(outcomeResult);
-
-		if (!featureResult.isContained() && !outcomeResult.isContained()) {
-			// if both, feature and outcome are not contained fast quit.
-			return EntityResult.notContained();
 		}
 
 		// determine result length and check against aggregators in query
@@ -109,60 +101,49 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			// is the coarsed resolution it must be at the first
 			// to indexes of the list.
 			Object[] mergedFull = new Object[size];
-			if (featureResult.isContained()) {
-				setFeatureValues(mergedFull, ((MultilineContainedEntityResult) featureResult).getValues().get(resultStartIndex));
-			}
-			if (outcomeResult.isContained()) {
-				setOutcomeValues(
+
+			setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
+
+			setOutcomeValues(
 					mergedFull,
-					((MultilineContainedEntityResult) outcomeResult).getValues().get(resultStartIndex),
-					featureLength);
-			}
+					outcomeResult.getValues().get(resultStartIndex),
+					featureLength
+			);
+
 			values.add(mergedFull);
 			resultStartIndex++;
 		}
 
 		// append all other lines directly
-		if (featureResult.isContained()) {
-			MultilineContainedEntityResult multiresult = ((MultilineContainedEntityResult) featureResult);
-			for (int i = resultStartIndex; i < multiresult.getValues().size(); i++) {
-				Object[] result = new Object[size];
-				setFeatureValues(result, multiresult.getValues().get(i));
-				values.add(result);
-			}
+		for (int i = resultStartIndex; i < featureResult.getValues().size(); i++) {
+			Object[] result = new Object[size];
+			setFeatureValues(result, featureResult.getValues().get(i));
+			values.add(result);
 		}
-		if (outcomeResult.isContained()) {
-			MultilineContainedEntityResult multiresult = ((MultilineContainedEntityResult) outcomeResult);
-			for (int i = resultStartIndex; i < multiresult.getValues().size(); i++) {
-				Object[] result = new Object[size];
-				setOutcomeValues(result, multiresult.getValues().get(i), featureLength);
-				values.add(result);
-			}
+
+		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
+			Object[] result = new Object[size];
+			setOutcomeValues(result, outcomeResult.getValues().get(i), featureLength);
+			values.add(result);
 		}
+
 		return EntityResult.multilineOf(entity.getId(), values);
 	}
 
-	private int determineResultWidth(FormQueryPlan subquery, EntityResult subResult) {
+	private int determineResultWidth(FormQueryPlan subquery, MultilineContainedEntityResult subResult) {
 		// This is sufficient for NOT_CONTAINTED subresults
 		int resultWidth = subquery.columnCount();
 		// When it's a contained result also check whether the result really has the awaited width
-		if (subResult.isContained()) {
-			int resultColumnCount = subResult.asContained().columnCount();
-			if(resultColumnCount != resultWidth) {				
-				throw new IllegalStateException(String
-					.format("Aggregator number (%d) and result number (%d) are not the same", resultWidth, resultColumnCount));
-			}
+
+		int resultColumnCount = subResult.asContained().columnCount();
+
+		if(resultColumnCount != resultWidth) {
+			throw new IllegalStateException(String
+				.format("Aggregator number (%d) and result number (%d) are not the same", resultWidth, resultColumnCount));
 		}
 		return resultWidth;
 	}
 
-	private void assertProcessible(EntityResult result) {
-		if (!(result instanceof MultilineContainedEntityResult) && result.isContained()) {
-			throw new IllegalStateException(String.format(
-				"The relative form queryplan only handles MultilineContainedEntityResult and NotContainedEntityResults. Was %s",
-				result.getClass()));
-		}
-	}
 
 	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
 		return contexts.size()>=2
@@ -177,7 +158,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		return new FormQueryPlan(list, subPlan);
 	}
-	
+
 	private void setFeatureValues(Object[] result, Object[] value) {
 		// copy everything up to including index
 		for (int i = 0; i <= EVENTDATE; i++) {
@@ -187,7 +168,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		result[FEATURE_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
 		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, OUTCOME_DATE_RANGE + 1, value.length - (DATE_RANGE_SUB_RESULT+1));
 	}
-	
+
 	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
 		// copy everything up to including index
 		for (int i = 0; i <= EVENTDATE; i++) {

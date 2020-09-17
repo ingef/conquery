@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 
 @Getter
@@ -40,12 +41,12 @@ public class FormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+	public MultilineContainedEntityResult execute(QueryExecutionContext ctx, Entity entity) {
 
 		features.init(ctx,entity);
 
-		if(!isOfInterest(entity)){
-			return EntityResult.notContained();
+		if (!isOfInterest(entity)) {
+			return EntityResult.multilineOf(entity.getId(), new ArrayList<>(columnCount()));
 		}
 
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
