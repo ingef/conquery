@@ -125,12 +125,6 @@
 			<version>4.4</version>
 		</dependency>
 		<dependency>
-			<!-- Override the managed dependency because this version cannot be set by a property. -->
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-text</artifactId>
-			<version>1.8</version>
-		</dependency>
-		<dependency>
 			<groupId>it.unimi.dsi</groupId>
 			<artifactId>fastutil</artifactId>
 			<version>8.4.1</version>
@@ -190,11 +184,11 @@
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-smile</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>com.zigurs.karlis.utils</groupId>
-            <artifactId>magicsort</artifactId>
-            <version>0.2</version>
-        </dependency>
+		<dependency>
+			<groupId>com.zigurs.karlis.utils</groupId>
+			<artifactId>magicsort</artifactId>
+			<version>0.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.tuckey</groupId>
 			<artifactId>urlrewritefilter</artifactId>
@@ -205,28 +199,38 @@
 			<artifactId>byteunits</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-        <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
-            <version>5.0.0-RC8</version>
-        </dependency>
-        <dependency>
-		  <groupId>org.mockito</groupId>
-		  <artifactId>mockito-core</artifactId>
-		  <scope>test</scope>
+		<dependency>
+			<groupId>com.esotericsoftware</groupId>
+			<artifactId>kryo</artifactId>
+			<version>5.0.0-RC8</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.auth0</groupId>
-		    <artifactId>java-jwt</artifactId>
-		    <version>3.10.3</version>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>3.10.3</version>
+		</dependency>
+		<dependency>
+			<groupId>io.dropwizard</groupId>
+			<artifactId>dropwizard-metrics-graphite</artifactId>
 		</dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-core</artifactId>
+            <artifactId>metrics-graphite</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-metrics-graphite</artifactId>
-        </dependency>
+		<dependency>
+		    <groupId>com.nimbusds</groupId>
+		    <artifactId>oauth2-oidc-sdk</artifactId>
+		    <version>7.4</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.keycloak</groupId>
+		    <artifactId>keycloak-authz-client</artifactId>
+		    <version>9.0.3</version>
+		</dependency>
 	</dependencies>
 </project>
