@@ -15,9 +15,10 @@
             <tr>
 				<td>${key}</td>
 				<td>
-					<#if permissionTemplateMap[key].left?has_content>
+					<#assign abilities=permissionTemplateMap[key].getLeft()>
+					<#if abilities?has_content>
 						<div class="form-group col" id="${ABILITIES}${key}">
-							<#list permissionTemplateMap[key].left as ability>
+							<#list abilities as ability>
 								<div class="form-check">
 									<input class="form-check-input" type="checkbox" value="${ability}" id="ability_${key}_${ability}">
 									<label class="form-check-label" for="ability_${key}_${ability}">

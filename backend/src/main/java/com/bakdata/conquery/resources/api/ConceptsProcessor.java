@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +96,7 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
 		//search in the full text engine
-		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, filter.getSearchType()::score)
+		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score)
 										   .stream()
 										   .map(FEValue::getValue)
 										   .collect(Collectors.toSet());
@@ -104,7 +105,7 @@ public class ConceptsProcessor {
 		openSearchTerms.removeAll(searchResult);
 
 		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
-		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
+ 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
 			String searchTerm = it.next();
 			// Test if any of the values occurs directly in the filter's values or their labels (for when we don't have a provided file).
 			if(filter.getValues().contains(searchTerm)) {
@@ -142,7 +143,7 @@ public class ConceptsProcessor {
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), FilterSearch.FilterSearchType.CONTAINS::score);
+			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.of(50), FilterSearch.FilterSearchType.CONTAINS::score);
 		}
 		
 		String value = filter.getValueFor(text);
@@ -156,13 +157,18 @@ public class ConceptsProcessor {
 	/**
 	 * Do a search with the supplied values.
 	 */
-	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, SearchScorer scorer) {
+	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
 		if(search == null) {
 			return Collections.emptyList();
 		}
 
 		// Quicksearch can split and also schedule for us.
-		List<FilterSearchItem> result = search.findItems(String.join(" ", values), 50, scorer);
+		List<FilterSearchItem> result;
+		result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
+		
+		if(numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
+			log.warn("The quick search return the maximum number of results ({}) which probably mean not all possible results are returned.", Integer.MAX_VALUE);
+		}
 		
 		return result
 			.stream()

@@ -29,6 +29,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -92,6 +93,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private transient LocalDateTime startTime;
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
+	@JsonIgnore
+	private transient ConqueryErrorInfo error;
 
 	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
 		this.owner = owner;
@@ -120,7 +123,19 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
-	protected void fail(MasterMetaStorage storage) {
+	/**
+	 * Fails the execution and log the occurred error.
+	 */
+	protected void fail(MasterMetaStorage storage, ConqueryErrorInfo error) {
+		if(this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
+			// Warn only again if the error is different (failed might by called per collected result)
+			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
+		} else {
+			this.error = error;
+			// Log the error, so its id is atleast once in the logs
+			log.warn("The execution [{}] failed with:\n\t{}", this.error);
+		}
+		
 		finish(storage, ExecutionState.FAILED);
 	}
 
@@ -130,8 +145,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected void finish(MasterMetaStorage storage, ExecutionState executionState) {
-		if (getState() == ExecutionState.NEW)
-			log.error("Query[{}] was never run.", getId());
+		if (getState() == ExecutionState.NEW) {
+			log.error("Query[{}] was never run.", getId());			
+		}
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
@@ -192,6 +208,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			isReadyToDownload(url, user)
 				? getDownloadURL(url)
 				: null);
+		if (state.equals(ExecutionState.FAILED) && error != null) {
+			// Use plain format here to have a uniform serialization.
+			status.setError(error.asPlain());
+		}
 	}
 
 	/**

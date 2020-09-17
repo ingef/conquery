@@ -7,15 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -28,22 +25,12 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 
 	@MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
-	
-	/**
-	 * The name of a user is unique in the system. It is used to generate the UserId object.
-	 * The name might be an email address.
-	 */
-	@Getter @Setter @NonNull @NotNull
-	private String name;
-	@Getter @Setter @NonNull @NotNull
-	private String label;
-	
+
 	@Getter @Setter @JsonIgnore
 	private transient boolean displayLogout = true;
 
 	public User(String name, String label) {
-		this.name = name;
-		this.label = label;
+		super(name, label);
 	}
 	
 

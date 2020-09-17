@@ -2,7 +2,6 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -107,7 +106,6 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				}
 
 				workers.createWorker(
-						workerStorage.getWorker(),
 						workerStorage
 				);
 
@@ -243,17 +241,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void stop() throws Exception {
-		getJobManager().stop();
-
-		for (Worker w : new ArrayList<>(workers.getWorkers().values())) {
-			try {
-				w.close();
-				w.getJobManager().stop();
-			}
-			catch (Exception e) {
-				log.error(w + " could not be closed", e);
-			}
-		}
+		getJobManager().close();
+		
+		workers.stop();
+		
 		//after the close command was send
 		if (context != null) {
 			context.awaitClose();
