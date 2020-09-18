@@ -48,6 +48,10 @@
 							<resources>
 								<resource>
 									<directory>${project.parent.basedir}/frontend</directory>
+                                    <excludes>
+                                        <exclude>**/target/</exclude>
+                                        <exclude>node_modules/</exclude>
+                                    </excludes>
 								</resource>
 							</resources>
 						</configuration>
