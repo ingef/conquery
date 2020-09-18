@@ -1,6 +1,6 @@
 {
     "type": "QUERY_TEST",
-    "label": "SIMPLE_TREECONCEPT_QUERY Test",
+    "label": "SIMPLE_TREECONCEPT_QUERY_SPECIAL_CHAR_DATA Test",
     "expectedCsv": "tests/query/SIMPLE_TREECONCEPT_QUERY_SPECIAL_CHAR_DATA/expected.csv",
     "query": {
         "type": "CONCEPT_QUERY",
