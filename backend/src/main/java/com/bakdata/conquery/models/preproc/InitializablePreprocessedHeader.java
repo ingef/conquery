@@ -14,13 +14,13 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Helper class for preprocessed files when they are imported and need to be initialied in a dataset.
+ * Helper class for a preprocessed file when it is imported and its header needs to be initialized for a dataset.
  */
 @Slf4j
 public class InitializablePreprocessedHeader extends PreprocessedHeader {
 	
 	/**
-	 * The table where the import corresponding to the header is imported to. This member is set upon 
+	 * The table where the import corresponding to this header is imported to. This member is set upon 
 	 * initializing the header with dataset.
 	 */
 	@JsonIgnore
@@ -48,7 +48,7 @@ public class InitializablePreprocessedHeader extends PreprocessedHeader {
 	 * @return
 	 */
 	public ImportId generateImportId() {
-		Preconditions.checkNotNull(targetTable, "PreprocessedHeader was not initialized propperly. Call PreprocessedHeader::initDataset first.");
+		Preconditions.checkNotNull(targetTable, "PreprocessedHeader was not initialized propperly. Call InitializablePreprocessedHeader::initDataset first.");
 		return new ImportId(targetTable.getId(), getName());
 	}
 
