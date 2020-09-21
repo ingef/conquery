@@ -1,9 +1,11 @@
+import { UserGroupIdT } from "../../api/types";
 import {
   LOAD_CONFIGS_SUCCESS,
   LOAD_CONFIGS_ERROR,
   PATCH_CONFIG_SUCCESS,
   DELETE_CONFIG_SUCCESS,
 } from "./actionTypes";
+
 export interface BaseFormConfigT {
   formType: string;
   values: Record<string, any>;
@@ -18,6 +20,7 @@ export interface FormConfigT extends BaseFormConfigT {
   shared: boolean;
   system: boolean;
   ownerName: string;
+  groups?: UserGroupIdT[];
 }
 
 export interface FormConfigsStateT {

@@ -4,10 +4,8 @@ import ReactList from "react-list";
 
 import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import { PreviousQueryT } from "./reducer";
-import { useDispatch } from "react-redux";
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
 import SharePreviousQueryModal from "./SharePreviousQueryModal";
-import { deletePreviousQuerySuccess } from "./actions";
 
 interface PropsT {
   datasetId: string;
