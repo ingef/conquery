@@ -514,7 +514,17 @@ public class BitMapCDateSet {
 	}
 
 	public boolean isAll() {
-		return openMax && openMin && positiveBits.isEmpty() && negativeBits.isEmpty();
+		// trivial case
+		if (!openMax || !openMin) {
+			return false;
+		}
+
+		if(positiveBits.isEmpty() && negativeBits.isEmpty()) {
+			return true;
+		}
+
+		// if min and max are open and we have a single contiguous range in the center, then we're also open!
+		return asRanges().size() == 1;
 	}
 
 	/**

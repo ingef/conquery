@@ -215,6 +215,15 @@ public class BitMapCDateSetTest {
 	}
 
 	@Test
+	public void testAddMakingAll() {
+		assertThat(BitMapCDateSet.create(CDateRange.atMost(1), CDateRange.atLeast(1)).asRanges())
+				.containsExactly(CDateRange.all());
+
+		assertThat(BitMapCDateSet.create(CDateRange.atMost(1), CDateRange.atLeast(1)))
+				.matches(BitMapCDateSet::isAll);
+	}
+
+	@Test
 	public void testRetain() {
 		BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(
 				LocalDate.of(2000, 01, 01),
@@ -415,8 +424,7 @@ public class BitMapCDateSetTest {
 				.matches(set -> set.contains(1))
 				.matches(set -> set.contains(2))
 				.matches(set -> set.contains(-1))
-				.matches(set -> set.contains(-1000))
-				.matches(BitMapCDateSet::isAll);
+				.matches(set -> set.contains(-1000));
 
 	}
 
