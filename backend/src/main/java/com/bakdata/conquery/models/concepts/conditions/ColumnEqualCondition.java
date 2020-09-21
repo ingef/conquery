@@ -1,26 +1,34 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
-import java.util.HashSet;
 import java.util.Map;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.CalculatedValue;
-
+import com.bakdata.conquery.util.CollectionsUtil;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * This condition requires the value of another column to be equal to a given value.
  */
 @CPSType(id="COLUMN_EQUAL", base=CTCondition.class)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ColumnEqualCondition implements CTCondition {
 
 	@Setter @Getter @NotEmpty
-	private HashSet<String> values;
+	private Set<String> values;
 	@NotEmpty @Setter @Getter
 	private String column;
+
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+	public static ColumnEqualCondition create(Set<String> values, String column) {
+		return new ColumnEqualCondition(CollectionsUtil.createSmallestSet(values), column);
+	}
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {
