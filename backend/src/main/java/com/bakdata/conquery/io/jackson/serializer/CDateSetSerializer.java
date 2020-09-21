@@ -3,22 +3,22 @@ package com.bakdata.conquery.io.jackson.serializer;
 import java.io.IOException;
 import java.util.Collection;
 
-import com.bakdata.conquery.models.common.ICDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class CDateSetSerializer extends StdSerializer<ICDateSet> {
+public class CDateSetSerializer extends StdSerializer<BitMapCDateSet> {
 
 	private static final long serialVersionUID = 1L;
 
 	public CDateSetSerializer() {
-		super(ICDateSet.class);
+		super(BitMapCDateSet.class);
 	}
 
 	@Override
-	public void serialize(ICDateSet value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+	public void serialize(BitMapCDateSet value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 		final Collection<CDateRange> ranges = value.asRanges();
 
 		gen.writeStartArray(ranges.size() * 2);

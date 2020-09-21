@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -22,11 +21,11 @@ public class ExternalNode extends QPNode {
 	private SpecialDateUnion dateUnion;
 
 	@Getter @NotEmpty @NonNull
-	private final Map<Integer, ICDateSet> includedEntities;
+	private final Map<Integer, BitMapCDateSet> includedEntities;
 
-	private ICDateSet contained;
+	private BitMapCDateSet contained;
 
-	public ExternalNode(TableId tableId, Map<Integer, ICDateSet> includedEntities, SpecialDateUnion dateUnion) {
+	public ExternalNode(TableId tableId, Map<Integer, BitMapCDateSet> includedEntities, SpecialDateUnion dateUnion) {
 		this.dateUnion = dateUnion;
 		this.includedEntities = includedEntities;
 		this.tableId = tableId;

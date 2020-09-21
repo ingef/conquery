@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.ICDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -25,7 +25,7 @@ import lombok.Setter;
 public class CQExternalResolved implements CQElement {
 
 	@Getter @NotNull @NonNull
-	private Map<Integer, ICDateSet> values;
+	private Map<Integer, BitMapCDateSet> values;
 	
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {

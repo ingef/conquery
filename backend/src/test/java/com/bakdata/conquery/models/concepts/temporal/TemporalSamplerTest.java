@@ -8,14 +8,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.ICDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import org.junit.jupiter.api.Test;
 
 class TemporalSamplerTest {
 
-	private static ICDateSet generateSet(CDateRange... ranges) {
+	private static BitMapCDateSet generateSet(CDateRange... ranges) {
 		return CDateSet.create(Arrays.asList(ranges));
 	}
 
@@ -59,14 +58,14 @@ class TemporalSamplerTest {
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
 		{
-			ICDateSet set = generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)));
+			BitMapCDateSet set = generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)));
 
 			assertThat(RANDOM.sample(set).getAsInt())
 					.matches(set::contains);
 		}
 
 		{
-			ICDateSet set =
+			BitMapCDateSet set =
 					generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)), of(LocalDate.of(2011, 1, 15), LocalDate.of(2011, 1, 17)));
 
 			assertThat(RANDOM.sample(set).getAsInt())

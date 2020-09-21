@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
 
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 /**
@@ -22,7 +22,7 @@ public enum TemporalSampler {
 		 * @return the earliest date contained in {@link ICDateSet}.
 		 */
 		@Override
-		public OptionalInt sample(ICDateSet data) {
+		public OptionalInt sample(BitMapCDateSet data) {
 			if (data.isEmpty()) {
 				return OptionalInt.empty();
 			}
@@ -44,7 +44,7 @@ public enum TemporalSampler {
 		 * @return the latest date contained in {@link ICDateSet}.
 		 */
 		@Override
-		public OptionalInt sample(ICDateSet data) {
+		public OptionalInt sample(BitMapCDateSet data) {
 			if (data.isEmpty()) {
 				return OptionalInt.empty();
 			}
@@ -71,7 +71,7 @@ public enum TemporalSampler {
 		 * @return a random date contained in {@code data}.
 		 */
 		@Override
-		public OptionalInt sample(ICDateSet data) {
+		public OptionalInt sample(BitMapCDateSet data) {
 			if (data.isEmpty()) {
 				return OptionalInt.empty();
 			}
@@ -122,6 +122,6 @@ public enum TemporalSampler {
 	 * @param data the set to be sampled from.
 	 * @return the date fitting the sampling criteria. Or {@link OptionalInt#empty()} if none is found.
 	 */
-	public abstract OptionalInt sample(ICDateSet data);
+	public abstract OptionalInt sample(BitMapCDateSet data);
 
 }

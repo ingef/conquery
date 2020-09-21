@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -21,14 +20,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SpecialDateUnion implements Aggregator<String> {
 
-	private BitMapCDateSet set = BitMapCDateSet.create(
+	private BitMapCDateSet set = BitMapCDateSet.createPreallocated(
 			CDate.ofLocalDate(LocalDate.of(1950, 01, 01)),
 			CDate.ofLocalDate(LocalDate.now())
 	);
 
 	private Column currentColumn;
 
-	private ICDateSet dateRestriction;
+	private BitMapCDateSet dateRestriction;
 
 
 	@Override
@@ -59,7 +58,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 	 * Helper method to insert dates from outside.
 	 * @param other ICDateSet to be included.
 	 */
-	public void merge(ICDateSet other){
+	public void merge(BitMapCDateSet other){
 		set.addAll(other);
 	}
 

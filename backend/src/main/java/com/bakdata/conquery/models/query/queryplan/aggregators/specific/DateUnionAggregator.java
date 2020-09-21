@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.ICDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -15,8 +14,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
  */
 public class DateUnionAggregator extends SingleColumnAggregator<String> {
 
-	private ICDateSet set = CDateSet.create();
-	private ICDateSet dateRestriction;
+	private BitMapCDateSet set = CDateSet.create();
+	private BitMapCDateSet dateRestriction;
 
 	public DateUnionAggregator(Column column) {
 		super(column);
@@ -38,7 +37,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 			return;
 		}
 
-		ICDateSet range = CDateSet.create();
+		BitMapCDateSet range = CDateSet.create();
 		range.add(bucket.getAsDateRange(event, getColumn()));
 
 		range.retainAll(dateRestriction);

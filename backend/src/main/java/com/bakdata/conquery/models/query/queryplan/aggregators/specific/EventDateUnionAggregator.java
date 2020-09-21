@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -25,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventDateUnionAggregator implements Aggregator<String> {
 
-	private BitMapCDateSet set = BitMapCDateSet.create(
+	private BitMapCDateSet set = BitMapCDateSet.createPreallocated(
 			CDate.ofLocalDate(LocalDate.of(1950, 01, 01)),
 			CDate.ofLocalDate(LocalDate.now())
 	);
@@ -33,7 +32,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
 
-	private ICDateSet dateRestriction;
+	private BitMapCDateSet dateRestriction;
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {

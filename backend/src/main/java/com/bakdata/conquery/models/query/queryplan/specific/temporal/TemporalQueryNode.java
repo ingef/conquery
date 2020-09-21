@@ -4,7 +4,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.ICDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -118,9 +117,9 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		ICDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
+		BitMapCDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
 		// Create copy as we are mutating the set
-		ICDateSet precedingDurations = BitMapCDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
+		BitMapCDateSet precedingDurations = BitMapCDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
