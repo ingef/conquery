@@ -70,7 +70,10 @@ const findUniqueNames = (queries: FormConfigT[]) => {
   return Array.from(uniqueNames);
 };
 
-const updateFormConfig = (configs: FormConfigT[], { id, values }) => {
+const updateFormConfig = (
+  configs: FormConfigT[],
+  { id, values }: { id: string; values: Partial<FormConfigT> }
+) => {
   const config = configs.find((conf) => conf.id === id);
 
   if (!config) {

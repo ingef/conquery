@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
@@ -13,6 +13,9 @@ import PrimaryButton from "../../button/PrimaryButton";
 import { FormConfigT } from "./reducer";
 import InputMultiSelect from "../../form-components/InputMultiSelect";
 import { patchFormConfigSuccess } from "./actions";
+import { usePrevious } from "../../common/helpers/usePrevious";
+import { exists } from "../../common/helpers/exists";
+import { useLoadFormConfig } from "./selectors";
 
 const Buttons = styled("div")`
   text-align: center;
@@ -71,13 +74,25 @@ const ShareFormConfigModal = ({
     initialUserGroupsValue
   );
 
-  console.log(initialUserGroupsValue);
+  const previousFormConfigId = usePrevious(formConfigId);
+
+  const { loadFormConfig } = useLoadFormConfig();
+
+  useEffect(() => {
+    if (
+      exists(datasetId) &&
+      !exists(previousFormConfigId) &&
+      exists(formConfigId)
+    ) {
+      loadFormConfig(datasetId, formConfigId);
+    }
+  }, [datasetId, previousFormConfigId, formConfigId, loadFormConfig]);
+
+  const dispatch = useDispatch();
 
   const onSetUserGroupsValue = (value: SelectValueT[] | null) => {
     setUserGroupsValue(value ? value : []);
   };
-
-  const dispatch = useDispatch();
 
   if (!formConfig) {
     return null;

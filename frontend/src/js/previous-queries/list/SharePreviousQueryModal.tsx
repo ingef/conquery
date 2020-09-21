@@ -1,18 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
+import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "app-types";
 
 import Modal from "../../modal/Modal";
 import { patchStoredQuery } from "../../api/api";
-import { useDispatch, useSelector } from "react-redux";
-import { StateT } from "app-types";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 import TransparentButton from "../../button/TransparentButton";
 import PrimaryButton from "../../button/PrimaryButton";
-import { PreviousQueryT } from "./reducer";
 import InputMultiSelect from "../../form-components/InputMultiSelect";
-import { sharePreviousQuerySuccess } from "./actions";
+import { usePrevious } from "../../common/helpers/usePrevious";
+import { exists } from "../../common/helpers/exists";
+
+import { PreviousQueryT } from "./reducer";
+import { loadPreviousQuery, sharePreviousQuerySuccess } from "./actions";
 
 const Buttons = styled("div")`
   text-align: center;
@@ -77,11 +80,22 @@ const SharePreviousQueryModal = ({
     initialUserGroupsValue
   );
 
+  const previousPreviousQueryId = usePrevious(previousQueryId);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (
+      exists(datasetId) &&
+      !exists(previousPreviousQueryId) &&
+      exists(previousQueryId)
+    ) {
+      dispatch(loadPreviousQuery(datasetId, previousQueryId));
+    }
+  }, [datasetId, previousPreviousQueryId, previousQueryId, dispatch]);
+
   const onSetUserGroupsValue = (value: SelectValueT[] | null) => {
     setUserGroupsValue(value ? value : []);
   };
-
-  const dispatch = useDispatch();
 
   if (!previousQuery) {
     return null;
