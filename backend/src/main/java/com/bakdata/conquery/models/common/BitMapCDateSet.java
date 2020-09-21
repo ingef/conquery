@@ -126,7 +126,7 @@ public class BitMapCDateSet {
 
 		final List<CDateRange> out = new ArrayList<>();
 
-		//TODO implement this using higherSetBit etc.
+		//TODO implement this using higherSetBit etc.? Which might actually be slower since it traverses memory in reverse
 
 		// Iterate negative ranges first
 		if (!negativeBits.isEmpty()) {
@@ -213,7 +213,7 @@ public class BitMapCDateSet {
 	 * @return The lowest set value if it exists, throw an exception else.
 	 */
 	private int getMinRealValue() {
-		int negativeMin = negativeBits.length();
+		int negativeMin = negativeBits.length() - 1;
 
 		if (negativeMin != 0) {
 			return -negativeMin;
@@ -359,12 +359,20 @@ public class BitMapCDateSet {
 		}
 	}
 
-	public void add(CDateRangeClosed range) {
+	private void add(CDateRangeClosed range) {
+		if(isAll()){
+			return;
+		}
+
 		setRange(range.getMinValue(), range.getMaxValue() + 1);
 	}
 
 
-	public void add(CDateRangeExactly range) {
+	private void add(CDateRangeExactly range) {
+		if(isAll()){
+			return;
+		}
+
 		final int value = range.getMinValue();
 
 		if (value >= 0) {
@@ -375,16 +383,21 @@ public class BitMapCDateSet {
 		}
 	}
 
-	public void add(CDateRangeAll range) {
+	private void add(CDateRangeAll range) {
 		positiveBits.clear();
 		negativeBits.clear();
 		openMin = true;
 		openMax = true;
 	}
 
-	public void add(CDateRangeEnding range) {
-
+	private void add(CDateRangeEnding range) {
 		final int value = range.getMaxValue();
+
+		if(contains(value)){
+			openMin = true;
+			return;
+		}
+
 		openMin = true;
 
 		final int maxValue = getMaxValue();
@@ -406,7 +419,7 @@ public class BitMapCDateSet {
 		}
 	}
 
-	public void add(CDateRangeStarting range) {
+	private void add(CDateRangeStarting range) {
 
 		final int value = range.getMinValue();
 		openMax = true;
@@ -431,6 +444,10 @@ public class BitMapCDateSet {
 	}
 
 	public void add(CDateRange rangeToAdd) {
+		if(isAll()){
+			return;
+		}
+
 		if (rangeToAdd instanceof CDateRangeClosed) {
 			add(((CDateRangeClosed) rangeToAdd));
 		}
@@ -524,7 +541,7 @@ public class BitMapCDateSet {
 		}
 
 		// if min and max are open and we have a single contiguous range in the center, then we're also open!
-		return asRanges().size() == 1;
+		return higherClearBit(getMinRealValue()) - 1 == getMaxRealValue();
 	}
 
 	/**

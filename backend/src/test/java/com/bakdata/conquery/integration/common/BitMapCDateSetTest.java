@@ -483,6 +483,23 @@ public class BitMapCDateSetTest {
 
 				.matches(set -> set.intersects(CDateRange.of(-12, -11)))
 		;
+	}
+
+	@Test
+	public void testIsAll() {
+		assertThat(BitMapCDateSet.createAll()).matches(BitMapCDateSet::isAll);
+		assertThat(BitMapCDateSet.create(CDateRange.of(-10, 10), CDateRange.all())).matches(BitMapCDateSet::isAll);
+		assertThat(BitMapCDateSet.create(CDateRange.all(), CDateRange.of(-10, 10))).matches(BitMapCDateSet::isAll);
+
+		final BitMapCDateSet out = BitMapCDateSet.create();
+
+		out.add(CDateRange.atLeast(-10));
+		out.add(CDateRange.atMost(10));
+
+		assertThat(out)
+				.matches(BitMapCDateSet::isAll)
+				.hasToString("{-∞/+∞}")
+		;
 
 	}
 }
