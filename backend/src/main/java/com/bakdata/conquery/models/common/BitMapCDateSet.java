@@ -196,7 +196,7 @@ public class BitMapCDateSet {
 		int positiveMax = positiveBits.length();
 
 		if (positiveMax != 0) {
-			return positiveMax;
+			return positiveMax - 1;
 		}
 
 
@@ -213,10 +213,10 @@ public class BitMapCDateSet {
 	 * @return The lowest set value if it exists, throw an exception else.
 	 */
 	private int getMinRealValue() {
-		int negativeMin = negativeBits.length() - 1;
+		int negativeMin = negativeBits.length();
 
 		if (negativeMin != 0) {
-			return -negativeMin;
+			return -(negativeMin - 1);
 		}
 
 		int positiveMax = positiveBits.nextSetBit(0);
@@ -400,6 +400,7 @@ public class BitMapCDateSet {
 
 		openMin = true;
 
+
 		final int maxValue = getMaxValue();
 		final int minValue = getMinValue();
 
@@ -422,7 +423,16 @@ public class BitMapCDateSet {
 	private void add(CDateRangeStarting range) {
 
 		final int value = range.getMinValue();
+
+
+		if(contains(value)){
+			openMax = true;
+			return;
+		}
+
 		openMax = true;
+
+
 
 		final int maxValue = getMaxValue();
 		final int minValue = getMinValue();
