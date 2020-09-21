@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -38,5 +38,5 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 		}
 	}
 	
-	public abstract T getPermissionOwner(MasterMetaStorage storage);
+	public abstract T getPermissionOwner(MetaStorage storage);
 }

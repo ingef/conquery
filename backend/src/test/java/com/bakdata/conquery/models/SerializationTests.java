@@ -10,7 +10,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -76,7 +76,7 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException{
-		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		MetaStorage storage = mock(MetaStorage.class);
 		User user = new User("user", "user");
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
@@ -97,7 +97,7 @@ public class SerializationTests {
 	
 	@Test
 	public void group() throws IOException, JSONException {
-		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		MetaStorage storage = mock(MetaStorage.class);
 		Group group = new Group("group", "group");
 		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group

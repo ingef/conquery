@@ -10,7 +10,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler;
@@ -33,13 +33,13 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 	
 	@Setter
 	private JWTConfig jwtConfig = new JWTConfig();
 	
 	
-	public ConqueryTokenRealm(MasterMetaStorage storage) {
+	public ConqueryTokenRealm(MetaStorage storage) {
 		this.storage = storage;
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		setCredentialsMatcher(new SkippingCredentialsMatcher());
