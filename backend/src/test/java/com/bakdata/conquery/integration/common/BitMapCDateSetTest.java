@@ -216,87 +216,165 @@ public class BitMapCDateSetTest {
 
 	@Test
 	public void testRetain() {
-		BitMapCDateSet set = BitMapCDateSet.create();
-		set.add(CDateRange.of(
-				LocalDate.of(2000, 01, 01),
-				LocalDate.of(2000, 12, 31)
-		));
+//		{
+//			BitMapCDateSet set = BitMapCDateSet.create();
+//			set.add(CDateRange.of(
+//					LocalDate.of(2000, 01, 01),
+//					LocalDate.of(2000, 12, 31)
+//			));
+//
+//			BitMapCDateSet retain = BitMapCDateSet.create();
+//			retain.add(CDateRange.of(
+//					LocalDate.of(2000, 06, 01),
+//					LocalDate.of(2000, 06, 20)
+//			));
+//			retain.add(CDateRange.atLeast(LocalDate.of(2000, 12, 01)));
+//
+//			set.retainAll(retain);
+//
+//			assertThat(set).hasToString("{2000-06-01/2000-06-20, 2000-12-01/2000-12-31}");
+//		}
 
-		BitMapCDateSet retain = BitMapCDateSet.create();
-		retain.add(CDateRange.of(
-				LocalDate.of(2000, 06, 01),
-				LocalDate.of(2000, 06, 20)
-		));
-		retain.add(CDateRange.atLeast(LocalDate.of(2000, 12, 01)));
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+			set.retainAll(CDateRange.of(10, 20));
+			assertThat(set.asRanges()).containsExactly(CDateRange.of(10, 20));
+		}
 
-		set.retainAll(retain);
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+			set.retainAll(CDateRange.exactly(10));
+			assertThat(set.asRanges()).containsExactly(CDateRange.exactly(10));
+		}
 
-		assertThat(set).hasToString("{2000-06-01/2000-06-20, 2000-12-01/2000-12-31}");
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+			set.retainAll(CDateRange.atMost(10));
+			assertThat(set.asRanges()).containsExactly(CDateRange.atMost(10));
+		}
+
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+			set.retainAll(CDateRange.atLeast(10));
+			assertThat(set.asRanges()).containsExactly(CDateRange.atLeast(10));
+		}
+
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+			set.retainAll(CDateRange.atLeast(-10));
+			assertThat(set.asRanges()).containsExactly(CDateRange.atLeast(-10));
+		}
+
+		{
+			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+			set.retainAll(CDateRange.atMost(-10));
+			assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-10));
+		}
+
 	}
 
 	@Test
-	public void remove() {
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(10, 10));
-			set.remove(CDateRange.of(10, 10));
+	public void removeAtMostFromAll() {
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+		set.remove(CDateRange.atMost(10));
 
-			assertThat(set.asRanges()).isEmpty();
-		}
+		assertThat(set.asRanges()).containsExactly(CDateRange.atLeast(11));
+	}
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+	@Test
+	public void removeAtLeastFromAll() {
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+		set.remove(CDateRange.atLeast(10));
 
-			assertThat(set.asRanges()).containsExactly(CDateRange.all());
-		}
+		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(9));
+	}
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
-			set.remove(CDateRange.of(10, 10));
+	@Test
+	public void removeExactlyFromItself() {
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.exactly(10));
+		set.remove(CDateRange.exactly(10));
 
-			assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 9));
-		}
+		assertThat(set.asRanges()).isEmpty();
+	}
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
-			set.remove(CDateRange.of(-1, 1));
+	@Test
+	public void removeExactlyFromAnother() {
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.exactly(10));
+		set.remove(CDateRange.exactly(11));
 
-			assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, -2), CDateRange.of(2, 10));
-		}
+		assertThat(set.asRanges()).containsExactly(CDateRange.exactly(10));
+	}
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
-			set.remove(CDateRange.atMost(-5));
 
-			assertThat(set.asRanges()).containsExactly(CDateRange.of(-4, 10));
-		}
+	@Test
+	public void removeAllFromFromAll()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
-			set.remove(CDateRange.atLeast(5));
+		assertThat(set.asRanges()).containsExactly(CDateRange.all());
+	}
 
-			assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 4));
-		}
+	@Test
+	public void removeExactlyFromRangeOverNegativeAxis()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+		set.remove(CDateRange.exactly(10));
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
-			set.remove(CDateRange.all());
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 9));
+	}
 
-			assertThat(set.asRanges()).isEmpty();
-		}
+	@Test
+	public void removeSpanFromRangeOverNegativAxis()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+		set.remove(CDateRange.of(-1, 1));
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
-			set.remove(CDateRange.of(-1, 1));
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, -2), CDateRange.of(2, 10));
+	}
 
-			assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-2), CDateRange.atLeast(2));
-		}
+	@Test
+	public void removeNegativeAtMostFromSpanOverNegativeAxis()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+		set.remove(CDateRange.atMost(-5));
 
-		{
-			final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
-			set.remove(CDateRange.exactly(0));
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-4, 10));
+	}
 
-			assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-1), CDateRange.atLeast(1));
-		}
+	@Test
+	public void removePositiveAtLeastFromSpanOverNegativeAxis()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+		set.remove(CDateRange.atLeast(5));
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 4));
+	}
+
+	@Test
+	public void removeAllFromSpanOverNegativeAxis()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+		set.remove(CDateRange.all());
+
+		assertThat(set.asRanges()).isEmpty();
+	}
+
+	@Test
+	public void removeSpanOverNegativeAxisFromAll()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+		set.remove(CDateRange.of(-1, 1));
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-2), CDateRange.atLeast(2));
+	}
+
+	@Test
+	public void removeExactlyZeroFromAll()
+	{
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
+		set.remove(CDateRange.exactly(0));
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-1), CDateRange.atLeast(1));
 	}
 
 	@Test

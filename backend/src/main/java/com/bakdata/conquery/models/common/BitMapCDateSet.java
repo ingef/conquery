@@ -185,9 +185,6 @@ public class BitMapCDateSet implements ICDateSet {
 		return out;
 	}
 
-
-
-
 	public boolean contains(LocalDate value) {
 		return contains(CDate.ofLocalDate(value));
 	}
@@ -207,7 +204,7 @@ public class BitMapCDateSet implements ICDateSet {
 			return -negativeMax;
 		}
 
-		return 0;
+		throw new IllegalStateException("Open sets have no real max value");
 	}
 
 	private int getMinRealValue() {
@@ -223,7 +220,7 @@ public class BitMapCDateSet implements ICDateSet {
 			return positiveMax;
 		}
 
-		return 0;
+		throw new IllegalStateException("Open sets have no real min value");
 	}
 
 	public boolean contains(int value) {
@@ -257,6 +254,8 @@ public class BitMapCDateSet implements ICDateSet {
 
 
 	public void clear() {
+		openMin = false;
+		openMax = false;
 		positiveBits.clear();
 		negativeBits.clear();
 	}
@@ -476,13 +475,16 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public void remove(CDateRangeOpen range) {
-		positiveBits.clear();
-		negativeBits.clear();
-		openMax = false;
-		openMin = false;
+		clear();
 	}
 
 	public void remove(CDateRangeStarting range) {
+		if(isAll()) {
+			setRange(range.getMinValue() - 1, range.getMinValue());
+			openMax = false;
+			return;
+		}
+
 		if (range.getMinValue() < getMaxRealValue()) {
 			clearRange(range.getMinValue(), getMaxRealValue() + 1);
 		}
@@ -490,6 +492,12 @@ public class BitMapCDateSet implements ICDateSet {
 	}
 
 	public void remove(CDateRangeEnding range) {
+		if(isAll()) {
+			setRange(range.getMaxValue() + 1, range.getMaxValue() + 2);
+			openMin = false;
+			return;
+		}
+
 		if (range.getMaxValue() > getMinRealValue()) {
 			clearRange(getMinRealValue(), range.getMaxValue());
 		}
@@ -509,6 +517,16 @@ public class BitMapCDateSet implements ICDateSet {
 
 		final BitMapCDateSet dateSet = (BitMapCDateSet) retained;
 
+		if(isAll()) {
+			negativeBits.or(dateSet.negativeBits);
+			positiveBits.or(dateSet.positiveBits);
+
+			openMin = openMin && dateSet.openMin;
+			openMax = openMax && dateSet.openMax;
+
+			return;
+		}
+
 		// expand both ways to make anding even possible
 		if(dateSet.getMaxRealValue() > getMaxRealValue() && openMax) {
 			setRange(getMaxRealValue(), dateSet.getMaxRealValue());
@@ -527,8 +545,8 @@ public class BitMapCDateSet implements ICDateSet {
 
 
 	public void retainAll(CDateRange retained) {
-		remove(CDateRange.atMost(retained.getMinValue()));
-		remove(CDateRange.atLeast(retained.getMaxValue()));
+		// TODO: 21.09.2020 if the need comes up, we can unroll this into a specialized method, but as it stands it would be a complicated method that has far too little usage.
+		retainAll(BitMapCDateSet.create(retained));
 	}
 
 
