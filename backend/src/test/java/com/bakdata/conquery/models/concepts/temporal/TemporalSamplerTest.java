@@ -6,7 +6,6 @@ import static com.bakdata.conquery.models.query.concept.specific.temporal.Tempor
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -15,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class TemporalSamplerTest {
 
 	private static BitMapCDateSet generateSet(CDateRange... ranges) {
-		return CDateSet.create(Arrays.asList(ranges));
+		return BitMapCDateSet.create(ranges);
 	}
 
 

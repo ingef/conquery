@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
  */
 public class DateUnionAggregator extends SingleColumnAggregator<String> {
 
-	private BitMapCDateSet set = CDateSet.create();
+	private BitMapCDateSet set = BitMapCDateSet.create();
 	private BitMapCDateSet dateRestriction;
 
 	public DateUnionAggregator(Column column) {
@@ -37,7 +37,8 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 			return;
 		}
 
-		BitMapCDateSet range = CDateSet.create();
+		// TODO: 21.09.2020 masked add
+		BitMapCDateSet range = BitMapCDateSet.create();
 		range.add(bucket.getAsDateRange(event, getColumn()));
 
 		range.retainAll(dateRestriction);

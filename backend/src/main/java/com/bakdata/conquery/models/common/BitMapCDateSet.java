@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.common.daterange.CDateRangeAll;
 import com.bakdata.conquery.models.common.daterange.CDateRangeClosed;
@@ -16,11 +18,13 @@ import com.bakdata.conquery.models.common.daterange.CDateRangeEnding;
 import com.bakdata.conquery.models.common.daterange.CDateRangeExactly;
 import com.bakdata.conquery.models.common.daterange.CDateRangeStarting;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import lombok.NonNull;
 
-
+@JsonDeserialize(using = CDateSetDeserializer.class)
+@JsonSerialize(using = CDateSetSerializer.class)
 public class BitMapCDateSet {
 
 	private BitMapCDateSet(BitSet positiveBits, BitSet negativeBits) {
@@ -475,6 +479,10 @@ public class BitMapCDateSet {
 	}
 
 	public void remove(CDateRangeStarting range) {
+		if(isEmpty()){
+			return;
+		}
+
 		if (isAll()) {
 			setRange(range.getMinValue() - 1, range.getMinValue());
 			openMax = false;
@@ -488,6 +496,10 @@ public class BitMapCDateSet {
 	}
 
 	public void remove(CDateRangeEnding range) {
+		if(isEmpty()){
+			return;
+		}
+
 		if (isAll()) {
 			setRange(range.getMaxValue() + 1, range.getMaxValue() + 2);
 			openMin = false;
@@ -501,7 +513,6 @@ public class BitMapCDateSet {
 		openMin = false;
 	}
 
-	@JsonIgnore
 	public boolean isAll() {
 		return openMax && openMin && positiveBits.isEmpty() && negativeBits.isEmpty();
 	}

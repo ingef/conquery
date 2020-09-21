@@ -49,7 +49,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
-		BitMapCDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
+		BitMapCDateSet dateSet = BitMapCDateSet.parse(Objects.toString(contained.getValues()[0]));
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
 		// dateset is empty or sampling failed.

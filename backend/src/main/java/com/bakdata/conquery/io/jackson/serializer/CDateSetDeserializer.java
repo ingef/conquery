@@ -30,7 +30,7 @@ public class CDateSetDeserializer extends StdDeserializer<BitMapCDateSet> {
 			return set;
 		}
 		else if(p.currentToken() == JsonToken.VALUE_STRING) {
-			return CDateSet.parse(p.readValueAs(String.class));
+			return BitMapCDateSet.parse(p.readValueAs(String.class));
 		}
 		else {
 			return (BitMapCDateSet) ctxt.handleUnexpectedToken(BitMapCDateSet.class, p.currentToken(), p, "can't deserialize ICDateSet");

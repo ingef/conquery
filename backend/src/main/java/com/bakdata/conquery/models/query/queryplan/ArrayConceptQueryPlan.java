@@ -87,7 +87,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
-		BitMapCDateSet dateSet = CDateSet.create();
+		BitMapCDateSet dateSet = BitMapCDateSet.create();
 		int resultInsertIdx = specialDateUnion ? 1 : 0;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {
@@ -106,7 +106,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
 			if (specialDateUnion) {
-				dateSet.addAll(CDateSet.parse(Objects.toString(singleLineResult.getValues()[0])));
+				dateSet.addAll(BitMapCDateSet.parse(Objects.toString(singleLineResult.getValues()[0])));
 				// Skip overwriting the first value: daterange
 				srcCopyPos = 1;
 			}
