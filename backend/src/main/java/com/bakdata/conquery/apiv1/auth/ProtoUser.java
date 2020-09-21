@@ -7,7 +7,7 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -61,7 +61,7 @@ public class ProtoUser {
 		return user;
 	}
 
-	public void registerForAuthorization(MasterMetaStorage storage, boolean override) {
+	public void registerForAuthorization(MetaStorage storage, boolean override) {
 		User user = this.getUser();
 		if(override) {			
 			storage.updateUser(user);

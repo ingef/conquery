@@ -9,8 +9,8 @@ import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
-import com.bakdata.conquery.commands.SlaveCommand;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -60,19 +60,19 @@ public class StandaloneSupport implements Closeable {
 	}
 
 	public Validator getValidator() {
-		return testConquery.getStandaloneCommand().getMaster().getValidator();
+		return testConquery.getStandaloneCommand().getManager().getValidator();
 	}
 
-	public MasterMetaStorage getMasterMetaStorage() {
-		return testConquery.getStandaloneCommand().getMaster().getStorage();
+	public MetaStorage getMetaStorage() {
+		return testConquery.getStandaloneCommand().getManager().getStorage();
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset.getId()).getStorage();
+		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry().get(dataset.getId()).getStorage();
 	}
 
-	public List<SlaveCommand> getSlaves() {
-		return testConquery.getStandaloneCommand().getSlaves();
+	public List<ShardNode> getShardNodes() {
+		return testConquery.getStandaloneCommand().getShardNodes();
 	}
 	
 	/**

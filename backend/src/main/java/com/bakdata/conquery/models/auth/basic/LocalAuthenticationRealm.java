@@ -11,7 +11,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
 import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.AuthorizationController;
@@ -54,8 +54,8 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
  * is given a signed JWT for further authentication over following requests. The
  * realm offers a basic user management, which is decoupled form the
  * authorization related user information that is saved in the
- * {@link MasterMetaStorage}. So adding or removing a user in this realm does
- * not change the {@link MasterMetaStorage}. {@link Conquery} interacts with
+ * {@link MetaStorage}. So adding or removing a user in this realm does
+ * not change the {@link MetaStorage}. {@link Conquery} interacts with
  * this realm using the Shiro frame work. However, endusers can interface it
  * through specific endpoints that are registerd by this realm.
  */
@@ -64,8 +64,8 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
-	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the MasterCommand)
-	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the slaves, so this is a problem.
+	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the ManagerNode)
+	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
 	private static final File STORE_DIR = ConqueryConfig.getInstance().getStorage().getDirectory();
 
 	private final XodusConfig passwordStoreConfig;
@@ -77,7 +77,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private XodusStore passwordStore;
 
 	@JsonIgnore
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
 

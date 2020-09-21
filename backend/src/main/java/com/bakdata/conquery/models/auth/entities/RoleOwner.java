@@ -2,14 +2,14 @@ package com.bakdata.conquery.models.auth.entities;
 
 import java.util.Set;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface RoleOwner {
 
-	void addRole(MasterMetaStorage storage, Role role);
+	void addRole(MetaStorage storage, Role role);
 
-	void removeRole(MasterMetaStorage storage, Role role);
+	void removeRole(MetaStorage storage, Role role);
 
 	/**
 	 * Return a copy of the roles hold by the owner.
