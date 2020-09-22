@@ -242,7 +242,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		for(CreationFlag flag : creationFlags) {
 			switch (flag) {
 				case WITH_COLUMN_DESCIPTION:
-					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 					break;
 				case WITH_SOURCE:
 					setAdditionalFieldsForStatusWithSource(storage, url, user, status);

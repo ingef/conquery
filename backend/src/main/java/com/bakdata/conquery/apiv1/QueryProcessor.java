@@ -102,7 +102,7 @@ public class QueryProcessor {
 
 				final ManagedExecution<?> mq = ExecutionManager.execute( datasetRegistry, storage.getExecution(executionId));
 
-				return getStatus(dataset, mq, urlb, user);
+				return getStatus(mq, urlb, user);
 			}
 
 		}
@@ -118,7 +118,7 @@ public class QueryProcessor {
 		}
 
 		// return status
-		return getStatus(dataset, mq, urlb, user);
+		return getStatus(mq, urlb, user);
 	}
 
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
