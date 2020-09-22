@@ -12,7 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Workers send their part of the query result to master for assembly.
+ * Workers send their part of the query result to ManagerNode for assembly.
  */
 @CPSType(id="COLLECT_QUERY_RESULT", base=NamespacedMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(of = "result")

@@ -25,8 +25,8 @@ public class AutoDoc {
 	public AutoDoc() {
 		scan = new ClassGraph()
 			.enableAllInfo()
-			//blacklist some packages that contain large libraries
-			.blacklistPackages(
+			//reject some packages that contain large libraries
+			.rejectPackages(
 				"groovy",
 				"org.codehaus.groovy",
 				"org.apache",

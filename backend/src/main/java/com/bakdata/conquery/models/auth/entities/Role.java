@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.auth.entities;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 
 public class Role extends PermissionOwner<RoleId> {
@@ -16,7 +16,7 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 	
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) {
+	protected void updateStorage(MetaStorage storage) {
 		storage.updateRole(this);
 		
 	}

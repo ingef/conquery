@@ -11,7 +11,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -33,7 +33,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 	private static final String USERS = "users";
 	private static final String ACTIVE = "active";
 
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 	private final Duration activeUserDuration;
 
 	private final Table<Group, User, LocalDateTime> activeUsers = HashBasedTable.create();

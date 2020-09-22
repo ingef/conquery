@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
@@ -42,14 +42,14 @@ public class LocalAuthRealmTest {
 	private File tmpDir;
 	private AuthorizationController controller;
 	private LocalAuthenticationRealm realm;
-	private MasterMetaStorage storage;
+	private MetaStorage storage;
 	private User user1;
 
 	@BeforeAll
 	public void setupAll() throws Exception {
 		LocalAuthenticationConfig config = new LocalAuthenticationConfig();
 
-		storage = mock(MasterMetaStorage.class);
+		storage = mock(MetaStorage.class);
 		File tmpDir = Files.createTempDir();
 
 		tmpDir.mkdir();
