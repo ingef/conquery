@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
@@ -217,10 +218,13 @@ public class BitMapCDateSetTest {
 	@Test
 	public void testAddMakingAll() {
 		assertThat(BitMapCDateSet.create(CDateRange.atMost(1), CDateRange.atLeast(1)).asRanges())
-				.containsExactly(CDateRange.all());
+				.containsExactly(CDateRange.all())
+		;
 
 		assertThat(BitMapCDateSet.create(CDateRange.atMost(1), CDateRange.atLeast(1)))
-				.matches(BitMapCDateSet::isAll);
+				.matches(BitMapCDateSet::isAll)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+		;
 	}
 
 	@Test
@@ -264,6 +268,11 @@ public class BitMapCDateSetTest {
 		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
 		set.retainAll(CDateRange.exactly(10));
 		assertThat(set.asRanges()).containsExactly(CDateRange.exactly(10));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -271,13 +280,24 @@ public class BitMapCDateSetTest {
 		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
 		set.retainAll(CDateRange.atMost(10));
 		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(10));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
 	public void testRetainRemoveAtLeastFromAll() {
 		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
 		set.retainAll(CDateRange.atLeast(10));
+
 		assertThat(set.asRanges()).containsExactly(CDateRange.atLeast(10));
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
+
 	}
 
 	@Test
@@ -285,6 +305,12 @@ public class BitMapCDateSetTest {
 		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
 		set.retainAll(CDateRange.atLeast(-10));
 		assertThat(set.asRanges()).containsExactly(CDateRange.atLeast(-10));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
+
 	}
 
 	@Test
@@ -292,6 +318,12 @@ public class BitMapCDateSetTest {
 		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
 		set.retainAll(CDateRange.atMost(-10));
 		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-10));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
+
 	}
 
 	@Test
@@ -300,6 +332,12 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.atMost(10));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.atLeast(11));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
+
 	}
 
 	@Test
@@ -308,6 +346,13 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.atLeast(10));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(9));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
+
+
 	}
 
 	@Test
@@ -316,6 +361,12 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.exactly(10));
 
 		assertThat(set.asRanges()).isEmpty();
+
+		assertThat(set)
+				.matches(BitMapCDateSet::isEmpty)
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
+
 	}
 
 	@Test
@@ -324,6 +375,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.exactly(11));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.exactly(10));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 
@@ -332,6 +388,11 @@ public class BitMapCDateSetTest {
 		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.all());
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(BitMapCDateSet::isAll)
+		;
 	}
 
 	@Test
@@ -340,6 +401,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.exactly(10));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 9));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -348,6 +414,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.of(-1, 1));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, -2), CDateRange.of(2, 10));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -356,6 +427,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.atMost(-5));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.of(-4, 10));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -364,6 +440,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.atLeast(5));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 4));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -372,6 +453,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.all());
 
 		assertThat(set.asRanges()).isEmpty();
+
+		assertThat(set)
+				.matches(BitMapCDateSet::isEmpty)
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -380,6 +466,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.of(-1, 1));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-2), CDateRange.atLeast(2));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -388,6 +479,11 @@ public class BitMapCDateSetTest {
 		set.remove(CDateRange.exactly(0));
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-1), CDateRange.atLeast(1));
+
+		assertThat(set)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -424,8 +520,10 @@ public class BitMapCDateSetTest {
 				.matches(set -> set.contains(1))
 				.matches(set -> set.contains(2))
 				.matches(set -> set.contains(-1))
-				.matches(set -> set.contains(-1000));
-
+				.matches(set -> set.contains(-1000))
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(BitMapCDateSet::isAll)
+		;
 	}
 
 	@Test
@@ -435,7 +533,10 @@ public class BitMapCDateSetTest {
 				.matches(set -> set.contains(6))
 
 				.matches(set -> !set.contains(-1))
-				.matches(set -> set.contains(-11));
+				.matches(set -> set.contains(-11))
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
+		;
 	}
 
 	@Test
@@ -449,7 +550,9 @@ public class BitMapCDateSetTest {
 
 				.matches(set -> !set.contains(0))
 				.matches(set -> !set.contains(100))
-				.matches(set -> !set.contains(-100));
+				.matches(set -> !set.contains(-100))
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll));
 	}
 
 	@Test
@@ -465,10 +568,14 @@ public class BitMapCDateSetTest {
 				.matches(set -> set.intersects(CDateRange.atMost(6)))
 
 				.matches(set -> !set.intersects(CDateRange.of(-12, -11)))
+
+
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
 		;
 
 
-		// Complicated set with overlapping build instructions
+		// Complicated set with overlapping/redundant build instructions
 		assertThat(BitMapCDateSet.create(CDateRange.exactly(-7), CDateRange.exactly(7), CDateRange.atMost(-5), CDateRange.atLeast(5)))
 				.matches(set -> set.intersects(CDateRange.of(-6, 6)))
 
@@ -482,14 +589,28 @@ public class BitMapCDateSetTest {
 				.matches(set -> set.intersects(CDateRange.atMost(6)))
 
 				.matches(set -> set.intersects(CDateRange.of(-12, -11)))
+
+
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(Predicate.not(BitMapCDateSet::isAll))
 		;
+
+
 	}
 
 	@Test
 	public void testIsAll() {
-		assertThat(BitMapCDateSet.createAll()).matches(BitMapCDateSet::isAll);
-		assertThat(BitMapCDateSet.create(CDateRange.of(-10, 10), CDateRange.all())).matches(BitMapCDateSet::isAll);
-		assertThat(BitMapCDateSet.create(CDateRange.all(), CDateRange.of(-10, 10))).matches(BitMapCDateSet::isAll);
+		assertThat(BitMapCDateSet.createAll())
+				.matches(BitMapCDateSet::isAll)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+		;
+		assertThat(BitMapCDateSet.create(CDateRange.of(-10, 10), CDateRange.all()))
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(BitMapCDateSet::isAll);
+
+		assertThat(BitMapCDateSet.create(CDateRange.all(), CDateRange.of(-10, 10)))
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
+				.matches(BitMapCDateSet::isAll);
 
 		final BitMapCDateSet out = BitMapCDateSet.create();
 
@@ -498,6 +619,7 @@ public class BitMapCDateSetTest {
 
 		assertThat(out)
 				.matches(BitMapCDateSet::isAll)
+				.matches(Predicate.not(BitMapCDateSet::isEmpty))
 				.hasToString("{-∞/+∞}")
 		;
 

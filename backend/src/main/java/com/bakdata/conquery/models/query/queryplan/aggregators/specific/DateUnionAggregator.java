@@ -8,13 +8,15 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.util.QueryUtils;
 
 /**
  * Aggregator, listing all days present.
  */
 public class DateUnionAggregator extends SingleColumnAggregator<String> {
 
-	private BitMapCDateSet set = BitMapCDateSet.create();
+	private final BitMapCDateSet set = QueryUtils.createPreAllocatedDateSet();
+
 	private BitMapCDateSet dateRestriction;
 
 	public DateUnionAggregator(Column column) {
@@ -37,13 +39,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 			return;
 		}
 
-		// TODO: 21.09.2020 masked add
-		BitMapCDateSet range = BitMapCDateSet.create();
-		range.add(bucket.getAsDateRange(event, getColumn()));
-
-		range.retainAll(dateRestriction);
-
-		set.addAll(range);
+		set.maskedAdd(bucket.getAsDateRange(event, getColumn()), dateRestriction);
 	}
 
 	@Override

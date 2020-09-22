@@ -1,11 +1,9 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -13,6 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -24,11 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventDateUnionAggregator implements Aggregator<String> {
 
-	private BitMapCDateSet set = BitMapCDateSet.createPreallocated(
-			CDate.ofLocalDate(LocalDate.of(1950, 01, 01)),
-			CDate.ofLocalDate(LocalDate.now())
-	);
-
+	private BitMapCDateSet set = QueryUtils.createPreAllocatedDateSet();
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
 
