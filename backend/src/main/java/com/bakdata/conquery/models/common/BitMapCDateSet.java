@@ -360,19 +360,11 @@ public class BitMapCDateSet {
 	}
 
 	private void add(CDateRangeClosed range) {
-		if(isAll()){
-			return;
-		}
-
 		setRange(range.getMinValue(), range.getMaxValue() + 1);
 	}
 
 
 	private void add(CDateRangeExactly range) {
-		if(isAll()){
-			return;
-		}
-
 		final int value = range.getMinValue();
 
 		if (value >= 0) {
@@ -400,6 +392,7 @@ public class BitMapCDateSet {
 
 		openMin = true;
 
+		// TODO: 22.09.2020 empty trivial case
 
 		final int maxValue = getMaxValue();
 		final int minValue = getMinValue();
@@ -421,9 +414,7 @@ public class BitMapCDateSet {
 	}
 
 	private void add(CDateRangeStarting range) {
-
 		final int value = range.getMinValue();
-
 
 		if(contains(value)){
 			openMax = true;
@@ -431,8 +422,6 @@ public class BitMapCDateSet {
 		}
 
 		openMax = true;
-
-
 
 		final int maxValue = getMaxValue();
 		final int minValue = getMinValue();
@@ -476,6 +465,10 @@ public class BitMapCDateSet {
 	}
 
 	public void remove(CDateRange rangeToAdd) {
+		if(isEmpty()){
+			return;
+		}
+
 		if (rangeToAdd instanceof CDateRangeClosed) {
 			remove(((CDateRangeClosed) rangeToAdd));
 		}
@@ -493,19 +486,19 @@ public class BitMapCDateSet {
 		}
 	}
 
-	public void remove(CDateRangeExactly range) {
+	private void remove(CDateRangeExactly range) {
 		clearRange(range.getMinValue(), range.getMaxValue() + 1);
 	}
 
-	public void remove(CDateRangeClosed range) {
+	private void remove(CDateRangeClosed range) {
 		clearRange(range.getMinValue(), range.getMaxValue() + 1);
 	}
 
-	public void remove(CDateRangeAll range) {
+	private void remove(CDateRangeAll range) {
 		clear();
 	}
 
-	public void remove(CDateRangeStarting range) {
+	private void remove(CDateRangeStarting range) {
 		if(isEmpty()){
 			return;
 		}
@@ -522,7 +515,7 @@ public class BitMapCDateSet {
 		openMax = false;
 	}
 
-	public void remove(CDateRangeEnding range) {
+	private void remove(CDateRangeEnding range) {
 		if(isEmpty()){
 			return;
 		}
@@ -797,7 +790,7 @@ public class BitMapCDateSet {
 	 */
 	public int getMinValue() {
 		if (isEmpty()) {
-			return Integer.MAX_VALUE;
+			throw new IllegalStateException("Empty range has no min/max");
 		}
 
 		if (openMin) {
@@ -816,7 +809,7 @@ public class BitMapCDateSet {
 	 */
 	public int getMaxValue() {
 		if (isEmpty()) {
-			return Integer.MIN_VALUE;
+			throw new IllegalStateException("Empty range has no min/max");
 		}
 
 		if (openMax) {

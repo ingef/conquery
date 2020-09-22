@@ -556,6 +556,18 @@ public class BitMapCDateSetTest {
 	}
 
 	@Test
+	public void containsPositiveSpans() {
+		assertThat(BitMapCDateSet.create(CDateRange.of(5, 10)))
+				.matches(set -> set.contains(10))
+				.matches(set -> set.contains(5))
+
+				.matches(set -> !set.contains(4))
+				.matches(set -> !set.contains(11))
+
+		;
+	}
+
+	@Test
 	public void intersects() {
 		assertThat(BitMapCDateSet.create(CDateRange.of(-10, -5), CDateRange.of(5, 10)))
 				.matches(set -> set.intersects(CDateRange.of(-6, 6)))
