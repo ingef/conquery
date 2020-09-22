@@ -128,6 +128,14 @@ public class BitMapCDateSet {
 	 * Test if the single CDate is inside the Set.
 	 */
 	public boolean contains(int value) {
+		if(isEmpty()){
+			return false;
+		}
+
+		if(isAll()){
+			return true;
+		}
+
 		if (openMax && value >= getMaxRealValue()) {
 			return true;
 		}
