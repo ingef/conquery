@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
-import java.net.SocketAddress;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
@@ -32,7 +31,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
-import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
@@ -103,7 +102,7 @@ public class AdminUIResource extends HAdmin {
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
-		groovy.setProperty("namespaces", processor.getNamespaces());
+		groovy.setProperty("datasetRegistry", processor.getDatasetRegistry());
 		groovy.setProperty("jobManager", processor.getJobManager());
 
 		try {
@@ -118,7 +117,7 @@ public class AdminUIResource extends HAdmin {
 	@GET
 	@Path("datasets")
 	public View getDatasets() {
-		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getNamespaces().getAllDatasets());
+		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getDatasetRegistry().getAllDatasets());
 	}
 
 	@POST @Path("/update-matching-stats/{"+ DATASET +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -133,8 +132,7 @@ public class AdminUIResource extends HAdmin {
 
 		processor.getJobManager().cancelJob(jobId);
 
-		for (Map.Entry<SocketAddress, SlaveInformation> entry : processor.getNamespaces().getSlaves().entrySet()) {
-			SlaveInformation info = entry.getValue();
+		for (ShardNodeInformation info : processor.getDatasetRegistry().getShardNodes().values()) {
 			info.send(new CancelJobMessage(jobId));
 		}
 
@@ -148,24 +146,24 @@ public class AdminUIResource extends HAdmin {
 	public View getJobs() {
 		Map<String, JobManagerStatus> status =
 				ImmutableMap.<String, JobManagerStatus>builder()
-						.put("Master", processor.getJobManager().reportStatus())
-						// Namespace JobManagers on Master
+						.put("ManagerNode", processor.getJobManager().reportStatus())
+						// Namespace JobManagers on ManagerNode
 						.putAll(
-								processor.getNamespaces().getNamespaces().stream()
+								processor.getDatasetRegistry().getDatasets().stream()
 										 .collect(Collectors.toMap(
-												 ns -> String.format("Master::%s", ns.getDataset().getId()),
+												 ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
 												 ns -> ns.getJobManager().reportStatus()
 										 )))
 						// Remote Worker JobManagers
 						.putAll(
 								processor
-										.getNamespaces()
-										.getSlaves()
+										.getDatasetRegistry()
+										.getShardNodes()
 										.values()
 										.stream()
 										.collect(Collectors.toMap(
 												si -> Objects.toString(si.getRemoteAddress()),
-												SlaveInformation::getJobManagerStatus
+												ShardNodeInformation::getJobManagerStatus
 										))
 						)
 						.build();

@@ -34,7 +34,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -104,7 +104,7 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
-		Namespaces namespaces = support.getNamespace().getNamespaces();
+		DatasetRegistry namespaces = support.getNamespace().getNamespaces();
 		UserId userId = support.getTestUser().getId();
 		DatasetId dataset = support.getNamespace().getDataset().getId();
 		

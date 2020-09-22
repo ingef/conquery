@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.types.parser.specific.string;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.AStringType;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -20,7 +19,7 @@ public interface TypeGuesser{
 		private final long typeMemoryEstimate;
 		
 		public long estimate() {
-			int instances = ConqueryConfig.getInstance().getStandalone().getNumberOfSlaves() + 1;
+			int instances = ConqueryConfig.getInstance().getStandalone().getNumberOfShardNodes() + 1;
 			return memoryEstimate + instances * typeMemoryEstimate;
 		}
 

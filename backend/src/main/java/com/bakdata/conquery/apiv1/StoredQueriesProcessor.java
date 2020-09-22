@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -11,7 +9,7 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -23,7 +21,8 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,22 +30,22 @@ import lombok.extern.slf4j.Slf4j;
 public class StoredQueriesProcessor {
 
 	@Getter
-	private final Namespaces namespaces;
-	private final MasterMetaStorage storage;
+	private final DatasetRegistry datasets;
+	private final MetaStorage storage;
 
-	public StoredQueriesProcessor(Namespaces namespaces) {
-		this.namespaces = namespaces;
-		this.storage = namespaces.getMetaStorage();
+	public StoredQueriesProcessor(DatasetRegistry datasets) {
+		this.datasets = datasets;
+		this.storage = datasets.getMetaStorage();
 	}
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
+	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return allQueries
 			.stream()
 			// to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
-			.filter(q -> q.getDataset().equals(dataset.getId()))
+			.filter(q -> q.getDataset().equals(namespace.getDataset().getId()))
 			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
 			.flatMap(mq -> {
 				try {
@@ -63,11 +62,11 @@ public class StoredQueriesProcessor {
 			});
 	}
 
-	public void deleteQuery(Dataset dataset, ManagedExecution<?> query) {
-		storage.removeExecution(query.getId());
+	public void deleteQuery(Namespace namespace, ManagedExecutionId queryId) {
+		storage.removeExecution(queryId);
 	}
 
-	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId, User user) {
+	public ExecutionStatus getQueryWithSource(ManagedExecutionId queryId, User user) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
 			return null;
@@ -82,8 +81,8 @@ public class StoredQueriesProcessor {
 		storage.updateExecution(execution);
 		
 		// Patch this query in other datasets
-		List<Dataset> remainingDatasets = namespaces.getAllDatasets(() -> new ArrayList<>());
-		remainingDatasets.remove(namespaces.get(executionId.getDataset()).getDataset());
+		List<Dataset> remainingDatasets = datasets.getAllDatasets(() -> new ArrayList<>());
+		remainingDatasets.remove(datasets.get(executionId.getDataset()).getDataset());
 		for(Dataset dataset : remainingDatasets) {
 			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(),executionId.getExecution());
 			execution = storage.getExecution(id);

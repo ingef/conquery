@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.auth.basic;
 import java.util.Objects;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserAuthenticationManagementProcessor {
 
 	private final LocalAuthenticationRealm realm;
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 
 	public boolean addUser(ProtoUser pUser) {
 		// Throws an exception if it would override the existing user

@@ -34,7 +34,7 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.bakdata.conquery.util.search.SearchScorer;
@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ConceptsProcessor {
 	
-	private final Namespaces namespaces;
+	private final DatasetRegistry namespaces;
 	private final LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
 		.softValues()
 		.expireAfterWrite(10, TimeUnit.MINUTES)

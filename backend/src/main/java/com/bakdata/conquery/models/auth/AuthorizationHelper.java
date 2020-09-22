@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -123,7 +123,7 @@ public class AuthorizationHelper {
 	 * @param permission The permission to add.
 	 * @param storage A storage where the permission are added for persistence.
 	 */
-	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission, @NonNull MasterMetaStorage storage) {
+	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission, @NonNull MetaStorage storage) {
 		owner.addPermission(storage, permission);
 	}
 	
@@ -133,11 +133,11 @@ public class AuthorizationHelper {
 	 * @param permission The permission to remove.
 	 * @param storage A storage where the permission is removed from.
 	 */
-	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission, @NonNull MasterMetaStorage storage) {
+	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission, @NonNull MetaStorage storage) {
 		owner.removePermission(storage, permission);
 	}
 	
-	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MasterMetaStorage storage){
+	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
 		List<Group> userGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups()) {
 			if(group.containsMember(user)) {
@@ -151,7 +151,7 @@ public class AuthorizationHelper {
 	 * Find the primary group of the user. All users must have a primary group.
 	 * @implNote Currently this is the first group of a user and should also be the only group.
 	 */
-	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MasterMetaStorage storage) {
+	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MetaStorage storage) {
 		List<Group> groups = getGroupsOf(user, storage);
 		if(groups.isEmpty()) {
 			return Optional.empty();
@@ -167,7 +167,7 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Set<Permission> getEffectiveUserPermissions(UserId userId, MasterMetaStorage storage) {
+	public static Set<Permission> getEffectiveUserPermissions(UserId userId, MetaStorage storage) {
 		User user = Objects.requireNonNull(storage.getUser(userId), () -> String.format("User with id %s was not found", userId));
 		Set<Permission> userPermissions = user.getPermissions();
 		Set<Permission> tmpView = userPermissions;
@@ -193,7 +193,7 @@ public class AuthorizationHelper {
 	 * @param storage
 	 * @return
 	 */
-	public static Set<Permission> getEffectiveGroupPermissions(GroupId groupId, MasterMetaStorage storage) {
+	public static Set<Permission> getEffectiveGroupPermissions(GroupId groupId, MetaStorage storage) {
 		Group group = Objects.requireNonNull(
 			storage.getGroup(groupId),
 			() -> String.format("User with id %s was not found", groupId));
@@ -214,7 +214,7 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(UserId userId, List<String> domainSpecifier, MasterMetaStorage storage) {
+	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(UserId userId, List<String> domainSpecifier, MetaStorage storage) {
 		Set<Permission> permissions = getEffectiveUserPermissions(userId, storage);
 		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
 		for(Permission perm : permissions) {
@@ -231,7 +231,7 @@ public class AuthorizationHelper {
 	
 
 	
-	public static <P extends PermissionOwner<?>> void addRoleTo(MasterMetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
+	public static <P extends PermissionOwner<?>> void addRoleTo(MetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
 		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
 		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
 		
@@ -243,7 +243,7 @@ public class AuthorizationHelper {
 		log.trace("Added role {} to {}", role, owner);
 	}
 	
-	public static <P extends PermissionOwner<?>> void deleteRoleFrom(MasterMetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
+	public static <P extends PermissionOwner<?>> void deleteRoleFrom(MetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
 		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
 		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
 		
@@ -256,7 +256,7 @@ public class AuthorizationHelper {
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
-	public static void deleteRole(MasterMetaStorage storage, RoleId roleId) {
+	public static void deleteRole(MetaStorage storage, RoleId roleId) {
 		log.info("Deleting mandator: {}", roleId);
 		Role role = storage.getRole(roleId);
 		for (User user : storage.getAllUsers()) {
@@ -270,11 +270,11 @@ public class AuthorizationHelper {
 	
 
 
-	public static List<User> getUsersByRole(MasterMetaStorage storage, Role role) {
+	public static List<User> getUsersByRole(MetaStorage storage, Role role) {
 		return storage.getAllUsers().stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
 	}
 
-	public static List<Group> getGroupsByRole(MasterMetaStorage storage, Role role) {
+	public static List<Group> getGroupsByRole(MetaStorage storage, Role role) {
 		return storage.getAllGroups().stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
 	}
 

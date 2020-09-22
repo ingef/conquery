@@ -32,7 +32,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class ResultCSVResource {
 
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
 		ResultCSVResource.class, "getAsCsv");
-	private final Namespaces namespaces;
+	private final DatasetRegistry namespaces;
 	private final ConqueryConfig config;
 
 	@GET

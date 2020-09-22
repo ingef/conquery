@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
@@ -47,7 +47,7 @@ public final class AuthorizationController implements Managed{
 	private final List<AuthenticationConfig> authenticationConfigs;
 	@NonNull
 	@Getter
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 
 	@Getter
 	private ConqueryTokenRealm centralTokenRealm;
@@ -113,7 +113,7 @@ public final class AuthorizationController implements Managed{
 	 * @param storage
 	 *            A storage, where the handler might add a new users.
 	 */
-	private static void initializeAuthConstellation(AuthorizationConfig config, List<Realm> realms, MasterMetaStorage storage) {
+	private static void initializeAuthConstellation(AuthorizationConfig config, List<Realm> realms, MetaStorage storage) {
 		for (ProtoUser pUser : config.getInitialUsers()) {
 			pUser.registerForAuthorization(storage, true);
 			for (Realm realm : realms) {
