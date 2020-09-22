@@ -51,7 +51,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 
 	/**
 	 * Helper method to insert dates from outside.
-	 * @param other ICDateSet to be included.
+	 * @param other BitMapCDateSet to be included.
 	 */
 	public void merge(BitMapCDateSet other){
 		set.addAll(other);

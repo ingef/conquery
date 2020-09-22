@@ -107,7 +107,7 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * Retrieves the {@link ConceptQueryPlan#getSpecialDateUnion()} ()} time of {@link #reference} and {@link #preceding}.
 	 * Then tests whether they match the specific criteria for inclusion.
-	 * If the criteria are met, the matching {@link ICDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
+	 * If the criteria are met, the matching {@link BitMapCDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
 	 *
 	 * @return true, iff the Events match the specific criteria.
 	 */
