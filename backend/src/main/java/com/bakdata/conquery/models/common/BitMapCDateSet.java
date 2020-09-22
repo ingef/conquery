@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import lombok.NonNull;
 
 @JsonDeserialize(using = CDateSetDeserializer.class)
@@ -54,6 +55,7 @@ public class BitMapCDateSet {
 												  return DateRangeParser.parseISORange(mr.group(2));
 											  }
 											  catch (Exception e) {
+												  Throwables.throwIfUnchecked(e);
 												  throw new RuntimeException(e);
 											  }
 										  })
@@ -261,6 +263,9 @@ public class BitMapCDateSet {
 	}
 
 
+	/**
+	 * completely reset the set, making it empty.
+	 */
 	public void clear() {
 		openMin = false;
 		openMax = false;
@@ -294,6 +299,11 @@ public class BitMapCDateSet {
 	}
 
 
+	/**
+	 * Test if the range has an intersection with any of this sets subranges.
+	 *
+	 * This means, that either of the ends is contained, or that there exists a range between the ends.
+	 */
 	public boolean intersects(CDateRange range) {
 		// trivial case
 		if (contains(range.getMinValue()) || contains(range.getMaxValue())) {
@@ -321,6 +331,18 @@ public class BitMapCDateSet {
 	public CDateRange span() {
 		if (isEmpty()) {
 			return null;
+		}
+
+		if(isAll()){
+			return CDateRange.all();
+		}
+
+		if(openMin){
+			return CDateRange.atMost(getMaxValue());
+		}
+
+		if(openMax){
+			return CDateRange.atLeast(getMinValue());
 		}
 
 		return CDateRange.of(getMinValue(), getMaxValue());
@@ -387,6 +409,12 @@ public class BitMapCDateSet {
 
 		if(contains(value)){
 			openMin = true;
+
+			// ensures that isAll always has the fastest default case, the internal state is also irrelevant at this point.
+			if(isAll()){
+				positiveBits.clear();
+				negativeBits.clear();
+			}
 			return;
 		}
 
@@ -418,6 +446,12 @@ public class BitMapCDateSet {
 
 		if(contains(value)){
 			openMax = true;
+
+			// ensures that isAll always has the fastest default case, the internal state is also irrelevant at this point.
+			if(isAll()){
+				positiveBits.clear();
+				negativeBits.clear();
+			}
 			return;
 		}
 
@@ -534,7 +568,7 @@ public class BitMapCDateSet {
 	}
 
 	public boolean isAll() {
-		// trivial case
+		// trivial exclusion case
 		if (!openMax || !openMin) {
 			return false;
 		}
@@ -553,6 +587,9 @@ public class BitMapCDateSet {
 	 * @param retained
 	 */
 	public void retainAll(BitMapCDateSet retained) {
+		if(isEmpty()){
+			return;
+		}
 
 		if (isAll()) {
 			negativeBits.or(retained.negativeBits);
