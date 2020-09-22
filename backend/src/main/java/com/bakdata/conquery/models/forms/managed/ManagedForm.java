@@ -241,7 +241,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 				getSubmitted().getClass().getSimpleName());
 			return;
 		}
-		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions());
+		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(datasetRegistry));
 	}
 
 

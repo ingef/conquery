@@ -88,7 +88,6 @@ public class QueryResource {
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
-			dsUtil.getDataset(datasetId),
 			query,
 			RequestAwareUriBuilder.fromRequest(req),
 			user);
