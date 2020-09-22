@@ -159,7 +159,7 @@ public class BitMapCDateSet {
 			}
 		}
 
-		// Now handle special cases related to infinities and connectedness of the bitsets
+		// Now handle special cases related to infinities and connected bitsets
 
 		// they are indeed connected
 		if (positiveBits.get(0) && negativeBits.get(1)) {
