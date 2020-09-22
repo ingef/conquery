@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -79,12 +80,12 @@ public class ConceptsProcessor {
 		}
 	}
 	
-	public List<IdLabel> getDatasets(User user) {
+	public List<IdLabel<DatasetId>> getDatasets(User user) {
 		return namespaces
 			.getAllDatasets()
 			.stream()
 			.filter(d -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), d.getId())))
-			.map(d -> new IdLabel(d.getLabel(), d.getId().toString()))
+			.map(d -> new IdLabel<DatasetId>(d.getId(), d.getLabel()))
 			.sorted()
 			.collect(Collectors.toList());
 	}
