@@ -157,7 +157,7 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	public static Import createForPreprocessing(String table, String tag, PPColumn[] columns) {
-		Import imp = new Import(0);
+		Import imp = new Import(0); // is not yet used here.
 		imp.setTable(new TableId(new DatasetId("preprocessing"), table));
 		imp.setName(tag);
 		ImportColumn[] impCols = new ImportColumn[columns.length];

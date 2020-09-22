@@ -43,8 +43,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
 	 */
-	private int[] minDate;
-	private int[] maxDate;
+	private int[] minDate, maxDate;
 	
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.

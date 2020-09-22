@@ -210,7 +210,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				return;
 			}
 
-			// Apply the conusmer to key and value
+			// Apply the consumer to key and value
 			try {
 				consumer.accept(key, value, v.getLength());
 			}
@@ -359,7 +359,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		// Write dump
 		try {
-			log.warn("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
+			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
 			JsonNode dump = Jackson.BINARY_MAPPER.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
