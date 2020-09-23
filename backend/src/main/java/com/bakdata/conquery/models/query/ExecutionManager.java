@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -15,8 +15,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,45 +28,45 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	public static ManagedExecution<?> runQuery(Namespaces namespaces, QueryDescription query, UserId userId, DatasetId submittedDataset) {
-		return execute(namespaces, createExecution(namespaces, query, userId, submittedDataset));
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset) {
+		return execute(datasets, createExecution(datasets, query, userId, submittedDataset));
 	}
 	
-	public static ManagedExecution<?> runQuery(Namespaces namespaces, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
-		return execute(namespaces, createQuery(namespaces, query, queryId, userId, submittedDataset));
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset));
 	}
 	
 
-	public static ManagedExecution<?> createExecution(Namespaces namespaces, QueryDescription query, UserId userId, DatasetId submittedDataset) {
-		return createQuery( namespaces, query, UUID.randomUUID(), userId, submittedDataset);
+	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset) {
+		return createQuery( datasets, query, UUID.randomUUID(), userId, submittedDataset);
 	}
 
-	public static ManagedExecution<?> createQuery(Namespaces namespaces, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution<?> managed = query.toManagedExecution( namespaces, userId, submittedDataset);
+		ManagedExecution<?> managed = query.toManagedExecution( datasets, userId, submittedDataset);
 
 		managed.setQueryId(queryId);
 		
 		// Store the execution
-		namespaces.getMetaStorage().addExecution(managed);
+		datasets.getMetaStorage().addExecution(managed);
 
 		return managed;
 	}
 
-	public static ManagedExecution<?> execute(Namespaces namespaces, ManagedExecution<?> execution){
+	public static ManagedExecution<?> execute(DatasetRegistry datasets, ManagedExecution<?> execution){
 		// Initialize the query / create subqueries
-		execution.initExecutable(namespaces);
+		execution.initExecutable(datasets);
 
-		log.info("Executing Query[{}] in Namesspaces[{}]", execution.getQueryId(), execution.getRequiredNamespaces());
+		log.info("Executing Query[{}] in Datasets[{}]", execution.getQueryId(), execution.getRequiredDatasets());
 
 
 		execution.start();
 
-		final MasterMetaStorage storage = namespaces.getMetaStorage();
+		final MetaStorage storage = datasets.getMetaStorage();
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
-		for(Namespace namespace : execution.getRequiredNamespaces()) {
+		for(Namespace namespace : execution.getRequiredDatasets()) {
 			namespace.getQueryManager().executeQueryInNamespace(execution);
 		}
 		return execution;
@@ -88,7 +88,7 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
-		final MasterMetaStorage storage = namespace.getNamespaces().getMetaStorage();
+		final MetaStorage storage = namespace.getNamespaces().getMetaStorage();
 
 		final E query = (E) getQuery(result.getQueryId());
 		query.addResult(storage, result);

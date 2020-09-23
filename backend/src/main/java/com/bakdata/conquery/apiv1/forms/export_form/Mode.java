@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -30,5 +30,5 @@ public abstract class Mode implements Visitable {
 
 	public abstract void resolve(QueryResolveContext context);
 	
-	public abstract IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
+	public abstract IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
 }

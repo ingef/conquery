@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
@@ -62,12 +62,12 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	}
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
 		return Map.of(
 			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
 			List.of(
-				timeMode.createSpecializedQuery(namespaces, userId, submittedDataset)
-					.toManagedExecution(namespaces, userId, submittedDataset)));
+				timeMode.createSpecializedQuery(datasets, userId, submittedDataset)
+					.toManagedExecution(datasets, userId, submittedDataset)));
 	}
 
 	@Override
