@@ -40,6 +40,11 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "TREE", base = Concept.class)
 public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect> {
 
+	@JsonIgnore
+	@Getter
+	private final int depth = 0;
+	@Getter
+	private final int[] prefix = new int[]{0};
 	@Getter
 	@Setter
 	private int globalToLocalOffset;
@@ -57,11 +62,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Getter
 	@Setter
 	private int localId;
-
-	@JsonIgnore
-	@Getter
-	private final int depth = 0;
-
 	@NotNull
 	@Getter
 	@Setter
@@ -87,9 +87,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	public ConceptTreeNode<?> getParent() {
 		return null;
 	}
-
-	@Getter
-	private final int[] prefix = new int[0];
 
 	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
