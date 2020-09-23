@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid.ValidationMethod2;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -38,6 +40,7 @@ import lombok.Setter;
 @Getter @Setter @DetailedValid
 public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
 
+	public static final int[] NOT_CONTAINED = new int[]{-1};
 	private static final long serialVersionUID = 1L;
 
 	@NotNull @JsonManagedReference
@@ -166,4 +169,11 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			f.addImport(imp);
 		}
 	}
+
+	/**
+	 * @param cBlock
+	 * @param bucket
+	 * @param imp
+	 */
+	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket, Import imp);
 }

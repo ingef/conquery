@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,32 +21,44 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@JsonIgnore
 	private transient int[] prefix;
 	@JsonManagedReference //@Valid
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
-	@JsonIgnore @Getter @Setter
+	@JsonIgnore
+	@Getter
+	@Setter
 	private int localId;
-	@JsonBackReference @Getter @Setter
+	@JsonBackReference
+	@Getter
+	@Setter
 	private ConceptTreeNode<?> parent;
-	@JsonIgnore @Getter @Setter
-	private int depth=-1;
-	@Getter @NotNull @Setter
+	@JsonIgnore
+	@Getter
+	@Setter
+	private int depth = 0;
+	@Getter
+	@NotNull
+	@Setter
 	private CTCondition condition = null;
 
-	@JsonIgnore @Getter @Setter
+	@JsonIgnore
+	@Getter
+	@Setter
 	private TreeChildPrefixIndex childIndex;
 
-	@Override @JsonIgnore
+	@Override
+	@JsonIgnore
 	public int[] getPrefix() {
-		if(prefix==null) {
+		if (prefix == null) {
 			int[] pPrefix = getParent().getPrefix();
-			prefix = Arrays.copyOf(pPrefix, pPrefix.length+1);
-			prefix[prefix.length-1] = this.getLocalId();
+			prefix = Arrays.copyOf(pPrefix, pPrefix.length + 1);
+			prefix[prefix.length - 1] = this.getLocalId();
 		}
 		return prefix;
 	}
-	
+
 	public void init() throws ConceptConfigurationException {
-		if(condition!=null) {
+		if (condition != null) {
 			condition.init(this);
 		}
 	}
@@ -64,26 +75,27 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		return new ConceptTreeChildId(parent.getId(), getName());
 	}
 
-	@Override @JsonIgnore
+	@Override
+	@JsonIgnore
 	public TreeConcept getConcept() {
 		ConceptTreeNode<?> n = this;
-		while(n!=null) {
-			if(n instanceof TreeConcept) {
-				return (TreeConcept)n;
+		while (n != null) {
+			if (n instanceof TreeConcept) {
+				return (TreeConcept) n;
 			}
 			n = n.getParent();
 		}
-		throw new IllegalStateException("The node "+this+" seems to have no root");
+		throw new IllegalStateException("The node " + this + " seems to have no root");
 	}
-	
+
 	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;
 	}
-	
+
 	@Override
 	public long calculateBitMask() {
-		if(getLocalId() < 64) {
+		if (getLocalId() < 64) {
 			return 1L << getLocalId();
 		}
 		else {
