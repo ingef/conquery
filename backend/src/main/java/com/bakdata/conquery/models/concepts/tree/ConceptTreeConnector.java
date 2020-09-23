@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.CheckForNull;
 import javax.validation.Valid;
@@ -11,14 +12,25 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.BucketEntry;
+import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter
+@Slf4j
 public class ConceptTreeConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
@@ -57,5 +69,107 @@ public class ConceptTreeConnector extends Connector {
 	@Override
 	public TreeConcept getConcept() {
 		return (TreeConcept) super.getConcept();
+	}
+
+	@Override
+	public void calculateCBlock(CBlock cBlock, Bucket bucket, Import imp) {
+
+		final Column column = getColumn();
+
+		final TreeConcept treeConcept = getConcept();
+
+		final ImportId importId = imp.getId();
+
+		final AStringType<?> stringType;
+
+		// If we have a column and it is of string-type, we create indices and caches.
+		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof AStringType) {
+
+			CType<?, ?> cType = imp.getColumns()[column.getPosition()].getType();
+
+			stringType = (AStringType<?>) cType;
+
+			// Create index and insert into Tree.
+			TreeChildPrefixIndex.putIndexInto(treeConcept);
+
+			treeConcept.initializeIdCache(stringType, importId);
+		}
+		// No column only possible if we have just one tree element!
+		else if(treeConcept.countElements() == 1){
+			stringType = null;
+		}
+		else {
+			throw new IllegalStateException(String.format("Cannot build tree over Connector[%s] without Column", getId()));
+		}
+
+
+		final List<int[]> mostSpecificChildren = new ArrayList<>(bucket.getNumberOfEvents());
+
+		final ConceptTreeCache cache = treeConcept.getCache(importId);
+
+		final int[] root = getConcept().getPrefix();
+
+		for (BucketEntry entry : bucket.entries()) {
+			try {
+				final int event = entry.getEvent();
+
+				// Events without values are omitted
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				if (column != null && !bucket.has(event, column)) {
+					mostSpecificChildren.add(Connector.NOT_CONTAINED);
+					continue;
+				}
+				String stringValue = "";
+				int valueIndex = -1;
+
+				if (stringType != null) {
+					valueIndex = bucket.getString(event, column);
+					stringValue = stringType.getElement(valueIndex);
+				}
+
+				// Lazy evaluation of map to avoid allocations if possible.
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, imp));
+
+
+				if ((getCondition() != null && !getCondition().matches(stringValue, rowMap))) {
+					mostSpecificChildren.add(Connector.NOT_CONTAINED);
+					continue;
+				}
+
+				ConceptTreeChild child = cache == null
+										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
+										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+
+				// Add all Concepts and their path to the root to the CBlock
+				if (child == null) {
+					// see #174 improve handling by copying the relevant things from the old project
+					mostSpecificChildren.add(root);
+					continue;
+				}
+
+				mostSpecificChildren.add(child.getPrefix());
+				ConceptTreeNode<?> it = child;
+				while (it != null) {
+					cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
+					it = it.getParent();
+				}
+			}
+			catch (ConceptConfigurationException ex) {
+				log.error("Failed to resolve event " + bucket + "-" + entry.getEvent() + " against concept " + this, ex);
+			}
+		}
+
+		cBlock.setMostSpecificChildren(mostSpecificChildren);
+
+
+		if (cache != null) {
+			log.trace(
+					"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+					cache.getHits(),
+					cache.getMisses(),
+					(double) cache.getHits() / cache.getMisses(),
+					(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+			);
+		}
 	}
 }
