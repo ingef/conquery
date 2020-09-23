@@ -8,14 +8,14 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class QueryTranslator {
 
-	public <T extends IQuery> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
+	public <T extends IQuery> T replaceDataset(DatasetRegistry namespaces, T element, DatasetId target) {
 		if(element instanceof ConceptQuery) {
 			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target);
 			return (T) new ConceptQuery(root);
@@ -23,7 +23,7 @@ public class QueryTranslator {
 		throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
 	}
 	
-	public <T extends Visitable> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
+	public <T extends Visitable> T replaceDataset(DatasetRegistry namespaces, T element, DatasetId target) {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
 			

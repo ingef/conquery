@@ -28,7 +28,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Workers extends NamespaceCollection {
+public class Workers extends IdResolveContext {
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
@@ -57,7 +57,7 @@ public class Workers extends NamespaceCollection {
 	}
 
 	public Worker createWorker(WorkerStorage storage) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, entityBucketSize);
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage);
 
 		addWorker(worker);
 

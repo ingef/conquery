@@ -2,7 +2,7 @@ package com.bakdata.conquery.resources.admin;
 
 import java.util.Collections;
 
-import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
@@ -55,26 +55,26 @@ public class AdminServlet {
 	private AdminProcessor adminProcessor;
 	private DropwizardResourceConfig jerseyConfig;
 
-	public void register(MasterCommand masterCommand) {
-		jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
+	public void register(ManagerNode manager) {
+		jerseyConfig = new DropwizardResourceConfig(manager.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 
-		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);
+		RESTServer.configure(manager.getConfig(), jerseyConfig);
 
-		masterCommand.getEnvironment().admin().addServlet("admin", new ServletContainer(jerseyConfig)).addMapping("/admin/*");
+		manager.getEnvironment().admin().addServlet("admin", new ServletContainer(jerseyConfig)).addMapping("/admin/*");
 
-		jerseyConfig.register(new JacksonMessageBodyProvider(masterCommand.getEnvironment().getObjectMapper()));
+		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 		// freemarker support
-		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
+		jerseyConfig.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
 
 		adminProcessor = new AdminProcessor(
-				masterCommand.getConfig(),
-				masterCommand.getStorage(),
-				masterCommand.getNamespaces(),
-				masterCommand.getJobManager(),
-				masterCommand.getMaintenanceService(),
-				masterCommand.getValidator(),
-				masterCommand.getConfig().getCluster().getEntityBucketSize()
+			manager.getConfig(),
+			manager.getStorage(),
+			manager.getDatasetRegistry(),
+			manager.getJobManager(),
+			manager.getMaintenanceService(),
+			manager.getValidator(),
+			manager.getConfig().getCluster().getEntityBucketSize()
 		);
 
 		// inject required services
@@ -107,7 +107,7 @@ public class AdminServlet {
 			.register(AuthOverviewResource.class);
 
 		// Scan classpath for Admin side plugins and register them.
-		for ( Realm realm : masterCommand.getAuthController().getRealms()) {
+		for ( Realm realm : manager.getAuthController().getRealms()) {
 			if(realm instanceof AuthAdminResourceProvider) {
 				((AuthAdminResourceProvider)realm).registerAuthenticationAdminResources(jerseyConfig);
 			}
@@ -116,7 +116,7 @@ public class AdminServlet {
 		// register features
 		jerseyConfig
 			.register(new MultiPartFeature())
-			.register(masterCommand.getAuthController().getAuthenticationFilter())
+			.register(manager.getAuthController().getAuthenticationFilter())
 			.register(IdParamConverter.Provider.INSTANCE)
 			.register(AuthCookieFilter.class);
 	}

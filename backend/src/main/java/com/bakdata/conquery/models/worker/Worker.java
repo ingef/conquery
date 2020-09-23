@@ -17,11 +17,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -43,25 +42,26 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Getter
 	private final ExecutorService executorService;
 	
-	public Worker(@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-				  @NonNull WorkerStorage storage,
-				  @NonNull ExecutorService executorService, int entityBucketSize) {
+	
+	private Worker(
+		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+		@NonNull WorkerStorage storage,
+		@NonNull ExecutorService executorService
+		) {
 		this.jobManager = new JobManager(storage.getWorker().getName());
 		this.storage = storage;
 		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		this.executorService = executorService;
-
-		storage.setBucketManager(new BucketManager(entityBucketSize, this.jobManager, this.storage, getInfo()));
-
+		
+		storage.setBucketManager(new BucketManager(this));
 	}
 
 	public static Worker newWorker(
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService executorService,
-		@NonNull WorkerStorage storage
-			, int entityBucketSize) {
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService executorService,
+			@NonNull WorkerStorage storage) {
 
-		return new Worker(queryThreadPoolDefinition, storage, executorService, entityBucketSize);
+		return new Worker(queryThreadPoolDefinition, storage, executorService);
 	}
 
 	public static Worker newWorker(
@@ -81,15 +81,15 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setIncludedBuckets(new IntArrayList());
 		info.setName(directory.getName());
+		info.setEntityBucketSize(entityBucketSize);
 
 		workerStorage = new WorkerStorageImpl(validator, config, directory);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, executorService, entityBucketSize);
+		return new Worker(queryThreadPoolDefinition, workerStorage, executorService);
 	}
 
 	public WorkerInformation getInfo() {
@@ -102,7 +102,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	@Override
-	public MasterMessage transform(NamespaceMessage message) {
+	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
 	

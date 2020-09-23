@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
@@ -29,8 +28,8 @@ public interface NamespaceStorage extends NamespacedStorage {
 		return storage;
 	}
 	
-	MasterMetaStorage getMetaStorage();
-	void setMetaStorage(@NonNull MasterMetaStorage storage);
+	MetaStorage getMetaStorage();
+	void setMetaStorage(@NonNull MetaStorage storage);
 	
 	StructureNode[] getStructure();
 	void updateStructure(StructureNode[] structure) throws JSONException;

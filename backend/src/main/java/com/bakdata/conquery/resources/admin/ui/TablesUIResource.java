@@ -50,7 +50,7 @@ public class TablesUIResource extends HAdmin {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.table = namespace
 			.getStorage()
 			.getDataset()

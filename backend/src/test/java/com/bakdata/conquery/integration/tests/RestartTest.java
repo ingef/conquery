@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -45,14 +45,15 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		Validator validator = Validators.newValidator();
 		PersistentIdMap persistentIdMap = IdMapSerialisationTest.createTestPersistentMap();
 
-		MasterCommand master = testConquery.getStandaloneCommand().getMaster();
+		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
 		AdminProcessor adminProcessor = new AdminProcessor(
-				master.getConfig(),
-				master.getStorage(),
-				master.getNamespaces(),
-				master.getJobManager(),
-				master.getMaintenanceService(),
-				master.getValidator(),
+
+				manager.getConfig(),
+				manager.getStorage(),
+				manager.getDatasetRegistry(),
+				manager.getJobManager(),
+				manager.getMaintenanceService(),
+				manager.getValidator(),
 				ConqueryConfig.getInstance().getCluster().getEntityBucketSize()
 		);
 
@@ -125,7 +126,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		test.executeTest(support);
 
 
-		MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		MetaStorage storage = conquery.getMetaStorage();
 
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());

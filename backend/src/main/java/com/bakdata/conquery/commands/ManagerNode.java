@@ -21,8 +21,8 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
+import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -31,11 +31,11 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
@@ -56,10 +56,10 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 @Slf4j
 @Getter
-public class MasterCommand extends IoHandlerAdapter implements Managed {
+public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private IoAcceptor acceptor;
-	private MasterMetaStorage storage;
+	private MetaStorage storage;
 	private JobManager jobManager;
 	private Validator validator;
 	private ConqueryConfig config;
@@ -68,26 +68,30 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private AuthServlet authServletApp;
 	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
-	private Namespaces namespaces = new Namespaces();
+	private DatasetRegistry datasetRegistry;
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
-		//inject namespaces into the objectmapper
+
+		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
+
+		//inject datasets into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
-			.add(NamespaceCollection.class, namespaces);
+				.add(IdResolveContext.class, datasetRegistry);
 
 
-		this.jobManager = new JobManager("master");
+		this.jobManager = new JobManager("ManagerNode");
 		this.environment = environment;
-		
+		this.validator = environment.getValidator();
+		this.config = config;
+
 		// Initialization of internationalization
 		I18n.init();
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
-		this.validator = environment.getValidator();
-		this.config = config;
+
 
 		this.maintenanceService = environment
 			.lifecycle()
@@ -116,25 +120,25 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 				Namespace ns = new Namespace(datasetStorage);
 				ns.initMaintenance(maintenanceService);
-				namespaces.add(ns);
+				datasetRegistry.add(ns);
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)){
-			log.debug("Still waiting for Namespaces to load. {} already finished.", namespaces.getNamespaces());
+			log.debug("Still waiting for Datasets to load. {} already finished.", datasetRegistry.getDatasets());
 		}
 
-		log.info("All stores loaded: {}", namespaces.getNamespaces());
+		log.info("All stores loaded: {}", datasetRegistry.getDatasets());
 		
 		
-		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
+		this.storage = new MetaStorageImpl(datasetRegistry, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 
-		namespaces.setMetaStorage(this.storage);
-		for (Namespace sn : namespaces.getNamespaces()) {
+		datasetRegistry.setMetaStorage(this.storage);
+		for (Namespace sn : datasetRegistry.getDatasets()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
 
@@ -187,32 +191,32 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
+		ConqueryMDC.setLocation("ManagerNode["+session.getLocalAddress().toString()+"]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.error("caught exception", cause);
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
-		if (message instanceof MasterMessage) {
-			MasterMessage mrm = (MasterMessage) message;
-			log.trace("Master received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master(
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
+		if (message instanceof MessageToManagerNode) {
+			MessageToManagerNode mrm = (MessageToManagerNode) message;
+			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
 				jobManager,
 				new NetworkSession(session),
-				namespaces
+				datasetRegistry
 			));
 
 			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
@@ -232,19 +236,19 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(namespaces, validator);
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
-		log.info("Started master @ {}", acceptor.getLocalAddress());
+		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
 	}
 
 	@Override
 	public void stop() throws Exception {
 		jobManager.close();
 
-		namespaces.close();
+		datasetRegistry.close();
 		
 		try {
 			acceptor.dispose();

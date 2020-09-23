@@ -31,7 +31,6 @@ import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -41,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  *
- * @implNote This class is only used per {@link Worker}. And NOT in the Master.
+ * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
 public class BucketManager {
@@ -57,19 +56,18 @@ public class BucketManager {
 	private final IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
 	@Getter
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
-	private final WorkerInformation workerInformation;
 
+	//Backreference
+	private final Worker worker;
 
-
-	public BucketManager(int bucketSize, JobManager jobManager, WorkerStorage storage, WorkerInformation workerInformation) {
-		this.bucketSize = bucketSize;
-		this.jobManager = jobManager;
-		this.storage = storage;
-		this.workerInformation = workerInformation;
-
+	public BucketManager(Worker worker) {
+		this.jobManager = worker.getJobManager();
+		this.storage = worker.getStorage();
 		this.concepts.addAll(storage.getAllConcepts());
 		this.buckets.addAll(storage.getAllBuckets());
 		this.cBlocks.addAll(storage.getAllCBlocks());
+		this.worker = worker;
+		bucketSize = worker.getInfo().getEntityBucketSize();
 	}
 
 	@SneakyThrows
@@ -84,9 +82,10 @@ public class BucketManager {
 
 					for (Import imp : t.findImports(storage)) {
 
-						storage.registerTableImport(imp.getId());
 
-						for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
+							storage.registerTableImport(imp.getId());
+
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 							Optional<Bucket> bucket = buckets.getOptional(bucketId);
 
@@ -195,7 +194,7 @@ public class BucketManager {
 				Table t = con.getTable();
 				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 				for (Import imp : t.findImports(storage)) {
-					for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
@@ -302,7 +301,7 @@ public class BucketManager {
 
 		for (Connector con : c.getConnectors()) {
 			for (Import imp : con.getTable().findImports(storage)) {
-				for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+				for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 					BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
@@ -322,7 +321,7 @@ public class BucketManager {
 	 * Remove all buckets comprising the import. Which will in-turn remove all CBLocks.
 	 */
 	public void removeImport(ImportId imp) {
-		for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+		for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 			BucketId bucketId = new BucketId(imp, bucketNumber);
 

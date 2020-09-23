@@ -53,7 +53,7 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 		Validator validator = support.getValidator();
 		StorageConfig config = support.getConfig().getStorage();
-		CentralRegistry registry = support.getMasterMetaStorage().getCentralRegistry();
+		CentralRegistry registry = support.getMetaStorage().getCentralRegistry();
 		directory = new File(config.getDirectory(), STORE_SUFFIX);
 		directory.deleteOnExit();
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
