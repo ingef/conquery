@@ -89,13 +89,17 @@ public class UpdateMatchingStats extends Job {
 				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
 
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
-					if (!(concept instanceof TreeConcept) || cBlock.getMostSpecificChildren() == null || cBlock.getMostSpecificChildren().get(event) == null) {
+					if (!(concept instanceof TreeConcept)
+						|| cBlock.getMostSpecificChildren() == null
+						|| cBlock.getMostSpecificChildren()[event] == null) {
+
 						messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
 								.addEvent(table, bucket, cBlock, event);
+
 						continue;
 					}
 
-					int[] localIds = cBlock.getMostSpecificChildren().get(event);
+					int[] localIds = cBlock.getMostSpecificChildren()[event];
 
 					ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
 
