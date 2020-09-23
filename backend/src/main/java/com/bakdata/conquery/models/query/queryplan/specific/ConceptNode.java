@@ -85,7 +85,7 @@ public class ConceptNode extends QPChainNode {
 		//check concepts
 		int[] mostSpecificChildren;
 		if (currentRow.getCBlock().getMostSpecificChildren() != null
-			&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
+			&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren()[event]) != null)) {
 
 			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 				if (ce.matchesPrefix(mostSpecificChildren)) {

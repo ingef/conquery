@@ -88,10 +88,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return null;
 	}
 
-	@Override
-	public int[] getPrefix() {
-		return new int[]{0};
-	}
+	@Getter
+	private final int[] prefix = new int[0];
 
 	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {

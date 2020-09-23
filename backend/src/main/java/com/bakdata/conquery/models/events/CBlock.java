@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events;
 
 import java.util.Arrays;
-import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -10,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -53,7 +53,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Nodes in the tree are simply enumerated.
 	 */
 	@Nullable
-	private List<int[]> mostSpecificChildren = null;
+	private int[][] mostSpecificChildren = null;
 	
 	public CBlock(BucketId bucket, ConnectorId connector) {
 		this.bucket = bucket;
@@ -71,5 +71,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		maxDate = new int[bucketSize];
 		Arrays.fill(minDate, Integer.MAX_VALUE);
 		Arrays.fill(maxDate, Integer.MIN_VALUE);
+	}
+
+	public void addEntityIncludedConcept(int localEntity, ConceptTreeNode<?> node) {
+		getIncludedConcepts()[localEntity] |= node.calculateBitMask();
 	}
 }

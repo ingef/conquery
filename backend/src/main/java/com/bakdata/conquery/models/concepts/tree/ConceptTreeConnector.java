@@ -103,7 +103,7 @@ public class ConceptTreeConnector extends Connector {
 		}
 
 
-		final List<int[]> mostSpecificChildren = new ArrayList<>(bucket.getNumberOfEvents());
+		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 
@@ -116,7 +116,7 @@ public class ConceptTreeConnector extends Connector {
 				// Events without values are omitted
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (column != null && !bucket.has(event, column)) {
-					mostSpecificChildren.add(Connector.NOT_CONTAINED);
+					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
 					continue;
 				}
 				String stringValue = "";
@@ -132,7 +132,7 @@ public class ConceptTreeConnector extends Connector {
 
 
 				if ((getCondition() != null && !getCondition().matches(stringValue, rowMap))) {
-					mostSpecificChildren.add(Connector.NOT_CONTAINED);
+					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
 					continue;
 				}
 
@@ -140,17 +140,19 @@ public class ConceptTreeConnector extends Connector {
 										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
 										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
-				// Add all Concepts and their path to the root to the CBlock
+				// All unresolved elements resolve to the root.
 				if (child == null) {
-					// see #174 improve handling by copying the relevant things from the old project
-					mostSpecificChildren.add(root);
+					mostSpecificChildren[event] = root;
 					continue;
 				}
 
-				mostSpecificChildren.add(child.getPrefix());
+				// put path into event
+				mostSpecificChildren[event] = child.getPrefix();
+
+				// also add concepts into bloom filter of entity cblock.
 				ConceptTreeNode<?> it = child;
 				while (it != null) {
-					cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
+					cBlock.addEntityIncludedConcept(entry.getLocalEntity(), it);
 					it = it.getParent();
 				}
 			}
@@ -172,4 +174,5 @@ public class ConceptTreeConnector extends Connector {
 			);
 		}
 	}
+
 }
