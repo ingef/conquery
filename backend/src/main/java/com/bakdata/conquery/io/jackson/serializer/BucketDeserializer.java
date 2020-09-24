@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.esotericsoftware.kryo.io.Input;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,7 +37,7 @@ public class BucketDeserializer extends JsonDeserializer<Bucket> {
 		if (!p.nextFieldName(FIELD_IMPORT)) {
 			ctxt.handleUnexpectedToken(Bucket.class, p.currentToken(), p, "expected field 'imp'");
 		}
-		Import imp = NamespaceCollection.get(ctxt).resolve(ImportId.Parser.INSTANCE.parse(p.nextTextValue()));
+		Import imp = IdResolveContext.get(ctxt).resolve(ImportId.Parser.INSTANCE.parse(p.nextTextValue()));
 		
 		if (!p.nextFieldName(FIELD_NUMBER_OF_EVENTS)) {
 			ctxt.handleUnexpectedToken(Bucket.class, p.currentToken(), p, "expected field 'numberOfEvents'");

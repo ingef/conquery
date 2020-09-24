@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
@@ -10,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler;
@@ -66,7 +65,7 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 	
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 	private final OIDCResourceOwnerPasswordCredentialRealmFactory config;
 	
 	private ClientAuthentication clientAuthentication;

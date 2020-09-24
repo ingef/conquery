@@ -17,11 +17,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -54,7 +53,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		this.executorService = executorService;
 		
-		storage.setBucketManager(new BucketManager(this.jobManager, this.storage, getInfo()));
+		storage.setBucketManager(new BucketManager(this));
 		
 	}
 	
@@ -82,7 +81,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setIncludedBuckets(new IntArrayList());
 		info.setName(directory.getName());
 		
 		workerStorage = new WorkerStorageImpl(validator, config, directory);
@@ -103,7 +101,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	@Override
-	public MasterMessage transform(NamespaceMessage message) {
+	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
 	

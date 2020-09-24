@@ -226,7 +226,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L22) | entityBucketSize | `int` | `1000` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L18) | masterURL | `InetAddress` | `"localhost"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L18) | managerURL | `InetAddress` | `"localhost"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L20) | mina | [MinaConfig](#Type-MinaConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L16) | port | `int` | `16170` |  |  | 
 </p></details>
@@ -389,7 +389,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StandaloneConfig.java#L8) | numberOfSlaves | `int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StandaloneConfig.java#L8) | numberOfShardNodes | `int` | `2` |  |  | 
 </p></details>
 
 ### Type StorageConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java#L16)</sup></sub></sup>

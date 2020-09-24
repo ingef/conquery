@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Shareable;
@@ -78,7 +78,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(MasterMetaStorage storage, User user) {
+	public FormConfigOverviewRepresentation overview(MetaStorage storage, User user) {
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()
@@ -138,7 +138,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	/**
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
-	public FormConfigFullRepresentation fullRepresentation(MasterMetaStorage storage, User requestingUser){
+	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, User requestingUser){
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 		return FormConfigFullRepresentation.builder()
 			.id(getId()).formType(formType)

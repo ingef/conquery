@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
 	
 	@Getter @Setter @NonNull
-	private MasterMetaStorage metaStorage;
+	private MetaStorage metaStorage;
 	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	
