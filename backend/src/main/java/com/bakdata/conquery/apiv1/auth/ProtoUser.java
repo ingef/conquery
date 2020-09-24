@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -15,7 +16,6 @@ import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Container class for holding information about initial users.

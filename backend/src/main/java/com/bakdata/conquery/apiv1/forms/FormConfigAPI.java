@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.forms;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -17,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import org.apache.commons.lang3.ArrayUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter
 @Setter
