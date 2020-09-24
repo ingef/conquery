@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.concepts;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -8,11 +13,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public abstract class ConceptElement<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Labeled<ID> {
 
@@ -47,9 +47,7 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@JsonIgnore
 	public abstract Concept<?> getConcept();
 
-	public boolean matchesPrefix(int[] conceptPrefix) {
-		return true;
-	}
+	public abstract boolean matchesPrefix(int[] conceptPrefix);
 
 	public abstract long calculateBitMask();
 }
