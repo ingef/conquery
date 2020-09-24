@@ -335,8 +335,10 @@
   "preview": {
     "preview": "Preview",
     "headline": "Results preview",
-    "previewHeadline": "The first {count} lines from the results",
-    "statisticsHeadline": "Statistics by column based on the full results",
+    "previewHeadline": "Result CSV",
+    "previewSubline": "Preview of the first {count} lines",
+    "statisticsHeadline": "Statistics per column",
+    "statisticsSubline": "Based on the full results. Missing number values interpreted as 0.",
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",

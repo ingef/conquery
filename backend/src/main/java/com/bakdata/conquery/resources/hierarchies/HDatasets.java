@@ -33,7 +33,7 @@ public abstract class HDatasets extends HAuthorized {
 	public void init() {
 		super.init();
 		authorize(user, datasetId, Ability.READ);
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		if(namespace == null) {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}

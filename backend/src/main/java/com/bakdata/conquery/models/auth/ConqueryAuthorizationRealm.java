@@ -5,7 +5,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +20,12 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 /**
  * This realms only provides authorization information for a given {@link UserId}.
- * For now there is only one such authorizing realm. This queries the {@link MasterMetaStorage}.
+ * For now there is only one such authorizing realm. This queries the {@link MetaStorage}.
  */
 @RequiredArgsConstructor
 public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	
-	public final MasterMetaStorage storage;
+	public final MetaStorage storage;
 	
 	@Override
 	protected void onInit() {

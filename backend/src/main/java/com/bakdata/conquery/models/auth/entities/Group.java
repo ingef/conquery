@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +28,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) {
+	protected void updateStorage(MetaStorage storage) {
 		storage.updateGroup(this);
 	}
 
@@ -37,14 +37,14 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		return new GroupId(name);
 	}
 
-	public void addMember(MasterMetaStorage storage, User user) {
+	public void addMember(MetaStorage storage, User user) {
 		if(members.add(user)) {
 			log.trace("Added user {} to group {}", user.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public void removeMember(MasterMetaStorage storage, User user) {
+	public void removeMember(MetaStorage storage, User user) {
 		if(members.remove(user)) {
 			log.trace("Removed user {} from group {}", user.getId(), getId());				
 			updateStorage(storage);
@@ -59,14 +59,14 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		return Collections.unmodifiableSet(members);
 	}
 
-	public void addRole(MasterMetaStorage storage, Role role) {
+	public void addRole(MetaStorage storage, Role role) {
 		if (roles.add(role)) {
 			log.trace("Added role {} to group {}", role.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public void removeRole(MasterMetaStorage storage, Role role) {
+	public void removeRole(MetaStorage storage, Role role) {
 		if (roles.remove(role)) {
 			log.trace("Removed role {} from group {}", role.getId(), getId());
 			updateStorage(storage);

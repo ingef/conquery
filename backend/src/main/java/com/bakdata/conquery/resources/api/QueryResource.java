@@ -50,12 +50,12 @@ public class QueryResource {
 	@Inject
 	public QueryResource(QueryProcessor processor) {
 		this.processor= processor;
-		dsUtil = new ResourceUtil(processor.getNamespaces());
+		dsUtil = new ResourceUtil(processor.getDatasetRegistry());
 	}
 
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
-		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
+		query.resolve(new QueryResolveContext(datasetId, processor.getDatasetRegistry()));
 		log.info("Query posted on dataset {} by user {} ({}).", datasetId, user.getId(), user.getName());
 
 		return Response.ok(

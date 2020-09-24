@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -13,9 +14,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 
-public interface MasterMetaStorage extends ConqueryStorage {
+/**
+ * Interface for the persistent data of the {@link ManagerNode} 
+ */
+public interface MetaStorage extends ConqueryStorage {
 
 	void addExecution(ManagedExecution<?> query);
 	ManagedExecution getExecution(ManagedExecutionId id);
@@ -118,10 +122,10 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	void updateGroup(Group group);
 	
 	/**
-	 * Return the namespaces used in the instance of conquery.
-	 * @return The namespaces.
+	 * Return the datasets used in the instance of conquery.
+	 * @return The datasets.
 	 */
-	Namespaces getNamespaces();
+	DatasetRegistry getDatasetRegistry();
 	
 	/**
 	 * Gets the FormConfig with the specified id from the storage.
