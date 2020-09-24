@@ -74,6 +74,61 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L28-L30) | storeName | `String` | `"authenticationStore"` |  | The name of the folder the store lives in. | 
 </p></details>
 
+### OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/passwordflow/OIDCResourceOwnerPasswordCredentialRealmFactory.java#L9)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealmFactory`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | allowAnyHostname | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | alwaysRefreshToken | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | clientKeyPassword | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | clientKeystore | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | clientKeystorePassword | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | connectionPoolSize | `int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | disableTrustManager | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | ignoreOAuthQueryParameter | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | minTimeBetweenJwksRequests | `int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | pkce | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | policyEnforcerConfig | `PolicyEnforcerConfig` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | principalAttribute | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | proxyUrl | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | publicKeyCacheTtl | `int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | registerNodeAtStartup | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | registerNodePeriod | `int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | tokenCookiePath | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | tokenMinimumTimeToLive | `int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | tokenStore | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | truststore | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | truststorePassword | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | turnOffChangeSessionIdOnLogin | `boolean` or `null` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/AdapterConfig.java) | verifyTokenAudience | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | autodetectBearerOnly | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | bearerOnly | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | cors | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | corsAllowedHeaders | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | corsAllowedMethods | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | corsExposedHeaders | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | corsMaxAge | `int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | credentials | map from `String` to `Object` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | enableBasicAuth | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | exposeToken | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | publicClient | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | redirectRewriteRules | map from `String` to `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | resource | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseAdapterConfig.java) | useResourceRoleMappings | `boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseRealmConfig.java) | authServerUrl | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseRealmConfig.java) | confidentialPort | `int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseRealmConfig.java) | realm | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseRealmConfig.java) | realmKey | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/org/keycloak/representations/adapters/config/BaseRealmConfig.java) | sslRequired | `String` | ␀ |  |  | 
+</p></details>
+
 
 
 ---
@@ -171,7 +226,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L22) | entityBucketSize | `int` | `1000` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L18) | masterURL | `InetAddress` | `"localhost"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L18) | managerURL | `InetAddress` | `"localhost"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L20) | mina | [MinaConfig](#Type-MinaConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java#L16) | port | `int` | `16170` |  |  | 
 </p></details>
@@ -334,7 +389,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StandaloneConfig.java#L8) | numberOfSlaves | `int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StandaloneConfig.java#L8) | numberOfShardNodes | `int` | `2` |  |  | 
 </p></details>
 
 ### Type StorageConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java#L16)</sup></sub></sup>

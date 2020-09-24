@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.Optional;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -24,7 +24,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 @RequiredArgsConstructor
 public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, User>{
 	
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 
 	/**
 	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
@@ -36,7 +36,7 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
-		// The UserId is queried in the MasterMetaStorage, the central place for authorization information
+		// The UserId is queried in the MetaStorage, the central place for authorization information
 		User user = storage.getUser(userId);
 		
 		if(user != null) {

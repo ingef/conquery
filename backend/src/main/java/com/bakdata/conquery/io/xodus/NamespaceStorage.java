@@ -29,8 +29,8 @@ public interface NamespaceStorage extends NamespacedStorage {
 		return storage;
 	}
 	
-	MasterMetaStorage getMetaStorage();
-	void setMetaStorage(@NonNull MasterMetaStorage storage);
+	MetaStorage getMetaStorage();
+	void setMetaStorage(@NonNull MetaStorage storage);
 	
 	StructureNode[] getStructure();
 	void updateStructure(StructureNode[] structure) throws JSONException;

@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,8 +37,8 @@ public class AbsoluteMode extends Mode {
 	}
 
 	@Override
-	public IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(namespaces, this, userId, submittedDataset);
+	public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+		return AbsExportGenerator.generate(datasets, this, userId, submittedDataset);
 	}
 
 	@Override

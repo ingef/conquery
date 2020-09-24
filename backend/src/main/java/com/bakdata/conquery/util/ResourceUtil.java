@@ -5,13 +5,13 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 
 public class ResourceUtil {
 
-	private final Namespaces namespaces;
+	private final DatasetRegistry namespaces;
 
-	public ResourceUtil(Namespaces namespaces) {
+	public ResourceUtil(DatasetRegistry namespaces) {
 		this.namespaces = namespaces;
 	}
 

@@ -12,19 +12,19 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Manipulates a given Concept based on the provided blacklisting or
- * whitelisting for {@link ConceptSelectId} and {@link CQTable}s. After this
+ * Manipulates a given Concept based on the provided blocklisting or
+ * allowlisting for {@link ConceptSelectId} and {@link CQTable}s. After this
  * filtering, the defined default values are added if the corresponding list is
  * empty.
  *
- * For whitelisted tables a {@link TableManipulator} can be defined, that
+ * For allowlisted tables a {@link TableManipulator} can be defined, that
  * applies the filtering on specific tables.
  */
 @Getter
@@ -34,66 +34,66 @@ import lombok.ToString;
 public class FilteringConceptManipulator implements ConceptManipulator{
 
 	@Builder.Default
-	private List<ConceptSelectId> selectBlacklist = Collections.emptyList();
+	private List<ConceptSelectId> selectBlockList = Collections.emptyList();
 	@Builder.Default
-	private List<ConceptSelectId> selectWhitelist = Collections.emptyList();
+	private List<ConceptSelectId> selectAllowList = Collections.emptyList();
 	@Builder.Default
 	private List<ConceptSelectId> selectDefault = Collections.emptyList();
 
 	@Builder.Default
-	private List<ConnectorId> tableBlacklist = Collections.emptyList();
+	private List<ConnectorId> tableBlockList = Collections.emptyList();
 	@Builder.Default
-	private Map<ConnectorId, TableManipulator> tableWhitelist = Collections.emptyMap();
+	private Map<ConnectorId, TableManipulator> tableAllowList = Collections.emptyMap();
 	@Builder.Default
 	private List<CQTable> tableDefault = Collections.emptyList();
 
 	private void init() {
 
-		if (!selectBlacklist.isEmpty() && !selectWhitelist.isEmpty()) {
-			throw new IllegalArgumentException("Either select blacklist or whitelist needs to be empty.");
+		if (!selectBlockList.isEmpty() && !selectAllowList.isEmpty()) {
+			throw new IllegalArgumentException("Either select blocklist or allowlist needs to be empty.");
 		}
 
-		Set<ConceptSelectId> blackDefaultSelectIntersection = selectBlacklist
+		Set<ConceptSelectId> blockDefaultSelectIntersection = selectBlockList
 			.stream()
 			.distinct()
 			.filter(selectDefault::contains)
 			.collect(Collectors.toSet());
-		if (!blackDefaultSelectIntersection.isEmpty()) {
+		if (!blockDefaultSelectIntersection.isEmpty()) {
 			throw new IllegalArgumentException(
 				String
 					.format(
-						"The list of default selects intersects with the blacklist. Intersecting Elements:\t",
-						blackDefaultSelectIntersection.toString()));
+						"The list of default selects intersects with the blocklist. Intersecting Elements:\t",
+						blockDefaultSelectIntersection.toString()));
 		}
 
 		// Check tables
-		if (!tableBlacklist.isEmpty() && !tableWhitelist.isEmpty()) {
-			throw new IllegalArgumentException("Either table blacklist or whitelist needs to be empty.");
+		if (!tableBlockList.isEmpty() && !tableAllowList.isEmpty()) {
+			throw new IllegalArgumentException("Either table blocklist or allowlist needs to be empty.");
 		}
 
-		Set<ConnectorId> blackDefaultTableIntersection = tableDefault
+		Set<ConnectorId> blockDefaultTableIntersection = tableDefault
 			.stream()
 			.map(CQTable::getId)
 			.distinct()
-			.filter(tableBlacklist::contains)
+			.filter(tableBlockList::contains)
 			.collect(Collectors.toSet());
-		if (!blackDefaultTableIntersection.isEmpty()) {
+		if (!blockDefaultTableIntersection.isEmpty()) {
 			throw new IllegalArgumentException(
 				String
 					.format(
-						"The list of default tables intersects with the blacklist. Intersecting Elements:\t",
-						blackDefaultTableIntersection.toString()));
+						"The list of default tables intersects with the blocklist. Intersecting Elements:\t",
+						blockDefaultTableIntersection.toString()));
 		}
 	}
 
-	public void consume(CQConcept concept, Namespaces namespaces) {
+	public void consume(CQConcept concept, DatasetRegistry namespaces) {
 
 		List<Select> selects = concept.getSelects();
-		if (!selectBlacklist.isEmpty()) {
-			selects.removeIf(s -> selectBlacklist.contains(s.getId()));
+		if (!selectBlockList.isEmpty()) {
+			selects.removeIf(s -> selectBlockList.contains(s.getId()));
 		}
-		else if (!selectWhitelist.isEmpty()) {
-			selects.removeIf(s -> !selectWhitelist.contains(s.getId()));
+		else if (!selectAllowList.isEmpty()) {
+			selects.removeIf(s -> !selectAllowList.contains(s.getId()));
 		}
 
 		// Add default selects if none is present anymore
@@ -106,15 +106,15 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 		Iterator<CQTable> it = tables.iterator();
 		while(it.hasNext()) {
 			CQTable table = it.next();
-			if (tableBlacklist.contains(table.getId())) {
+			if (tableBlockList.contains(table.getId())) {
 				it.remove();
 			}
-			if (!tableWhitelist.containsKey(table.getId())) {
+			if (!tableAllowList.containsKey(table.getId())) {
 				it.remove();
 			}
 			else {
-				// If table is whitelisted apply a table manipulator if one exist
-				TableManipulator tableMan = tableWhitelist.get(table.getId());
+				// If table is allowlisted apply a table manipulator if one exist
+				TableManipulator tableMan = tableAllowList.get(table.getId());
 				if (tableMan != null) {
 					tableMan.consume(table, namespaces);
 				}

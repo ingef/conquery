@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -56,13 +56,13 @@ class QueryCleanupTaskTest {
 		return managedQuery;
 	}
 
-	private MasterMetaStorage storageMock;
+	private MetaStorage storageMock;
 	private Map<ManagedExecutionId, ? super ManagedExecution<?>> executions;
 	private Map<UserId,User> users;
 
 	@BeforeAll
 	void setUpAllTests() {
-		storageMock = Mockito.mock(MasterMetaStorage.class);
+		storageMock = Mockito.mock(MetaStorage.class);
 
 		executions = new HashMap<>();
 		users = new HashMap<>();

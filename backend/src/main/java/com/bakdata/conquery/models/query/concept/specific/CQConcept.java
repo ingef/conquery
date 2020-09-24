@@ -129,6 +129,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 					concepts,
 					calculateBitMask(concepts),
 					table,
+					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 					new ValidityDateNode(
 						selectValidityDateColumn(table),
 						filtersNode

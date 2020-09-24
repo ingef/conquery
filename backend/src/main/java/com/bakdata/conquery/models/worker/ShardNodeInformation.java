@@ -3,17 +3,17 @@ package com.bakdata.conquery.models.worker;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
-public class SlaveInformation extends MessageSender.Simple<SlaveMessage> {
+public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> {
 	@JsonIgnore @Getter
 	private transient JobManagerStatus jobManagerStatus = new JobManagerStatus();
 	@JsonIgnore
 	private final transient Object jobManagerSync = new Object();
 	
-	public SlaveInformation(NetworkSession session) {
+	public ShardNodeInformation(NetworkSession session) {
 		super(session);
 	}
 

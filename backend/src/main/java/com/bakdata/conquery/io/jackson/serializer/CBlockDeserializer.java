@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -31,11 +31,19 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
 		
-		Connector con = NamespaceCollection.get(ctxt).getOptional(block.getConnector()).get();
+		Connector con = IdResolveContext.get(ctxt).getOptional(block.getConnector()).get();
 		Concept<?> concept = con.getConcept();
 		if(concept instanceof TreeConcept && block.getMostSpecificChildren() != null) {
 			TreeConcept tree = (TreeConcept) concept;
-			block.getMostSpecificChildren().replaceAll(c->c==null?c:tree.getElementByLocalId(c).getPrefix());
+
+			// deduplicate concrete paths after loading from disk.
+			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
+				if (block.getMostSpecificChildren()[event] == null) {
+					continue;
+				}
+
+				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(block.getMostSpecificChildren()[event]).getPrefix();
+			}
 		}
 		return block;
 	}

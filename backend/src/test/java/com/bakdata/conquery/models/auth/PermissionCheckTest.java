@@ -20,7 +20,7 @@ import com.bakdata.conquery.integration.common.PermissionToCheck;
 import com.bakdata.conquery.integration.common.RequiredUser;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -55,13 +55,13 @@ public class PermissionCheckTest extends ConqueryTestSpec  {
 	private HashMultimap<ConqueryPermission, UserId> expectedPermitts = HashMultimap.create();
 	
 	@JsonIgnore
-	private MasterMetaStorage storage = null;
+	private MetaStorage storage = null;
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
-		storage = support.getMasterMetaStorage();
+		storage = support.getMetaStorage();
 
-		// Clear MasterStorage
+		// Clear MetaStorage
 		clearAuthStorage(storage, roles, rUsers);
 		
 		importPermissionConstellation(storage, roles, rUsers);
@@ -136,7 +136,7 @@ public class PermissionCheckTest extends ConqueryTestSpec  {
 		assertThat(getGrantedElementwiseCheck()).as("permissions individually checked on users").containsAllEntriesOf(getExpected());
 		assertThat(getGrantedListedCheck()).as("list of permission checked on user").containsAnyElementsOf(getExpectedAllGranted());
 
-		// Clear MasterStorage
+		// Clear MetaStorage
 		clearAuthStorage(storage, roles, rUsers);
 	}
 }
