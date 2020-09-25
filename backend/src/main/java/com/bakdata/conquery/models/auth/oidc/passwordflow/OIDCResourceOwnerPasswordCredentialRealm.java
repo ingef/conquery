@@ -97,11 +97,11 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		
 		TokenIntrospectionSuccessResponse successResponse = tokenCache.get((JwtToken) token);
 		
-		
-		if(isExpired(successResponse)){
-			tokenCache.invalidate(token);
-			throw new ExpiredCredentialsException();
-		}
+//		TODO check why tokens are invalidated too early
+//		if(isExpired(successResponse)){
+//			tokenCache.invalidate(token);
+//			throw new ExpiredCredentialsException();
+//		}
 
 		String username = successResponse.getUsername();
 		if(StringUtils.isBlank(username)) {
