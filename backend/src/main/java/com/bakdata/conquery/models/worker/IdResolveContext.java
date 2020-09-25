@@ -14,22 +14,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-public abstract class NamespaceCollection implements Injectable {
+public abstract class IdResolveContext implements Injectable {
 
-	public static NamespaceCollection get(DeserializationContext ctxt) throws JsonMappingException {
-		NamespaceCollection namespaces = (NamespaceCollection) ctxt
-				.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+	public static IdResolveContext get(DeserializationContext ctxt) throws JsonMappingException {
+		IdResolveContext namespaces = (IdResolveContext) ctxt
+				.findInjectableValue(IdResolveContext.class.getName(), null, null);
 		if(namespaces == null) {
 			throw new NoSuchElementException("Could not find injected namespaces");
 		}
-		else {
-			return namespaces;
-		}
+		return namespaces;
 	}
 	
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespaceCollection.class, this);
+		return values.add(IdResolveContext.class, this);
 	}
 
 	public abstract CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException;

@@ -15,6 +15,8 @@ import DateCell from "./DateCell";
 import { Cell } from "./Cell";
 import PreviewInfo from "./PreviewInfo";
 import { StatsHeadline } from "./StatsHeadline";
+import { getRightCellPadding, getStatsByColumn } from "./alignNumbersOnComma";
+import StatsSubline from "./StatsSubline";
 
 const Root = styled("div")`
   height: 100%;
@@ -165,6 +167,8 @@ const Preview: React.FC = () => {
     preview.resultColumns
   );
 
+  const columnStats = getStatsByColumn(columns, previewData);
+
   const { min, max, diff } = getMinMaxDates(previewData.slice(1), columns);
 
   const Row = ({ index }: { index: number }) => (
@@ -173,6 +177,25 @@ const Preview: React.FC = () => {
         if (columns[j] === "DATE_RANGE" && min && max) {
           return (
             <DateCell cell={cell} key={j} minDate={min} dateDiffInDays={diff} />
+          );
+        }
+
+        if (columns[j] === "MONEY") {
+          return (
+            <Cell
+              title={cell}
+              key={j}
+              style={{
+                textAlign: "right",
+                paddingRight: getRightCellPadding(
+                  cell,
+                  columns[j],
+                  columnStats[j]
+                ),
+              }}
+            >
+              {cell}
+            </Cell>
           );
         }
 
@@ -195,9 +218,10 @@ const Preview: React.FC = () => {
         minDate={min}
         maxDate={max}
       />
-      <StatsHeadline>
-        {T.translate("preview.previewHeadline", { count: RENDER_ROWS_LIMIT })}
-      </StatsHeadline>
+      <StatsHeadline>{T.translate("preview.previewHeadline")}</StatsHeadline>
+      <StatsSubline>
+        {T.translate("preview.previewSubline", { count: RENDER_ROWS_LIMIT })}
+      </StatsSubline>
       <CSVFrame>
         <ScrollWrap>
           <Line isHeader>

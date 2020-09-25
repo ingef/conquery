@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
@@ -29,7 +29,7 @@ public interface UserManageable {
 	boolean updateUser(User user, List<CredentialType> credentials);
 
 	/**
-	 * Removes a user from the realm only but not from the local permission storage (i.e. {@link MasterMetaStorage}).
+	 * Removes a user from the realm only but not from the local permission storage (i.e. {@link MetaStorage}).
 	 */
 	boolean removeUser(User user);
 

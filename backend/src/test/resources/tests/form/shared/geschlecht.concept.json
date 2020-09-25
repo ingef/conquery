@@ -23,7 +23,7 @@
 				"column": "vers_stamm.date_end"
 			}
 		],
-		"column": "vers_stamm.geschlecht",
+		"table": "vers_stamm",
 		"filters": {
 			"type": "SELECT",
 			"name": "geschlecht",

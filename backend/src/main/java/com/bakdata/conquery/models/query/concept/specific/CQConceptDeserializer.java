@@ -43,8 +43,8 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 			final ScanResult scan = new ClassGraph()
 											.enableClassInfo()
 											.enableAnnotationInfo()
-											//blacklist some packages that contain large libraries
-											.blacklistPackages(
+											//reject some packages that contain large libraries
+											.rejectPackages(
 													"groovy",
 													"org.codehaus.groovy",
 													"org.apache",

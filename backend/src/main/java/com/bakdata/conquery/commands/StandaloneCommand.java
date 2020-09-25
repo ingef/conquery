@@ -29,8 +29,8 @@ import net.sourceforge.argparse4j.inf.Namespace;
 public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryConfig> {
 
 	private final Conquery conquery;
-	private MasterCommand master;
-	private final List<SlaveCommand> slaves = new Vector<>();
+	private ManagerNode manager;
+	private final List<ShardNode> shardNodes = new Vector<>();
 
 	public StandaloneCommand(Conquery conquery) {
 		super(conquery, "standalone", "starts a server and a client at the same time.");
@@ -56,54 +56,54 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 	}
 
 	protected void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		// start master
-		ConqueryMDC.setLocation("Master");
-		log.debug("Starting Master");
-		ConqueryConfig masterConfig = Cloner.clone(config, Map.of(Validator.class, environment.getValidator()));
-		masterConfig.getStorage().setDirectory(new File(masterConfig.getStorage().getDirectory(), "master"));
-		masterConfig.getStorage().getDirectory().mkdir();
-		conquery.run(masterConfig, environment);
+		// start ManagerNode
+		ConqueryMDC.setLocation("ManagerNode");
+		log.debug("Starting ManagerNode");
+		ConqueryConfig managerConfig = Cloner.clone(config, Map.of(Validator.class, environment.getValidator()));
+		managerConfig.getStorage().setDirectory(new File(managerConfig.getStorage().getDirectory(), "manager"));
+		managerConfig.getStorage().getDirectory().mkdir();
+		conquery.run(managerConfig, environment);
 		
-		//create thread pool to start multiple slaves at the same time
+		//create thread pool to start multiple ShardNodes at the same time
 		ExecutorService starterPool = Executors.newFixedThreadPool(
-			config.getStandalone().getNumberOfSlaves(),
+			config.getStandalone().getNumberOfShardNodes(),
 			new ThreadFactoryBuilder()
-				.setNameFormat("Slave Storage Loader %d")
+				.setNameFormat("ShardNode Storage Loader %d")
 				.setUncaughtExceptionHandler((t, e) -> {
 					ConqueryMDC.setLocation(t.getName());
-					log.error(t.getName()+" failed to init storage of slave", e);
+					log.error(t.getName()+" failed to init storage of ShardNode", e);
 				})
 				.build()
 		);
 		
-		List<Future<SlaveCommand>> tasks = new ArrayList<>();
-		for(int i=0;i<config.getStandalone().getNumberOfSlaves();i++) {
+		List<Future<ShardNode>> tasks = new ArrayList<>();
+		for(int i=0;i<config.getStandalone().getNumberOfShardNodes();i++) {
 			final int id = i;
 			tasks.add(starterPool.submit(() -> {
-				ConqueryMDC.setLocation("Slave " + id);
+				ShardNode sc = new ShardNode("ShardNode " + id);
+				this.shardNodes.add(sc);
+				
+				ConqueryMDC.setLocation(sc.getName());
 				ConqueryConfig clone = Cloner.clone(config, Map.of(Validator.class, environment.getValidator()));
-				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "slave_" + id));
+				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "shard_" + id));
 				clone.getStorage().getDirectory().mkdir();
 
-				SlaveCommand sc = new SlaveCommand();
-				sc.setLabel("slave " + id);
-				this.slaves.add(sc);
 				sc.run(environment, namespace, clone);
 				return sc;
 			}));
 		}
-		ConqueryMDC.setLocation("Master");
-		log.debug("Waiting for slaves to start");
+		ConqueryMDC.setLocation("ManagerNode");
+		log.debug("Waiting for ShardNodes to start");
 		starterPool.shutdown();
 		starterPool.awaitTermination(1, TimeUnit.HOURS);
 		//catch exceptions on tasks
 		boolean failed = false;
-		for(Future<SlaveCommand> f : tasks) {
+		for(Future<ShardNode> f : tasks) {
 			try {
 				f.get();
 			}
 			catch(ExecutionException e) {
-				log.error("during slave creation", e);
+				log.error("during ShardNodes creation", e);
 				failed = true;
 			}
 		}
@@ -115,6 +115,6 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);
-		master = conquery.getMaster();
+		manager = conquery.getManager();
 	}
 }
