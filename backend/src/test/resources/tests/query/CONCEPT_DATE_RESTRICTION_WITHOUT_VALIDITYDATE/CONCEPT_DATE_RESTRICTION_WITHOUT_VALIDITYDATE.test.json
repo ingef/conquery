@@ -18,7 +18,10 @@
                 "tables": [
                     {
                         "id": "${dataset}.test_tree.test_column",
-                        "filters": []
+                        "filters": [],
+                        "selects": [
+                            "${dataset}.test_tree.test_column.test_select"
+                        ]
                     }
                 ]
             }
@@ -31,7 +34,16 @@
             "connectors": {
                 "label": "tree_label",
                 "name": "test_column",
-                "column": "test_table.test_column"
+                "column": "test_table.test_column",
+                "selects": [
+                    {
+                        "column": "test_table.test_column",
+                        "default": true,
+                        "label": "Ausgabe test",
+                        "name": "test_select",
+                        "type": "FIRST"
+                    }
+                ]
             },
             "children": [
                 {
