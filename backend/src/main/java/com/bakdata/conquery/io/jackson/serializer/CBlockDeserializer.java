@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.Arrays;
 
 @Slf4j
 @AllArgsConstructor @NoArgsConstructor
@@ -41,9 +42,13 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 			// deduplicate concrete paths after loading from disk.
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
 				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
-				if (mostSpecificChildren == null || mostSpecificChildren.equals(Connector.NOT_CONTAINED)) {
+				if (mostSpecificChildren == null || Arrays.areEqual(mostSpecificChildren, Connector.NOT_CONTAINED)) {
 					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
 					continue;
+				}
+				
+				if(Arrays.contains(mostSpecificChildren, -1)) {
+					throw new IllegalStateException("MostSpecificChildren contained the special value for NOT_CONTAINED and other values, which signal containment.");
 				}
 				
 				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
