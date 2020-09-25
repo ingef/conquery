@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -100,6 +101,10 @@ public class UpdateMatchingStats extends Job {
 					}
 
 					int[] localIds = cBlock.getMostSpecificChildren()[event];
+					
+					if(localIds.equals(Connector.NOT_CONTAINED)) {
+						continue;
+					}
 
 					ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
 

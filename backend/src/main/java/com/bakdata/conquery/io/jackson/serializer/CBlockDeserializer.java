@@ -38,11 +38,13 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 
 			// deduplicate concrete paths after loading from disk.
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
-				if (block.getMostSpecificChildren()[event] == null) {
+				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
+				if (mostSpecificChildren == null || mostSpecificChildren.equals(Connector.NOT_CONTAINED)) {
+					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
 					continue;
 				}
 
-				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(block.getMostSpecificChildren()[event]).getPrefix();
+				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(mostSpecificChildren).getPrefix();
 			}
 		}
 		return block;
