@@ -110,7 +110,7 @@ public class DateFormats {
 		final HashSet<DateTimeFormatter> formatters = new HashSet<>();
 
 		formatters.add(createFormatter("yyyy-MM-dd"));
-		formatters.add(createFormatter("ddMMMyyyy"));
+		formatters.add(createFormatter("ddMMyyyy"));
 		formatters.add(createFormatter("yyyyMMdd"));
 		for (String p : ConqueryConfig.getInstance().getAdditionalFormats()) {
 			formatters.add(createFormatter(p));
