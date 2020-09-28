@@ -102,7 +102,7 @@ public class UpdateMatchingStats extends Job {
 
 					int[] localIds = cBlock.getMostSpecificChildren()[event];
 					
-					if(localIds.equals(Connector.NOT_CONTAINED)) {
+					if(Connector.isNotContained(localIds)) {
 						continue;
 					}
 

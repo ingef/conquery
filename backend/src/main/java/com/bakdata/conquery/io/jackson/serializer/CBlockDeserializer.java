@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.concepts.Concept;
@@ -43,7 +42,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
 				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
 
-				if (mostSpecificChildren == null || Arrays.equals(mostSpecificChildren, Connector.NOT_CONTAINED)) {
+				if (mostSpecificChildren == null || Connector.isNotContained(mostSpecificChildren)) {
 					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
 					continue;
 				}
@@ -54,7 +53,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 		}
 		return block;
 	}
-	
+
 	@Override
 	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.concepts;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -157,17 +158,22 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public Column getValidityDateColumn(String name) {
-		for(ValidityDate vDate:validityDates) {
-			if(vDate.getName().equals(name))
+		for (ValidityDate vDate : validityDates) {
+			if (vDate.getName().equals(name)) {
 				return vDate.getColumn();
+			}
 		}
-		throw new NoSuchElementException("There is no validityDate called '"+name+"' in "+this);
+		throw new NoSuchElementException("There is no validityDate called '" + name + "' in " + this);
 	}
 
 	public synchronized void addImport(Import imp) {
 		for(Filter<?> f : collectAllFilters()) {
 			f.addImport(imp);
 		}
+	}
+
+	public static boolean isNotContained(int[] mostSpecificChildren) {
+		return Arrays.equals(mostSpecificChildren, NOT_CONTAINED);
 	}
 
 	/**
