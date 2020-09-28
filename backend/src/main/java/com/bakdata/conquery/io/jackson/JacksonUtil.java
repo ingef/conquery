@@ -92,10 +92,6 @@ public class JacksonUtil {
 		);
 	}
 
-	public static String toJsonDebug(Iterable<IoBuffer> list) {
-		return toJsonDebug(stream(list));
-	}
-
 	public static InputStream stream(Iterable<IoBuffer> list) {
 		return new SequenceInputStream(
 				IteratorUtils.asEnumeration(

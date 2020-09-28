@@ -68,12 +68,19 @@ public class BucketManager {
 						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 							Optional<Bucket> bucket = buckets.getOptional(bucketId);
-							if (bucket.isPresent()) {
-								CBlockId cBlockId = new CBlockId(bucketId, conName);
-								if (!cBlocks.getOptional(cBlockId).isPresent()) {
-									job.addCBlock(imp, bucket.get(), cBlockId);
-								}
+
+							if (bucket.isEmpty()) {
+								continue;
 							}
+
+							CBlockId cBlockId = new CBlockId(bucketId, conName);
+
+							if (!cBlocks.containsKey(cBlockId)) {
+								continue;
+							}
+
+							log.warn("CBlock[{}] missing in Storage.", cBlockId);
+							job.addCBlock(imp, bucket.get(), cBlockId);
 						}
 					}
 					if (!job.isEmpty()) {
