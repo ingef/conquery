@@ -95,9 +95,11 @@ public class BucketManager {
 
 							CBlockId cBlockId = new CBlockId(bucketId, conName);
 
-							if (cBlocks.getOptional(cBlockId).isPresent()) {
+							if (!cBlocks.containsKey(cBlockId)) {
 								continue;
 							}
+
+							log.warn("CBlock[{}] missing in Storage.", cBlockId);
 
 							job.addCBlock(imp, bucket.get(), cBlockId);
 						}
