@@ -16,49 +16,57 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.shiro.authz.Permission;
 
 @AllArgsConstructor
 @Getter
-public class StoredQueryItem {
+public class StoredQuerySingleItem {
 	private ManagedExecutionId id;
 	private String label;
 	private ZonedDateTime createdAt; // ISO timestamp: 2019-06-18T11:11:50.528626+02:00
 	private boolean own;
 	private boolean shared;
 	private boolean system;
-	private boolean isPristineLabel,
+	@JsonProperty("isPristineLabel")
+	private boolean isPristineLabel;
 	private String ownerName;
-	private Long numberOfResults;
 	private URL resultUrl;
-	private String[] tags;
-	private QueryDescription query;
 	private Collection<IdLabel<GroupId>> groups;
+	private QueryDescription query;
+	private String[] tags;
+	private Long numberOfResults;
 	
-	public static StoredQueryItem from(ManagedQuery execution, User user, MetaStorage metaStorage,  URLBuilder url) {
+	public static StoredQuerySingleItem from(ManagedQuery query, User user, MetaStorage metaStorage,  URLBuilder url) {
+		/* Calculate which groups can see this query.
+		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 */
 		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
 		for(Group group : metaStorage.getAllGroups()) {
 			for(Permission perm : group.getPermissions()) {
-				if(perm.implies(QueryPermission.onInstance(Ability.READ, execution.getId()))) {
+				if(perm.implies(QueryPermission.onInstance(Ability.READ, query.getId()))) {
 					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+					continue;
 				}
 			}
 		}
-		return new StoredQueryItem(
-			execution.getId(), 
-			execution.getLabel(),
-			execution.getCreationTime().atZone(ZoneId.systemDefault()),
-			execution.getOwner().equals(user.getId()),
-			execution.isShared(),
+		
+		return new StoredQuerySingleItem(
+			query.getId(), 
+			query.getLabel(),
+			query.getCreationTime().atZone(ZoneId.systemDefault()),
+			query.getOwner().equals(user.getId()),
+			query.isShared(),
 			false, // there is no mechanism/definition yet for system queries
-			execution.getLabel() == null,
-			Optional.ofNullable(execution.getOwner()).map(owner -> metaStorage.getUser(owner)).map(User::getLabel).orElse(null),
-			execution.getLastResultCount(),
-			execution.isReadyToDownload(url, user) ? execution.getDownloadURL(url) : null,
-			execution.getTags(),
-			execution.getQuery(),
-			permittedGroups);
+			query.getLabel() == null,
+			Optional.ofNullable(query.getOwner()).map(owner -> metaStorage.getUser(owner)).map(User::getLabel).orElse(null),
+			query.getDownloadURL(url, user),
+			permittedGroups,
+			query.getQuery(),
+			query.getTags(),
+			query.getLastResultCount()
+			);
 	}
 }

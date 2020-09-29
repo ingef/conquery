@@ -207,7 +207,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected URL getDownloadURL(URLBuilder url) {
+	public URL getDownloadURL(@NonNull URLBuilder url, User user) {
+		if (!isReadyToDownload(url, user)) {
+			return null;
+		}
 		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
 			.to(ResultCSVResource.GET_CSV_PATH).get();
 	}

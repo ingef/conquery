@@ -217,7 +217,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
 	 */
-	protected abstract URL getDownloadURL(URLBuilder url);
+	public abstract URL getDownloadURL(URLBuilder url, User user);
 
 	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user) {
 		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
@@ -266,7 +266,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	public boolean isReadyToDownload(URLBuilder url, User user) {
+	protected boolean isReadyToDownload(@NonNull URLBuilder url, User user) {
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
@@ -274,7 +274,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return url != null && state == ExecutionState.DONE && isPermittedDownload;
+		return state == ExecutionState.DONE && isPermittedDownload;
 	}
 
 	/**
