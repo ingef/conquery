@@ -20,7 +20,7 @@ import { FORM_CONFIG } from "../common/constants/dndTypes";
 import { FormConfigDragItem } from "./form-configs/FormConfig";
 import { loadExternalFormValues, setExternalForm } from "./actions";
 import FaIcon from "../icon/FaIcon";
-import { useLoadFormConfigs } from "./form-configs/useLoadFormConfigs";
+import { useLoadFormConfigs } from "./form-configs/selectors";
 
 interface PropsT {
   datasetId: string;
