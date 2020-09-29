@@ -137,13 +137,14 @@ public class ConceptsProcessor {
 
 	/**
 	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
+	 * @param maxResultNumber 
 	 */
-	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text, OptionalInt maxResultNumber) {
 		List<FEValue> result = new LinkedList<>();
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.of(50), FilterSearch.FilterSearchType.CONTAINS::score);
+			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), maxResultNumber, FilterSearch.FilterSearchType.CONTAINS::score);
 		}
 		
 		String value = filter.getValueFor(text);
