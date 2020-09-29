@@ -21,7 +21,6 @@ public class ClearFilterSourceSearch extends Task {
 
 	@Override
 	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
-		// TODO Auto-generated method stub
 		FilterSearch.clear();		
 	}
 

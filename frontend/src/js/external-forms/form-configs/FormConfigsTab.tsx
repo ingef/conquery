@@ -9,8 +9,7 @@ import Loading from "../../list/Loading";
 import FormConfigs from "./FormConfigs";
 import FormConfigsSearchBox from "./search/FormConfigsSearchBox";
 import FormConfigsFilter from "./filter/FormConfigsFilter";
-import { useFilteredFormConfigs } from "./selectors";
-import { useLoadFormConfigs } from "./useLoadFormConfigs";
+import { useFilteredFormConfigs, useLoadFormConfigs } from "./selectors";
 
 const Container = styled("div")`
   overflow-y: auto;
@@ -18,9 +17,9 @@ const Container = styled("div")`
   padding: 0 10px;
 `;
 
-type PropsT = {
+interface PropsT {
   datasetId: DatasetIdT | null;
-};
+}
 
 const FormConfigsTab = ({ datasetId }: PropsT) => {
   const formConfigs = useFilteredFormConfigs();
