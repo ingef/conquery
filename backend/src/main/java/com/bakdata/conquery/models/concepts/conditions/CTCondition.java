@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -13,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface CTCondition extends Serializable {
+public interface CTCondition {
 
 	public default void init(ConceptTreeNode node) throws ConceptConfigurationException {}
 	

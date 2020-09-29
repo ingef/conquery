@@ -42,13 +42,6 @@
         </module>
 
         <module name="RegexpSinglelineJava">
-            <property name="format" value='//\s*(todo|fixme|bug)'/>
-            <property name="ignoreCase" value="true"/>
-            <property name="message" value="no TODOs should be commited, use issues instead"/>
-            <property name="severity" value="error"/>
-        </module>
-
-        <module name="RegexpSinglelineJava">
             <property name="format" value="System\.out\."/>
             <property name="severity" value="error"/>
         </module>

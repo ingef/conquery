@@ -3,13 +3,11 @@ package com.bakdata.conquery.io.xodus.stores;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.google.common.primitives.Ints;
-
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
@@ -30,14 +28,19 @@ public class XodusStore implements Closeable {
 		);
 	}
 	
-	public void add(ByteIterable key, ByteIterable value) {
-		environment.executeInTransaction(t -> store.add(t, key, value));
+	public boolean add(ByteIterable key, ByteIterable value) {
+		return environment.computeInTransaction(t -> store.add(t, key, value));
 	}
 
 	public ByteIterable get(ByteIterable key) {
 		return environment.computeInReadonlyTransaction(t -> store.get(t, key));
 	}
 
+	/**
+	 * Iterate over all key-value pairs in a consistent manner.
+	 * The transaction is read only!
+	 * @param consumer function called for-each key-value pair.
+	 */
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
 		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 		AtomicBoolean done = new AtomicBoolean(false);
@@ -64,12 +67,12 @@ public class XodusStore implements Closeable {
 		}
 	}
 
-	public void update(ByteIterable key, ByteIterable value) {
-		environment.executeInTransaction(t -> store.put(t, key, value));
+	public boolean update(ByteIterable key, ByteIterable value) {
+		return environment.computeInTransaction(t -> store.put(t, key, value));
 	}
 	
-	public void remove(ByteIterable key) {
-		environment.executeInTransaction(t -> store.delete(t, key));
+	public boolean remove(ByteIterable key) {
+		return environment.computeInTransaction(t -> store.delete(t, key));
 	}
 
 	@Override

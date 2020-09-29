@@ -19,27 +19,13 @@
     "concepts": [
         {
             "label": "test_tree",
-            "type":"TREE",
+            "type":"VIRTUAL",
             "connectors": {
               "label": "tree_label",
-              "name": "test_column",
-              "column": "test_table.test_column",
+              "name": "test_concept",
+              "table": "test_table",
               "validityDates": {"label": "datum" ,"column": "test_table.datum"}
-            },
-            "children": [
-                {
-                    "label": "test_child1",
-                    "description": " ",
-                    "condition": {"type": "PREFIX_LIST", "prefixes": "A1"},
-                    "children": []
-                },
-                {
-                    "label": "test_child2",
-                    "description": " ",
-                    "condition": {"type": "PREFIX_LIST", "prefixes": "B2"},
-                    "children": []
-                }
-            ]
+            }
         }
     ],
     "content": {
@@ -55,10 +41,6 @@
 					{
 						"name": "datum",
 						"type": "DATE"
-					},
-					{
-						"name": "test_column",
-						"type": "STRING"
 					}
 				]
 			}

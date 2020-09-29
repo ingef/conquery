@@ -1,18 +1,12 @@
 package com.bakdata.conquery.commands;
 
-import java.util.concurrent.TimeUnit;
-
-import org.eclipse.jetty.util.component.ContainerLifeCycle;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.DebugMode;
-import com.google.common.util.concurrent.Uninterruptibles;
-
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 @Slf4j
 public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> {
@@ -31,10 +25,11 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
 		final Environment environment = new Environment(bootstrap.getApplication().getName(),
 														bootstrap.getObjectMapper(),
-														bootstrap.getValidatorFactory().getValidator(),
+														bootstrap.getValidatorFactory(),
 														bootstrap.getMetricRegistry(),
 														bootstrap.getClassLoader(),
-														bootstrap.getHealthCheckRegistry());
+														bootstrap.getHealthCheckRegistry(),
+														configuration);
 		configuration.getMetricsFactory().configure(environment.lifecycle(),
 													bootstrap.getMetricRegistry());
 		configuration.getServerFactory().configure(environment);

@@ -3,38 +3,39 @@ package com.bakdata.conquery.models.messages.network.specific;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Master;
-import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeNetworkContext;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.google.common.util.concurrent.Uninterruptibles;
-
+import com.bakdata.conquery.util.Wait;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="UPDATE_SLAVE_IDENTITY", base=NetworkMessage.class) @Slf4j
+@CPSType(id="REGISTER_SHARD_WORKER_IDENTITY", base=NetworkMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter
-public class RegisterWorker extends MasterMessage {
+public class RegisterWorker extends MessageToManagerNode {
 
 	private WorkerInformation info;
 	
 	@Override
-	public void react(Master context) throws Exception {
-		SlaveInformation slave = getSlave(context);
-		for(int attempt = 0; attempt < 6 && slave == null; attempt++) {
-			Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-			slave = getSlave(context);
-		}
+	public void react(ManagerNodeNetworkContext context) throws Exception {
+		ShardNodeInformation node = getShardNode(context);
+		Wait
+			.builder()
+			.attempts(6)
+			.stepTime(1)
+			.stepUnit(TimeUnit.SECONDS)
+			.build()
+			.until(()->getShardNode(context));
 		
-		if(slave == null) {
+		if(node == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
 		}
-		info.setConnectedSlave(slave);
-		context.getNamespaces().register(slave, info);
+		info.setConnectedShardNode(node);
+		context.getNamespaces().register(node, info);
 	}
 
 	/**
@@ -42,9 +43,9 @@ public class RegisterWorker extends MasterMessage {
 	 * @param context the network context
 	 * @return the found slave or null if none was found
 	 */
-	private SlaveInformation getSlave(Master context) {
+	private ShardNodeInformation getShardNode(ManagerNodeNetworkContext context) {
 		return context.getNamespaces()
-			.getSlaves()
+			.getShardNodes()
 			.get(context.getRemoteAddress());
 	}
 }

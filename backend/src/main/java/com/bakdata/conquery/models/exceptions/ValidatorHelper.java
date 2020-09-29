@@ -1,19 +1,19 @@
 package com.bakdata.conquery.models.exceptions;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.ConstraintViolation;
-import javax.ws.rs.core.Request;
-
+import io.dropwizard.jersey.validation.ConstraintMessage;
+import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.model.Invocable;
 import org.slf4j.Logger;
 
-import io.dropwizard.jersey.validation.ConstraintMessage;
+import javax.validation.ConstraintViolation;
+import javax.ws.rs.core.Request;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public interface ValidatorHelper {
+@UtilityClass
+public final class ValidatorHelper {
 
 	public static void failOnError(Logger log, Set<? extends ConstraintViolation<?>> violations) throws JSONException {
 		failOnError(log, violations, null);

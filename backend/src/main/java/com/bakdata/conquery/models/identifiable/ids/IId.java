@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.identifiable.ids;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -14,6 +12,8 @@ import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 @JsonDeserialize(using=IdDeserializer.class)
 public interface IId<TYPE> {
@@ -21,11 +21,11 @@ public interface IId<TYPE> {
 	char JOIN_CHAR = '.';
 	Joiner JOINER = Joiner.on(JOIN_CHAR);
 	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
-	Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
 	
 	List<String> collectComponents();
 	static <ID extends IId<?>> ID intern(ID id) {
-		ID old = (ID) INTERNED_IDS.putIfAbsent(id.collectComponents(), id);
+		@SuppressWarnings("unchecked")
+		ID old = IIdInterner.<ID>forParser((Parser<ID>)createParser(id.getClass())).putIfAbsent(id.collectComponents(), id);
 		if(old == null) {
 			return id;
 		}
@@ -38,6 +38,7 @@ public interface IId<TYPE> {
 	interface Parser<ID extends IId<?>> {
 		
 		static String[] split(String id) {
+			Objects.requireNonNull(id, "An empty id was provided for parsing.");
 			String[] parts = StringUtils.split(id, IId.JOIN_CHAR);
 			for(int i = 0; i < parts.length; ++i){
 				parts[i] = ConqueryEscape.unescape(parts[i]);
@@ -47,17 +48,20 @@ public interface IId<TYPE> {
 		}
 
 		default ID parse(String id) {
-			return parse(Arrays.asList(split(id)));
+			return parse(split(id));
 		}
 		
-		@SuppressWarnings("unchecked")
+		default ID parse(String... id) {
+			return parse(Arrays.asList(id));
+		}
+		
 		default ID parse(List<String> parts) {
 			//first check if we get the result with the list (which might be a sublist)
-			ID result = (ID) INTERNED_IDS.get(parts);
+			ID result = IIdInterner.forParser(this).get(parts);
 			if(result == null) {
 				result = createId(parts);
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(parts), result);
+				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(parts), result);
 				if(secondResult != null) {
 					checkConflict(result, secondResult);
 					return secondResult;
@@ -66,16 +70,15 @@ public interface IId<TYPE> {
 			return result;
 		}
 		
-		@SuppressWarnings("unchecked")
 		default ID parse(IdIterator parts) {
 			//first check if we get the result with the list (which might be a sublist)
 			List<String> input = parts.getRemaining();
-			ID result = (ID) INTERNED_IDS.get(input);
+			ID result = IIdInterner.forParser(this).get(input);
 			if(result == null) {
 				parts.internNext();
 				result = parseInternally(parts);
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(input), result);
+				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(input), result);
 				if(secondResult != null) {
 					checkConflict(result, secondResult);
 					return secondResult;

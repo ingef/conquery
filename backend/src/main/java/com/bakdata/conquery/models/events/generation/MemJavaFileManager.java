@@ -1,17 +1,18 @@
 package com.bakdata.conquery.models.events.generation;
 
+import java.io.IOException;
+
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaCompiler;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
-import javax.tools.StandardJavaFileManager;
 
-public class MemJavaFileManager extends ForwardingJavaFileManager<StandardJavaFileManager> {
+public class MemJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
 	private final MemClassLoader classLoader;
 
-	public MemJavaFileManager(JavaCompiler compiler, MemClassLoader classLoader) {
-		super(compiler.getStandardFileManager(null, null, null));
+	public MemJavaFileManager(JavaFileManager fileManager, MemClassLoader classLoader) {
+		super(fileManager);
 
 		this.classLoader = classLoader;
 	}
@@ -23,4 +24,9 @@ public class MemJavaFileManager extends ForwardingJavaFileManager<StandardJavaFi
 		return fileObject;
 	}
 
+	@Override
+	public void close() throws IOException {
+		super.flush();
+		//super.close();
+	}
 }

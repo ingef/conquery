@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.filter.event.number;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class IntegerFilterNode extends NumberFilterNode<Range.LongRange> {
@@ -17,7 +17,7 @@ public class IntegerFilterNode extends NumberFilterNode<Range.LongRange> {
 	}
 
 	@Override
-	public boolean contains(Block block, int event) {
-		return getFilterValue().contains(block.getInteger(event, getColumn()));
+	public boolean contains(Bucket bucket, int event) {
+		return getFilterValue().contains(bucket.getInteger(event, getColumn()));
 	}
 }

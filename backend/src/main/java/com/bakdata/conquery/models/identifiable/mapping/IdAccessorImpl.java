@@ -2,12 +2,12 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * The standard Implementation for an IdAccessor.
@@ -30,7 +30,8 @@ public class IdAccessorImpl implements IdAccessor {
 	/**
 	 * The used namespace storage.
 	 */
-	private final NamespaceStorage storage;
+	@Getter
+	private final PersistentIdMap idMapping;
 
 	/**
 	 * removes all non Id Fields from a given CSV Line respective to the given formal Columns.
@@ -38,7 +39,7 @@ public class IdAccessorImpl implements IdAccessor {
 	 * @param formatColumns The format description for the given Csv..
 	 * @return The filtered csvLine.
 	 */
-	public static String[] removeNonIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns) {
+	public static String[] selectIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns) {
 		List<String> result = new ArrayList<>();
 		for (int i = 0; i < csvLine.length; i++) {
 			if (formatColumns.get(i) == CQExternal.FormatColumn.ID) {
@@ -46,30 +47,18 @@ public class IdAccessorImpl implements IdAccessor {
 			}
 		}
 
-		return result.toArray(new String[0]);
-	}
-
-	/**
-	 * If not real mapping is possible we use this fallback CsvId and join the id Parts together.
-	 * @param idPart all required Parts of the id.
-	 * @return all Parts of the concatenated by a pipe.
-	 */
-	public static CsvEntityId getFallbackCsvId(String[] idPart) {
-		return new CsvEntityId(String.join("|", idPart));
+		return result.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
 	}
 
 	@Override
 	public CsvEntityId getCsvEntityId(String[] csvLine) {
 		String[] reorderedCsvLine = reorder(csvLine);
-		String[] partOfId = this.accessor.extract(reorderedCsvLine);
-		CsvEntityId csvEntityId = storage.getIdMapping()
-			.getExternalIdPartCsvIdMap()
-			.get(new SufficientExternalEntityId(partOfId));
-		if (csvEntityId != null) {
-			return csvEntityId;
-		}
-		// fallback: we join everything relevant together
-		return getFallbackCsvId(partOfId);
+
+		return Optional
+			.ofNullable(idMapping)
+			.map(m -> m.toInternal(new SufficientExternalEntityId(reorderedCsvLine)))
+			// fallback: we join everything relevant together
+			.orElseGet(()->accessor.getFallbackCsvId(reorderedCsvLine));
 	}
 
 	/**
@@ -77,7 +66,7 @@ public class IdAccessorImpl implements IdAccessor {
 	 * @param csvLine The csv line.
 	 * @return Outputs a csvLine like the one in the original uploaded id mapping CSV
 	 */
-	private String[] reorder(String[] csvLine) {
+	protected String[] reorder(String[] csvLine) {
 		String[] reorderedCsvLine = new String[accessor.getHeader().length];
 		for (int i = 0; i < csvLine.length; i++) {
 			int indexInHeader = applicationMapping[i];

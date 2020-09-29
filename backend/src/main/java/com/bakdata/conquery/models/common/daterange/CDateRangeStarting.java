@@ -2,10 +2,9 @@ package com.bakdata.conquery.models.common.daterange;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Wither;
+import lombok.With;
 
-@Wither
+@With
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class CDateRangeStarting extends CDateRange {
 
@@ -18,7 +17,7 @@ public class CDateRangeStarting extends CDateRange {
 	
 	@Override
 	public String toString() {
-		return String.format("%s/+∞", getMin());
+		return getMin() + "/+∞";
 	}
 
 	@Override

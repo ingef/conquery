@@ -1,13 +1,16 @@
 package com.bakdata.conquery.integration;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.DynamicContainer;
+
+import com.google.common.base.Joiner;
 
 import io.github.classgraph.Resource;
 import lombok.Getter;
@@ -49,11 +52,13 @@ public class ResourceTree {
 	}
 
 	public String getFullName() {
-		return Stream
+		List<String> l = Stream
 			.iterate(this, Objects::nonNull, ResourceTree::getParent)
-			.filter(Objects::nonNull)
 			.map(ResourceTree::getName)
-			.collect(Collectors.joining("/"));
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
+		Collections.reverse(l);
+		return Joiner.on('/').join(l);
 	}
 
 	public ResourceTree reduce() {

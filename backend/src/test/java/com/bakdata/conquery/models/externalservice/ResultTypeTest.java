@@ -9,23 +9,27 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.query.PrintSettings;
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
-
-@Execution(ExecutionMode.SAME_THREAD)
 public class ResultTypeTest {
+	
+	static {
+		// Initialization of the internationalization
+		I18n.init();
+	}
+	
 
-	private static final PrintSettings PRETTY = new PrintSettings();
-	private static final PrintSettings PLAIN = PrintSettings.builder().prettyPrint(false).build();
+	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH);
+	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMAN);
+	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH);
 	
 	public static Stream<Arguments> testData() {
 		//init global default config
@@ -36,6 +40,8 @@ public class ResultTypeTest {
 			Arguments.of(PRETTY, ResultType.BOOLEAN, true,	"t"),
 			Arguments.of(PRETTY, ResultType.BOOLEAN, false,	"f"),
 			Arguments.of(PRETTY, ResultType.CATEGORICAL, "test", "test"),
+			Arguments.of(PRETTY, ResultType.RESOLUTION, DateContextMode.COMPLETE, "complete"),
+			Arguments.of(PRETTY_DE, ResultType.RESOLUTION, DateContextMode.COMPLETE, "Gesamt"),
 			Arguments.of(PRETTY, ResultType.DATE, LocalDate.of(2013, 07, 12), "2013-07-12"),
 			Arguments.of(PRETTY, ResultType.INTEGER, 51839274, "51,839,274"),
 			Arguments.of(PRETTY, ResultType.MONEY, 51839274L, "518,392.74"),
@@ -52,6 +58,7 @@ public class ResultTypeTest {
 			Arguments.of(PLAIN, ResultType.NUMERIC, 0.2, "0.2"),
 			Arguments.of(PLAIN, ResultType.NUMERIC, new BigDecimal("716283712389817246892743124.12312"), "716283712389817246892743124.12312"),
 			Arguments.of(PLAIN, ResultType.STRING, "test", "test"),
+			Arguments.of(PLAIN, ResultType.CATEGORICAL, DateContextMode.COMPLETE, "COMPLETE"),
 			Arguments.of(PLAIN, ResultType.STRING, ImmutableMap.of("a", 2, "c", 1), "{a=2, c=1}")
 		);
 	}

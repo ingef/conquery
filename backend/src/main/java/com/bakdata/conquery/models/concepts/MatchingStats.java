@@ -6,11 +6,10 @@ import java.util.Map;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +32,7 @@ public class MatchingStats {
 	
 	public synchronized CDateRange spanEvents() {
 		if(span == null) {
-			span = entries.values().stream().map(Entry::getSpan).reduce(null, CDateRange::spanOf);
+			span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
 		}
 		return span;
 	}
@@ -49,11 +48,17 @@ public class MatchingStats {
 		private long numberOfEvents = 0;
 		private CDateRange span;
 		
-		public void addEvent(Table table, Block block, CBlock cBlock, int event) {
+		public void addEvent(Table table, Bucket bucket, CBlock cBlock, int event) {
 			numberOfEvents++;
 			for(Column c : table.getColumns()) {
 				if(c.getType().isDateCompatible()) {
-					span = CDateRange.spanOf(block.getAsDateRange(event, c), span);
+					final CDateRange time = bucket.getAsDateRange(event, c);
+
+					if(time == null){
+						continue;
+					}
+
+					span = time.spanClosed(span);
 				}
 			}
 		}

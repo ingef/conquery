@@ -387,6 +387,6 @@ public class SuccinctTrie extends Dictionary {
 
 	@Override
 	public long estimateMemoryConsumption() {
-		return 13*getNodeCount() + 4*size();
+		return 13L*getNodeCount() + 4L*size();
 	}
 }

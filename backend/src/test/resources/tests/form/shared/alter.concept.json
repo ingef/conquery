@@ -1,0 +1,53 @@
+{
+    "type": "TREE",
+    "name": "alter",
+    "label": "Alter",
+    "hidden": false,
+    "connectors": {
+        "name": "alter",
+        "label": "Alter",
+        "validityDates": [
+            {
+                "name": "versichertenzeit",
+                "label": "Versichertenzeit",
+                "column": "vers_stamm.date"
+            },
+            {
+                "name": "erster_tag",
+                "label": "Erster Tag",
+                "column": "vers_stamm.date_start"
+            },
+            {
+                "name": "letzter_tag",
+                "label": "Letzter Tag",
+                "column": "vers_stamm.date_end"
+            }
+        ],
+        "table": "vers_stamm",
+        "filters": {
+            "type": "DATE_DISTANCE",
+            "name": "alterseinschränkung",
+            "label": "Alterseinschränkung",
+            "description": "Alter zur gegebenen Datumseinschränkung",
+            "column": "vers_stamm.geburtsdatum",
+            "timeUnit": "YEARS"
+        },
+        "selects": [
+            {
+                "type": "DATE_DISTANCE",
+                "name": "alter_select",
+                "label": "Ausgabe Alter",
+                "description": "Automatisch erzeugter Zusatzwert.",
+                "column": "vers_stamm.geburtsdatum",
+                "timeUnit": "YEARS",
+                "default": true
+            },
+            {
+                "name": "liste_geburtsdatum",
+                "label": "Ausgabe Geburtsdatum",
+                "type": "FIRST",
+                "column": "vers_stamm.geburtsdatum"
+            }
+        ]
+    }
+}

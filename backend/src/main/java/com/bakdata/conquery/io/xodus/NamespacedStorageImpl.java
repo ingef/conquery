@@ -29,7 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.functions.Collector;
-
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,16 +41,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected IdentifiableStore<Concept<?>> concepts;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(
-			validator,
-			config,
-			directory
-		);
+		super(validator,config,directory);
 	}
-	
+
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		this.dataset = StoreInfo.DATASET.<Dataset>singleton(this)
+		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), getEnvironment(), getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
 				for(Table t:ds.getTables().values()) {
@@ -69,14 +65,15 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 				centralRegistry.remove(ds);
 			});
+
 		if(ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
-			this.dictionaries =	StoreInfo.DICTIONARIES.weakBig(this);
+			dictionaries =	StoreInfo.DICTIONARIES.weakBig(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
 		}
 		else {
-			this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
+			dictionaries =	StoreInfo.DICTIONARIES.big(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
 		}
-		
-		this.concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(this)
+
+		concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry())
 			.onAdd(concept -> {
 				Dataset ds = centralRegistry.resolve(
 					concept.getDataset() == null
@@ -84,10 +81,9 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 						: concept.getDataset()
 				);
 				concept.setDataset(ds.getId());
-				ds.addConcept(concept);
 
 				concept.initElements(validator);
-				
+
 				concept.getSelects().forEach(centralRegistry::register);
 				for (Connector c : concept.getConnectors()) {
 					centralRegistry.register(c);
@@ -112,7 +108,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					centralRegistry.remove(c.getId());
 				}
 			});
-		this.imports = StoreInfo.IMPORTS.<Import>identifiable(this)
+		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry())
 			.onAdd(imp-> {
 				imp.loadExternalInfos(this);
 				for(Concept<?> c: getAllConcepts()) {
@@ -123,7 +119,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					}
 				}
 			});
-		
+
+
 		collector
 			.collect(dataset)
 			.collect(dictionaries)
@@ -137,7 +134,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateDataset(Dataset dataset) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
 
@@ -159,6 +157,9 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public void updateDictionary(Dictionary dict) throws JSONException {
 		dictionaries.update(dict);
+		for(Import imp : getAllImports()) {
+			imp.loadExternalInfos(this);
+		}
 	}
 
 	@Override
@@ -205,6 +206,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Concept<?> getConcept(ConceptId id) {
 		return Optional.ofNullable(concepts.get(id))
 			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
+	}
+
+	@Override
+	public boolean hasConcept(ConceptId id) {
+		return concepts.get(id) != null;
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import com.google.common.math.LongMath;
 import com.google.common.primitives.Primitives;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -26,8 +27,8 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 
 	@JsonIgnore
 	private transient final MajorTypeId typeId;
-	@JsonIgnore
-	private transient final Class<?> primitiveType;
+	@JsonIgnore @NonNull
+	private transient Class<?> primitiveType;
 
 	private long lines = 0;
 	private long nullLines = 0;

@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "SIMPLE_VIRTUAL_CONCEPT_QUERY Test",
+  "label": "DURATION_SUM_AGGREGATOR Test",
   "expectedCsv": "tests/aggregator/DURATION_SUM_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -27,15 +27,15 @@
       "connectors": [
         {
           "label": "connector",
-          "table": "vers_stamm",
+          "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           },
           "selects": {
             "type": "DURATION_SUM",
             "name" : "select",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           }
         }
       ]
@@ -45,7 +45,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/DURATION_SUM_AGGREGATOR/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

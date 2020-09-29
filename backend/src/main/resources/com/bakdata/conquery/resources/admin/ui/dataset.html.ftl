@@ -1,89 +1,65 @@
 <#import "templates/template.html.ftl" as layout>
 <@layout.layout>
-	<h3>Dataset ${c.label}</h3>
-	<div class="row">
-		<div class="col">Name / Id</div>
-		<div class="col">${c.id}</div>
-		<div class="col-7"></div>
-	<div class="w-100"></div>
-		<div class="col">Label</div>
-		<div class="col">${c.label}</div>
-		<div class="col-7">
-			<#-- <form method="post" enctype="multipart/form-data">
-				<input type="text" name="dataset_label" title="Label of the dataset" value="${c.label}">
-				<input type="submit"/>
-			</form>
-			-->
-		</div>
-	<div class="w-100"></div>
-		<div class="col">Tables</div>
-		<div class="col">
-			<ul>
-				<#list c.tables as id, table>
-					<li>
-						<a href="/admin/datasets/${c.id}/tables/${table.id}">${table.label}</a> 
-						<a href="" onclick="event.preventDefault(); fetch('/admin/datasets/${c.id}/tables/${table.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-					</li>
-				</#list>
-			</ul>
-		</div>
-		<div class="col-7">
-			<form action="/admin/datasets/${c.id}/tables" method="post" enctype="multipart/form-data">
-				<div class="form-group">
-					<label for="table_schema">Add Table</label>
-					<input class="form-control-file" type="file" name="table_schema" title="Schema of the table" accept="*.table.json" multiple required>
-				</div>
-				<input class="btn btn-primary" type="submit"/>
-			</form>
-		</div>
-	<div class="w-100"></div>
-		<div class="col">Concepts</div>
-		<div class="col">
-			<ul>
-			<#list c.concepts as concept>
+	<h3>Dataset ${c.ds.label}</h3>
+	
+	<@layout.kid k="ID" v=c.ds.id/>
+	<@layout.kc k="Label">
+		<form method="post" enctype="multipart/form-data">
+			<input id="newDatasetLabel" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
+			<input type="submit" onclick="event.preventDefault(); rest.post('/datasets/${c.ds.id}/label', document.getElementById('newDatasetLabel').value).then(function(){location.reload();});"/>
+		</form>
+	</@layout.kc>
+	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
+	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
+	<@layout.kc k="IdMapping"><a href="/admin/datasets/${c.ds.id}/mapping">Here</a></@layout.kc>
+	<@layout.kc k="Tables">
+		<ul>
+			<#list c.tables?sort_by("label") as table>
 				<li>
-					<a href="/admin/datasets/${c.id}/concepts/${concept.id}">${concept.label}</a>
-					<a href="" onclick="event.preventDefault(); fetch('/admin/datasets/${c.id}/concepts/${concept.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+					<a href="/admin/datasets/${c.ds.id}/tables/${table.id}">${table.label} <span>[${table.imports}] (${table.entries})</span></a>
+					<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/tables/${table.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>
-			</ul>
-		</div>
-		<div class="col-7">
-			<form onsubmit="postFile(event, '/admin/datasets/${c.id}/concepts');">
-				<div class="form-group">
-					<label for="concept_schema">Add Concept</label>
-					<input type="file" class="restparam" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" multiple required>
-				</div>
-				<input class="btn btn-primary" type="submit"/>
-			</form>
-		</div>
-	</div>
+		</ul>
+	</@layout.kc>
+	<@layout.kc k="Concepts">
+		<ul>
+		<#list c.concepts?sort_by("label") as concept>
+			<li>
+				<a href="/admin/datasets/${c.ds.id}/concepts/${concept.id}">${concept.label}</a>
+				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/concepts/${concept.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+			</li>
+		</#list>
+		</ul>
+	</@layout.kc>
 	
-	<div class="row">
-		<div class="col">
-			<h3>Structure Nodes</h3>
-			<form onsubmit="postFile(event, '/admin/datasets/${c.id}/structure');">
-				<div class="form-group">
-					<label for="structure_schema">Set Structure Nodes</label>
-					<input type="file" class="restparam" name="structure_schema" title="Schema of the Structure Nodes" accept="structure.json" required>
-				</div>
-				<input class="btn btn-primary" type="submit"/>
-			</form>
+	<form action="/admin/update-matching-stats/${c.ds.id}" method="post" enctype="multipart/form-data">
+        <h3>Start Update Matching Stats Job</h3>
+        <input class="btn btn-primary" type="submit"/>
+    </form>
+	<h3>Add Table</h3>
+	<form action="/admin/datasets/${c.ds.id}/tables" method="post" enctype="multipart/form-data">
+		<div class="form-group">
+			<label for="table_schema">Add Table</label>
+			<input class="form-control-file" type="file" name="table_schema" title="Schema of the table" accept="*.table.json" multiple required>
 		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			<h3>Import Files</h3>
-			<#macro linkCreator>
-				<a href="#" onclick="event.preventDefault(); fetch('/admin/datasets/${c.id}/imports?file='+encodeURIComponent('<#nested/>'.trim()), {method: 'post'}).then(function(){location.reload();});">
-			</#macro>
-			<#include "templates/fileChooser.html.ftl"/>
+		<input class="btn btn-primary" type="submit"/>
+	</form>
+	
+	<h3>Add Concept</h3>
+	<form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/concepts');">
+		<div class="form-group">
+			<input type="file" class="restparam" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" multiple required>
 		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			<h2>IdMapping</h2>
-			<a href="/admin/datasets/${c.id}/mapping">Here</a>
+		<input class="btn btn-primary" type="submit"/>
+	</form>
+	
+	<h3>Structure Nodes</h3>
+	<form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/structure');">
+		<div class="form-group">
+			<label for="structure_schema">Set Structure Nodes</label>
+			<input type="file" class="restparam" name="structure_schema" title="Schema of the Structure Nodes" accept="structure.json" required>
 		</div>
-	</div>
+		<input class="btn btn-primary" type="submit"/>
+	</form>
 </@layout.layout>

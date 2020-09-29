@@ -19,3 +19,5 @@ package-lock.json
 .idea
 
 *.tgz
+
+app/api/dnd/**/_*.*

@@ -1,27 +1,35 @@
 package com.bakdata.conquery.models.identifiable;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
+
+import javax.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.google.common.collect.ForwardingMap;
 
-public class IdMap<ID extends IId<? extends V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID ,V > implements Iterable<V>{
+/**
+ * A typesafe mapping for the ID-system that does not allow a remapping of an existing key.
+ * 
+ * @implNote implementation of {@link Iterable} is dropped, because hibernate could not decide on how to validate this map (either with an map-extractor or an iterable-extractor).
+ */
+public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID,V> {
 
-	private final Map<ID, V> map;
+	@Valid
+	private final ConcurrentMap<ID, V> map;
 	
 	public IdMap() {
-		map = new HashMap<ID, V>();
+		map = new ConcurrentHashMap<ID, V>();
 	}
 	
 	public IdMap(Collection<V> collection) {
-		map = new HashMap<>();
+		map = new ConcurrentHashMap<>();
 		for(V value : collection) {
 			map.put(value.getId(), value);
 		}
@@ -35,11 +43,6 @@ public class IdMap<ID extends IId<? extends V>, V extends Identifiable<? extends
 	@Override
 	public Collection<V> values() {
 		return map.values();
-	}
-	
-	@Override
-	public Iterator<V> iterator() {
-		return values().iterator();
 	}
 
 	public Stream<V> stream() {

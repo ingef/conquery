@@ -1,11 +1,10 @@
 package com.bakdata.conquery.models.common.daterange;
 
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Wither;
+import lombok.With;
 
-@Wither
+@With
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CDateRangeOpen extends CDateRange {
 	public static final CDateRange INSTANCE = new CDateRangeOpen();

@@ -3,11 +3,12 @@ package com.bakdata.conquery.models.types;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 
 import lombok.Getter;
+import lombok.Setter;
 
-@Getter
+@Getter @Setter
 public abstract class CTypeVarInt<MAJOR_JAVA_TYPE> extends CType<MAJOR_JAVA_TYPE, Number> {
 
-	protected final VarIntType numberType;
+	protected VarIntType numberType;
 
 	public CTypeVarInt(MajorTypeId typeId, VarIntType numberType) {
 		super(typeId, numberType.getPrimitiveType());

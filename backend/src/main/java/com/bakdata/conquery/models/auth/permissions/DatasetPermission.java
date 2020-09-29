@@ -1,30 +1,44 @@
 package com.bakdata.conquery.models.auth.permissions;
 
 import java.util.Set;
-import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.fasterxml.jackson.annotation.JsonCreator;
 
-import lombok.EqualsAndHashCode;
+@CPSType(id = "DATASETS", base = StringPermissionBuilder.class)
+public class DatasetPermission extends StringPermissionBuilder {
 
-@CPSType(id="DATASET_PERMISSION", base=ConqueryPermission.class)
-@EqualsAndHashCode(callSuper=true)
-public class DatasetPermission extends IdentifiableInstancePermission<DatasetId> {
+	public static final String DOMAIN = "datasets";
 
-	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId instanceId) {
-		super(ownerId, abilities, instanceId);
+	private static final Set<Ability> ALLOWED_ABILITIES = AbilitySets.DATASET_CREATOR;
+	
+	public static final DatasetPermission INSTANCE = new DatasetPermission();
+	
+	public ConqueryPermission instancePermission(Ability ability, DatasetId instance) {
+		return instancePermission(ability, instance.toString());
 	}
-
-	@JsonCreator
-	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId instanceId, UUID jsonId) {
-		super(ownerId, abilities, instanceId, jsonId);
+	
+	public ConqueryPermission instancePermission(Set<Ability> abilities, DatasetId instance) {
+		return instancePermission(abilities, instance.toString());
 	}
 
 	@Override
-	public DatasetPermission withOwner(PermissionOwnerId<?> newOwner) {
-		return new DatasetPermission(newOwner, this.getAbilities().clone(), this.getInstanceId());
+	public String getDomain() {
+		return DOMAIN;
+	}
+
+	@Override
+	public Set<Ability> getAllowedAbilities() {
+		return ALLOWED_ABILITIES;
+	}
+	
+	
+	//// Helper functions
+	public static ConqueryPermission onInstance(Set<Ability> abilities, DatasetId instance) {
+		return INSTANCE.instancePermission(abilities, instance);
+	}
+
+	public static ConqueryPermission onInstance(Ability ability, DatasetId instance) {
+		return INSTANCE.instancePermission(ability, instance);
 	}
 }

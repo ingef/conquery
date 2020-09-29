@@ -1,0 +1,107 @@
+{
+    "type": "QUERY_TEST",
+    "label": "ARRAY_CONCEPT_QUERY Test",
+    "expectedCsv": "tests/query/ARRAY_CONCEPT_QUERY/expected.csv",
+    "query": {
+		"type": "ARRAY_CONCEPT_QUERY",
+        "childQueries": [
+            {
+                "type": "CONCEPT_QUERY",
+                "root": {
+                    "ids": [
+                        "${dataset}.select"
+                    ],
+                    "type": "CONCEPT",
+                    "label": "select",
+                    "tables": [
+                        {
+                            "id": "${dataset}.select.connector",
+                            "selects": [
+                                "${dataset}.select.connector.count_genders"
+                            ]
+                        }
+                    ]
+                }
+			},
+			{
+                "type": "CONCEPT_QUERY",
+                "root": {
+                    "ids": [
+                        "${dataset}.select"
+                    ],
+                    "type": "CONCEPT",
+                    "label": "select",
+                    "tables": [
+                        {
+							"id": "${dataset}.select.connector",
+							"filters":[
+								{
+								"type": "INTEGER_RANGE",
+								"filter":"${dataset}.select.connector.geschlecht",
+								"value": {
+									"min": 2,
+									"max": 6
+								  }
+							}
+							],
+                            "selects": [
+                                "${dataset}.select.connector.count_genders"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "concepts": [
+        {
+            "label": "select",
+            "type": "VIRTUAL",
+            "connectors": [
+                {
+                    "label": "connector",
+                    "table": "table1",
+                    "validityDates": {
+                        "label": "datum",
+                        "column": "table1.datum"
+					},
+					"filter": {
+						"label": "geschlecht",
+						"type": "COUNT",
+						"column": "table1.geschlecht",
+						"distinct": false
+					},
+                    "selects": [
+                        {
+                            "name": "count_genders",
+                            "type": "COUNT",
+                            "column": "table1.geschlecht"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+            {
+                "csv": "tests/query/ARRAY_CONCEPT_QUERY/content.csv",
+                "name": "table1",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name": "datum",
+                        "type": "DATE"
+                    },
+                    {
+                        "name": "geschlecht",
+                        "type": "STRING"
+                    }
+                ]
+            }
+        ]
+    }
+}

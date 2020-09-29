@@ -1,37 +1,36 @@
 <#import "templates/template.html.ftl" as layout>
 <@layout.layout>
-	<div class="row">
-		<div class="col">Name</div>
-		<div class="col-7">${c.table.id}</div>
-	<div class="w-100"></div>
-		<div class="col">Label</div>
-		<div class="col-7">${c.table.label}</div>
-	<div class="w-100"></div>
-		<div class="col">Tags</div>
-		<div class="col-7">[ ${c.table.tags?join(", ")} ]</div>
-	<div class="w-100"></div>
-		<div class="col">Blocks</div>
-		<div class="col-7">${c.numberOfBlocks}</div>
-	<div class="w-100"></div>
-		<div class="col">Entries</div>
-		<div class="col-7">${c.numberOfEntries}</div>
-	<div class="w-100"></div>
-		<div class="col">Columns</div>
-		<div class="col-7">
-			<table>
-				<tr>
-					<th>Label</th>
-					<th>Name</th>
-					<th>Type</th>
-				</tr>
-			<#list c.table.columns as column>
-				<tr>
-					<td>${column.label}</td>
-					<td>${column.id}</td>
-					<td>${column.type}</td>
-				</tr>
-			</#list>
-			</table>
-		</div>
-	</div>
+	<@layout.kid k="ID" v=c.table.id/>
+	<@layout.kv k="Label" v=c.table.label/>
+	<@layout.kv k="Entries" v=c.numberOfEntries?string.number/>
+	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
+	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
+	<@layout.kc k="Tags">
+		<ul>
+		<#list c.imports as import>
+			<li>
+				<a href="/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${import.id}">${import.name} (${import.numberOfEntries})</a>
+				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.table.dataset.id}/tables/${c.table.id}/imports/${import.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+			</li>
+		</#list>
+		</ul>
+	</@layout.kc>
+	<@layout.kc k="Columns">
+		<table class="headed-table">
+			<tr>
+				<th>Label</th>
+				<th>ID</th>
+				<th>Type</th>
+				<th>Infos</th>
+			</tr>
+		<#list c.table.columns as column>
+			<tr>
+				<td>${column.label}</td>
+				<td><code>${column.id}</code></td>
+				<td>${column.type}</td>
+				<td>${("Shared Dictionary <code>"?no_esc+column.sharedDictionary+"</code>"?no_esc)!}</td>
+			</tr>
+		</#list>
+		</table>
+	</@layout.kc>
 </@layout.layout>

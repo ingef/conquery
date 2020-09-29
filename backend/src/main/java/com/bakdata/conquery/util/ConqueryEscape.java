@@ -11,8 +11,13 @@ import lombok.NonNull;
 public class ConqueryEscape {
 	
 	private static final byte ESCAPER = '$';
+	private static final ConqueryEscape INSTANCE = new ConqueryEscape();
 
 	public static String escape(@NonNull String word) {
+		return INSTANCE.escapeString(word);
+	}
+		
+	protected String escapeString(String word) {
 		if(word.isEmpty()) {
 			return word;
 		}
@@ -39,7 +44,7 @@ public class ConqueryEscape {
 	}
 	
 			
-	private static String escapeRequired(byte[] bytes, int index, ByteArrayOutputStream baos) {
+	private String escapeRequired(byte[] bytes, int index, ByteArrayOutputStream baos) {
 		for(int i=index;i<bytes.length;i++) {
 			if(matchesOther(bytes[i])) {
 				baos.write(bytes[i]);
@@ -52,6 +57,10 @@ public class ConqueryEscape {
 	}
 	
 	public static String unescape(@NonNull String word) {
+		return INSTANCE.unescapeString(word);
+	}
+	
+	protected String unescapeString(String word) {
 		if(word.isEmpty()) {
 			return word;
 		}
@@ -75,22 +84,22 @@ public class ConqueryEscape {
 		return new String(out.toByteArray(), StandardCharsets.UTF_8);
 	}
 	
-	private static void encode(byte b, ByteArrayOutputStream out) {
+	private void encode(byte b, ByteArrayOutputStream out) {
 		out.write(ESCAPER);
 		out.write(Character.forDigit((b >> 4) & 0xF, 16));
 		out.write(Character.forDigit((b & 0xF), 16));
 	}
 	
-	private static int decode(byte[] bytes, int i, ByteArrayOutputStream out) {
+	private int decode(byte[] bytes, int i, ByteArrayOutputStream out) {
 		out.write((Character.digit(bytes[i+1], 16) << 4) + Character.digit(bytes[i+2], 16));
 		return 2;
 	}
 
-	private static boolean matchesOther(byte v) {
-		return matchesFirst(v) || (v>=(byte)'0' && v<=(byte)'9') || v == '_';
+	protected boolean matchesOther(byte v) {
+		return v>=(byte)'!' && v<=(byte)'~' && v!=ESCAPER && v!=(byte)'.';
 	}
 
-	private static boolean matchesFirst(byte v) {
-		return (v>=(byte)'a' && v<=(byte)'z') || (v>=(byte)'A' && v<=(byte)'Z');
+	protected boolean matchesFirst(byte v) {
+		return matchesOther(v);
 	}
 }

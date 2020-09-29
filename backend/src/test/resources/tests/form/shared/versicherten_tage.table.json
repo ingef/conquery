@@ -1,0 +1,14 @@
+{
+    "csv": "tests/form/shared/versicherten_tage.csv",
+    "name": "vers_tage_range",
+    "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+    },
+    "columns": [
+        {
+            "name": "date",
+            "type": "DATE_RANGE"
+        }
+    ]
+}

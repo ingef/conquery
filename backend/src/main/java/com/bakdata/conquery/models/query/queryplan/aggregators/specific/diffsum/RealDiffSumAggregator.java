@@ -1,13 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
 
+/**
+ * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for real columns.
+ */
 public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	@Getter
@@ -16,6 +18,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	private Column subtrahendColumn;
 
 	private double sum = 0;
+	private boolean hit;
 
 	public RealDiffSumAggregator(Column addend, Column subtrahend) {
 		this.addendColumn = addend;
@@ -33,13 +36,20 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		double addend = block.has(event, getAddendColumn())
-								? block.getReal(event, getAddendColumn())
+	public void acceptEvent(Bucket bucket, int event) {
+
+		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
+			return;
+		}
+
+		hit = true;
+
+		double addend = bucket.has(event, getAddendColumn())
+								? bucket.getReal(event, getAddendColumn())
 								: 0;
 
-		double subtrahend = block.has(event, getSubtrahendColumn())
-									? block.getReal(event, getSubtrahendColumn())
+		double subtrahend = bucket.has(event, getSubtrahendColumn())
+									? bucket.getReal(event, getSubtrahendColumn())
 									: 0;
 
 		sum = sum + addend - subtrahend;
@@ -47,7 +57,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		return sum;
+		return hit ? sum : null;
 	}
 	
 	@Override

@@ -1,0 +1,38 @@
+{
+  "type": "FILTER_TEST",
+  "label": "SINGLE_SELECT_SPEZIAL_CHARACTER2 Test",
+  "expectedCsv": "tests/filter/SINGLE_SELECT_SPEZIAL_CHARACTER2/expected_SINGLE_SELECT_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/SINGLE_SELECT_SPEZIAL_CHARACTER2/content_SINGLE_SELECT_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "value",
+          "type": "STRING"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.value",
+      "type": "SINGLE_SELECT"
+    }
+  },
+  "filterValue": {
+    "type": "SELECT",
+    "value": "!"
+  }
+}

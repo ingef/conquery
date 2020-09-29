@@ -24,12 +24,12 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonParser;
-
-import jersey.repackaged.com.google.common.collect.Iterators;
+import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter
+@Getter @Setter @Slf4j
 @CPSType(base = CType.class, id = "STRING_DICTIONARY")
 public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
@@ -104,5 +104,20 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	@Override
 	public long estimateTypeSize() {
 		return dictionary.estimateMemoryConsumption();
+	}
+
+	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+		dictionaryId = newDict.getId();
+		dictionary = newDict;
+		if(newNumberType.estimateMemoryBitWidth() > numberType.estimateMemoryBitWidth()) {
+			log.warn(
+				"The width of a column is increased from {} to {} bits because of the shared dictionary {}",
+				numberType.estimateMemoryBitWidth(),
+				newNumberType.estimateMemoryBitWidth(),
+				newDict.getId()
+			);
+		}
+		numberType = newNumberType;
+		this.setPrimitiveType(newNumberType.getPrimitiveType());
 	}
 }

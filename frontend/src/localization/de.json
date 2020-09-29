@@ -1,0 +1,373 @@
+{
+  "locale": "de",
+  "headline": "Anfragen und Analyse",
+  "errorCodes": {
+    "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
+    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {adjective} Beispiel-Fehlermeldung"
+  },
+  "leftPane": {
+    "conceptTrees": "Konzeptbäume",
+    "previousQueries": "Anfragen",
+    "formConfigs": "Formulare"
+  },
+  "rightPane": {
+    "queryEditor": "Editor",
+    "timebasedQueryEditor": "Zeit-Editor",
+    "externalForms": "Formular-Editor"
+  },
+  "conceptTreeList": {
+    "loading": "Lade Konzeptbäume",
+    "loadingTree": "Lade Konzeptbaum: {tree}",
+    "error": "Konnte Konzeptbaum {tree} nicht laden.",
+    "noTrees": "Keine Konzeptbäume",
+    "noTreesExplanation": "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden.",
+    "openAll": "Alle aufklappen",
+    "closeAll": "Einzeln aufklappen",
+    "searchPlaceholder": "Konzepte durchsuchen ...",
+    "showMismatches": "Vollständig anzeigen",
+    "showMatchesOnly": "Nur Treffer anzeigen",
+    "showingMatchesOnly": "Zeige nur Treffer",
+    "showingMismatches": "Zeige vollständig"
+  },
+  "queryRunner": {
+    "errorDates": "Ungültig: Alle Datumsbereiche sind von Zeitberechnung ausgeschlossen",
+    "start": "Anfrage starten",
+    "stop": "Anfrage stoppen",
+    "stopSuccess": "Anfrage gestoppt.",
+    "stopError": "Anfrage stoppen fehlgeschlagen.",
+    "startSuccess": "Anfrage gestartet.",
+    "endSuccess": "Anfrage erfolgreich",
+    "startError": "Anfrage starten fehlgeschlagen.",
+    "resultError": "Anfrageergebnis konnte nicht geladen werden.",
+    "resultCount": "Ergebnisse",
+    "queryFailed": "Anfrage ist fehlgeschlagen.",
+    "queryCanceled": "Anfrage wurde abgebrochen."
+  },
+  "queryEditor": {
+    "couldNotExpandNode": "Konzept nicht gefunden",
+    "couldNotInsertConceptList": "Fehler beim Einfügen der Konzeptliste",
+    "edit": "Bearbeiten",
+    "exclude": "Nicht",
+    "date": "Datum",
+    "expand": "Expandieren",
+    "previousQuery": "Anfrage",
+    "loadingPreviousQuery": "Lade Anfragedetails"
+  },
+  "dropzone": {
+    "dragElementPlease": "Füge ein Element hinzu",
+    "dragQuery": "Füge eine Anfrage hinzu",
+    "explanation": "In diesem Bereich erstellst Du eine Anfrage",
+    "drop": "Ziehe",
+    "aConcept": "ein Konzept",
+    "aQuery": "eine Anfrage",
+    "aConceptList": "eine Konzeptliste",
+    "intoThisArea": "in diesen Bereich"
+  },
+  "datasetSelector": {
+    "pleaseChoose": "Datenbank auswählen",
+    "error": "Konnte Datenbanken nicht laden"
+  },
+  "queryNodeEditor": {
+    "conceptTree": "Konzeptbaum",
+    "queryNode": "Abfrageknoten",
+    "conceptNodes": "Konzeptknoten",
+    "conceptNodeTables": "Anfragetabellen",
+    "properties": "Eigenschaften",
+    "reset": "Zurücksetzen",
+    "resetSettings": "Änderungen zurücksetzen",
+    "excludeTimestamps": "Von Zeitberechnung ausschließen",
+    "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
+    "description": "Beschreibung",
+    "noDescriptionProvided": "Keine Beschreibung verfügbar.",
+    "selectAFilter": "Kein Filter ausgewählt.",
+    "dropConcept": "Füge ein weiteres Konzept hinzu",
+    "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
+    "tooManyValues": "{count} Werte ausgewählt",
+    "filters": "Filter",
+    "selects": "Zusatzwerte",
+    "nodeNotFound": "Konzept nicht gefunden",
+    "selectValidityDate": "Relevanter Zeitraum",
+    "dateColumn": "Datumsspalte"
+  },
+  "queryGroupModal": {
+    "explanation": "Zeitlich einschränken",
+    "dateRange": "Datumsbereich",
+    "headlineStart": "Konzepte:"
+  },
+  "deletePreviousQueryModal": {
+    "areYouSure": "Diese Anfrage wirklich löschen?"
+  },
+  "sharePreviousQueryModal": {
+    "headline": "Anfrage freigeben: ",
+    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "unshare": "Freigabe aufheben"
+  },
+  "common": {
+    "back": "Zurück",
+    "any": "Beliebig",
+    "save": "Speichern",
+    "edit": "Bearbeiten",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "done": "Fertig",
+    "and": "UND",
+    "or": "ODER",
+    "clear": "Zurücksetzen",
+    "timeUnitDays": "Tage",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "clearAll": "Alle entfernen",
+    "clearValue": "Wert entfernen",
+    "closeEsc": "Schließen (ESC)",
+    "create": "Erstellen",
+    "addTag": "Schlagwort hinzufügen",
+    "share": "Freigeben",
+    "shared": "Freigegeben",
+    "loading": "Lade ...",
+    "average": "Mittelwert",
+    "median": "Median",
+    "min": "Min",
+    "max": "Max",
+    "std": "Std.",
+    "logout": "Ausloggen"
+  },
+  "tooltip": {
+    "headline": "Info",
+    "placeholder": "Weitere Informationen zu Konzepten ...",
+    "entriesFound": {
+      "1": "Eintrag",
+      "_": "Einträge"
+    },
+    "date": {
+      "daterange": "Zeitraum",
+      "from": "Von",
+      "to": "Bis"
+    }
+  },
+  "reactSelect": {
+    "placeholder": "Auswählen ...",
+    "tagPlaceholder": "Schlagwort ...",
+    "searchPlaceholder": "Suchen ...",
+    "dndPlaceholder": "Auswählen oder Datei hochladen ...",
+    "backspaceToRemove": "Backspace zum Entfernen drücken",
+    "noResults": "Keine Werte gefunden",
+    "createTag": "Schlagwort erstellen: {label}",
+    "searchFor": "Suchen nach: {label}",
+    "clearAll": "Alle entfernen",
+    "clearValue": "Wert entfernen"
+  },
+  "inputRange": {
+    "range": "Bereich",
+    "exact": "Gleich",
+    "exactLabel": "exakt",
+    "minLabel": "min",
+    "maxLabel": "max"
+  },
+  "inputDateRange": {
+    "from": "Von",
+    "to": "Bis",
+    "placeholder": "Datum wählen",
+    "today": "Heute",
+    "dateFormat": "dd.MM.yyyy",
+    "tooltip": {
+      "possiblePattern": "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
+    }
+  },
+  "inputMultiSelect": {
+    "openFileDialog": "Datei auswählen",
+    "insertAll": "Alle einfügen",
+    "options": "Werte"
+  },
+  "previousQueries": {
+    "loading": "Lade Anfragen",
+    "error": "Konnte Anfragen nicht laden",
+    "results": "Ergebnisse",
+    "noQueriesFound": "Keine Anfragen gefunden"
+  },
+  "previousQuery": {
+    "notExecuted": "Noch nicht ausgeführt",
+    "downloadResults": "Ergebnisse herunterladen",
+    "loadError": "Konnte Anfrage nicht laden",
+    "renameError": "Konnte Anfrage nicht umbenennen",
+    "retagError": "Konnte Schlagwörter nicht speichern",
+    "shareError": "Konnte Anfrage nicht freigeben",
+    "deleteError": "Konnte Anfrage nicht löschen"
+  },
+  "previousQueriesFilter": {
+    "all": "Alle",
+    "own": "Eigene",
+    "shared": "Freigegeben",
+    "system": "SYSTEM"
+  },
+  "formConfigsFilter": {
+    "activeForm": "Aktives Formular"
+  },
+  "timebasedQueryEditor": {
+    "headline": "Anfragen in Relation",
+    "opBefore": "VOR",
+    "opBeforeOrSame": "VOR ODER GLEICH",
+    "opDays": "TAGE VOR",
+    "opSame": "GLEICH",
+    "opDaysOrNoEventBefore": "KEIN EREIGNIS IN TAGE VOR",
+    "timestampFirst": "ERSTER",
+    "timestampLast": "LETZTER",
+    "timestampRandom": "ZUFÄLLIG",
+    "timestamp": "Zeitpunkt",
+    "condition": "Bedingung",
+    "timestampResultsFrom": "Nutze als Ergebnis-Zeitstempel",
+    "addCondition": "Bedingung hinzufügen",
+    "minDaysLabel": "Beginn Tage",
+    "maxDaysLabel": "Ende Tage"
+  },
+  "externalForms": {
+    "forms": "Formulare",
+    "config": {
+      "headline": "Formular-Konfiguration",
+      "save": "Speichern",
+      "saveError": "Konnte Formular-Konfiguration nicht speichern"
+    },
+    "formValidation": {
+      "mustBePositiveNumber": "Muss positive Zahl sein",
+      "isRequired": "Erforderlich",
+      "invalidDateRange": "Enddatum liegt vor Startdatum"
+    },
+    "default": {
+      "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",
+      "conceptColumnDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu"
+    },
+    "copyModal": {
+      "headline": "Kopieren von Konzepten aus anderem Feld",
+      "selectLabel": "Kopieren aus Quelle",
+      "selectAll": "Alle auswählen",
+      "accept": "Kopieren"
+    },
+    "common": {
+      "relativeToIndex": "Relativ zum Indexdatum",
+      "timespan": "Zeitraum",
+      "dateMinLabel": "Von",
+      "dateMaxLabel": "Bis",
+      "timeInterval": "Zeitintervall",
+      "indexDate": {
+        "label": "Indexdatum",
+        "before": "DAVOR",
+        "neutral": "GLEICH",
+        "after": "DANACH"
+      },
+      "timeUnit": {
+        "label": "Zeiteinheit",
+        "days": "Tage",
+        "quarters": "Quartale",
+        "years": "Jahre",
+        "complete": "Gesamter Zeitraum"
+      },
+      "timestamp": {
+        "label": "Zeitstempel",
+        "first": "ERSTES",
+        "last": "LETZTES",
+        "random": "ZUFÄLLIG"
+      },
+      "edit": "Bearbeiten",
+      "concept": {
+        "expand": "Untergeordnete Attribute einbeziehen / wieder ausschließen.",
+        "copyFrom": "Kopieren von ...",
+        "copying": "Kopieren"
+      },
+      "clear": "Formular leeren"
+    }
+  },
+  "uploadQueryResultsModal": {
+    "headline": "Ergebnisliste hochladen",
+    "dropzone": "Lege eine CSV-Datei hier ab",
+    "upload": "Hochladen",
+    "uploadFailed": "Konnte Datei nicht hochladen",
+    "uploadFailedSub": "Bitte überprüfen Sie das Format und die Netzwerkverbindung",
+    "uploadSucceeded": "Ergebnisliste hochladen erfolgreich",
+    "formatInfo": {
+      "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
+    }
+  },
+  "csvColumnPicker": {
+    "loading": "Lese Daten ...",
+    "delimiter": "Trennzeichen",
+    "semicolon": "Semikolon",
+    "colon": "Doppelpunkt",
+    "comma": "Komma",
+    "id": "ID",
+    "dateSet": "DATUMSBEREICH",
+    "startDate": "START_DATUM",
+    "endDate": "END_DATUM",
+    "ignore": "IGNORIEREN"
+  },
+  "uploadConceptListModal": {
+    "headline": "Konzepte aus Liste einfügen",
+    "label": "Name der Liste",
+    "selectConceptRootNode": "Konzeptbaum-Wurzel auswählen",
+    "insertNode": "Jetzt einfügen",
+    "result": "Ergebnis",
+    "resolvedCodes": {
+      "1": "1 Wert aufgelöst.",
+      "_": "{context} Werte aufgelöst."
+    },
+    "unknownCodes": {
+      "1": "1 Wert nicht aufgelöst",
+      "_": "{context} Werte nicht aufgelöst"
+    },
+    "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
+    "nothingResolved": "Kein Konzept konnte aufgelöst werden."
+  },
+  "uploadFilterListModal": {
+    "headline": "Filter-Werte aus Liste einfügen"
+  },
+  "conceptListDetailsModal": {
+    "conceptTreeRoot": "Konzeptbaum",
+    "conceptCodes": "Konzeptcodes"
+  },
+  "uploadQueryResults": {
+    "uploadResults": "Lade Anfrageergebnis hoch"
+  },
+  "authorization": {
+    "unauthorized": "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"
+  },
+  "search": {
+    "placeholder": "Suchen ...",
+    "resultLabel": "{totalResults} Ergebnisse ({duration} s)"
+  },
+  "preview": {
+    "preview": "Vorschau",
+    "headline": "Ergebnisvorschau",
+    "previewHeadline": "Ergebnis-CSV",
+    "previewSubline": "Auszug der ersten {count} Zeilen",
+    "statisticsHeadline": "Spaltenstatistik",
+    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
+    "total": "Zeilen",
+    "min": "Min Datum",
+    "max": "Max Datum",
+    "span": "Datumsbereich"
+  },
+  "login": {
+    "headline": "Anfragen und Analyse",
+    "username": "Nutzername",
+    "password": "Passwort",
+    "error": "Einloggen fehlgeschlagen. Bitte die Eingabe überprüfen.",
+    "submit": "Starten"
+  },
+  "formConfigs": {
+    "loading": "Lade Formular-Konfigurationen",
+    "error": "Konnte Formular-Konfigurationen nicht laden",
+    "noneFound": "Keine Formular-Konfigurationen gefunden"
+  },
+  "formConfig": {
+    "loadError": "Konnte Konfiguration nicht laden",
+    "renameError": "Konnte Konfiguration nicht umbenennen",
+    "retagError": "Konnte Schlagwörter nicht speichern",
+    "shareError": "Konnte Konfiguration nicht freigeben",
+    "deleteError": "Konnte Konfiguration nicht löschen"
+  },
+  "deleteFormConfigModal": {
+    "areYouSure": "Diese Konfiguration wirklich löschen?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Zurück zu Standardansicht",
+    "closeAll": "Alle Konzepte schließen"
+  }
+}

@@ -1,0 +1,285 @@
+{
+  "version": 1,
+  "concepts": {
+    "movie_appearances": {
+      "label": "Movie Appearances",
+      "active": true,
+      "codeListResolvable": true,
+      "children": [
+        "action_movies",
+        "fantasy_movies",
+        "comedies",
+        "horror_movies",
+        "family_movies",
+        "independent_movies"
+      ],
+      "detailsAvailable": true,
+      "selects": [
+        {
+          "id": "12345678",
+          "label": "Filme gespielt Gesamt",
+          "description": "Beispieldescription",
+          "default": true
+        },
+        {
+          "id": "123456789",
+          "label": "Summe Gage",
+          "description": "Die Summe berechnet sich aus X und Y und Z und example."
+        },
+        {
+          "id": "123456789a",
+          "label": "Hatte Spaß im Dreh",
+          "description": "Der Spaß ist manchmal gegeben und manchmal nicht."
+        }
+      ],
+      "tables": [
+        {
+          "connectorId": "feature_films",
+          "id": "feature_films",
+          "label": "Feature Films",
+          "dateColumn": {
+            "id": "385623",
+            "options": [
+              { "label": "Main date", "value": "main_date" },
+              { "label": "Another date", "value": "another_date" }
+            ]
+          },
+          "selects": [
+            {
+              "id": "12345678",
+              "label": "Anzahl unterschiedliche Studios",
+              "description": "Beispieldescription",
+              "default": true
+            },
+            {
+              "id": "123456789",
+              "label": "Summe Budget",
+              "description": "Die Summe berechnet sich aus X und Y und Z und example."
+            }
+          ],
+          "filters": [
+            {
+              "id": "studio",
+              "label": "Production Studio",
+              "type": "MULTI_SELECT",
+              "description": "The studio producing the movie",
+              "options": [
+                {
+                  "value": "universal",
+                  "label": "Universal Studios"
+                },
+                {
+                  "value": "paramount",
+                  "label": "Paramount Pictures"
+                },
+                {
+                  "value": "warner_bros",
+                  "label": "Warner Bros."
+                },
+                {
+                  "value": "20th_century_fox",
+                  "label": "20th Century Fox"
+                },
+                {
+                  "value": "sony",
+                  "label": "Sony/Columbia Pictures"
+                },
+                {
+                  "value": "disney",
+                  "label": "Walt Disney Studios"
+                }
+              ]
+            },
+            {
+              "id": "production_country",
+              "label": "Production Country",
+              "type": "BIG_MULTI_SELECT",
+              "allowDropFile": true,
+              "options": [
+                {
+                  "value": "GER",
+                  "label": "Germany"
+                },
+                {
+                  "value": "USA",
+                  "label": "United States (USA)"
+                }
+              ]
+            },
+            {
+              "id": "budget",
+              "label": "Budget",
+              "type": "MONEY_RANGE",
+              "unit": "EUR",
+              "description": "The movie's total budget",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "connectorId": "tv_series",
+          "id": "tv_series",
+          "label": "TV Series",
+          "dateColumn": {
+            "id": "385623",
+            "options": [
+              { "label": "Main date", "value": "main_date" },
+              { "label": "Another date", "value": "another_date" }
+            ]
+          },
+          "filters": [
+            {
+              "id": "network",
+              "label": "Network",
+              "type": "MULTI_SELECT",
+              "description": "The original broadcasting network",
+              "options": [
+                {
+                  "value": "amc",
+                  "label": "AMC"
+                },
+                {
+                  "value": "fox",
+                  "label": "FOX"
+                },
+                {
+                  "value": "cbs",
+                  "label": "CBS"
+                },
+                {
+                  "value": "hbo",
+                  "label": "HBO"
+                },
+                {
+                  "value": "netflix",
+                  "label": "Netflix"
+                },
+                {
+                  "value": "amazon",
+                  "label": "Amazon Video"
+                },
+                {
+                  "value": "amazon2",
+                  "label": "Amazon Video 2"
+                },
+                {
+                  "value": "amazon3",
+                  "label": "Amazon Video 3"
+                },
+                {
+                  "value": "amazon4",
+                  "label": "Amazon Video 4"
+                },
+                {
+                  "value": "amazon5",
+                  "label": "Amazon Video 5"
+                },
+                {
+                  "value": "amazon6",
+                  "label": "Amazon Video 6"
+                },
+                {
+                  "value": "amazon7",
+                  "label": "Amazon Video 7"
+                },
+                {
+                  "value": "amazon8",
+                  "label": "Amazon Video 8"
+                }
+              ]
+            },
+            {
+              "id": "picture_format",
+              "label": "Picture Format",
+              "type": "SELECT",
+              "description": "The original picture format",
+              "defaultValue": "hdtv",
+              "options": [
+                {
+                  "value": "sdtv",
+                  "label": "SDTV"
+                },
+                {
+                  "value": "hdtv",
+                  "label": "HDTV"
+                },
+                {
+                  "value": "4k",
+                  "label": "4K"
+                }
+              ]
+            },
+            {
+              "id": "production_country",
+              "label": "Production Country",
+              "type": "BIG_MULTI_SELECT"
+            },
+            {
+              "id": "series_count",
+              "label": "Number of series",
+              "type": "INTEGER_RANGE",
+              "distinct": true,
+              "unit": "#",
+              "description": "The total number of series",
+              "pattern": "^(?!-)\\d*$",
+              "min": 1
+            }
+          ]
+        }
+      ]
+    },
+    "awards": {
+      "label": "Awards",
+      "active": true,
+      "codeListResolvable": true,
+      "children": ["academy_award", "golden_globe_award"],
+      "detailsAvailable": true,
+      "tables": [
+        {
+          "id": "awards",
+          "connectorId": "awards",
+          "label": "Awards",
+          "dateColumn": {
+            "id": "385623",
+            "options": [
+              { "label": "Main date", "value": "main_date" },
+              { "label": "Another date", "value": "another_date" }
+            ]
+          },
+          "filters": [
+            {
+              "id": "award_type",
+              "label": "Type of award",
+              "type": "MULTI_SELECT",
+              "options": [
+                {
+                  "value": "nominated",
+                  "label": "Nominated"
+                },
+                {
+                  "value": "won",
+                  "label": "Won"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "place_of_birth": {
+      "label": "Place of birth",
+      "active": true,
+      "children": [
+        "europe",
+        "north_america",
+        "south_america",
+        "africa",
+        "asia",
+        "oceania",
+        "australia"
+      ],
+      "detailsAvailable": true,
+      "tables": [{}]
+    }
+  }
+}

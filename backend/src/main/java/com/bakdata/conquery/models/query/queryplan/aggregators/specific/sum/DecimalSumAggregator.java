@@ -3,14 +3,17 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator implementing a sum over {@code column}, for decimal columns.
+ */
 public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 
-
+	private boolean hit = false;
 	private BigDecimal sum = BigDecimal.ZERO;
 
 	public DecimalSumAggregator(Column column) {
@@ -23,19 +26,21 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
-		BigDecimal addend = block.getDecimal(event, getColumn());
+		hit = true;
+
+		BigDecimal addend = bucket.getDecimal(event, getColumn());
 
 		sum = sum.add(addend);
 	}
 
 	@Override
 	public BigDecimal getAggregationResult() {
-		return sum;
+		return hit ? sum : null;
 	}
 	
 	@Override

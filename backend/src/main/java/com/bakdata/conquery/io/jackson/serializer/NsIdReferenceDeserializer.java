@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -59,7 +59,7 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 					id = idParser.parse(text);
 				}
 				
-				Optional<T> result = NamespaceCollection.get(ctxt).getOptional(id);
+				Optional<T> result = IdResolveContext.get(ctxt).getOptional(id);
 
 				if (!result.isPresent()) {
 					throw new IdReferenceResolvingException(parser, "Could not find entry "+id+" of type "+type.getName(), text, type);
@@ -72,8 +72,7 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 				return result.get();
 			}
 			catch(Exception e) {
-				log.error("Error while resolving entry "+text+" of type "+type, e);
-				throw e;
+				throw new RuntimeException("Error while resolving entry "+text+" of type "+type, e);
 			}
 		}
 		else {

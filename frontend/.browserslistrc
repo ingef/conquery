@@ -1,6 +1,0 @@
-# browserslist defaults and explicitly set IE 11 (should be included in > 0.5%)
-> 0.5%
-last 2 versions
-Firefox ESR
-not dead
-IE 11

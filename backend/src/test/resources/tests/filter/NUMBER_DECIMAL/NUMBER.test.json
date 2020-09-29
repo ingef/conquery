@@ -1,6 +1,6 @@
 {
   "type": "FILTER_TEST",
-  "label": "NUMBER_REAL Test",
+  "label": "NUMBER_DECIMAL Test",
   "expectedCsv": "tests/filter/NUMBER_DECIMAL/expected_NUMBER_Filter.csv",
   "content": {
     "tables": {

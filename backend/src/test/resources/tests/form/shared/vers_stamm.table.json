@@ -1,0 +1,30 @@
+{
+    "csv": "tests/form/shared/vers_stamm.csv",
+    "name": "vers_stamm",
+    "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+    },
+    "columns": [
+        {
+            "name" : "date",
+            "type" : "DATE_RANGE"
+        },
+        {
+            "name" : "date_start",
+            "type" : "DATE"
+        },
+        {
+            "name" : "date_end",
+            "type" : "DATE"
+        },
+        {
+            "name" : "geburtsdatum",
+            "type" : "DATE"
+        },
+        {
+            "name" : "geschlecht",
+            "type" : "STRING"
+        }
+    ]
+}

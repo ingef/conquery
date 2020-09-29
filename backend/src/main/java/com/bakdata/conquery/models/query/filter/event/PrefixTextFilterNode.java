@@ -1,19 +1,30 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Entity is included when the number of values for a specified column are within a given range.
+ * Single events are filtered, and included if they start with a given prefix. Entity is only included if it has any event with prefix.
  */
-public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
+public class PrefixTextFilterNode extends EventFilterNode<String> {
 
-	private boolean hit;
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
 
 	public PrefixTextFilterNode(Column column, String filterValue) {
-		super(column, filterValue);
+		super(filterValue);
+		this.column = column;
 	}
 
 	@Override
@@ -22,26 +33,22 @@ public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public boolean checkEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
 
-		int stringToken = block.getString(event, getColumn());
+		int stringToken = bucket.getString(event, getColumn());
 
-		String value = (String) getColumn().getTypeFor(block).createScriptValue(stringToken);
+		String value = (String) getColumn().getTypeFor(bucket).createScriptValue(stringToken);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
 		return value.startsWith(filterValue);
 	}
 
 	@Override
-	public void acceptEvent(Block block, int event) {
-		this.hit = true;
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
 	}
 
-	@Override
-	public boolean isContained() {
-		return hit;
-	}
 }

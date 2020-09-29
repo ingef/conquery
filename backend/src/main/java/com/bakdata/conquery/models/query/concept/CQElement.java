@@ -1,30 +1,28 @@
 package com.bakdata.conquery.models.query.concept;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface CQElement {
+public interface CQElement extends Visitable {
 
 	default CQElement resolve(QueryResolveContext context) {
 		return this;
 	}
 
-	QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan);
+	QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
 	default void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
 	
@@ -35,19 +33,15 @@ public interface CQElement {
 		return set;
 	}
 
-	default void collectNamespacedIds(Set<NamespacedId> namespacedIds) {}
-
-	default Set<NamespacedId> collectNamespacedIds() {
-		HashSet<NamespacedId> set = new HashSet<>();
-		this.collectNamespacedIds(set);
-		return set;
+	default ResultInfoCollector collectResultInfos() {
+		ResultInfoCollector collector = new ResultInfoCollector();
+		collectResultInfos(collector);
+		return collector;
 	}
-
-	default void collectSelects(Deque<SelectDescriptor> select) {}
 	
-	default List<SelectDescriptor> collectSelects() {
-		ArrayDeque<SelectDescriptor> deque = new ArrayDeque<>();
-		this.collectSelects(deque);
-		return new ArrayList<>(deque);
+	void collectResultInfos(ResultInfoCollector collector);
+
+	default void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
 	}
 }

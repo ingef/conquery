@@ -2,15 +2,15 @@ package com.bakdata.conquery.models.datasets;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,12 +25,22 @@ public class Column extends Labeled<ColumnId> {
 
 	@JsonBackReference
 	@NotNull
+	@ToString.Exclude
 	private Table table;
 	@NotNull
-	@ToString.Include
 	private MajorTypeId type;
 	@JsonIgnore
 	private int position = UNKNOWN_POSITION;
+	/**
+	 * if set this column should use the given dictionary
+	 * if it is of type string, instead of its own dictionary
+	 */
+	private String sharedDictionary;
+	/**
+	 * if this is set this column counts as the secondary id of the given name for this
+	 * table
+	 */
+	private SecondaryId secondaryId;
 
 	@Override
 	public ColumnId createId() {
@@ -44,8 +54,8 @@ public class Column extends Labeled<ColumnId> {
 		return this.getType().equals(column.getType().getTypeId());
 	}
 
-	public CType getTypeFor(Block block) {
-		return getTypeFor(block.getImp());
+	public CType getTypeFor(Bucket bucket) {
+		return getTypeFor(bucket.getImp());
 	}
 
 	public CType getTypeFor(Import imp) {
@@ -75,5 +85,10 @@ public class Column extends Labeled<ColumnId> {
 			}
 		}
 		return position;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Column[%s](type = %s)",getId(), getType());
 	}
 }

@@ -3,14 +3,18 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
 
+/**
+ * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for decimal columns.
+ */
 public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
+
+	private boolean hit = false;
 
 	@Getter
 	private Column addendColumn;
@@ -34,21 +38,32 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		BigDecimal addend = block.has(event, getAddendColumn()) ? block.getDecimal(event, getAddendColumn()) : BigDecimal.ZERO;
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
+			return;
+		}
 
-		BigDecimal subtrahend = block.has(event, getSubtrahendColumn()) ? block.getDecimal(event, getSubtrahendColumn()) : BigDecimal.ZERO;
+		hit = true;
+
+		BigDecimal addend = bucket.has(event, getAddendColumn()) ? bucket.getDecimal(event, getAddendColumn()) : BigDecimal.ZERO;
+
+		BigDecimal subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getDecimal(event, getSubtrahendColumn()) : BigDecimal.ZERO;
 
 		sum = sum.add(addend.subtract(subtrahend));
 	}
 
 	@Override
 	public BigDecimal getAggregationResult() {
-		return sum;
+		return hit ? sum : null;
 	}
 	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return false;
 	}
 }

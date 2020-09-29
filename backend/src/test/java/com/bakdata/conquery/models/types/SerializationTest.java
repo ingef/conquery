@@ -14,9 +14,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.specific.BooleanTypeBoolean;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
@@ -31,10 +31,11 @@ import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
 import com.bakdata.conquery.models.types.specific.RealTypeDouble;
 import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
+import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+import com.bakdata.conquery.models.types.specific.StringTypeNumber;
 import com.bakdata.conquery.models.types.specific.StringTypePrefix;
 import com.bakdata.conquery.models.types.specific.StringTypeSingleton;
 import com.bakdata.conquery.models.types.specific.StringTypeSuffix;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
@@ -44,7 +45,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class SerializationTest {
 
-	@SuppressWarnings("rawtypes")
 	public static List<CType<?,?>> createCTypes() {
 		return Arrays.asList(
 			new DecimalTypeScaled(13, new IntegerTypeLong(-1,1)),
@@ -59,6 +59,7 @@ public class SerializationTest {
 			new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)),Encoding.Base16LowerCase),
 			new StringTypePrefix(new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)),Encoding.Base16LowerCase), "a"),
 			new StringTypeSuffix(new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)),Encoding.Base16LowerCase), "a"),
+			new StringTypeNumber(new IntegerRange(0,7), new VarIntTypeInt(0, 7)),
 			new StringTypeSingleton("a"),
 			new IntegerTypeLong(-1,+1),
 			new DateRangeTypeDateRange(),

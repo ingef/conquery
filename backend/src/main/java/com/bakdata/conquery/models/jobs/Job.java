@@ -4,7 +4,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -27,12 +26,11 @@ public abstract class Job {
 		return cancelledState.get();
 	}
 
-
 	public abstract void execute() throws Exception;
 	public abstract String getLabel();
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"(progress="+progressReporter.getEstimate()+")";
+		return this.getClass().getSimpleName()+"(label='"+getLabel()+"' progress="+progressReporter.getEstimate()+")";
 	}
 }

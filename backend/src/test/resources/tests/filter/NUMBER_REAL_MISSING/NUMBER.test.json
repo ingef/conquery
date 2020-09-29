@@ -1,0 +1,41 @@
+{
+  "type": "FILTER_TEST",
+  "label": "NUMBER_MISSING FILTER Test",
+  "expectedCsv": "tests/filter/NUMBER_REAL_MISSING/expected_NUMBER_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/NUMBER_REAL_MISSING/content_NUMBER_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "nr",
+          "type": "REAL"
+        },
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.nr",
+      "type": "NUMBER"
+    }
+  },
+  "filterValue": {
+    "type": "REAL_RANGE",
+    "value": {
+      "min": 0,
+      "max": 200
+    }
+  }
+}

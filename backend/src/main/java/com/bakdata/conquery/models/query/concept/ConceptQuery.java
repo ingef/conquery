@@ -1,39 +1,39 @@
 package com.bakdata.conquery.models.query.concept;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
-public class ConceptQuery implements IQuery {
+@CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
+@AllArgsConstructor(onConstructor = @__({@JsonCreator}))
+public class ConceptQuery extends IQuery {
 
 	@Valid
 	@NotNull
 	protected CQElement root;
 
 	@Override
-	public QueryPlan createQueryPlan(QueryPlanContext context) {
-		ConceptQueryPlan qp = ConceptQueryPlan.create();
+	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
+		ConceptQueryPlan qp = new ConceptQueryPlan(context);
 		qp.setChild(root.createQueryPlan(context, qp));
 		return qp;
 	}
@@ -49,31 +49,14 @@ public class ConceptQuery implements IQuery {
 		return this;
 	}
 
-	public List<SelectDescriptor> collectSelects() {
-		return root.collectSelects();
+	@Override
+	public void collectResultInfos(ResultInfoCollector collector) {
+		collector.add(ConqueryConstants.DATES_INFO);
+		root.collectResultInfos(collector);
 	}
 
 	@Override
-	public List<ResultInfo> collectResultInfos(PrintSettings config) {
-		List<ResultInfo> header = new ArrayList<>();
-		header.add(ConqueryConstants.DATES_INFO);
-		return collectResultInfos(this.collectSelects(), header, config);
-	}
-	
-	
-	public static List<ResultInfo> collectResultInfos(List<SelectDescriptor> selects, List<ResultInfo> header, PrintSettings config) {
-		HashMap<String, Integer> ocurrences = new HashMap<>();
-		/*
-		 * Column name is constructed from the most specific concept id the CQConcept
-		 * has and the selector.
-		 */
-		for (SelectDescriptor selectDescriptor : selects) {
-			Select select = selectDescriptor.getSelect();
-			String columnName = config.getNameExtractor().apply(selectDescriptor);
-			Integer occurence = ocurrences.computeIfAbsent(columnName, str -> Integer.valueOf(0));
-
-			header.add(new SelectResultInfo(columnName, select.getResultType(), occurence, occurence.intValue(), select));
-		}
-		return header;
+	public void visit(Consumer<Visitable> visitor) {
+		root.visit(visitor);
 	}
 }

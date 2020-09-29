@@ -27,11 +27,23 @@ Commands analogoues to `start_production.sh` script.
 
 ### Using node / express
 
+
 ```
 yarn
 yarn run build
 PORT=8000 yarn run start-production
 ```
+
+## Available Environment Variables
+
+````js
+NODE_ENV: "development" | "production"; // Create a production build and disable debuggers when set to production   
+REACT_APP_API_URL?: string; // Set the backend URL
+REACT_APP_DISABLE_LOGIN?: boolean; // Disable forced login page
+REACT_APP_LANG?: "de" | "en"; // Select language for Frontend
+PORT?: string; // Port on which to start the frontend
+````
+
 
 ## Install & start (development)
 
@@ -52,12 +64,27 @@ $ yarn
 $ yarn start
 ```
 
+**Mock API**
+
+```bash
+$ yarn serve
+```
+
+**Login**
+
+When queried for login:
+
+- **Username**: `test`
+- **Password**: `test`
+
+This is documented in [the mock-API](https://github.com/bakdata/conquery/blob/develop/frontend/mock-api/index.js).
+
 ## Glossary
 
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.
 
-- **Category Tree** – consists of concept nodes
-- **Category Tree Node / Concept** – a concept node
+- **Concept Tree** – consists of concepts
+- **Concept Tree Node / Concept** – a concept node
 - **Query**
   - consisting of multiple `and`-groups
   - which again consist of multiple `or`-ed concepts
@@ -71,9 +98,12 @@ Depending on the use-case, we're still calling the same concepts differently som
 - **Tooltip** – small area (below), that contains additional information on hovering over certain elements
 - **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the tooltip
 
-## Various technical explanations
+## Various Technical Explanations
+
+Migration to TypeScript is in progress.
 
 ### Drag and Drop
 
 - We're using MultiBackend to support Drag and Drop for touch and html5.
 - To render a Drag and Drop preview on mobile, we'll have to calculate `width` and `height` of the drag source.
+

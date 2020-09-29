@@ -4,79 +4,164 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
-import com.bakdata.conquery.models.query.queryplan.EventIterating;
-import com.bakdata.conquery.models.query.queryplan.QPChainNode;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 
-public class FiltersNode extends QPChainNode implements EventIterating {
+@ToString(of = {"filters", "aggregators"})
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class FiltersNode extends QPNode {
 
-	private final List<FilterNode<?>> filters;
+	private boolean hit = false;
 
-	public FiltersNode(List<FilterNode<?>> filters, QPNode child) {
-		super(child);
-		this.filters = filters;
+	@Getter @Setter(AccessLevel.PRIVATE)
+	private List<? extends FilterNode<?>> filters;
+
+	@Setter(AccessLevel.PRIVATE)
+	private List<Aggregator<?>> aggregators;
+
+	@Setter(AccessLevel.PRIVATE)
+	private List<EventFilterNode<?>> eventFilters;
+
+
+	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		if(filters.isEmpty() && aggregators.isEmpty()) {
+			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
+		}
+		
+		final ArrayList<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
+
+		// Select only Event Filtering nodes as they are used differently.
+		for (FilterNode<?> filter : filters) {
+			if (!(filter instanceof EventFilterNode)) {
+				continue;
+			}
+
+			eventFilters.add((EventFilterNode<?>) filter);
+		}
+
+		final FiltersNode filtersNode = new FiltersNode();
+		filtersNode.setAggregators(aggregators);
+		filtersNode.setFilters(filters);
+		filtersNode.setEventFilters(eventFilters);
+
+		return filtersNode;
 	}
 
+
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		super.nextTable(ctx, currentTable);
-		for(FilterNode<?> f:filters) {
-			f.nextTable(ctx, currentTable);
-		}
+		filters.forEach(f -> f.nextTable(ctx, currentTable));
+		aggregators.forEach(a -> a.nextTable(ctx, currentTable));
 	}
 	
 	@Override
-	public void nextBlock(Block block) {
-		super.nextBlock(block);
-		for(FilterNode<?> f:filters) {
-			f.nextBlock(block);
-		}
+	public void nextBlock(Bucket bucket) {
+		super.nextBlock(bucket);
+		filters.forEach(f -> f.nextBlock(bucket));
+		aggregators.forEach(a -> a.nextBlock(bucket));
 	}
 	
 	@Override
-	public final void nextEvent(Block block, int event) {
-		for(FilterNode<?> f : filters) {
-			if (!f.checkEvent(block, event)) {
+	public final void acceptEvent(Bucket bucket, int event) {
+		for(EventFilterNode<?> f : eventFilters) {
+			if (!f.checkEvent(bucket, event)) {
 				return;
 			}
 		}
 
-		for(FilterNode<?> f : filters) {
-			f.acceptEvent(block, event);
-		}
+		filters.forEach(f -> f.acceptEvent(bucket, event));
+		aggregators.forEach(a -> a.acceptEvent(bucket, event));
 
-		getChild().nextEvent(block, event);
+		hit = true;
 	}
 
+	@Override
 	public boolean isContained() {
 		for(FilterNode<?> f : filters) {
 			if (!f.isContained()) {
 				return false;
 			}
 		}
-		return getChild().isContained();
+
+		return hit;
 	}
 	
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
-		List<FilterNode<?>> copy = new ArrayList<>(filters);
-		copy.replaceAll(fn->fn.clone(ctx));
+		final FiltersNode clone = new FiltersNode();
 
-		return new FiltersNode(copy, getChild().clone(ctx));
+		List<FilterNode<?>> filters = new ArrayList<>(this.filters);
+		filters.replaceAll(ctx::clone);
+
+		clone.setFilters(filters);
+
+		List<EventFilterNode<?>> eventFilters = new ArrayList<>(this.eventFilters);
+		eventFilters.replaceAll(ctx::clone);
+		clone.setEventFilters(eventFilters);
+
+		List<Aggregator<?>> aggregators = new ArrayList<>(this.aggregators);
+		aggregators.replaceAll(ctx::clone);
+
+		clone.setAggregators(aggregators);
+
+		return clone;
 	}
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		for(FilterNode<?> f:filters) {
-			f.collectRequiredTables(requiredTables);
-		}
+
+		filters.forEach(f -> f.collectRequiredTables(requiredTables));
+		aggregators.forEach(a -> a.collectRequiredTables(requiredTables));
 	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		for (FilterNode<?> filter : filters) {
+			if(filter.isOfInterest(bucket)){
+				return true;
+			}
+		}
+
+		for (Aggregator<?> aggregator : aggregators) {
+			if (aggregator.isOfInterest(bucket)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		for (FilterNode<?> filter : filters) {
+			if(filter.isOfInterest(entity)){
+				return true;
+			}
+		}
+
+		for (Aggregator<?> aggregator : aggregators) {
+			if (aggregator.isOfInterest(entity)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
 }

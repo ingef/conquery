@@ -1,21 +1,23 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import io.dropwizard.lifecycle.Managed;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JobManager implements Managed {
+public class JobManager implements Closeable{
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
-	
-	
-	public JobManager(String labelSuffix) {
-		slowExecutor = new JobExecutor("slow "+labelSuffix);
-		fastExecutor = new JobExecutor("fast "+labelSuffix);
+
+	public JobManager(String name) {
+		slowExecutor = new JobExecutor("Job Manager slow " + name);
+		fastExecutor = new JobExecutor("Job Manager fast " + name);
+
+		slowExecutor.start();
+		fastExecutor.start();
 	}
 
 	public void addSlowJob(Job job) {
@@ -30,32 +32,27 @@ public class JobManager implements Managed {
 	public List<Job> getSlowJobs() {
 		return slowExecutor.getJobs();
 	}
-	
-	@Override
-	public void start() throws Exception {
-		log.debug("Started Job Manager");
-		slowExecutor.start();
-		fastExecutor.start();
+
+	public JobManagerStatus reportStatus() {
+		return new JobManagerStatus(
+				getSlowJobs()
+						.stream()
+						.map(job -> new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
+						.collect(Collectors.toList())
+		);
 	}
 
-	@Override
-	public void stop() throws Exception {
-		fastExecutor.close();
-		slowExecutor.close();
-	}
-	
-	public List<JobStatus> reportStatus() {
-		return getSlowJobs()
-			.stream()
-			.map(job->new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
-			.collect(Collectors.toList());
-	}
-	
 	public boolean isSlowWorkerBusy() {
 		return slowExecutor.isBusy();
 	}
 
 	public boolean cancelJob(UUID jobId) {
 		return fastExecutor.cancelJob(jobId) || slowExecutor.cancelJob(jobId);
+	}
+
+	@Override
+	public void close() {
+		fastExecutor.close();
+		slowExecutor.close();
 	}
 }

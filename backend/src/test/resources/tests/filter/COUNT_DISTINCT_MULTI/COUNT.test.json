@@ -1,0 +1,54 @@
+{
+  "type": "FILTER_TEST",
+  "label": "COUNT multi distinct Test",
+  "expectedCsv": "tests/filter/COUNT_DISTINCT_MULTI/expected_COUNT_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/COUNT_DISTINCT_MULTI/content_COUNT_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "nr",
+          "type": "INTEGER"
+        },
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        },
+        {
+          "name": "a",
+          "type": "STRING"
+        },
+        {
+          "name": "b",
+          "type": "STRING"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.nr",
+      "distinct": "true",
+      "distinctByColumn": [
+      		"table.a",
+      		"table.b"
+      ],
+      "type": "COUNT"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 5,
+      "max": 6
+    }
+  }
+}

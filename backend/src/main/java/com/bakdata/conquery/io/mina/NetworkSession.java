@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 
@@ -17,9 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor @Slf4j
 public class NetworkSession implements MessageSender<NetworkMessage<?>> {
+	@Getter
 	private final IoSession session;
 	private final LinkedBlockingQueue<NetworkMessage<?>> queuedMessages = new LinkedBlockingQueue<>(20);
 
+	@Override
 	public WriteFuture send(final NetworkMessage<?> message) {
 		try {
 			while(!queuedMessages.offer(message, 2, TimeUnit.MINUTES)) {
@@ -41,12 +44,14 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 			.addListener(f->queuedMessages.remove(message));
 	}
 	
+	@Override
 	public void trySend(final NetworkMessage<?> message) {
 		if(isConnected()) {
 			session.write(message);
 		}
 	}
 	
+	@Override
 	public SocketAddress getRemoteAddress() {
 		return session.getRemoteAddress();
 	}
@@ -55,12 +60,13 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 		return session.getLocalAddress();
 	}
 
+	@Override
 	public void awaitClose() {
 		session.closeOnFlush().awaitUninterruptibly();
 	}
 
 	@Override
 	public boolean isConnected() {
-		return session != null;
+		return session != null && session.isConnected();
 	}
 }

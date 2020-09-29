@@ -4,15 +4,17 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
+@ToString
+@Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE> {
 	private long lines = 0;
 	private long nullLines = 0;
@@ -26,7 +28,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 				return parseValue(v);
 			}
 			catch(Exception e) {
-				throw new ParsingException("Failed to parse '"+v+"' as "+this.getClass().getSimpleName(), e);
+				throw new ParsingException("Failed to parse '"+v+"' with "+this.getClass().getSimpleName(), e);
 			}
 		}
 	}
@@ -45,6 +47,8 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 	
 	public MAJOR_JAVA_TYPE addLine(MAJOR_JAVA_TYPE v) {
 		lines++;
+		log.trace("Registering `{}` in line {}",v, lines);
+
 		if(v == null) {
 			nullLines++;
 		}
@@ -52,11 +56,6 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 			registerValue(v);
 		}
 		return v;
-	}
-	
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName();
 	}
 	
 	public void setLineCounts(CType<?, ?> type) {

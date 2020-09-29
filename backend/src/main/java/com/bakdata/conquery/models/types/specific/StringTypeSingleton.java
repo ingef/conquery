@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
-import jersey.repackaged.com.google.common.collect.Iterators;
+import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,9 +48,7 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 		if(value != null && value.equals(singleValue)) {
 			return 0;
 		}
-		else {
-			return -1;
-		}
+		return -1;
 	}
 	
 	@Override
@@ -58,13 +56,21 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 		if(singleValue == null) {
 			return Collections.emptyIterator();
 		}
-		else {
-			return Iterators.singletonIterator(singleValue);
-		}
+		return Iterators.singletonIterator(singleValue);
 	}
 	
 	@Override
 	public long estimateMemoryBitWidth() {
 		return Byte.SIZE;
+	}
+	
+	@Override
+	public Dictionary getUnderlyingDictionary() {
+		return null;
+	}
+	
+	@Override
+	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+		throw new UnsupportedOperationException();
 	}
 }

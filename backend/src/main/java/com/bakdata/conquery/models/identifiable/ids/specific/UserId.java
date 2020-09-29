@@ -2,12 +2,10 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -30,7 +28,7 @@ public class UserId extends PermissionOwnerId<User> {
 		components.add(email);
 	}
 
-	enum Parser implements IId.Parser<UserId> {
+	public enum Parser implements IId.Parser<UserId> {
 		INSTANCE;
 		
 		@Override
@@ -40,7 +38,7 @@ public class UserId extends PermissionOwnerId<User> {
 	}
 
 	@Override
-	public PermissionOwner<?> getOwner(MasterMetaStorage storage) {
+	public User getPermissionOwner(MetaStorage storage) {
 		return storage.getUser(this);
 	}
 }

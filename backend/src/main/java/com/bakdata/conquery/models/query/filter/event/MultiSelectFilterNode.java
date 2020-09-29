@@ -1,27 +1,39 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Entity is included when the number of values for a specified column are within a given range.
+ * Event is included when the value in column is one of many selected.
  */
-public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
+public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
-	private int[] selectedValues;
-	private boolean hit;
+	private final int[] selectedValues;
+
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
 
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
-		super(column, filterValue);
+		super(filterValue);
+		this.column = column;
 		this.selectedValues = new int[filterValue.length];
 	}
 
 	@Override
-	public void nextBlock(Block block) {
-		AStringType type = (AStringType) getColumn().getTypeFor(block);
+	public void nextBlock(Bucket bucket) {
+		AStringType type = (AStringType) getColumn().getTypeFor(bucket);
 
 		for (int index = 0; index < filterValue.length; index++) {
 			String select = filterValue[index];
@@ -32,12 +44,12 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 
 
 	@Override
-	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public boolean checkEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
 
-		int stringToken = block.getString(event, getColumn());
+		int stringToken = bucket.getString(event, getColumn());
 
 		for (int selectedValue : selectedValues) {
 			if (selectedValue == stringToken) {
@@ -54,12 +66,19 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 	}
 
 	@Override
-	public void acceptEvent(Block block, int event) {
-		this.hit = true;
+	public boolean isOfInterest(Bucket bucket) {
+		for (String selected : getFilterValue()) {
+			if(((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(selected) != -1) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
-	public boolean isContained() {
-		return hit;
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
 	}
+
 }

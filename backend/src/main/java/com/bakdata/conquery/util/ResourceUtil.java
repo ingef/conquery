@@ -5,14 +5,13 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 
 public class ResourceUtil {
 
-	private final Namespaces namespaces;
+	private final DatasetRegistry namespaces;
 
-	public ResourceUtil(Namespaces namespaces) {
+	public ResourceUtil(DatasetRegistry namespaces) {
 		this.namespaces = namespaces;
 	}
 
@@ -24,8 +23,8 @@ public class ResourceUtil {
 		return namespaces.get(id).getStorage();
 	}
 
-	public ManagedQuery getManagedQuery(DatasetId id, ManagedExecutionId queryId) {
-		return namespaces.get(id).getQueryManager().getQuery(queryId);
+	public ManagedExecution<?> getManagedQuery(ManagedExecutionId queryId) {
+		return namespaces.get(queryId.getDataset()).getQueryManager().getQuery(queryId);
 	}
 
 }

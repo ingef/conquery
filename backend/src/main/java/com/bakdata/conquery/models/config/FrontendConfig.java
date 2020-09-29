@@ -18,8 +18,8 @@ public class FrontendConfig {
 	private CurrencyConfig currency = new CurrencyConfig();
 	
 	@Data
-	private static class CurrencyConfig {
-		private int factor = 1;
+	public
+	static class CurrencyConfig {
 		private String prefix = "€";
 		private String thousandSeparator = ".";
 		private String decimalSeparator = ",";

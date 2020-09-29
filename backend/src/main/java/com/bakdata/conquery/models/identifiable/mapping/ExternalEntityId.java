@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import java.util.Arrays;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Data;
@@ -10,7 +12,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-public class ExternalEntityId implements EntityId {
+public class ExternalEntityId implements EntityId, Comparable<ExternalEntityId> {
 
 	/**
 	 * The external Entity Id.
@@ -25,5 +27,10 @@ public class ExternalEntityId implements EntityId {
 	 */
 	public static ExternalEntityId from(CsvEntityId csvEntityId) {
 		return new ExternalEntityId(new String[] { csvEntityId.getCsvId() });
+	}
+
+	@Override
+	public int compareTo(ExternalEntityId o) {
+		return Arrays.compare(externalId, o.externalId);
 	}
 }

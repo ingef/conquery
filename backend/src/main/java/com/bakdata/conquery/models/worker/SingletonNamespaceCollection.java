@@ -2,11 +2,10 @@ package com.bakdata.conquery.models.worker;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class SingletonNamespaceCollection implements NamespaceCollection {
+public class SingletonNamespaceCollection extends IdResolveContext {
 	private final CentralRegistry registry;
 
 	@Override

@@ -2,110 +2,159 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.validation.Validator;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.identifiable.mapping.SufficientExternalEntityId;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RestartTest implements ProgrammaticIntegrationTest {
 
-	private Mandator mandator = new Mandator("99999998", "MANDATOR_LABEL");
-	private User user = new User("user@test.email", "USER_LABEL");
+	private Role role = new Role("role", "ROLE");
+	private Role roleToDelete = new Role("roleDelete", "ROLE_DELETE");
+	private User user = new User("user@test.email", "USER");
+	private User userToDelete = new User("userDelete@test.email", "USER_DELETE");
+	private Group group = new Group("group", "GROUP");
+	private Group groupToDelete = new Group("groupDelete", "GROUP_DELETE");
 
 	@Override
-	public void execute(TestConquery testConquery) throws Exception {
+	public void execute(String name, TestConquery testConquery) throws Exception {
 		//read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
 		DatasetId dataset;
 		ConqueryTestSpec test;
-		PersistentIdMap persistentIdMap = getPersistentIdMap();
+		PersistentIdMap persistentIdMap = IdMapSerialisationTest
+												  .createTestPersistentMap();
+
+		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
+		AdminProcessor adminProcessor = new AdminProcessor(
+
+				manager.getConfig(),
+				manager.getStorage(),
+				manager.getDatasetRegistry(),
+				manager.getJobManager(),
+				manager.getMaintenanceService(),
+				manager.getValidator()
+		);
 
 
-		try (StandaloneSupport conquery = testConquery.getSupport()) {
-			dataset = conquery.getDataset().getId();
+		StandaloneSupport conquery = testConquery.getSupport(name);
+		dataset = conquery.getDataset().getId();
 
-			test = JsonIntegrationTest.readJson(dataset, testJson);
-			ValidatorHelper.failOnError(log, validator.validate(test));
+		test = JsonIntegrationTest.readJson(dataset, testJson);
+		ValidatorHelper.failOnError(log, validator.validate(test));
 
-			test.importRequiredData(conquery);
+		test.importRequiredData(conquery);
 
-			test.executeTest(conquery);
+		test.executeTest(conquery);
 
-			// Auth testing
-			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
-			storage.addMandator(mandator);
+		// IDMapping Testing
+		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 
-			// IDMapping Testing
-			NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
+		namespaceStorage.updateIdMapping(persistentIdMap);
 
+		{// Auth testing (deletion and permission grant)
+			// build constellation
+			adminProcessor.addUser(user);
+			adminProcessor.addUser(userToDelete);
+			adminProcessor.addRole(role);
+			adminProcessor.addRole(roleToDelete);
+			adminProcessor.addGroup(group);
+			adminProcessor.addGroup(groupToDelete);
 
-			namespaceStorage.updateIdMapping(persistentIdMap);
+			adminProcessor.addRoleTo(user.getId(), role.getId());
+			adminProcessor.addRoleTo(user.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(userToDelete.getId(), role.getId());
+			adminProcessor.addRoleTo(userToDelete.getId(), roleToDelete.getId());
 
-			storage.addUser(user);
-			user.addMandator(storage, mandator);
+			adminProcessor.addRoleTo(group.getId(), role.getId());
+			adminProcessor.addRoleTo(group.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(groupToDelete.getId(), role.getId());
+			adminProcessor.addRoleTo(groupToDelete.getId(), roleToDelete.getId());
 
+			adminProcessor.addUserToGroup(group.getId(), user.getId());
+			adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
+			adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
+			adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
+
+			// Adding Permissions
+			adminProcessor.createPermission(user.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
+			adminProcessor.createPermission(userToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
+
+			adminProcessor.createPermission(role.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
+			adminProcessor.createPermission(roleToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
+
+			adminProcessor.createPermission(group.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
+			adminProcessor.createPermission(groupToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
+
+			// Delete entities
+			adminProcessor.deleteUser(userToDelete.getId());
+			adminProcessor.deleteRole(roleToDelete.getId());
+			adminProcessor.deleteGroup(groupToDelete.getId());
 		}
+
+		// TODO: 21.07.2020 FK: This is temporary logging for finding a bug in CI.
+		final int entityBucketSizeBeforeRestart = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+		log.info("Configured bucket size = {}", entityBucketSizeBeforeRestart);
+
+		testConquery.shutdown(conquery);
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();
 		//restart
 		testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-		try (StandaloneSupport conquery = testConquery.openDataset(dataset)) {
-			test.executeTest(conquery);
+		final StandaloneSupport support = testConquery.openDataset(dataset);
 
-			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		test.executeTest(support);
+
+		assertThat(entityBucketSizeBeforeRestart).isEqualTo(ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
+
+		MetaStorage storage = conquery.getMetaStorage();
+
+		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());
-			Mandator mandatorStored = storage.getMandator(mandator.getId());
-			Mandator userRefMand = userStored.getRoles().iterator().next();
-			assertThat(mandatorStored).isSameAs(userRefMand);
-			PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
-				.getMaster()
-				.getNamespaces()
-				.get(dataset)
-				.getStorage()
-				.getIdMapping();
-			assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
+			assertThat(userStored).isEqualTo(user);
+			assertThat(storage.getRole(role.getId())).isEqualTo(role);
+			assertThat(storage.getGroup(group.getId())).isEqualTo(group);
+
+			assertThat(storage.getUser(userToDelete.getId())).as("deleted user should stay deleted").isNull();
+			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
+			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
+
+			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")))).isTrue();
+			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")))).isFalse(); // Was never permitted
+			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")))).isTrue();
+			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")))).isFalse(); // Was permitted by deleted role
+			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")))).isTrue();
+			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")))).isFalse(); // Was permitted by deleted group
+
 		}
 
-	}
-
-	private PersistentIdMap getPersistentIdMap() {
-		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = new HashMap<>();
-		Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap = new HashMap<>();
-
-		csvIdToExternalIdMap.put(new CsvEntityId("test1"), new ExternalEntityId(new String[] { "a", "b" }));
-		csvIdToExternalIdMap.put(new CsvEntityId("test2"), new ExternalEntityId(new String[] { "c", "d" }));
-		csvIdToExternalIdMap.put(new CsvEntityId("test3"), new ExternalEntityId(new String[] { "e", "f" }));
-		csvIdToExternalIdMap.put(new CsvEntityId("test4"), new ExternalEntityId(new String[] { "g", "h" }));
-
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "a", "b" }), new CsvEntityId("test1"));
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "c", "d" }), new CsvEntityId("test2"));
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "e", "f" }), new CsvEntityId("test3"));
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "g", "h" }), new CsvEntityId("test4"));
-
-		return new PersistentIdMap(csvIdToExternalIdMap, externalIdPartCsvIdMap);
+		PersistentIdMap persistentIdMapAfterRestart = conquery.getNamespaceStorage()
+															  .getIdMapping();
+		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 	}
 }
+

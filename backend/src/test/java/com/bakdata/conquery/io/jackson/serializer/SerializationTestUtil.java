@@ -8,25 +8,24 @@ import java.util.List;
 
 import javax.validation.Validator;
 
-import org.assertj.core.api.ObjectAssert;
-
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
 import io.dropwizard.jersey.validation.Validators;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.ObjectAssert;
 
 @RequiredArgsConstructor
 @Accessors(chain = true, fluent = true)
@@ -48,19 +47,24 @@ public class SerializationTestUtil<T> {
 		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
 	}
 	
-	public void test(T value) throws JSONException, IOException {
+	public void test(T value, T expected) throws JSONException, IOException {
 		test(
 			value,
+			expected,
 			Jackson.MAPPER
 		);
 		test(
 			value,
+			expected,
 			Jackson.BINARY_MAPPER
 		);
-		
 	}
 	
-	private void test(T value, ObjectMapper mapper) throws JSONException, IOException {
+	public void test(T value) throws JSONException, IOException {
+		test(value, value);
+	}
+	
+	private void test(T value, T expected, ObjectMapper mapper) throws JSONException, IOException {
 		if(registry != null) {
 			mapper = new SingletonNamespaceCollection(registry).injectInto(mapper);
 		}
@@ -71,13 +75,22 @@ public class SerializationTestUtil<T> {
 		ValidatorHelper.failOnError(log, validator.validate(value));
 		byte[] src = writer.writeValueAsBytes(value);
 		T copy = reader.readValue(src);
+		
+		if(expected == null && copy == null) {
+			return;
+		}
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 		
+		//because IdentifiableImp cashes the hash
+		if(value instanceof IdentifiableImpl) {
+			assertThat(copy.hashCode()).isEqualTo(value.hashCode());
+		}
+
 		ObjectAssert<T> ass = assertThat(copy)
 			.as("Unequal after copy.");
 		for(Class<?> ig:ignoreClasses)
 			ass.usingComparatorForType((a,b)->0, ig);
 		
-		ass.isEqualToComparingFieldByFieldRecursively(value);
+		ass.isEqualToComparingFieldByFieldRecursively(expected);
 	}
 }

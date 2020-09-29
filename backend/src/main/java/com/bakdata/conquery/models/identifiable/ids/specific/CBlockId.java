@@ -15,7 +15,7 @@ import lombok.Getter;
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
 public class CBlockId extends AId<CBlock> implements NamespacedId {
 
-	private final BlockId block;
+	private final BucketId bucket;
 	private final ConnectorId connector;
 	
 	@Override
@@ -25,7 +25,7 @@ public class CBlockId extends AId<CBlock> implements NamespacedId {
 	
 	@Override
 	public void collectComponents(List<Object> components) {
-		block.collectComponents(components);
+		bucket.collectComponents(components);
 		connector.collectComponents(components);
 	}
 	
@@ -35,7 +35,7 @@ public class CBlockId extends AId<CBlock> implements NamespacedId {
 		@Override
 		public CBlockId parseInternally(IdIterator parts) {
 			ConnectorId connector = ConnectorId.Parser.INSTANCE.parse(parts.splitOff(3));
-			BlockId block = BlockId.Parser.INSTANCE.parse(parts);
+			BucketId block = BucketId.Parser.INSTANCE.parse(parts);
 			return new CBlockId(block, connector);
 		}
 	}

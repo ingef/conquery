@@ -13,53 +13,52 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.math.DoubleMath;
-
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.AllArgsConstructor;
 
-@CPSType(id="MAP_DICTIONARY", base=Dictionary.class)
+@CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
 @AllArgsConstructor
 public class MapDictionary extends Dictionary {
 
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
 	private List<ByteArrayList> id2Value;
-	
+
 	public MapDictionary() {
 		value2Id = new Object2IntOpenHashMap<>();
 		value2Id.defaultReturnValue(-1);
 		id2Value = new ArrayList<>();
 	}
-	
+
 	public MapDictionary(DictionaryId dictionaryId) {
 		this();
 		this.setName(dictionaryId.getDictionary());
 		this.setDataset(dictionaryId.getDataset());
 	}
-	
+
 	@JsonCreator
 	public MapDictionary(DatasetId datasetId, String name, byte[][] id2Value) {
-		if(id2Value==null) {
+		if (id2Value == null) {
 			id2Value = new byte[0][];
 		}
 		this.id2Value = new ArrayList<>(id2Value.length);
-		value2Id = new Object2IntOpenHashMap<>();
+		value2Id = new Object2IntOpenHashMap<>(id2Value.length);
 		value2Id.defaultReturnValue(-1);
 		this.setName(name);
 		this.setDataset(datasetId);
-		
-		for(int i=0;i<id2Value.length;i++) {
+
+		for (int i = 0; i < id2Value.length; i++) {
 			ByteArrayList v = new ByteArrayList(id2Value[i]);
 			this.id2Value.add(v);
 			value2Id.put(v, i);
 		}
 	}
-	
+
 	@JsonProperty
 	public byte[][] getId2Value() {
 		byte[][] result = new byte[id2Value.size()][];
-		for(int i=0;i<id2Value.size();i++) {
+		for (int i = 0; i < id2Value.size(); i++) {
 			result[i] = id2Value.get(i).elements();
 		}
 		return result;
@@ -69,22 +68,22 @@ public class MapDictionary extends Dictionary {
 	public int add(byte[] bytes) {
 		ByteArrayList value = new ByteArrayList(bytes);
 		int id = value2Id.getInt(value);
-		if(id == -1) {
+		if (id == -1) {
 			id = id2Value.size();
 			value2Id.put(value, id);
 			id2Value.add(value);
 		}
 		else {
-			throw new IllegalStateException("there already was an element "+Arrays.toString(bytes));
+			throw new IllegalStateException("there already was an element " + Arrays.toString(bytes));
 		}
 		return id;
 	}
-	
+
 	@Override
 	public int put(byte[] bytes) {
 		ByteArrayList value = new ByteArrayList(bytes);
 		int id = value2Id.getInt(value);
-		if(id == -1) {
+		if (id == -1) {
 			id = id2Value.size();
 			value2Id.put(value, id);
 			id2Value.add(value);
@@ -115,28 +114,29 @@ public class MapDictionary extends Dictionary {
 			public DictionaryEntry next() {
 				return new DictionaryEntry(it.nextIndex(), it.next().elements());
 			}
+
 			@Override
 			public boolean hasNext() {
 				return it.hasNext();
 			}
 		};
 	}
-	
+
 	public static long estimateMemoryConsumption(long entries, long totalBytes) {
 		return DoubleMath.roundToLong(
-			//size of two collections and string object overhead
-			entries*(48f+8f/Hash.DEFAULT_LOAD_FACTOR)
-			//number of string bytes
-			+ totalBytes,
-			RoundingMode.CEILING
+				//size of two collections and string object overhead
+				entries * (48f + 8f / Hash.DEFAULT_LOAD_FACTOR)
+				//number of string bytes
+				+ totalBytes,
+				RoundingMode.CEILING
 		);
 	}
 
 	@Override
 	public long estimateMemoryConsumption() {
 		return MapDictionary.estimateMemoryConsumption(
-			id2Value.size(),
-			id2Value.stream().mapToLong(ByteArrayList::size).sum()
+				id2Value.size(),
+				id2Value.stream().mapToLong(ByteArrayList::size).sum()
 		);
 	}
 }

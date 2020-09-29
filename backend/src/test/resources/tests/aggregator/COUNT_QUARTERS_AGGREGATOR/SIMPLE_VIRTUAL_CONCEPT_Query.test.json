@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "SIMPLE_VIRTUAL_CONCEPT_QUERY Test",
+  "label": "COUNT_QUARTERS_AGGREGATOR Test",
   "expectedCsv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -28,15 +28,15 @@
       "connectors": [
         {
           "label": "connector",
-          "table": "vers_stamm",
+          "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           },
           "selects":         {
             "name" : "count_quarters",
             "type": "COUNT_QUARTERS",
-            "column": "vers_stamm.behandlungsdatum"
+            "column": "table1.behandlungsdatum"
           }
         }
       ]
@@ -46,7 +46,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

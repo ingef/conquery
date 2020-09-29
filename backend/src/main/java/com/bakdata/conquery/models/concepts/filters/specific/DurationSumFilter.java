@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
@@ -45,6 +45,6 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
-		return new RangeFilterNode(value, new DurationSumAggregatorNode(getColumn()));
+		return new RangeFilterNode(value, new DurationSumAggregator(getColumn()));
 	}
 }

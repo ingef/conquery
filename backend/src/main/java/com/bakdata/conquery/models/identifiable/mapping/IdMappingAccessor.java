@@ -1,24 +1,23 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-
 
 public interface IdMappingAccessor {
+
 	String[] getHeader();
 
 	/**
-	 * Check whether all Fields used for the mapping by this id mapping accessor are present.
-	 * @param csvHeader List of the header Strings.
+	 * Check whether all Fields used for the mapping by this id mapping accessor are
+	 * present.
+	 *
+	 * @param csvHeader
+	 *            List of the header Strings.
 	 * @return whether the mapping can be applied to the header.
 	 */
 	default boolean canBeApplied(List<String> csvHeader) {
-		for (String fieldInCsvHeader: csvHeader) {
-			if(!ArrayUtils.contains(getHeader(),fieldInCsvHeader)){
+		for (String requiredHeader : getHeader()) {
+			if (!csvHeader.contains(requiredHeader)) {
 				return false;
 			}
 		}
@@ -26,34 +25,43 @@ public interface IdMappingAccessor {
 	}
 
 	/**
-	 * Retrieves an applicationMapping which maps from CsvHeader to IdMappingCsv Indices.
-	 * Assumes that canBeApplied has been checked before and returned True.
-	 * @param csvHeader Array of the header Strings.
-	 * @param storage The Namespace Storage to use.
+	 * Retrieves an applicationMapping which maps from CsvHeader to IdMappingCsv
+	 * Indices. Assumes that canBeApplied has been checked before and returned True.
+	 *
+	 * @param csvHeader
+	 *            Array of the header Strings.
+	 * @param idMapping
 	 * @return The IdAccessor.
 	 */
-	default IdAccessor getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
+	default IdAccessor getApplicationMapping(String[] csvHeader, final PersistentIdMap idMapping) {
 		int[] applicationMapping = new int[csvHeader.length];
+		Arrays.fill(applicationMapping, -1);
 		for (int indexInHeader = 0; indexInHeader < csvHeader.length; indexInHeader++) {
 			String csvHeaderField = csvHeader[indexInHeader];
-			int indexInCsvHeader = ArrayUtils.indexOf(getHeader(),csvHeaderField);
+			int indexInCsvHeader = findIndexFromMappingHeader(csvHeaderField);
 			if (indexInCsvHeader != -1) {
 				applicationMapping[indexInHeader] = indexInCsvHeader;
 			}
 		}
-		return new IdAccessorImpl(this, applicationMapping, storage);
+		return new IdAccessorImpl(this, applicationMapping, idMapping);
 	}
+	
+	/**
+	 * Returns the index of the header in the setted mapping that maps best to the provided header in the CSV.
+	 * @param csvHeaderField The header field in the CSV that is machted to the predefined required headers.
+	 * @return The index of the predefined header that matched best.
+	 */
+	int findIndexFromMappingHeader(String csvHeaderField);
 
 	/**
-	 * @param dataLine A Line from a CSV.
+	 * Extracts the Id information from a CSV line using this accessor
+	 * configuration.
+	 *
+	 * @param dataLine
+	 *            A Line from a CSV.
 	 * @return the dataLine without the unused fields.
 	 */
 	String[] extract(String[] dataLine);
 
-	default void collectSufficientEntityIds(PersistentIdMap mapping) {
-		for (Map.Entry<CsvEntityId, ExternalEntityId> entry : mapping.getCsvIdToExternalIdMap().entrySet()) {
-			mapping.getExternalIdPartCsvIdMap()
-				.put(new SufficientExternalEntityId(extract(entry.getValue().getExternalId())), entry.getKey());
-		}
-	}
+	CsvEntityId getFallbackCsvId(String[] reorderedCsvLine);
 }

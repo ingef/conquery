@@ -29,9 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j @CPSType(id="GROOVY", base=CTCondition.class)
 public class GroovyCondition implements CTCondition {
 
-	private static final long serialVersionUID = 1L;
-
-	private static final String[] AUTO_IMPORTS = Stream.of(
+	public static final String[] AUTO_IMPORTS = Stream.of(
 		LocalDate.class,
 		Range.class
 	).map(Class::getName).toArray(String[]::new);

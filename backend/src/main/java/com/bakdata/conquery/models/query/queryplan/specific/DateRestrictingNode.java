@@ -1,59 +1,98 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Map;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class DateRestrictingNode extends QPChainNode {
 
-	private final CDateSet dateRange;
-	private Column validityDateColumn;
+	protected final CDateSet restriction;
+	protected Column validityDateColumn;
+	protected Map<BucketId, EntityRow> preCurrentRow = null;
 
-	public DateRestrictingNode(CDateSet dateRange, QPNode child) {
+	public DateRestrictingNode(CDateSet restriction, QPNode child) {
 		super(child);
-		this.dateRange = dateRange;
+		this.restriction = restriction;
 	}
 
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
-		CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
-		dateRestriction.retainAll(dateRange);
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+		//if there was no date restriction we can just use the restriction CDateSet
+		if(ctx.getDateRestriction().isAll()) {
+			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
+		}
+		else {
+			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			dateRestriction.retainAll(restriction);
+			ctx = ctx.withDateRestriction(dateRestriction);
+		}
+		super.nextTable(ctx, currentTable);
 
-		super.nextTable(
-				ctx.withDateRestriction(dateRestriction),
-				currentTable
-		);
 
+		preCurrentRow = entity.getCBlockPreSelect(context.getConnector().getId());
 
-		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
-
-		if (!validityDateColumn.getType().isDateCompatible()) {
+		validityDateColumn = context.getValidityDateColumn();
+		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 	}
 
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		EntityRow currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+		
+		if(validityDateColumn == null) {
+			// If there is no validity date set for a concept there is nothing to restrict
+			return true;
+		}
+		
+		CBlock cBlock = currentRow.getCBlock();
+		int localId = bucket.toLocal(entity.getId());
+		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
+			return false;
+		}
+		
+		CDateRange range = CDateRange.of(
+			cBlock.getMinDate()[localId],
+			cBlock.getMaxDate()[localId]
+		);
+		if(!restriction.intersects(range)) {
+			return false;
+		}
+		return super.isOfInterest(bucket);
+	}
 
 	@Override
-	public void nextEvent(Block block, int event) {
-		if (block.eventIsContainedIn(event, validityDateColumn, dateRange)) {
-			getChild().nextEvent(block, event);
+	public void acceptEvent(Bucket bucket, int event) {
+		if (validityDateColumn != null && !bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
+			return;
 		}
+		getChild().acceptEvent(bucket, event);
 	}
 
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();
 	}
-
+	
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new DateRestrictingNode(dateRange, getChild().clone(ctx));
+		return new DateRestrictingNode(restriction, ctx.clone(getChild()));
 	}
 }

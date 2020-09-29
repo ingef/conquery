@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -14,7 +15,7 @@ public class Leaf extends QPNode {
 	}
 	
 	@Override
-	public void nextEvent(Block block, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		triggered = true;
 	}
 
@@ -23,5 +24,13 @@ public class Leaf extends QPNode {
 		return triggered;
 	}
 
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
 	
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return true;
+	}
 }

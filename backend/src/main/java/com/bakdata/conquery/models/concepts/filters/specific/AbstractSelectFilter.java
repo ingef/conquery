@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.apiv1.FilterSearchItem;
+import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;
@@ -16,10 +16,11 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.util.search.QuickSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
-import com.zigurs.karlis.utils.search.QuickSearch;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -27,56 +28,56 @@ import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
 
-	protected Set<String> values;
-	protected Map<String, String> labels = Collections.emptyMap();
-	protected boolean matchLabels = false;
+	/**
+	 * user given mapping from the values in the CSVs to shown labels
+	 */
+	protected BiMap<String, String> labels = ImmutableBiMap.of();
+	
+	protected Set<String> values = new HashSet<>();
 	@JsonIgnore
-	protected Map<String, String> realLabels;
-	@JsonIgnore
-	protected Map<String, String> labelsToRealLabels;
-	@JsonIgnore
-	protected transient QuickSearch sourceSearch;
+	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
 	@JsonIgnore
 	private final int maximumSize;
 	@JsonIgnore
 	private final FEFilterType filterType;
 
+	private FilterTemplate template;
+
+
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
 	}
 
+	public FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.EXACT;
+
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+		f.setTemplate(getTemplate());
 		f.setType(filterType);
 
-//		if (maximumSize != -1 && values.size() > maximumSize) {
-//			throw new ConceptConfigurationException(getConnector(),
-//				String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
-//		}
-		if (values != null) {
-			realLabels = values.stream().limit(200).collect(Collectors.toMap(Function.identity(), e -> {
-				String r = labels.get(e);
-				return r == null ? e : r;
-			}));
+		if (values == null || values.isEmpty()) {
+			return;
+		}
 
-			f.setOptions(FEValue.fromLabels(realLabels));
+		if (maximumSize != -1 && values.size() > maximumSize) {
+			log.warn("Too many possible values ({} of {} in Filter[{}]). Upgrading to BigMultiSelect", values.size(), maximumSize, getId());
+			f.setType(FEFilterType.BIG_MULTI_SELECT);
 		}
-	}
 
-	public String resolveValueToRealValue(String value) {
-		if (realLabels.containsKey(value)) {
-			return value;
+		if(this.filterType != FEFilterType.BIG_MULTI_SELECT) {
+			f.setOptions(
+				values
+					.stream()
+					.map(v->new FEValue(getLabelFor(v), v))
+					.collect(Collectors.toList())
+			);
 		}
-		if (labelsToRealLabels.containsKey(value)) {
-			return labelsToRealLabels.get(value);
-		}
-		return null;
 	}
 
 	@Override
@@ -85,5 +86,19 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			values = new HashSet<>();
 		}
 		values.addAll(Sets.newHashSet(((AStringType) getColumn().getTypeFor(imp)).iterator()));
+	}
+
+	public String getLabelFor(String value) {
+		return labels.getOrDefault(value, value);
+	}
+	
+	public String getValueFor(String label) {
+		String value = labels.inverse().get(label);
+		if(value == null) {
+			if(values.contains(label)) {
+				return label;
+			}
+		}
+		return null;
 	}
 }

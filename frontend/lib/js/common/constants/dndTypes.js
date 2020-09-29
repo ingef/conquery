@@ -1,6 +1,0 @@
-// @flow
-
-export const CATEGORY_TREE_NODE = "CATEGORY_TREE_NODE";
-export const QUERY_NODE = "QUERY_NODE";
-export const PREVIOUS_QUERY = "PREVIOUS_QUERY";
-export const TIMEBASED_NODE = "TIMEBASED_NODE";

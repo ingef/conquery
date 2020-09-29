@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
-import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -12,14 +11,13 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MetadataCollectionTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class MetadataCollectionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
@@ -34,16 +32,12 @@ public class MetadataCollectionTest implements ProgrammaticIntegrationTest, Inte
 		test.importRequiredData(conquery);
 		
 		//ensure the metadata is collected
-		for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
-			slave.getWorkers().getWorkers().forEach((id, worker) -> {
-				worker.getJobManager().addSlowJob(new UpdateMatchingStats(worker));
-			});
-		}
-		
+		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage());
+
 		conquery.waitUntilWorkDone();
 		
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		
+
 		//check the number of matched events
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
 		assertThat(concept.getChildren()).allSatisfy(c -> {

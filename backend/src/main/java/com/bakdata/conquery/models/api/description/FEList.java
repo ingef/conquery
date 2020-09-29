@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.api.description;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.core.EntityTag;
 

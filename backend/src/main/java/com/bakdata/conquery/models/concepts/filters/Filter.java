@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters;
 
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -15,10 +12,10 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * This class is the abstract superclass for all filters.
@@ -34,7 +31,6 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 	private String description;
 	@JsonBackReference
 	private Connector connector;
-	private FilterTemplate template;
 	private String pattern;
 	private Boolean allowDropFile;
 

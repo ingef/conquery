@@ -8,17 +8,15 @@ import java.util.EnumSet;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 /**
- * Entity is included when the the number of quarters with events is within a
- * specified range.
+ * Aggregator counting the number of quarters in a year, returning the maximum number of quarters present.
  */
 public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
@@ -29,12 +27,12 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
-		LocalDate date = CDate.toLocalDate(block.getDate(event, getColumn()));
+		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
 
 		EnumSet<Month> months = quartersInYear.get(date.getYear());
 		int quarter = date.get(IsoFields.QUARTER_OF_YEAR);
@@ -50,6 +48,10 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
+		if(quartersInYear.isEmpty()) {
+			return null;
+		}
+
 		long max = 0;
 
 		for (EnumSet<Month> months : quartersInYear.values()) {
@@ -57,7 +59,6 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 			if (cardinality > max) {
 				max = cardinality;
 			}
-
 		}
 
 		return max;

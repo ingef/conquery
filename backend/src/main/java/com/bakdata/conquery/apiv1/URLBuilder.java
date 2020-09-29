@@ -1,7 +1,9 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.API;
+import static com.bakdata.conquery.resources.ResourceConstants.API;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +12,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.SneakyThrows;
 
 public class URLBuilder {
 
@@ -35,8 +38,9 @@ public class URLBuilder {
 		return this;
 	}
 
-	public String get() {
-		return toString();
+	@SneakyThrows(MalformedURLException.class)
+	public URL get() {
+		return builder.buildFromMap(queryParams).toURL();
 	}
 
 	@Override

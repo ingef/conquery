@@ -7,10 +7,9 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.mina.ChunkReader.ChunkedMessage;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.util.io.EndCheckableInputStream;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -26,12 +25,12 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 	private final ObjectWriter writer;
 	private final ObjectReader reader;
 
-	public BinaryJacksonCoder(NamespaceCollection namespaces, Validator validator) {
+	public BinaryJacksonCoder(IdResolveContext datasets, Validator validator) {
 		this.validator = validator;
 		this.writer = Jackson.BINARY_MAPPER
 			.writerFor(NetworkMessage.class)
 			.withView(InternalOnly.class);
-		this.reader = namespaces
+		this.reader = datasets
 				.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class))
 				.without(Feature.AUTO_CLOSE_SOURCE)
 				.withView(InternalOnly.class);
@@ -54,7 +53,7 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 		try(EndCheckableInputStream is = message.createInputStream()) {
 			Object obj = reader.readValue(is);
 			if(!is.isAtEnd()) {
-				throw new IllegalStateException("After reading the JSON message "+message.getId()+" -> "+obj+" the buffer has still bytes available");
+				throw new IllegalStateException("After reading the JSON message "+obj+" the buffer has still bytes available");
 			}
 			ValidatorHelper.failOnError(log, validator.validate(obj), "decoding " + obj.getClass().getSimpleName());
 			return (NetworkMessage<?>)obj;

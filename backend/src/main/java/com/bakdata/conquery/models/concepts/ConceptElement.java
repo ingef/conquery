@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,19 +22,17 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	private List<KeyValue> additionalInfos = Collections.emptyList();
 	@Getter @Setter @JsonIgnore
 	private MatchingStats matchingStats = new MatchingStats();
-	
+
 	public ConceptElement<?> getElementById(ConceptElementId<?> conceptElementId) {
 		if(Objects.equals(conceptElementId, this.getId())) {
 			return this;
 		}
-		else {
-			if(conceptElementId instanceof ConceptTreeChildId) {
-				return getChildById((ConceptTreeChildId)conceptElementId);
-			}
-			else {
-				throw new NoSuchElementException("Could not resolve the element "+conceptElementId +" in " + this);
-			}
+
+		if(conceptElementId instanceof ConceptTreeChildId) {
+			return getChildById((ConceptTreeChildId)conceptElementId);
 		}
+
+		throw new NoSuchElementException("Could not resolve the element "+conceptElementId +" in " + this);
 	}
 
 	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
@@ -50,7 +47,7 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@JsonIgnore
 	public abstract Concept<?> getConcept();
 
-	public boolean matchesPrefix(int[] conceptPrefix) {
-		return true;
-	}
+	public abstract boolean matchesPrefix(int[] conceptPrefix);
+
+	public abstract long calculateBitMask();
 }

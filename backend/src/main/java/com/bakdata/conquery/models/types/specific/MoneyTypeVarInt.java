@@ -20,6 +20,6 @@ public class MoneyTypeVarInt extends CTypeVarInt<Long> {
 	
 	@Override
 	public Long createScriptValue(Number value) {
-		return (long)createScriptValue(value);
+		return (long)numberType.createScriptValue(value);
 	}
 }

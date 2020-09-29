@@ -1,0 +1,41 @@
+{
+  "type": "FILTER_TEST",
+  "label": "NUMBER_MONEY Test",
+  "expectedCsv": "tests/filter/NUMBER_MONEY/expected_NUMBER_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/NUMBER_MONEY/content_NUMBER_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "nr",
+          "type": "MONEY"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.nr",
+      "type": "NUMBER"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 10000,
+      "max": 20000
+    }
+  }
+}

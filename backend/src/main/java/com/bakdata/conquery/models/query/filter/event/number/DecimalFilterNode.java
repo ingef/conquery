@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class DecimalFilterNode extends NumberFilterNode<Range<BigDecimal>> {
@@ -19,7 +19,7 @@ public class DecimalFilterNode extends NumberFilterNode<Range<BigDecimal>> {
 	}
 
 	@Override
-	public boolean contains(Block block, int event) {
-		return getFilterValue().contains(block.getDecimal(event, getColumn()));
+	public boolean contains(Bucket bucket, int event) {
+		return getFilterValue().contains(bucket.getDecimal(event, getColumn()));
 	}
 }

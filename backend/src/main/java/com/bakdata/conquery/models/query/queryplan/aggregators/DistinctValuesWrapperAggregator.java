@@ -3,17 +3,15 @@ package com.bakdata.conquery.models.query.queryplan.aggregators;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
- * Aggregator node forwarding only events with distinct values to {@code aggregator}.
+ * Helper Aggregator, forwarding only events with distinct values to {@code aggregator}.
  * @param <VALUE>
  */
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
@@ -40,9 +38,9 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (observed.add(block.getAsObject(event, getColumn()))) {
-			aggregator.aggregateEvent(block, event);
+	public void acceptEvent(Bucket bucket, int event) {
+		if (observed.add(bucket.getAsObject(event, getColumn()))) {
+			aggregator.acceptEvent(bucket, event);
 		}
 	}
 
@@ -53,6 +51,6 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return aggregator.getResultType();
 	}
 }

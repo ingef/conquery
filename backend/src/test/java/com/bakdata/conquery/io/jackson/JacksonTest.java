@@ -2,17 +2,19 @@ package com.bakdata.conquery.io.jackson;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import lombok.Data;
+import org.junit.jupiter.api.Test;
 
 
 public class JacksonTest {
@@ -29,6 +31,37 @@ public class JacksonTest {
 		List<String> list = Arrays.asList("singular");
 		assertThat(Jackson.MAPPER.writeValueAsString(list))
 			.isEqualTo("[\"singular\"]");
+	}
+	
+	@Test
+	public void testBiMapSerialization() throws JSONException, IOException {
+		BiMap<String, String> map = HashBiMap.create();
+		map.put("a", "1");
+		map.put("b", "2");
+		SerializationTestUtil
+			.forType(new TypeReference<BiMap<String, String>>() {})
+			.test(map);
+	}
+	
+	@Test
+	public void testNonStrictNumbers() throws JSONException, IOException {
+		SerializationTestUtil.forType(Double.class).test(Double.NaN, null);
+		SerializationTestUtil.forType(Double.class).test(Double.NEGATIVE_INFINITY, null);
+		SerializationTestUtil.forType(Double.class).test(Double.POSITIVE_INFINITY, null);
+		SerializationTestUtil.forType(Double.class).test(Double.MAX_VALUE);
+		SerializationTestUtil.forType(Double.class).test(Double.MIN_VALUE);
+		SerializationTestUtil
+			.forType(EntityResult.class)
+			.test(
+				EntityResult.of(4, List.of(
+					new Object[] {0, 1, 2},
+					new Object[] {Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
+				)),
+				EntityResult.of(4, List.of(
+					new Object[] {0, 1, 2},
+					new Object[] {null, null, null}
+				))
+			);
 	}
 
 	@Test

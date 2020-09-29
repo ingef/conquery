@@ -2,19 +2,24 @@ package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.worker.Worker;
-
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -35,60 +40,92 @@ public class UpdateMatchingStats extends Job {
 			return;
 		}
 
-		log.debug("Starting to update Matching stats with {}", worker);
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(worker.getExecutorService());
 
-		progressReporter.setMax(worker.getStorage().getAllCBlocks().size());
+		progressReporter.setMax(worker.getStorage().getAllConcepts().size());
+
+		log.info("Starting to update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
+
+		// SubJobs collect into this Map.
+		final Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>(worker.getStorage().getAllConcepts().size() * 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
+
+		List<ListenableFuture<?>> subJobs =
+				worker.getStorage()
+					  .getAllConcepts()
+					  .stream()
+					  .map(concept -> executorService.submit(() -> calculateConceptMatches(concept, messages)))
+					  .collect(Collectors.toList());
+
+		log.debug("All jobs submitted. Waiting for completion.");
+
+		Futures.allAsList(subJobs).get();
+
+		log.info("All threads are done.");
+
+		if (!messages.isEmpty()) {
+			worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
+		}else {
+			log.warn("Results were empty.");
+		}
+
+		progressReporter.done();
+	}
+
+	public void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results) {
 
 		Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
 
 		for (CBlock cBlock : new ArrayList<>(worker.getStorage().getAllCBlocks())) {
 
 			if(isCancelled()) {
-				progressReporter.done();
 				return;
 			}
 
-			Concept<?> concept = worker.getStorage().getConcept(cBlock.getConnector().getConcept());
-			Block block = worker.getStorage().getBlock(cBlock.getBlock());
-			Table table = worker.getStorage().getDataset().getTables().get(block.getId().getImp().getTable());
+			if(!cBlock.getConnector().getConcept().equals(concept.getId()))
+				continue;
 
 			try {
-				for (int event = 0; event < block.size(); event++) {
-					if (concept instanceof TreeConcept) {
-						int[] localIds = cBlock.getMostSpecificChildren().get(event);
-						if (localIds != null) {
-							ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
+				Bucket bucket = worker.getStorage().getBucket(cBlock.getBucket());
+				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
 
-							while (e != null) {
-								messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
-									.addEvent(table, block, cBlock, event);
-								e = e.getParent();
-							}
-						}
-					}
-					else {
+				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+					if (!(concept instanceof TreeConcept)
+						|| cBlock.getMostSpecificChildren() == null
+						|| cBlock.getMostSpecificChildren()[event] == null) {
+
 						messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
-							.addEvent(table, block, cBlock, event);
+								.addEvent(table, bucket, cBlock, event);
+
+						continue;
+					}
+
+					int[] localIds = cBlock.getMostSpecificChildren()[event];
+
+					ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
+
+					while (e != null) {
+						messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
+								.addEvent(table, bucket, cBlock, event);
+						e = e.getParent();
 					}
 				}
 			}
 			catch (Exception e) {
-				log.error("Failed to collect the matching stats for CBlock " + cBlock.getId(), e);
+				log.error("Failed to collect the matching stats for {}", cBlock, e);
 			}
-
-			progressReporter.report(1);
 		}
 
-		if (!messages.isEmpty()) {
-			worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
-		}
+		progressReporter.report(1);
 
-		progressReporter.done();
+
+		synchronized (results){
+			results.putAll(messages);
+		}
 	}
 
 	@Override
 	public String getLabel() {
-		return toString();
+		return "updating matching stats for "+worker.getInfo().getId();
 	}
 
 }

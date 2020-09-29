@@ -4,11 +4,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator gathering all unique values in a column, into a Set.
+ * @param <VALUE> Value type of the column.
+ */
 public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
 
 	private final Set<VALUE> entries = new HashSet<>();
@@ -18,15 +22,15 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (block.has(event, getColumn())) {
-			entries.add((VALUE) getColumn().getTypeFor(block).createPrintValue(block.getRaw(event, getColumn())));
+	public void acceptEvent(Bucket bucket, int event) {
+		if (bucket.has(event, getColumn())) {
+			entries.add((VALUE) getColumn().getTypeFor(bucket).createPrintValue(bucket.getRaw(event, getColumn())));
 		}
 	}
 
 	@Override
 	public Set<VALUE> getAggregationResult() {
-		return entries;
+		return entries.isEmpty() ? null : entries;
 	}
 
 	@Override

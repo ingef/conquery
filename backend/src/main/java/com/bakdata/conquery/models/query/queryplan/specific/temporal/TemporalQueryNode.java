@@ -4,16 +4,14 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
 import lombok.Getter;
 
 /**
@@ -52,7 +50,7 @@ public class TemporalQueryNode extends QPNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new TemporalQueryNode(reference.clone(ctx), preceding.clone(ctx), matcher, dateUnion.clone(ctx));
+		return new TemporalQueryNode(ctx.clone((SampledNode) reference), ctx.clone((SampledNode) preceding), matcher, ctx.clone(dateUnion));
 	}
 
 	/**
@@ -62,8 +60,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {
-		reference.getChild().collectRequiredTables(out);
-		preceding.getChild().collectRequiredTables(out);
+		out.addAll(getReference().getChild().collectRequiredTables());
+		out.addAll(getPreceding().getChild().collectRequiredTables());
 	}
 
 	/**
@@ -81,35 +79,29 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Calls nextBlock on its children.
-	 * @param block the new Block
 	 */
 	@Override
-	public void nextBlock(Block block) {
-		reference.getChild().nextBlock(block);
-		preceding.getChild().nextBlock(block);
+	public void nextBlock(Bucket bucket) {
+		reference.getChild().nextBlock(bucket);
+		preceding.getChild().nextBlock(bucket);
 	}
 
 	/**
 	 * Calls nextBlock on its children.documentation code for refactored matchers.
-	 * @param ctx The new QueryContext
-	 * @param currentTable the new Table
 	 */
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		reference.getChild().nextTable(ctx, currentTable);
 		preceding.getChild().nextTable(ctx, currentTable);
 	}
 
 	/**
 	 * Delegates aggregation to {@link #reference} and {@link #preceding}.
-	 * @param block the specific Block
-	 * @param event the event to aggregate over
-	 * @return always true.
 	 */
 	@Override
-	public void nextEvent(Block block, int event) {
-		reference.getChild().nextEvent(block, event);
-		preceding.getChild().nextEvent(block, event);
+	public void acceptEvent(Bucket bucket, int event) {
+		reference.getChild().nextEvent(bucket, event);
+		preceding.getChild().nextEvent(bucket, event);
 	}
 
 	/**
@@ -132,18 +124,37 @@ public class TemporalQueryNode extends QPNode {
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
 
-		if (!sampledReference.isPresent())
+		if (sampledReference.isEmpty()) {
 			return false;
+		}
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 
-		OptionalInt sampledPreceding = getReference().getSampler().sample(precedingDurations);
+		OptionalInt sampledPreceding = getPreceding().getSampler().sample(precedingDurations);
 
 		if (matcher.isContained(sampledReference, sampledPreceding)) {
-			dateUnion.merge(precedingDurations);
+			dateUnion.merge(referenceDurations);
 			return true;
 		}
 
 		return false;
+	}
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return 
+			reference.getChild().isOfInterest(bucket)
+			| //call isOfInterest on both children because some nodes use it for initialization 
+			preceding.getChild().isOfInterest(bucket)
+		;
+	}
+	
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return 
+			reference.getChild().isOfInterest(entity)
+			| //call isOfInterest on both children because some nodes use it for initialization 
+			preceding.getChild().isOfInterest(entity)
+		;
 	}
 }

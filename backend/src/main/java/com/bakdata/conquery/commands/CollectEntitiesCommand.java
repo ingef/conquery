@@ -20,14 +20,13 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
-import com.bakdata.conquery.models.preproc.PPHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
-
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +58,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
 
-		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
 		
 		Collection<EntityExtractor> jobs = findPreprocessedJobs(config);
 		
@@ -94,7 +93,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 	public List<EntityExtractor> findPreprocessedJobs(ConqueryConfig config) throws IOException, JSONException {
 		List<EntityExtractor> l = new ArrayList<>();
 		for(PreprocessingDirectories directories:config.getPreprocessor().getDirectories()) {
-			File in = directories.getPreprocessedOutput().getAbsoluteFile();
+			File in = directories.getPreprocessedOutputDir().getAbsoluteFile();
 			for(File preprocessedFile:in.listFiles()) {
 				if(preprocessedFile.getName().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
 					try {
@@ -116,9 +115,9 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 		@Override
 		public void execute() throws Exception {
 			try (HCFile hcFile = new HCFile(file, false)) {
-				PPHeader header;
+				PreprocessedHeader header;
 				try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(hcFile.readHeader())) {
-					header = Jackson.BINARY_MAPPER.readerFor(PPHeader.class).readValue(in);
+					header = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class).readValue(in);
 
 					log.info("Reading {}", header.getName());
 

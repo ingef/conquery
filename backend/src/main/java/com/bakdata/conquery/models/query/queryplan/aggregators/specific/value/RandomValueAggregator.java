@@ -3,16 +3,20 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 import java.util.Random;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator, returning a random value of a column.
+ * @param <VALUE> Value type of the column/return value
+ */
 public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;
 	private int nValues = 0;
-	private Block block;
+	private Bucket bucket;
 
 	private final Random random = new Random();
 
@@ -28,12 +32,12 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	 * P(n-th value = output) 	= P(switching n-th value) * P(not switching values > n)
 	 * = 1/n * n/m = 1/m
 	 *
-	 * @param block
+	 * @param bucket
 	 * @param event
 	 */
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
@@ -41,18 +45,18 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 		nValues++;
 
 		if (random.nextInt(nValues) == 0) {
-			value = block.getRaw(event, getColumn());
-			this.block = block;
+			value = bucket.getRaw(event, getColumn());
+			this.bucket = bucket;
 		}
 	}
 
 	@Override
 	public VALUE getAggregationResult() {
-		if (block == null) {
+		if (bucket == null) {
 			return null;
 		}
 
-		return (VALUE) getColumn().getTypeFor(block).createPrintValue(value);
+		return (VALUE) getColumn().getTypeFor(bucket).createPrintValue(value);
 	}
 
 	@Override

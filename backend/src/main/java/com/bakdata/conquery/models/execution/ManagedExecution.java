@@ -1,135 +1,315 @@
 package com.bakdata.conquery.models.execution;
 
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.StreamingOutput;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.bakdata.conquery.apiv1.ResourceConstants;
-import com.bakdata.conquery.apiv1.ResultCSVResource;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
+import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.util.QueryUtils;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.shiro.authz.Permission;
 
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
 @Slf4j
 @CPSBase
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
-public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> {
+@NoArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
 
 	protected DatasetId dataset;
-	protected UUID queryId = UUID.randomUUID();
-	@NotEmpty
-	protected String label = queryId.toString();
+	protected UUID queryId;
+	protected String label;
+
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
-	
-	//we don't want to store or send query results or other result metadata
+
+	@NotNull
+	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
+	private boolean shared = false;
+
+	protected boolean machineGenerated;
+
+
+	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
-	protected transient ExecutionState state = ExecutionState.RUNNING;
+	protected transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
-	protected transient CountDownLatch execution;
+	private final transient CountDownLatch execution = new CountDownLatch(1);
 	@JsonIgnore
-	protected transient LocalDateTime startTime = LocalDateTime.now();
+	private transient LocalDateTime startTime;
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
-	protected transient Namespace namespace;
+	private transient ConqueryErrorInfo error;
 
-	public ManagedExecution(Namespace namespace, UserId owner) {
+	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
 		this.owner = owner;
-		initExecutable(namespace);
+		this.dataset = submittedDataset;
 	}
 
-	public void initExecutable(Namespace namespace) {
-		this.namespace = namespace;
-		this.execution = new CountDownLatch(1);
-		this.dataset = namespace.getStorage().getDataset().getId();
-	}
+	/**
+	 * Executed right before execution submission.
+	 * @param namespaces
+	 */
+	public abstract void initExecutable(DatasetRegistry namespaces);
+
+	/**
+	 * Returns the set of namespaces, this execution needs to be executed on.
+	 * The {@link ExecutionManager} then submits the queries to these namespaces.
+	 */
+	@JsonIgnore
+	public abstract Set<Namespace> getRequiredDatasets();
+
 
 	@Override
 	public ManagedExecutionId createId() {
+		if(queryId == null) {
+			queryId = UUID.randomUUID();
+		}
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
-	protected void fail() {
-		synchronized (execution) {
-			state = ExecutionState.FAILED;
-			finishTime = LocalDateTime.now();
-			execution.countDown();
+	/**
+	 * Fails the execution and log the occurred error.
+	 */
+	protected void fail(MetaStorage storage, ConqueryErrorInfo error) {
+		if(this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
+			// Warn only again if the error is different (failed might by called per collected result)
+			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
+		} else {
+			this.error = error;
+			// Log the error, so its id is atleast once in the logs
+			log.warn("The execution [{}] failed with:\n\t{}", this.error);
 		}
+		
+		finish(storage, ExecutionState.FAILED);
 	}
-	
-	protected void finish() {
+
+	public void start() {
+		startTime = LocalDateTime.now();
+		state = ExecutionState.RUNNING;
+	}
+
+	protected void finish(MetaStorage storage, ExecutionState executionState) {
+		if (getState() == ExecutionState.NEW) {
+			log.error("Query[{}] was never run.", getId());			
+		}
+
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
-			this.state = ExecutionState.DONE;
+			// Set execution state before acting on the latch to prevent a race condition
+			// Not sure if also the storage needs an update first
+			setState(executionState);
 			execution.countDown();
-			try {
-				namespace.getStorage().getMetaStorage().updateExecution(this);
-			}
-			catch (JSONException e) {
-				log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), e, this);
+
+			// No need to persist failed queries. (As they are most likely invalid)
+			if(getState() == ExecutionState.DONE) {
+				if(storage == null) {
+					log.warn("Not saving successful execution {} because no storage was provided", getId());
+					return;
+				}
+				try {
+					storage.updateExecution(this);
+				}
+				catch (JSONException e) {
+					log.error("Failed to store execution {} after finishing: {}", getClass().getSimpleName(), this, e);
+				}
 			}
 		}
-		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), Duration.between(startTime, finishTime));
+
+
+		log.info(
+			"{} {} {} within {}",
+			state,
+			queryId,
+			this.getClass().getSimpleName(),
+			getExecutionTime()
+		);
+	}
+
+	@JsonIgnore
+	public Duration getExecutionTime() {
+		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
-		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
-	}
-	
-	public ExecutionStatus buildStatus(URLBuilder url) {
-		return ExecutionStatus
-			.builder()
-			.label(label)
-			.id(getId())
-			.own(true)
-			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-			.requiredTime((startTime != null && finishTime != null)
-				? ChronoUnit.MILLIS.between(startTime, finishTime)
-				: null)
-			.status(state)
-			.owner(Optional.ofNullable(owner).orElse(null))
-			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user).getLabel()).orElse(null))
-			.resultUrl(
-				url != null
-				? url
-					.set(ResourceConstants.DATASET, dataset.getName())
-					.set(ResourceConstants.QUERY, getId().toString())
-					.to(ResultCSVResource.GET_CSV_PATH).get()
-				: null
-			)
-			.build();
+		if (state == ExecutionState.RUNNING) {
+			Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		}
 	}
 
-	public ExecutionStatus buildStatus() {
-		return buildStatus(null);
+	protected void setStatusBase(@NonNull MetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+		status.setLabel(label == null ? queryId.toString() : label);
+		status.setPristineLabel(label == null || queryId.toString().equals(label));
+		status.setId(getId());
+		status.setTags(tags);
+		status.setShared(shared);
+		status.setOwn(getOwner().equals(user.getId()));
+		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
+		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
+		status.setStatus(state);
+		status.setOwner(Optional.ofNullable(owner).orElse(null));
+		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
+		status.setResultUrl(
+			isReadyToDownload(url, user)
+				? getDownloadURL(url)
+				: null);
+		if (state.equals(ExecutionState.FAILED) && error != null) {
+			// Use plain format here to have a uniform serialization.
+			status.setError(error.asPlain());
+		}
 	}
+
+	/**
+	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
+	 */
+	protected abstract URL getDownloadURL(URLBuilder url);
+
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user) {
+		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
+	}
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
+	}
+	
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
+		ExecutionStatus status = new ExecutionStatus();
+		setStatusBase(storage, url, user, status);
+		for(CreationFlag flag : creationFlags) {
+			switch (flag) {
+				case WITH_COLUMN_DESCIPTION:
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					break;
+				case WITH_SOURCE:
+					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+					break;
+				default:
+					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
+			}
+		}
+		return status;
+		
+	}
+
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		// Implementation specific
+	}
+
+	/**
+	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
+	 */
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		QueryDescription query = getSubmitted();
+		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
+		query.visit(namespacesIdCollector);
+		List<Permission> permissions = new ArrayList<>();
+		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
+
+		boolean canExpand = user.isPermittedAll(permissions);
+
+
+		status.setCanExpand(canExpand);
+		status.setQuery(canExpand ? getSubmitted() : null);
+	}
+
+	public boolean isReadyToDownload(URLBuilder url, User user) {
+		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
+		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
+		 */
+		boolean isPermittedDownload = user.isPermittedAll(getUsedNamespacedIds().stream()
+			.map(NamespacedId::getDataset)
+			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
+			.collect(Collectors.toList()));
+		return url != null && state == ExecutionState.DONE && isPermittedDownload;
+	}
+
+	/**
+	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
+	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
+	 */
+	@JsonIgnore
+	public abstract StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator);
+	
+	/**
+	 * Gives all {@link NamespacedId}s that were required in the execution.
+	 * @return A List of all {@link NamespacedId}s needed for the execution.
+	 */
+	@JsonIgnore
+	public abstract Set<NamespacedId> getUsedNamespacedIds();
+
+
+	/**
+	 * Creates a mapping from subexecutions. Their id is mapped to their {@link QueryPlan}.
+	 */
+	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
+
+	public abstract void addResult(@NonNull MetaStorage storage, R result);
+
+	/**
+	 * Initializes the result that is send from a worker to the ManagerNode.
+	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
+	 * matched to its subqueries.
+	 */
+	@JsonIgnore
+	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
+
+	/**
+	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
+	 */
+	@JsonIgnore
+	public abstract QueryDescription getSubmitted();
 }

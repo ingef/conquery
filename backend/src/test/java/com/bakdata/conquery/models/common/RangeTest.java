@@ -117,11 +117,11 @@ class RangeTest {
 		
 		assertThat(dateRange.getCoveredYears()).containsExactlyInAnyOrderElementsOf(expected);
 	}
-	
+
 	@Test
 	public void coveredQuarters() {
 		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2002, 3, 15));
-		
+
 		List<CDateRange> expected = new ArrayList<>();
 		expected.add(CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 9, 30)));
 		expected.add(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)));
@@ -130,8 +130,15 @@ class RangeTest {
 		expected.add(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)));
 		expected.add(CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)));
 		expected.add(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 15)));
-		
+
 		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrderElementsOf(expected);
+	}
+
+	@Test
+	public void coveredQuartersNotAFullQuarter() {
+		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 1, 10), LocalDate.of(2000, 3, 15));
+
+		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrder(CDateRange.of(LocalDate.of(2000, 1, 10), LocalDate.of(2000, 3, 31)));
 	}
 	
 	public static List<Arguments> deserialize() {

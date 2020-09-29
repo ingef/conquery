@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
+import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
 import com.jakewharton.byteunits.BinaryByteUnit;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,11 +37,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public VALUE get(KEY key) {
+		// TODO: 08.01.2020 fk: This assumes that all values have been read at some point!
 		return cache.get(key);
 	}
 
 	@Override
-	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
+	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -87,10 +87,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			bar = null;
 		}
 		
-		store.forEach(entry -> {
+		store.forEach((key, value, size) -> {
 			try {
-				totalSize.addAndGet(entry.getByteSize());
-				cache.put(entry.getKey(), entry.getValue());
+				totalSize.addAndGet(size);
+				cache.put(key, value);
 			}
 			catch (RuntimeException e) {
 				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
@@ -110,7 +110,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			}
 		});
 		log.info(
-				"\tloaded store {}\n\tentries: {}\n\tsize: {}\n\tloading time: {}",
+				"\tloaded store {}: {} entries, {} within {}",
 				this,
 				cache.values().size(),
 				BinaryByteUnit.format(totalSize.get()),

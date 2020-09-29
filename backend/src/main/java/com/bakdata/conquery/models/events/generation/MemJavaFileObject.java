@@ -6,13 +6,20 @@ import java.net.URI;
 
 import javax.tools.SimpleJavaFileObject;
 
-class MemJavaFileObject extends SimpleJavaFileObject {
-	private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+public class MemJavaFileObject extends SimpleJavaFileObject {
+	private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	private final String className;
+	private byte[] bytes;
 
 	public MemJavaFileObject(String className) {
 		super(URI.create("file:///" + className.replace('.', '/') + Kind.CLASS.extension), Kind.CLASS);
 		this.className = className;
+	}
+	
+	
+	public MemJavaFileObject(String className, byte[] bytes) {
+		this(className);
+		this.bytes = bytes;
 	}
 
 	public String getClassName() {
@@ -20,7 +27,11 @@ class MemJavaFileObject extends SimpleJavaFileObject {
 	}
 
 	public byte[] getClassBytes() {
-		return baos.toByteArray();
+		if(bytes == null) {
+			bytes = baos.toByteArray();
+			baos = null;
+		}
+		return bytes;
 	}
 
 	@Override

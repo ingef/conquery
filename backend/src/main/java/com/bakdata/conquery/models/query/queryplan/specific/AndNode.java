@@ -1,16 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ListMultimap;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class AndNode extends QPParentNode {
 
@@ -37,7 +36,7 @@ public class AndNode extends QPParentNode {
 		return currently;
 	}
 
-	public static QPNode of(Collection<QPNode> children) {
+	public static QPNode of(Collection<? extends QPNode> children) {
 		switch (children.size()) {
 			case 0:
 				return new Leaf();

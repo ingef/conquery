@@ -1,0 +1,77 @@
+{  
+   "type":"QUERY_TEST",
+   "label":"NUMBER_MISSING_NO_RESTRICTION_QUERY Test",
+   "expectedCsv":"tests/query/NUMBER_MISSING_NO_RESTRICTION/expected2.csv",
+   "query":{  
+      "type":"CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+            "type":"OR",
+            "children":[
+				{  
+                  
+                     "ids":[  
+                        "${dataset}.number"
+                     ],
+                     "type":"CONCEPT",
+                     "label":"vs",
+                     "tables":[  
+                        {  
+                           "id":"${dataset}.number.number_connector",
+                           "filters":[ ]
+                        }
+                     ]
+                  
+               }
+			   ]
+            }
+         ]
+      }
+   },
+   "concepts":[  
+      {  
+         "label":"number",
+         "type":"VIRTUAL",
+         "connectors":[  
+            {  
+               "label":"number_connector",
+               "table":"table1",
+               "validityDates":{  
+                  "label":"datum",
+                  "column":"table1.datum"
+               },
+               "filter":{  
+                  "label":"value",
+                  "description":"xy",
+                  "column":"table1.value",
+                  "type":"NUMBER"
+               }
+            }
+         ]
+      }
+   ],
+   "content":{  
+      "tables":[  
+         {  
+            "csv":"tests/query/NUMBER_MISSING_NO_RESTRICTION/content.csv",
+            "name":"table1",
+            "primaryColumn":{  
+               "name":"pid",
+               "type":"STRING"
+            },
+            "columns": [
+        {
+          "name": "value",
+          "type": "REAL"
+        },
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+         }
+      ]
+   }
+}

@@ -18,8 +18,6 @@ import lombok.Setter;
 @CPSType(id="PREFIX_RANGE", base=CTCondition.class)
 public class PrefixRangeCondition implements CTCondition {
 
-	private static final long serialVersionUID = 1L;
-	
 	@Getter @Setter @NotEmpty
 	private String min;
 	@Getter @Setter @NotEmpty

@@ -1,37 +1,51 @@
 package com.bakdata.conquery.models.query.filter.event.number;
 
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends SingleColumnFilterNode<RANGE> {
+/**
+ * Abstract class, filtering single events to be in a specified range. Entity is only included if a single event is in range.
+ * There exist type specific implementations.
+ * @param <RANGE> Range Type for inclusion test.
+ */
+@ToString(of = {"column", "filterValue"})
+public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends EventFilterNode<RANGE> {
 
-	private boolean hit;
+
+	@NotNull
+	@Getter
+	@Setter
+	private Column column;
 
 	public NumberFilterNode(Column column, RANGE filterValue) {
-		super(column, filterValue);
+		super(filterValue);
+		this.column = column;
 	}
 
 	@Override
-	public final boolean checkEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public final boolean checkEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
 
-		return contains(block, event);
+		return contains(bucket, event);
 	}
 
-	public abstract boolean contains(Block block, int event);
-
-	@Override
-	public void acceptEvent(Block block, int event) {
-		// Assumption is that accept cannot be called when checkEvent returned false
-		hit = true;
-	}
+	public abstract boolean contains(Bucket bucket, int event);
 
 	@Override
-	public boolean isContained() {
-		return hit;
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		requiredTables.add(column.getTable().getId());
 	}
+
 }

@@ -9,7 +9,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.text.translate.JavaUnicodeEscaper;
 import org.apache.mina.core.buffer.IoBuffer;
 
-import com.bakdata.conquery.io.mina.ChunkReader.ChunkedMessage;
+import com.bakdata.conquery.io.mina.ChunkedMessage;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
@@ -22,11 +22,11 @@ public class JacksonUtil {
 		return toJsonDebug(IoBuffer.wrap(bytes));
 	}
 	
-	public static String toJsonDebug(List<IoBuffer> list) {
+	public static String toJsonDebug(Iterable<IoBuffer> list) {
 		return toJsonDebug(stream(list));
 	}
 	
-	public static InputStream stream(List<IoBuffer> list) {
+	public static InputStream stream(Iterable<IoBuffer> list) {
 		return new SequenceInputStream(
 			IteratorUtils.asEnumeration(
 				IteratorUtils.transformedIterator(
@@ -42,10 +42,10 @@ public class JacksonUtil {
 	}
 	
 	public static String toJsonDebug(ChunkedMessage msg) {
-		return toJsonDebug(stream(msg.getBuffers()));
+		return toJsonDebug(msg.createInputStream());
 	}
 	
-	private static InputStream stream(IoBuffer buffer) {
+	public static InputStream stream(IoBuffer buffer) {
 		return new ByteArrayInputStream(
 			buffer.array(),
 			buffer.position()+buffer.arrayOffset(),

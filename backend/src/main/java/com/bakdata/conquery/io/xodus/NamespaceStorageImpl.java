@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.functions.Collector;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -23,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
 	
 	@Getter @Setter @NonNull
-	private MasterMetaStorage metaStorage;
+	private MetaStorage metaStorage;
 	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	
@@ -44,10 +43,11 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	}
 
 	
+	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(this, new SingletonNamespaceCollection(centralRegistry));
-		idMapping = StoreInfo.ID_MAPPING.singleton(this);
+		structure = StoreInfo.STRUCTURE.singleton(getConfig(), getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
+		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), getEnvironment(), getValidator());
 		collector
 			.collect(structure)
 			.collect(idMapping);

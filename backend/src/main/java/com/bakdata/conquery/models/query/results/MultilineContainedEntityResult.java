@@ -9,7 +9,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,6 +16,11 @@ import lombok.ToString;
 @Getter @Setter @ToString
 @CPSType(id="MULTILINE_CONTAINED", base=EntityResult.class)
 public class MultilineContainedEntityResult implements ContainedEntityResult {
+	
+	@Min(0)
+	private final int entityId;
+	@NotNull
+	private final List<Object[]> values;
 
 	//this is needed because of https://github.com/FasterXML/jackson-databind/issues/2024
 	public MultilineContainedEntityResult(int entityId, List<Object[]> values) {
@@ -24,13 +28,24 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 		this.values = Objects.requireNonNullElse(values, Collections.emptyList());
 	}
 
-	@Min(0)
-	private final int entityId;
-	@NotNull
-	private final List<Object[]> values;
-
 	@Override
 	public Stream<Object[]> streamValues() {
 		return values.stream();
+	}
+
+	@Override
+	public boolean isFailed() {
+		return false;
+	}
+
+	@Override
+	public boolean isContained() {
+		return true;
+	}
+
+	@Override
+	public int columnCount() {
+		// We look at the first result line to determine the number of columns
+		return values.get(0).length;
 	}
 }

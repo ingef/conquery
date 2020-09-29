@@ -32,7 +32,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	}
 
 	public void forEach(Consumer<VALUE> consumer) {
-		store.forEach(e -> consumer.accept(e.getValue()));
+		store.forEach((key, value, size) -> consumer.accept(value));
 	}
 
 	public void update(VALUE value) throws JSONException {
