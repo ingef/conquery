@@ -44,7 +44,7 @@ import com.github.powerlibraries.io.In;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 @Slf4j
 @Getter

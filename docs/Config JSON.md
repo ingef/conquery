@@ -26,7 +26,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevelopmentAuthorizationConfig.java#L17)</sup></sub></sup>
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevelopmentAuthorizationConfig.java#L18)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
