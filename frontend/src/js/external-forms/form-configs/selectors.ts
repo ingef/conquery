@@ -1,7 +1,18 @@
-import { FormConfigT } from "./reducer";
-import { useSelector } from "react-redux";
+import { useCallback, useState } from "react";
 import { StateT } from "app-types";
+
+import type { DatasetIdT } from "js/api/types";
+import { getFormConfig, getFormConfigs } from "../../api/api";
+import { setMessage } from "../../snack-message/actions";
+
+import { FormConfigT } from "./reducer";
+import { useDispatch, useSelector } from "react-redux";
 import { useActiveFormType } from "../stateSelectors";
+import {
+  loadFormConfigsError,
+  loadFormConfigsSuccess,
+  patchFormConfigSuccess,
+} from "./actions";
 
 const configHasTag = (config: FormConfigT, searchTerm: string) => {
   return (
@@ -83,4 +94,54 @@ export const useIsLabelHighlighted = (label: string) => {
   );
 
   return labelContainsAnySearch(label, formConfigsSearch);
+};
+
+export const useLoadFormConfigs = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
+
+  const loadFormConfigs = useCallback(
+    async (datasetId: DatasetIdT) => {
+      setLoading(true);
+      try {
+        const data = await getFormConfigs(datasetId);
+
+        dispatch(loadFormConfigsSuccess(data));
+      } catch (e) {
+        dispatch(loadFormConfigsError(e));
+      }
+      setLoading(false);
+    },
+    [dispatch]
+  );
+
+  return {
+    loading,
+    loadFormConfigs,
+  };
+};
+
+export const useLoadFormConfig = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
+
+  const loadFormConfig = useCallback(
+    async (datasetId: DatasetIdT, id: string) => {
+      setLoading(true);
+      try {
+        const data = await getFormConfig(datasetId, id);
+
+        dispatch(patchFormConfigSuccess(id, data));
+      } catch (e) {
+        dispatch(setMessage("formConfig.loadError"));
+      }
+      setLoading(false);
+    },
+    [dispatch]
+  );
+
+  return {
+    loading,
+    loadFormConfig,
+  };
 };

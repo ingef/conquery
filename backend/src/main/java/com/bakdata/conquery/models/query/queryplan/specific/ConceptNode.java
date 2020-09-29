@@ -24,7 +24,8 @@ public class ConceptNode extends QPChainNode {
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
-	
+
+
 	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child) {
 		super(child);
 		this.concepts = concepts;
@@ -53,6 +54,7 @@ public class ConceptNode extends QPChainNode {
 			super.nextBlock(bucket);
 		}
 	}
+
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
@@ -85,7 +87,7 @@ public class ConceptNode extends QPChainNode {
 		//check concepts
 		int[] mostSpecificChildren;
 		if (currentRow.getMostSpecificChildren() != null
-			&& ((mostSpecificChildren = currentRow.getMostSpecificChildren().get(event)) != null)) {
+			&& ((mostSpecificChildren = currentRow.getMostSpecificChildren()[event]) != null)) {
 
 			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 				if (ce.matchesPrefix(mostSpecificChildren)) {
@@ -101,7 +103,7 @@ public class ConceptNode extends QPChainNode {
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();

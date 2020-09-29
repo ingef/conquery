@@ -47,7 +47,8 @@ public class DateRestrictingNode extends QPChainNode {
 		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
 		preCurrentRow = ctx.getStorage().getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector().getId());
 
-		if (!validityDateColumn.getType().isDateCompatible()) {
+		validityDateColumn = context.getValidityDateColumn();
+		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 	}
@@ -55,12 +56,19 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+
+		if(validityDateColumn == null) {
+			// If there is no validity date set for a concept there is nothing to restrict
+			return true;
+		}
+
 		int localId = bucket.toLocal(entity.getId());
 
 		// This means the Entity is not contained.
 		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
 			return false;
 		}
+
 		CDateRange range = CDateRange.of(
 			cBlock.getMinDate()[localId],
 			cBlock.getMaxDate()[localId]
@@ -73,9 +81,10 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
-			getChild().acceptEvent(bucket, event);
+		if (validityDateColumn != null && !bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
+			return;
 		}
+		getChild().acceptEvent(bucket, event);
 	}
 
 	@Override

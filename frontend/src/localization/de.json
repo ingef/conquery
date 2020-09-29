@@ -335,8 +335,10 @@
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
-    "previewHeadline": "Die ersten {count} Zeilen der Ergebnisse",
-    "statisticsHeadline": "Spaltenstatistik basierend auf den vollständigen Ergebnissen",
+    "previewHeadline": "Ergebnis-CSV",
+    "previewSubline": "Auszug der ersten {count} Zeilen",
+    "statisticsHeadline": "Spaltenstatistik",
+    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",

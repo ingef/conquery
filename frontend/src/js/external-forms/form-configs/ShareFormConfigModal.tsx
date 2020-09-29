@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
-import { useDispatch, useSelector } from "react-redux";
-import { StateT } from "app-types";
 
 import Modal from "../../modal/Modal";
-import { patchStoredQuery } from "../../api/api";
+import { patchFormConfig } from "../../api/api";
+import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "app-types";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 import TransparentButton from "../../button/TransparentButton";
 import PrimaryButton from "../../button/PrimaryButton";
+import { FormConfigT } from "./reducer";
 import InputMultiSelect from "../../form-components/InputMultiSelect";
+import { patchFormConfigSuccess } from "./actions";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import { exists } from "../../common/helpers/exists";
-
-import { PreviousQueryT } from "./reducer";
-import { loadPreviousQuery, sharePreviousQuerySuccess } from "./actions";
+import { useLoadFormConfig } from "./selectors";
 
 const Buttons = styled("div")`
   text-align: center;
@@ -44,13 +44,13 @@ interface SelectValueT {
 }
 
 interface PropsT {
-  previousQueryId: string;
+  formConfigId: string;
   onClose: () => void;
   onShareSuccess: () => void;
 }
 
-const SharePreviousQueryModal = ({
-  previousQueryId,
+const ShareFormConfigModal = ({
+  formConfigId,
   onClose,
   onShareSuccess,
 }: PropsT) => {
@@ -60,44 +60,41 @@ const SharePreviousQueryModal = ({
   const userGroups = useSelector<StateT, UserGroupT[]>((state) =>
     state.user.me ? state.user.me.groups : []
   );
-  const previousQuery = useSelector<StateT, PreviousQueryT | undefined>(
-    (state) =>
-      state.previousQueries.queries.find(
-        (query) => query.id === previousQueryId
-      )
+  const formConfig = useSelector<StateT, FormConfigT | undefined>((state) =>
+    state.formConfigs.data.find((config) => config.id === formConfigId)
   );
   const initialUserGroupsValue =
-    previousQuery && previousQuery.groups
+    formConfig && formConfig.groups
       ? userGroups
-          .filter((group) => previousQuery.groups?.includes(group.groupId))
-          .map((group) => ({
-            label: group.label,
-            value: group.groupId,
-          }))
+          .filter((group) => formConfig.groups?.includes(group.groupId))
+          .map((group) => ({ label: group.label, value: group.groupId }))
       : [];
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(
     initialUserGroupsValue
   );
 
-  const previousPreviousQueryId = usePrevious(previousQueryId);
-  const dispatch = useDispatch();
+  const previousFormConfigId = usePrevious(formConfigId);
+
+  const { loadFormConfig } = useLoadFormConfig();
 
   useEffect(() => {
     if (
       exists(datasetId) &&
-      !exists(previousPreviousQueryId) &&
-      exists(previousQueryId)
+      !exists(previousFormConfigId) &&
+      exists(formConfigId)
     ) {
-      dispatch(loadPreviousQuery(datasetId, previousQueryId));
+      loadFormConfig(datasetId, formConfigId);
     }
-  }, [datasetId, previousPreviousQueryId, previousQueryId, dispatch]);
+  }, [datasetId, previousFormConfigId, formConfigId, loadFormConfig]);
+
+  const dispatch = useDispatch();
 
   const onSetUserGroupsValue = (value: SelectValueT[] | null) => {
     setUserGroupsValue(value ? value : []);
   };
 
-  if (!previousQuery) {
+  if (!formConfig) {
     return null;
   }
 
@@ -113,13 +110,17 @@ const SharePreviousQueryModal = ({
     const userGroupsToShare = userGroupsValue.map((group) => group.value);
 
     try {
-      await patchStoredQuery(datasetId, previousQueryId, {
+      await patchFormConfig(datasetId, formConfigId, {
         shared,
         groups: userGroupsToShare,
       });
 
       dispatch(
-        sharePreviousQuerySuccess(previousQueryId, shared, userGroupsToShare)
+        patchFormConfigSuccess(formConfigId, {
+          ...formConfig,
+          shared,
+          groups: userGroupsToShare,
+        })
       );
 
       onShareSuccess();
@@ -133,7 +134,7 @@ const SharePreviousQueryModal = ({
       onClose={onClose}
       headline={T.translate("sharePreviousQueryModal.headline")}
     >
-      <QueryName>{previousQuery.label}</QueryName>
+      <QueryName>{formConfig.label}</QueryName>
       <SxInputMultiSelect
         input={{ value: userGroupsValue, onChange: onSetUserGroupsValue }}
         label={T.translate("sharePreviousQueryModal.groupsLabel")}
@@ -142,7 +143,7 @@ const SharePreviousQueryModal = ({
       <Buttons>
         <Btn onClick={onClose}>{T.translate("common.cancel")}</Btn>
         <PrimaryBtn onClick={onShareClicked}>
-          {previousQuery.shared && userGroupsValue.length === 0
+          {formConfig.shared && userGroupsValue.length === 0
             ? T.translate("sharePreviousQueryModal.unshare")
             : T.translate("common.share")}
         </PrimaryBtn>
@@ -151,4 +152,4 @@ const SharePreviousQueryModal = ({
   );
 };
 
-export default SharePreviousQueryModal;
+export default ShareFormConfigModal;

@@ -26,4 +26,9 @@ public class VirtualConcept extends Concept<VirtualConceptConnector> implements 
 	public Concept<?> findConcept() {
 		return getConcept();
 	}
+
+	@Override
+	public boolean matchesPrefix(int[] conceptPrefix) {
+		return true;
+	}
 }
