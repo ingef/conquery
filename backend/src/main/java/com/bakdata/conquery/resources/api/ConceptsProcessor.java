@@ -159,7 +159,7 @@ public class ConceptsProcessor {
 	 * Do a search with the supplied values.
 	 */
 	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
-		if(search == null) {
+		if(search == null || (numberOfTopItems.isPresent() && numberOfTopItems.getAsInt() <= 0)) {
 			return Collections.emptyList();
 		}
 

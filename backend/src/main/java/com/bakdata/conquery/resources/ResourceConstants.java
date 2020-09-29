@@ -14,7 +14,7 @@ public class ResourceConstants {
 	public static final String QUERY	=	"query";
 	public static final String FORM_CONFIG	=	"form-config";
 	public static final String FILENAME	=	"filename";
-	public static final String MAX_RESULT_COUNT	=	"max-result-count";
+	public static final String MAX_RESULT_COUNT	= "max-result-count";
 	public static final String API		=	"api";
 	public static final String IMPORT_ID = "importId";
 	public static final String JOB_ID = "jobId";
