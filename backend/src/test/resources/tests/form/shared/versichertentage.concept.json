@@ -41,7 +41,7 @@
             "column": "vers_tage_range.date"
           }
         ],
-        "column": "vers_tage_range.date"
+        "table": "vers_tage_range"
       }
     ]
   }

@@ -1,13 +1,13 @@
 {
   "type": "QUERY_TEST",
   "label": "SIMPLE_TREECONCEPT_QUERY Test",
-  "expectedCsv": "tests/query/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_QUERY/expected.csv",
+  "expectedCsv": "tests/query/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_WITH_CHILDREN_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "${dataset}.test_tree"
+        "${dataset}.test_tree.a1"
       ],
       "tables": [
         {
@@ -27,11 +27,19 @@
           "column": "include",
           "values": "1"
         },
+        "label": "tree_label",
         "name": "test_column",
-        "table": "test_table",
+        "column": "test_table.test_column",
         "validityDates": {
           "label": "datum",
           "column": "test_table.datum"
+        }
+      },
+      "children": {
+        "name": "a1",
+        "condition": {
+          "type": "EQUAL",
+          "values": "A1"
         }
       }
     }
@@ -39,7 +47,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_QUERY/content.csv",
+        "csv": "tests/query/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_WITH_CHILDREN_QUERY/content.csv",
         "name": "test_table",
         "primaryColumn": {
           "name": "pid",
@@ -49,6 +57,10 @@
           {
             "name": "datum",
             "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
           },
           {
             "name": "include",

@@ -17,6 +17,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -155,10 +156,11 @@ public class Preprocessor {
 				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
 					long progress = 0;
 
+					CSVConfig csvSettings = ConqueryConfig.getInstance().getCsv();
 					// Create CSV parser according to config, but overriding some behaviour.
-					parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
+					parser = new CsvParser(csvSettings.withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
 
-					parser.beginParsing(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn);
+					parser.beginParsing(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
 
 					final String[] headers = parser.getContext().parsedHeaders();
 
