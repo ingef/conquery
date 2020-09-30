@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -50,6 +50,6 @@ public class AdminResource extends HAdmin {
 	@GET
 	@Path("datasets")
 	public List<DatasetId> listDatasets() {
-		return processor.getNamespaces().getAllDatasets().stream().map(Dataset::getId).collect(Collectors.toList());
+		return processor.getDatasetRegistry().getAllDatasets().stream().map(Dataset::getId).collect(Collectors.toList());
 	}
 }

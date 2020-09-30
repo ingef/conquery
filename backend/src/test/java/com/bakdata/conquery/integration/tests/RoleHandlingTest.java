@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -25,7 +25,7 @@ public class RoleHandlingTest extends IntegrationTest.Simple implements Programm
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MetaStorage storage = conquery.getMetaStorage();
 		
 		try {
 			storage.addRole(mandator1);

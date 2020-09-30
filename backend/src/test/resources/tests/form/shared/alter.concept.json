@@ -23,7 +23,7 @@
                 "column": "vers_stamm.date_end"
             }
         ],
-        "column": "vers_stamm.geburtsdatum",
+        "table": "vers_stamm",
         "filters": {
             "type": "DATE_DISTANCE",
             "name": "alterseinschränkung",

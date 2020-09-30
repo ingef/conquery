@@ -15,7 +15,7 @@ const Root = styled("div")`
   display: inline-block;
 `;
 
-const Input = styled("input")`
+const Input = styled("input")<{ large?: boolean }>`
   min-width: 170px;
   padding: ${({ large }) =>
     large ? "10px 30px 10px 14px" : "8px 30px 8px 10px"};
@@ -28,7 +28,7 @@ const ClearZone = styled(IconButton)`
   top: ${({ large }) => (large ? "5px" : "0")};
   right: 10px;
   cursor: pointer;
-  height: 36px;
+  height: 34px;
   display: flex;
   align-items: center;
 
@@ -38,29 +38,29 @@ const ClearZone = styled(IconButton)`
 `;
 
 type InputPropsType = {
-  pattern?: string,
-  step?: number,
-  min?: number,
-  max?: number
+  pattern?: string;
+  step?: number;
+  min?: number;
+  max?: number;
 };
 
 type PropsType = {
-  className?: string,
-  inputType: string,
-  valueType?: string,
-  placeholder?: string,
-  value: number | string | null,
-  large?: boolean,
-  inputProps?: InputPropsType,
-  currencyConfig?: CurrencyConfigT,
-  onChange: (val: null | number | string) => void
+  className?: string;
+  inputType: string;
+  valueType?: string;
+  placeholder?: string;
+  value: number | string | null;
+  large?: boolean;
+  inputProps?: InputPropsType;
+  currencyConfig?: CurrencyConfigT;
+  onChange: (val: null | number | string) => void;
 };
 
 const BaseInput = (props: PropsType) => {
   const inputProps = props.inputProps || {};
   const { pattern } = props.inputProps || {};
 
-  const handleKeyPress = event => {
+  const handleKeyPress = (event) => {
     if (!pattern) return;
 
     const regex = new RegExp(pattern);
@@ -95,8 +95,8 @@ const BaseInput = (props: PropsType) => {
         <Input
           placeholder={props.placeholder}
           type={props.inputType}
-          onChange={e => safeOnChange(e.target.value)}
-          onKeyPress={e => handleKeyPress(e)}
+          onChange={(e) => safeOnChange(e.target.value)}
+          onKeyPress={(e) => handleKeyPress(e)}
           value={props.value || ""}
           large={props.large}
           {...inputProps}
@@ -109,7 +109,7 @@ const BaseInput = (props: PropsType) => {
           tabIndex="-1"
           large={props.large}
           title={T.translate("common.clearValue")}
-          aria-label={T.translate("common.clearValue")}
+          ariaLabel={T.translate("common.clearValue")}
           onClick={() => props.onChange(null)}
         />
       )}

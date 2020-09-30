@@ -6,12 +6,12 @@ import EditableTagsForm from "./EditableTagsForm";
 import IconButton from "../button/IconButton";
 
 type PropsType = {
-  className: string;
+  className?: string;
   tags?: string[];
   editing: boolean;
   loading: boolean;
-  tagComponent?: React.Node;
-  onSubmit: () => void;
+  tagComponent?: React.ReactNode;
+  onSubmit: (value: string[]) => void;
   onToggleEdit: () => void;
   availableTags: string[];
 };
@@ -29,23 +29,27 @@ const StyledTags = styled(Tags)`
 `;
 
 const EditableTags = (props: PropsType) => {
-  return props.editing ? (
-    <EditableTagsForm
-      className={props.className}
-      tags={props.tags}
-      loading={props.loading}
-      onSubmit={props.onSubmit}
-      onCancel={props.onToggleEdit}
-      availableTags={props.availableTags}
-    />
-  ) : (
-    !!props.tags && props.tags.length > 0 && (
+  if (props.editing) {
+    return (
+      <EditableTagsForm
+        className={props.className}
+        tags={props.tags}
+        loading={props.loading}
+        onSubmit={props.onSubmit}
+        onCancel={props.onToggleEdit}
+        availableTags={props.availableTags}
+      />
+    );
+  } else {
+    if (!props.tags || props.tags.length === 0) return null;
+
+    return (
       <EditableTagsDisplay className={props.className}>
         <StyledIconButton bare icon="edit" onClick={props.onToggleEdit} />
         {props.tagComponent || <StyledTags tags={props.tags} />}
       </EditableTagsDisplay>
-    )
-  );
+    );
+  }
 };
 
 export default EditableTags;

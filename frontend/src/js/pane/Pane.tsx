@@ -1,14 +1,13 @@
-import * as React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import PaneTabNavigation from "./PaneTabNavigation";
 
-type PropsType = {
+interface PropsT {
   right?: boolean;
   left?: boolean;
-  children?: React.Node;
-};
+}
 
-const Root = styled("div")`
+const Root = styled("div")<{ left?: boolean; right?: boolean }>`
   width: 100%;
   height: 100%;
 
@@ -23,14 +22,14 @@ const Container = styled("div")`
   position: relative;
 `;
 
-const Pane = (props: PropsType) => {
-  const paneType = props.left ? "left" : "right";
+const Pane: FC<PropsT> = ({ left, right, children }) => {
+  const paneType = left ? "left" : "right";
 
   return (
-    <Root left={props.left} right={props.right}>
+    <Root left={left} right={right}>
       <Container>
         <PaneTabNavigation paneType={paneType} />
-        <Container className="pane__body">{props.children}</Container>
+        <Container>{children}</Container>
       </Container>
     </Root>
   );

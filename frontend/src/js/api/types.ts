@@ -3,92 +3,100 @@
 // - partial types that the reponses are built from
 
 import type { Forms } from "./form-types";
+import type { FormConfigT } from "../external-forms/form-configs/reducer";
+import { SupportedErrorCodesT } from "./errorCodes";
 
 export type DatasetIdT = string;
-export type DatasetT = {
-  id: DatasetIdT,
-  label: string
-};
+export interface DatasetT {
+  id: DatasetIdT;
+  label: string;
+}
 
-export type SelectOptionT = {
-  label: string,
-  value: number | string
-};
+export interface SelectOptionT {
+  label: string;
+  value: number | string;
+}
 
 export type SelectOptionsT = SelectOptionT[];
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
-export type DateRangeT = ?{ min?: string, max?: string };
+export interface DateRangeT {
+  min?: string;
+  max?: string;
+}
 
-export type CurrencyConfigT = {
-  prefix: string,
-  thousandSeparator: string,
-  decimalSeparator: string,
-  decimalScale: number
-};
+export interface CurrencyConfigT {
+  prefix: string;
+  thousandSeparator: string;
+  decimalSeparator: string;
+  decimalScale: number;
+}
 
 export type FilterIdT = string;
-export type FilterBaseT = {
-  id: FilterIdT,
-  label: string,
-  description?: string
-};
+export interface FilterBaseT {
+  id: FilterIdT;
+  label: string;
+  description?: string;
+}
 
-export type RangeFilterValueT = {
-  min?: number,
-  max?: number,
-  exact?: number
-};
-export type RangeFilterT = FilterBaseT & {
-  type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE",
-  value: ?RangeFilterValueT,
-  unit?: string,
-  mode: "range" | "exact",
-  precision?: number,
-  min?: number,
-  max?: number,
-  pattern?: string
-};
+export interface RangeFilterValueT {
+  min?: number;
+  max?: number;
+  exact?: number;
+}
+export interface RangeFilterT extends FilterBaseT {
+  type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
+  value: RangeFilterValueT | null;
+  unit?: string;
+  mode: "range" | "exact";
+  precision?: number;
+  min?: number;
+  max?: number;
+  pattern?: string;
+}
 
 export type MultiSelectFilterValueT = (string | number)[];
-export type MultiSelectFilterT = FilterBaseT & {
-  type: "MULTI_SELECT",
-  unit?: string,
-  options: SelectOptionsT,
-  defaultValue: ?MultiSelectFilterValueT
-};
+export interface MultiSelectFilterBaseT extends FilterBaseT {
+  unit?: string;
+  options: SelectOptionsT;
+  defaultValue: MultiSelectFilterValueT | null;
+}
 
-export type BigMultiSelectFilterT = MultiSelectFilterT & {
-  type: "BIG_MULTI_SELECT",
-  allowDropFile: boolean,
+export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
+  type: "MULTI_SELECT";
+}
+
+export interface BigMultiSelectFilterT extends MultiSelectFilterBaseT {
+  type: "BIG_MULTI_SELECT";
+  allowDropFile: boolean;
   // Not needed in this format:
   template: {
-    filePath: string, // "/.../import/stable/Referenzen/example.csv",
-    columns: string[],
-    columnValue: string, // Unclear, what that's even needed for
-    value: string,
-    optionValue: string
-  }
-};
+    filePath: string; // "/.../import/stable/Referenzen/example.csv",
+    columns: string[];
+    columnValue: string; // Unclear, what that's even needed for
+    value: string;
+    optionValue: string;
+  };
+}
 
 export type SelectFilterValueT = string | number;
-export type SelectFilterT = FilterBaseT & {
-  type: "SELECT",
-  unit?: string,
-  options: SelectOptionsT,
-  defaultValue: ?SelectFilterValueT
-};
+export interface SelectFilterT extends FilterBaseT {
+  type: "SELECT";
+  unit?: string;
+  options: SelectOptionsT;
+  defaultValue: SelectFilterValueT | null;
+}
 
 export type StringFilterValueT = string;
-export type StringFilterT = FilterBaseT & {
-  type: "STRING"
-};
+export interface StringFilterT extends FilterBaseT {
+  type: "STRING";
+}
 
-export type DateColumnT = {
-  options: SelectOptionsT,
-  defaultValue: ?string,
-  value?: string
-};
+export interface DateColumnT {
+  options: SelectOptionsT;
+  defaultValue: string | null;
+  value?: string;
+}
 
 export type FilterT =
   | StringFilterT
@@ -97,118 +105,115 @@ export type FilterT =
   | RangeFilterT;
 
 export type TableIdT = string;
-export type TableT = {
-  id: TableIdT,
-  dateColumn: ?DateColumnT,
-  connectorId: string, // TODO: Get rid of two ids here (unclear when which one should be used)
-  label: string,
-  exclude?: boolean,
-  filters?: FilterT[], // Empty array: key not defined
-  selects?: SelectorT[] // Empty array: key not defined
-};
+export interface TableT {
+  id: TableIdT;
+  dateColumn: DateColumnT | null;
+  connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
+  label: string;
+  exclude?: boolean;
+  filters?: FilterT[]; // Empty array: key not defined
+  selects?: SelectorT[]; // Empty array: key not defined
+}
 
 export type SelectorIdT = string;
-export type SelectorT = {
-  id: SelectorIdT,
-  label: string,
-  description: string,
-  default?: boolean
-};
+export interface SelectorT {
+  id: SelectorIdT;
+  label: string;
+  description: string;
+  default?: boolean;
+}
 
-export type InfoT = {
-  key: string,
-  value: string
-};
+export interface InfoT {
+  key: string;
+  value: string;
+}
 
 export type ConceptIdT = string;
 
-export type ConceptBaseT = {
-  label: string,
-  active: boolean,
-  detailsAvailable: boolean,
-  codeListResolvable: boolean,
-  matchingEntries: number, // TODO: Don't send with struct nodes (even sent with 0)
-  children?: ConceptIdT[], // Might be an empty struct or a "virtual node"
-  description?: string, // Empty array: key not defined
-  additionalInfos?: InfoT[], // Empty array: key not defined
-  dateRange?: DateRangeT
-};
+export interface ConceptBaseT {
+  label: string;
+  active: boolean;
+  detailsAvailable: boolean;
+  codeListResolvable: boolean;
+  matchingEntries: number; // TODO: Don't send with struct nodes (even sent with 0)
+  children?: ConceptIdT[]; // Might be an empty struct or a "virtual node"
+  description?: string; // Empty array: key not defined
+  additionalInfos?: InfoT[]; // Empty array: key not defined
+  dateRange?: DateRangeT;
+}
 
 export type ConceptStructT = ConceptBaseT;
 
-export type ConceptElementT = ConceptBaseT & {
-  parent?: ConceptIdT, // If not set, it's nested under a struct node
-  tables?: TableT[], // Empty array: key not defined
-  selects?: SelectorT[] // Empty array: key not defined
-};
+export interface ConceptElementT extends ConceptBaseT {
+  parent?: ConceptIdT; // If not set, it's nested under a struct node
+  tables?: TableT[]; // Empty array: key not defined
+  selects?: SelectorT[]; // Empty array: key not defined
+}
 
 export type ConceptT = ConceptElementT | ConceptStructT;
 
-export type FilterConfigT = {
-  filter: FilterIdT, // TODO: Rename this: "id"
-  type:  // TODO: NOT USED, the type is clear based on the filter id
-    | "INTEGER_RANGE"
+export interface FilterConfigT {
+  filter: FilterIdT; // TODO: Rename this: "id"
+  type: // TODO: NOT USED, the type is clear based on the filter id
+  | "INTEGER_RANGE"
     | "REAL_RANGE"
     | "MONEY_RANGE"
     | "STRING"
     | "SELECT"
     | "MULTI_SELECT"
-    | "BIG_MULTI_SELECT",
+    | "BIG_MULTI_SELECT";
   value:
     | StringFilterValueT
     | RangeFilterValueT
     | SelectFilterValueT
-    | MultiSelectFilterValueT
-    | BigMultiSelectFilterValueT
-};
+    | MultiSelectFilterValueT;
+}
 
-export type TableConfigT = {
-  id: TableIdT,
-  filters?: FilterConfigT
-}[];
+export interface TableConfigT {
+  id: TableIdT;
+  filters?: FilterConfigT;
+}
 
-export type SelectsConfigT = SelectorIdT[];
-
-export type QueryConceptT = {
-  type: "CONCEPT",
-  ids: ConceptIdT[],
-  label: string, // Used to expand
-  excludeFromTimestampAggregation: boolean, // TODO: Not used
-  tables: TableConfigT,
-  selects?: SelectsConfigT
-};
+export interface QueryConceptT {
+  type: "CONCEPT";
+  ids: ConceptIdT[];
+  label: string; // Used to expand
+  excludeFromTimestampAggregation: boolean; // TODO: Not used
+  tables: TableConfigT[];
+  selects?: SelectorIdT[];
+}
 
 export type QueryIdT = string;
-export type SavedQueryT = {
-  type: "SAVED_QUERY",
-  query: QueryIdT // TODO: rename this "id"
-};
+export interface SavedQueryT {
+  type: "SAVED_QUERY";
+  query: QueryIdT; // TODO: rename this "id"
+}
 
-export type OrQueryT = {
-  type: "OR",
-  children: (QueryConceptT | SavedQueryT)[]
-};
+export interface OrQueryT {
+  type: "OR";
+  children: (QueryConceptT | SavedQueryT)[];
+}
 
-export type DateRestrictionQueryT = {
-  type: "DATE_RESTRICTION",
-  dateRange: DateRangeT,
-  child: OrQueryT
-};
+export interface DateRestrictionQueryT {
+  type: "DATE_RESTRICTION";
+  dateRange: DateRangeT;
+  child: OrQueryT;
+}
 
-export type NegationQueryT = {
-  type: "NEGATION",
-  child: DateRestrictionQueryT | OrQueryT
-};
+export interface NegationQueryT {
+  type: "NEGATION";
+  child: DateRestrictionQueryT | OrQueryT;
+}
 
-export type AndQueryT = {
-  type: "AND",
-  children: (DateRestrictionQueryT | NegationQueryT | OrQueryT)[]
-};
+export interface AndQueryT {
+  type: "AND";
+  children: (DateRestrictionQueryT | NegationQueryT | OrQueryT)[];
+}
 
-export type QueryT = {
-  type: "CONCEPT_QUERY",
-  root: AndQueryT | NegationQueryT | DateRestrictionQueryT
-};
+export interface QueryT {
+  type: "CONCEPT_QUERY";
+  root: AndQueryT | NegationQueryT | DateRestrictionQueryT;
+}
 
 // ---------------------------------------
 // ---------------------------------------
@@ -217,103 +222,141 @@ export type QueryT = {
 // ---------------------------------------
 export type GetDatasetsResponseT = DatasetT[];
 
-export type GetFrontendConfigResponseT = {
-  currency: CurrencyConfigT,
-  version: string
-};
+export interface GetFrontendConfigResponseT {
+  currency: CurrencyConfigT;
+  version: string;
+}
 
-export type GetConceptResponseT = {
-  [key: ConceptIdT]: ConceptElementT
-};
+export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
 
-export type GetConceptsResponseT = {
+export interface GetConceptsResponseT {
   concepts: {
-    [key: ConceptIdT]: ConceptStructT | ConceptElementT
-  },
-  version?: number // TODO: Is this even sent anymore?
-};
+    [conceptId: string]: ConceptStructT | ConceptElementT;
+  };
+  version?: number; // TODO: Is this even sent anymore?
+}
 
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
-export type PostQueriesResponseT = {
-  id: QueryIdT
-};
+export interface PostQueriesResponseT {
+  id: QueryIdT;
+}
+
+export type ColumnDescriptionKind =
+  | "ID"
+  | "STRING"
+  | "INTEGER"
+  | "MONEY"
+  | "NUMERIC"
+  | "DATE"
+  | "DATE_RANGE"
+  | "BOOLEAN"
+  | "CATEGORICAL"
+  | "RESOLUTION";
+
+export interface ColumnDescription {
+  label: string;
+  selectId: string | null;
+  type: ColumnDescriptionKind;
+}
 
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
-export type GetQueryResponseDoneT = {
-  status: "DONE",
-  numberOfResults: number,
-  resultUrl: string
-};
+export interface GetQueryResponseDoneT {
+  status: "DONE";
+  numberOfResults: number;
+  resultUrl: string;
+  columnDescriptions: ColumnDescription[];
+}
 
-export type GetQueryResponseT =
-  | GetQueryResponseDoneT
-  | {
-      status: "FAILED" | "CANCELED"
-    };
+// TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
+export interface GetQueryErrorResponseT {
+  status: "FAILED" | "CANCELED";
+  error: ErrorResponseT | null;
+}
 
-export type GetStoredQueryResponseT = {
-  id: QueryIdT,
-  label: string,
-  createdAt: string, // ISO timestamp: 2019-06-18T11:11:50.528626+02:00
-  own: boolean,
-  shared: boolean,
-  system: boolean,
-  ownerName: string,
-  numberOfResults: number,
-  resultUrl: string,
-  requiredTime: number, // TODO: Not used
-  tags?: string[],
-  query: QueryT, // TODO: Remove in QUERIES response. Creates a lot of additional traffic right now
-  owner: string, // TODO: Remove. Not used. And it's actually an ID
-  status: "DONE" // TODO: Remove. Not used here
-};
+export interface ErrorResponseT {
+  id?: string;
+  code: SupportedErrorCodesT; // To translate to localized messages
+  message?: string; // For developers / debugging only
+  context?: Record<string, string>; // More information to maybe display in translated messages
+}
+
+export type GetQueryResponseT = GetQueryResponseDoneT | GetQueryErrorResponseT;
+
+export interface GetStoredQueryResponseT {
+  id: QueryIdT;
+  label: string;
+  createdAt: string; // ISO timestamp: 2019-06-18T11:11:50.528626+02:00
+  own: boolean;
+  shared: boolean;
+  system: boolean;
+  ownerName: string;
+  numberOfResults: number;
+  resultUrl: string;
+  requiredTime: number; // TODO: Not used
+  tags?: string[];
+  query: QueryT; // TODO: Remove in QUERIES response. Creates a lot of additional traffic right now
+  owner: string; // TODO: Remove. Not used. And it's actually an ID
+  status: "DONE"; // TODO: Remove. Not used here
+  groups?: UserGroupIdT[];
+}
 
 // TODO: This actually returns a lot of unused fields, see above
 export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
-export type PostConceptResolveResponseT = {
-  resolvedConcepts?: string[],
-  unknownCodes?: string[] // TODO: Use "unknownConcepts"
-};
+export interface PostConceptResolveResponseT {
+  resolvedConcepts?: string[];
+  unknownCodes?: string[]; // TODO: Use "unknownConcepts"
+}
 
-export type PostFilterResolveResponseT = {
-  unknownCodes?: string[],
+export interface PostFilterResolveResponseT {
+  unknownCodes?: string[];
   resolvedFilter?: {
-    filterId: FilterIdT,
-    tableId: TableIdT,
+    filterId: FilterIdT;
+    tableId: TableIdT;
     value: {
-      label: string,
-      value: string
-    }[]
-  }
-};
+      label: string;
+      value: string;
+    }[];
+  };
+}
 
-export type PostFilterSuggestionsResponseT = {
-  label: string,
-  value: string,
-  optionValue: ?string,
-  templateValues: string[] // unclear whether that's correct
-}[];
+interface FilterSuggestion {
+  label: string;
+  value: string;
+  optionValue: string | null;
+  templateValues: string[]; // unclear whether that's correct
+}
+export type PostFilterSuggestionsResponseT = FilterSuggestion[];
 
 export type GetFormQueriesResponseT = Forms;
 
-export type Permission = {
-  domains: string[],
-  abilities: string[],
-  targets: string[]
-};
+export interface PermissionT {
+  domains: string[];
+  abilities: string[];
+  targets: string[];
+}
 
-export type UserGroup = {
-  groupId: string,
-  label: string
-};
+export type UserGroupIdT = string;
+export interface UserGroupT {
+  groupId: UserGroupIdT;
+  label: string;
+}
 
-export type GetMeResponseT = {
-  userName: string,
-  permissions: Permission[],
-  groups: UserGroup[]
-};
+export interface GetMeResponseT {
+  userName: string;
+  permissions: PermissionT[];
+  groups: UserGroupT[];
+  hideLogoutButton?: boolean;
+}
 
-export type PostLoginResponseT = {
-  access_token: string
-};
+export interface PostLoginResponseT {
+  access_token: string;
+}
+
+export interface PostFormConfigsResponseT {
+  id: string;
+}
+
+export type GetFormConfigsResponseT = FormConfigT[];
+
+export type GetFormConfigResponseT = FormConfigT;

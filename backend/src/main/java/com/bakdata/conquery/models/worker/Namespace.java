@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -10,6 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -23,19 +26,24 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * Keep track of all data assigned to a single dataset. Each Slave has one {@link Worker} per {@link Dataset} / {@link Namespace}.
+ * Keep track of all data assigned to a single dataset. Each ShardNode has one {@link Worker} per {@link Dataset} / {@link Namespace}.
  * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
  */
 @Slf4j
 @Setter
 @Getter
 @NoArgsConstructor
-public class Namespace {
+public class Namespace implements Closeable {
 
 	@JsonIgnore
 	private transient NamespaceStorage storage;
+
 	@JsonIgnore
 	private transient ExecutionManager queryManager;
+
+	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
+	@JsonIgnore
+	private transient JobManager jobManager;
 
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
@@ -47,12 +55,14 @@ public class Namespace {
 	 */
 	@JsonIgnore
 	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
+
 	@JsonIgnore
-	private transient Namespaces namespaces;
+	private transient DatasetRegistry namespaces;
 
 	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
 		this.queryManager = new ExecutionManager(this);
+		this.jobManager = new JobManager(storage.getDataset().getName());
 	}
 
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {
@@ -60,10 +70,10 @@ public class Namespace {
 
 	public void checkConnections() {
 		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w -> w.getConnectedSlave() != null);
+		l.removeIf(w -> w.getConnectedShardNode() != null);
 
 		if (!l.isEmpty()) {
-			throw new IllegalStateException("Not all known slaves are connected. Missing " + l);
+			throw new IllegalStateException("Not all known ShardNodes are connected. Missing " + l);
 		}
 	}
 
@@ -102,15 +112,46 @@ public class Namespace {
 	}
 
 	public synchronized void addWorker(WorkerInformation info) {
-		Objects.requireNonNull(info.getConnectedSlave(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
+		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);
 		workers = l;
+
+		for (Integer bucket : info.getIncludedBuckets()) {
+			final WorkerInformation old = bucket2WorkerMap.put(bucket.intValue(), info);
+
+			// This is a completely invalid state from which we should not recover even in production settings.
+			if (old != null && !old.equals(info)) {
+				throw new IllegalStateException(String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
+			}
+		}
 	}
 
 	@JsonIgnore
 	public Dataset getDataset() {
 		return storage.getDataset();
+	}
+	
+	public void close() {
+		try {
+			jobManager.close();
+		}
+		catch (Exception e) {
+			log.error("Unable to close namespace jobmanager of {}", this, e);
+		}
+		
+		try {
+			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
+			storage.close();
+		}
+		catch (IOException e) {
+			log.error("Unable to close namespace storage of {}.", this, e);
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + '[' + storage.getEnvironment().getLocation() + ']';
 	}
 }

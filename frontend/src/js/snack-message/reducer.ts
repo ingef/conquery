@@ -1,14 +1,17 @@
 import { SET_MESSAGE, RESET_MESSAGE } from "./actionTypes";
 
-export type StateType = {
+export interface SnackMessageStateT {
   messageKey: string | null;
+}
+
+const initialState: SnackMessageStateT = {
+  messageKey: null,
 };
 
-const initialState: StateType = {
-  messageKey: null
-};
-
-export default (state: StateType = initialState, action: Object): StateType => {
+export default (
+  state: SnackMessageStateT = initialState,
+  action: Object
+): SnackMessageStateT => {
   switch (action.type) {
     case SET_MESSAGE:
       return { ...state, messageKey: action.payload.messageKey };

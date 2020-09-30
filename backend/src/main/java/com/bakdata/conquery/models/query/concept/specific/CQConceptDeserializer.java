@@ -1,5 +1,12 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -10,18 +17,11 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.module.afterburner.deser.SuperSonicBeanDeserializer;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Deserializer for {@link CQConcept}. Specifies the actual query element based on the Concept it is targeting.
@@ -43,8 +43,8 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 			final ScanResult scan = new ClassGraph()
 											.enableClassInfo()
 											.enableAnnotationInfo()
-											//blacklist some packages that contain large libraries
-											.blacklistPackages(
+											//reject some packages that contain large libraries
+											.rejectPackages(
 													"groovy",
 													"org.codehaus.groovy",
 													"org.apache",
@@ -135,7 +135,7 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 															  .createBeanDeserializer(ctxt, type, ctxt.getConfig().introspect(type));
 
 		// Set-up deserializer for current context etc.
-		((SuperSonicBeanDeserializer) beanDeserializer).resolve(ctxt);
+		((BeanDeserializerBase) beanDeserializer).resolve(ctxt);
 
 		// parsers created with TreeNode need to be stepped once to be used in the rest of Jackson.
 		parser.nextToken();

@@ -30,10 +30,10 @@ const CenteredIcon = styled(FaIcon)`
 `;
 
 type PropsType = {
-  loading: boolean,
-  resolved: Object,
-  error: Object,
-  onClose: Function
+  loading: boolean;
+  resolved: Object;
+  error: Object;
+  onClose: Function;
 };
 
 const selectResolvedItemsCount = resolved => {

@@ -7,17 +7,18 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
-
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ConqueryConstants {
 
+	public static final String ALL_IDS_TABLE = "ALL_IDS";
 	public static final String EXTENSION_PREPROCESSED = ".cqpp";
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
-	public static final String ALL_IDS_TABLE = "ALL_IDS_TABLE";
-	public static final String ALL_IDS_TABLE___ID = "id";
-	public static final SimpleResultInfo DATES_INFO = new SimpleResultInfo("dates", ResultType.STRING);
+	public static final String INPUT_FILE_EXTENSION = ".csv.gz";
+	public static final String ID_TYPE = "ID";
+
+  public static final SimpleResultInfo DATES_INFO = new SimpleResultInfo("dates", ResultType.STRING);
 	
 	// Form related constants
 	public static final String CONTEXT_INDEX = "index";

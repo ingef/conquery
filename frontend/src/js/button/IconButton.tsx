@@ -1,17 +1,15 @@
 import * as React from "react";
-import styled from "@emotion/styled";
 import BasicButton from "./BasicButton";
-import FaIcon from "../icon/FaIcon";
+import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
+import styled from "@emotion/styled";
 
-type PropsType = {
-  children?: React.Node;
-  iconProps?: Object;
-  active?: boolean;
-  large?: boolean;
-  icon: string;
-};
+interface StyledFaIconProps extends FaIconPropsT {
+  tight?: boolean;
+  red?: boolean;
+  hasChildren: boolean;
+}
 
-const StyledFaIcon = styled(FaIcon)`
+const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
   color: ${({ theme, active, red }) =>
     red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
@@ -19,7 +17,7 @@ const StyledFaIcon = styled(FaIcon)`
     hasChildren ? (tight ? "5px" : "10px") : "0"};
 `;
 
-const StyledTransparentButton = styled(BasicButton)`
+const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   background-color: transparent;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.black};
@@ -36,35 +34,49 @@ const StyledTransparentButton = styled(BasicButton)`
 
   &:disabled {
     &:hover {
-      opacity: 0.8;
+      opacity: 0.6;
     }
   }
 `;
 
+interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
+  iconProps?: IconStyleProps;
+  active?: boolean;
+  large?: boolean;
+  icon: string;
+  regular?: boolean;
+  tight?: boolean;
+  red?: boolean;
+  left?: boolean;
+  frame?: boolean;
+  bare?: boolean;
+  onClick: () => void;
+}
+
 // A button that is prefixed by an icon
-const IconButton = ({
+const IconButton: React.FC<PropsT> = ({
   icon,
   active,
   red,
   large,
   regular,
-  tight,
   left,
   children,
+  tight,
   iconProps,
   ...restProps
-}: PropsType) => (
+}) => (
   <StyledTransparentButton active={active} {...restProps}>
     <StyledFaIcon
       main
       left={left}
-      hasChildren={!!children}
       regular={regular}
       large={large}
       active={active}
-      tight={tight}
       red={red}
       icon={icon}
+      hasChildren={!!children}
+      tight={tight}
       {...iconProps}
     />
     {children}

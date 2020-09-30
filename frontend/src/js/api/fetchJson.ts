@@ -14,24 +14,29 @@ export async function fetchJsonUnauthorized(
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          ...request.headers
-        }
+          ...request.headers,
+        },
       }
     : {
         url,
         method: "GET",
         headers: {
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+        },
       };
 
   try {
     const response = await axios({
       ...finalRequest,
-      validateStatus: () => true // Don't ever reject the promise for special status codes
+      validateStatus: () => true, // Don't ever reject the promise for special status codes
     });
 
-    if (response.status >= 200 && response.status < 300) {
+    if (
+      response.status >= 200 &&
+      response.status < 300 &&
+      !!response.data &&
+      !response.data.error
+    ) {
       // Also handle empty responses
       return response.data;
     } else {
@@ -57,8 +62,8 @@ function fetchJson(
     ...(request || {}),
     headers: {
       Authorization: `Bearer ${authToken}`,
-      ...((request && request.headers) || {})
-    }
+      ...((request && request.headers) || {}),
+    },
   };
 
   return fetchJsonUnauthorized(url, finalRequest, rawBody);

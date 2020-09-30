@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.NumberParsing;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.NoopTransformer;
@@ -13,11 +12,13 @@ import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.MoneyTypeLong;
 import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.util.NumberParsing;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class MoneyParser extends Parser<Long> {
 
 	private long maxValue = Long.MIN_VALUE;

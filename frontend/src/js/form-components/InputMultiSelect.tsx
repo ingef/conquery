@@ -16,18 +16,18 @@ import TooManyValues from "./TooManyValues";
 import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
 
-type PropsType = FieldPropsType & {
-  label?: string,
-  options: SelectOptionsT | null,
-  disabled?: boolean | null,
-  tooltip?: string,
-  onInputChange?: Function,
-  isLoading?: boolean,
-  className?: string,
+interface PropsType extends FieldPropsType {
+  label?: string;
+  options: SelectOptionsT | null;
+  disabled?: boolean | null;
+  tooltip?: string;
+  onInputChange?: Function;
+  isLoading?: boolean;
+  className?: string;
 
-  allowDropFile?: boolean | null,
-  onDropFile?: Function
-};
+  allowDropFile?: boolean | null;
+  onDropFile?: Function;
+}
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
@@ -62,7 +62,7 @@ const InfoText = styled("p")`
 // TODO: Unlimited here + paginated backend vs
 const OPTIONS_LIMIT = 50;
 
-const MultiValueLabel = params => {
+const MultiValueLabel = (params) => {
   const label = params.data.optionLabel || params.data.label || params.data;
   const valueLabel = params.data.templateValues
     ? Mustache.render(label, params.data.templateValues)
@@ -75,12 +75,10 @@ const MultiValueLabel = params => {
   );
 };
 
-const optionContainsStr = str => option => {
+const optionContainsStr = (str) => (option) => {
   return (
-    option.value
-      .toString()
-      .toLowerCase()
-      .includes(str) || option.label.toLowerCase().includes(str)
+    option.value.toString().toLowerCase().includes(str) ||
+    option.label.toLowerCase().includes(str)
   );
 };
 
@@ -92,19 +90,19 @@ const InputMultiSelect = (props: PropsType) => {
 
   const options =
     !!props.options &&
-    props.options.slice(0, OPTIONS_LIMIT).map(option => ({
+    props.options.slice(0, OPTIONS_LIMIT).map((option) => ({
       ...option,
       label:
         !!option.optionValue && !!option.templateValues
           ? Mustache.render(option.optionValue, option.templateValues)
           : option.label,
       value: option.value.toString(),
-      optionLabel: option.label
+      optionLabel: option.label,
     }));
 
   const MenuList = ({ children, ...ownProps }) => {
     return (
-      <div>
+      <>
         <Row>
           <InfoText>
             {!!props.options ? props.options.length : 0}{" "}
@@ -125,7 +123,7 @@ const InputMultiSelect = (props: PropsType) => {
           </TransparentButton>
         </Row>
         <components.MenuList {...ownProps}>{children}</components.MenuList>
-      </div>
+      </>
     );
   };
 
@@ -153,11 +151,11 @@ const InputMultiSelect = (props: PropsType) => {
       onChange={props.input.onChange}
       onInputChange={
         props.onInputChange || // To allow for async option loading
-        function(value) {
+        function (value) {
           return value;
         }
       }
-      formatCreateLabel={inputValue =>
+      formatCreateLabel={(inputValue) =>
         T.translate("common.create") + `: "${inputValue}"`
       }
       formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
@@ -172,6 +170,7 @@ const InputMultiSelect = (props: PropsType) => {
 
   return (
     <Labeled
+      className={props.className}
       valueChanged={
         !isEmpty(props.input.value) &&
         props.input.value !== props.input.defaultValue

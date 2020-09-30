@@ -16,14 +16,14 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.ResultInfoDecorator;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class RelExportGenerator {
 	
-	public static RelativeFormQuery generate(Namespaces namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
+	public static RelativeFormQuery generate(DatasetRegistry namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
 		
 		List<DateContextMode> resolutions = null;
 		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
@@ -39,7 +39,7 @@ public class RelExportGenerator {
 		return generate(mode.getForm().getPrerequisite(), mode.getFeatures(), mode.getOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutions, namespaces);
 	}
 	
-	public static RelativeFormQuery generate(IQuery query, List<CQElement> features, List<CQElement> outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContextMode timeUnit, List<DateContextMode> resolutions, Namespaces namespaces) {
+	public static RelativeFormQuery generate(IQuery query, List<CQElement> features, List<CQElement> outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContextMode timeUnit, List<DateContextMode> resolutions, DatasetRegistry namespaces) {
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(outcomes, namespaces);
 

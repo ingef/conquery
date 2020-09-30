@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.MetaDataPatch.PermissionCreator;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
@@ -36,7 +36,7 @@ public interface  Shareable {
 	
 	
 	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable> Consumer<ShareInformation> sharer(
-		MasterMetaStorage storage,
+		MetaStorage storage,
 		User user,
 		PermissionCreator<ID> sharedPermissionCreator) {
 		if(!(this instanceof Identifiable<?>)) {
@@ -46,7 +46,7 @@ public interface  Shareable {
 		return (patch) -> {
 			if(patch != null && patch.getShared() != null) {
 				List<Group> groups;
-				if(patch.getGroups() != null) {
+				if(patch.getGroups() != null && !patch.getGroups().isEmpty()) {
 					// Resolve the provided groups
 					groups = patch.getGroups().stream().map(id -> storage.getGroup(id)).collect(Collectors.toList());
 				}
@@ -73,7 +73,7 @@ public interface  Shareable {
 	 * Does persist this change made to the {@link Shareable}. 
 	 */
 	public static <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable, O extends PermissionOwner<? extends IId<O>>> void shareWithOther(
-		@NonNull MasterMetaStorage storage,
+		@NonNull MetaStorage storage,
 		@NonNull User user,
 		@NonNull S shareable,
 		@NonNull PermissionCreator<ID> sharedPermissionCreator,

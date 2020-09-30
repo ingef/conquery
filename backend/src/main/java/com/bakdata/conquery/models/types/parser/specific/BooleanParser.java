@@ -8,7 +8,9 @@ import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.NoopTransformer;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.BooleanTypeBoolean;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class BooleanParser extends Parser<Boolean> {
 
 	@Override

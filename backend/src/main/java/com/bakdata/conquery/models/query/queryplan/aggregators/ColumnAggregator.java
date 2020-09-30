@@ -23,14 +23,13 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	public abstract Column[] getRequiredColumns();
 
 	@Override
-	public abstract void aggregateEvent(Bucket bucket, int event);
+	public abstract void acceptEvent(Bucket bucket, int event);
 
 	@Override
 	public String toString(){
 		return getClass().getSimpleName();
 	}
 	
-	@Override
 	public ColumnAggregator<T> clone(CloneContext ctx) {
 		return ctx.clone(this);
 	}

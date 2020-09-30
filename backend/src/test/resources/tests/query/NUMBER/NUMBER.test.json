@@ -46,15 +46,15 @@
 			"connectors": [
 				{
 					"label": "number_connector",
-					"table": "vers_stamm",
+					"table": "table1",
 					"validityDates": {
 						"label": "datum",
-						"column": "vers_stamm.datum"
+						"column": "table1.datum"
 					},
 					"filter": {
 						"label": "value",
 						"description": "xy",
-						"column": "vers_stamm.value",
+						"column": "table1.value",
 						"type": "NUMBER"
 					}
 				}
@@ -65,7 +65,7 @@
 		"tables": [
 			{
 				"csv": "tests/query/NUMBER/content.csv",
-				"name": "vers_stamm",
+				"name": "table1",
 				"primaryColumn": {
 					"name": "pid",
 					"type": "STRING"

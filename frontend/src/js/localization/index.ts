@@ -1,15 +1,21 @@
-// @flow
-
 import _T from "i18n-react";
+import { Locale } from "date-fns";
+
 
 import { mergeDeep } from "../common/helpers";
 
 export const T = _T;
 
-let i18nLocale = null;
-let dateFnsLocale = null;
+type AvailableLocale = "en" | "de";
 
-export const initializeLocalization = (locale, dateLocale, ...texts) => {
+let i18nLocale: AvailableLocale | null = null;
+let dateFnsLocale: AvailableLocale | null = null;
+
+export const initializeLocalization = (
+  locale: AvailableLocale,
+  dateLocale: Locale,
+  ...texts
+) => {
   T.setTexts(mergeDeep(...texts));
 
   i18nLocale = locale;
@@ -21,5 +27,5 @@ export const getDateLocale = () => {
 };
 
 export const getLocale = () => {
-  return i18nLocale;
+  return i18nLocale || "de";
 };

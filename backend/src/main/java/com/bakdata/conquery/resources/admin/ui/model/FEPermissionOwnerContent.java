@@ -4,13 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * This class provides the FreeMarker template with the needed data for easier access.
@@ -23,7 +21,7 @@ public class FEPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
 	/**
 	 *  Holds the owned permission objects and its JSON representation.
 	 */
-	private List<Pair<FEPermission,String>> permissions;
+	private Set<FEPermission> permissions;
 	
 	
 	/**

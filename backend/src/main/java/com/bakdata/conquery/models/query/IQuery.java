@@ -11,11 +11,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.MoreCollectors;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 public abstract class IQuery implements QueryDescription {
 
 	public abstract QueryPlan createQueryPlan(QueryPlanContext context);
@@ -31,8 +33,8 @@ public abstract class IQuery implements QueryDescription {
 		return set;
 	}
 
-	public ResultInfoCollector collectResultInfos(PrintSettings config) {
-		ResultInfoCollector collector = new ResultInfoCollector(config);
+	public ResultInfoCollector collectResultInfos() {
+		ResultInfoCollector collector = new ResultInfoCollector();
 		collectResultInfos(collector);
 		return collector;
 	}
@@ -40,7 +42,7 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void collectResultInfos(ResultInfoCollector collector);
 	
 	@Override
-	public ManagedQuery toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+	public ManagedQuery toManagedExecution(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset) {
 		return new ManagedQuery(this,userId, submittedDataset);
 	}
 

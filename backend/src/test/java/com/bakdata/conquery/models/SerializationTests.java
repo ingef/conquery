@@ -5,14 +5,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import com.bakdata.conquery.apiv1.FormConfigProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.apiv1.forms.FormConfig;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -25,12 +23,18 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,7 +76,7 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException{
-		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		MetaStorage storage = mock(MetaStorage.class);
 		User user = new User("user", "user");
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
@@ -93,7 +97,7 @@ public class SerializationTests {
 	
 	@Test
 	public void group() throws IOException, JSONException {
-		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		MetaStorage storage = mock(MetaStorage.class);
 		Group group = new Group("group", "group");
 		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group
@@ -192,5 +196,34 @@ public class SerializationTests {
 		SerializationTestUtil
 			.forType(FormConfig.class)
 			.test(formConfig);
+	}
+	
+	@Test
+	public void managedQuery() throws JSONException, IOException {
+		
+		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), new DatasetId("test-dataset"));
+		execution.setTags(new String[] {"test-tag"});
+		
+		SerializationTestUtil
+			.forType(ManagedExecution.class)
+			.test(execution);
+	}
+	
+	@Test
+	public void executionCreationPlanError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
+		
+		SerializationTestUtil
+			.forType(ConqueryError.class)
+			.test(error);
+	}
+	
+	@Test
+	public void executionCreationResolveError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test"));
+		
+		SerializationTestUtil
+			.forType(ConqueryError.class)
+			.test(error);
 	}
 }

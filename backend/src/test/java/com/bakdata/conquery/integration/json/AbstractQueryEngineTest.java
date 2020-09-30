@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -23,10 +23,8 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -45,8 +43,8 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
-		Namespaces namespaces = standaloneSupport.getNamespace().getNamespaces();
-		MasterMetaStorage storage = standaloneSupport.getNamespace().getStorage().getMetaStorage();
+		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
+		MetaStorage storage = standaloneSupport.getNamespace().getStorage().getMetaStorage();
 		UserId userId = standaloneSupport.getTestUser().getId();
 		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();
 		
@@ -64,17 +62,12 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		if (managed.getState() == ExecutionState.FAILED) {
-			managed
-				.getResults()
-				.stream()
-				.filter(EntityResult::isFailed)
-				.map(FailedEntityResult.class::cast)
-				.forEach(r->log.error("Failure in query " + managed.getId(), r.getThrowable()));
+			log.error("Failure in query {}. The error was: {}" + managed.getId(),managed.getError());
 			fail("Query failed (see above)");
 		}
 		
 		//check result info size
-		ResultInfoCollector resultInfos = managed.collectResultInfos(PRINT_SETTINGS);
+		ResultInfoCollector resultInfos = managed.collectResultInfos();
 		assertThat(
 			managed
 				.fetchContainedEntityResult()

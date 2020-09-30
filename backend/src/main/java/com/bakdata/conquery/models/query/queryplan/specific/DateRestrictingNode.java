@@ -1,12 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Map;
+import java.util.Objects;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
@@ -14,9 +17,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Map;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -32,7 +32,7 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		//if there was no date restriction we can just use the restriction CDateSet
 		if(ctx.getDateRestriction().isAll()) {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
@@ -45,10 +45,10 @@ public class DateRestrictingNode extends QPChainNode {
 		super.nextTable(ctx, currentTable);
 
 
-		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
 		preCurrentRow = entity.getCBlockPreSelect(context.getConnector().getId());
 
-		if (!validityDateColumn.getType().isDateCompatible()) {
+		validityDateColumn = context.getValidityDateColumn();
+		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 	}
@@ -56,11 +56,18 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		EntityRow currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+		
+		if(validityDateColumn == null) {
+			// If there is no validity date set for a concept there is nothing to restrict
+			return true;
+		}
+		
 		CBlock cBlock = currentRow.getCBlock();
 		int localId = bucket.toLocal(entity.getId());
 		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
 			return false;
 		}
+		
 		CDateRange range = CDateRange.of(
 			cBlock.getMinDate()[localId],
 			cBlock.getMaxDate()[localId]
@@ -72,10 +79,11 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
-		if (bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
-			getChild().nextEvent(bucket, event);
+	public void acceptEvent(Bucket bucket, int event) {
+		if (validityDateColumn != null && !bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
+			return;
 		}
+		getChild().acceptEvent(bucket, event);
 	}
 
 	@Override
@@ -85,6 +93,6 @@ public class DateRestrictingNode extends QPChainNode {
 	
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new DateRestrictingNode(restriction, getChild().clone(ctx));
+		return new DateRestrictingNode(restriction, ctx.clone(getChild()));
 	}
 }

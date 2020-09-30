@@ -11,7 +11,12 @@ public enum NotContainedEntityResult implements EntityResult, SinglelineEntityRe
 	public String toString() {
 		return "NOT_CONTAINED";
 	}
-	
+
+	@Override
+	public boolean isFailed() {
+		return false;
+	}
+
 	@Override
 	public boolean isContained() {
 		return false;

@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.execution;
 
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,37 +20,39 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.metrics.ExecutionMetrics;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -61,11 +65,12 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @Slf4j
 @CPSBase
+@NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
 
 	protected DatasetId dataset;
-	protected UUID queryId = UUID.randomUUID();
+	protected UUID queryId;
 	protected String label;
 
 	protected LocalDateTime creationTime = LocalDateTime.now();
@@ -78,6 +83,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	protected boolean machineGenerated;
 
+
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	protected transient ExecutionState state = ExecutionState.NEW;
@@ -87,6 +93,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private transient LocalDateTime startTime;
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
+	@JsonIgnore
+	private transient ConqueryErrorInfo error;
 
 	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
 		this.owner = owner;
@@ -97,35 +105,49 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Executed right before execution submission.
 	 * @param namespaces
 	 */
-	public abstract void initExecutable(Namespaces namespaces);
+	public abstract void initExecutable(DatasetRegistry namespaces);
 
 	/**
 	 * Returns the set of namespaces, this execution needs to be executed on.
 	 * The {@link ExecutionManager} then submits the queries to these namespaces.
 	 */
 	@JsonIgnore
-	public abstract Set<Namespace> getRequiredNamespaces();
+	public abstract Set<Namespace> getRequiredDatasets();
 
 
 	@Override
 	public ManagedExecutionId createId() {
+		if(queryId == null) {
+			queryId = UUID.randomUUID();
+		}
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
-	protected void fail(MasterMetaStorage storage) {
+	/**
+	 * Fails the execution and log the occurred error.
+	 */
+	protected void fail(MetaStorage storage, ConqueryErrorInfo error) {
+		if(this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
+			// Warn only again if the error is different (failed might by called per collected result)
+			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
+		} else {
+			this.error = error;
+			// Log the error, so its id is atleast once in the logs
+			log.warn("The execution [{}] failed with:\n\t{}", this.error);
+		}
+		
 		finish(storage, ExecutionState.FAILED);
 	}
 
 	public void start() {
-		ExecutionMetrics.getRunningQueriesCounter().inc();
-
 		startTime = LocalDateTime.now();
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
-		if (getState() == ExecutionState.NEW)
-			log.error("Query {} was never run.", getId());
+	protected void finish(MetaStorage storage, ExecutionState executionState) {
+		if (getState() == ExecutionState.NEW) {
+			log.error("Query[{}] was never run.", getId());			
+		}
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
@@ -136,18 +158,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if(getState() == ExecutionState.DONE) {
+				if(storage == null) {
+					log.warn("Not saving successful execution {} because no storage was provided", getId());
+					return;
+				}
 				try {
 					storage.updateExecution(this);
 				}
 				catch (JSONException e) {
-					log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
+					log.error("Failed to store execution {} after finishing: {}", getClass().getSimpleName(), this, e);
 				}
 			}
 		}
-
-		ExecutionMetrics.getRunningQueriesCounter().dec();
-		ExecutionMetrics.getQueryStateCounter(getState()).inc();
-		ExecutionMetrics.getQueriesTimeHistogram().update(getExecutionTime().toMillis());
 
 
 		log.info(
@@ -170,8 +192,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : label);
+		status.setPristineLabel(label == null || queryId.toString().equals(label));
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
@@ -183,33 +206,64 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
 		status.setResultUrl(
 			isReadyToDownload(url, user)
-				? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-					.to(ResultCSVResource.GET_CSV_PATH).get()
+				? getDownloadURL(url)
 				: null);
+		if (state.equals(ExecutionState.FAILED) && error != null) {
+			// Use plain format here to have a uniform serialization.
+			status.setError(error.asPlain());
+		}
 	}
 
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		ExecutionStatus status = new ExecutionStatus();
-		setStatusBase(storage, url, user, status);
-		return status;
-		
-		
+	/**
+	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
+	 */
+	protected abstract URL getDownloadURL(URLBuilder url);
+
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user) {
+		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
+	}
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
 	}
 	
-	public ExecutionStatus buildStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
+		ExecutionStatus status = new ExecutionStatus();
+		setStatusBase(storage, url, user, status);
+		for(CreationFlag flag : creationFlags) {
+			switch (flag) {
+				case WITH_COLUMN_DESCIPTION:
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					break;
+				case WITH_SOURCE:
+					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+					break;
+				default:
+					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
+			}
+		}
+		return status;
+		
+	}
+
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		// Implementation specific
+	}
+
+	/**
+	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
+	 */
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
 		List<Permission> permissions = new ArrayList<>();
 		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
-		
+
 		boolean canExpand = user.isPermittedAll(permissions);
-		
-		ExecutionStatus.WithQuery status = new ExecutionStatus.WithQuery();
+
+
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);
-		setStatusBase(storage, url, user, status);
-		return status;
 	}
 
 	public boolean isReadyToDownload(URLBuilder url, User user) {
@@ -220,10 +274,15 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return url != null && state != ExecutionState.NEW && isPermittedDownload;
+		return url != null && state == ExecutionState.DONE && isPermittedDownload;
 	}
 
-	public abstract Collection<ManagedQuery> toResultQuery();
+	/**
+	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
+	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
+	 */
+	@JsonIgnore
+	public abstract StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator);
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
@@ -238,10 +297,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
 
-	public abstract void addResult(@NonNull MasterMetaStorage storage, R result);
+	public abstract void addResult(@NonNull MetaStorage storage, R result);
 
 	/**
-	 * Initializes the result that is send from a worker to the Master.
+	 * Initializes the result that is send from a worker to the ManagerNode.
 	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
 	 * matched to its subqueries.
 	 */

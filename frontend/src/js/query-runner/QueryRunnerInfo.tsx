@@ -1,9 +1,9 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import type { StateType } from "./reducer";
+import type { QueryRunnerStateT } from "./reducer";
 
-const Status = styled("p")`
+const Status = styled("p")<{ success?: boolean; error?: boolean }>`
   font-weight: 400;
   margin: 0 10px;
   font-size: ${({ theme }) => theme.font.sm};
@@ -11,27 +11,34 @@ const Status = styled("p")`
     success ? theme.col.green : error ? theme.col.red : "initial"};
 `;
 
-type PropsType = {
+interface PropsT {
   className?: string;
-  queryRunner: StateType;
-};
+  queryRunner: QueryRunnerStateT;
+}
 
-const getMessage = (queryRunner: StateType) => {
-  if (queryRunner.startQuery.error)
+const getMessage = (queryRunner: QueryRunnerStateT) => {
+  if (queryRunner.startQuery.error) {
     return { type: "error", value: T.translate("queryRunner.startError") };
-  else if (queryRunner.stopQuery.error)
+  } else if (queryRunner.stopQuery.error) {
     return { type: "error", value: T.translate("queryRunner.stopError") };
-  else if (!!queryRunner.queryResult && queryRunner.queryResult.error)
-    return { type: "error", value: T.translate("queryRunner.resultError") };
-  else if (queryRunner.startQuery.success)
+  } else if (!!queryRunner.queryResult && queryRunner.queryResult.error) {
+    return {
+      type: "error",
+      value: T.translate(
+        queryRunner.queryResult.error,
+        queryRunner.queryResult.errorContext
+      ),
+    };
+  } else if (queryRunner.startQuery.success) {
     return { type: "success", value: T.translate("queryRunner.startSuccess") };
-  else if (queryRunner.stopQuery.success)
+  } else if (queryRunner.stopQuery.success) {
     return { type: "success", value: T.translate("queryRunner.stopSuccess") };
+  }
 
   return null;
 };
 
-const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
+const QueryRunnerInfo: FC<PropsT> = ({ queryRunner, className }) => {
   const message = getMessage(queryRunner);
 
   const { queryResult } = queryRunner;
@@ -39,7 +46,11 @@ const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
   const noQueryResultOrError =
     !queryResult || (!!queryResult && queryResult.error);
 
-  return !!message && noQueryResultOrError ? (
+  if (!message || !noQueryResultOrError) {
+    return null;
+  }
+
+  return (
     <Status
       className={className}
       success={message.type === "success"}
@@ -47,7 +58,7 @@ const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
     >
       {message.value}
     </Status>
-  ) : null;
+  );
 };
 
 export default QueryRunnerInfo;

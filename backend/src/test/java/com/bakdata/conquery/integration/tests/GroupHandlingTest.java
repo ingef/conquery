@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -22,7 +22,7 @@ public class GroupHandlingTest extends IntegrationTest.Simple implements Program
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		MetaStorage storage = conquery.getMetaStorage();
 		
 		try {
 			storage.addGroup(group1);

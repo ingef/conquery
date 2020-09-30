@@ -3,17 +3,18 @@ package com.bakdata.conquery;
 import java.nio.charset.StandardCharsets;
 
 import javax.tools.ToolProvider;
-
-import com.bakdata.conquery.commands.CollectEntitiesCommand;
-import com.bakdata.conquery.commands.MasterCommand;
-import com.bakdata.conquery.commands.PreprocessorCommand;
-import com.bakdata.conquery.commands.SlaveCommand;
-import com.bakdata.conquery.commands.StandaloneCommand;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.UrlRewriteBundle;
+import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
+import com.bakdata.conquery.commands.CollectEntitiesCommand;
+import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.commands.PreprocessorCommand;
+import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.util.UrlRewriteBundle;
 import io.dropwizard.Application;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
-	private MasterCommand master;
+	private ManagerNode manager;
 
 	public Conquery() {
 		this("Conquery");
@@ -49,10 +50,12 @@ public class Conquery extends Application<ConqueryConfig> {
 		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
-		bootstrap.addCommand(new SlaveCommand());
+		bootstrap.addCommand(new ShardNode());
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
+		
+		((MutableInjectableValues)bootstrap.getObjectMapper().getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
 
 		// do some setup in other classes after initialization but before running a
 		// command
@@ -60,7 +63,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				configuration.initialize();
 			}
 
 			@Override
@@ -98,8 +100,8 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		master = new MasterCommand();
-		master.run(configuration, environment);
+		manager = new ManagerNode();
+		manager.run(configuration, environment);
 	}
 
 	public static void main(String... args) throws Exception {

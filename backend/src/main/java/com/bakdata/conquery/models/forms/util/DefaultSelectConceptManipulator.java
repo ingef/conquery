@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
@@ -13,7 +12,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -32,7 +31,7 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 	private  FillMethod method = FillMethod.ADD_TO_COMPLETE_EMPTY;
 
 	@Override
-	public void consume(CQConcept concept, Namespaces namespaces) {
+	public void consume(CQConcept concept, DatasetRegistry namespaces) {
 		// Obtain the concept Id
 		List<ConceptElementId<?>> conceptIds = concept.getIds();
 		if(conceptIds.isEmpty()) {
@@ -57,8 +56,12 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 		switch(method) {
 			
 			case ADD_TO_COMPLETE_EMPTY:
-				Optional<Boolean> tablesEmpty = concept.getTables().stream().map(CQTable::getSelects).map(List::isEmpty).reduce(Boolean::logicalOr);
-				if(!(concept.getSelects().isEmpty() && tablesEmpty.orElse(true /* No table present -> signal empty tables*/))) {
+				Boolean allTablesEmpty = concept.getTables().stream()
+					.map(CQTable::getSelects)
+					.map(List::isEmpty)
+					.reduce(Boolean::logicalAnd)
+					.orElse(true /* No table present -> signal empty tables*/);
+				if(!(concept.getSelects().isEmpty() && allTablesEmpty)) {
 					// Don't fill if there are any selects on concept level or on any table level
 					break;
 				}

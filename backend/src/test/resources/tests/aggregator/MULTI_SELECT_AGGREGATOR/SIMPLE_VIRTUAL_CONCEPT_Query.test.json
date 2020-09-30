@@ -27,15 +27,15 @@
       "connectors": [
         {
           "label": "connector",
-          "table": "vers_stamm",
+          "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           },
           "selects": {
             "type": "COUNT_OCCURENCES",
             "name" : "select",
-            "column": "vers_stamm.geschlecht",
+            "column": "table1.geschlecht",
             "selection": [
               "f",
               "m"
@@ -49,7 +49,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/MULTI_SELECT_AGGREGATOR/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

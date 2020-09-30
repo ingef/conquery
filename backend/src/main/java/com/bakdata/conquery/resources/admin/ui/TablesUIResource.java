@@ -50,7 +50,7 @@ public class TablesUIResource extends HAdmin {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.table = namespace
 			.getStorage()
 			.getDataset()
@@ -91,13 +91,7 @@ public class TablesUIResource extends HAdmin {
 					.stream()
 					.mapToLong(Import::estimateMemoryConsumption)
 					.sum(),
-					namespace
-					.getStorage()
-					.getAllImports()
-					.stream()
-					.filter(imp -> imp.getTable().equals(table.getId()))
-					.map(imp -> imp.getName())
-					.collect(Collectors.toList())
+					imports
 			)
 		);
 	}

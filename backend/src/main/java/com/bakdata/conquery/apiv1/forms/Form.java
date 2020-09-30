@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -16,7 +17,8 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
 import org.apache.shiro.authz.Permission;
@@ -25,11 +27,16 @@ import org.apache.shiro.authz.Permission;
  * API representation of a form query.
  */
 public interface Form extends QueryDescription {
+	
+	@JsonIgnore
+	default String getFormType() {
+		return this.getClass().getAnnotation(CPSType.class).id();
+	}
 
-	public abstract Map<String, List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
+	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
 	
 	@Override
-	public default ManagedForm toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+	public default ManagedForm toManagedExecution(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
 		return new ManagedForm(this, userId, submittedDataset);
 	}
 		
@@ -37,7 +44,7 @@ public interface Form extends QueryDescription {
 	public default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset) {
 		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset);
 		// Check if user is allowed to create this form
-		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, this.getClass()));
+		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));
 	}
 
 	/**
@@ -45,10 +52,10 @@ public interface Form extends QueryDescription {
 	 */
 	public static IQuery resolvePrerequisite(QueryResolveContext context, ManagedExecutionId prerequisiteId) {
 		// Resolve the prerequisite
-		ManagedExecution<?> prerequisiteExe = context.getNamespaces().getMetaStorage().getExecution(prerequisiteId);
+		ManagedExecution<?> prerequisiteExe = context.getDatasetRegistry().getMetaStorage().getExecution(prerequisiteId);
 		if(!(prerequisiteExe instanceof ManagedQuery)) {
 			throw new IllegalArgumentException("The prerequisite query must be of type " + ManagedQuery.class.getName());
 		}
-		return (IQuery)((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
+		return ((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
 	}
 }

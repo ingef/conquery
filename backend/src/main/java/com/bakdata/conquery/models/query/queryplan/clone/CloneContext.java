@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.queryplan.clone;
 import java.util.IdentityHashMap;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +33,7 @@ public class CloneContext {
 			value = obj.doClone(this);
 			CtxCloneable<?> old = cloneCache.put(obj, value);
 			if(old != null) {
-				throw new IllegalStateException();
+				throw new IllegalStateException("Object was cloned twice");
 			}
 		}
 		return (T) value;

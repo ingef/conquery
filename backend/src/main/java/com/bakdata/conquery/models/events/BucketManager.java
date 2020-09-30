@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
@@ -32,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  *
- * @implNote This class is only used per {@link Worker}. And NOT in the Master.
+ * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
 public class BucketManager {
@@ -40,26 +39,26 @@ public class BucketManager {
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
-	private final Worker worker;
 	private final IdMap<ConceptId, Concept<?>> concepts = new IdMap<>();
 	private final IdMap<BucketId, Bucket> buckets = new IdMap<>();
 	private final IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
 	@Getter
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
+	
+	//Backreference
+	private final Worker worker;
 
-	public BucketManager(JobManager jobManager, WorkerStorage storage, Worker worker) {
-		this.jobManager = jobManager;
-		this.storage = storage;
-		this.worker = worker;
+	public BucketManager(Worker worker) {
+		this.jobManager = worker.getJobManager();
+		this.storage = worker.getStorage();
 		this.concepts.addAll(storage.getAllConcepts());
 		this.buckets.addAll(storage.getAllBuckets());
 		this.cBlocks.addAll(storage.getAllCBlocks());
-
-		jobManager.addSlowJob(new SimpleJob("Update Block Manager", this::fullUpdate));
+		this.worker = worker;
 	}
 
-	private void fullUpdate() {
-		for (Concept<?> c : concepts) {
+	public void fullUpdate() {
+		for (Concept<?> c : concepts.values()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					Table t = con.getTable();
@@ -69,12 +68,19 @@ public class BucketManager {
 						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 							Optional<Bucket> bucket = buckets.getOptional(bucketId);
-							if (bucket.isPresent()) {
-								CBlockId cBlockId = new CBlockId(bucketId, conName);
-								if (!cBlocks.getOptional(cBlockId).isPresent()) {
-									job.addCBlock(imp, bucket.get(), cBlockId);
-								}
+
+							if (bucket.isEmpty()) {
+								continue;
 							}
+
+							CBlockId cBlockId = new CBlockId(bucketId, conName);
+
+							if (!cBlocks.containsKey(cBlockId)) {
+								continue;
+							}
+
+							log.warn("CBlock[{}] missing in Storage.", cBlockId);
+							job.addCBlock(imp, bucket.get(), cBlockId);
 						}
 					}
 					if (!job.isEmpty()) {
@@ -84,11 +90,11 @@ public class BucketManager {
 			}
 		}
 
-		for (Bucket bucket : buckets) {
+		for (Bucket bucket : buckets.values()) {
 			registerBucket(bucket);
 		}
 
-		for (CBlock cBlock : cBlocks) {
+		for (CBlock cBlock : cBlocks.values()) {
 			registerCBlock(cBlock);
 		}
 	}
@@ -140,7 +146,7 @@ public class BucketManager {
 		buckets.add(bucket);
 		registerBucket(bucket);
 
-		for (Concept<?> c : concepts) {
+		for (Concept<?> c : concepts.values()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());

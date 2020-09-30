@@ -63,7 +63,7 @@ public class AdminDatasetResource extends HAdmin {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		if (namespace == null) {
 			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
 		}
@@ -88,7 +88,7 @@ public class AdminDatasetResource extends HAdmin {
 	@Path("tables")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public void addTable(@FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
-		ObjectMapper mapper = processor.getNamespaces().injectInto(Jackson.MAPPER);
+		ObjectMapper mapper = processor.getDatasetRegistry().injectInto(Jackson.MAPPER);
 		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
 				Table t = mapper.readValue(is, Table.class);

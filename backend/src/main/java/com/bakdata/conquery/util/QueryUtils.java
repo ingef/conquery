@@ -131,7 +131,7 @@ public class QueryUtils {
 		public void accept(Visitable element) {
 			if (element instanceof NamespacedIdHolding) {
 				NamespacedIdHolding idHolder = (NamespacedIdHolding) element;
-				ids.addAll(idHolder.collectNamespacedIds());
+				idHolder.collectNamespacedIds(ids);
 			}
 		}
 	}

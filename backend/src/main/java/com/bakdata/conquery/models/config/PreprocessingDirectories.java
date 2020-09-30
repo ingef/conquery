@@ -5,7 +5,6 @@ import java.io.File;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
-
 import groovy.transform.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,9 +14,9 @@ import lombok.Setter;
 @Getter @Setter @ToString @NoArgsConstructor @AllArgsConstructor
 public class PreprocessingDirectories {
 	@NotNull @ExistingFile(directory=true)
-	private File csv;
+	private File csvDir;
 	@NotNull @ExistingFile(directory=true)
-	private File descriptions;
+	private File descriptionsDir;
 	@NotNull @ExistingFile(directory=true)
-	private File preprocessedOutput;
+	private File preprocessedOutputDir;
 }

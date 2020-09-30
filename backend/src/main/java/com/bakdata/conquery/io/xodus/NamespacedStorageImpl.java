@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.functions.Collector;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -45,7 +46,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		dataset = StoreInfo.DATASET.<Dataset>singleton(getEnvironment(), getValidator())
+		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), getEnvironment(), getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
 				for(Table t:ds.getTables().values()) {
@@ -66,13 +67,13 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			});
 
 		if(ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
-			dictionaries =	StoreInfo.DICTIONARIES.weakBig(getEnvironment(), getValidator(), getCentralRegistry());
+			dictionaries =	StoreInfo.DICTIONARIES.weakBig(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
 		}
 		else {
-			dictionaries =	StoreInfo.DICTIONARIES.big(getEnvironment(), getValidator(), getCentralRegistry());
+			dictionaries =	StoreInfo.DICTIONARIES.big(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
 		}
 
-		concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(getEnvironment(), getValidator(), getCentralRegistry())
+		concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry())
 			.onAdd(concept -> {
 				Dataset ds = centralRegistry.resolve(
 					concept.getDataset() == null
@@ -107,7 +108,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					centralRegistry.remove(c.getId());
 				}
 			});
-		imports = StoreInfo.IMPORTS.<Import>identifiable(getEnvironment(), getValidator(), getCentralRegistry())
+		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry())
 			.onAdd(imp-> {
 				imp.loadExternalInfos(this);
 				for(Concept<?> c: getAllConcepts()) {
@@ -133,7 +134,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateDataset(Dataset dataset) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
 

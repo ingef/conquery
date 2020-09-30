@@ -1,3 +1,3 @@
 const { override, addBabelPlugin } = require("customize-cra");
 
-module.exports = override(addBabelPlugin("babel-plugin-emotion"));
+module.exports = override(addBabelPlugin("@emotion/babel-plugin"));

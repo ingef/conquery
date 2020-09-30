@@ -1,15 +1,18 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
@@ -27,20 +30,18 @@ import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
-import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
+import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
-import com.bakdata.conquery.models.query.queryplan.specific.TableRequiringAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.Lists;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -58,9 +59,9 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	@ToString.Include
 	private String label;
 	@Valid @NotEmpty
-	private List<ConceptElementId<?>> ids;
+	private List<ConceptElementId<?>> ids = Collections.emptyList();
 	@Valid @NotEmpty @JsonManagedReference
-	private List<CQTable> tables;
+	private List<CQTable> tables = Collections.emptyList();
 
 	@Valid @NotNull
 	@NsIdRefCollection
@@ -71,6 +72,8 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
+
+		List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
 
 		Concept<?> concept = concepts[0].getConcept();
 
@@ -96,16 +99,40 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 				}
 			}
 
-			QPNode aggregators = createAggregators(context, plan, this, table);
+			List<Aggregator<?>> aggregators = new ArrayList<>();
+			//add aggregators
+
+			aggregators.addAll(conceptAggregators);
+
+			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, resolvedSelects);
+
+			List<ExistsAggregator> existsAggregators = connectorAggregators.stream()
+																		   .filter(ExistsAggregator.class::isInstance)
+																		   .map(ExistsAggregator.class::cast)
+																		   .collect(Collectors.toList());
+
+			aggregators.addAll(connectorAggregators);
+
+			aggregators.removeIf(ExistsAggregator.class::isInstance);
+
+
+			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
+				aggregators.add(plan.getSpecialDateUnion());
+			}
+
+			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
+
+			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
 
 			tableNodes.add(
 				new ConceptNode(
 					concepts,
 					calculateBitMask(concepts),
 					table,
+					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 					new ValidityDateNode(
 						selectValidityDateColumn(table),
-						conceptChild(concept, context, filters, aggregators)
+						filtersNode
 					)
 				)
 			);
@@ -115,26 +142,17 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 			throw new IllegalStateException(String.format("Unable to resolve any connector for query `%s`", label));
 		}
 
-		return OrNode.of(tableNodes);
-	}
+		final QPNode outNode = OrNode.of(tableNodes);
 
-	private QPNode createAggregators(QueryPlanContext context, ConceptQueryPlan plan, CQConcept cqConcept, CQTable table) {
-		List<AggregatorNode<?>> aggregators = new ArrayList<>();
-		aggregators.addAll(Lists.transform(this.getSelects(), s->new AggregatorNode<>(s.createAggregator())));
-		aggregators.addAll(Lists.transform(table.getSelects(), s->new AggregatorNode<>(s.createAggregator())));
-		
-		for(AggregatorNode<?> aggNode : aggregators) {
-			plan.addAggregator(aggNode.getAggregator());
+		for (Iterator<Aggregator<?>> iterator = conceptAggregators.iterator(); iterator.hasNext(); ) {
+			Aggregator<?> aggregator = iterator.next();
+			if (aggregator instanceof ExistsAggregator) {
+				((ExistsAggregator) aggregator).setReference(outNode);
+				iterator.remove();
+			}
 		}
 
-		if(!this.isExcludeFromTimeAggregation() && context.isGenerateSpecialDateUnion()) {
-			aggregators.add(new TableRequiringAggregatorNode<>(
-				table.getResolvedConnector().getTable().getId(),
-				plan.getSpecialDateUnion()
-			));
-		}
-		
-		return AndNode.of(aggregators);
+		return outNode;
 	}
 
 	private long calculateBitMask(ConceptElement<?>[] concepts) {
@@ -146,18 +164,31 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	}
 
 	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return	ids
-			.stream()
-			.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-			.toArray(ConceptElement[]::new);
+		return
+				ids
+					.stream()
+					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+					.toArray(ConceptElement[]::new);
 	}
 
-	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, QPNode aggregators) {
-		QPNode result = aggregators;
-		if(!filters.isEmpty()) {
-			result = new FiltersNode(filters, result);
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		if (filters.isEmpty() && aggregators.isEmpty()) {
+			return new Leaf();
 		}
-		return result;
+		return FiltersNode.create(filters, aggregators);
+	}
+
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<Select> select) {
+
+		List<Aggregator<?>> nodes = new ArrayList<>();
+
+		for (Select s : select) {
+			Aggregator<?> agg = s.createAggregator();
+
+			plan.addAggregator(agg);
+			nodes.add(agg);
+		}
+		return nodes;
 	}
 
 	private Column selectValidityDateColumn(CQTable t) {
@@ -178,18 +209,17 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		selects.forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
+		selects.forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		for (CQTable table : tables) {
-			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
+			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		}
 	}
 
 	@Override
-	public Set<NamespacedId> collectNamespacedIds() {
-		Set<NamespacedId> namespacedIds = new HashSet<>();
+	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+		checkNotNull(namespacedIds);
 		namespacedIds.addAll(ids);
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
-		return namespacedIds;
 	}
 }

@@ -1,0 +1,57 @@
+{
+    "type": "TREE",
+    "name": "two_connector",
+    "label": "two_connector",
+    "hidden": false,
+    "connectors": [
+        {
+            "name": "table1",
+            "label": "Table1",
+            "column": "vers_stamm.geburtsdatum",
+            "validityDates": {
+                "name": "versichertenzeit",
+                "label": "Versichertenzeit",
+                "column": "vers_stamm.date"
+            },
+            "selects": [
+                {
+                    "type": "DATE_DISTANCE",
+                    "name": "alter_select",
+                    "label": "Ausgabe Alter",
+                    "description": "Automatisch erzeugter Zusatzwert.",
+                    "column": "vers_stamm.geburtsdatum",
+                    "timeUnit": "YEARS",
+                    "default": true
+                },
+                {
+                    "name": "liste_geburtsdatum",
+                    "label": "Ausgabe Geburtsdatum",
+                    "type": "FIRST",
+                    "column": "vers_stamm.geburtsdatum"
+                }
+            ]
+        },
+        {
+            "name": "table2",
+            "label": "Table2",
+            "column": "vers_stamm.geburtsdatum",
+            "validityDates": {
+                "name": "versichertenzeit",
+                "label": "Versichertenzeit",
+                "column": "vers_stamm.date"
+            },
+            "selects": {
+                "name": "liste_geburtsdatum",
+                "label": "Ausgabe Geburtsdatum",
+                "type": "FIRST",
+                "column": "vers_stamm.geburtsdatum",
+                "default": true
+            }
+        }
+    ],
+    "selects": {
+        "name": "exists",
+        "type": "EXISTS",
+        "default": true
+    }
+}

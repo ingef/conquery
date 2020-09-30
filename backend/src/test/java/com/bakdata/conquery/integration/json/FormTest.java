@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -34,7 +35,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,7 +45,6 @@ import com.github.powerlibraries.io.In;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Slf4j
 @Getter
@@ -89,7 +89,7 @@ public class FormTest extends ConqueryTestSpec {
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
-		LoadingUtil.importTableContents(support, content);
+		LoadingUtil.importTableContents(support, content.getTables());
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
 		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
@@ -104,7 +104,7 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
-		Namespaces namespaces = support.getNamespace().getNamespaces();
+		DatasetRegistry namespaces = support.getNamespace().getNamespaces();
 		UserId userId = support.getTestUser().getId();
 		DatasetId dataset = support.getNamespace().getDataset().getId();
 		
