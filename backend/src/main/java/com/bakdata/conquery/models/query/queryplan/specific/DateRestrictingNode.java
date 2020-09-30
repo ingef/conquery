@@ -44,10 +44,9 @@ public class DateRestrictingNode extends QPChainNode {
 		super.nextTable(ctx, currentTable);
 
 
-		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
 		preCurrentRow = ctx.getStorage().getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector().getId());
-
 		validityDateColumn = context.getValidityDateColumn();
+
 		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
