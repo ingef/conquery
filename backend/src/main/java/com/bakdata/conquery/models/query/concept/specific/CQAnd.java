@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 @CPSType(id="AND", base=CQElement.class)
 public class CQAnd implements CQElement {

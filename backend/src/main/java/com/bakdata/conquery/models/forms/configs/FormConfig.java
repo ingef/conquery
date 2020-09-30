@@ -32,7 +32,7 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 @Slf4j
 @Data

@@ -20,7 +20,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.Flat3Map;
 import org.apache.commons.text.StringSubstitutor;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * Base class for errors that are thrown within Conquery and can be serialized

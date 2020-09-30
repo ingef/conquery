@@ -1,9 +1,10 @@
 package com.bakdata.conquery.apiv1.auth;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.Data;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Container class that holds user ({@link UserId} as a {@link String}) and

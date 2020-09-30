@@ -21,7 +21,9 @@ import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor @NoArgsConstructor
 public class CBlockDeserializer extends JsonDeserializer<CBlock> implements ContextualDeserializer {
 
@@ -38,16 +40,20 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 
 			// deduplicate concrete paths after loading from disk.
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
-				if (block.getMostSpecificChildren()[event] == null) {
+				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
+
+				if (mostSpecificChildren == null || Connector.isNotContained(mostSpecificChildren)) {
+					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
 					continue;
 				}
 
-				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(block.getMostSpecificChildren()[event]).getPrefix();
+				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
+				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(mostSpecificChildren).getPrefix();
 			}
 		}
 		return block;
 	}
-	
+
 	@Override
 	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);

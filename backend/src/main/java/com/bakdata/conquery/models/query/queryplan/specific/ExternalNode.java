@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.NonNull;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
 
