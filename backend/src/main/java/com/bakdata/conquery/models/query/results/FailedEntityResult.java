@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 @Getter @Setter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 @CPSType(id="FAILED", base=EntityResult.class)

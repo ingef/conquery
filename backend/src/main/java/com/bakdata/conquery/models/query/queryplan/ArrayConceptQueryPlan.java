@@ -64,12 +64,10 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	 * union handling. It acts as a gate keeper, so all child queries either have a
 	 * SpecialDateUnion or none.
 	 *
-	 * @param childQueries
-	 *            The queries that are individually executed, for which QueryPlans
-	 *            are generated uniformly regarding the SpecialDateContext.
-	 * @param context
-	 *            Primarily used to decide if a SpecialDateUnion needs to be
-	 *            generated.
+	 * @param childQueries The queries that are individually executed, for which QueryPlans
+	 *                     are generated uniformly regarding the SpecialDateContext.
+	 * @param context      Primarily used to decide if a SpecialDateUnion needs to be
+	 *                     generated.
 	 */
 	public void addChildPlans(List<ConceptQuery> childQueries, QueryPlanContext context) {
 		childPlans = new ArrayList<>();
@@ -78,9 +76,16 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		}
 	}
 
+	public void init(QueryExecutionContext ctx, Entity entity) {
+		childPlans.forEach(plan -> plan.init(entity, ctx));
+	}
+
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		if(!isOfInterest(entity)){
+
+		init(ctx, entity);
+
+		if (!isOfInterest(entity)) {
 			return EntityResult.notContained();
 		}
 
@@ -101,7 +106,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 				continue;
 			}
 
-			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult)result;
+			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult) result;
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
@@ -160,7 +165,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		List<Aggregator<?>> aggregators = new ArrayList<>();
 		for (ConceptQueryPlan child : childPlans) {
 			List<Aggregator<?>> allAggs = child.getAggregators();
-			aggregators.addAll(allAggs.subList((specialDateUnion? 1 : 0), allAggs.size()));
+			aggregators.addAll(allAggs.subList((specialDateUnion ? 1 : 0), allAggs.size()));
 		}
 
 		return aggregators;

@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -24,7 +23,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	protected final BitMapCDateSet restriction;
 	protected Column validityDateColumn;
-	protected Map<BucketId, EntityRow> preCurrentRow = null;
+	protected Map<BucketId, CBlock> preCurrentRow = null;
 
 	public DateRestrictingNode(BitMapCDateSet restriction, QPNode child) {
 		super(child);
@@ -45,9 +44,9 @@ public class DateRestrictingNode extends QPChainNode {
 		super.nextTable(ctx, currentTable);
 
 
-		preCurrentRow = entity.getCBlockPreSelect(context.getConnector().getId());
-
+		preCurrentRow = ctx.getStorage().getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector().getId());
 		validityDateColumn = context.getValidityDateColumn();
+
 		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
@@ -55,19 +54,20 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		EntityRow currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
-		
+		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+
 		if(validityDateColumn == null) {
 			// If there is no validity date set for a concept there is nothing to restrict
 			return true;
 		}
-		
-		CBlock cBlock = currentRow.getCBlock();
+
 		int localId = bucket.toLocal(entity.getId());
+
+		// This means the Entity is not contained.
 		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
 			return false;
 		}
-		
+
 		CDateRange range = CDateRange.of(
 			cBlock.getMinDate()[localId],
 			cBlock.getMaxDate()[localId]

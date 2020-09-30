@@ -73,7 +73,6 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 
 	@Override
 	public PrimitiveIterator.OfInt iterator() {
-		log.info("Bucket[{}] size = {}", getId(), getBucketSize()); // TODO: 21.07.2020 FK: This is just temporary for bug-finding in CI.
 		return IntStream.range(0, getBucketSize())
 						.filter(this::containsLocalEntity)
 						.map(this::toGlobal)

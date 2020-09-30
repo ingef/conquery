@@ -22,7 +22,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}.

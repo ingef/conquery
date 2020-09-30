@@ -1,8 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_PATH_ELEMENT;
-import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Collection;
 import java.util.List;

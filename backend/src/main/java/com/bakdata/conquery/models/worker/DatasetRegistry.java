@@ -21,10 +21,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
@@ -32,6 +34,10 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	@Getter
 	@Setter
 	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>(); // TODO remove this and take it from Namespaces.datasets
+
+	@Getter @Setter
+	private final int entityBucketSize;
+
 	@Getter
 	@JsonIgnore
 	private transient ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();

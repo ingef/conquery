@@ -22,9 +22,9 @@ import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
+import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardNodeNetworkContext;
-import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.specific.AddShardNode;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
@@ -89,11 +89,13 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 		this.config = config;
 
+
+
 		if (config.getStorage().getDirectory().mkdirs()) {
 			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
 		}
 
-		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads());
+		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads(), config.getCluster().getEntityBucketSize());
 		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
 
 

@@ -1,12 +1,7 @@
 package com.bakdata.conquery.io.freemarker;
 
-import static freemarker.core.Configurable.LOCALE_KEY;
-import static freemarker.core.Configurable.LOG_TEMPLATE_EXCEPTIONS_KEY_CAMEL_CASE;
-import static freemarker.core.Configurable.NUMBER_FORMAT_KEY_CAMEL_CASE;
-import static freemarker.core.Configurable.WRAP_UNCHECKED_EXCEPTIONS_KEY_CAMEL_CASE;
-import static freemarker.template.Configuration.DEFAULT_ENCODING_KEY_CAMEL_CASE;
-import static freemarker.template.Configuration.LOCALIZED_LOOKUP_KEY_CAMEL_CASE;
-import static freemarker.template.Configuration.WHITESPACE_STRIPPING_KEY_CAMEL_CASE;
+import static freemarker.core.Configurable.*;
+import static freemarker.template.Configuration.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;

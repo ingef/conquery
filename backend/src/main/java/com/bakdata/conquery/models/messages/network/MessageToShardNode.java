@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.messages.network;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 

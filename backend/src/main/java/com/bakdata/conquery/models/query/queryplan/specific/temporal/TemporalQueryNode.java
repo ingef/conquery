@@ -70,11 +70,11 @@ public class TemporalQueryNode extends QPNode {
 	 * @param entity the Entity to be worked on.
 	 */
 	@Override
-	public void init(Entity entity) {
-		super.init(entity);
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
 
-		reference.getChild().init(entity);
-		preceding.getChild().init(entity);
+		reference.getChild().init(entity, context);
+		preceding.getChild().init(entity, context);
 	}
 
 	/**

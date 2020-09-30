@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import com.bakdata.conquery.models.datasets.Table;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,18 +12,18 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Getter(AccessLevel.PROTECTED) @Setter(AccessLevel.PROTECTED)
 public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 	protected QueryExecutionContext context;
 	protected Entity entity;
 
-	public void init(Entity entity) {
-		this.entity = entity;
-		init();
-	}
-
-	protected void init() {
+	/**
+	 * Initialize the QueryPlan element for evaluation. eg.: Prefetching elements.
+	 * @apiNote inheritors should always call super.
+	 */
+	public void init(Entity entity, QueryExecutionContext context) {
+		setEntity(entity);
+		setContext(context);
 	}
 
 	@Override

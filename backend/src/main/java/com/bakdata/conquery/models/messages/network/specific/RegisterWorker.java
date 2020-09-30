@@ -34,6 +34,7 @@ public class RegisterWorker extends MessageToManagerNode {
 		if(node == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
 		}
+
 		info.setConnectedShardNode(node);
 		context.getNamespaces().register(node, info);
 	}
