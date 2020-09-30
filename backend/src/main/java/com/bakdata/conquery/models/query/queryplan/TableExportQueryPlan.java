@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.CType;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -52,34 +51,47 @@ public class TableExportQueryPlan implements QueryPlan {
 
 		
 		List<Object[]> results = new ArrayList<>();
-		for(TableExportDescription tec : tables) {
-			for(Bucket bucket : entity.getBucket(tec.getTable().getId())) {
+		for(TableExportDescription exportDescription : tables) {
+			for(Bucket bucket : entity.getBucket(exportDescription.getTable().getId())) {
+
 				int localEntity = bucket.toLocal(entity.getId());
-				if(bucket.containsLocalEntity(localEntity)) {
-					int start = bucket.getFirstEventOfLocal(localEntity);
-					int end = bucket.getLastEventOfLocal(localEntity);
-					for(int event = start; event < end ; event++) {
-						if (bucket.eventIsContainedIn(event, tec.getValidityDateColumn(), dateRange)) {
-							Object[] entry = new Object[totalColumns];
-							for(int col = 0; col < tec.getTable().getColumns().length; col++) {
-								if(bucket.has(event, col)) {
-									CType type = tec.getTable().getColumns()[col].getTypeFor(bucket);
-		
-									// depending on context use pretty printing or script value
-									entry[col+tec.getColumnOffset()] = ctx.isPrettyPrint()
-										? type.createPrintValue(bucket.getRaw(event, col))
-										: type.createScriptValue(bucket.getRaw(event, col));
-								}
-							}
-							results.add(entry);
-						}
+
+				if (!bucket.containsLocalEntity(localEntity)) {
+					continue;
+				}
+
+				int start = bucket.getFirstEventOfLocal(localEntity);
+				int end = bucket.getLastEventOfLocal(localEntity);
+
+				for(int event = start; event < end ; event++) {
+
+					if (!bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), dateRange)) {
+						continue;
 					}
+
+					Object[] entry = new Object[totalColumns];
+					for(int col = 0; col < exportDescription.getTable().getColumns().length; col++) {
+						final Column column = exportDescription.getTable().getColumns()[col];
+
+						if (!bucket.has(event, column)) {
+							continue;
+						}
+
+						CType type = column.getTypeFor(bucket);
+
+						// depending on context use pretty printing or script value
+						entry[exportDescription.getColumnOffset() + col] = ctx.isPrettyPrint()
+															 ? type.createPrintValue(bucket.getRaw(event, col))
+															 : type.createScriptValue(bucket.getRaw(event, col));
+					}
+
+					results.add(entry);
 				}
 			}
 		}
-		//pivot the last column
+
 		return EntityResult.multilineOf(
-			result.asContained().getEntityId(),
+			entity.getId(),
 			results
 		);
 	}

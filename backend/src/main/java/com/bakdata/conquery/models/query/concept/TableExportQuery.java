@@ -10,8 +10,6 @@ import java.util.function.Consumer;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
@@ -32,12 +30,12 @@ import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExp
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotEmpty;
 
 
 /**
@@ -98,10 +96,12 @@ public class TableExportQuery extends IQuery {
 	public TableExportQuery resolve(QueryResolveContext context) {
 		this.query = query.resolve(context);
 		resolvedHeader = new ArrayList<>();
+
 		for(CQUnfilteredTable table : tables) {
 			try {
 				Concept<?> concept = context.getNamespace().getStorage().getCentralRegistry().resolve(table.getId().getConcept());
 				Connector connector = concept.getConnectorByName(table.getId().getConnector());
+
 				for(Column col : connector.getTable().getColumns()) {
 					resolvedHeader.add(col.getId());
 				}
@@ -111,6 +111,7 @@ public class TableExportQuery extends IQuery {
 				continue;
 			}
 		}
+
 		return this;
 	}
 
