@@ -38,14 +38,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
-		//read test sepcification
+
+		//read test specification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
-		DatasetId dataset;
-		ConqueryTestSpec test;
-		PersistentIdMap persistentIdMap = IdMapSerialisationTest
-												  .createTestPersistentMap();
+		PersistentIdMap persistentIdMap = IdMapSerialisationTest.createTestPersistentMap();
 
 		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
 		AdminProcessor adminProcessor = new AdminProcessor(
@@ -55,14 +53,15 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
-				manager.getValidator()
+				manager.getValidator(),
+				ConqueryConfig.getInstance().getCluster().getEntityBucketSize()
 		);
 
 
 		StandaloneSupport conquery = testConquery.getSupport(name);
-		dataset = conquery.getDataset().getId();
+		DatasetId dataset = conquery.getDataset().getId();
 
-		test = JsonIntegrationTest.readJson(dataset, testJson);
+		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, validator.validate(test));
 
 		test.importRequiredData(conquery);
@@ -114,9 +113,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.deleteGroup(groupToDelete.getId());
 		}
 
-		// TODO: 21.07.2020 FK: This is temporary logging for finding a bug in CI.
-		final int entityBucketSizeBeforeRestart = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
-		log.info("Configured bucket size = {}", entityBucketSizeBeforeRestart);
 
 		testConquery.shutdown(conquery);
 
@@ -129,7 +125,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(support);
 
-		assertThat(entityBucketSizeBeforeRestart).isEqualTo(ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
 
 		MetaStorage storage = conquery.getMetaStorage();
 

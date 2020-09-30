@@ -1,8 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Arrays;
 import java.util.List;
