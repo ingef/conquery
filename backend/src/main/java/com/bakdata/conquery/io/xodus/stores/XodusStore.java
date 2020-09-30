@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -16,7 +14,7 @@ import jetbrains.exodus.env.StoreConfig;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class XodusStore implements Closeable {
+public class XodusStore {
 	private final Store store;
 	private final Environment environment;
 	private final long timeout = ConqueryConfig.getInstance().getStorage().getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()/2;
@@ -74,9 +72,6 @@ public class XodusStore implements Closeable {
 	public boolean remove(ByteIterable key) {
 		return environment.computeInTransaction(t -> store.delete(t, key));
 	}
-
-	@Override
-	public void close() throws IOException {}
 
 	public int count() {
 		return Ints.checkedCast(environment.computeInReadonlyTransaction(store::count));

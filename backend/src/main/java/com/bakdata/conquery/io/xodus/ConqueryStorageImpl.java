@@ -69,11 +69,6 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	public void close() throws IOException {
 		for(Environment environment : environmentToStores.keySet()) {
 			log.info("Closing stores of environment {}", environment.getLocation());
-			for (KeyIncludingStore<?, ?> store : environmentToStores.get(environment)) {
-				log.info("Closing store {}", store.toString());
-				store.close();
-				log.info("Closed store {}", store.toString());
-			}
 			environment.close();
 			log.info("Closed environment {}", environment.getLocation());
 		}
