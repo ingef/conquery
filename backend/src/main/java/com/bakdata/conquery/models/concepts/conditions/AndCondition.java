@@ -4,14 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
-
 import lombok.Getter;
 import lombok.Setter;
 
