@@ -21,7 +21,7 @@ import lombok.ToString;
 /**
  * All associated data to a single entity (usually a person), over all {@link Table}s and {@link com.bakdata.conquery.models.concepts.Concept}s.
  *
- * @implNote The master does not hold any data of Entities, only the Slaves do (via Workers). Additionally, all data of a single Entity must be held by a single Worker only (See {@link com.bakdata.conquery.models.worker.Namespace::getResponsibleWorker}).
+ * @implNote The ManagerNode does not hold any data of Entities, only the ShardNodes do (via Workers). Additionally, all data of a single Entity must be held by a single Worker only (See {@link com.bakdata.conquery.models.worker.Namespace::getResponsibleWorker}).
  */
 @RequiredArgsConstructor
 @ToString(of = "id")
@@ -70,6 +70,10 @@ public class Entity {
 	// TODO: 24.01.2020 What does this do?
 	public Map<BucketId, EntityRow> getCBlockPreSelect(ConnectorId connector) {
 		return cBlocks.row(connector);
+	}
+
+	public boolean hasConnector(ConnectorId connector) {
+		return cBlocks.containsRow(connector);
 	}
 
 	/**

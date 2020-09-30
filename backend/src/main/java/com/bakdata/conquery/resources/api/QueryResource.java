@@ -20,6 +20,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -34,11 +36,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
+import lombok.extern.slf4j.Slf4j;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
-
+@Slf4j
 public class QueryResource {
 	
 	private QueryProcessor processor;
@@ -47,19 +50,22 @@ public class QueryResource {
 	@Inject
 	public QueryResource(QueryProcessor processor) {
 		this.processor= processor;
-		dsUtil = new ResourceUtil(processor.getNamespaces());
+		dsUtil = new ResourceUtil(processor.getDatasetRegistry());
 	}
 
 	@POST
-	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
-		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
+	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
+		query.resolve(new QueryResolveContext(datasetId, processor.getDatasetRegistry()));
+		log.info("Query posted on dataset {} by user {} ({}).", datasetId, user.getId(), user.getName());
 
-
-		return processor.postQuery(
+		return Response.ok(
+			processor.postQuery(
 			dsUtil.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
-			user);
+			user))
+			.status(Status.CREATED)
+			.build();
 	}
 
 	@DELETE

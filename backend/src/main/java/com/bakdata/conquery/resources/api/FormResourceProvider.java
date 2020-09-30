@@ -1,7 +1,8 @@
 package com.bakdata.conquery.resources.api;
 
-import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 
@@ -11,9 +12,9 @@ public class FormResourceProvider implements ResourcesProvider {
 	private FormProcessor processor;
 	
 	@Override
-	public void registerResources(MasterCommand master) {
-		JerseyEnvironment environment = master.getEnvironment().jersey();
-		processor = new FormProcessor(master.getNamespaces(), master.getStorage());
+	public void registerResources(ManagerNode manager) {
+		JerseyEnvironment environment = manager.getEnvironment().jersey();
+		processor = new FormProcessor();
 
 		environment.register(new FormResource(processor));
 	}

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.results;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -28,8 +29,8 @@ public interface EntityResult {
 		return new MultilineContainedEntityResult(entityId, values);
 	}
 	
-	static FailedEntityResult failed(int entityId, Throwable t) {
-		return new FailedEntityResult(entityId, t);
+	static FailedEntityResult failed(int entityId, ConqueryError error) {
+		return new FailedEntityResult(entityId, error);
 	}
 	
 	static NotContainedEntityResult notContained() {
@@ -37,14 +38,10 @@ public interface EntityResult {
 	};
 	
 	@JsonIgnore
-	default boolean isFailed() {
-		return false;
-	}
+	boolean isFailed();
 	
 	@JsonIgnore
-	default boolean isContained() {
-		return true;
-	}
+	boolean isContained();
 	
 	default FailedEntityResult asFailed() {
 		throw new IllegalStateException("The EntityResult "+this+" is not failed");

@@ -7,6 +7,7 @@ import FormConfig from "./FormConfig";
 import DeleteFormConfigModal from "./DeleteFormConfigModal";
 import { useDispatch } from "react-redux";
 import { deleteFormConfigSuccess } from "./actions";
+import ShareFormConfigModal from "./ShareFormConfigModal";
 
 interface PropsT {
   datasetId: string;
@@ -27,10 +28,13 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
   const [formConfigToDelete, setFormConfigToDelete] = useState<string | null>(
     null
   );
+  const [formConfigToShare, setFormConfigToShare] = useState<string | null>(
+    null
+  );
 
   const dispatch = useDispatch();
-
   const closeDeleteModal = () => setFormConfigToDelete(null);
+  const onCloseShareModal = () => setFormConfigToShare(null);
 
   function onDeleteSuccess() {
     if (formConfigToDelete) {
@@ -38,6 +42,10 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
     }
 
     closeDeleteModal();
+  }
+
+  function onShareSuccess() {
+    onCloseShareModal();
   }
 
   function renderConfig(index: number, key: string | number) {
@@ -49,6 +57,7 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
           onIndicateDeletion={() =>
             setFormConfigToDelete(formConfigs[index].id)
           }
+          onIndicateShare={() => setFormConfigToShare(formConfigs[index].id)}
         />
       </Container>
     );
@@ -56,6 +65,13 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
 
   return (
     <Root>
+      {!!formConfigToShare && (
+        <ShareFormConfigModal
+          formConfigId={formConfigToShare}
+          onClose={onCloseShareModal}
+          onShareSuccess={onShareSuccess}
+        />
+      )}
       {!!formConfigToDelete && (
         <DeleteFormConfigModal
           formConfigId={formConfigToDelete}

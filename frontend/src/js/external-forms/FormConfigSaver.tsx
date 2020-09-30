@@ -20,6 +20,7 @@ import { FORM_CONFIG } from "../common/constants/dndTypes";
 import { FormConfigDragItem } from "./form-configs/FormConfig";
 import { loadExternalFormValues, setExternalForm } from "./actions";
 import FaIcon from "../icon/FaIcon";
+import { useLoadFormConfigs } from "./form-configs/selectors";
 
 interface PropsT {
   datasetId: string;
@@ -52,7 +53,7 @@ const DirtyFlag = styled("div")`
   height: 7px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   border-radius: 50%;
-  margin: 4px 4px 0;
+  margin: 0 4px;
   flex-shrink: 0;
 `;
 
@@ -62,7 +63,7 @@ const SxDropzone = styled(Dropzone)`
 
 const LoadingText = styled("p")`
   font-weight: 400;
-  margin: 5px 0 0px 8px;
+  margin: 3px 0 0px 8px;
 `;
 
 const SxFaIcon = styled(FaIcon)`
@@ -91,6 +92,8 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state)
   );
+
+  const { loadFormConfigs } = useLoadFormConfigs();
 
   function getUntitledName(name: string) {
     return `${name} ${new Date().toISOString().split("T")[0]}`;
@@ -125,6 +128,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
         });
 
         setIsDirty(false);
+        loadFormConfigs(datasetId);
       } else if (activeFormType) {
         const result = await postFormConfig(datasetId, {
           label: configName,
@@ -134,6 +138,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
 
         setFormConfigId(result.id);
         setIsDirty(false);
+        loadFormConfigs(datasetId);
       }
     } catch (e) {
       dispatch(setMessage("externalForms.config.saveError"));
@@ -186,6 +191,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
                       editing={editing}
                       onToggleEdit={() => setEditing(!editing)}
                       text={configName || ""}
+                      saveOnClickoutside
                       onSubmit={(txt: string) => {
                         if (txt) {
                           setConfigName(txt);

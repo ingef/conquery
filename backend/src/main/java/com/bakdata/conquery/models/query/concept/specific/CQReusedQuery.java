@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.HashSet;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -49,7 +50,7 @@ public class CQReusedQuery implements CQElement, NamespacedIdHolding {
 	
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
-		resolvedQuery = ((ManagedQuery)Objects.requireNonNull(context.getNamespaces().getMetaStorage().getExecution(query), "Unable to resolve stored query")).getQuery();
+		resolvedQuery = ((ManagedQuery)Objects.requireNonNull(context.getDatasetRegistry().getMetaStorage().getExecution(query), "Unable to resolve stored query")).getQuery();
 		return this;
 	}
 	
@@ -65,9 +66,10 @@ public class CQReusedQuery implements CQElement, NamespacedIdHolding {
 	public void collectResultInfos(ResultInfoCollector collector) {}
 
 	@Override
-	public Set<NamespacedId> collectNamespacedIds() {
-		Set<NamespacedId> namespacedIds = new HashSet<>();
-		namespacedIds.add(query);
-		return namespacedIds;
+	public void collectNamespacedIds(Set<NamespacedId> ids) {
+		checkNotNull(ids);
+		if(query != null) {
+			ids.add(query);
+		}
 	}
 }

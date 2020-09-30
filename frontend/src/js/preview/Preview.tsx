@@ -1,31 +1,24 @@
 import * as React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import T from "i18n-react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Hotkeys from "react-hot-keys";
+import T from "i18n-react";
 
-import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
+import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
 
-import {
-  getDiffInDays,
-  parseStdDate,
-  formatStdDate,
-  formatDateDistance
-} from "../common/helpers/dateHelper";
-
-import TransparentButton from "../button/TransparentButton";
-
-import type { StateT as PreviewStateT } from "./reducer";
+import type { PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
+import { StateT } from "app-types";
+import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
+import DateCell from "./DateCell";
+import { Cell } from "./Cell";
+import PreviewInfo from "./PreviewInfo";
+import { StatsHeadline } from "./StatsHeadline";
+import { getRightCellPadding, getStatsByColumn } from "./alignNumbersOnComma";
+import StatsSubline from "./StatsSubline";
 
-type PropsT = {
-  preview: PreviewStateT;
-  onClose: () => void;
-};
-
-const Preview = styled("div")`
+const Root = styled("div")`
   height: 100%;
   width: 100%;
   position: fixed;
@@ -38,31 +31,7 @@ const Preview = styled("div")`
   flex-direction: column;
 `;
 
-const TopRow = styled("div")`
-  margin: 12px 0 20px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const StdRow = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const Stat = styled("code")`
-  display: block;
-  margin: 0;
-  padding-right: 10px;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const BStat = styled(Stat)`
-  font-weight: 700;
-`;
-
-const Line = styled("div")`
+const Line = styled("div")<{ isHeader?: boolean }>`
   display: flex;
   width: 100%;
   align-items: center;
@@ -74,61 +43,7 @@ const Line = styled("div")`
       border-bottom: "1px solid #ccc";
       align-items: flex-end;
       margin: "0 0 10px";
-      overflow-x: auto;
     `};
-`;
-
-const Cell = styled("code")`
-  padding: 1px 5px;
-  font-size: ${({ theme }) => theme.font.xs};
-  height: ${({ theme }) => theme.font.xs};
-  width: ${({ isDates }) => (isDates ? "auto" : "100px")};
-  flex-grow: ${({ isDates }) => (isDates ? "1" : "0")};
-  flex-shrink: 0;
-  background-color: white;
-  margin: 0;
-  position: relative;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: ${({ isDates }) => (isDates ? "flex" : "block")};
-  align-items: center;
-  overflow: hidden;
-
-  ${({ isHeader }) =>
-    isHeader &&
-    css`
-      font-weight: 700;
-      overflow-wrap: break-word;
-      margin: 0 0 5px;
-      text-overflow: initial;
-      white-space: initial;
-      height: initial;
-    `};
-`;
-
-const Span = styled("div")`
-  position: absolute;
-  top: 0;
-  height: 10px;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  margin-right: 10px;
-  color: white;
-  font-size: ${({ theme }) => theme.font.tiny};
-  min-width: 1px;
-`;
-
-const Headline = styled("h2")`
-  font-size: ${({ theme }) => theme.font.md};
-  margin: 0;
-`;
-
-const Explanation = styled("p")`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 0;
-`;
-
-const HeadInfo = styled("div")`
-  margin: 0 20px;
 `;
 
 const CSVFrame = styled("div")`
@@ -138,22 +53,53 @@ const CSVFrame = styled("div")`
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 `;
 
-const Tr = styled("tr")`
-  line-height: 1;
+const ScrollWrap = styled("div")`
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 `;
 
-function detectColumn(cell) {
+const List = styled("div")`
+  position: relative;
+  height: 100%;
+  flex-grow: 1;
+`;
+
+export type ColumnDescriptionType = ColumnDescriptionKind | "OTHER";
+
+const SUPPORTED_COLUMN_DESCRIPTION_KINDS = new Set<ColumnDescriptionKind>([
+  "ID",
+  "INTEGER",
+  "NUMERIC",
+  "MONEY",
+  "DATE",
+  "DATE_RANGE",
+  "STRING",
+  "CATEGORICAL",
+  "RESOLUTION",
+]);
+
+function detectColumnType(
+  cell: string,
+  resultColumns: ColumnDescription[]
+): ColumnDescriptionType {
   if (cell === "dates") return "DATE_RANGE";
+
+  const maybeColumn = resultColumns.find((column) => column.label === cell);
+
+  if (maybeColumn && SUPPORTED_COLUMN_DESCRIPTION_KINDS.has(maybeColumn.type)) {
+    return maybeColumn.type;
+  }
 
   return "OTHER";
 }
 
-function detectColumnsByHeader(line: string[]) {
-  return line.map(detectColumn);
-}
-
-function getDaysDiff(d1, d2) {
-  return Math.abs(getDiffInDays(d1, d2)) + 1;
+function detectColumnTypesByHeader(
+  line: string[],
+  resultColumns: ColumnDescription[]
+) {
+  return line.map((cell) => detectColumnType(cell, resultColumns));
 }
 
 function getFirstAndLastDateOfRange(dateStr: string) {
@@ -166,14 +112,21 @@ function getFirstAndLastDateOfRange(dateStr: string) {
   return { first, last };
 }
 
-function getMinMaxDates(rows: string[][], columns: string[]) {
+function getMinMaxDates(
+  rows: string[][],
+  columns: string[]
+): {
+  min: Date | null;
+  max: Date | null;
+  diff: number;
+} {
   let min = null;
   let max = null;
 
-  const dateColumn = columns.find(col => col === "DATE_RANGE");
-  const dateColumnIdx = columns.indexOf(dateColumn);
+  const dateColumn = columns.find((col) => col === "DATE_RANGE");
+  const dateColumnIdx = dateColumn ? columns.indexOf(dateColumn) : -1;
 
-  if (dateColumnIdx === -1) return {};
+  if (dateColumnIdx === -1) return { min: null, max: null, diff: 0 };
 
   for (let row of rows) {
     // To cut off '{' and '}'
@@ -191,64 +144,63 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
   return {
     min,
     max,
-    diff: getDaysDiff(min, max)
+    diff: min && max ? getDiffInDays(min, max) : 0,
   };
 }
 
-export default connect(
-  state => ({ preview: state.preview }),
-  dispatch => ({
-    onClose: () => dispatch(closePreview())
-  })
-)(({ preview, onClose }: PropsT) => {
-  if (!preview.csv || preview.csv.length < 2) return null;
+const Preview: React.FC = () => {
+  const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
+  const dispatch = useDispatch();
 
-  const columns = detectColumnsByHeader(preview.csv[0]);
+  const onClose = () => dispatch(closePreview());
 
-  // Potentially, limit size:
-  // const slice = csv.slice(1000);
-  const slice = preview.csv.slice();
+  if (!preview.csv || !preview.resultColumns) return null;
 
-  const { min, max, diff } = getMinMaxDates(slice.slice(1), columns);
+  // Limit size:
+  const RENDER_ROWS_LIMIT = 500;
+  const previewData = preview.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
 
-  const Row = ({ index, style }) => (
-    <Line style={style} key={index}>
-      {slice[index + 1].map((cell, i) => {
-        if (columns[i] === "DATE_RANGE") {
+  if (previewData.length < 2) return null;
+
+  const columns = detectColumnTypesByHeader(
+    previewData[0],
+    preview.resultColumns
+  );
+
+  const columnStats = getStatsByColumn(columns, previewData);
+
+  const { min, max, diff } = getMinMaxDates(previewData.slice(1), columns);
+
+  const Row = ({ index }: { index: number }) => (
+    <Line key={index}>
+      {previewData[index + 1].map((cell, j) => {
+        if (columns[j] === "DATE_RANGE" && min && max) {
           return (
-            <Cell key={i} isDates>
-              {cell
-                .slice(1, cell.length - 1)
-                .split(",")
-                .map((dateRange, k) => {
-                  const s = dateRange.split("/");
-                  const dateStr1 = s[0].trim();
-                  const date1 = parseStdDate(dateStr1);
+            <DateCell cell={cell} key={j} minDate={min} dateDiffInDays={diff} />
+          );
+        }
 
-                  const dateStr2 = s[1].trim();
-                  const date2 = parseStdDate(dateStr2);
-
-                  const diffWidth = getDaysDiff(date1, date2);
-                  const diffLeft = getDaysDiff(min, date1);
-
-                  const left = (diffLeft / diff) * 100;
-                  const width = (diffWidth / diff) * 100;
-
-                  return (
-                    <Span
-                      key={k}
-                      style={{ left: `${left}%`, width: `${width}%` }}
-                    >
-                      {diffWidth}
-                    </Span>
-                  );
-                })}
+        if (columns[j] === "MONEY") {
+          return (
+            <Cell
+              title={cell}
+              key={j}
+              style={{
+                textAlign: "right",
+                paddingRight: getRightCellPadding(
+                  cell,
+                  columns[j],
+                  columnStats[j]
+                ),
+              }}
+            >
+              {cell}
             </Cell>
           );
         }
 
         return (
-          <Cell title={cell} key={i}>
+          <Cell title={cell} key={j}>
             {cell}
           </Cell>
         );
@@ -257,83 +209,42 @@ export default connect(
   );
 
   return (
-    <Preview>
+    <Root>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
-      <TopRow>
-        <StdRow>
-          <TransparentButton icon="times" onClick={onClose}>
-            {T.translate("common.back")}
-          </TransparentButton>
-          <HeadInfo>
-            <Headline>{T.translate("preview.headline")}</Headline>
-            <Explanation>{T.translate("preview.explanation")}</Explanation>
-          </HeadInfo>
-        </StdRow>
-        <table>
-          <tbody>
-            <Tr>
-              <td>
-                <Stat>{T.translate("preview.total")}:</Stat>
-              </td>
-              <td>
-                <BStat>{preview.csv.length}</BStat>
-              </td>
-            </Tr>
-            <Tr>
-              <td>
-                <Stat>{T.translate("preview.min")}:</Stat>
-              </td>
-              <td>
-                <BStat>{min ? formatStdDate(min) : "-"}</BStat>
-              </td>
-            </Tr>
-            <Tr>
-              <td>
-                <Stat>{T.translate("preview.max")}:</Stat>
-              </td>
-              <td>
-                <BStat>{max ? formatStdDate(max) : "-"}</BStat>
-              </td>
-            </Tr>
-            <Tr>
-              <td>
-                <Stat>{T.translate("preview.span")}:</Stat>
-              </td>
-              <td>
-                <BStat>
-                  {!!min && !!max ? formatDateDistance(min, max) : "-"}
-                </BStat>
-              </td>
-            </Tr>
-          </tbody>
-        </table>
-      </TopRow>
+      <PreviewInfo
+        rawPreviewData={preview.csv}
+        columns={columns}
+        onClose={onClose}
+        minDate={min}
+        maxDate={max}
+      />
+      <StatsHeadline>{T.translate("preview.previewHeadline")}</StatsHeadline>
+      <StatsSubline>
+        {T.translate("preview.previewSubline", { count: RENDER_ROWS_LIMIT })}
+      </StatsSubline>
       <CSVFrame>
-        <Line isHeader={true}>
-          {slice[0].map((cell, k) => (
-            <Cell
-              key={k}
-              isHeader={true}
-              title={cell}
-              isDates={columns[k] === "DATE_RANGE"}
-            >
-              {cell}
-            </Cell>
-          ))}
-        </Line>
-        <AutoSizer>
-          {({ width, height }) => (
-            <List
-              height={height}
-              width={width}
-              itemCount={slice.length - 1}
-              itemSize={12}
-            >
-              {Row}
-            </List>
-          )}
-        </AutoSizer>
+        <ScrollWrap>
+          <Line isHeader>
+            {previewData[0].map((cell, k) => (
+              <Cell
+                isHeader
+                key={k}
+                title={cell}
+                isDates={columns[k] === "DATE_RANGE"}
+              >
+                {cell}
+              </Cell>
+            ))}
+          </Line>
+          <List>
+            {previewData.slice(1).map((_, i) => (
+              <Row key={i} index={i} />
+            ))}
+          </List>
+        </ScrollWrap>
       </CSVFrame>
-    </Preview>
+    </Root>
   );
-});
+};
+
+export default Preview;

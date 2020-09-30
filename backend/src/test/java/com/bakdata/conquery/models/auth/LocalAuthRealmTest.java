@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,18 +9,19 @@ import java.util.List;
 
 import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
+import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.google.common.collect.MoreCollectors;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.util.LifecycleUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,24 +38,25 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 public class LocalAuthRealmTest {
 
 	private File tmpDir;
+	private AuthorizationController controller;
 	private LocalAuthenticationRealm realm;
-	private MasterMetaStorage storage;
+	private MetaStorage storage;
 	private User user1;
 
 	@BeforeAll
-	public void setupAll() {
+	public void setupAll() throws Exception {
 		LocalAuthenticationConfig config = new LocalAuthenticationConfig();
 
-		storage = mock(MasterMetaStorage.class);
-		realm = config.createRealm(storage);
+		storage = mock(MetaStorage.class);
 		File tmpDir = Files.createTempDir();
 
 		tmpDir.mkdir();
 
 		ConqueryConfig.getInstance().getStorage().setDirectory(tmpDir);
-
-		LifecycleUtils.init(realm);
-
+		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(),List.of(config), storage);
+		controller.init();
+		controller.start();
+		realm = (LocalAuthenticationRealm) controller.getAuthenticationRealms().stream().filter(r -> r instanceof LocalAuthenticationRealm).collect(MoreCollectors.onlyElement());
 	}
 
 	@BeforeEach
@@ -112,7 +112,7 @@ public class LocalAuthRealmTest {
 		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
-		assertThat(realm.doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
+		assertThat(controller.getCentralTokenRealm().doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
 			.isEqualTo(new UserId("TestUser"));
 	}
 

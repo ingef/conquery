@@ -59,14 +59,14 @@
       "connectors": [
         {
           "label": "geschlecht_connector",
-          "table": "vers_stamm",
+          "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           },
           "filter": {
             "label": "geschlecht",
-            "column": "vers_stamm.geschlecht",
+            "column": "table1.geschlecht",
             "type": "SINGLE_SELECT"
           }
         }
@@ -77,7 +77,7 @@
     "tables": [
       {
         "csv": "tests/query/TEMPORAL_SAME_CONCEPT_QUERY/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

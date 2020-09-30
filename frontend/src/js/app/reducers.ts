@@ -1,6 +1,9 @@
 import { combineReducers } from "redux";
 
 import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
+import conceptTreesOpen, {
+  ConceptTreesOpenStateT,
+} from "../concept-trees-open/reducer";
 
 import datasets, { DatasetStateT } from "../dataset/reducer";
 import tooltip, { TooltipStateT } from "../tooltip/reducer";
@@ -22,9 +25,8 @@ import previousQueriesFilter, {
   PreviousQueriesFilterStateT,
 } from "../previous-queries/filter/reducer";
 import uploadQueryResults from "../previous-queries/upload/reducer";
-import deletePreviousQueryModal from "../previous-queries/delete-modal/reducer";
-import snackMessage from "../snack-message/reducer";
-import preview from "../preview/reducer";
+import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
+import preview, { PreviewStateT } from "../preview/reducer";
 import queryUploadConceptListModal from "../query-upload-concept-list-modal/reducer";
 import uploadConceptListModal, {
   UploadConceptListModalStateT,
@@ -46,6 +48,7 @@ import formConfigsFilter, {
 // TODO: Introduce more StateTypes gradually
 export type StateT = {
   conceptTrees: ConceptTreesStateT;
+  conceptTreesOpen: ConceptTreesOpenStateT;
   datasets: DatasetStateT;
   tooltip: TooltipStateT;
   panes: PanesStateT;
@@ -59,12 +62,15 @@ export type StateT = {
   formConfigs: FormConfigsStateT;
   formConfigsSearch: FormConfigsSearchStateT;
   formConfigsFilter: FormConfigsFilterStateT;
+  preview: PreviewStateT;
+  snackMessage: SnackMessageStateT;
 };
 
 const buildAppReducer = (tabs: TabT[]) => {
   return combineReducers({
     startup,
     conceptTrees,
+    conceptTreesOpen,
     uploadConceptListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
     queryGroupModal,
@@ -75,7 +81,6 @@ const buildAppReducer = (tabs: TabT[]) => {
     previousQueriesSearch,
     previousQueriesFilter,
     uploadQueryResults,
-    deletePreviousQueryModal,
     snackMessage,
     preview,
     queryUploadConceptListModal,

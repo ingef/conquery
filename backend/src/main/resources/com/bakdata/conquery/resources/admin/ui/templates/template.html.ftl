@@ -75,10 +75,10 @@
 			</div>
 		  </li>
 		</ul>
-		<!-- Status of the slaves -->
+		<!-- Status of the shardNodes -->
 		<div>
-			<#list ctx.namespaces.slaves as key,slave>
-				<i class="fas fa-circle <#if slave.connected>text-success<#else>text-danger</#if>"></i>
+			<#list ctx.namespaces.shardNodes as key,shardNode>
+				<i class="fas fa-circle <#if shardNode.connected>text-success<#else>text-danger</#if>"></i>
 			</#list>
 		</div>
 	  </div>

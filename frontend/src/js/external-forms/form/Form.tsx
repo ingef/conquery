@@ -11,8 +11,9 @@ import {
   validateDateRange,
   validatePositive,
   validateConceptGroupFilled,
+  validateDateRangeRequired,
 } from "../validators";
-import { collectAllFields } from "../helper";
+import { collectAllFormFields, isFormField } from "../helper";
 import { selectReduxFormState } from "../stateSelectors";
 import FormsHeader from "../FormsHeader";
 
@@ -54,15 +55,21 @@ const DEFAULT_VALIDATION_BY_TYPE = {
   DATE_RANGE: validateDateRange,
 };
 
+function getNotEmptyValidation(fieldType: string) {
+  switch (fieldType) {
+    case "CONCEPT_LIST":
+      return validateConceptGroupFilled;
+    case "DATE_RANGE":
+      return validateDateRangeRequired;
+    default:
+      return validateRequired;
+  }
+}
+
 function getPossibleValidations(fieldType: string) {
-  const notEmptyValidation =
-    fieldType === "CONCEPT_LIST"
-      ? {
-          NOT_EMPTY: validateConceptGroupFilled,
-        }
-      : {
-          NOT_EMPTY: validateRequired,
-        };
+  const notEmptyValidation = {
+    NOT_EMPTY: getNotEmptyValidation(fieldType),
+  };
 
   return {
     ...notEmptyValidation,
@@ -125,22 +132,26 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
     return (
       <form>
         <FormsHeader headline={config.headline[locale]} />
-        {config.fields.map((field) => (
-          <Field
-            key={field.name}
-            formType={config.type}
-            getFieldValue={getFieldValue}
-            field={field}
-            selectedDatasetId={selectedDatasetId}
-            availableDatasets={availableDatasets}
-            locale={locale}
-          />
-        ))}
+        {config.fields.map((field, i) => {
+          const key = isFormField(field) ? field.name : field.type + i;
+
+          return (
+            <Field
+              key={key}
+              formType={config.type}
+              getFieldValue={getFieldValue}
+              field={field}
+              selectedDatasetId={selectedDatasetId}
+              availableDatasets={availableDatasets}
+              locale={locale}
+            />
+          );
+        })}
       </form>
     );
   };
 
-  const allFields = collectAllFields(config.fields);
+  const allFields = collectAllFormFields(config.fields);
   const fieldValueSelector = formValueSelector(
     config.type,
     selectReduxFormState

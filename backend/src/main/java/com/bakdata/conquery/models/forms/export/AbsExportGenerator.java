@@ -15,14 +15,14 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class AbsExportGenerator {
 	
 
-	public static AbsoluteFormQuery generate(Namespaces namespaces, AbsoluteMode mode, UserId userId, DatasetId submittedDataset) {
+	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, AbsoluteMode mode, UserId userId, DatasetId submittedDataset) {
 		
 		List<DateContextMode> resolutions = null;
 		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
@@ -37,7 +37,7 @@ public class AbsExportGenerator {
 		return generate(namespaces, resolutions, userId, submittedDataset, mode.getFeatures(), mode.getForm().getPrerequisite(), mode.getDateRange());
 	}
 	
-	public static AbsoluteFormQuery generate(Namespaces namespaces, List<DateContextMode> resolutions, UserId userId, DatasetId submittedDataset, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange) {
+	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, List<DateContextMode> resolutions, UserId userId, DatasetId submittedDataset, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange) {
 		
 		// Apply defaults to user concept
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);

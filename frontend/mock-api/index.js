@@ -67,12 +67,25 @@ module.exports = function (app, port) {
 
         const dice = Math.random();
 
-        if (dice <= 0.3) {
+        if (dice <= 0.1) {
           res.status(422);
           res.send(ERROR);
-        } else if (dice > 0.3 && dice <= 0.7)
+        } else if (dice > 0.1 && dice <= 0.5) {
           res.send(JSON.stringify({ id: 1, status: "RUNNING" }));
-        else
+        } else if (dice > 0.5 && dice <= 0.8) {
+          res.send(
+            JSON.stringify({
+              id: 1,
+              status: "FAILED",
+              error: {
+                code: "EXAMPLE_ERROR_INTERPOLATED",
+                context: {
+                  adjective: "easy",
+                },
+              },
+            })
+          );
+        } else {
           res.send(
             JSON.stringify({
               id: 1,
@@ -81,6 +94,7 @@ module.exports = function (app, port) {
               resultUrl: `/api/results/results.csv`,
             })
           );
+        }
       }, LONG_DELAY);
     }
   );

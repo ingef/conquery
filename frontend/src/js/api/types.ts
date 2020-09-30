@@ -3,23 +3,27 @@
 // - partial types that the reponses are built from
 
 import type { Forms } from "./form-types";
-import type { FormConfigT } from "js/external-forms/form-configs/reducer";
+import type { FormConfigT } from "../external-forms/form-configs/reducer";
+import { SupportedErrorCodesT } from "./errorCodes";
 
 export type DatasetIdT = string;
-export type DatasetT = {
+export interface DatasetT {
   id: DatasetIdT;
   label: string;
-};
+}
 
-export type SelectOptionT = {
+export interface SelectOptionT {
   label: string;
   value: number | string;
-};
+}
 
 export type SelectOptionsT = SelectOptionT[];
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
-export type DateRangeT = ?{ min?: string; max?: string };
+export interface DateRangeT {
+  min?: string;
+  max?: string;
+}
 
 export interface CurrencyConfigT {
   prefix: string;
@@ -223,11 +227,11 @@ export interface GetFrontendConfigResponseT {
   version: string;
 }
 
-export type GetConceptResponseT = Record<ConceptIdT, ConceptElement>;
+export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
 
 export interface GetConceptsResponseT {
   concepts: {
-    [key: ConceptIdT]: ConceptStructT | ConceptElementT;
+    [conceptId: string]: ConceptStructT | ConceptElementT;
   };
   version?: number; // TODO: Is this even sent anymore?
 }
@@ -237,18 +241,46 @@ export interface PostQueriesResponseT {
   id: QueryIdT;
 }
 
+export type ColumnDescriptionKind =
+  | "ID"
+  | "STRING"
+  | "INTEGER"
+  | "MONEY"
+  | "NUMERIC"
+  | "DATE"
+  | "DATE_RANGE"
+  | "BOOLEAN"
+  | "CATEGORICAL"
+  | "RESOLUTION";
+
+export interface ColumnDescription {
+  label: string;
+  selectId: string | null;
+  type: ColumnDescriptionKind;
+}
+
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE";
   numberOfResults: number;
   resultUrl: string;
+  columnDescriptions: ColumnDescription[];
 }
 
-export type GetQueryResponseT =
-  | GetQueryResponseDoneT
-  | {
-      status: "FAILED" | "CANCELED";
-    };
+// TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
+export interface GetQueryErrorResponseT {
+  status: "FAILED" | "CANCELED";
+  error: ErrorResponseT | null;
+}
+
+export interface ErrorResponseT {
+  id?: string;
+  code: SupportedErrorCodesT; // To translate to localized messages
+  message?: string; // For developers / debugging only
+  context?: Record<string, string>; // More information to maybe display in translated messages
+}
+
+export type GetQueryResponseT = GetQueryResponseDoneT | GetQueryErrorResponseT;
 
 export interface GetStoredQueryResponseT {
   id: QueryIdT;
@@ -265,6 +297,7 @@ export interface GetStoredQueryResponseT {
   query: QueryT; // TODO: Remove in QUERIES response. Creates a lot of additional traffic right now
   owner: string; // TODO: Remove. Not used. And it's actually an ID
   status: "DONE"; // TODO: Remove. Not used here
+  groups?: UserGroupIdT[];
 }
 
 // TODO: This actually returns a lot of unused fields, see above
@@ -297,21 +330,23 @@ export type PostFilterSuggestionsResponseT = FilterSuggestion[];
 
 export type GetFormQueriesResponseT = Forms;
 
-export interface Permission {
+export interface PermissionT {
   domains: string[];
   abilities: string[];
   targets: string[];
 }
 
-export interface UserGroup {
-  groupId: string;
+export type UserGroupIdT = string;
+export interface UserGroupT {
+  groupId: UserGroupIdT;
   label: string;
 }
 
 export interface GetMeResponseT {
   userName: string;
-  permissions: Permission[];
-  groups: UserGroup[];
+  permissions: PermissionT[];
+  groups: UserGroupT[];
+  hideLogoutButton?: boolean;
 }
 
 export interface PostLoginResponseT {

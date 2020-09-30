@@ -15,7 +15,7 @@ public class Leaf extends QPNode {
 	}
 	
 	@Override
-	public void nextEvent(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		triggered = true;
 	}
 

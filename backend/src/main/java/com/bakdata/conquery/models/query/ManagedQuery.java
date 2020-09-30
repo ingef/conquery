@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.query;
 
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -9,26 +10,33 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.ws.rs.core.StreamingOutput;
+
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -59,7 +67,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
+	private transient int involvedWorkers;
+	@JsonIgnore
 	private transient int executingThreads;
+	@JsonIgnore
+	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
@@ -69,20 +81,21 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public void initExecutable(@NonNull Namespaces namespaces) {
-		this.namespace = namespaces.get(getDataset());
-		this.executingThreads = namespace.getWorkers().size();
-	}
-
-	@Override
-	public void addResult(@NonNull MasterMetaStorage storage, ShardResult result) {
-		for (EntityResult er : result.getResults()) {
-			if (er.isFailed() && state == ExecutionState.RUNNING) {
-				fail(storage);
-				FailedEntityResult failed = er.asFailed();
-				log.error("Failed query " + queryId + " at least for the entity " + failed.getEntityId() + " with:\n{}", failed.getThrowable());
-			}
+	public void initExecutable(@NonNull DatasetRegistry namespaces) {
+		synchronized (getExecution()) {
+			this.namespace = namespaces.get(getDataset());
+			this.involvedWorkers = namespace.getWorkers().size();
 		}
+	}
+	
+	@Override
+	public void addResult(@NonNull MetaStorage storage, ShardResult result) {
+		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
+
+		if(result.getError().isPresent()) {
+			fail(storage, result.getError().get());
+		}
+
 		synchronized (getExecution()) {
 			executingThreads--;
 			results.addAll(result.getResults());
@@ -95,6 +108,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public void start() {
 		super.start();
+		synchronized (getExecution()) {
+			executingThreads = involvedWorkers;
+		}
+		
 
 		if(results != null)
 			results.clear();
@@ -103,7 +120,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
+	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
 		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
 
 		super.finish(storage, executionState);
@@ -114,19 +131,41 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@JsonIgnore
-	public ResultInfoCollector collectResultInfos(PrintSettings config) {
-		return query.collectResultInfos(config);
+	public ResultInfoCollector collectResultInfos() {
+		return query.collectResultInfos();
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, URLBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
 	}
 	
 	@Override
-	public Collection<ManagedQuery> toResultQuery() {
-		return List.of(this);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+		if (columnDescriptions == null) {
+			columnDescriptions = generateColumnDescriptions();
+		}
+		status.setColumnDescriptions(columnDescriptions);
+	}
+
+	/**
+	 * Generates a description of each column that will appear in the resulting csv.
+	 */
+	public List<ColumnDescriptor> generateColumnDescriptions() {
+		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+		// First add the id columns to the descriptor list. The are the first columns
+		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
+			columnDescriptions.add(ColumnDescriptor.builder()
+				.label(header)
+				.type(ConqueryConstants.ID_TYPE)
+				.build());
+		}
+		// Then all columns that originate from selects and static aggregators
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
+		collectResultInfos().getInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
+		return columnDescriptions;
 	}
 
 	@Override
@@ -153,12 +192,23 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public Set<Namespace> getRequiredNamespaces() {
+	public Set<Namespace> getRequiredDatasets() {
 		return Set.of(namespace);
 	}
 
 	@Override
 	public QueryDescription getSubmitted() {
 		return query;
+	}
+
+	@Override
+	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), mappingState, charset, lineSeparator);
+	}
+	
+	@Override
+	protected URL getDownloadURL(URLBuilder url) {
+		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
+			.to(ResultCSVResource.GET_CSV_PATH).get();
 	}
 }

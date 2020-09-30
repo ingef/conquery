@@ -1,25 +1,37 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import lombok.Data;
+import lombok.ToString;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter @Setter @CPSType(id="LINE", base=Output.class)
-public class LineOutput extends Output {
+/**
+ * Outputs the current line in the file.
+ */
+@Data
+@ToString
+@CPSType(id="LINE", base= OutputDescription.class)
+public class LineOutput extends OutputDescription {
 	
 	private static final long serialVersionUID = 1L;
-	
+
 	@Override
-	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) {
-		return Collections.singletonList(sourceLine);
+	public boolean isRequired() {
+		return true;
 	}
 
+	@Override
+	public Output createForHeaders(Object2IntArrayMap<String> headers) {
+		return new Output() {
+			@Override
+			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+				return sourceLine;
+			}
+		};
+	}
 	@Override
 	public MajorTypeId getResultType() {
 		return MajorTypeId.INTEGER;

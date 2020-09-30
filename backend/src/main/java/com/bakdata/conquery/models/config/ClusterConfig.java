@@ -16,10 +16,9 @@ public class ClusterConfig extends Configuration {
 	@PortRange
 	private int port = 16170;
 	@Valid @NotNull
-	private InetAddress masterURL = InetAddress.getLoopbackAddress();
+	private InetAddress managerURL = InetAddress.getLoopbackAddress();
 	@Valid @NotNull
 	private MinaConfig mina = new MinaConfig();
 	@Min(1)
 	private int entityBucketSize = 1000;
-	
 }

@@ -490,7 +490,6 @@ const FormConceptGroup = (props: PropsType) => {
     const nextValue = valuesToCopy.reduce((currentValue, value) => {
       const newVal = addValue(currentValue, newValue);
 
-      debugger;
       return value.concepts.reduce(
         (curVal, concept) =>
           addConcept(newVal, curVal.length, copyConcept(concept)),

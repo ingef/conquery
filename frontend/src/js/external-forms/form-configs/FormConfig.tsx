@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { parseISO } from "date-fns";
 
 import type { StateT } from "app-types";
-import type { DatasetIdT } from "js/api/types";
+import type { DatasetIdT } from "../../api/types";
 
 import { FORM_CONFIG } from "../../common/constants/dndTypes";
 import SelectableLabel from "../../highlightable-label/HighlightableLabel";
@@ -113,12 +113,14 @@ interface PropsT {
   datasetId: DatasetIdT;
   config: FormConfigT;
   onIndicateDeletion: () => void;
+  onIndicateShare: () => void;
 }
 
 const FormConfig: React.FC<PropsT> = ({
   datasetId,
   config,
   onIndicateDeletion,
+  onIndicateShare,
 }) => {
   const formLabel = useFormLabelByType(config.formType);
   const availableTags = useSelector<StateT, string[]>(
@@ -160,10 +162,6 @@ const FormConfig: React.FC<PropsT> = ({
     setIsLoading(false);
   };
 
-  const onSetSharedFormConfig = (shared: boolean) => {
-    onPatchFormConfig({ shared }, "formConfig.shareError");
-  };
-
   const onRenameFormConfig = async (label: string) => {
     await onPatchFormConfig({ label }, "formConfig.renameError");
 
@@ -203,9 +201,7 @@ const FormConfig: React.FC<PropsT> = ({
         <div>
           {formLabel}
           {config.own && config.shared && (
-            <SharedIndicator
-              onClick={() => onSetSharedFormConfig(!config.shared)}
-            >
+            <SharedIndicator onClick={onIndicateShare}>
               {T.translate("common.shared")}
             </SharedIndicator>
           )}
@@ -224,11 +220,7 @@ const FormConfig: React.FC<PropsT> = ({
               )}
             {config.own && !config.shared && (
               <StyledWithTooltip text={T.translate("common.share")}>
-                <IconButton
-                  icon="upload"
-                  bare
-                  onClick={() => onSetSharedFormConfig(!config.shared)}
-                />
+                <IconButton icon="upload" bare onClick={onIndicateShare} />
               </StyledWithTooltip>
             )}
             {isLoading ? (

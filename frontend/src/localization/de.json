@@ -1,6 +1,10 @@
 {
   "locale": "de",
   "headline": "Anfragen und Analyse",
+  "errorCodes": {
+    "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
+    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {adjective} Beispiel-Fehlermeldung"
+  },
   "leftPane": {
     "conceptTrees": "Konzeptbäume",
     "previousQueries": "Anfragen",
@@ -93,6 +97,11 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Diese Anfrage wirklich löschen?"
   },
+  "sharePreviousQueryModal": {
+    "headline": "Anfrage freigeben: ",
+    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "unshare": "Freigabe aufheben"
+  },
   "common": {
     "back": "Zurück",
     "any": "Beliebig",
@@ -114,7 +123,13 @@
     "addTag": "Schlagwort hinzufügen",
     "share": "Freigeben",
     "shared": "Freigegeben",
-    "loading": "Lade ..."
+    "loading": "Lade ...",
+    "average": "Mittelwert",
+    "median": "Median",
+    "min": "Min",
+    "max": "Max",
+    "std": "Std.",
+    "logout": "Ausloggen"
   },
   "tooltip": {
     "headline": "Info",
@@ -320,7 +335,10 @@
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
-    "explanation": "Stellt die CSV-Datei der Ergebnisse dar",
+    "previewHeadline": "Ergebnis-CSV",
+    "previewSubline": "Auszug der ersten {count} Zeilen",
+    "statisticsHeadline": "Spaltenstatistik",
+    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
@@ -347,5 +365,9 @@
   },
   "deleteFormConfigModal": {
     "areYouSure": "Diese Konfiguration wirklich löschen?"
+  },
+  "conceptTreesOpen": {
+    "resetAll": "Zurück zu Standardansicht",
+    "closeAll": "Alle Konzepte schließen"
   }
 }

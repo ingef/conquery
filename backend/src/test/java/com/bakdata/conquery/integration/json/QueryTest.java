@@ -1,7 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
-import java.io.IOException;
-import java.util.Arrays;
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -10,8 +9,6 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,18 +46,23 @@ public class QueryTest extends AbstractQueryEngineTest {
 	}
 
 	@Override
-	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
-		IntegrationUtils.importTables(support, content);
+	public void importRequiredData(StandaloneSupport support) throws Exception {
+		importTables(support, content);
 		support.waitUntilWorkDone();
 
-		IntegrationUtils.importConcepts(support, rawConcepts);
+		importConcepts(support, rawConcepts);
 		support.waitUntilWorkDone();
+
+		importTableContents(support, content.getTables());
+		support.waitUntilWorkDone();
+		
+		importIdMapping(support, content);
+		support.waitUntilWorkDone();
+		
+		importPreviousQueries(support, content);
+		support.waitUntilWorkDone();
+		
 		query = IntegrationUtils.parseQuery(support, rawQuery);
-
-		IntegrationUtils.importTableContents(support, Arrays.asList(content.getTables()), support.getDataset());
-		support.waitUntilWorkDone();
-		IntegrationUtils.importIdMapping(support, content);
-		IntegrationUtils.importPreviousQueries(support, content);
 	}
 
 }

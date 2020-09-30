@@ -5,5 +5,5 @@ import lombok.Setter;
 
 @Getter @Setter
 public class StandaloneConfig {
-	private int numberOfSlaves = 2;
+	private int numberOfShardNodes = 2;
 }

@@ -7,14 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -27,19 +25,12 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 
 	@MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
-	
-	/**
-	 * The name of a user is unique in the system. It is used to generate the UserId object.
-	 * The name might be an email address.
-	 */
-	@Getter @Setter @NonNull @NotNull
-	private String name;
-	@Getter @Setter @NonNull @NotNull
-	private String label;
+
+	@Getter @Setter @JsonIgnore
+	private transient boolean displayLogout = true;
 
 	public User(String name, String label) {
-		this.name = name;
-		this.label = label;
+		super(name, label);
 	}
 	
 
@@ -79,7 +70,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 		return new UserId(name);
 	}
 
-	public void addRole(MasterMetaStorage storage, Role role) {
+	public void addRole(MetaStorage storage, Role role) {
 		if(roles.add(role)) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
 			updateStorage(storage);
@@ -87,7 +78,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 	
 	@Override
-	public void removeRole(MasterMetaStorage storage, Role role) {
+	public void removeRole(MetaStorage storage, Role role) {
 		if(roles.remove(role)) {
 			log.trace("Removed role {} from user {}", role.getId(), getId());				
 			updateStorage(storage);
@@ -99,7 +90,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 	
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) {
+	protected void updateStorage(MetaStorage storage) {
 		storage.updateUser(this);
 	}
 

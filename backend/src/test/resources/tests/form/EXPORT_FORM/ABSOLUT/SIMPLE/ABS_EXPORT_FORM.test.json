@@ -1,6 +1,6 @@
 {
     "type": "FORM_TEST",
-    "label": "ABS-EXPORT-FORM Test",
+    "label": "ABS-EXPORT-FORM ADD DEFAULT SELECT Test",
     "expectedCsv": {
         "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected.csv"
     },

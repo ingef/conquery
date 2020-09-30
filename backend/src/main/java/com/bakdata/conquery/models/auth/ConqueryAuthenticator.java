@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.Optional;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -11,7 +11,6 @@ import io.dropwizard.auth.Authenticator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 
 /**
@@ -25,7 +24,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 @RequiredArgsConstructor
 public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, User>{
 	
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 
 	/**
 	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
@@ -33,15 +32,16 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 	@Override
 	public Optional<User> authenticate(AuthenticationToken token) {
 		// Submit the token to Shiro (to all realms that were registered)
-		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
+		ConqueryAuthenticationInfo info = (ConqueryAuthenticationInfo) SecurityUtils.getSecurityManager().authenticate(token);
 		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
-		// The UserId is queried in the MasterMetaStorage, the central place for authorization information
+		// The UserId is queried in the MetaStorage, the central place for authorization information
 		User user = storage.getUser(userId);
 		
 		if(user != null) {
 			ConqueryMDC.setLocation(user.getId().toString());
+			user.setDisplayLogout(info.isDisplayLogout());
 		} else {
 			log.trace("The user id {} could not be map to a user.", userId);
 		}

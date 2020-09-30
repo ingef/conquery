@@ -51,14 +51,14 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
-		Validator validator = support.getStandaloneCommand().getMaster().getValidator();
-		StorageConfig config = support.getStandaloneCommand().getMaster().getConfig().getStorage();
-		CentralRegistry registry = support.getStandaloneCommand().getMaster().getStorage().getCentralRegistry();
+		Validator validator = support.getValidator();
+		StorageConfig config = support.getConfig().getStorage();
+		CentralRegistry registry = support.getMetaStorage().getCentralRegistry();
 		directory = new File(config.getDirectory(), STORE_SUFFIX);
 		directory.deleteOnExit();
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		this.authMandator =  StoreInfo.AUTH_ROLE.identifiable(env, validator, registry);
-		this.authUser = StoreInfo.AUTH_USER.identifiable(env, validator, registry);
+		this.authMandator =  StoreInfo.AUTH_ROLE.identifiable(config, env, validator, registry);
+		this.authUser = StoreInfo.AUTH_USER.identifiable(config, env, validator, registry);
 	}
 	
 	/**

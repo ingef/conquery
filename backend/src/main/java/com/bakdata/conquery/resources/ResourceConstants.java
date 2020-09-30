@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources;
 
-import freemarker.template.Configuration;
+import com.bakdata.conquery.io.freemarker.Freemarker;
 import freemarker.template.DefaultObjectWrapperBuilder;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
@@ -34,7 +34,7 @@ public class ResourceConstants {
 	 */
 	public static final TemplateModel getAsTemplateModel() {
 		try {
-			return new DefaultObjectWrapperBuilder(Configuration.getVersion())
+			return new DefaultObjectWrapperBuilder(Freemarker.VERSION)
 				.build()
 				.getStaticModels()
 				.get(ResourceConstants.class.getName());

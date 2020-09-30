@@ -1,14 +1,21 @@
-import T from "i18n-react";
+import type {
+  ColumnDescription,
+  DatasetIdT,
+  GetQueryResponseDoneT,
+  ErrorResponseT,
+} from "../api/types";
 import { toUpperCaseUnderscore } from "../common/helpers";
+import { getErrorCodeMessageKey } from "../api/errorCodes";
 import * as actionTypes from "./actionTypes";
 
-type APICallType = {
+interface APICallType {
   loading?: boolean;
   success?: boolean;
   error?: string;
-};
+  errorContext?: Record<string, string>;
+}
 
-export type QueryRunnerStateT = {
+export interface QueryRunnerStateT {
   runningQuery: number | string | null;
   queryRunning: boolean;
   startQuery: APICallType;
@@ -18,9 +25,10 @@ export type QueryRunnerStateT = {
         datasetId?: string;
         resultCount?: number;
         resultUrl?: string;
+        resultColumns?: ColumnDescription[];
       })
     | null;
-};
+}
 
 export default function createQueryRunnerReducer(type: string) {
   const initialState: QueryRunnerStateT = {
@@ -28,7 +36,7 @@ export default function createQueryRunnerReducer(type: string) {
     queryRunning: false,
     startQuery: {},
     stopQuery: {},
-    queryResult: null
+    queryResult: null,
   };
 
   const capitalType = toUpperCaseUnderscore(type);
@@ -47,24 +55,36 @@ export default function createQueryRunnerReducer(type: string) {
     actionTypes[`QUERY_${capitalType}_RESULT_SUCCESS`];
   const QUERY_RESULT_ERROR = actionTypes[`QUERY_${capitalType}_RESULT_ERROR`];
 
-  const getQueryResult = (data, datasetId) => {
-    if (data.status === "CANCELED")
-      return {
-        loading: false,
-        error: T.translate("queryRunner.queryCanceled")
-      };
-    else if (data.status === "FAILED")
-      return { loading: false, error: T.translate("queryRunner.queryFailed") };
-
-    // E.G. STATUS DONE
+  const getQueryResult = (
+    data: GetQueryResponseDoneT,
+    datasetId: DatasetIdT
+  ) => {
     return {
       datasetId,
       loading: false,
       success: true,
       error: null,
       resultCount: data.numberOfResults,
-      resultUrl: data.resultUrl
+      resultUrl: data.resultUrl,
+      resultColumns: data.columnDescriptions,
     };
+  };
+
+  const getQueryError = ({
+    status,
+    error,
+  }: {
+    status: "CANCELED" | "FAILED";
+    error: ErrorResponseT | null;
+  }): string => {
+    if (status === "CANCELED") {
+      return "queryRunner.queryCanceled";
+    }
+
+    return (
+      (error && error.code && getErrorCodeMessageKey(error.code)) ||
+      "queryRunner.queryFailed"
+    );
   };
 
   return (
@@ -78,7 +98,7 @@ export default function createQueryRunnerReducer(type: string) {
           ...state,
           stopQuery: {},
           startQuery: { loading: true },
-          queryResult: null
+          queryResult: null,
         };
       case START_QUERY_SUCCESS:
         return {
@@ -86,15 +106,15 @@ export default function createQueryRunnerReducer(type: string) {
           runningQuery: action.payload.data.id,
           queryRunning: true,
           stopQuery: {},
-          startQuery: { success: true }
+          startQuery: { success: true },
         };
       case START_QUERY_ERROR:
         return {
           ...state,
           stopQuery: {},
           startQuery: {
-            error: action.payload.message || action.payload.status
-          }
+            error: action.payload.message || action.payload.status,
+          },
         };
 
       // To cancel a query
@@ -106,13 +126,13 @@ export default function createQueryRunnerReducer(type: string) {
           runningQuery: null,
           queryRunning: false,
           startQuery: {},
-          stopQuery: { success: true }
+          stopQuery: { success: true },
         };
       case STOP_QUERY_ERROR:
         return {
           ...state,
           startQuery: {},
-          stopQuery: { error: action.payload.message || action.payload.status }
+          stopQuery: { error: action.payload.message || action.payload.status },
         };
 
       // To check for query results
@@ -121,26 +141,31 @@ export default function createQueryRunnerReducer(type: string) {
       case QUERY_RESULT_RESET:
         return { ...state, queryResult: { loading: false } };
       case QUERY_RESULT_SUCCESS:
-        const { data, datasetId } = action.payload;
-
-        const queryResult = getQueryResult(data, datasetId);
+        const queryResult = getQueryResult(
+          action.payload.data,
+          action.payload.datasetId
+        );
 
         return {
           ...state,
           queryResult,
           runningQuery: null,
-          queryRunning: false
+          queryRunning: false,
         };
       case QUERY_RESULT_ERROR:
+        const { payload } = action;
+        const error = getQueryError(payload);
+        const errorContext = (payload.error && payload.error.context) || {};
+
         return {
           ...state,
           runningQuery: null,
           queryRunning: false,
           queryResult: {
             loading: false,
-            error:
-              action.payload.message || T.translate("queryRunner.queryFailed")
-          }
+            error,
+            errorContext,
+          },
         };
       default:
         return state;

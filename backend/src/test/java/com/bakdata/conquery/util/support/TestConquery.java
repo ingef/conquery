@@ -6,25 +6,32 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
+import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkerStorage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -87,7 +94,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 				name += "[" + count + "]";
 			}
 			DatasetId datasetId = new DatasetId(name);
-			standaloneCommand.getMaster().getAdmin().getAdminProcessor().addDataset(name);
+			standaloneCommand.getManager().getAdmin().getAdminProcessor().addDataset(name);
 			return createSupport(datasetId, name);
 		}
 		catch (Exception e) {
@@ -96,31 +103,30 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
-		Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
-		Namespace ns = namespaces.get(datasetId);
+		DatasetRegistry datasets = standaloneCommand.getManager().getDatasetRegistry();
+		Namespace ns = datasets.get(datasetId);
 
-		assertThat(namespaces.getSlaves()).hasSize(2);
+		assertThat(datasets.getShardNodes()).hasSize(2);
 
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 		localTmpDir.mkdir();
-		ConqueryConfig localCfg = Cloner.clone(config);
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
 		localCfg
 			.getPreprocessor()
 			.setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir) });
 
 		StandaloneSupport support = new StandaloneSupport(
 			this,
-			standaloneCommand,
 			ns,
 			ns.getStorage().getDataset(),
 			localTmpDir,
 			localCfg,
-			standaloneCommand.getMaster().getAdmin().getAdminProcessor(),
+			standaloneCommand.getManager().getAdmin().getAdminProcessor(),
 			// Getting the User from AuthorizationConfig
-			standaloneCommand.getMaster().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
+			standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
 
-		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
+		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getShardNodes().size());
 
 		support.waitUntilWorkDone();
 		openSupports.add(support);
@@ -133,23 +139,11 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 
 		DatasetId dataset = support.getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new SlaveMessage() {
-			@Override
-			public void react(NetworkMessageContext.Slave context) throws Exception {
-				context.getWorkers().getWorkers().values().stream()
-					   .filter(worker -> worker.getInfo().getDataset().equals(dataset))
-					   .forEach(worker -> {
-						   try {
-							   worker.getStorage().close();
-						   } catch (IOException e) {
-							   log.error("Failed closing down worker", e);
-						   }
-					   });
 
-			}
-		}));
+		standaloneCommand.getManager().getDatasetRegistry().get(dataset).sendToAll(new ShutdownWorkerStorage());
+
 		try {
-			standaloneCommand.getMaster().getStorage().close();
+			standaloneCommand.getManager().getStorage().close();
 		} catch (IOException e) {
 			log.error("",e);
 		}
@@ -160,7 +154,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		config.getStorage().setDirectory(tmpDir);
-		config.getStandalone().setNumberOfSlaves(2);
+		config.getStandalone().setNumberOfShardNodes(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());
 
@@ -230,9 +224,49 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 			log.info("Tearing down dataset");
 			DatasetId dataset = openSupport.getDataset().getId();
-			standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
-			standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
+			closeNamespace(dataset);
 			it.remove();
 		}
+	}
+	
+
+
+
+	public void waitUntilWorkDone() {
+		log.info("Waiting for jobs to finish");
+		boolean busy;
+		//sample 10 times from the job queues to make sure we are done with everything
+		long started = System.nanoTime();
+		for(int i=0;i<10;i++) {
+			do {
+				busy = standaloneCommand.getManager().getJobManager().isSlowWorkerBusy();
+				busy |= standaloneCommand.getManager()
+										 .getStorage()
+										 .getAllExecutions()
+										 .stream()
+										 .map(ManagedExecution::getState)
+										 .anyMatch(ExecutionState.RUNNING::equals);
+
+				for (Namespace namespace : standaloneCommand.getManager().getDatasetRegistry().getDatasets()) {
+					busy |= namespace.getJobManager().isSlowWorkerBusy();
+				}
+
+				for (ShardNode slave : standaloneCommand.getShardNodes())
+					busy |= slave.isBusy();
+
+				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
+					log.warn("waiting for done work for a long time");
+					started = System.nanoTime();
+				}
+
+			} while(busy);
+		}
+		log.info("all jobs finished");
+	}
+	
+	public void closeNamespace(DatasetId dataset) {
+		standaloneCommand.getManager().getDatasetRegistry().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(dataset);
 	}
 }

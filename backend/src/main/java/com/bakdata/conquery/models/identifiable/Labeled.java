@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.identifiable;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.google.common.base.CharMatcher;
 import lombok.AllArgsConstructor;
@@ -8,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.validator.constraints.NotEmpty;
 
 
 @Getter @Setter @NoArgsConstructor @EqualsAndHashCode(callSuper=true) @AllArgsConstructor

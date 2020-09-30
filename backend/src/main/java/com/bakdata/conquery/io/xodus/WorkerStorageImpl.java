@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Collection;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -16,11 +21,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.functions.Collector;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Collection;
 
 @Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
@@ -43,9 +45,9 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		worker = StoreInfo.WORKER.singleton(getEnvironment(), getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getEnvironment(), getValidator(), getCentralRegistry());
+		worker = StoreInfo.WORKER.singleton(getConfig(), getEnvironment(), getValidator());
+		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
+		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
 		
 		collector
 			.collect(worker)
@@ -110,7 +112,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void setWorker(WorkerInformation worker) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void setWorker(WorkerInformation worker) {
 		this.worker.add(worker);
 	}
 

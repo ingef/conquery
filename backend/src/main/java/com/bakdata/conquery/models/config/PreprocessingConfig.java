@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.config;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,10 +10,13 @@ import lombok.ToString;
 
 @Getter @Setter @ToString
 public class PreprocessingConfig {
-	@NotEmpty @Valid
+	@Valid
 	private PreprocessingDirectories[] directories;
 	@Min(1)
-	private int threads = Runtime.getRuntime().availableProcessors();
+	private int nThreads = Runtime.getRuntime().availableProcessors();
 	@Min(0)
 	private int maximumPrintedErrors = 10;
+
+	@Min(0) @Max(1)
+	private double faultyLineThreshold = 0.01d;
 }

@@ -1,18 +1,6 @@
 package com.bakdata.conquery.handler;
 
-import static com.bakdata.conquery.Constants.AUTH;
-import static com.bakdata.conquery.Constants.CONTEXT;
-import static com.bakdata.conquery.Constants.CPS_TYPE;
-import static com.bakdata.conquery.Constants.ID_OF;
-import static com.bakdata.conquery.Constants.ID_REF;
-import static com.bakdata.conquery.Constants.ID_REF_COL;
-import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
-import static com.bakdata.conquery.Constants.JSON_CREATOR;
-import static com.bakdata.conquery.Constants.JSON_IGNORE;
-import static com.bakdata.conquery.Constants.LIST_OF;
-import static com.bakdata.conquery.Constants.PATH;
-import static com.bakdata.conquery.Constants.PATH_PARAM;
-import static com.bakdata.conquery.Constants.RESTS;
+import static com.bakdata.conquery.Constants.*;
 
 import java.io.Closeable;
 import java.io.File;
@@ -35,6 +23,7 @@ import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.PrettyPrinter;
+import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
@@ -303,6 +292,10 @@ public class GroupHandler {
 			var def = node.get(field.getName());
 			if(def == null) {
 				return "\u2400";
+			}
+			
+			if(field.getAnnotationInfo(VariableDefaultValue.class.getName()) != null) {
+				return "generated default varies";
 			}
 			String json = Jackson.MAPPER.writeValueAsString(def);
 			//we don't want to print defaults if it is a whole object itself
