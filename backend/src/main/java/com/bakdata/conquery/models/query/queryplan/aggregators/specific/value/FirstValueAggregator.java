@@ -24,7 +24,6 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	private int date = Integer.MAX_VALUE;
 
 	private Column validityDateColumn;
-	private boolean possiblyMultipleHits = false;
 
 	public FirstValueAggregator(Column column) {
 		super(column);
@@ -47,7 +46,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 				selectedBucket = bucket;
 				selectedEvent = OptionalInt.of(event);
 			} else {
-				possiblyMultipleHits = true;
+				log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 			}
 			return;			
 		}
@@ -63,10 +62,9 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			date = next;
 			selectedEvent = OptionalInt.of(event);
 			selectedBucket = bucket;
-			possiblyMultipleHits = false;
 		}
 		else if (next == date) {
-			possiblyMultipleHits = true;
+			log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 		}
 	}
 
@@ -74,9 +72,6 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	public VALUE getAggregationResult() {
 		if (selectedBucket == null && selectedEvent.isEmpty()) {
 			return null;
-		}
-		if (possiblyMultipleHits) {
-			log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 		}
 		return (VALUE) getColumn().getTypeFor(selectedBucket).createPrintValue(selectedBucket.getRaw(selectedEvent.getAsInt(), getColumn()));
 	}
