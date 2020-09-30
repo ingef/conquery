@@ -45,9 +45,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private final int depth = 0;
 	@Getter
 	private final int[] prefix = new int[]{0};
-	@Getter
-	@Setter
-	private int globalToLocalOffset;
 	@JsonIgnore
 	private transient int maxDepth = -1;
 	@JsonIgnore
