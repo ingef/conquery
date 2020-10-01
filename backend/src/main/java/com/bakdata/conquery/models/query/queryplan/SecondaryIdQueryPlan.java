@@ -45,12 +45,12 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 			return EntityResult.notContained();
 		}
 
-		query.checkRequiredTables(ctx.getStorage());
-		query.init(entity);
-
 		if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
 		}
+
+		query.checkRequiredTables(ctx.getStorage());
+		query.init(entity, ctx);
 
 
 		List<TableId> tablesWithoutSecondary = new ArrayList<>();
@@ -100,15 +100,22 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, Column secondaryIdColumn) {
-		Table currentTable = secondaryIdColumn.getTable();
-		nextTable(ctx, currentTable.getId());
-		for (Bucket bucket : entity.getBucket(currentTable.getId())) {
+		TableId currentTable = secondaryIdColumn.getTable().getId();
+		nextTable(ctx, currentTable);
+
+		final List<Bucket> tableBuckets = ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity, currentTable);
+
+		for (Bucket bucket : tableBuckets) {
 			int localEntity = bucket.toLocal(entity.getId());
+
 			AStringType<?> secondaryIdType = (AStringType<?>) secondaryIdColumn.getTypeFor(bucket);
+
 			nextBlock(bucket);
+
 			if (!bucket.containsLocalEntity(localEntity) || !isOfInterest(bucket)) {
 				continue;
 			}
+
 			int start = bucket.getFirstEventOfLocal(localEntity);
 			int end = bucket.getLastEventOfLocal(localEntity);
 
@@ -127,7 +134,10 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, TableId currentTable) {
 		nextTable(ctx, currentTable);
-		for (Bucket bucket : entity.getBucket(currentTable)) {
+
+		final List<Bucket> tableBuckets = ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity, currentTable);
+
+		for (Bucket bucket : tableBuckets) {
 			int localEntity = bucket.toLocal(entity.getId());
 			nextBlock(bucket);
 			if (!bucket.containsLocalEntity(localEntity) || !isOfInterest(bucket)) {
@@ -168,11 +178,14 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 * and bring it up to speed
 	 */
 	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket) {
+
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
-		plan.init(query.getEntity());
+
+		plan.init(query.getEntity(), currentContext);
 		plan.nextTable(currentContext, secondaryIdColumn.getId().getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
+
 		return plan;
 	}
 

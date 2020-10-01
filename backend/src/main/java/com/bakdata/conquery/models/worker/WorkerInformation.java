@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.MessageSender;
@@ -22,6 +23,9 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	private IntHashSet includedBuckets = new IntHashSet();
 	@JsonIgnore
 	private transient ShardNodeInformation connectedShardNode;
+
+	@Min(0)
+	private int entityBucketSize;
 
 	@Override
 	public WorkerId createId() {

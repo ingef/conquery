@@ -267,7 +267,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		if (state == ExecutionState.DONE) {
 			assertThat(managedQuery.getLastResultCount())
-					.describedAs(managedQuery.getResults().toString())
+					.describedAs("Query results")
 					.isEqualTo(size);
 		}
 	}
