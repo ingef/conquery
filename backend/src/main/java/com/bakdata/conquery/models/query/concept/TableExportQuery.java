@@ -42,48 +42,51 @@ import org.hibernate.validator.constraints.NotEmpty;
  * A TABLE_EXPORT creates a full export of the given tables. It ignores selects completely.
  */
 @Slf4j
-@Getter @Setter
+@Getter
+@Setter
 @CPSType(id = "TABLE_EXPORT", base = QueryDescription.class)
 @RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
 public class TableExportQuery extends IQuery {
 
 	@Valid
-	@NotNull @NonNull
+	@NotNull
+	@NonNull
 	protected IQuery query;
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
-	@NotEmpty @Valid
+	@NotEmpty
+	@Valid
 	private List<CQUnfilteredTable> tables;
-	private List<ColumnId> resolvedHeader;  
+	private List<ColumnId> resolvedHeader;
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
 		int totalColumns = 0;
 		List<TableExportDescription> resolvedConnectors = new ArrayList<>();
-		for(CQUnfilteredTable table : tables) {
+		for (CQUnfilteredTable table : tables) {
 			try {
 				Concept<?> concept = context.getCentralRegistry().resolve(table.getId().getConcept());
 				Connector connector = concept.getConnectorByName(table.getId().getConnector());
 				resolvedConnectors.add(
-					new TableExportDescription(
-						connector.getTable(),
-						connector.getValidityDateColumn(table.selectedValidityDate()),
-						totalColumns
-					)
+						new TableExportDescription(
+								connector.getTable(),
+								connector.getValidityDateColumn(table.getDateColumn().getValue()),
+								totalColumns
+						)
 				);
-				totalColumns+=connector.getTable().getColumns().length;
+				totalColumns += connector.getTable().getColumns().length;
 			}
-			catch (NoSuchElementException exc){
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), table.getId().getDataset(), exc);
+			catch (NoSuchElementException exc) {
+				log.warn("Unable to resolve connector `{}` in dataset `{}`.", table.getId().getConnector(), table.getId().getDataset(), exc);
 				continue;
 			}
 		}
-		
+
 		return new TableExportQueryPlan(
-			query.createQueryPlan(context),
-			CDateRange.of(dateRange),
-			resolvedConnectors,
-			totalColumns
+				query.createQueryPlan(context),
+				CDateRange.of(dateRange),
+				resolvedConnectors,
+				totalColumns
 		);
 	}
 
@@ -97,17 +100,17 @@ public class TableExportQuery extends IQuery {
 		this.query = query.resolve(context);
 		resolvedHeader = new ArrayList<>();
 
-		for(CQUnfilteredTable table : tables) {
+		for (CQUnfilteredTable table : tables) {
 			try {
 				Concept<?> concept = context.getNamespace().getStorage().getCentralRegistry().resolve(table.getId().getConcept());
 				Connector connector = concept.getConnectorByName(table.getId().getConnector());
 
-				for(Column col : connector.getTable().getColumns()) {
+				for (Column col : connector.getTable().getColumns()) {
 					resolvedHeader.add(col.getId());
 				}
 			}
-			catch (NoSuchElementException exc){
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), table.getId().getDataset(), exc);
+			catch (NoSuchElementException exc) {
+				log.warn("Unable to resolve connector `{}` in dataset `{}`.", table.getId().getConnector(), table.getId().getDataset(), exc);
 				continue;
 			}
 		}
@@ -117,7 +120,7 @@ public class TableExportQuery extends IQuery {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		for(ColumnId col : resolvedHeader) {
+		for (ColumnId col : resolvedHeader) {
 			collector.add(new SimpleResultInfo(col.toStringWithoutDataset(), ResultType.STRING));
 		}
 	}

@@ -191,20 +191,18 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 		return nodes;
 	}
 
-	private Column selectValidityDateColumn(CQTable t) {
-		if(t.selectedValidityDate() != null) {
-			return t
-				.getResolvedConnector()
-				.getValidityDateColumn(t.selectedValidityDate());
+	private Column selectValidityDateColumn(CQTable table) {
+		if (table.getDateColumn().getValue() != null) {
+			return table.getResolvedConnector()
+						.getValidityDateColumn(table.getDateColumn().getValue());
 		}
 
 		//else use this first defined validity date column
-		else if(!t.getResolvedConnector().getValidityDates().isEmpty()) {
-			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
+		if (!table.getResolvedConnector().getValidityDates().isEmpty()) {
+			return table.getResolvedConnector().getValidityDates().get(0).getColumn();
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
