@@ -74,12 +74,12 @@
 					"table": "vers_stamm2",
 					"validityDates": {
 						"label": "datum",
-						"column": "vers_stamm.datum"
+						"column": "vers_stamm2.datum"
 					},
 					"filter": {
 						"label": "value",
 						"description": "xy",
-						"column": "vers_stamm.value",
+						"column": "vers_stamm2.value",
 						"type": "NUMBER"
 					}
 				}
