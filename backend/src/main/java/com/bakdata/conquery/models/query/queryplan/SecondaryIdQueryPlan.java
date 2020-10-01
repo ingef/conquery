@@ -41,9 +41,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 */
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		if (!query.isOfInterest(entity)) {
-			return EntityResult.notContained();
-		}
+
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
@@ -52,6 +50,9 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		query.checkRequiredTables(ctx.getStorage());
 		query.init(entity, ctx);
 
+		if (!query.isOfInterest(entity)) {
+			return EntityResult.notContained();
+		}
 
 		List<TableId> tablesWithoutSecondary = new ArrayList<>();
 		//first execute only tables with secondaryIds
