@@ -32,9 +32,9 @@ public abstract class QPChainNode extends QPNode {
 	}
 	
 	@Override
-	public void init(Entity entity) {
-		super.init(entity);
-		child.init(entity);
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+		child.init(entity, context);
 	}
 	
 	@Override

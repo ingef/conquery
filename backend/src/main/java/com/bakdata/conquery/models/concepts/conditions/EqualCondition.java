@@ -1,24 +1,33 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
-import java.util.HashSet;
 import java.util.Map;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.CalculatedValue;
-
+import com.bakdata.conquery.util.CollectionsUtil;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * This condition requires each value to be exactly as given in the list.
  */
 @CPSType(id="EQUAL", base=CTCondition.class)
+@AllArgsConstructor
 public class EqualCondition implements CTCondition {
 
 	@Setter @Getter @NotEmpty
-	private HashSet<String> values;
+	private Set<String> values;
+
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+	public static EqualCondition create(Set<String> values) {
+		return new EqualCondition(CollectionsUtil.createSmallestSet(values));
+	}
+
+
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {

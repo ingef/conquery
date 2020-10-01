@@ -1,9 +1,11 @@
+import { UserGroupIdT } from "../../api/types";
 import {
   LOAD_CONFIGS_SUCCESS,
   LOAD_CONFIGS_ERROR,
   PATCH_CONFIG_SUCCESS,
   DELETE_CONFIG_SUCCESS,
 } from "./actionTypes";
+
 export interface BaseFormConfigT {
   formType: string;
   values: Record<string, any>;
@@ -18,6 +20,7 @@ export interface FormConfigT extends BaseFormConfigT {
   shared: boolean;
   system: boolean;
   ownerName: string;
+  groups?: UserGroupIdT[];
 }
 
 export interface FormConfigsStateT {
@@ -67,7 +70,10 @@ const findUniqueNames = (queries: FormConfigT[]) => {
   return Array.from(uniqueNames);
 };
 
-const updateFormConfig = (configs: FormConfigT[], { id, values }) => {
+const updateFormConfig = (
+  configs: FormConfigT[],
+  { id, values }: { id: string; values: Partial<FormConfigT> }
+) => {
   const config = configs.find((conf) => conf.id === id);
 
   if (!config) {

@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -63,6 +62,7 @@ public class ImportJob extends Job {
 	private final Namespace namespace;
 	private final TableId table;
 	private final File importFile;
+	private final int entityBucketSize;
 
 	@Override
 	public void execute() throws JSONException {
@@ -86,7 +86,7 @@ public class ImportJob extends Job {
 
 			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
 
-			// Distribute the new IDs between the slaves
+			// Distribute the new IDs between the ShardNodes
 			log.debug("\tpartition new IDs");
 
 			// Allocate a responsibility for all yet unassigned buckets.
@@ -108,8 +108,8 @@ public class ImportJob extends Job {
 			//create data import and store/send it
 			log.info("\tupdating import information");
 			//if mapping is not required we can also use the old infos here
-			Import outImport = createImport(header, !mappingRequired);
-			Import inImport = createImport(header, true);
+			Import outImport = createImport(header, !mappingRequired, entityBucketSize);
+			Import inImport = createImport(header, true, entityBucketSize);
 
 			inImport.setSuffix(inImport.getSuffix() + "_old");
 
@@ -122,7 +122,7 @@ public class ImportJob extends Job {
 			//import the actual data
 			log.info("\timporting");
 
-			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+			int bucketSize = entityBucketSize;
 
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
@@ -171,8 +171,8 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, boolean useOldType) {
-		Import imp = new Import();
+	private Import createImport(PreprocessedHeader header, boolean useOldType, int entityBucketSize) {
+		Import imp = new Import(entityBucketSize);
 		imp.setName(header.getName());
 		imp.setTable(table);
 		imp.setNumberOfEntries(header.getRows());
@@ -212,7 +212,7 @@ public class ImportJob extends Job {
 				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
 			}
 			try {
-				responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
+				responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
 			}
 			catch (InterruptedException e) {
 				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
@@ -229,7 +229,7 @@ public class ImportJob extends Job {
 		Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
 		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
 		log.debug("\tmap values");
-		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
+		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict, entityBucketSize);
 
 		//if no new ids we shouldn't recompress and store
 		if (primaryMapping.getNewIds() == null) {
@@ -268,7 +268,7 @@ public class ImportJob extends Job {
 				mappingRequired |= createSharedDictionary(col, tableCol);
 			}
 
-			//store external infos into master and slaves
+			//store external infos into ManagerNode and ShardNodes
 			col.getType().storeExternalInfos(
 					namespace.getStorage(),
 					(Consumer<Dictionary>) (dict -> {
@@ -299,7 +299,7 @@ public class ImportJob extends Job {
 		Dictionary shared = namespace.getStorage().computeDictionary(sharedId);
 		DictionaryMapping mapping = DictionaryMapping.create(
 				source,
-				shared
+				shared, entityBucketSize
 		);
 
 		AStringType<?> newType = Cloner.clone(oldType);

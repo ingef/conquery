@@ -23,6 +23,7 @@ public class ValidityDateNode extends QPChainNode {
 		//if table without validity columns we continue always
 		if(validityDateColumn == null) {
 			getChild().acceptEvent(bucket, event);
+			return;
 		}
 
 		//if event has null validityDate cancel

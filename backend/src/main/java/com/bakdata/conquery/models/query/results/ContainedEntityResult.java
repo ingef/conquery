@@ -5,15 +5,17 @@ import java.util.stream.Stream;
 public interface ContainedEntityResult extends EntityResult {
 
 	int getEntityId();
+	/**
+	 * Provides the number of columns this result contains.
+	 */
+	int columnCount();
 	Stream<Object[]> streamValues();
 	
 	static Stream<ContainedEntityResult> filterCast(EntityResult result) {
 		if(result instanceof ContainedEntityResult) {
 			return Stream.of(result.asContained());
 		}
-		else {
-			return Stream.empty();
-		}
+		return Stream.empty();
 	}
 	
 	@Override

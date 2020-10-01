@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
@@ -20,22 +26,27 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  *
- * @implNote This class is only used per {@link Worker}. And NOT in the Master.
+ * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
 public class BucketManager {
+
+	@Getter
+	private final int bucketSize;
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
@@ -45,36 +56,55 @@ public class BucketManager {
 	private final IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
 	@Getter
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
-	private final WorkerInformation workerInformation;
 
-	public BucketManager(JobManager jobManager, WorkerStorage storage, WorkerInformation workerInformation) {
-		this.jobManager = jobManager;
-		this.storage = storage;
+	//Backreference
+	private final Worker worker;
+
+	public BucketManager(Worker worker) {
+		this.jobManager = worker.getJobManager();
+		this.storage = worker.getStorage();
 		this.concepts.addAll(storage.getAllConcepts());
 		this.buckets.addAll(storage.getAllBuckets());
 		this.cBlocks.addAll(storage.getAllCBlocks());
-		this.workerInformation = workerInformation;
+		this.worker = worker;
+		bucketSize = worker.getInfo().getEntityBucketSize();
 	}
 
+	@SneakyThrows
 	public void fullUpdate() {
-		for (Concept<?> c : concepts) {
+		for (Concept<?> c : concepts.values()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
+
 					Table t = con.getTable();
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 					ConnectorId conName = con.getId();
+
 					for (Import imp : t.findImports(storage)) {
-						for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+
+
+						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
+							storage.registerTableImport(imp.getId());
+
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 							Optional<Bucket> bucket = buckets.getOptional(bucketId);
-							if (bucket.isPresent()) {
-								CBlockId cBlockId = new CBlockId(bucketId, conName);
-								if (!cBlocks.getOptional(cBlockId).isPresent()) {
-									job.addCBlock(imp, bucket.get(), cBlockId);
-								}
+
+							if (bucket.isEmpty()) {
+								continue;
 							}
+
+							CBlockId cBlockId = new CBlockId(bucketId, conName);
+
+							if (!cBlocks.containsKey(cBlockId)) {
+								continue;
+							}
+
+							log.warn("CBlock[{}] missing in Storage.", cBlockId);
+
+							job.addCBlock(imp, bucket.get(), cBlockId);
 						}
 					}
+
 					if (!job.isEmpty()) {
 						jobManager.addSlowJob(job);
 					}
@@ -82,19 +112,18 @@ public class BucketManager {
 			}
 		}
 
-		for (Bucket bucket : buckets) {
+		for (Bucket bucket : buckets.values()) {
 			registerBucket(bucket);
 		}
 
-		for (CBlock cBlock : cBlocks) {
+		for (CBlock cBlock : cBlocks.values()) {
 			registerCBlock(cBlock);
 		}
 	}
 
 	private void registerBucket(Bucket bucket) {
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(bucket))
-					.addBucket(storage.getCentralRegistry().resolve(bucket.getImp().getTable()).getId(), bucket);
+			entities.computeIfAbsent(entity, createEntityFor(bucket));
 		}
 	}
 
@@ -118,15 +147,14 @@ public class BucketManager {
 	private void registerCBlock(CBlock cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(cBlock))
-					.addCBlock(
-							storage.getCentralRegistry().resolve(cBlock.getConnector()),
-							storage.getImport(cBlock.getBucket().getImp()),
-							storage.getCentralRegistry().resolve(cBlock.getBucket().getImp().getTable()),
-							bucket,
-							cBlock
-					);
+			entities.computeIfAbsent(entity, createEntityFor(cBlock));
 		}
+
+		List<CBlock> forCBlock = connectorCBlocks
+										 .computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
+										 .computeIfAbsent(bucket.getId().getBucket(), bucketId -> new ArrayList<>(3));
+
+		forCBlock.add(cBlock);
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
@@ -138,7 +166,7 @@ public class BucketManager {
 		buckets.add(bucket);
 		registerBucket(bucket);
 
-		for (Concept<?> c : concepts) {
+		for (Concept<?> c : concepts.values()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
@@ -168,7 +196,7 @@ public class BucketManager {
 				Table t = con.getTable();
 				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 				for (Import imp : t.findImports(storage)) {
-					for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
@@ -199,30 +227,40 @@ public class BucketManager {
 			if(entity == null)
 				continue;
 
-			entity.removeBucket(bucket.getId());
-
-			//TODO Verify that this is enough.
-			if(entity.isEmpty()) {
+			if(isEntityEmpty(entity)) {
 				entities.remove(entityId);
 			}
 		}
 	}
 
-	private void deregisterCBlock(CBlockId cBlock) {
-		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
+	private void deregisterCBlock(CBlockId cBlockId) {
+		Bucket bucket = buckets.getOrFail(cBlockId.getBucket());
+
 		for (int entityId : bucket) {
 			final Entity entity = entities.get(entityId);
 
 			if(entity == null)
 				continue;
 
-			entity.removeCBlock(cBlock.getConnector(), cBlock.getBucket());
-
 			//TODO Verify that this is enough.
-			if(entity.isEmpty()) {
+			if(isEntityEmpty(entity)) {
 				entities.remove(entityId);
 			}
 		}
+
+		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(cBlockId.getConnector());
+
+		if(forConnector == null){
+			return;
+		}
+
+		final List<CBlock> forBucket = forConnector.get(cBlockId.getBucket().getBucket());
+
+		if(forBucket == null){
+			return;
+		}
+
+		forBucket.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
 	}
 
 	public void removeBucket(BucketId bucketId) {
@@ -265,14 +303,13 @@ public class BucketManager {
 
 		for (Connector con : c.getConnectors()) {
 			for (Import imp : con.getTable().findImports(storage)) {
-				for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+				for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 					BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
 					if (!buckets.containsKey(bucketId)) {
 						continue;
 					}
-
 
 					removeCBlock(new CBlockId(bucketId, con.getId()));
 				}
@@ -286,7 +323,7 @@ public class BucketManager {
 	 * Remove all buckets comprising the import. Which will in-turn remove all CBLocks.
 	 */
 	public void removeImport(ImportId imp) {
-		for (int bucketNumber : workerInformation.getIncludedBuckets()) {
+		for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 			BucketId bucketId = new BucketId(imp, bucketNumber);
 
@@ -311,5 +348,81 @@ public class BucketManager {
 
 	public boolean hasBucket(BucketId id) {
 		return buckets.containsKey(id);
+	}
+
+	public boolean hasBucket(int id) {
+		return  buckets.keySet().stream().map(BucketId::getBucket).anyMatch(bucket -> bucket == id);
+	}
+
+	public Bucket getBucket(BucketId id) {
+		return buckets.get(id);
+	}
+
+	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+		final Collection<ImportId> imports = storage.getTableImports(tableId);
+
+		final List<Bucket> buckets = new ArrayList<>();
+
+		for (ImportId impId : imports) {
+			final Bucket bucket = getBucket(new BucketId(impId, bucketId));
+
+			if(bucket == null){
+				continue;
+			}
+
+			buckets.add(bucket);
+		}
+
+		return buckets;
+	}
+
+
+	/**
+	 * Connector -> Bucket -> [CBlock]
+	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
+	 */
+	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
+
+
+	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
+
+		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(connectorId);
+
+		if(forConnector == null){
+			return Collections.emptyMap();
+		}
+
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+
+		final List<CBlock> forBucket = forConnector.get(bucketId);
+
+		if(forBucket == null){
+			return Collections.emptyMap();
+		}
+
+		Map<BucketId, CBlock> out = new Object2ObjectArrayMap<>(forBucket.size());
+
+		for (CBlock cBlock : forBucket) {
+			out.put(cBlock.getBucket(), cBlock);
+		}
+
+		return out;
+	}
+
+	public boolean hasEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
+
+		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(connectorId);
+		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+
+		return forConnector != null && forConnector.containsKey(bucketId);
+	}
+
+	/**
+	 * Test if there is any known associated data to the Entity in the {@link BucketManager}
+	 * @param entity
+	 */
+	public boolean isEntityEmpty(Entity entity) {
+		return !hasBucket(Entity.getBucket(entity.getId(), getBucketSize()));
 	}
 }

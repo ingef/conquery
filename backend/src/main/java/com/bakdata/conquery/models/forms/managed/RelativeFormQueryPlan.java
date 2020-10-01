@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +44,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		EntityResult preResult = query.execute(ctx, entity);
+
 		if (preResult.isFailed() || !preResult.isContained()) {
 			return preResult;
 		}
@@ -54,7 +54,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
 		// dateset is empty or sampling failed.
-		if (!sampled.isPresent()) {
+		if (sampled.isEmpty()) {
 			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
 			return preResult;
 		}
@@ -63,30 +63,53 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		List<DateContext> contexts = DateContext
 			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
 
-		SubResult featureResult = executeSubQuery(ctx, FeatureGroup.FEATURE, entity, contexts);
-		SubResult outcomeResult = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
+		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
+		FormQueryPlan outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
 
-		List<Object[]> values = new ArrayList<>();
-		// We look at the first result line to determine the length of the subresult
-		int featureLength = featureResult.getValues().get(0).length;
-		int outcomeLength = outcomeResult.getValues().get(0).length;
-		
+		MultilineContainedEntityResult featureResult = featureSubquery.execute(ctx, entity);
+		MultilineContainedEntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
+
+		// on fail return failed result
+		if (featureResult.isFailed()) {
+			return featureResult;
+		}
+		if (outcomeResult.isFailed()) {
+			return outcomeResult;
+		}
+
+		// determine result length and check against aggregators in query
+		int featureLength = determineResultWidth(featureSubquery, featureResult);
+		int outcomeLength = determineResultWidth(outcomeSubquery, outcomeResult);
+
 		/*
-		 *  Whole result is the concatenation of the subresults. The final output format combines resolution info, index and eventdate of both sub queries.
-		 *  The feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... 
-		 *  The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 * Whole result is the concatenation of the subresults. The final output format
+		 * combines resolution info, index and eventdate of both sub queries. The
+		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX],
+		 * [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... The wanted
+		 * format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR],
+		 * [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
 		 */
-		int size = featureLength + outcomeLength - 3/*= [RESOLUTION], [INDEX], [EVENTDATE]*/;
+		int size = featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 
 		int resultStartIndex = 0;
-		if(hasCompleteDateContexts(contexts)) {
-			// merge a line for the complete daterange, when two dateContext were generated that don't target the same feature group,
+		List<Object[]> values = new ArrayList<>();
+		if (hasCompleteDateContexts(contexts)) {
+			// merge a line for the complete daterange, when two dateContext were generated
+			// that don't target the same feature group,
 			// which would be a mistake by the generation
-			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE is the coarsed resolution it must be at the first
+			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE
+			// is the coarsed resolution it must be at the first
 			// to indexes of the list.
 			Object[] mergedFull = new Object[size];
+
 			setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
-			setOutcomeValues(mergedFull, outcomeResult.getValues().get(resultStartIndex), featureLength);
+
+			setOutcomeValues(
+					mergedFull,
+					outcomeResult.getValues().get(resultStartIndex),
+					featureLength
+			);
+
 			values.add(mergedFull);
 			resultStartIndex++;
 		}
@@ -97,13 +120,30 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			setFeatureValues(result, featureResult.getValues().get(i));
 			values.add(result);
 		}
+
 		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
 			Object[] result = new Object[size];
 			setOutcomeValues(result, outcomeResult.getValues().get(i), featureLength);
 			values.add(result);
 		}
+
 		return EntityResult.multilineOf(entity.getId(), values);
 	}
+
+	private int determineResultWidth(FormQueryPlan subquery, MultilineContainedEntityResult subResult) {
+		// This is sufficient for NOT_CONTAINTED subresults
+		int resultWidth = subquery.columnCount();
+		// When it's a contained result also check whether the result really has the awaited width
+
+		int resultColumnCount = subResult.asContained().columnCount();
+
+		if(resultColumnCount != resultWidth) {
+			throw new IllegalStateException(String
+				.format("Aggregator number (%d) and result number (%d) are not the same", resultWidth, resultColumnCount));
+		}
+		return resultWidth;
+	}
+
 
 	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
 		return contexts.size()>=2
@@ -112,16 +152,13 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
 	}
 
-	private SubResult executeSubQuery(QueryExecutionContext ctx, FeatureGroup featureGroup, Entity entity, List<DateContext> contexts) {
+	private FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {
 		List<DateContext> list = new ArrayList<>(contexts);
 		list.removeIf(dctx -> dctx.getFeatureGroup() != featureGroup);
 
-		ArrayConceptQueryPlan subPlan = featureGroup == FeatureGroup.FEATURE ? featurePlan : outcomePlan;
-
-		FormQueryPlan sub = new FormQueryPlan(list,subPlan);
-		return new SubResult((MultilineContainedEntityResult) sub.execute(ctx, entity));
+		return new FormQueryPlan(list, subPlan);
 	}
-	
+
 	private void setFeatureValues(Object[] result, Object[] value) {
 		// copy everything up to including index
 		for (int i = 0; i <= EVENTDATE; i++) {
@@ -131,7 +168,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		result[FEATURE_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
 		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, OUTCOME_DATE_RANGE + 1, value.length - (DATE_RANGE_SUB_RESULT+1));
 	}
-	
+
 	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
 		// copy everything up to including index
 		for (int i = 0; i <= EVENTDATE; i++) {
@@ -160,16 +197,6 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return query.isOfInterest(entity);
+		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity) || outcomePlan.isOfInterest(entity);
 	}
-	
-	@AllArgsConstructor
-	private static class SubResult {
-		private MultilineContainedEntityResult result;
-		
-		public List<Object[]> getValues() {
-			return result.getValues();
-		}
-	}
-
 }

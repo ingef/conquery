@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
@@ -34,7 +35,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 @Slf4j
 @CPSType(id = "EXTERNAL", base = CQElement.class)
@@ -79,7 +80,7 @@ public class CQExternal implements CQElement {
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
 			if (row.length != format.size()) {
-				throw new IllegalArgumentException("There are " + format.size() + " columns in the format but " + row.length + " in at least one row");
+				throw new ConqueryError.ExternalResolveError(format.size(), row.length);
 			}
 
 			//read the dates from the row

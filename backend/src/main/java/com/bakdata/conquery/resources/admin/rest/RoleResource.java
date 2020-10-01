@@ -1,7 +1,9 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMENT;
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -17,9 +19,10 @@ import javax.ws.rs.core.Response;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.resources.hierarchies.HRoles;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
-public class RoleResource extends HRoles {
+@Path(ROLES_PATH_ELEMENT)
+public class RoleResource extends HAdmin {
 
 	@POST
 	public Response postRole(Role role) throws JSONException {
@@ -29,14 +32,14 @@ public class RoleResource extends HRoles {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postRoles(List<Role> roles) throws JSONException {
+	public Response postRoles(List<Role> roles) {
 		processor.addRoles(roles);
 		return Response.ok().build();
 	}
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Role> getRoles() throws JSONException {
+	public Collection<Role> getRoles() {
 		return processor.getAllRoles();
 	}
 

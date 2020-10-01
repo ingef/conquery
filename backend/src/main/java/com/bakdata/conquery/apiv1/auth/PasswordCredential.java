@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1.auth;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
@@ -7,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Container for holding a password. This credential type is used by the

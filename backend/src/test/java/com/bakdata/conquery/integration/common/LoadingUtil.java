@@ -59,7 +59,7 @@ public class LoadingUtil {
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data)).resolve(new QueryResolveContext(support.getDataset().getId(), support.getNamespace().getNamespaces()));
 
 			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
-			user.addPermission(support.getMasterMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(support.getMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -81,19 +81,19 @@ public class LoadingUtil {
 		}
 	}
 	
-	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables, Dataset dataset) throws IOException {
+	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables, Dataset dataset) throws Exception {
 		importTableContents(support, Arrays.asList(tables), dataset);
 	}
 	
-	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws IOException {
+	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
 		importTableContents(support, Arrays.asList(tables), support.getDataset());
 	}
 	
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws IOException {
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
 		importTableContents(support, tables, support.getDataset());
 	}
 	
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException {
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws Exception {
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : tables) {

@@ -4,14 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -21,8 +22,8 @@ import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -43,14 +44,14 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		final MetaStorage storage = conquery.getMetaStorage();
 
 		// Read two JSONs with different Trees
 		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
-		final Namespace namespace = storage.getNamespaces().get(dataset);
+		final Dataset dataset = conquery.getDataset();
+		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 
@@ -86,9 +87,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -135,9 +136,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -181,9 +182,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
@@ -212,7 +213,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			//restart
 			testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
+			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
 
 			log.info("Checking state after re-start");
 
@@ -225,9 +226,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 						.isNotEmpty();
 
-				for (SlaveCommand slave : conquery2.getSlaves()) {
-					for (Worker value : slave.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+				for (ShardNode node : conquery2.getShardNodes()) {
+					for (Worker value : node.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
 						}
 
@@ -254,8 +255,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
 	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState state) {
-		Namespaces namespaces = conquery.getNamespace().getNamespaces();
-		MasterMetaStorage storage = conquery.getNamespace().getStorage().getMetaStorage();
+		DatasetRegistry namespaces = conquery.getNamespace().getNamespaces();
+		MetaStorage storage = conquery.getNamespace().getStorage().getMetaStorage();
 		UserId userId = conquery.getTestUser().getId();
 		DatasetId dataset = conquery.getNamespace().getDataset().getId();
 		
@@ -266,7 +267,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		if (state == ExecutionState.DONE) {
 			assertThat(managedQuery.getLastResultCount())
-					.describedAs(managedQuery.getResults().toString())
+					.describedAs("Query results")
 					.isEqualTo(size);
 		}
 	}

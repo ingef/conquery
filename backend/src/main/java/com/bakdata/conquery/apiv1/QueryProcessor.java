@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -27,8 +27,8 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.ClassToInstanceMap;
@@ -42,8 +42,8 @@ import org.apache.shiro.authz.Permission;
 public class QueryProcessor {
 
 	@Getter
-	private final Namespaces namespaces;
-	private final MasterMetaStorage storage;
+	private final DatasetRegistry datasetRegistry;
+	private final MetaStorage storage;
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -53,7 +53,7 @@ public class QueryProcessor {
 		authorize(user, dataset.getId(), Ability.READ);
 		
 		// Initialize the query
-		query = query.resolve(new QueryResolveContext(dataset.getId(), namespaces));
+		query = query.resolve(new QueryResolveContext(dataset.getId(), datasetRegistry));
 		
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
@@ -98,7 +98,7 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedExecution<?> mq = ExecutionManager.execute( namespaces, storage.getExecution(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.execute( datasetRegistry, storage.getExecution(executionId));
 
 				return getStatus(dataset, mq, urlb, user);
 			}
@@ -106,7 +106,7 @@ public class QueryProcessor {
 		}
 		
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(namespaces, query, user.getId(), dataset.getId());
+		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId());
 		
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
@@ -122,7 +122,7 @@ public class QueryProcessor {
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
 		IQuery translateable = (IQuery) query;
 		// translate the query for all other datasets of user and submit it.
-		for (Namespace targetNamespace : namespaces.getNamespaces()) {
+		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
 			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
 				|| targetNamespace.getDataset().equals(dataset)) {
 				continue;
@@ -137,8 +137,8 @@ public class QueryProcessor {
 			
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
-				IQuery translated = QueryTranslator.replaceDataset(namespaces, translateable, targetDataset);
-				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(namespaces, translated, mq.getQueryId(), user.getId(), targetDataset);
+				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
+				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
 				
 				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}

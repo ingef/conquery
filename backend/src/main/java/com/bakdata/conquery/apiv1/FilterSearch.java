@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilte
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.common.IterableResult;
@@ -86,9 +86,9 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public static void updateSearch(Namespaces namespaces, Collection<Dataset> datasets, JobManager jobManager) {
-		datasets.stream()
-				.flatMap(ds -> namespaces.get(ds.getId()).getStorage().getAllConcepts().stream())
+	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager) {
+		datasetsToUpdate.stream()
+				.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
 				.flatMap(co -> co.collectAllFilters().stream())
 				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter<?>) f).getTemplate() != null)
@@ -161,5 +161,9 @@ public class FilterSearch {
 		} catch (Exception e) {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
 		}
+	}
+	
+	public static void clear() {
+		search.clear();
 	}
 }

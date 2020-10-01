@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -20,22 +21,28 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Namespaces extends NamespaceCollection {
+@RequiredArgsConstructor
+public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
 	@Getter
 	@Setter
-	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
+	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>(); // TODO remove this and take it from Namespaces.datasets
+
+	@Getter @Setter
+	private final int entityBucketSize;
+
 	@Getter
 	@JsonIgnore
-	private transient ConcurrentMap<SocketAddress, SlaveInformation> slaves = new ConcurrentHashMap<>();
+	private transient ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
 	@Getter @Setter @JsonIgnore
-	private transient MasterMetaStorage metaStorage;
+	private transient MetaStorage metaStorage;
 
 	public void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
@@ -77,14 +84,14 @@ public class Namespaces extends NamespaceCollection {
 		return metaStorage.getCentralRegistry();
 	}
 
-	public synchronized void register(SlaveInformation slave, WorkerInformation info) {
+	public synchronized void register(ShardNodeInformation node, WorkerInformation info) {
 		WorkerInformation old = workers.getOptional(info.getId()).orElse(null);
 		if (old != null) {
 			old.setIncludedBuckets(info.getIncludedBuckets());
-			old.setConnectedSlave(slave);
+			old.setConnectedShardNode(node);
 		}
 		else {
-			info.setConnectedSlave(slave);
+			info.setConnectedShardNode(node);
 			workers.add(info);
 		}
 
@@ -104,7 +111,18 @@ public class Namespaces extends NamespaceCollection {
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toCollection(collectionSupplier));
 	}
 
-	public Collection<Namespace> getNamespaces() {
+	public Collection<Namespace> getDatasets() {
 		return datasets.values();
+	}
+	
+	public void close() {
+		for (Namespace namespace : datasets.values()) {
+			try {
+				namespace.close();
+			}
+			catch (Exception e) {
+				log.error("Unable to close namespace {}", namespace, e);
+			}
+		}
 	}
 }

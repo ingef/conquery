@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
@@ -18,10 +19,9 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter @Setter
 @CPSType(id="RELATIVE", base=Mode.class)
@@ -48,8 +48,8 @@ public class RelativeMode extends Mode {
 	}
 	
 	@Override
-	public RelativeFormQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return RelExportGenerator.generate(namespaces, this, userId, submittedDataset);
+	public RelativeFormQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+		return RelExportGenerator.generate(datasets, this, userId, submittedDataset);
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -24,14 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * Keep track of all data assigned to a single dataset. Each Slave has one {@link Worker} per {@link Dataset} / {@link Namespace}.
+ * Keep track of all data assigned to a single dataset. Each ShardNode has one {@link Worker} per {@link Dataset} / {@link Namespace}.
  * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
  */
 @Slf4j
 @Setter
 @Getter
 @NoArgsConstructor
-public class Namespace {
+public class Namespace implements Closeable {
 
 	@JsonIgnore
 	private transient NamespaceStorage storage;
@@ -55,7 +57,7 @@ public class Namespace {
 	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
 
 	@JsonIgnore
-	private transient Namespaces namespaces;
+	private transient DatasetRegistry namespaces;
 
 	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
@@ -68,10 +70,10 @@ public class Namespace {
 
 	public void checkConnections() {
 		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w -> w.getConnectedSlave() != null);
+		l.removeIf(w -> w.getConnectedShardNode() != null);
 
 		if (!l.isEmpty()) {
-			throw new IllegalStateException("Not all known slaves are connected. Missing " + l);
+			throw new IllegalStateException("Not all known ShardNodes are connected. Missing " + l);
 		}
 	}
 
@@ -110,7 +112,7 @@ public class Namespace {
 	}
 
 	public synchronized void addWorker(WorkerInformation info) {
-		Objects.requireNonNull(info.getConnectedSlave(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
+		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);
@@ -129,5 +131,27 @@ public class Namespace {
 	@JsonIgnore
 	public Dataset getDataset() {
 		return storage.getDataset();
+	}
+	
+	public void close() {
+		try {
+			jobManager.close();
+		}
+		catch (Exception e) {
+			log.error("Unable to close namespace jobmanager of {}", this, e);
+		}
+		
+		try {
+			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
+			storage.close();
+		}
+		catch (IOException e) {
+			log.error("Unable to close namespace storage of {}.", this, e);
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + '[' + storage.getEnvironment().getLocation() + ']';
 	}
 }

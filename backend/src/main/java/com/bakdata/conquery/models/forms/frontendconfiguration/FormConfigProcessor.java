@@ -15,7 +15,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -52,7 +52,7 @@ import org.jetbrains.annotations.TestOnly;
 public class FormConfigProcessor {
 	
 	private final Validator validator;
-	private final MasterMetaStorage storage;
+	private final MetaStorage storage;
 	@Getter(onMethod = @__({@TestOnly}))
 	private final static ObjectMapper MAPPER = Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
 	
@@ -92,7 +92,7 @@ public class FormConfigProcessor {
 	public FormConfigId addConfig(User user, DatasetId targetDataset, FormConfigAPI config) {
 		user.checkPermission(DatasetPermission.onInstance(Ability.READ.asSet(), targetDataset));
 
-		List<DatasetId> translateToDatasets = storage.getNamespaces().getAllDatasets().stream()
+		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets().stream()
 			.map(Identifiable::getId)
 			.filter(dId -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dId)))
 			.collect(Collectors.toList());
