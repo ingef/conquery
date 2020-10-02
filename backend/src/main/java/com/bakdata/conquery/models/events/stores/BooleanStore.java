@@ -4,14 +4,18 @@ import java.io.OutputStream;
 import java.util.BitSet;
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 
+@CPSType(id = "BOOLEANS", base = ColumnStore.class)
 public class BooleanStore extends ColumnStoreAdapter<BooleanStore> {
 
 	private final BitSet values;
 
+	@JsonCreator
 	public BooleanStore(ImportColumn column, BitSet values) {
 		super(column);
 		this.values = values;

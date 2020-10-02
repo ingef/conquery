@@ -2,13 +2,17 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
+@CPSType(id = "FLOATS", base = ColumnStore.class)
 public class FloatStore extends ColumnStoreAdapter<FloatStore> {
 
 	private final float[] values;
 
+	@JsonCreator
 	public FloatStore(ImportColumn column, float[] values) {
 		super(column);
 		this.values = values;

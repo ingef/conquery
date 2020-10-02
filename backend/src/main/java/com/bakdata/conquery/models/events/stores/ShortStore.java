@@ -2,15 +2,19 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 
+@CPSType(id = "SHORTS", base = ColumnStore.class)
 public class ShortStore extends ColumnStoreAdapter<ShortStore> {
 
 	private final short nullValue;
 	private final short[] values;
 
+	@JsonCreator
 	public ShortStore(ImportColumn column, short[] values, short nullValue) {
 		super(column);
 		this.nullValue = nullValue;

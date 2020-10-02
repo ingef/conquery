@@ -2,14 +2,18 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
+@CPSType(id = "LONGS", base = ColumnStore.class)
 public class LongStore extends ColumnStoreAdapter<LongStore> {
 
 	private final long nullValue;
 	private final long[] values;
 
+	@JsonCreator
 	public LongStore(ImportColumn column, long[] values, long nullValue) {
 		super(column);
 		this.nullValue = nullValue;

@@ -4,13 +4,17 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
+@CPSType(id = "DECIMALS", base = ColumnStore.class)
 public class DecimalStore extends ColumnStoreAdapter<DecimalStore> {
 
 	private final BigDecimal[] values;
 
+	@JsonCreator
 	public DecimalStore(ImportColumn column, BigDecimal[] values) {
 		super(column);
 		this.values = values;

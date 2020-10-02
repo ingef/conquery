@@ -2,15 +2,19 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 
+@CPSType(id = "INTEGERS", base = ColumnStore.class)
 public class IntegerStore extends ColumnStoreAdapter<IntegerStore> {
 
 	private final int nullValue;
 	private final int[] values;
 
+	@JsonCreator
 	public IntegerStore(ImportColumn column, int[] values, int nullValue) {
 		super(column);
 		this.nullValue = nullValue;

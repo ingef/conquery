@@ -2,9 +2,11 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 
+@CPSType(id = "DOUBLES", base = ColumnStore.class)
 public class DoubleStore extends ColumnStoreAdapter<DoubleStore> {
 
 	private final double[] values;

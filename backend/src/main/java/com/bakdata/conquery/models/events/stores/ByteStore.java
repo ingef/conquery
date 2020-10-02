@@ -2,15 +2,19 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 
+@CPSType(id = "BYTES", base = ColumnStore.class)
 public class ByteStore extends ColumnStoreAdapter<ByteStore> {
 
 	private final byte nullValue;
 	private final byte[] values;
 
+	@JsonCreator
 	public ByteStore(ImportColumn column, byte[] values, byte nullValue) {
 		super(column);
 		this.nullValue = nullValue;

@@ -3,16 +3,20 @@ package com.bakdata.conquery.models.events.stores;
 import java.io.OutputStream;
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
+@CPSType(id = "DATES", base = ColumnStore.class)
 public class DateStore extends ColumnStoreAdapter<DateStore> {
 
 	private final int nullValue;
 	private final int[] values;
 
+	@JsonCreator
 	public DateStore(ImportColumn column, int[] values, int nullValue) {
 		super(column);
 		this.nullValue = nullValue;
@@ -46,11 +50,6 @@ public class DateStore extends ColumnStoreAdapter<DateStore> {
 	}
 
 	@Override
-	public int getDate(int event) {
-		return values[event];
-	}
-
-	@Override
 	public CDateRange getDateRange(int event) {
 		return CDateRange.exactly(values[event]);
 	}
@@ -58,6 +57,11 @@ public class DateStore extends ColumnStoreAdapter<DateStore> {
 	@Override
 	public Object getAsObject(int event) {
 		return CDate.toLocalDate(getDate(event));
+	}
+
+	@Override
+	public int getDate(int event) {
+		return values[event];
 	}
 
 	@Override

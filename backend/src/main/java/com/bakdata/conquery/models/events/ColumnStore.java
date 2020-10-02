@@ -4,12 +4,15 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "value")
+@RequiredArgsConstructor @CPSBase
 public abstract class ColumnStore<T extends ColumnStore<T>> {
 
 	@Getter
