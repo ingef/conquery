@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import lombok.Data;
 
 @Data
-public class ValidityDate {
+public class ValidityDateContainer {
 	@NotNull
 	private ValidityDateId value;
 }

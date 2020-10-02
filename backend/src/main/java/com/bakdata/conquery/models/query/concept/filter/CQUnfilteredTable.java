@@ -17,7 +17,7 @@ public class CQUnfilteredTable {
 	private ConnectorId id;
 
 	@NotNull
-	private ValidityDate dateColumn;
+	private ValidityDateContainer dateColumn;
 
 	@JsonIgnore
 	private Connector resolvedConnector;

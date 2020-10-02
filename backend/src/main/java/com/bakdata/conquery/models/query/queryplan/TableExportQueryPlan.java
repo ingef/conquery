@@ -52,7 +52,9 @@ public class TableExportQueryPlan implements QueryPlan {
 		
 		List<Object[]> results = new ArrayList<>();
 		for(TableExportDescription exportDescription : tables) {
-			for(Bucket bucket : entity.getBucket(exportDescription.getTable().getId())) {
+
+
+			for(Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable().getId())) {
 
 				int localEntity = bucket.toLocal(entity.getId());
 
@@ -95,7 +97,7 @@ public class TableExportQueryPlan implements QueryPlan {
 			results
 		);
 	}
-	
+
 	@RequiredArgsConstructor
 	@Getter
 	public static class TableExportDescription {

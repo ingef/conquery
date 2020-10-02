@@ -69,6 +69,7 @@ import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.query.concept.filter.ValidityDateContainer;
 import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.resources.api.APIResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
@@ -170,7 +171,7 @@ public class Constants {
 			.otherClass(ConceptsProcessor.ResolvedConceptsResult.class)
 			.otherClass(ConceptResource.ConceptCodeList.class)
 			.otherClass(CQTable.class)
-			.otherClass(CQTable.ValidityDateColumn.class)
+			.otherClass(ValidityDateContainer.class)
 			.otherClass(FormConfig.class)
 			.otherClass(FormConfigOverviewRepresentation.class)
 			.otherClass(FormConfigFullRepresentation.class)

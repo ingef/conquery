@@ -34,7 +34,7 @@ public class CQTable {
 	@NotNull
 	private ConnectorId id;
 
-	private ValidityDate dateColumn;
+	private ValidityDateContainer dateColumn;
 
 	@JsonIgnore
 	private Connector resolvedConnector;
