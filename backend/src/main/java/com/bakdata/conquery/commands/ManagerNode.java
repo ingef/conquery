@@ -68,26 +68,30 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private AuthServlet authServletApp;
 	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
-	private DatasetRegistry datasetRegistry = new DatasetRegistry();
+	private DatasetRegistry datasetRegistry;
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
+
+		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
+
 		//inject datasets into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
-			.add(IdResolveContext.class, datasetRegistry);
+				.add(IdResolveContext.class, datasetRegistry);
 
 
 		this.jobManager = new JobManager("ManagerNode");
 		this.environment = environment;
-		
+		this.validator = environment.getValidator();
+		this.config = config;
+
 		// Initialization of internationalization
 		I18n.init();
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
-		this.validator = environment.getValidator();
-		this.config = config;
+
 
 		this.maintenanceService = environment
 			.lifecycle()

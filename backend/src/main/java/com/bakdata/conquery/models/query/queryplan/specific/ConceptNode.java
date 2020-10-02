@@ -6,12 +6,12 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -22,8 +22,9 @@ public class ConceptNode extends QPChainNode {
 	private final long requiredBits;
 	private final CQTable table;
 	private boolean tableActive = false;
-	private Map<BucketId, EntityRow> preCurrentRow = null;
-	private EntityRow currentRow = null;
+	private Map<BucketId, CBlock> preCurrentRow = null;
+	private CBlock currentRow = null;
+
 
 	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child) {
 		super(child);
@@ -33,8 +34,9 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	protected void init() {
-		preCurrentRow = entity.getCBlockPreSelect(table.getResolvedConnector().getId());
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+		preCurrentRow = context.getStorage().getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
 	}
 
 	@Override
@@ -56,7 +58,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return entity.hasConnector(table.getId());
+		return context.getStorage().getBucketManager().hasEntityCBlocksForConnector(entity, table.getId());
 	}
 
 	@Override
@@ -65,10 +67,10 @@ public class ConceptNode extends QPChainNode {
 			return false;
 		}
 
-		EntityRow row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+		CBlock row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 
 		int localEntity = bucket.toLocal(entity.getId());
-		long bits = row.getCBlock().getIncludedConcepts()[localEntity];
+		long bits = row.getIncludedConcepts()[localEntity];
 
 		if((bits & requiredBits) != 0L || requiredBits == 0L) {
 			return super.isOfInterest(bucket);
@@ -84,8 +86,8 @@ public class ConceptNode extends QPChainNode {
 
 		//check concepts
 		int[] mostSpecificChildren;
-		if (currentRow.getCBlock().getMostSpecificChildren() != null
-			&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren()[event]) != null)) {
+		if (currentRow.getMostSpecificChildren() != null
+			&& ((mostSpecificChildren = currentRow.getMostSpecificChildren()[event]) != null)) {
 
 			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 				if (ce.matchesPrefix(mostSpecificChildren)) {

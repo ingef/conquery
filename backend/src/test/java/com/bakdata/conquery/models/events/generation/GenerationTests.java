@@ -19,14 +19,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -40,9 +35,11 @@ import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.AStringType;
-import com.google.common.collect.Lists;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.output.NullOutputStream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 
 @Slf4j
@@ -147,8 +144,10 @@ public class GenerationTests {
 				}
 			}
 		}
-		
-		Import imp = new Import();
+
+		final int entityBucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+
+		Import imp = new Import(entityBucketSize);
 		imp.setTable(new TableId(new DatasetId("test_dataset"), "table"));
 		imp.setName("import");
 		imp.setColumns(IntStream.range(0, parser.length)

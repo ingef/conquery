@@ -73,7 +73,9 @@ public class AdminServlet {
 			manager.getDatasetRegistry(),
 			manager.getJobManager(),
 			manager.getMaintenanceService(),
-			manager.getValidator());
+			manager.getValidator(),
+			manager.getConfig().getCluster().getEntityBucketSize()
+		);
 
 		// inject required services
 		jerseyConfig.register(new AbstractBinder() {

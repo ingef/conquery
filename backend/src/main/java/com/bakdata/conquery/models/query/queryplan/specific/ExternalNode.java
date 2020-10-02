@@ -33,8 +33,8 @@ public class ExternalNode extends QPNode {
 	}
 
 	@Override
-	public void init(Entity entity) {
-		super.init(entity);
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
 		contained = includedEntities.get(entity.getId());
 	}
 	
