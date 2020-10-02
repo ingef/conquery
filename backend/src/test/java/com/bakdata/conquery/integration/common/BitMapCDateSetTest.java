@@ -495,7 +495,7 @@ public class BitMapCDateSetTest {
 	}
 
 	@Test
-	public void containsAtLeas() {
+	public void containsAtLeast() {
 		assertThat(BitMapCDateSet.create(CDateRange.atLeast(1)))
 				.matches(set -> set.contains(1))
 				.matches(set -> set.contains(2))
