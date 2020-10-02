@@ -9,6 +9,7 @@ import java.util.List;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.Bucket;
@@ -39,7 +40,7 @@ public class Preprocessed {
 	
 	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 
-	public Preprocessed(TableImportDescriptor descriptor) throws IOException {
+	public Preprocessed(TableImportDescriptor descriptor, ParserConfig parserConfig) throws IOException {
 		this.file = descriptor.getInputFile();
 		this.name = descriptor.getName();
 		this.descriptor = descriptor;
@@ -49,7 +50,7 @@ public class Preprocessed {
 		
 		
 		primaryColumn = new PPColumn(input.getPrimary().getColumnDescription().getName());
-		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser());
+		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser(parserConfig));
 		
 		if(!(primaryColumn.getParser() instanceof StringParser)) {
 			throw new IllegalStateException("The primary column must be an ENTITY_ID or STRING column");
@@ -58,7 +59,7 @@ public class Preprocessed {
 		for(int i=0;i<input.getWidth();i++) {
 			ColumnDescription columnDescription = input.getColumnDescription(i);
 			columns[i] = new PPColumn(columnDescription.getName());
-			columns[i].setParser(columnDescription.getType().createParser());
+			columns[i].setParser(columnDescription.getType().createParser(parserConfig));
 		}
 	}
 

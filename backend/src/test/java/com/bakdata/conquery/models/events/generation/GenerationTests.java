@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -109,25 +110,27 @@ public class GenerationTests {
 	}
 
 	public Bucket generateBucket(List<Object[]> arrays) throws IOException {
+		final ParserConfig parserConfig = new ParserConfig();
+
 		Parser[] parser = new Parser[] {
-			MajorTypeId.DATE.createParser(),
-			MajorTypeId.STRING.createParser(),
-			MajorTypeId.STRING.createParser(),
-			MajorTypeId.STRING.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.STRING.createParser(),
-			MajorTypeId.STRING.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.STRING.createParser(),
-			MajorTypeId.DECIMAL.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.DECIMAL.createParser(),
-			MajorTypeId.STRING.createParser()
+			MajorTypeId.DATE.createParser(parserConfig),
+			MajorTypeId.STRING.createParser(parserConfig),
+			MajorTypeId.STRING.createParser(parserConfig),
+			MajorTypeId.STRING.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.STRING.createParser(parserConfig),
+			MajorTypeId.STRING.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.STRING.createParser(parserConfig),
+			MajorTypeId.DECIMAL.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.INTEGER.createParser(parserConfig),
+			MajorTypeId.DECIMAL.createParser(parserConfig),
+			MajorTypeId.STRING.createParser(parserConfig)
 		};
 
 
