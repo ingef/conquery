@@ -12,6 +12,7 @@ import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+
 @Slf4j
 @ToString(callSuper = true)
 public class RealParser extends Parser<Double> {
@@ -29,11 +30,18 @@ public class RealParser extends Parser<Double> {
 		return NumberParsing.parseDouble(value);
 	}
 
+	/**
+	 * Collect ULP of all values
+	 * @see Math#ulp(float) for an explanation.
+	 */
 	@Override
 	protected void registerValue(Double v) {
 		floatULP = Math.max(floatULP, Math.ulp(v.floatValue()));
 	}
 
+	/**
+	 * If values are within a margin of precision, we store them as floats.
+	 */
 	@Override
 	protected Decision<Double, ?, ? extends CType<Double, ?>> decideType() {
 		if(floatULP < requiredPrecision){
@@ -42,7 +50,6 @@ public class RealParser extends Parser<Double> {
 					new RealTypeFloat()
 			);
 		}
-
 
 		return new Decision<>(new NoopTransformer<Double>(), new RealTypeDouble());
 	}
