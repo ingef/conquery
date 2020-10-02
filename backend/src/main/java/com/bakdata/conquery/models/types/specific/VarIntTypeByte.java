@@ -7,13 +7,13 @@ import com.bakdata.conquery.models.events.stores.ByteStore;
 import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
 
-@CPSType(base=CType.class, id="VAR_INT_BYTE")
+@CPSType(base = CType.class, id = "VAR_INT_BYTE")
 @Getter
 public class VarIntTypeByte extends VarIntType {
 
 	private final byte maxValue;
 	private final byte minValue;
-	
+
 	public VarIntTypeByte(byte minValue, byte maxValue) {
 		super(byte.class);
 		this.minValue = minValue;
@@ -30,6 +30,10 @@ public class VarIntTypeByte extends VarIntType {
 		byte[] values = new byte[objects.length];
 
 		for (int index = 0; index < objects.length; index++) {
+			if (objects[index] == null) {
+				objects[index] = Byte.MAX_VALUE;
+			}
+
 			values[index] = ((Number) objects[index]).byteValue();
 		}
 

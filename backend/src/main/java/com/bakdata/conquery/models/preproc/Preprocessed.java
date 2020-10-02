@@ -115,24 +115,26 @@ public class Preprocessed {
 	}
 
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
-		entries.computeIfAbsent(primaryId,(id) -> new ArrayList<>())
+		entries.computeIfAbsent(primaryId, (id) -> new ArrayList<>())
 			   .add(outRow);
 
-		for(int i=0;i<columns.length;i++) {
+		for (int i = 0; i < columns.length; i++) {
 			log.trace("Registering `{}` for Column[{}]", outRow[i], columns[i].getName());
 			columns[i].getParser().addLine(outRow[i]);
 		}
 
 		//update stats
 		rows++;
-		for(int i=0;i<columns.length;i++) {
-			if(outRow[i] != null) {
-				if(columns[i].getParser() instanceof DateParser) {
-					extendEventRange(CDateRange.exactly((Integer)outRow[i]));
-				}
-				else if(columns[i].getParser() instanceof DateRangeParser) {
-					extendEventRange((CDateRange)outRow[i]);
-				}
+		for (int i = 0; i < columns.length; i++) {
+			if (outRow[i] == null) {
+				continue;
+			}
+
+			if (columns[i].getParser() instanceof DateParser) {
+				extendEventRange(CDateRange.exactly((Integer) outRow[i]));
+			}
+			else if (columns[i].getParser() instanceof DateRangeParser) {
+				extendEventRange((CDateRange) outRow[i]);
 			}
 		}
 		
@@ -151,23 +153,27 @@ public class Preprocessed {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void writeRowsToFile(Output out, Import imp, int entityId, List<Object[]> events) throws IOException {
+	private void writeRowsToFile(Output out, Import imp, int entityId, List<Object[]> rows) throws IOException {
 		//transform values to their current subType
 		//we can't map the primary column since we do a lot of work which would destroy any compression anyway
 		//entityId = (Integer)primaryColumn.getType().transformFromMajorType(primaryColumn.getOriginalType(), Integer.valueOf(entityId));
 
-		for(ImportColumn ic : imp.getColumns()) {
-			PPColumn column = columns[ic.getPosition()];
+		for(ImportColumn importColumn : imp.getColumns()) {
+
+			PPColumn column = columns[importColumn.getPosition()];
 			Transformer transformer = column.getTransformer();
-			for(Object[] event : events) {
-				if(event[ic.getPosition()] != null) {
-					event[ic.getPosition()] = transformer.transform(event[ic.getPosition()]);
+
+			for(Object[] row : rows) {
+				if (row[importColumn.getPosition()] == null) {
+					continue;
 				}
+
+				row[importColumn.getPosition()] = transformer.transform(row[importColumn.getPosition()]);
 			}
 			transformer.finishTransform();
 		}
 		
-		Bucket bucket = imp.getBlockFactory().create(imp, events);
+		Bucket bucket = imp.getBlockFactory().create(imp, rows);
 		
 		out.writeInt(entityId, true);
 		bucket.writeContent(buffer);

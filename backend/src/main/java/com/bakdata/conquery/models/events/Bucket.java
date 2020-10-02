@@ -3,15 +3,15 @@ package com.bakdata.conquery.models.events;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceSerializer;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -20,8 +20,10 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -36,12 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor(onConstructor_ = {@JsonCreator})
 public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer> {
 
 	@Min(0)
 	private int bucket;
-	@NotNull
+
 	@NsIdRef
+	@JsonSerialize(using = NsIdReferenceSerializer.class)
 	private Import imp;
 
 	@Min(0)
@@ -50,23 +54,21 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	private final ColumnStore[] stores;
 
 	// todo these three can be combined
-	private final Int2IntMap start = new Int2IntArrayMap();
-	private final Int2IntMap end;
+	private final Map<Integer, Integer> start;
+	private final Map<Integer, Integer> end;
 
-	@Getter
+	@Getter(lazy = true)
 	private final int bucketSize = start.size();
 
+	public static Bucket create(int bucket, Import imp, ColumnStore[] stores, int[] entities, int[] ends) {
+		Int2IntArrayMap start = new Int2IntArrayMap();
 
-	public Bucket(int bucket, Import imp, ColumnStore[] stores, int[] entities, int[] ends) {
-		this.bucket = bucket;
-		this.imp = imp;
-		this.stores = stores;
-
-		for (int index = 1; index < entities.length; index++) {
-			start.put(ends[index], ends[index]);
+		start.put(entities[0], 0);
+		for (int index = 1; index < entities.length - 1; index++) {
+			start.put(entities[index], ends[index + 1]);
 		}
 
-		end = new Int2IntArrayMap(entities, ends);
+		return new Bucket(bucket, imp, ends[ends.length -1], stores, start, new Int2IntArrayMap(entities, ends));
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	 * @return
 	 */
 	@Override
-	public PrimitiveIterator.OfInt iterator() {
+	public Iterator<Integer> iterator() {
 		return start.keySet().iterator();
 	}
 

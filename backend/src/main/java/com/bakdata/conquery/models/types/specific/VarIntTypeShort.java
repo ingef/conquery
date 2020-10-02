@@ -26,6 +26,10 @@ public class VarIntTypeShort extends VarIntType {
 		short[] values = new short[objects.length];
 
 		for (int index = 0; index < objects.length; index++) {
+			if (objects[index] == null) {
+				values[index] = Short.MAX_VALUE;
+			}
+
 			values[index] = ((Number) objects[index]).shortValue();
 		}
 

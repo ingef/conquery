@@ -143,7 +143,7 @@ public class ImportJob extends Job {
 						try (InputStream bounded = new ByteArrayInputStream(data);
 							 ByteArrayOutputStream out = new ByteArrayOutputStream(data.length + 16)) {
 
-							Bucket value = inImport.getBlockFactory().readSingleValue(bucketNumber, inImport, bounded);
+							Bucket value = inImport.getBlockFactory().readSingleValue(namespace.getNamespaces(), namespace.getDataset(),bucketNumber, inImport, bounded);
 							Bucket result = outImport.getBlockFactory().adaptValuesFrom(bucketNumber, outImport, value, header);
 							try (Output sOut = new Output(out)) {
 								result.writeContent(sOut);

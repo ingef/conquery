@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,44 +38,43 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 	@SuppressWarnings("unchecked")
 	@Override
 	public T deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
-		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
-			String text = parser.getText();
-			try {
-				ID id;
-				
-				String datasetName = null;
-				//check if there was a dataset injected and if it is already a prefix
-				datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, Dataset.class)).map(Dataset::getName).orElse(null);
-				//maybe only the id was injected
-				if(datasetName == null) {
-					datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, DatasetId.class)).map(DatasetId::getName).orElse(null);
-				}
-				
-				if(datasetName != null) {
-					id = idParser.parsePrefixed(datasetName, text);
-				}
-				else {
-					id = idParser.parse(text);
-				}
-				
-				Optional<T> result = NamespaceCollection.get(ctxt).getOptional(id);
-
-				if (!result.isPresent()) {
-					throw new IdReferenceResolvingException(parser, "Could not find entry "+id+" of type "+type.getName(), text, type);
-				}
-
-				if(!type.isAssignableFrom(result.get().getClass())) {
-					throw new InputMismatchException(String.format("Cannot assign %s of type %s to %s ", id, result.get().getClass(), type));
-				}
-
-				return result.get();
-			}
-			catch(Exception e) {
-				throw new RuntimeException("Error while resolving entry "+text+" of type "+type, e);
-			}
-		}
-		else {
+		if (parser.getCurrentToken() != JsonToken.VALUE_STRING) {
 			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
+		}
+
+		String text = parser.getText();
+		try {
+			ID id;
+
+			String datasetName = null;
+			//check if there was a dataset injected and if it is already a prefix
+			datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, Dataset.class)).map(Dataset::getName).orElse(null);
+			//maybe only the id was injected
+			if(datasetName == null) {
+				datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, DatasetId.class)).map(DatasetId::getName).orElse(null);
+			}
+
+			if(datasetName != null) {
+				id = idParser.parsePrefixed(datasetName, text);
+			}
+			else {
+				id = idParser.parse(text);
+			}
+
+			Optional<T> result = NamespaceCollection.get(ctxt).getOptional(id);
+
+			if (!result.isPresent()) {
+				throw new IdReferenceResolvingException(parser, "Could not find entry "+id+" of type "+type.getName(), text, type);
+			}
+
+			if(!type.isAssignableFrom(result.get().getClass())) {
+				throw new InputMismatchException(String.format("Cannot assign %s of type %s to %s ", id, result.get().getClass(), type));
+			}
+
+			return result.get();
+		}
+		catch(Exception e) {
+			throw new RuntimeException("Error while resolving entry "+text+" of type "+type, e);
 		}
 	}
 	
