@@ -192,7 +192,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	}
 
 	private Column selectValidityDateColumn(CQTable table) {
-		if (table.getDateColumn().getValue() != null) {
+		if (table.getDateColumn() != null) {
 			return table.getResolvedConnector()
 						.getValidityDateColumn(table.getDateColumn().getValue());
 		}
