@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.config;
 
 import lombok.Data;
+import lombok.Setter;
 
 @Data
+@Setter
 public class ParserConfig {
 	/**
 	 * Minimum required double precision to switch from floats to doubles.
@@ -10,5 +12,5 @@ public class ParserConfig {
 	 * @see com.bakdata.conquery.models.types.parser.specific.RealParser#decideType()
 	 * @see Math#ulp(float)
 	 */
-	private final double minPrecision = Double.MIN_VALUE;
+	private double minPrecision = Double.MIN_VALUE;
 }
