@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -45,7 +47,7 @@ public class StoredQuerySingleInfo {
 	private String[] tags;
 	private Long numberOfResults;
 	
-	public static StoredQuerySingleInfo from(ManagedQuery query, User user, MetaStorage metaStorage,  URLBuilder url) {
+	public static StoredQuerySingleInfo from(ManagedQuery query, User user, MetaStorage metaStorage,  UriBuilder url) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */

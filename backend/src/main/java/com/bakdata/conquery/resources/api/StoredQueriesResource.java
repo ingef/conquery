@@ -19,9 +19,9 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
+import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.apiv1.StoredQuerySingleInfo;
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -51,7 +51,7 @@ public class StoredQueriesResource extends HDatasets {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 		
-		StoredQuerySingleInfo status = processor.getQueryWithSource(queryId, user, URLBuilder.fromRequest(servletRequest));
+		StoredQuerySingleInfo status = processor.getQueryWithSource(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 		if (status == null) {
 			throw new WebApplicationException("Unknown query " + queryId, Status.NOT_FOUND);
 		}
@@ -64,7 +64,7 @@ public class StoredQueriesResource extends HDatasets {
 		authorize(user, datasetId, Ability.READ);
 		processor.patchQuery(user, queryId, patch);
 		
-		return processor.getQueryWithSource(queryId, user, URLBuilder.fromRequest(servletRequest));
+		return processor.getQueryWithSource(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 	}
 
 	@DELETE

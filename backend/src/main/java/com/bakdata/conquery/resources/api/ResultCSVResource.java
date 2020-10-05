@@ -23,7 +23,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -44,8 +43,7 @@ import org.eclipse.jetty.io.EofException;
 @Slf4j
 public class ResultCSVResource {
 
-	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
-		ResultCSVResource.class, "getAsCsv");
+	public static final String GET_CSV_PATH_METHOD = "getAsCsv";
 	private final DatasetRegistry namespaces;
 	private final ConqueryConfig config;
 

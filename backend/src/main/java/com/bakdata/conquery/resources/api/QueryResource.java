@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.QueryProcessor;
-import com.bakdata.conquery.apiv1.URLBuilder;
+import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -62,7 +62,7 @@ public class QueryResource {
 			processor.postQuery(
 			dsUtil.getDataset(datasetId),
 			query,
-			URLBuilder.fromRequest(req),
+			RequestAwareUriBuilder.fromRequest(req),
 			user))
 			.status(Status.CREATED)
 			.build();
@@ -77,7 +77,7 @@ public class QueryResource {
 		return processor.cancel(
 			dsUtil.getDataset(datasetId),
 			dsUtil.getManagedQuery(queryId),
-			URLBuilder.fromRequest(req));
+			RequestAwareUriBuilder.fromRequest(req));
 	}
 
 	@GET
@@ -90,7 +90,7 @@ public class QueryResource {
 		return processor.getStatus(
 			dsUtil.getDataset(datasetId),
 			query,
-			URLBuilder.fromRequest(req),
+			RequestAwareUriBuilder.fromRequest(req),
 			user);
 	}
 }

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -53,7 +54,7 @@ public class StoredQueriesProcessor {
 					return Stream.of(
 						mq.buildStatus(
 							storage,
-							URLBuilder.fromRequest(req),
+							RequestAwareUriBuilder.fromRequest(req),
 							user));
 				}
 				catch (Exception e) {
@@ -67,14 +68,16 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(queryId);
 	}
 
-	public StoredQuerySingleInfo getQueryWithSource(ManagedExecutionId queryId, User user, URLBuilder url) {
+	public StoredQuerySingleInfo getQueryWithSource(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
 			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
-		else if(!(query instanceof ManagedQuery)) {
+
+		if(!(query instanceof ManagedQuery)) {
 			throw new WebApplicationException(Status.NOT_IMPLEMENTED);
 		}
+		
 		return StoredQuerySingleInfo.from((ManagedQuery) query, user, storage, url);
 	}
 
