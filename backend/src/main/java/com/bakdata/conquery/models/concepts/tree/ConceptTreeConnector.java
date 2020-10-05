@@ -72,20 +72,21 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override
-	public void calculateCBlock(CBlock cBlock, Bucket bucket, Import imp) {
+	public void calculateCBlock(CBlock cBlock, Bucket bucket) {
 
 		final Column column = getColumn();
 
 		final TreeConcept treeConcept = getConcept();
 
-		final ImportId importId = imp.getId();
+		final Import _import = bucket.getImp();
+		final ImportId importId = _import.getId();
 
 		final AStringType<?> stringType;
 
 		// If we have a column and it is of string-type, we create indices and caches.
-		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof AStringType) {
+		if (column != null && _import.getColumns()[column.getPosition()].getType() instanceof AStringType) {
 
-			CType<?, ?> cType = imp.getColumns()[column.getPosition()].getType();
+			CType<?, ?> cType = _import.getColumns()[column.getPosition()].getType();
 
 			stringType = (AStringType<?>) cType;
 
@@ -128,7 +129,7 @@ public class ConceptTreeConnector extends Connector {
 				}
 
 				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, imp));
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, _import));
 
 
 				if ((getCondition() != null && !getCondition().matches(stringValue, rowMap))) {

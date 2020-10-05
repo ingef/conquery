@@ -181,5 +181,5 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	 * @param bucket
 	 * @param imp
 	 */
-	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket, Import imp);
+	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket);
 }

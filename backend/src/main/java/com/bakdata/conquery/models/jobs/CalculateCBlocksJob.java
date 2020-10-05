@@ -40,7 +40,7 @@ public class CalculateCBlocksJob extends Job {
 	}
 
 	public void addCBlock(Import imp, Bucket bucket, CBlockId cBlockId) {
-		infos.add(new CalculationInformation(imp, bucket, cBlockId));
+		infos.add(new CalculationInformation(bucket, cBlockId));
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class CalculateCBlocksJob extends Job {
 				CBlock cBlock = createCBlock(connector, info);
 				cBlock.initIndizes(info.getBucket().getBucketSize());
 
-				connector.calculateCBlock(cBlock, info.getBucket(), info.getImp());
+				connector.calculateCBlock(cBlock, info.getBucket());
 
 				calculateEntityDateIndices(cBlock, info.getBucket());
 				bucketManager.addCalculatedCBlock(cBlock);
@@ -118,7 +118,6 @@ public class CalculateCBlocksJob extends Job {
 	@Setter
 	private static class CalculationInformation {
 
-		private final Import imp;
 		private final Bucket bucket;
 		private final CBlockId cBlockId;
 	}
