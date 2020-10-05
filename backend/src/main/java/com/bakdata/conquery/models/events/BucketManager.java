@@ -75,7 +75,8 @@ public class BucketManager {
 
 							CBlockId cBlockId = new CBlockId(bucketId, conName);
 
-							if (!cBlocks.containsKey(cBlockId)) {
+							if (cBlocks.containsKey(cBlockId)) {
+								log.trace("Skip calculation of CBlock with Id {}, because it was loaded from the storage.");
 								continue;
 							}
 
