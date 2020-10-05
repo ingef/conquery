@@ -13,9 +13,12 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
@@ -49,6 +52,12 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 		dictionary.setDataset(dataset);
 	}
 
+	@Override
+	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+
+
+		return new StringStore(column, super.createStore(objects));
+	}
 
 	@Override
 	public byte[] createScriptValue(Number value) {

@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
@@ -116,6 +117,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 							con.addImport(imp);
 						}
 					}
+				}
+
+				centralRegistry.register(imp);
+
+				for (ImportColumn column : imp.getColumns()) {
+					centralRegistry.register(column);
 				}
 			});
 

@@ -3,27 +3,23 @@ package com.bakdata.conquery.models.events.stores;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 @CPSType(id = "FLOATS", base = ColumnStore.class)
+@Getter
 public class FloatStore extends ColumnStoreAdapter<FloatStore> {
 
 	private final float[] values;
 
 	@JsonCreator
-	public FloatStore(ImportColumn column, float[] values) {
-		super(column);
+	public FloatStore(float[] values) {
 		this.values = values;
 	}
 
 	@Override
-	public FloatStore merge(List<? extends ColumnStore<?>> stores) {
-		if (!stores.stream().allMatch(store -> store.getColumn().equals(getColumn()))) {
-			throw new IllegalArgumentException("Not all stores belong to the same Column");
-		}
-
+	public FloatStore merge(List<? extends FloatStore> stores) {
 		final int newSize = stores.stream().map(FloatStore.class::cast).mapToInt(store -> store.values.length).sum();
 		final float[] mergedValues = new float[newSize];
 
@@ -36,7 +32,7 @@ public class FloatStore extends ColumnStoreAdapter<FloatStore> {
 			start += doubleStore.values.length;
 		}
 
-		return new FloatStore(getColumn(), mergedValues);
+		return new FloatStore(mergedValues);
 	}
 
 	@Override

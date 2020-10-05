@@ -99,10 +99,12 @@ public class CalculateCBlocksJob extends Job {
 				for (BucketEntry entry : bucket.entries()) {
 					if (bucket.has(entry.getEvent(), column)) {
 						CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
-						cBlock.getMinDate()[entry.getLocalEntity()] = Math
-							.min(cBlock.getMinDate()[entry.getLocalEntity()], range.getMinValue());
-						cBlock.getMaxDate()[entry.getLocalEntity()] = Math
-							.max(cBlock.getMaxDate()[entry.getLocalEntity()], range.getMaxValue());
+
+						cBlock.getMinDate().compute(
+								entry.getLocalEntity(),
+								(id, value) -> Math.min((value == null) ? Integer.MAX_VALUE : value, range.getMinValue()));
+
+						cBlock.getMaxDate().compute(entry.getLocalEntity(),(id, value) -> Math.max((value == null) ? Integer.MIN_VALUE : value, range.getMaxValue()));
 					}
 				}
 			}
@@ -172,7 +174,9 @@ public class CalculateCBlocksJob extends Job {
 					cBlock.getMostSpecificChildren().add(child.getPrefix());
 					ConceptTreeNode<?> it = child;
 					while (it != null) {
-						cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
+						cBlock.getIncludedConcepts()
+							  .put(entry.getLocalEntity(), cBlock.getIncludedConcepts().getOrDefault(entry.getLocalEntity(), 0) | it.calculateBitMask());
+
 						it = it.getParent();
 					}
 				}

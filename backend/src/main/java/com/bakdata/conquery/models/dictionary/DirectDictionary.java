@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.LongStore;
 import com.bakdata.conquery.models.types.specific.AStringType;
@@ -20,8 +19,8 @@ public class DirectDictionary extends AStringType<Integer> {
 		this.dict = dict;
 	}
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return new LongStore(column, Arrays.stream(objects).mapToLong(Long.class::cast).toArray(), Integer.MAX_VALUE);
+	public ColumnStore createStore(Integer[] objects) {
+		return new LongStore(Arrays.stream(objects).mapToLong(Long.class::cast).toArray(), Integer.MAX_VALUE);
 	}
 	
 	@Override

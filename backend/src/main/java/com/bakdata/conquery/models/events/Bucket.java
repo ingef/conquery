@@ -173,12 +173,13 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	public Map<String, Object> calculateMap(int event, Import imp) {
 		Map<String, Object> out = new HashMap<>(stores.length);
 
-		for (ColumnStore store : stores) {
+		for (int i = 0; i < stores.length; i++) {
+			ColumnStore store = stores[i];
 			if (!store.has(event)) {
 				continue;
 			}
 
-			out.put(store.getColumn().getName(), store.getAsObject(event));
+			out.put(imp.getColumns()[i].getName(), store.getAsObject(event));
 		}
 
 		return out;

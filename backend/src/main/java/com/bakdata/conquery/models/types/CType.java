@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -36,7 +35,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 
 	public void init(DatasetId dataset) {}
 
-	public abstract ColumnStore createStore(ImportColumn column, Object[] objects);
+	public abstract ColumnStore createStore(MAJOR_JAVA_TYPE[] objects);
 
 
 	public Object createScriptValue(JAVA_TYPE value) {

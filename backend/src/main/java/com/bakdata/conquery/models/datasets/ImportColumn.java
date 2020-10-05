@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportColumnId;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +16,7 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 public class ImportColumn extends NamedImpl<ImportColumnId> {
 
-	@JsonBackReference
+	@JsonBackReference @NotNull
 	private Import parent;
 	@NotNull @Valid
 	private CType type;

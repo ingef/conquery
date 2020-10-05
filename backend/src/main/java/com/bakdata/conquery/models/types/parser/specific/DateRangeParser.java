@@ -90,7 +90,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
 
-			return new Decision<>(
+			return new Decision(
 					new Transformer<CDateRange, Integer>() {
 						@Override
 						public Integer transform(CDateRange value) {

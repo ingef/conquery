@@ -2,66 +2,54 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.io.OutputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 @CPSType(id = "DATES", base = ColumnStore.class)
+@Getter
 public class DateStore extends ColumnStoreAdapter<DateStore> {
 
-	private final int nullValue;
-	private final int[] values;
+	private final ColumnStore<?> store;
 
 	@JsonCreator
-	public DateStore(ImportColumn column, int[] values, int nullValue) {
-		super(column);
-		this.nullValue = nullValue;
-		this.values = values;
+	public DateStore(ColumnStore<?> store) {
+		this.store = store;
 	}
 
 	@Override
 	public boolean has(int event) {
-		return values[event] != nullValue;
+		return store.has(event);
 	}
 
 	@Override
-	public DateStore merge(List<? extends ColumnStore<?>> stores) {
-		if (!stores.stream().allMatch(store -> store.getColumn().equals(getColumn()))) {
-			throw new IllegalArgumentException("Not all stores belong to the same Column");
-		}
+	public DateStore merge(List<? extends DateStore> stores) {
 
-		final int newSize = stores.stream().map(DateStore.class::cast).mapToInt(store -> store.values.length).sum();
-		final int[] mergedValues = new int[newSize];
+		final List<ColumnStore> collect = stores.stream().map(DateStore::getStore).collect(Collectors.toList());
 
-		int start = 0;
+		final ColumnStore values = collect.get(0).merge(collect);
 
-		for (ColumnStore<?> store : stores) {
-			final DateStore doubleStore = (DateStore) store;
-
-			System.arraycopy(doubleStore.values, 0, mergedValues, start, doubleStore.values.length);
-			start += doubleStore.values.length;
-		}
-
-		return new DateStore(getColumn(), mergedValues, nullValue);
+		return new DateStore(values);
 	}
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		return CDateRange.exactly(values[event]);
+		return CDateRange.exactly(getDate(event));
+	}
+
+	@Override
+	public int getDate(int event) {
+		return (int) store.getInteger(event);
 	}
 
 	@Override
 	public Object getAsObject(int event) {
 		return CDate.toLocalDate(getDate(event));
-	}
-
-	@Override
-	public int getDate(int event) {
-		return values[event];
 	}
 
 	@Override

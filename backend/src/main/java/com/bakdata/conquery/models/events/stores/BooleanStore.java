@@ -1,40 +1,39 @@
 package com.bakdata.conquery.models.events.stores;
 
 import java.io.OutputStream;
-import java.util.BitSet;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 
 @CPSType(id = "BOOLEANS", base = ColumnStore.class)
+@Getter
 public class BooleanStore extends ColumnStoreAdapter<BooleanStore> {
 
-	private final BitSet values;
+	private final boolean[] values;
 
 	@JsonCreator
-	public BooleanStore(ImportColumn column, BitSet values) {
-		super(column);
+	public BooleanStore(@NotNull boolean[] values) {
+		super();
 		this.values = values;
 	}
 
 	@Override
-	public BooleanStore merge(List<? extends ColumnStore<?>> stores) {
-		if(!stores.stream().allMatch(store -> store.getColumn().equals(getColumn()))){
-			throw new IllegalArgumentException("Not all stores belong to the same Column");
-		}
+	public BooleanStore merge(List<? extends BooleanStore> stores) {
 
-		final int newSize = stores.stream().map(BooleanStore.class::cast).mapToInt(store -> store.values.size()).sum();
-		final BitSet mergedValues = new BitSet(newSize);
+		final int newSize = stores.stream().map(BooleanStore.class::cast).mapToInt(store -> store.values.length).sum();
+		final boolean[] mergedValues = new boolean[newSize];
 
 		int start = 0;
 
 		//TODO !
 
-		return new BooleanStore(getColumn(),mergedValues);
+		return new BooleanStore(mergedValues);
 	}
 
 	@Override
@@ -44,7 +43,7 @@ public class BooleanStore extends ColumnStoreAdapter<BooleanStore> {
 
 	@Override
 	public boolean getBoolean(int event) {
-		return values.get(event);
+		return values[event];
 	}
 
 	@Override

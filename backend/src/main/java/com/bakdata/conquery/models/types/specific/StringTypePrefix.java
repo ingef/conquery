@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
@@ -27,8 +26,8 @@ public class StringTypePrefix extends AChainedStringType {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return new IntegerStore(column, Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), Integer.MAX_VALUE);
+	public ColumnStore createStore(Integer[] objects) {
+		return new IntegerStore(Arrays.stream(objects).map(Number.class::cast).mapToInt(Number::intValue).toArray(), Integer.MAX_VALUE);
 	}
 
 	@Override

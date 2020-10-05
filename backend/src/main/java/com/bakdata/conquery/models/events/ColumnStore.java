@@ -6,19 +6,14 @@ import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "value")
 @RequiredArgsConstructor @CPSBase
 public abstract class ColumnStore<T extends ColumnStore<T>> {
 
-	@Getter
-	private final ImportColumn column;
-
-	public abstract T merge(List<? extends ColumnStore<?>> stores);
+	public abstract T merge(List<? extends T> stores);
 
 	public abstract boolean has(int event);
 

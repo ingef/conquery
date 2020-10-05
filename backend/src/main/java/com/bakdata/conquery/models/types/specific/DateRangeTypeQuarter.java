@@ -5,9 +5,9 @@ import java.util.Arrays;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.DateStore;
+import com.bakdata.conquery.models.events.stores.IntegerStore;
+import com.bakdata.conquery.models.events.stores.QuarterDateStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
@@ -21,8 +21,8 @@ public class DateRangeTypeQuarter extends CType<CDateRange, Integer> {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return new DateStore(column, Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), Integer.MAX_VALUE);
+	public ColumnStore createStore(CDateRange[] objects) {
+		return new QuarterDateStore(new IntegerStore(Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), Integer.MAX_VALUE));
 	}
 
 	@Override

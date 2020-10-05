@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.types.specific;
 import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
@@ -23,9 +22,9 @@ public class VarIntTypeInt extends VarIntType {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+	public ColumnStore createStore(Integer[] objects) {
 		// TODO: 03.09.2020 intStore
-		return new IntegerStore(column, Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), Integer.MAX_VALUE);
+		return new IntegerStore(Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), Integer.MAX_VALUE);
 	}
 
 	@Override

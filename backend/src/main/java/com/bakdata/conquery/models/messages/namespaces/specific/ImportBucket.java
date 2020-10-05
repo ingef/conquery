@@ -26,30 +26,34 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.NotEmpty;
 
-@CPSType(id="IMPORT_BIT", base=NamespacedMessage.class)
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator) @Getter @Setter
+@CPSType(id = "IMPORT_BIT", base = NamespacedMessage.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter
+@Setter
 public class ImportBucket extends WorkerMessage.Slow {
-	
-	@Nonnull @NotNull
+
+	@Nonnull
+	@NotNull
 	private final BucketId bucket;
 	@NotEmpty
 	private IntArrayList includedEntities = new IntArrayList();
 	@NotNull
 	private byte[][] bytes;
-	
+
 
 	@Override
 	public void react(Worker context) throws Exception {
 		getProgressReporter().setMax(includedEntities.size());
 		Import imp = context.getStorage().getImport(bucket.getImp());
-		
+
 		BlockFactory factory = imp.getBlockFactory();
 		Bucket[] buckets = new Bucket[includedEntities.size()];
-		
-		for(int index=0;index<includedEntities.size();index++) {
+
+		for (int index = 0; index < includedEntities.size(); index++) {
 			int entity = includedEntities.getInt(index);
-			
-			try(ByteArrayInputStream input = new ByteArrayInputStream(bytes[index])) {
+
+			try (ByteArrayInputStream input = new ByteArrayInputStream(bytes[index])) {
+				// TODO: 02.10.2020 fix this
 				buckets[index] = factory.readSingleValue(new NamespaceCollection() {
 					@Override
 					public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
@@ -60,9 +64,15 @@ public class ImportBucket extends WorkerMessage.Slow {
 					public CentralRegistry getMetaRegistry() {
 						return null;
 					}
-				}, context.getStorage().getDataset(), bucket.getBucket(), imp, input);
-				if(input.available() > 0) {
-					throw new IllegalStateException("After reading the block of "+entity+" there are still "+input.available()+" bytes remaining in its content");
+				},
+														 context.getStorage().getDataset(), bucket.getBucket(), imp, input);
+
+				if (input.available() > 0) {
+					throw new IllegalStateException("After reading the block of "
+													+ entity
+													+ " there are still "
+													+ input.available()
+													+ " bytes remaining in its content");
 				}
 			}
 			getProgressReporter().report(1);
@@ -70,17 +80,17 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 		context.getStorage().addBucket(factory.combine(includedEntities, buckets));
 	}
-	
+
 	@Override
 	public String toString() {
 		return
-			"Importing "
-			+ bytes.length
-			+ " entities from "
-			+ BinaryByteUnit.format(Arrays.stream(bytes).mapToInt(v->v.length).sum())
-			+ " as "
-			+ bucket.getImp().getTag()
-			+ " into "
-			+ bucket.getImp().getTable();
+				"Importing "
+				+ bytes.length
+				+ " entities from "
+				+ BinaryByteUnit.format(Arrays.stream(bytes).mapToInt(v -> v.length).sum())
+				+ " as "
+				+ bucket.getImp().getTag()
+				+ " into "
+				+ bucket.getImp().getTable();
 	}
 }

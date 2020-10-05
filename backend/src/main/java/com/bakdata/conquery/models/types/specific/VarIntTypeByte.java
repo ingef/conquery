@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ByteStore;
 import com.bakdata.conquery.models.types.CType;
@@ -26,18 +25,19 @@ public class VarIntTypeByte extends VarIntType {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+	public ColumnStore createStore(Integer[] objects) {
 		byte[] values = new byte[objects.length];
 
 		for (int index = 0; index < objects.length; index++) {
 			if (objects[index] == null) {
-				objects[index] = Byte.MAX_VALUE;
+				values[index] = Byte.MAX_VALUE;
+				continue;
 			}
 
 			values[index] = ((Number) objects[index]).byteValue();
 		}
 
-		return new ByteStore(column, values, Byte.MAX_VALUE);
+		return new ByteStore(values, Byte.MAX_VALUE);
 	}
 
 	@Override

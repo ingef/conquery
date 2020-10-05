@@ -3,29 +3,26 @@ package com.bakdata.conquery.models.events.stores;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 
 @CPSType(id = "SHORTS", base = ColumnStore.class)
+@Getter
 public class ShortStore extends ColumnStoreAdapter<ShortStore> {
 
 	private final short nullValue;
 	private final short[] values;
 
 	@JsonCreator
-	public ShortStore(ImportColumn column, short[] values, short nullValue) {
-		super(column);
+	public ShortStore(short[] values, short nullValue) {
 		this.nullValue = nullValue;
 		this.values = values;
 	}
 
 	@Override
-	public ShortStore merge(List<? extends ColumnStore<?>> stores) {
-		if (!stores.stream().allMatch(store -> store.getColumn().equals(getColumn()))) {
-			throw new IllegalArgumentException("Not all stores belong to the same Column");
-		}
+	public ShortStore merge(List<? extends ShortStore> stores) {
 
 		final int newSize = stores.stream().map(ShortStore.class::cast).mapToInt(store -> store.values.length).sum();
 		final short[] mergedValues = new short[newSize];
@@ -39,7 +36,7 @@ public class ShortStore extends ColumnStoreAdapter<ShortStore> {
 			start += doubleStore.values.length;
 		}
 
-		return new ShortStore(getColumn(), mergedValues, nullValue);
+		return new ShortStore(mergedValues, nullValue);
 	}
 
 	@Override

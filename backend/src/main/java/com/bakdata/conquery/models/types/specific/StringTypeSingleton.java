@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.BooleanStore;
+import com.bakdata.conquery.models.events.stores.SingletonStringStore;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jersey.repackaged.com.google.common.collect.Iterators;
@@ -27,9 +27,10 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return new BooleanStore(column, null); // todo
+	public ColumnStore createStore(Integer[] objects) {
+		return new SingletonStringStore(singleValue, new BooleanStore(new boolean[objects.length])); // todo
 	}
+
 
 	@Override
 	public int size() {

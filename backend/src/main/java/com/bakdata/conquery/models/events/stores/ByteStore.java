@@ -3,29 +3,27 @@ package com.bakdata.conquery.models.events.stores;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 
 @CPSType(id = "BYTES", base = ColumnStore.class)
+@Getter
 public class ByteStore extends ColumnStoreAdapter<ByteStore> {
 
 	private final byte nullValue;
 	private final byte[] values;
 
 	@JsonCreator
-	public ByteStore(ImportColumn column, byte[] values, byte nullValue) {
-		super(column);
+	public ByteStore(byte[] values, byte nullValue) {
 		this.nullValue = nullValue;
 		this.values = values;
 	}
 
 	@Override
-	public ByteStore merge(List<? extends ColumnStore<?>> stores) {
-		if (!stores.stream().allMatch(store -> store.getColumn().equals(getColumn()))) {
-			throw new IllegalArgumentException("Not all stores belong to the same Column");
-		}
+	public ByteStore merge(List<? extends ByteStore> stores) {
+
 
 		final int newSize = stores.stream().map(ByteStore.class::cast).mapToInt(store -> store.values.length).sum();
 		final byte[] mergedValues = new byte[newSize];
@@ -39,7 +37,7 @@ public class ByteStore extends ColumnStoreAdapter<ByteStore> {
 			start += doubleStore.values.length;
 		}
 
-		return new ByteStore(getColumn(), mergedValues, nullValue);
+		return new ByteStore(mergedValues, nullValue);
 	}
 
 	@Override

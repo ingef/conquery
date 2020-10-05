@@ -3,9 +3,7 @@ package com.bakdata.conquery.models.events.generation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -42,14 +40,19 @@ public class BlockFactory {
 		for (int colIndex = 0; colIndex < columns.length; colIndex++) {
 			ImportColumn column = columns[colIndex];
 
-			stores[colIndex] = column.getType().createStore(column, byColumns[colIndex]);
+			stores[colIndex] = column.getType().createStore(byColumns[colIndex]);
 		}
 
 		return Bucket.create(0, imp, stores, new int[] {0}, new int[] {rows.get(0).length });
 	}
 
 	public Bucket readSingleValue(NamespaceCollection namespaceCollection, Dataset dataset, int bucketNumber, Import imp, InputStream inputStream) throws IOException {
-		return dataset.injectInto(namespaceCollection.injectInto(Jackson.BINARY_MAPPER)).readValue(inputStream, Bucket.class);
+
+		final Bucket bucket = dataset.injectInto(namespaceCollection.injectInto(Jackson.BINARY_MAPPER)).readValue(inputStream, Bucket.class);
+		bucket.setImp(imp);
+		bucket.setBucket(bucketNumber);
+
+		return bucket;
 	}
 	
 	public Bucket adaptValuesFrom(int bucketNumber, Import outImport, Bucket value, PreprocessedHeader header){
@@ -62,17 +65,22 @@ public class BlockFactory {
 		ColumnStore<?>[] newStores = new ColumnStore[buckets[0].getStores().length];
 
 		// the order is important!
-		Map<ImportColumn, List<ColumnStore<?>>> stores = new HashMap<>();
+
+		final List<ColumnStore>[] storesByColumn = new ArrayList[buckets[0].getStores().length];
+
+		for (int i = 0; i < storesByColumn.length; i++) {
+			storesByColumn[i] = new ArrayList<>(buckets.length);
+		}
 
 		for (Bucket bucket : buckets) {
-			for (ColumnStore<?> store : bucket.getStores()) {
-				stores.computeIfAbsent(store.getColumn(), ignored -> new ArrayList<>(buckets.length))
-					  .add(store);
+			ColumnStore[] stores = bucket.getStores();
+			for (int i = 0; i < stores.length; i++) {
+				storesByColumn[i].add(stores[i]);
 			}
 		}
 
-		for (Map.Entry<ImportColumn, List<ColumnStore<?>>> entries : stores.entrySet()) {
-			newStores[entries.getKey().getPosition()] = entries.getValue().get(0).merge(entries.getValue());
+		for (int column = 0; column < storesByColumn.length; column++) {
+			newStores[column] = storesByColumn[column].get(0).merge(storesByColumn[column]);
 		}
 
 		final int[] ends = new int[buckets.length];

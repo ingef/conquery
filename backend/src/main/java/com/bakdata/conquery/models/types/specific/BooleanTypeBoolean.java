@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
-import java.util.BitSet;
-
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.BooleanStore;
 import com.bakdata.conquery.models.types.CType;
@@ -17,8 +14,8 @@ public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return new BooleanStore(column, new BitSet(objects.length)); // TODO
+	public ColumnStore createStore(Boolean[] objects) {
+		return new BooleanStore(new boolean[objects.length]); // TODO
 	}
 
 	@Override

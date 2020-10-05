@@ -1,13 +1,12 @@
 package com.bakdata.conquery.models.types;
 
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public abstract class CTypeVarInt<MAJOR_JAVA_TYPE> extends CType<MAJOR_JAVA_TYPE, Number> {
+public abstract class CTypeVarInt<MAJOR_JAVA_TYPE extends Number> extends CType<MAJOR_JAVA_TYPE, Number> {
 
 	protected VarIntType numberType;
 
@@ -17,8 +16,8 @@ public abstract class CTypeVarInt<MAJOR_JAVA_TYPE> extends CType<MAJOR_JAVA_TYPE
 	}
 
 	@Override
-	public final ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return numberType.createStore(column,objects);
+	public ColumnStore createStore(MAJOR_JAVA_TYPE[] objects) {
+		return numberType.createStore(objects);
 	}
 
 	@Override

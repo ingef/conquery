@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -28,7 +27,7 @@ public class DecimalTypeScaled extends CType<BigDecimal, Number> {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
+	public ColumnStore createStore(BigDecimal[] objects) {
 		return null; //TODO
 	}
 

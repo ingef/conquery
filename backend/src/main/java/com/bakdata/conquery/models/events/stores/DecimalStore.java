@@ -5,18 +5,18 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
+@Getter
 public class DecimalStore extends ColumnStoreAdapter<DecimalStore> {
 
 	private final BigDecimal[] values;
 
 	@JsonCreator
-	public DecimalStore(ImportColumn column, BigDecimal[] values) {
-		super(column);
+	public DecimalStore(BigDecimal[] values) {
 		this.values = values;
 	}
 
@@ -26,11 +26,7 @@ public class DecimalStore extends ColumnStoreAdapter<DecimalStore> {
 	}
 
 	@Override
-	public DecimalStore merge(List<? extends ColumnStore<?>> stores) {
-		if (!stores.stream().allMatch(store -> store.getColumn().equals(getColumn()))) {
-			throw new IllegalArgumentException("Not all stores belong to the same Column");
-		}
-
+	public DecimalStore merge(List<? extends DecimalStore> stores) {
 		final int newSize = stores.stream().map(DecimalStore.class::cast).mapToInt(store -> store.values.length).sum();
 		final BigDecimal[] mergedValues = new BigDecimal[newSize];
 
@@ -43,7 +39,7 @@ public class DecimalStore extends ColumnStoreAdapter<DecimalStore> {
 			start += doubleStore.values.length;
 		}
 
-		return new DecimalStore(getColumn(), mergedValues);
+		return new DecimalStore(mergedValues);
 	}
 
 	@Override

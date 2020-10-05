@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.DateStore;
 import com.bakdata.conquery.models.events.stores.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(base=CType.class, id="DATE_RANGE_2UINT16") @Getter @Setter
-public class DateRangeTypePacked extends CType<CDateRange, Integer> {
+public class DateRangeTypePacked extends CType<Integer, Integer> {
 
 	private int maxValue;
 	private int minValue;
@@ -24,8 +24,8 @@ public class DateRangeTypePacked extends CType<CDateRange, Integer> {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return new IntegerStore(column, Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), maxValue + 1);
+	public ColumnStore createStore(Integer[] objects) {
+		return new DateStore(new IntegerStore(Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), maxValue + 1));
 	}
 
 	@Override

@@ -5,14 +5,9 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 
 abstract class ColumnStoreAdapter<T extends ColumnStore<T>> extends ColumnStore<T> {
-
-	public ColumnStoreAdapter(ImportColumn column) {
-		super(column);
-	}
 
 	@Override
 	public int getString(int event) {

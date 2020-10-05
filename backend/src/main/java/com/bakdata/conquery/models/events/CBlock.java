@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -16,6 +15,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2LongArrayMap;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,14 +39,14 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	/**
 	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
 	 */
-	private long[] includedConcepts;
+	private Int2LongArrayMap includedConcepts = new Int2LongArrayMap();
 	
 	/**
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
 	 */
-	private int[] minDate;
-	private int[] maxDate;
+	private Int2IntMap minDate = new Int2IntArrayMap();
+	private Int2IntMap maxDate = new Int2IntArrayMap();
 	
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
@@ -64,10 +66,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	}
 
 	public void initIndizes(int bucketSize) {
-		includedConcepts = new long[bucketSize];
-		minDate = new int[bucketSize];
-		maxDate = new int[bucketSize];
-		Arrays.fill(minDate, Integer.MAX_VALUE);
-		Arrays.fill(maxDate, Integer.MIN_VALUE);
+		includedConcepts = new Int2LongArrayMap();
+		minDate = new Int2IntArrayMap();
+		minDate.defaultReturnValue(Integer.MAX_VALUE);
+
+		maxDate = new Int2IntArrayMap();
+		minDate.defaultReturnValue(Integer.MIN_VALUE);
 	}
 }
