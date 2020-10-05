@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.NonNull;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
 
@@ -32,8 +32,8 @@ public class ExternalNode extends QPNode {
 	}
 
 	@Override
-	public void init(Entity entity) {
-		super.init(entity);
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
 		contained = includedEntities.get(entity.getId());
 	}
 	

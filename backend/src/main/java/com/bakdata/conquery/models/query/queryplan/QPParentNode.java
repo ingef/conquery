@@ -48,10 +48,10 @@ public abstract class QPParentNode extends QPNode {
 	}
 
 	@Override
-	public void init(Entity entity) {
-		super.init(entity);
+	public void init(Entity entity, QueryExecutionContext ctx) {
+		super.init(entity, ctx);
 		for (QPNode child : children) {
-			child.init(entity);
+			child.init(entity, ctx);
 		}
 	}
 

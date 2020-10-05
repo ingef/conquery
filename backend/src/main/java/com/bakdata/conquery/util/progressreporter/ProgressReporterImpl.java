@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.math.DoubleMath;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -111,9 +112,10 @@ public class ProgressReporterImpl implements ProgressReporter {
 			}
 		}
 
+		// Some numerical error is acceptable here.
 		final double progress = getProgress();
-		if (progress != max) {
-			log.warn("ProgressReporter is done but Progress is just {}/{}", getProgress(), getMax());
+		if (DoubleMath.fuzzyEquals(progress,1,0.1d)) {
+			log.warn("ProgressReporter is done but Progress is just {}", progress);
 		}
 
 		innerProgress = max - reservedForChildren;

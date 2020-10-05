@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 
 @Getter @Setter @NoArgsConstructor @EqualsAndHashCode(callSuper=true) @AllArgsConstructor

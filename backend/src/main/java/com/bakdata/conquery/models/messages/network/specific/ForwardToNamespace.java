@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Manage
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

@@ -52,7 +52,7 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	public static class ManagerNodeNetworkContext extends NetworkMessageContext<MessageToShardNode> {
 
 		private final DatasetRegistry namespaces;
-		
+
 		public ManagerNodeNetworkContext(JobManager jobManager, NetworkSession session, DatasetRegistry namespaces) {
 			super(jobManager, session);
 			this.namespaces = namespaces;

@@ -62,7 +62,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		if (managed.getState() == ExecutionState.FAILED) {
-			log.error("Failure in query {}. The error was: {}" + managed.getId(),managed.getError());
+			log.error("Failure in Query[{}]. The error was: {}" + managed.getId(),managed.getError());
 			fail("Query failed (see above)");
 		}
 		
