@@ -44,6 +44,8 @@ public class RealParser extends Parser<Double> {
 	 */
 	@Override
 	protected Decision<Double, ?, ? extends CType<Double, ?>> decideType() {
+		log.debug("Max ULP = {}", floatULP);
+
 		if(floatULP < requiredPrecision){
 			return new Decision<>(
 					Double::floatValue,
