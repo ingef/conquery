@@ -7,6 +7,9 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -64,12 +67,15 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(queryId);
 	}
 
-	public StoredQuerySingleItem getQueryWithSource(ManagedExecutionId queryId, User user, URLBuilder url) {
+	public StoredQuerySingleInfo getQueryWithSource(ManagedExecutionId queryId, User user, URLBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
-		if (query == null || !(query instanceof ManagedQuery)) {
-			return null;
+		if (query == null) {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
-		return StoredQuerySingleItem.from((ManagedQuery) query, user, storage, url);
+		else if(!(query instanceof ManagedQuery)) {
+			throw new WebApplicationException(Status.NOT_IMPLEMENTED);
+		}
+		return StoredQuerySingleInfo.from((ManagedQuery) query, user, storage, url);
 	}
 
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {

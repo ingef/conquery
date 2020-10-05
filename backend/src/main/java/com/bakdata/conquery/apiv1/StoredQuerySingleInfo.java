@@ -21,9 +21,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.shiro.authz.Permission;
 
+/**
+ * API-Class that holds exactly the informations that the front end needs when querying an stored query.
+ * 
+ * @implNote It can be tedious to maintain several Api classes for different end points that have
+ * overlapping information. GraphQL might be a solution for this.
+ */
 @AllArgsConstructor
 @Getter
-public class StoredQuerySingleItem {
+public class StoredQuerySingleInfo {
 	private ManagedExecutionId id;
 	private String label;
 	private ZonedDateTime createdAt; // ISO timestamp: 2019-06-18T11:11:50.528626+02:00
@@ -39,7 +45,7 @@ public class StoredQuerySingleItem {
 	private String[] tags;
 	private Long numberOfResults;
 	
-	public static StoredQuerySingleItem from(ManagedQuery query, User user, MetaStorage metaStorage,  URLBuilder url) {
+	public static StoredQuerySingleInfo from(ManagedQuery query, User user, MetaStorage metaStorage,  URLBuilder url) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
@@ -53,7 +59,7 @@ public class StoredQuerySingleItem {
 			}
 		}
 		
-		return new StoredQuerySingleItem(
+		return new StoredQuerySingleInfo(
 			query.getId(), 
 			query.getLabel(),
 			query.getCreationTime().atZone(ZoneId.systemDefault()),
@@ -62,7 +68,7 @@ public class StoredQuerySingleItem {
 			false, // there is no mechanism/definition yet for system queries
 			query.getLabel() == null,
 			Optional.ofNullable(query.getOwner()).map(owner -> metaStorage.getUser(owner)).map(User::getLabel).orElse(null),
-			query.getDownloadURL(url, user),
+			query.getDownloadURL(url, user).orElse(null),
 			permittedGroups,
 			query.getQuery(),
 			query.getTags(),

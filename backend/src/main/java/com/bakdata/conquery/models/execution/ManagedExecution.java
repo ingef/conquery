@@ -204,20 +204,25 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
-		status.setResultUrl(
-			isReadyToDownload(url, user)
-				? getDownloadURL(url)
-				: null);
+		status.setResultUrl(getDownloadURL(url, user).orElse(null));
 		if (state.equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
 	}
+	
+	
+	public final Optional<URL> getDownloadURL(URLBuilder url, User user) {
+		if(isReadyToDownload(url, user)) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(_getDownloadURL(url));
+	}
 
 	/**
 	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
 	 */
-	public abstract URL getDownloadURL(URLBuilder url, User user);
+	protected abstract URL _getDownloadURL(URLBuilder url);
 
 	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user) {
 		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));

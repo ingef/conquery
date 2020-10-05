@@ -244,7 +244,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public URL getDownloadURL(URLBuilder url) {
+	protected URL _getDownloadURL(URLBuilder url) {
 		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
 			.to(ResultCSVResource.GET_CSV_PATH).get();
 	}
