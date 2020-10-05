@@ -1,10 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importConcepts;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importIdMapping;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importPreviousQueries;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importTableContents;
-import static com.bakdata.conquery.integration.common.LoadingUtil.importTables;
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

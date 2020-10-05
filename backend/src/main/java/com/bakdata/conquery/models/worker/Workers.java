@@ -38,9 +38,11 @@ public class Workers extends IdResolveContext {
 	
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
+
+	private final int entityBucketSize;
+
 	
-	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, int jobThreadPoolSize) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, int jobThreadPoolSize, int entityBucketSize) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 		
 		// TODO: 30.06.2020 build from configuration
@@ -49,21 +51,22 @@ public class Workers extends IdResolveContext {
 												new LinkedBlockingQueue<>(),
 												new ThreadFactoryBuilder().setNameFormat("Workers Helper %d").build()
 		);
+		this.entityBucketSize = entityBucketSize;
 
 		jobsThreadPool.prestartAllCoreThreads();
 	}
-	
+
 	public Worker createWorker(WorkerStorage storage) {
 		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage);
-		
+
 		addWorker(worker);
 
 		return worker;
 	}
-	
+
 	public Worker createWorker(Dataset dataset, StorageConfig storageConfig, @NonNull File directory, Validator validator) {
-		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, directory, validator);
-		
+		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, directory, validator, entityBucketSize);
+
 		addWorker(worker);
 
 		return worker;
@@ -116,7 +119,7 @@ public class Workers extends IdResolveContext {
 		}
 		return false;
 	}
-	
+
 	public void stop() {
 		jobsThreadPool.shutdown();
 		for (Worker w : workers.values()) {

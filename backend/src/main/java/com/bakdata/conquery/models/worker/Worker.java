@@ -54,35 +54,36 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.executorService = executorService;
 		
 		storage.setBucketManager(new BucketManager(this));
-		
 	}
-	
+
 	public static Worker newWorker(
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService executorService,
-		@NonNull WorkerStorage storage) {
-			
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService executorService,
+			@NonNull WorkerStorage storage) {
+
 		return new Worker(queryThreadPoolDefinition, storage, executorService);
 	}
-	
+
 	public static Worker newWorker(
 		@NonNull Dataset dataset,
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull ExecutorService executorService,
 		@NonNull StorageConfig config,
 		@NonNull File directory,
-		@NonNull Validator validator) {
+		@NonNull Validator validator,
+		int entityBucketSize) {
 
 		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
 		if (workerStorage != null) {
 			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
 		}
-		
+
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
 		info.setName(directory.getName());
-		
+		info.setEntityBucketSize(entityBucketSize);
+
 		workerStorage = new WorkerStorageImpl(validator, config, directory);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
@@ -90,7 +91,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		return new Worker(queryThreadPoolDefinition, workerStorage, executorService);
 	}
-	
+
 	public WorkerInformation getInfo() {
 		return storage.getWorker();
 	}
@@ -114,13 +115,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		catch (IOException e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
-		
+
 		try {
 			jobManager.close();
 		}catch (Exception e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
-		
+
 		try {
 			storage.close();
 		}

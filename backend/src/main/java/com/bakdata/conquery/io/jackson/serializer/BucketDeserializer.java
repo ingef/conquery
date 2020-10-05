@@ -1,5 +1,11 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -11,12 +17,6 @@ import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class BucketDeserializer extends JsonDeserializer<Bucket> {
 

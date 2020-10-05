@@ -106,6 +106,7 @@ public class AdminProcessor {
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
+	private final int entityBucketSize;
 
 	public void addTable(Dataset dataset, Table table) throws JSONException {
 		Objects.requireNonNull(dataset);
@@ -188,7 +189,7 @@ public class AdminProcessor {
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			datasetRegistry.get(dataset.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(dataset.getId()), table.getId(), selectedFile));
+					  .addSlowJob(new ImportJob(datasetRegistry.get(dataset.getId()), table.getId(), selectedFile, entityBucketSize));
 		}
 	}
 

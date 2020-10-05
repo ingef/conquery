@@ -7,11 +7,11 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
 import com.bakdata.conquery.models.events.generation.SafeJavaString;
@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.util.ConqueryJavaEscape;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.powerlibraries.io.In;
@@ -32,12 +33,20 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter @NoArgsConstructor @Slf4j
+@Getter @Setter @Slf4j
 public class Import extends NamedImpl<ImportId> {
+
+	@Min(0)
+	private final int entityBucketSize;
+
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+	public Import(int entityBucketSize) {
+		super();
+		this.entityBucketSize = entityBucketSize;
+	}
 
 	@Valid @NotNull
 	private TableId table;
@@ -135,7 +144,7 @@ public class Import extends NamedImpl<ImportId> {
 						.put("types", MajorTypeId.values())
 						.put("safeName", SafeName.INSTANCE)
 						.put("safeJavaString", SafeJavaString.INSTANCE)
-						.put("bucketSize", ConqueryConfig.getInstance().getCluster().getEntityBucketSize())
+						.put("bucketSize", entityBucketSize)
 						.build(),
 					writer
 			);
@@ -148,7 +157,7 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	public static Import createForPreprocessing(String table, String tag, PPColumn[] columns) {
-		Import imp = new Import();
+		Import imp = new Import(0); // is not yet used here.
 		imp.setTable(new TableId(new DatasetId("preprocessing"), table));
 		imp.setName(tag);
 		ImportColumn[] impCols = new ImportColumn[columns.length];
@@ -167,8 +176,8 @@ public class Import extends NamedImpl<ImportId> {
 
 	public long estimateMemoryConsumption() {
 		long mem = 0;
-		for(ImportColumn col:columns) {
-			mem+=col.getType().estimateMemoryConsumption();
+		for (ImportColumn col : columns) {
+			mem += col.getType().estimateMemoryConsumption();
 		}
 		return mem;
 	}
