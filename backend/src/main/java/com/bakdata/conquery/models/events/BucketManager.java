@@ -75,11 +75,12 @@ public class BucketManager {
 
 							CBlockId cBlockId = new CBlockId(bucketId, conName);
 
-							if (!cBlocks.containsKey(cBlockId)) {
+							if (cBlocks.containsKey(cBlockId)) {
+								log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.",cBlockId);
 								continue;
 							}
 
-							log.warn("CBlock[{}] missing in Storage.", cBlockId);
+							log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
 							job.addCBlock(imp, bucket.get(), cBlockId);
 						}
 					}
