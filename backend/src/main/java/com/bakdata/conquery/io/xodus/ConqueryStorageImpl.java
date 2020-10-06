@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.metrics.JobMetrics;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.util.functions.Collector;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multimap;
@@ -43,14 +42,14 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	 * This method collects this information as a mapping that is used to load and later close the stores.
 	 * The environments should be collected in the order the stores should be loaded.
 	 */
-	abstract protected void createStores(Collector<Environment,KeyIncludingStore<?,?>> collector);
+	abstract protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores);
 
 	/**
 	 * Load all stores from disk.
 	 */
 	@Override
 	public void loadData() {
-		createStores(environmentToStores::put);
+		createStores(environmentToStores);
 		for(Environment environment : environmentToStores.keySet()) {
 			log.info("Loading storage {} from {}", this.getClass().getSimpleName(), environment.getLocation());
 			

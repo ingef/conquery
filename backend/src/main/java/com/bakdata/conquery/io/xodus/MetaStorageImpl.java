@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
@@ -78,7 +78,7 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 	}
 
 	@Override
-	protected void createStores(Collector<Environment, KeyIncludingStore<?, ?>> collector) {
+	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 
 		executions = StoreInfo.EXECUTIONS
 			.<ManagedExecution<?>>identifiable(getConfig(), getExecutionsEnvironment(), getValidator(), getCentralRegistry(), datasetRegistry);
@@ -90,13 +90,12 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 		
 		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getConfig(), getFormConfigEnvironment(), getValidator(), getCentralRegistry());
 
-		collector
-			.collect(rolesEnvironment, authRole)
+		environmentToStores.put(rolesEnvironment, authRole);
 			// load users before queries
-			.collect(usersEnvironment,authUser)
-			.collect(groupsEnvironment,authGroup)
-			.collect(executionsEnvironment, executions)
-			.collect(formConfigEnvironment, formConfigs);
+		environmentToStores.put(usersEnvironment,authUser);
+		environmentToStores.put(groupsEnvironment,authGroup);
+		environmentToStores.put(executionsEnvironment, executions);
+		environmentToStores.put(formConfigEnvironment, formConfigs);
 	}
 
 	@Override

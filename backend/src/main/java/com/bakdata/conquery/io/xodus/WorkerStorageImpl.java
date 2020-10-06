@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Validator;
 
@@ -21,10 +22,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.functions.Collector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -52,16 +53,17 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	protected void createStores(Collector<Environment, KeyIncludingStore<?, ?>> collector) {
-		super.createStores(collector);
+	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
+		super.createStores(environmentToStores);
 		worker = StoreInfo.WORKER.singleton(getConfig(), environment, getValidator());
 		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 		
-		collector
-			.collect(environment, worker)
-			.collect(environment, blocks)
-			.collect(environment, cBlocks);
+		environmentToStores.putAll(environment, List.of(
+			worker, 
+			blocks, 
+			cBlocks
+			));
 	}
 	
 	@Override

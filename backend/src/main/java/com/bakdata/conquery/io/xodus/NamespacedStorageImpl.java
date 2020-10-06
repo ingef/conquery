@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.SneakyThrows;
@@ -50,7 +51,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	protected void createStores(Collector<Environment, KeyIncludingStore<?, ?>> collector) {
+	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), environment, getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
@@ -125,12 +126,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 			});
 
-
-		collector
-			.collect(environment,dataset)
-			.collect(environment, dictionaries)
-			.collect(environment, concepts)
-			.collect(environment, imports);
+		// Order is important here
+		environmentToStores.putAll(environment, List.of(
+			dataset, 
+			dictionaries, 
+			concepts, 
+			imports));
 	}
 	
 	@Override
