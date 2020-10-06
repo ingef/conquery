@@ -164,7 +164,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public void removeImport(ImportId importId) {
-		storage.removeImport(importId);
+		bucketManager.removeImport(importId);
 	}
 
 	public void addBucket(Bucket bucket) {
