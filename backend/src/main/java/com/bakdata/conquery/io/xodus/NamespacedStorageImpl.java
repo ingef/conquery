@@ -219,8 +219,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 	@Override
 	public Concept<?> getConcept(ConceptId id) {
-		return Optional.ofNullable(concepts.get(id))
-			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
+		return concepts.get(id);
 	}
 
 	@Override
