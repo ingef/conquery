@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +54,6 @@ public class QueryResource {
 
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
-		query.resolve(new QueryResolveContext(datasetId, processor.getDatasetRegistry()));
 		log.info("Query posted on dataset {} by user {} ({}).", datasetId, user.getId(), user.getName());
 
 		return Response.ok(
