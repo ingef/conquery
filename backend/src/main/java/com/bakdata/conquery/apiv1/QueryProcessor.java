@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -54,9 +53,6 @@ public class QueryProcessor {
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
 		authorize(user, dataset.getId(), Ability.READ);
-
-		// Initialize the query
-		query = query.resolve(new QueryResolveContext(dataset.getId(), datasetRegistry));
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
