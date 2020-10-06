@@ -21,7 +21,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @CPSType(id="IMPORT_BIT", base=NamespacedMessage.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator) @Getter @Setter

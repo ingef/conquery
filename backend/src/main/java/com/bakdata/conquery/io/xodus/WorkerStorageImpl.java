@@ -11,15 +11,12 @@ import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ArrayListMultimap;
@@ -129,36 +126,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void removeConcept(ConceptId id) {
 		concepts.remove(id);
-	}
-
-
-	@Override
-	public void addImport(Import imp) throws JSONException {
-		super.addImport(imp);
-
-		registerTableImport(imp.getId());
-	}
-
-	@Override
-	public void updateImport(Import imp) throws JSONException {
-		super.updateImport(imp);
-	}
-
-	@Override
-	public void removeImport(ImportId id){
-		imports.remove(id);
-	}
-
-	public void registerTableImport(ImportId impId) {
-		tableImports.put(impId.getTable(),impId);
-	}
-
-	public void unregisterTableImport(ImportId impId) {
-		tableImports.remove(impId.getTable(), impId);
-	}
-
-	public Collection<ImportId> getTableImports(TableId tableId) {
-		return this.tableImports.get(tableId);
 	}
 
 }

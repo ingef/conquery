@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.IntFunction;
 
@@ -26,7 +31,8 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +43,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class BucketManager {
-
-	@Getter
-	private final int bucketSize;
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
@@ -54,14 +57,14 @@ public class BucketManager {
 		this.storage = storage;
 		this.worker = worker;
 		
-		IntArrayList requiredBuckets = worker.getInfo().getIncludedBuckets().clone();
+		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets: {}", requiredBuckets);
 		for (Bucket bucket : storage.getAllBuckets()) {
 			if(!requiredBuckets.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
 			else {
-				requiredBuckets.rem(bucket.getBucket());
+				requiredBuckets.remove(bucket.getBucket());
 			}
 			registerBucket(bucket);
 		}
@@ -88,22 +91,19 @@ public class BucketManager {
 						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 							Bucket bucket = storage.getBucket(bucketId);
-							if (bucket != null) {
-								CBlockId cBlockId = new CBlockId(bucketId, conName);
-								if (storage.getCBlock(cBlockId) == null) {
-									job.addCBlock(imp, bucket, cBlockId);
-								}
+							if (bucket == null) {
+								continue;
 							}
 
 							CBlockId cBlockId = new CBlockId(bucketId, conName);
 
-							if (cBlocks.containsKey(cBlockId)) {
+							if (storage.getCBlock(cBlockId) != null) {
 								continue;
 							}
 
 							log.warn("CBlock[{}] missing in Storage.", cBlockId);
 
-							job.addCBlock(imp, bucket.get(), cBlockId);
+							job.addCBlock(imp, bucket, cBlockId);
 						}
 					}
 
@@ -230,10 +230,10 @@ public class BucketManager {
 		}
 	}
 
-	private void deregisterCBlock(CBlockId cBlock) {
-		Bucket bucket = storage.getBucket(cBlock.getBucket());
+	private void deregisterCBlock(CBlockId cBlockId) {
+		Bucket bucket = storage.getBucket(cBlockId.getBucket());
 		if (bucket == null) {
-			throw new NoSuchElementException("Could not find an element called '"+cBlock.getBucket()+"'");
+			throw new NoSuchElementException("Could not find an element called '"+cBlockId.getBucket()+"'");
 		}
 		for (int entityId : bucket) {
 			final Entity entity = entities.get(entityId);
@@ -246,20 +246,6 @@ public class BucketManager {
 				entities.remove(entityId);
 			}
 		}
-
-		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(cBlockId.getConnector());
-
-		if(forConnector == null){
-			return;
-		}
-
-		final List<CBlock> forBucket = forConnector.get(cBlockId.getBucket().getBucket());
-
-		if(forBucket == null){
-			return;
-		}
-
-		forBucket.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
 	}
 
 	public void removeBucket(BucketId bucketId) {
@@ -349,22 +335,25 @@ public class BucketManager {
 		return storage.getBucket(id) != null;
 	}
 
-	public boolean hasBucket(int id) {
-		return  buckets.keySet().stream().map(BucketId::getBucket).anyMatch(bucket -> bucket == id);
+	private boolean hasBucket(int id) {
+		return  storage.getAllBuckets().stream().map(Bucket::getBucket).anyMatch(bucket -> bucket == id);
 	}
 
 	public Bucket getBucket(BucketId id) {
-		return buckets.get(id);
+		return storage.getBucket(id);
 	}
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
-		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
-		final Collection<ImportId> imports = storage.getTableImports(tableId);
+		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
 
 		final List<Bucket> buckets = new ArrayList<>();
 
-		for (ImportId impId : imports) {
-			final Bucket bucket = getBucket(new BucketId(impId, bucketId));
+		for (Import imp : storage.getAllImports()) {
+			if (!imp.getTable().equals(tableId)) {
+				continue;
+			}
+			
+			final Bucket bucket = getBucket(new BucketId(imp.getId(), bucketId));
 
 			if(bucket == null){
 				continue;
@@ -375,6 +364,25 @@ public class BucketManager {
 
 		return buckets;
 	}
+
+//	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
+//		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+//		final Collection<ImportId> imports = storage.getTableImports(tableId);
+//
+//		final List<Bucket> buckets = new ArrayList<>();
+//
+//		for (ImportId impId : imports) {
+//			final Bucket bucket = getBucket(new BucketId(impId, bucketId));
+//
+//			if(bucket == null){
+//				continue;
+//			}
+//
+//			buckets.add(bucket);
+//		}
+//
+//		return buckets;
+//	}
 
 
 	/**
@@ -392,7 +400,7 @@ public class BucketManager {
 			return Collections.emptyMap();
 		}
 
-		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
 
 		final List<CBlock> forBucket = forConnector.get(bucketId);
 
@@ -412,7 +420,7 @@ public class BucketManager {
 	public boolean hasEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
 
 		final Int2ObjectMap<List<CBlock>> forConnector = connectorCBlocks.get(connectorId);
-		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
+		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
 
 		return forConnector != null && forConnector.containsKey(bucketId);
 	}
@@ -422,6 +430,6 @@ public class BucketManager {
 	 * @param entity
 	 */
 	public boolean isEntityEmpty(Entity entity) {
-		return !hasBucket(Entity.getBucket(entity.getId(), getBucketSize()));
+		return !hasBucket(Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize()));
 	}
 }

@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jetbrains.exodus.core.dataStructures.hash.IntHashSet;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +20,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	@NotNull
 	private DatasetId dataset;
 	@NotNull
-	private IntHashSet includedBuckets = new IntHashSet();
+	private IntArraySet includedBuckets = new IntArraySet();
 	@JsonIgnore
 	private transient ShardNodeInformation connectedShardNode;
 

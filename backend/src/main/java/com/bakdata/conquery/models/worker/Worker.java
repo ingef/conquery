@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.entity.Entity;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -72,7 +71,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public static Worker newWorker(
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService executorService,
-			@NonNull WorkerStorage storage) {
+			@NonNull WorkerStorage storage,
+			int entityBucketSize) {
 
 		return new Worker(queryThreadPoolDefinition, storage, executorService);
 	}

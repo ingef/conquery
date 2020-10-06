@@ -130,11 +130,13 @@ public class ConceptQueryPlan implements QueryPlan {
 
 			nextTable(ctx, currentTableId);
 
-			final List<Bucket> tableBuckets = ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity, currentTableId);
-
-			for (Bucket bucket : tableBuckets) {
+			for (Bucket bucket : ctx.getStorage().getAllBuckets()) {
 
 				if(bucket == null){
+					continue;
+				}
+				
+				if(!bucket.getId().getImp().getTable().equals(currentTableId)) {
 					continue;
 				}
 

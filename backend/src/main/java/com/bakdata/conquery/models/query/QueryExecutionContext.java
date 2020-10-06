@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import com.bakdata.conquery.models.events.BucketManager;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -26,7 +27,7 @@ public class QueryExecutionContext {
 	private boolean prettyPrint = true;
 	private Connector connector;
 	private final WorkerStorageRetrivalDelegate storage;
-	private final Int2ObjectMap<Entity> entities;
+	private final BucketManager bucketManager;
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId id) {
 		return getStorage().getBucketManager().getEntityBucketsForTable(entity, id);

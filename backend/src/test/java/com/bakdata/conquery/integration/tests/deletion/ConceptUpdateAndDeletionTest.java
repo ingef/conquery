@@ -10,7 +10,7 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorageRetrivalDelegate;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -229,7 +229,11 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				for (ShardNode node : conquery2.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
+							continue;
+						}
 
+						final WorkerStorageRetrivalDelegate workerStorage = value.getStorage();
+						
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 								.isNotEmpty();
 
