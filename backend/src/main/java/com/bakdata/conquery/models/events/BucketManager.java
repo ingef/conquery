@@ -365,25 +365,6 @@ public class BucketManager {
 		return buckets;
 	}
 
-//	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
-//		final int bucketId = Entity.getBucket(entity.getId(), bucketSize);
-//		final Collection<ImportId> imports = storage.getTableImports(tableId);
-//
-//		final List<Bucket> buckets = new ArrayList<>();
-//
-//		for (ImportId impId : imports) {
-//			final Bucket bucket = getBucket(new BucketId(impId, bucketId));
-//
-//			if(bucket == null){
-//				continue;
-//			}
-//
-//			buckets.add(bucket);
-//		}
-//
-//		return buckets;
-//	}
-
 
 	/**
 	 * Connector -> Bucket -> [CBlock]
