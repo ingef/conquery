@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -54,9 +54,19 @@ public class BucketManager {
 		this.storage = storage;
 		this.worker = worker;
 		
-
+		IntArrayList requiredBuckets = worker.getInfo().getIncludedBuckets().clone();
+		log.trace("Trying to load these buckets: {}", requiredBuckets);
 		for (Bucket bucket : storage.getAllBuckets()) {
+			if(!requiredBuckets.contains(bucket.getBucket())) {
+				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
+			}
+			else {
+				requiredBuckets.rem(bucket.getBucket());
+			}
 			registerBucket(bucket);
+		}
+		if(!requiredBuckets.isEmpty()) {
+			log.warn("Not all required Buckets were loaded from the storage. Missing Buckets: {}", requiredBuckets);
 		}
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
