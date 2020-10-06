@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.File;
 
 import javax.validation.Validator;
 
@@ -25,4 +26,5 @@ public interface ConqueryStorage extends Closeable {
 	 * @return String presenting the origin for this store.
 	 */
 	String getStorageOrigin();
+	void clear();
 }

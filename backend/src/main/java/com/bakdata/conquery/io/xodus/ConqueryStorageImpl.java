@@ -75,9 +75,6 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	
 
 
-	/**
-	 * Clears the environment then closes it.
-	 */
 	@Override
 	public void remove() throws IOException {
 		for(Environment environment : environmentToStores.keySet()) {
@@ -86,5 +83,12 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 			log.info("Cleared environment {}", environment.getLocation());
 		}
 		close();
+	}
+	
+	/**
+	 * Clears the environment.
+	 */
+	public void clear(){
+		environment.clear();
 	}
 }

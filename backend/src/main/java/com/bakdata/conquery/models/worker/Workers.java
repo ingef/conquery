@@ -104,7 +104,7 @@ public class Workers extends IdResolveContext {
 		
 		workers.remove(removed.getInfo().getId());
 		try {
-			removed.getStorage().remove();
+			removed.remove();
 		}
 		catch(Exception e) {
 			log.error("Failed to remove storage "+removed, e);

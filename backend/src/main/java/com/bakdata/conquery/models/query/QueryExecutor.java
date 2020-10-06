@@ -37,7 +37,7 @@ public class QueryExecutor implements Closeable {
 
 	public static ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry, ListeningExecutorService executor) {
 		ManagedExecutionId executionId = entry.getKey();
-		Collection<Entity> entries = context.getStorage().getBucketManager().getEntities().values();
+		Collection<Entity> entries = context.getEntities().values();
 
 		if(entries.isEmpty()) {
 			log.warn("entries for query {} are empty", executionId);

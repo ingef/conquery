@@ -19,6 +19,6 @@ public class UpdateWorkerBucket extends WorkerMessage {
 	@Override
 	public void react(Worker context) throws Exception {
 		//new included buckets from master
-		context.getStorage().updateWorker(info);
+		context.updateWorkerInfo(info);
 	}
 }

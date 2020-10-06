@@ -151,7 +151,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void addDictionary(Dictionary dict) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addDictionary(Dictionary dict) {
 		dictionaries.add(dict);
 	}
 
@@ -166,7 +167,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateDictionary(Dictionary dict) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateDictionary(Dictionary dict) {
 		dictionaries.update(dict);
 		for(Import imp : getAllImports()) {
 			imp.loadExternalInfos(this);
@@ -179,7 +181,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Dictionary computeDictionary(DictionaryId id) throws JSONException {
+	public Dictionary computeDictionary(DictionaryId id) {
 		Dictionary e = getDictionary(id);
 		if (e == null) {
 			e = new MapDictionary(id);
@@ -189,7 +191,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void addImport(Import imp) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addImport(Import imp) {
 		imports.add(imp);
 	}
 
@@ -204,7 +207,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateImport(Import imp) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateImport(Import imp) {
 		imports.update(imp);
 	}
 
@@ -225,7 +229,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateConcept(Concept<?> concept) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateConcept(Concept<?> concept) {
 		concepts.update(concept);
 	}
 

@@ -21,6 +21,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @CPSType(id="IMPORT_BIT", base=NamespacedMessage.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator) @Getter @Setter
@@ -54,7 +55,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 			getProgressReporter().report(1);
 		}
 
-		context.getStorage().addBucket(factory.combine(includedEntities, buckets));
+		context.addBucket(factory.combine(includedEntities, buckets));
 	}
 	
 	@Override

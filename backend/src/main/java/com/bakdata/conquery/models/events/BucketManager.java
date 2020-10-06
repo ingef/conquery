@@ -1,12 +1,6 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.util.function.IntFunction;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -16,7 +10,6 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.IdMutex.Locked;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -51,28 +44,29 @@ public class BucketManager {
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
-	private final IdMap<ConceptId, Concept<?>> concepts = new IdMap<>();
-	private final IdMap<BucketId, Bucket> buckets = new IdMap<>();
-	private final IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
 	@Getter
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
-
 	//Backreference
 	private final Worker worker;
 
-	public BucketManager(Worker worker) {
-		this.jobManager = worker.getJobManager();
-		this.storage = worker.getStorage();
-		this.concepts.addAll(storage.getAllConcepts());
-		this.buckets.addAll(storage.getAllBuckets());
-		this.cBlocks.addAll(storage.getAllCBlocks());
+	public BucketManager(JobManager jobManager, WorkerStorage storage, Worker worker) {
+		this.jobManager = jobManager;
+		this.storage = storage;
 		this.worker = worker;
-		bucketSize = worker.getInfo().getEntityBucketSize();
+		
+
+		for (Bucket bucket : storage.getAllBuckets()) {
+			registerBucket(bucket);
+		}
+
+		for (CBlock cBlock : storage.getAllCBlocks()) {
+			registerCBlock(cBlock);
+		}
 	}
 
 	@SneakyThrows
 	public void fullUpdate() {
-		for (Concept<?> c : concepts.values()) {
+		for (Concept<?> c : storage.getAllConcepts()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 
@@ -81,21 +75,19 @@ public class BucketManager {
 					ConnectorId conName = con.getId();
 
 					for (Import imp : t.findImports(storage)) {
-
-
 						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
-							storage.registerTableImport(imp.getId());
-
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
-							Optional<Bucket> bucket = buckets.getOptional(bucketId);
-
-							if (bucket.isEmpty()) {
-								continue;
+							Bucket bucket = storage.getBucket(bucketId);
+							if (bucket != null) {
+								CBlockId cBlockId = new CBlockId(bucketId, conName);
+								if (storage.getCBlock(cBlockId) == null) {
+									job.addCBlock(imp, bucket, cBlockId);
+								}
 							}
 
 							CBlockId cBlockId = new CBlockId(bucketId, conName);
 
-							if (!cBlocks.containsKey(cBlockId)) {
+							if (cBlocks.containsKey(cBlockId)) {
 								continue;
 							}
 
@@ -110,14 +102,6 @@ public class BucketManager {
 					}
 				}
 			}
-		}
-
-		for (Bucket bucket : buckets.values()) {
-			registerBucket(bucket);
-		}
-
-		for (CBlock cBlock : cBlocks.values()) {
-			registerCBlock(cBlock);
 		}
 	}
 
@@ -145,7 +129,10 @@ public class BucketManager {
 	}
 
 	private void registerCBlock(CBlock cBlock) {
-		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
+		Bucket bucket = storage.getBucket(cBlock.getBucket());
+		if (bucket == null) {
+			throw new NoSuchElementException("Could not find an element called '"+cBlock.getBucket()+"'");
+		}
 		for (int entity : bucket) {
 			entities.computeIfAbsent(entity, createEntityFor(cBlock));
 		}
@@ -158,15 +145,14 @@ public class BucketManager {
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
-		cBlocks.add(cBlock);
 		registerCBlock(cBlock);
 	}
 
 	public void addBucket(Bucket bucket) {
-		buckets.add(bucket);
+		storage.addBucket(bucket);
 		registerBucket(bucket);
 
-		for (Concept<?> c : concepts.values()) {
+		for (Concept<?> c : storage.getAllConcepts()) {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
@@ -176,7 +162,7 @@ public class BucketManager {
 								bucket.getId(),
 								con.getId()
 						);
-						if (!cBlocks.getOptional(cBlockId).isPresent()) {
+						if (storage.getCBlock(cBlockId) == null) {
 							job.addCBlock(imp, bucket, cBlockId);
 						}
 					}
@@ -189,7 +175,7 @@ public class BucketManager {
 	}
 
 	public void addConcept(Concept<?> c) {
-		concepts.add(c);
+		storage.updateConcept(c);
 
 		for (Connector con : c.getConnectors()) {
 			try (Locked lock = cBlockLocks.acquire(con.getId())) {
@@ -199,18 +185,19 @@ public class BucketManager {
 					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
+						Bucket bucket = storage.getBucket(bucketId) ;
 
-						if (!buckets.containsKey(bucketId)) {
+						if (storage.getBucket(bucketId) == null) {
 							continue;
 						}
 
 						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
 
-						if (cBlocks.containsKey(cBlockId)) {
+						if (storage.getCBlock(cBlockId) != null) {
 							continue;
 						}
 
-						job.addCBlock(imp, buckets.get(bucketId), cBlockId);
+						job.addCBlock(imp, bucket, cBlockId);
 					}
 				}
 				if (!job.isEmpty()) {
@@ -233,9 +220,11 @@ public class BucketManager {
 		}
 	}
 
-	private void deregisterCBlock(CBlockId cBlockId) {
-		Bucket bucket = buckets.getOrFail(cBlockId.getBucket());
-
+	private void deregisterCBlock(CBlockId cBlock) {
+		Bucket bucket = storage.getBucket(cBlock.getBucket());
+		if (bucket == null) {
+			throw new NoSuchElementException("Could not find an element called '"+cBlock.getBucket()+"'");
+		}
 		for (int entityId : bucket) {
 			final Entity entity = entities.get(entityId);
 
@@ -264,12 +253,12 @@ public class BucketManager {
 	}
 
 	public void removeBucket(BucketId bucketId) {
-		Bucket bucket = buckets.get(bucketId);
+		Bucket bucket = storage.getBucket(bucketId);
 		if (bucket == null) {
 			return;
 		}
 
-		for (Concept<?> concept : concepts.values()) {
+		for (Concept<?> concept : storage.getAllConcepts()) {
 			for (Connector con : concept.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					removeCBlock(new CBlockId(bucketId, con.getId()));
@@ -277,25 +266,24 @@ public class BucketManager {
 			}
 		}
 
-		deregisterBucket(buckets.get(bucketId));
+		deregisterBucket(bucket);
 
-		buckets.remove(bucketId);
 		storage.removeBucket(bucketId);
 	}
 
 	private void removeCBlock(CBlockId cBlockId) {
-		if (!cBlocks.containsKey(cBlockId)) {
+		if (storage.getCBlock(cBlockId) == null) {
+			log.trace("Cannot remove CBlock[{}], because it is not present for worker[{}]", cBlockId, worker);
 			return;
 		}
 
 		deregisterCBlock(cBlockId);
 
-		cBlocks.remove(cBlockId);
 		storage.removeCBlock(cBlockId);
 	}
 
 	public void removeConcept(ConceptId conceptId) {
-		Concept<?> c = concepts.get(conceptId);
+		Concept<?> c = storage.getConcept(conceptId);
 
 		if (c == null) {
 			return;
@@ -307,7 +295,8 @@ public class BucketManager {
 
 					BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
-					if (!buckets.containsKey(bucketId)) {
+					if (storage.getBucket(bucketId) == null) {
+						log.trace("Skipping cleanup of CBlock of Concept[{}] for Bucket[{}], because it is not present", conceptId, bucketId);
 						continue;
 					}
 
@@ -316,7 +305,7 @@ public class BucketManager {
 			}
 		}
 
-		concepts.remove(conceptId);
+		storage.removeConcept(conceptId);
 	}
 
 	/**
@@ -327,14 +316,14 @@ public class BucketManager {
 
 			BucketId bucketId = new BucketId(imp, bucketNumber);
 
-			if (!buckets.containsKey(bucketId)) {
+			if (storage.getBucket(bucketId) == null) {
 				continue;
 			}
 
 			removeBucket(bucketId);
 		}
 
-		for (Concept<?> concept : concepts.values()) {
+		for (Concept<?> concept : storage.getAllConcepts()) {
 			if(!(concept instanceof TreeConcept))
 				continue;
 
@@ -343,11 +332,11 @@ public class BucketManager {
 	}
 
 	public boolean hasCBlock(CBlockId id) {
-		return cBlocks.containsKey(id);
+		return storage.getCBlock(id) != null;
 	}
 
 	public boolean hasBucket(BucketId id) {
-		return buckets.containsKey(id);
+		return storage.getBucket(id) != null;
 	}
 
 	public boolean hasBucket(int id) {

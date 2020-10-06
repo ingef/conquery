@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -28,28 +27,17 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
+import com.bakdata.conquery.util.functions.Collector;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
-	@Getter
-	private BucketManager bucketManager;
-
-	@JsonIgnore
-	private final ListMultimap<TableId, ImportId> tableImports = ArrayListMultimap.create();
-
+	
 	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
-	}
-	
-	@Override
-	public void setBucketManager(BucketManager bucketManager) {
-		this.bucketManager = bucketManager;
 	}
 
 	@Override
@@ -67,7 +55,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public void addCBlock(CBlock cBlock) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addCBlock(CBlock cBlock) {
 		cBlocks.add(cBlock);
 	}
 
@@ -77,7 +66,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void updateCBlock(CBlock cBlock) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateCBlock(CBlock cBlock) {
 		cBlocks.update(cBlock);
 	}
 
@@ -92,11 +82,9 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public void addBucket(Bucket bucket) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addBucket(Bucket bucket) {
 		blocks.add(bucket);
-		if(this.getBucketManager() != null) {
-			this.getBucketManager().addBucket(bucket);
-		}
 	}
 
 	@Override
@@ -107,9 +95,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void removeBucket(BucketId id) {
 		blocks.remove(id);
-		if(this.getBucketManager() != null) {
-			this.getBucketManager().removeBucket(id);
-		}
 	}
 	
 	@Override
@@ -129,26 +114,21 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void updateWorker(WorkerInformation worker) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
 	}
 	
 	//block manager overrides
 	@Override
-	public void updateConcept(Concept<?> concept) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateConcept(Concept<?> concept) {
 		concepts.update(concept);
-		if(bucketManager != null) {
-			bucketManager.removeConcept(concept.getId());
-			bucketManager.addConcept(concept);
-		}
 	}
 
 	@Override
 	public void removeConcept(ConceptId id) {
 		concepts.remove(id);
-		if(bucketManager != null) {
-			bucketManager.removeConcept(id);
-		}
 	}
 
 
@@ -166,13 +146,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 
 	@Override
 	public void removeImport(ImportId id){
-		super.removeImport(id);
-
-		unregisterTableImport(id);
-
-		if (bucketManager != null){
-			bucketManager.removeImport(id);
-		}
+		imports.remove(id);
 	}
 
 	public void registerTableImport(ImportId impId) {

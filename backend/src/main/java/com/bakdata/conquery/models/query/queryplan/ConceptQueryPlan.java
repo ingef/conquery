@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.WorkerStorageRetrivalDelegate;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.generation.EmptyBucket;
@@ -63,7 +63,7 @@ public class ConceptQueryPlan implements QueryPlan {
 		return clone;
 	}
 
-	protected void checkRequiredTables(WorkerStorage storage) {
+	protected void checkRequiredTables(WorkerStorageRetrivalDelegate storage) {
 		if (requiredTables.get() != null) {
 			return;
 		}

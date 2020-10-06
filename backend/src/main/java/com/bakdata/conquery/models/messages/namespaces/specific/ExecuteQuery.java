@@ -56,7 +56,7 @@ public class ExecuteQuery extends WorkerMessage {
 		for(Entry<ManagedExecutionId, QueryPlan> entry : plans) {
 			ShardResult result = execution.getInitializedShardResult(entry);
 			try {
-				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage()), entry);
+				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage(), context.getEntities()), entry);
 				// Send result back
 				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 			} catch(Exception e) {
