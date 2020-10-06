@@ -229,10 +229,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				for (ShardNode node : conquery2.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
-							continue;
-						}
-
-						final WorkerStorageRetrivalDelegate workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 								.isNotEmpty();
