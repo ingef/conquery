@@ -7,15 +7,14 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
-
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
-
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
 
 @Slf4j
@@ -50,7 +49,7 @@ public class StringEncodingTest {
 
 	@Test
 	public void testHexStreamStringType() {
-		StringParser parser = new StringParser();
+		StringParser parser = new StringParser(new ParserConfig());
 
 		Stream
 				.generate(() -> UUID.randomUUID().toString().replace("-", ""))

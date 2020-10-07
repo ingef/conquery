@@ -4,11 +4,11 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
-@CPSType(base=CType.class, id="REAL_DOUBLE")
-public class RealTypeDouble extends CType<Double, Double> {
+@CPSType(base=CType.class, id="REAL_FLOAT")
+public class RealTypeFloat extends CType<Double, Float> {
 
-	public RealTypeDouble() {
-		super(MajorTypeId.REAL, double.class);
+	public RealTypeFloat() {
+		super(MajorTypeId.REAL, float.class);
 	}
 
 	@Override
@@ -18,6 +18,6 @@ public class RealTypeDouble extends CType<Double, Double> {
 	
 	@Override
 	public long estimateMemoryBitWidth() {
-		return Double.SIZE;
+		return Float.SIZE;
 	}
 }
