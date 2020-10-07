@@ -118,15 +118,14 @@ public class TemporalQueryNode extends QPNode {
 		}
 
 		BitMapCDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
-		// Create copy as we are mutating the set
-		BitMapCDateSet precedingDurations = BitMapCDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
-
-
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
 
 		if (sampledReference.isEmpty()) {
 			return false;
 		}
+
+		// Create copy as we are mutating the set
+		BitMapCDateSet precedingDurations = BitMapCDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 
@@ -139,22 +138,14 @@ public class TemporalQueryNode extends QPNode {
 
 		return false;
 	}
-	
+
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return 
-			reference.getChild().isOfInterest(bucket)
-			| //call isOfInterest on both children because some nodes use it for initialization 
-			preceding.getChild().isOfInterest(bucket)
-		;
+		return reference.getChild().isOfInterest(bucket) || preceding.getChild().isOfInterest(bucket);
 	}
-	
+
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return 
-			reference.getChild().isOfInterest(entity)
-			| //call isOfInterest on both children because some nodes use it for initialization 
-			preceding.getChild().isOfInterest(entity)
-		;
+		return reference.getChild().isOfInterest(entity) || preceding.getChild().isOfInterest(entity);
 	}
 }

@@ -37,6 +37,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	
 	/**
 	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
+	 *
+	 * Per Entity.
 	 */
 	private long[] includedConcepts;
 
@@ -44,12 +46,16 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	/**
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
+	 *
+	 * Per Entity.
 	 */
 	private int[] minDate, maxDate;
 	
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
+	 *
+	 * Per Event.
 	 */
 	@Nullable
 	private int[][] mostSpecificChildren = null;
