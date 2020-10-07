@@ -22,10 +22,10 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import jetbrains.exodus.env.Environment;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 /**
  * Provides a view on the storage that does not allow modification of the storage (update, delete). 
  */
+@RequiredArgsConstructor
 public class ModificationShieldedWorkerStorage {
 
 	private final WorkerStorage delegate;
