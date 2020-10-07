@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -44,7 +45,11 @@ public class StringParser extends Parser<Integer> {
 	private Encoding encoding;
 	private String prefix = null;
 	private String suffix = null;
-	
+
+	public StringParser(ParserConfig config) {
+
+	}
+
 	@Override
 	protected Integer parseValue(String value) throws ParsingException {
 		return strings.computeIfAbsent(value, v-> {

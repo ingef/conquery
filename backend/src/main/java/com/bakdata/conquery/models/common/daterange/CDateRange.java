@@ -133,7 +133,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange all() {
-		return CDateRangeOpen.INSTANCE;
+		return CDateRangeAll.INSTANCE;
 	}
 
 	@Override

@@ -35,7 +35,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	@Setter
 	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>(); // TODO remove this and take it from Namespaces.datasets
 
-	@Getter @Setter
+	@Getter
 	private final int entityBucketSize;
 
 	@Getter
