@@ -3,7 +3,10 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Map;
 import java.util.Set;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import javax.validation.constraints.NotEmpty;
+
+import com.bakdata.conquery.models.common.BitMapCDateSet;
+
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -13,7 +16,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.NonNull;
-import javax.validation.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
 
@@ -21,11 +23,11 @@ public class ExternalNode extends QPNode {
 	private SpecialDateUnion dateUnion;
 
 	@Getter @NotEmpty @NonNull
-	private final Map<Integer, CDateSet> includedEntities;
+	private final Map<Integer, BitMapCDateSet> includedEntities;
 
-	private CDateSet contained;
+	private BitMapCDateSet contained;
 
-	public ExternalNode(TableId tableId, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnion) {
+	public ExternalNode(TableId tableId, Map<Integer, BitMapCDateSet> includedEntities, SpecialDateUnion dateUnion) {
 		this.dateUnion = dateUnion;
 		this.includedEntities = includedEntities;
 		this.tableId = tableId;
@@ -45,7 +47,7 @@ public class ExternalNode extends QPNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if(contained != null) {
-			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
+			BitMapCDateSet newSet = BitMapCDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained);
 			ctx = ctx.withDateRestriction(newSet);
 		}

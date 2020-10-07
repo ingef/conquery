@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.types.parser.specific;
 
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
@@ -18,6 +19,10 @@ public class IntegerParser extends Parser<Long> {
 
 	private long maxValue = Long.MIN_VALUE;
 	private long minValue = Long.MAX_VALUE;
+
+	public IntegerParser(ParserConfig config) {
+
+	}
 
 	@Override
 	protected Long parseValue(String value) throws ParsingException {

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,10 +22,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
 	
-	@Override
-	public void close() throws IOException {
-	}
-
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		if(cache.putIfAbsent(key, value)!=null) {

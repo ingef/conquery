@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
@@ -29,6 +25,7 @@ import com.bakdata.conquery.models.types.specific.IntegerTypeVarInt;
 import com.bakdata.conquery.models.types.specific.MoneyTypeLong;
 import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
 import com.bakdata.conquery.models.types.specific.RealTypeDouble;
+import com.bakdata.conquery.models.types.specific.RealTypeFloat;
 import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
@@ -42,6 +39,9 @@ import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class SerializationTest {
 
@@ -68,7 +68,8 @@ public class SerializationTest {
 			new DateTypeVarInt(new VarIntTypeInt(-1, +1)),
 			new VarIntTypeInt(-1, +1),
 			new VarIntTypeByte((byte)-1, (byte)+1),
-			new VarIntTypeShort((short)-1, (short)+1)
+			new VarIntTypeShort((short)-1, (short)+1),
+			new RealTypeFloat()
 		);
 	}
 	

@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.concepts.conditions;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
@@ -10,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import javax.validation.constraints.NotEmpty;
 
 /**
  * This condition requires each value to be exactly as given in the list.

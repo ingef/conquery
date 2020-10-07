@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -157,13 +158,14 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return (T)allFiltersMap.getOrFail(id);
 	}
 
-	public Column getValidityDateColumn(String name) {
+	public Column getValidityDateColumn(ValidityDateId id) {
 		for (ValidityDate vDate : validityDates) {
-			if (vDate.getName().equals(name)) {
+			if (vDate.getId().equals(id)) {
 				return vDate.getColumn();
 			}
 		}
-		throw new NoSuchElementException("There is no validityDate called '" + name + "' in " + this);
+
+		throw new NoSuchElementException("There is no validityDate called '" + id + "' in " + this);
 	}
 
 	public synchronized void addImport(Import imp) {

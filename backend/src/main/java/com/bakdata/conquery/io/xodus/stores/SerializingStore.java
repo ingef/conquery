@@ -137,11 +137,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void close() throws IOException {
-		store.close();
-	}
-
-	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
