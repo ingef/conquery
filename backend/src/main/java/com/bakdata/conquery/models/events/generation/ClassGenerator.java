@@ -1,10 +1,5 @@
 package com.bakdata.conquery.models.events.generation;
 
-import javax.tools.JavaCompiler;
-import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileManager;
-import javax.tools.ToolProvider;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -14,6 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+
+import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaFileManager;
+import javax.tools.ToolProvider;
 
 import com.github.powerlibraries.io.Out;
 import lombok.extern.slf4j.Slf4j;

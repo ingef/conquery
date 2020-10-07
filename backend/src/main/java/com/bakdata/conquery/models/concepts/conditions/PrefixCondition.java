@@ -6,7 +6,6 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.CalculatedValue;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.common;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -8,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
-import javax.validation.constraints.NotEmpty;
 
 @Getter
 @Setter

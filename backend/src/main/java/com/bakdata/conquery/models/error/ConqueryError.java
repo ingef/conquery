@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -20,7 +21,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.Flat3Map;
 import org.apache.commons.text.StringSubstitutor;
-import javax.validation.constraints.NotEmpty;
 
 /**
  * Base class for errors that are thrown within Conquery and can be serialized

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -35,7 +37,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import javax.validation.constraints.NotEmpty;
 
 @Slf4j
 @CPSType(id = "EXTERNAL", base = CQElement.class)
