@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
 import java.util.Collection;
 
 import javax.validation.Validator;
@@ -19,7 +18,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import jetbrains.exodus.env.Environment;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -30,16 +28,8 @@ public class ModificationShieldedWorkerStorage {
 
 	private final WorkerStorage delegate;
 
-	public File getDirectory() {
-		return delegate.getDirectory();
-	}
-
 	public Validator getValidator() {
 		return delegate.getValidator();
-	}
-
-	public Environment getEnvironment() {
-		return delegate.getEnvironment();
 	}
 
 	public CentralRegistry getCentralRegistry() {

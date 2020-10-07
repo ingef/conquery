@@ -18,13 +18,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
-import lombok.Getter;
-import com.bakdata.conquery.util.functions.Collector;
 import lombok.SneakyThrows;
 
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
