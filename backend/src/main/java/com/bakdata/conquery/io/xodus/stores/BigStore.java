@@ -86,12 +86,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void close() throws IOException {
-		metaStore.close();
-		dataStore.close();
-	}
-
-	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		if (metaStore.get(key) != null) {
 			throw new IllegalArgumentException("There is already a value associated with " + key);

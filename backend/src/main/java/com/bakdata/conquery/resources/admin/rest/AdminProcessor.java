@@ -155,7 +155,7 @@ public class AdminProcessor {
 		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
 			storage.getValidator(),
 			config.getStorage(),
-			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
+			new File(config.getStorage().getDirectory(), "dataset_" + name));
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);

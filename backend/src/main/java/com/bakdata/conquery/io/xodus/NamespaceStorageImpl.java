@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 
 import javax.validation.Validator;
@@ -12,13 +13,12 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.collect.Multimap;
+import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
 	
 	@Getter @Setter @NonNull
@@ -44,13 +44,15 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 
 	
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(getConfig(), getEnvironment(), getValidator(), new SingletonNamespaceCollection(centralRegistry));
-		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), getEnvironment(), getValidator());
-		collector
-			.collect(structure)
-			.collect(idMapping);
+	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
+		super.createStores(environmentToStores);
+		structure = StoreInfo.STRUCTURE.singleton(getConfig(), environment, getValidator(), new SingletonNamespaceCollection(centralRegistry));
+		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), environment, getValidator());
+
+		environmentToStores.putAll(environment, List.of(
+			structure,
+			idMapping
+			));
 	}
 
 	@Override
