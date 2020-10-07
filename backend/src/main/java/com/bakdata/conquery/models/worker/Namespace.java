@@ -152,6 +152,6 @@ public class Namespace implements Closeable {
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + '[' + storage.getEnvironment().getLocation() + ']';
+		return this.getClass().getSimpleName() + '[' + storage.getStorageOrigin() + ']';
 	}
 }

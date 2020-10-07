@@ -1,23 +1,16 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
 
-public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
+public abstract class KeyIncludingStore <KEY, VALUE> {
 
 	protected final Store<KEY, VALUE> store;
 	
 	public KeyIncludingStore(Store<KEY, VALUE> store) {
 		this.store = store;
-	}
-	
-	@Override
-	public void close() throws IOException {
-		store.close();
 	}
 	
 	protected abstract KEY extractKey(VALUE value);
