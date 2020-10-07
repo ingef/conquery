@@ -19,4 +19,6 @@ public class PreprocessingConfig {
 
 	@Min(0) @Max(1)
 	private double faultyLineThreshold = 0.01d;
+
+	private ParserConfig parsers = new ParserConfig();
 }

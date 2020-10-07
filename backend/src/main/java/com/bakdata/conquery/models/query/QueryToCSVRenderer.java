@@ -93,10 +93,13 @@ public class QueryToCSVRenderer {
 	
 	public static String print(CsvWriter writer, PrintSettings cfg, ExternalEntityId entity, ResultInfoCollector infos, Object[] value) {
 		List<String> result = new ArrayList<>(entity.getExternalId().length + value.length);
+
 		result.addAll(Arrays.asList(entity.getExternalId()));
-		for(int i=0;i<infos.size();i++) {
+
+		for (int i = 0; i < infos.size(); i++) {
 			result.add(infos.getInfos().get(i).getType().printNullable(cfg, value[i]));
 		}
+
 		return writer.writeRowToString(result);
 	}
 }

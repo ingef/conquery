@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types.parser.specific;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
@@ -26,6 +27,10 @@ public class DateRangeParser extends Parser<CDateRange> {
 	private boolean anyOpen = false;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
+
+	public DateRangeParser(ParserConfig config) {
+
+	}
 
 	@Override
 	protected CDateRange parseValue(@Nonnull String value) throws ParsingException {

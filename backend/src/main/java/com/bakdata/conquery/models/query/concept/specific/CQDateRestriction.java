@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -51,8 +51,8 @@ public class CQDateRestriction implements CQElement {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
 
 				validityDateNode.setChild(new DateRestrictingNode(
-					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
-					validityDateNode.getChild()
+						BitMapCDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+						validityDateNode.getChild()
 				));
 			}
 			else if(current instanceof NegatingNode) {

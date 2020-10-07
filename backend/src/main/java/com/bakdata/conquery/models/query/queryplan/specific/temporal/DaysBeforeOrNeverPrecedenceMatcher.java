@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import java.util.OptionalInt;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 /**
@@ -18,7 +18,7 @@ public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 
 
 	@Override
-	public void removePreceding(CDateSet preceding, int sample) {
+	public void removePreceding(BitMapCDateSet preceding, int sample) {
 		// Only consider samples that are before reference's sample event
 		preceding.remove(CDateRange.atLeast(sample));
 	}
