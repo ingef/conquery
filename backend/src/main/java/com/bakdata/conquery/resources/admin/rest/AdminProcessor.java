@@ -79,6 +79,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvParser;
@@ -175,10 +176,10 @@ public class AdminProcessor {
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException {
 		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
-			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
+			final ObjectMapper mapper = datasetRegistry.injectInto(dataset.injectInto(Jackson.BINARY_MAPPER));
+			PreprocessedHeader header = mapper.readValue(in, PreprocessedHeader.class);
 
-			TableId tableName = new TableId(dataset.getId(), header.getTable());
-			Table table = dataset.getTables().getOrFail(tableName);
+			Table table = header.getTable();
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
 
@@ -189,7 +190,7 @@ public class AdminProcessor {
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			datasetRegistry.get(dataset.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(dataset.getId()), table.getId(), selectedFile, entityBucketSize));
+					  .addSlowJob(new ImportJob(datasetRegistry, datasetRegistry.get(dataset.getId()), table.getId(), selectedFile, entityBucketSize));
 		}
 	}
 

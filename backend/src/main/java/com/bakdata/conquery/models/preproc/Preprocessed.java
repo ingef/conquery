@@ -10,8 +10,10 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.parser.specific.DateParser;
@@ -85,9 +87,14 @@ public class Preprocessed {
 		try (OutputStream out = outFile.writeHeader()) {
 			int hash = descriptor.calculateValidityHash();
 
+			final Table table = new Table();
+
+			table.setDataset(new Dataset());
+			table.setName(descriptor.getTable());
+
 			PreprocessedHeader header = new PreprocessedHeader(
 					descriptor.getName(),
-					descriptor.getTable(),
+					table,
 					imp.getSuffix(),
 					rows,
 					writtenGroups,

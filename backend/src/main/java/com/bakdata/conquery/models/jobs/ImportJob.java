@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.io.Cloner;
@@ -59,6 +60,7 @@ public class ImportJob extends Job {
 
 	private final ObjectReader headerReader = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class);
 
+	private final DatasetRegistry registry;
 	private final Namespace namespace;
 	private final TableId table;
 	private final File importFile;
@@ -323,7 +325,8 @@ public class ImportJob extends Job {
 
 	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
 		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
-			PreprocessedHeader header = headerReader.readValue(in);
+
+			PreprocessedHeader header = registry.injectInto(namespace.getStorage().getDataset().injectInto(headerReader)).readValue(in);
 
 			log.info("Importing {} into {}", header.getName(), table);
 			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);

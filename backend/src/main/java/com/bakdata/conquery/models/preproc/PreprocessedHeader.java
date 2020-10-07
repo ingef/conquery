@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc;
 
 import java.util.StringJoiner;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,8 @@ public class PreprocessedHeader {
 	/**
 	 * The specific table id to be loaded into.
 	 */
-	private String table;
+	@NsIdRef(withDataset = false)
+	private Table table;
 
 	// TODO: 14.07.2020 FK: Is this actually used? It doesn't seem so.
 	private String suffix;
@@ -84,7 +86,7 @@ public class PreprocessedHeader {
 
 		if (errors.length() != 0) {
 			log.error(errors.toString());
-			throw new IllegalArgumentException(String.format("Headers[%s.%s.%s] do not match Table[%s]", getTable(), getName(), getSuffix(), table.getId()));
+			throw new IllegalArgumentException(String.format("Headers[%s.%s.%s] do not match Table[%s]", getTable().getId(), getName(), getSuffix(), table.getId()));
 		}
 	}
 }

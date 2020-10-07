@@ -21,4 +21,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(using=IdReferenceSerializer.class)
 @JsonDeserialize(using=NsIdReferenceDeserializer.class)
 @Target({ElementType.FIELD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
-public @interface NsIdRef {}
+public @interface NsIdRef {
+	boolean withDataset()
+			default true;
+}
