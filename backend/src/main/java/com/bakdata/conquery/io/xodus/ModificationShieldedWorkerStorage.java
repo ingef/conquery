@@ -23,7 +23,10 @@ import jetbrains.exodus.env.Environment;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class WorkerStorageRetrivalDelegate {
+/**
+ * Provides a view on the storage that does not allow modification of the storage (update, delete). 
+ */
+public class ModificationShieldedWorkerStorage {
 
 	private final WorkerStorage delegate;
 

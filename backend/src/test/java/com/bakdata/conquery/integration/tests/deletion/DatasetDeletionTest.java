@@ -12,7 +12,7 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorageRetrivalDelegate;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -77,7 +77,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-					final WorkerStorageRetrivalDelegate workerStorage = value.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
@@ -142,7 +142,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-					final WorkerStorageRetrivalDelegate workerStorage = value.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
@@ -244,7 +244,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 							continue;
 						}
 
-						final WorkerStorageRetrivalDelegate workerStorage = value.getStorage();
+						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getDataset().equals(dataset.getId())))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())

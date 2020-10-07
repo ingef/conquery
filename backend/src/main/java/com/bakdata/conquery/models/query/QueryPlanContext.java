@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.io.xodus.WorkerStorageRetrivalDelegate;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -26,7 +26,7 @@ public class QueryPlanContext {
 		return worker.getStorage().getDataset().getId();
 	}
 
-	public WorkerStorageRetrivalDelegate getStorage() {
+	public ModificationShieldedWorkerStorage getStorage() {
 		return worker.getStorage();
 	}
 

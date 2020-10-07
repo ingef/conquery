@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.bakdata.conquery.io.xodus.WorkerStorageRetrivalDelegate;
 import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -26,7 +28,7 @@ public class QueryExecutionContext {
 	private BitMapCDateSet dateRestriction = BitMapCDateSet.createAll();
 	private boolean prettyPrint = true;
 	private Connector connector;
-	private final WorkerStorageRetrivalDelegate storage;
+	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId id) {

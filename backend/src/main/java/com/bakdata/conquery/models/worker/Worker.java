@@ -11,7 +11,7 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
-import com.bakdata.conquery.io.xodus.WorkerStorageRetrivalDelegate;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -64,7 +64,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.storage = storage;
 		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		this.executorService = executorService;
-		this.bucketManager = new BucketManager(this.jobManager, this.storage, this);
+		this.bucketManager = BucketManager.create(this, storage);
 		
 	}
 
@@ -105,8 +105,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		return new Worker(queryThreadPoolDefinition, workerStorage, executorService);
 	}
 	
-	public WorkerStorageRetrivalDelegate getStorage() {
-		return new WorkerStorageRetrivalDelegate(storage);
+	public ModificationShieldedWorkerStorage getStorage() {
+		return new ModificationShieldedWorkerStorage(storage);
 	}
 	
 	public WorkerInformation getInfo() {

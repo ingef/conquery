@@ -34,6 +34,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,20 +43,26 @@ import lombok.extern.slf4j.Slf4j;
  * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
+@RequiredArgsConstructor
 public class BucketManager {
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
-	@Getter
-	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 	//Backreference
 	private final Worker worker;
-
-	public BucketManager(JobManager jobManager, WorkerStorage storage, Worker worker) {
-		this.jobManager = jobManager;
-		this.storage = storage;
-		this.worker = worker;
+	@Getter
+	private final Int2ObjectMap<Entity> entities;
+	
+	/**
+	 * Connector -> Bucket -> [CBlock]
+	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
+	 */
+	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks;
+	
+	public static BucketManager create(Worker worker, WorkerStorage storage) {
+		Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
+		Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
 		
 		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets: {}", requiredBuckets);
@@ -66,15 +73,17 @@ public class BucketManager {
 			else {
 				requiredBuckets.remove(bucket.getBucket());
 			}
-			registerBucket(bucket);
+			registerBucket(bucket, entities, storage);
 		}
 		if(!requiredBuckets.isEmpty()) {
 			log.warn("Not all required Buckets were loaded from the storage. Missing Buckets: {}", requiredBuckets);
 		}
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
-			registerCBlock(cBlock);
+			registerCBlock(cBlock, entities, storage, connectorCBlocks);
 		}
+		
+		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks);
 	}
 
 	@SneakyThrows
@@ -115,21 +124,21 @@ public class BucketManager {
 		}
 	}
 
-	private void registerBucket(Bucket bucket) {
+	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage) {
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(bucket));
+			entities.computeIfAbsent(entity, createEntityFor(bucket, storage));
 		}
 	}
 
 	/**
 	* Logic for tracing the creation of new Entities.
 	*/
-	private IntFunction<Entity> createEntityFor(Identifiable<?> idable) {
+	private static IntFunction<Entity> createEntityFor(Identifiable<?> idable, WorkerStorage storage) {
 
 		return id -> {
 
 			if(log.isDebugEnabled() && idable.getId() instanceof NamespacedId){
-				byte[] thename = this.storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
+				byte[] thename = storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
 
 				log.trace("Creating new Entitiy[{}]=`{}` for Bucket[{}]", id, new String(thename), idable.getId());
 			}
@@ -138,13 +147,13 @@ public class BucketManager {
 		};
 	}
 
-	private void registerCBlock(CBlock cBlock) {
+	private static void registerCBlock(CBlock cBlock, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks) {
 		Bucket bucket = storage.getBucket(cBlock.getBucket());
 		if (bucket == null) {
 			throw new NoSuchElementException("Could not find an element called '"+cBlock.getBucket()+"'");
 		}
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(cBlock));
+			entities.computeIfAbsent(entity, createEntityFor(cBlock, storage));
 		}
 
 		List<CBlock> forCBlock = connectorCBlocks
@@ -155,12 +164,12 @@ public class BucketManager {
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
-		registerCBlock(cBlock);
+		registerCBlock(cBlock, entities, storage, connectorCBlocks);
 	}
 
 	public void addBucket(Bucket bucket) {
 		storage.addBucket(bucket);
-		registerBucket(bucket);
+		registerBucket(bucket, entities, storage);
 
 		for (Concept<?> c : storage.getAllConcepts()) {
 			for (Connector con : c.getConnectors()) {
@@ -364,13 +373,6 @@ public class BucketManager {
 
 		return buckets;
 	}
-
-
-	/**
-	 * Connector -> Bucket -> [CBlock]
-	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
-	 */
-	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
 
 
 	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {

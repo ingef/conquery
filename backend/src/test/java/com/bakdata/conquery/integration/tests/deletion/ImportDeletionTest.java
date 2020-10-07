@@ -13,7 +13,7 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorageRetrivalDelegate;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -90,7 +90,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-					final WorkerStorageRetrivalDelegate workerStorage = worker.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
@@ -136,7 +136,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-					final WorkerStorageRetrivalDelegate workerStorage = worker.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
@@ -215,7 +215,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-					final WorkerStorageRetrivalDelegate workerStorage = worker.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
@@ -251,7 +251,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 						if (!worker.getInfo().getDataset().equals(dataset.getId()))
 							continue;
 
-						final WorkerStorageRetrivalDelegate workerStorage = worker.getStorage();
+						final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
 						assertThat(workerStorage.getAllBuckets())
 								.describedAs("Buckets for Worker %s", worker.getInfo().getId())
