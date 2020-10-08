@@ -2,12 +2,15 @@ package com.bakdata.conquery.apiv1;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -16,7 +19,6 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -52,7 +54,7 @@ public class StoredQueriesProcessor {
 					return Stream.of(
 						mq.buildStatus(
 							storage,
-							URLBuilder.fromRequest(req),
+							RequestAwareUriBuilder.fromRequest(req),
 							user));
 				}
 				catch (Exception e) {
@@ -66,12 +68,17 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(queryId);
 	}
 
-	public ExecutionStatus getQueryWithSource(ManagedExecutionId queryId, User user) {
+	public StoredQuerySingleInfo getQueryWithSource(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
-			return null;
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
-		return query.buildStatus(storage, null, user, EnumSet.of(CreationFlag.WITH_COLUMN_DESCIPTION, CreationFlag.WITH_SOURCE));
+
+		if(!(query instanceof ManagedQuery)) {
+			throw new WebApplicationException(Status.NOT_IMPLEMENTED);
+		}
+		
+		return StoredQuerySingleInfo.from((ManagedQuery) query, user, storage, url);
 	}
 
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {

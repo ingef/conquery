@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -11,10 +12,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -136,13 +138,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MetaStorage storage, URLBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions();
@@ -207,8 +209,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected URL getDownloadURL(URLBuilder url) {
-		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-			.to(ResultCSVResource.GET_CSV_PATH).get();
+	protected URL getDownloadURLInternal(@NonNull UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
+		return url
+			.path(ResultCSVResource.class)
+			.resolveTemplate(ResourceConstants.DATASET, dataset.getName())
+			.path(ResultCSVResource.class, ResultCSVResource.GET_CSV_PATH_METHOD)
+			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
+			.build()
+			.toURL();
 	}
 }

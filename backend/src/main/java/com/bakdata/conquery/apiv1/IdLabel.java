@@ -1,23 +1,21 @@
 package com.bakdata.conquery.apiv1;
 
+
 import javax.validation.constraints.NotEmpty;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class IdLabel implements Comparable<IdLabel> {
-
+@Getter @RequiredArgsConstructor
+public class IdLabel<I extends IId<?>> implements Comparable<IdLabel<I>> {
 	@NotEmpty
-	private String label;
+	private final I id;
 	@NotEmpty
-	private String id;
-
+	private final String label;
+	
 	@Override
-	public int compareTo(IdLabel o) {
-		return id.compareTo(o.id);
+	public int compareTo(IdLabel<I> o) {
+		return id.toString().compareTo(o.id.toString());
 	}
 }

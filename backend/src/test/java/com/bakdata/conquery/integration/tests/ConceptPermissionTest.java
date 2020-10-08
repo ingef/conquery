@@ -3,8 +3,11 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.QueryProcessor;
@@ -83,7 +86,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 	}
 	
 	public static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MetaStorage storage ) {
-		ExecutionStatus status = processor.postQuery(dataset, query, null, user);
+		ExecutionStatus status = processor.postQuery(dataset, query, UriBuilder.fromUri(URI.create("http://localhost")), user);
 		Objects.requireNonNull(storage.getExecution(status.getId()), "Execution was not found in storage, even though it was startet")
 			.awaitDone(2, TimeUnit.MINUTES);
 	}

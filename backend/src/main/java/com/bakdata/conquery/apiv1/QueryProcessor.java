@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -49,7 +51,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, URLBuilder urlb, User user) {
+	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
 		authorize(user, dataset.getId(), Ability.READ);
 		
 		// Initialize the query
@@ -148,11 +150,11 @@ public class QueryProcessor {
 		}
 	}
 
-	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb, User user) {
+	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb, User user) {
 		return query.buildStatus(storage, urlb, user, CreationFlag.WITH_COLUMN_DESCIPTION);
 	}
 
-	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb) {
+	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
 		return null;
 	}

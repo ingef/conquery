@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -21,9 +22,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -55,6 +57,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -192,7 +195,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : label);
 		status.setPristineLabel(label == null || queryId.toString().equals(label));
 		status.setId(getId());
@@ -204,29 +207,36 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
-		status.setResultUrl(
-			isReadyToDownload(url, user)
-				? getDownloadURL(url)
-				: null);
+		status.setResultUrl(getDownloadURL(url, user).orElse(null));
 		if (state.equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
 	}
+	
+
+	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
+	public final Optional<URL> getDownloadURL(UriBuilder url, User user) {
+		if(!isReadyToDownload(url, user)) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(getDownloadURLInternal(url));
+	}
 
 	/**
 	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
 	 */
-	protected abstract URL getDownloadURL(URLBuilder url);
+	@Nullable
+	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user) {
 		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
 	}
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
 		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
 	}
 	
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, URLBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
 		for(CreationFlag flag : creationFlags) {
@@ -245,14 +255,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
@@ -266,7 +276,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	public boolean isReadyToDownload(URLBuilder url, User user) {
+	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user) {
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
@@ -274,7 +284,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return url != null && state == ExecutionState.DONE && isPermittedDownload;
+		return state == ExecutionState.DONE && isPermittedDownload;
 	}
 
 	/**
