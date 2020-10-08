@@ -11,7 +11,7 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -93,7 +93,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						continue;
 					}
 
-					final WorkerStorage workerStorage = value.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 							.isNotEmpty();
@@ -143,7 +143,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					}
 
 
-					final WorkerStorage workerStorage = value.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 							.isEmpty();
@@ -188,7 +188,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						continue;
 					}
 
-					final WorkerStorage workerStorage = value.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 							.isNotEmpty();
@@ -232,8 +232,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 							continue;
 						}
 
-						final WorkerStorage workerStorage = value.getStorage();
-
+						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
+						
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 								.isNotEmpty();
 

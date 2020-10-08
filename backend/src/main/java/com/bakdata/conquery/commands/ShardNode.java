@@ -208,7 +208,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Override
 	public void start() throws Exception {
 		for (Worker value : workers.getWorkers().values()) {
-			value.getJobManager().addSlowJob(new SimpleJob("Update Block Manager", value.getStorage().getBucketManager()::fullUpdate));
+			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);

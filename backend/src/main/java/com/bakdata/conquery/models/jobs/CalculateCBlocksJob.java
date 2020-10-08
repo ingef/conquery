@@ -50,6 +50,7 @@ public class CalculateCBlocksJob extends Job {
 		for (CalculationInformation info : infos) {
 			try {
 				if (bucketManager.hasCBlock(info.getCBlockId())) {
+					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.");
 					continue;
 				}
 

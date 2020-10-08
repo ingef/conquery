@@ -36,7 +36,7 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		preCurrentRow = context.getStorage().getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
+		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return context.getStorage().getBucketManager().hasEntityCBlocksForConnector(entity, table.getId());
+		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getId());
 	}
 
 	@Override

@@ -57,7 +57,7 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(WorkerStorage storage) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage);
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, entityBucketSize);
 
 		addWorker(worker);
 
@@ -104,7 +104,7 @@ public class Workers extends IdResolveContext {
 		
 		workers.remove(removed.getInfo().getId());
 		try {
-			removed.getStorage().remove();
+			removed.remove();
 		}
 		catch(Exception e) {
 			log.error("Failed to remove storage "+removed, e);

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -86,7 +86,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	/**
 	 * selects the right column for the given secondaryId from a table
 	 */
-	private Column findSecondaryIdColumn(TableId tableId, NamespacedStorage storage) {
+	private Column findSecondaryIdColumn(TableId tableId, ModificationShieldedWorkerStorage storage) {
 		final Table table = storage.getDataset().getTables().getOrFail(tableId);
 
 		for (Column col : table.getColumns()) {
@@ -104,7 +104,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		TableId currentTable = secondaryIdColumn.getTable().getId();
 		nextTable(ctx, currentTable);
 
-		final List<Bucket> tableBuckets = ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity, currentTable);
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
 			int localEntity = bucket.toLocal(entity.getId());
@@ -136,7 +136,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, TableId currentTable) {
 		nextTable(ctx, currentTable);
 
-		final List<Bucket> tableBuckets = ctx.getStorage().getBucketManager().getEntityBucketsForTable(entity, currentTable);
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
 			int localEntity = bucket.toLocal(entity.getId());

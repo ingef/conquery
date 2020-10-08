@@ -23,4 +23,4 @@ public class Entity {
 	public static int getBucket(int entityId, int entityBucketSize) {
 		return entityId / entityBucketSize;
 	}
-	}
+}

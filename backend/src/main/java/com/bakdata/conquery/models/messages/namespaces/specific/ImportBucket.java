@@ -54,7 +54,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 			getProgressReporter().report(1);
 		}
 
-		context.getStorage().addBucket(factory.combine(includedEntities, buckets));
+		context.addBucket(factory.combine(includedEntities, buckets));
 	}
 	
 	@Override

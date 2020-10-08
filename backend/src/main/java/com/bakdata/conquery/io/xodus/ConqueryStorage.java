@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.Closeable;
-import java.io.IOException;
 
 import javax.validation.Validator;
 
@@ -15,9 +14,9 @@ public interface ConqueryStorage extends Closeable {
 	void loadData();
 
 	/**
-	 * Completely remove the Storage, deleting its contents.
+	 * Delete the storage's contents.
 	 */
-	void remove() throws IOException;
+	void clear();
 	
 	/**
 	 * Gives a human readable information about the origin of this store,
