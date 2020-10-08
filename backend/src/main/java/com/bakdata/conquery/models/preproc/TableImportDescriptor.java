@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
@@ -16,7 +17,6 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import javax.validation.constraints.NotEmpty;
 
 /**
  * Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs.

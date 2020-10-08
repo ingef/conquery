@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -44,7 +45,6 @@ import com.github.powerlibraries.io.In;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import javax.validation.constraints.NotEmpty;
 
 @Slf4j
 @Getter
