@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -36,7 +37,7 @@ public class Table extends Labeled<TableId> {
 		return storage
 			.getAllImports()
 			.stream()
-			.filter(imp -> imp.getTable().equals(this.getId()))
+			.filter(imp -> Identifiable.equalsById(imp.getTable(), this))
 			.collect(Collectors.toList());
 	}
 }

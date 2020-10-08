@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -45,7 +46,7 @@ public class StoredQueriesProcessor {
 			.stream()
 			// to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
-			.filter(q -> q.getDataset().equals(namespace.getDataset().getId()))
+			.filter(q -> IId.equals(q.getDataset(), namespace.getDataset().getId()))
 			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
 			.flatMap(mq -> {
 				try {

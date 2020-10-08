@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -65,7 +66,7 @@ public class TablesUIResource extends HAdmin {
 			.getStorage()
 			.getAllImports()
 			.stream()
-			.filter(imp -> imp.getTable().equals(table.getId()))
+			.filter(imp -> Identifiable.equalsById(imp.getTable(), table))
 			.collect(Collectors.toList());
 
 		return new UIView<>(

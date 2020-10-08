@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.datasets;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
@@ -59,8 +60,8 @@ public class Column extends Labeled<ColumnId> {
 	}
 
 	public CType getTypeFor(Import imp) {
-		if (!imp.getTable().equals(getTable().getId())) {
-			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable(), getTable().getId()));
+		if (!Identifiable.equalsById(getTable(), imp.getTable())) {
+			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable().getId(), getTable().getId()));
 		}
 
 		return imp.getColumns()[getPosition()].getType();

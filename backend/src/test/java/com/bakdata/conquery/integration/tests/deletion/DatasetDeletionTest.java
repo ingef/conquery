@@ -15,9 +15,9 @@ import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -73,6 +73,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
+
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
@@ -111,7 +112,6 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 
 			conquery.getNamespace().getDataset().getTables().stream()
-					.map(Table::getId)
 					.forEach(conquery.getDatasetsProcessor()::deleteTable);
 
 			conquery.waitUntilWorkDone();
@@ -246,7 +246,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 						final WorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getDataset().equals(dataset.getId())))
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> Identifiable.equalsById(bucket.getImp().getTable().getDataset(), dataset)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}

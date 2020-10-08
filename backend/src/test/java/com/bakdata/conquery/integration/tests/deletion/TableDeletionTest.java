@@ -15,6 +15,7 @@ import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -101,7 +102,10 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
-			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteTable(tableId))
+
+			final Table table = conquery.getNamespace().getDataset().getTables().get(tableId);
+
+			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteTable(table))
 					.isInstanceOf(IllegalArgumentException.class);
 
 			conquery.getDatasetsProcessor().deleteConcept(conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId());
@@ -109,7 +113,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
 
-			conquery.getDatasetsProcessor().deleteTable(tableId);
+			conquery.getDatasetsProcessor().deleteTable(table);
 
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();

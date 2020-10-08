@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -99,7 +100,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				//add imports of table
 				for(Import imp: getAllImports()) {
 					for(Connector con : concept.getConnectors()) {
-						if(con.getTable().getId().equals(imp.getTable())) {
+						if(Identifiable.equalsById(con.getTable(),imp.getTable())) {
 							con.addImport(imp);
 						}
 					}
@@ -119,7 +120,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				imp.loadExternalInfos(this);
 				for(Concept<?> c: getAllConcepts()) {
 					for(Connector con : c.getConnectors()) {
-						if(con.getTable().getId().equals(imp.getTable())) {
+						if (Identifiable.equalsById(con.getTable(),imp.getTable())) {
 							con.addImport(imp);
 						}
 					}

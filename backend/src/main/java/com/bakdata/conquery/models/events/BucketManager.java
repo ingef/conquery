@@ -171,12 +171,13 @@ public class BucketManager {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
 					Import imp = bucket.getImp();
-					if (con.getTable().getId().equals(bucket.getImp().getTable())) {
+					if(Identifiable.equalsById(con.getTable(),imp.getTable())) {
 						CBlockId cBlockId = new CBlockId(
 								bucket.getId(),
 								con.getId()
 						);
-						if (!cBlocks.getOptional(cBlockId).isPresent()) {
+
+						if (cBlocks.getOptional(cBlockId).isEmpty()) {
 							job.addCBlock(imp, bucket, cBlockId);
 						}
 					}

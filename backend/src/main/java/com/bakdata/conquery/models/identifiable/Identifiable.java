@@ -7,6 +7,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface Identifiable<ID extends IId<? extends Identifiable<? extends ID>>> {
 
+	static <ID extends IId<T>, T extends Identifiable<ID>> boolean equalsById(T left, T right) {
+		return IId.equals(left.getId(), right.getId());
+	}
+
 	@JsonIgnore @Valid
 	ID getId();
 }

@@ -1,10 +1,11 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.util.StringJoiner;
+import javax.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -67,26 +68,30 @@ public class PreprocessedHeader {
 	/**
 	 * Verify that the supplied table matches the preprocessed' data in shape.
 	 */
-	public void assertMatch(Table table) {
-		StringJoiner errors = new StringJoiner("\n");
+	@DetailedValid.ValidationMethod2
+	public boolean validate(ConstraintValidatorContext context) {
+		boolean failed = false;
 
 		if (!table.getPrimaryColumn().matches(getPrimaryColumn())) {
-			errors.add(String.format("PrimaryColumn[%s] does not match table PrimaryColumn[%s]", getPrimaryColumn(), table.getPrimaryColumn()));
+			failed = true;
+			context.buildConstraintViolationWithTemplate(
+					String.format("PrimaryColumn[%s] does not match table PrimaryColumn[%s]", getPrimaryColumn(), table.getPrimaryColumn()));
 		}
 
 		if (table.getColumns().length != getColumns().length) {
-			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));
+			failed = true;
+			context.buildConstraintViolationWithTemplate(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));
 		}
 
 		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
-			if (!table.getColumns()[i].matches(getColumns()[i])) {
-				errors.add(String.format("Column[%s] does not match table Column[%s]`", getColumns()[i], table.getColumns()[i]));
+			if (table.getColumns()[i].matches(getColumns()[i])) {
+				continue;
 			}
+			failed = true;
+			context.buildConstraintViolationWithTemplate(String.format("Column[%s] does not match table Column[%s]`", getColumns()[i], table.getColumns()[i]));
+
 		}
 
-		if (errors.length() != 0) {
-			log.error(errors.toString());
-			throw new IllegalArgumentException(String.format("Headers[%s.%s.%s] do not match Table[%s]", getTable().getId(), getName(), getSuffix(), table.getId()));
-		}
+		return failed;
 	}
 }

@@ -11,15 +11,14 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.freemarker.Freemarker;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
 import com.bakdata.conquery.models.events.generation.SafeJavaString;
 import com.bakdata.conquery.models.events.generation.SafeName;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.util.ConqueryJavaEscape;
@@ -49,7 +48,9 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	@Valid @NotNull
-	private TableId table;
+	@NsIdRef
+	private Table table;
+
 	@JsonManagedReference @NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
 	private long numberOfEntries;
@@ -60,7 +61,7 @@ public class Import extends NamedImpl<ImportId> {
 
 	@Override
 	public ImportId createId() {
-		return new ImportId(table, getName());
+		return new ImportId(table.getId(), getName());
 	}
 
 	@JsonIgnore
@@ -88,8 +89,13 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	public synchronized String getSuffix() {
-		if(suffix == null) {
-			suffix = UUID.randomUUID().toString().replace('-', '_')+"_"+ConqueryJavaEscape.escape(table.getTable())+"_"+ConqueryJavaEscape.escape(getName());
+		if (suffix == null) {
+			suffix =
+					UUID.randomUUID().toString().replace('-', '_')
+					+ "_"
+					+ ConqueryJavaEscape.escape(table.getName())
+					+ "_"
+					+ ConqueryJavaEscape.escape(getName());
 		}
 		return suffix;
 	}
@@ -158,7 +164,13 @@ public class Import extends NamedImpl<ImportId> {
 
 	public static Import createForPreprocessing(String table, String tag, PPColumn[] columns) {
 		Import imp = new Import(0); // is not yet used here.
-		imp.setTable(new TableId(new DatasetId("preprocessing"), table));
+
+		final Table theTable = new Table();
+		theTable.setDataset(new Dataset());
+		theTable.setName(table);
+
+		imp.setTable(theTable);
+
 		imp.setName(tag);
 		ImportColumn[] impCols = new ImportColumn[columns.length];
 		for(int c = 0; c < impCols.length; c++) {

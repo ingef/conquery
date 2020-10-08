@@ -48,6 +48,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -179,18 +180,17 @@ public class AdminProcessor {
 			final ObjectMapper mapper = datasetRegistry.injectInto(dataset.injectInto(Jackson.BINARY_MAPPER));
 			PreprocessedHeader header = mapper.readValue(in, PreprocessedHeader.class);
 
-			Table table = header.getTable();
+			final ImportId importId = new ImportId(header.getTable().getId(), header.getName());
 
-			final ImportId importId = new ImportId(table.getId(), header.getName());
 
 			if(datasetRegistry.get(dataset.getId()).getStorage().getImport(importId) != null){
 				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
 			}
 
-			log.info("Importing {}", selectedFile.getAbsolutePath());
+			log.info("Trying to import {}", selectedFile.getAbsolutePath());
 
 			datasetRegistry.get(dataset.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry, datasetRegistry.get(dataset.getId()), table.getId(), selectedFile, entityBucketSize));
+						   .addSlowJob(new ImportJob(datasetRegistry, datasetRegistry.get(dataset.getId()), header.getTable(), selectedFile, entityBucketSize));
 		}
 	}
 
@@ -552,34 +552,40 @@ public class AdminProcessor {
 				}
 		));
 	}
+	public void deleteTable(TableId table)  {
+		final Namespace namespace = datasetRegistry.get(table.getDataset());
+		final Dataset dataset = namespace.getDataset();
 
-	public void deleteTable(TableId tableId)  {
-		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
+		deleteTable(dataset.getTables().get(table));
+	}
+
+	public void deleteTable(Table table)  {
+		final Namespace namespace = datasetRegistry.get(table.getId().getDataset());
 		final Dataset dataset = namespace.getDataset();
 
 		final List<? extends Connector> connectors = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-															  .filter(con -> con.getTable().getId().equals(tableId))
+															  .filter(con -> Identifiable.equalsById(con.getTable(),table))
 															  .collect(Collectors.toList());
 
 		if(!connectors.isEmpty()) {
-			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors for Concepts: `%s`", tableId, connectors.stream().map(Connector::getConcept).collect(Collectors.toList())));
+			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors for Concepts: `%s`", table.getId(), connectors.stream().map(Connector::getConcept).collect(Collectors.toList())));
 		}
 
 
 		getJobManager()
-				.addSlowJob(new SimpleJob("Removing table " + tableId, () -> {
+				.addSlowJob(new SimpleJob("Removing table " + table, () -> {
 					namespace.getStorage().getAllImports().stream()
-							 .filter(imp -> imp.getTable().equals(tableId))
+							 .filter(imp -> Identifiable.equalsById(imp.getTable(),table))
 							 .map(Import::getId)
 							 .forEach(this::deleteImport);
 
-					dataset.getTables().remove(tableId);
+					dataset.getTables().remove(table.getId());
 					datasetRegistry.get(dataset.getId()).getStorage().updateDataset(dataset);
 				}));
 
 		getJobManager()
 				.addSlowJob(new SimpleJob(
-						"Removing table " + tableId,
+						"Removing table " + table,
 						() -> {
 							datasetRegistry.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
 						}

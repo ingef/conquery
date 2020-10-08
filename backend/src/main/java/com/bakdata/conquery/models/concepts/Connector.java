@@ -96,24 +96,35 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	public boolean validateFilters(ConstraintValidatorContext context) {
 		boolean passed = true;
 
-		for(Filter<?> f:collectAllFilters()) {
-			for(Column c:f.getRequiredColumns()) {
-				if (c != null && c.getTable() != getTable()) {
-					context
-						.buildConstraintViolationWithTemplate("The filter "+f.getId()+" must be of the same table as its connector "+this.getId()+".\t Filter's table: "+ c.getTable().getId()+"\t Connector's table: "+ this.getTable().getId())
-						.addConstraintViolation();
-					passed = false;
+		for (Filter<?> f : collectAllFilters()) {
+			for (Column c : f.getRequiredColumns()) {
+				if (c == null || c.getTable() == getTable()) {
+					continue;
 				}
+
+				context
+						.buildConstraintViolationWithTemplate("The filter "
+															  + f.getId()
+															  + " must be of the same table as its connector "
+															  + this.getId()
+															  + ".\t Filter's table: "
+															  + c.getTable().getId()
+															  + "\t Connector's table: "
+															  + this.getTable().getId())
+						.addConstraintViolation();
+				passed = false;
 			}
 		}
 
-		for(Entry<String> e:collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
-			if(e.getCount()>1) {
-				passed = false;
-				context
-					.buildConstraintViolationWithTemplate("The filter name "+e.getElement()+" is used "+e.getCount()+" time in "+this.getId())
-					.addConstraintViolation();
+		for (Entry<String> e : collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
+			if (e.getCount() <= 1) {
+				continue;
 			}
+
+			passed = false;
+			context
+					.buildConstraintViolationWithTemplate("The filter name " + e.getElement() + " is used " + e.getCount() + " time in " + this.getId())
+					.addConstraintViolation();
 		}
 
 		return passed;

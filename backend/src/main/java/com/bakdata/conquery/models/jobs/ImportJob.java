@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
@@ -62,7 +61,7 @@ public class ImportJob extends Job {
 
 	private final DatasetRegistry registry;
 	private final Namespace namespace;
-	private final TableId table;
+	private final Table table;
 	private final File importFile;
 	private final int entityBucketSize;
 
@@ -124,8 +123,6 @@ public class ImportJob extends Job {
 			//import the actual data
 			log.info("\timporting");
 
-			int bucketSize = entityBucketSize;
-
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 
@@ -137,7 +134,7 @@ public class ImportJob extends Job {
 				for (long group = 0; group < header.getGroups(); group++) {
 					int entityId = primaryMapping.source2Target(in.readInt(true));
 					int size = in.readInt(true);
-					int bucketNumber = Entity.getBucket(entityId, bucketSize);
+					int bucketNumber = Entity.getBucket(entityId, entityBucketSize);
 					ImportBucket bucket = buckets.computeIfAbsent(bucketNumber, b -> new ImportBucket(new BucketId(outImport.getId(), b)));
 
 					byte[] data = in.readBytes(size);
@@ -236,7 +233,6 @@ public class ImportJob extends Job {
 		//if no new ids we shouldn't recompress and store
 		if (primaryMapping.getNewIds() == null) {
 			log.debug("\t\tno new ids");
-			primaryDict = oldPrimaryDict;
 			this.progressReporter.report(2);
 		}
 		//but if there are new ids we have to
@@ -260,7 +256,7 @@ public class ImportJob extends Job {
 
 		log.debug("\tsending secondary dictionaries");
 
-		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
+		Table table = this.table;
 
 		for (int colPos = 0; colPos < header.getColumns().length; colPos++) {
 			PPColumn col = header.getColumns()[colPos];
@@ -329,12 +325,11 @@ public class ImportJob extends Job {
 			PreprocessedHeader header = registry.injectInto(namespace.getStorage().getDataset().injectInto(headerReader)).readValue(in);
 
 			log.info("Importing {} into {}", header.getName(), table);
-			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
-
-			header.assertMatch(tab);
 
 			log.debug("\tparsing dictionaries");
+
 			header.getPrimaryColumn().getType().readHeader(in);
+
 			for (PPColumn col : header.getColumns()) {
 				col.getType().readHeader(in);
 			}

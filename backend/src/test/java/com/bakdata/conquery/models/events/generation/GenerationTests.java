@@ -24,13 +24,13 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -188,7 +188,16 @@ public class GenerationTests {
 		final int entityBucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
 
 		Import imp = new Import(entityBucketSize);
-		imp.setTable(new TableId(new DatasetId("test_dataset"), "table"));
+
+		final Dataset ds = new Dataset();
+		ds.setName("test_dataset");
+
+		final Table table = new Table();
+		table.setDataset(ds);
+		table.setName("table");
+
+		imp.setTable(table);
+
 		imp.setName("import");
 		imp.setColumns(IntStream.range(0, parser.length)
 								.mapToObj(i -> column(imp, i))

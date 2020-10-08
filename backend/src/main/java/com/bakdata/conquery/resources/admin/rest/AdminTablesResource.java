@@ -19,6 +19,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -54,7 +55,7 @@ public class AdminTablesResource extends HAdmin {
 
 	@DELETE
 	public void remove() {
-		processor.deleteTable(tableId);
+		processor.deleteTable(table);
 	}
 
 	@GET
@@ -64,7 +65,7 @@ public class AdminTablesResource extends HAdmin {
 		return namespace.getStorage()
 						.getAllImports()
 						.stream()
-						.filter(imp -> imp.getTable().equals(table.getId()))
+						.filter(imp -> Identifiable.equalsById(imp.getTable(),table))
 						.map(Import::getId)
 						.collect(Collectors.toList());
 	}
