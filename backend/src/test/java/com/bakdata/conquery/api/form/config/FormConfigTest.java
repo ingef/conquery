@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -169,10 +170,10 @@ public class FormConfigTest {
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
 			Namespace namespaceMock = Mockito.mock(Namespace.class);
-			if(id.equals(datasetId)) {
+			if(IId.equals(id, datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);				
 			}
-			else if (id.equals(datasetId1)) {	
+			else if(IId.equals(id, datasetId1)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset1);	
 			}
 			else {

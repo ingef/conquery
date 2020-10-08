@@ -7,6 +7,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -41,7 +42,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable);
+		tableActive = IId.equals(table.getResolvedConnector().getTable().getId(), currentTable);
 		if(tableActive) {
 			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
 		}

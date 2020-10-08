@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.worker.Worker;
@@ -82,7 +83,7 @@ public class UpdateMatchingStats extends Job {
 				return;
 			}
 
-			if(!cBlock.getConnector().getConcept().equals(concept.getId()))
+			if(!IId.equals(cBlock.getConnector().getConcept(), concept.getId()))
 				continue;
 
 			try {

@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
@@ -65,7 +66,7 @@ public class FormConfigProcessor {
 	 **/
 	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Optional<String> formType){
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
-			.filter(c -> dataset.equals(c.getDataset()))
+			.filter(c -> IId.equals(dataset, c.getDataset()))
 			.filter(c -> user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
 		if(formType.isPresent()) {
 			stream = stream.filter(c -> c.getFormType().equals(formType.get()));

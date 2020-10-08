@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.IdMutex.Locked;
 import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
@@ -261,7 +262,7 @@ public class BucketManager {
 			return;
 		}
 
-		forBucket.removeIf(cBlock -> cBlock.getId().equals(cBlockId));
+		forBucket.removeIf(cBlock -> IId.equals(cBlock.getId(), cBlockId));
 	}
 
 	public void removeBucket(BucketId bucketId) {

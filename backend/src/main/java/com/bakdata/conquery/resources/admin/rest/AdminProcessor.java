@@ -116,7 +116,7 @@ public class AdminProcessor {
 		if (table.getDataset() == null) {
 			table.setDataset(dataset);
 		}
-		else if (!table.getDataset().equals(dataset)) {
+		else if (!Identifiable.equalsById(table.getDataset(), dataset)) {
 			throw new IllegalArgumentException();
 		}
 

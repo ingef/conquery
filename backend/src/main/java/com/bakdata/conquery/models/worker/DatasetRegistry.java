@@ -17,6 +17,7 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,7 +60,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		if(removed != null) {
 			metaStorage.getCentralRegistry().remove(id);
 
-			workers.keySet().removeIf(w->w.getDataset().equals(id));
+			workers.keySet().removeIf(w -> IId.equals(w.getDataset(), id));
 			try {
 				// remove all associated data.
 				removed.getStorage().remove();

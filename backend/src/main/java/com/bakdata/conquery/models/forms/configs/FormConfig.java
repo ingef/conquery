@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -82,16 +83,16 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()
-			.id(getId())
-			.formType(formType)
-			.label(label)
-			.tags(tags)
-			.ownerName(ownerName)
-			.own(owner.equals(user.getId()))
-			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-			.shared(shared)
-			// system?
-			.build();
+											   .id(getId())
+											   .formType(formType)
+											   .label(label)
+											   .tags(tags)
+											   .ownerName(ownerName)
+											   .own(IId.equals(owner, user.getId()))
+											   .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+											   .shared(shared)
+											   // system?
+											   .build();
 	}
 
 // TODO rework translation with rework of Id-System
@@ -145,7 +146,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.label(label)
 			.tags(tags)
 			.ownerName(ownerName)
-			.own(requestingUser != null? requestingUser.getId().equals(owner) : false)
+			.own(requestingUser != null && IId.equals(requestingUser.getId(), owner))
 			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system? TODO discuss how system is determined (may check if owning user is in a special system group or so)

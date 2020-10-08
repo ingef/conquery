@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -90,7 +91,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		final Table table = storage.getDataset().getTables().getOrFail(tableId);
 
 		for (Column col : table.getColumns()) {
-			if (!secondaryId.equals(col.getSecondaryId())) {
+			if (!IId.equals(secondaryId, col.getSecondaryId())) {
 				continue;
 			}
 

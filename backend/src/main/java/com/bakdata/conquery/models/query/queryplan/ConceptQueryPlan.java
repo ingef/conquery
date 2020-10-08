@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.generation.EmptyBucket;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -124,7 +125,7 @@ public class ConceptQueryPlan implements QueryPlan {
 
 		for (TableId currentTableId : requiredTables.get()) {
 
-			if(currentTableId.equals(ctx.getStorage().getDataset().getAllIdsTableId())){
+			if(IId.equals(currentTableId, ctx.getStorage().getDataset().getAllIdsTableId())){
 				continue;
 			}
 

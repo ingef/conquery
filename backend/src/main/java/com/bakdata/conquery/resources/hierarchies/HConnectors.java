@@ -11,6 +11,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.google.common.collect.MoreCollectors;
@@ -32,10 +33,11 @@ public abstract class HConnectors extends HConcepts {
 		super.init();
 		try {
 			connector = concept.getConnectors()
-				.stream()
-				.filter(con->con.getTable().getId().equals(tableId))
-				.collect(MoreCollectors.toOptional())
-				.orElseThrow(()->new NoSuchElementException("No connector of "+conceptId+" maps to table "+tableId));
+							   .stream()
+							   .filter(con -> IId.equals(con.getTable().getId(), tableId))
+							   .collect(MoreCollectors.toOptional())
+							   .orElseThrow(() -> new NoSuchElementException("No connector of " + conceptId + " maps to table " + tableId));
+			
 			connectorId = connector.getId();
 		}
 		catch (NoSuchElementException e) {

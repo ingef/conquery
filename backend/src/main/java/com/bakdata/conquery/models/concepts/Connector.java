@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid.ValidationMethod2;
 import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -98,7 +99,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 		for (Filter<?> f : collectAllFilters()) {
 			for (Column c : f.getRequiredColumns()) {
-				if (c == null || c.getTable() == getTable()) {
+				if (c == null || Identifiable.equalsById(c.getTable(), getTable())) {
 					continue;
 				}
 
@@ -144,7 +145,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" of the connector "+this.getId()+" is not of type DATE or DATERANGE")
 					.addConstraintViolation();
 			}
-			if (!col.getTable().equals(getTable())) {
+			if (!Identifiable.equalsById(col.getTable(), getTable())) {
 				passed = false;
 				context
 					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" is not of the same table as its connector "+this.getId()+".\t Validity date's column: "+ col.getTable().getId()+"\t Connector's table: "+ this.getTable().getId())

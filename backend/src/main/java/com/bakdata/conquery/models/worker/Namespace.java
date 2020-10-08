@@ -12,6 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -122,7 +123,7 @@ public class Namespace implements Closeable {
 			final WorkerInformation old = bucket2WorkerMap.put(bucket.intValue(), info);
 
 			// This is a completely invalid state from which we should not recover even in production settings.
-			if (old != null && !old.equals(info)) {
+			if (old != null && !Identifiable.equalsById(old, info)) {
 				throw new IllegalStateException(String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
 			}
 		}

@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -76,7 +77,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset.getId())) {
+					if (!IId.equals(value.getInfo().getDataset(), dataset.getId())) {
 						continue;
 					}
 
@@ -128,12 +129,12 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			// The deleted import should not be found.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().getTable().equals(tableId))
+					.filteredOn(imp -> IId.equals(imp.getId().getTable(), tableId))
 					.isEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset.getId())) {
+					if (!IId.equals(value.getInfo().getDataset(),dataset.getId())) {
 						continue;
 					}
 
@@ -142,13 +143,13 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
-							.filteredOn(bucket -> bucket.getImp().getId().getTable().equals(tableId))
+							.filteredOn(bucket -> IId.equals(bucket.getImp().getId().getTable(), tableId))
 							.isEmpty();
 
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().equals(tableId))
+							.filteredOn(cBlock -> IId.equals(cBlock.getBucket().getImp().getTable(), tableId))
 							.isEmpty();
 				}
 			}
@@ -183,7 +184,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset.getId())) {
+					if (!IId.equals(value.getInfo().getDataset(),dataset.getId())) {
 						continue;
 					}
 
@@ -201,13 +202,13 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset.getId())) {
+					if (!IId.equals(value.getInfo().getDataset(),dataset.getId())) {
 						continue;
 					}
 
 					final WorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().getTable().equals(tableId)))
+					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> IId.equals(bucket.getImp().getId().getTable(), tableId)))
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
 				}
@@ -236,13 +237,13 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				for (ShardNode node : conquery2.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().equals(dataset.getId())) {
+						if (!IId.equals(value.getInfo().getDataset(),dataset.getId())) {
 							continue;
 						}
 
 						final WorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().getTable().equals(tableId)))
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> IId.equals(bucket.getImp().getId().getTable(), tableId)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}

@@ -21,7 +21,7 @@ public interface IId<TYPE> {
 	public static <T> boolean equals(IId<T> left, IId<T> right){
 		return left.equals(right);
 	}
-	
+
 	char JOIN_CHAR = '.';
 	Joiner JOINER = Joiner.on(JOIN_CHAR);
 	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();

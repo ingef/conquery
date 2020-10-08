@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -198,12 +199,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
-		status.setOwn(getOwner().equals(user.getId()));
+		status.setOwn(IId.equals(getOwner(), user.getId()));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
-		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
+		status.setOwnerName(Optional.ofNullable(owner).map(storage::getUser).map(User::getLabel).orElse(null));
 		status.setResultUrl(
 			isReadyToDownload(url, user)
 				? getDownloadURL(url)
