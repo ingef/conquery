@@ -56,7 +56,6 @@ public class BucketManager {
 	
 	/**
 	 * Connector -> Bucket -> [CBlock]
-	 * @implNote These numbers are estimates, we could make them configurable, though they aren't very important.
 	 */
 	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks;
 	
