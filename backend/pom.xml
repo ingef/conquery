@@ -230,7 +230,7 @@
 		<dependency>
 		    <groupId>org.keycloak</groupId>
 		    <artifactId>keycloak-authz-client</artifactId>
-		    <version>9.0.3</version>
+		    <version>11.0.2</version>
 		</dependency>
 	</dependencies>
 </project>
