@@ -21,10 +21,17 @@ public class CQBeforeTemporalQuery extends CQAbstractTemporalQuery {
 	}
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext registry, ConceptQueryPlan plan) {
-		return new TemporalQueryNode(index.createQueryPlan(registry, plan), preceding.createQueryPlan(registry, plan), new BeforeTemporalPrecedenceMatcher(), plan.getSpecialDateUnion());
+	public QPNode createQueryPlan(QueryPlanContext ctx, ConceptQueryPlan plan) {
+		ctx = ctx.withGenerateSpecialDateUnion(true);
+
+		return new TemporalQueryNode(
+				index.createQueryPlan(ctx, plan),
+				preceding.createQueryPlan(ctx, plan),
+				new BeforeTemporalPrecedenceMatcher(),
+				plan.getSpecialDateUnion()
+		);
 	}
-	
+
 	@Override
 	public CQBeforeTemporalQuery resolve(QueryResolveContext context) {
 		return new CQBeforeTemporalQuery(index.resolve(context), preceding.resolve(context));
