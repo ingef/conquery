@@ -10,7 +10,7 @@ import lombok.Getter;
 
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
-public class ByteStore extends ColumnStoreAdapter<ByteStore> {
+public class ByteStore extends ColumnStoreAdapter<Byte, ByteStore> {
 
 	private final byte nullValue;
 	private final byte[] values;
@@ -22,7 +22,7 @@ public class ByteStore extends ColumnStoreAdapter<ByteStore> {
 	}
 
 	@Override
-	public ByteStore merge(List<? extends ByteStore> stores) {
+	public ByteStore merge(List<ByteStore> stores) {
 
 
 		final int newSize = stores.stream().map(ByteStore.class::cast).mapToInt(store -> store.values.length).sum();
@@ -30,11 +30,10 @@ public class ByteStore extends ColumnStoreAdapter<ByteStore> {
 
 		int start = 0;
 
-		for (ColumnStore<?> store : stores) {
-			final ByteStore doubleStore = (ByteStore) store;
+		for (ByteStore store : stores) {
 
-			System.arraycopy(doubleStore.values, 0, mergedValues, start, doubleStore.values.length);
-			start += doubleStore.values.length;
+			System.arraycopy(store.values, 0, mergedValues, start, store.values.length);
+			start += store.values.length;
 		}
 
 		return new ByteStore(mergedValues, nullValue);
@@ -46,12 +45,7 @@ public class ByteStore extends ColumnStoreAdapter<ByteStore> {
 	}
 
 	@Override
-	public long getInteger(int event) {
-		return (long) values[event];
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return getInteger(event);
+	public Byte get(int event) {
+		return values[event];
 	}
 }

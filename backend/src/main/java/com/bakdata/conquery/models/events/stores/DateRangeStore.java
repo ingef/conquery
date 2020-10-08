@@ -1,23 +1,18 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "DATE_RANGES", base = ColumnStore.class)
 @Getter
-public class DateRangeStore extends ColumnStoreAdapter<DateRangeStore> {
+public class DateRangeStore extends ColumnStoreAdapter<CDateRange, DateRangeStore> {
 
-	private CDateRange[] ranges;
+	private final CDateRange[] ranges;
 
 	@JsonCreator
 	public DateRangeStore(CDateRange[] ranges) {
@@ -30,18 +25,16 @@ public class DateRangeStore extends ColumnStoreAdapter<DateRangeStore> {
 	}
 
 	@Override
-	public DateRangeStore merge(List<? extends DateRangeStore> stores) {
+	public DateRangeStore merge(List<DateRangeStore> stores) {
 
 		final int newSize = stores.stream().mapToInt(store -> store.getRanges().length).sum();
 		final CDateRange[] mergedValues = new CDateRange[newSize];
 
 		int start = 0;
 
-		for (ColumnStore<?> store : stores) {
-			final DateRangeStore doubleStore = (DateRangeStore) store;
-
-			System.arraycopy(doubleStore.getRanges(), 0, mergedValues, start, doubleStore.getRanges().length);
-			start += doubleStore.getRanges().length;
+		for (DateRangeStore store : stores) {
+			System.arraycopy(store.getRanges(), 0, mergedValues, start, store.getRanges().length);
+			start += store.getRanges().length;
 		}
 
 
@@ -49,18 +42,8 @@ public class DateRangeStore extends ColumnStoreAdapter<DateRangeStore> {
 	}
 
 	@Override
-	public CDateRange getDateRange(int event) {
+	public CDateRange get(int event) {
 		return ranges[event];
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return getDateRange(event);
-	}
-
-	@Override
-	public void serialize(OutputStream outputStream) {
-
 	}
 
 }

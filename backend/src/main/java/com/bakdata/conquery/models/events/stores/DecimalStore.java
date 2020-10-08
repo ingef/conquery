@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import lombok.Getter;
 
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
-public class DecimalStore extends ColumnStoreAdapter<DecimalStore> {
+public class DecimalStore extends ColumnStoreAdapter<BigDecimal, DecimalStore> {
 
 	private final BigDecimal[] values;
 
@@ -26,35 +25,24 @@ public class DecimalStore extends ColumnStoreAdapter<DecimalStore> {
 	}
 
 	@Override
-	public DecimalStore merge(List<? extends DecimalStore> stores) {
+	public DecimalStore merge(List<DecimalStore> stores) {
 		final int newSize = stores.stream().map(DecimalStore.class::cast).mapToInt(store -> store.values.length).sum();
 		final BigDecimal[] mergedValues = new BigDecimal[newSize];
 
 		int start = 0;
 
-		for (ColumnStore<?> store : stores) {
-			final DecimalStore doubleStore = (DecimalStore) store;
-
-			System.arraycopy(doubleStore.values, 0, mergedValues, start, doubleStore.values.length);
-			start += doubleStore.values.length;
+		for (DecimalStore store : stores) {
+			System.arraycopy(store.values, 0, mergedValues, start, store.values.length);
+			start += store.values.length;
 		}
 
 		return new DecimalStore(mergedValues);
 	}
 
 	@Override
-	public BigDecimal getDecimal(int event) {
+	public BigDecimal get(int event) {
 		return values[event];
 	}
 
-	@Override
-	public Object getAsObject(int event) {
-		return getDecimal(event);
-	}
-
-	@Override
-	public void serialize(OutputStream outputStream) {
-
-	}
 
 }

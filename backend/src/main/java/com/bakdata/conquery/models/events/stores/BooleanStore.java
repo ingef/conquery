@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.io.OutputStream;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -9,12 +8,14 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import org.apache.commons.lang3.ArrayUtils;
 
 
 @CPSType(id = "BOOLEANS", base = ColumnStore.class)
 @Getter
-public class BooleanStore extends ColumnStoreAdapter<BooleanStore> {
+public class BooleanStore extends ColumnStoreAdapter<Boolean, BooleanStore> {
 
+	@Getter
 	private final boolean[] values;
 
 	@JsonCreator
@@ -24,16 +25,15 @@ public class BooleanStore extends ColumnStoreAdapter<BooleanStore> {
 	}
 
 	@Override
-	public BooleanStore merge(List<? extends BooleanStore> stores) {
+	public BooleanStore merge(List<BooleanStore> stores) {
+		boolean[] out = new boolean[0];
 
-		final int newSize = stores.stream().map(BooleanStore.class::cast).mapToInt(store -> store.values.length).sum();
-		final boolean[] mergedValues = new boolean[newSize];
+		// naive impl might be slow because it reallocates very often.
+		for (BooleanStore store : stores) {
+			out = ArrayUtils.addAll(out, store.getValues());
+		}
 
-		int start = 0;
-
-		//TODO !
-
-		return new BooleanStore(mergedValues);
+		return new BooleanStore(out);
 	}
 
 	@Override
@@ -42,17 +42,7 @@ public class BooleanStore extends ColumnStoreAdapter<BooleanStore> {
 	}
 
 	@Override
-	public boolean getBoolean(int event) {
+	public Boolean get(int event) {
 		return values[event];
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return getBoolean(event);
-	}
-
-	@Override
-	public void serialize(OutputStream outputStream) {
-
 	}
 }

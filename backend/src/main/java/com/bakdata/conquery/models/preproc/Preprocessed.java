@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 
 import com.bakdata.conquery.io.HCFile;
@@ -17,9 +18,14 @@ import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.esotericsoftware.kryo.io.Output;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import io.dropwizard.util.Size;
-import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +41,16 @@ public class Preprocessed {
 	private long rows = 0;
 	private CDateRange eventRange;
 	private long writtenGroups = 0;
-	private Int2ObjectMap<List<Object[]>> entries = new Int2ObjectAVLTreeMap<>();
+
+	private IntSet entities = new IntAVLTreeSet();
+
+	private Object[][] columnValues;
+
+	private Int2IntMap entityStart = new Int2IntAVLTreeMap();
+	private Int2IntMap entityEnd = new Int2IntAVLTreeMap();
+
+	// by-column by-entity
+	private final transient Table<Integer, Integer, List<Object>> entries;
 	
 	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 
@@ -55,16 +70,38 @@ public class Preprocessed {
 			throw new IllegalStateException("The primary column must be an ENTITY_ID or STRING column");
 		}
 
-		for(int i=0;i<input.getWidth();i++) {
-			ColumnDescription columnDescription = input.getColumnDescription(i);
-			columns[i] = new PPColumn(columnDescription.getName());
-			columns[i].setParser(columnDescription.getType().createParser());
+		// pid and columns
+		entries = HashBasedTable.create();
+
+		for (int index = 0; index < input.getWidth(); index++) {
+			ColumnDescription columnDescription = input.getColumnDescription(index);
+			columns[index] = new PPColumn(columnDescription.getName());
+			columns[index].setParser(columnDescription.getType().createParser());
 		}
 	}
 
 	public void write(HCFile outFile) throws IOException {
 		if(!outFile.isWrite()){
 			throw new IllegalArgumentException("outfile was opened in read-only mode.");
+		}
+
+		final IntSummaryStatistics statistics = entries.column(0).values().stream().mapToInt(List::size).summaryStatistics();
+
+		log.info("Average size = {}", statistics.getAverage());
+
+		columnValues = new Object[columns.length][(int) statistics.getSum()];
+
+		for (int column = 0; column < entries.length; column++) {
+			Int2ObjectMap<List<Object>> values = entries[column];
+			int start = 0;
+
+			for (Integer entity : entities) {
+				final Object[] vals = values.get(entity.intValue()).toArray();
+				System.arraycopy(vals, 0, columnValues[column], start, vals.length);
+
+				entityStart.put(entity.intValue(), start);
+				entityEnd.put(entity.intValue(), start + vals.length);
+			}
 		}
 
 		// Write content to file
@@ -111,16 +148,17 @@ public class Preprocessed {
 
 	public synchronized int addPrimary(int primary) {
 		primaryColumn.getParser().addLine(primary);
+		entities.add(primary);
 		return primary;
 	}
 
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
-		entries.computeIfAbsent(primaryId, (id) -> new ArrayList<>())
-			   .add(outRow);
+		for (int col = 0; col < outRow.length; col++) {
+			entries[col].computeIfAbsent(primaryId, (id) -> new ArrayList<>())
+									   .add(outRow[col]);
 
-		for (int i = 0; i < columns.length; i++) {
-			log.trace("Registering `{}` for Column[{}]", outRow[i], columns[i].getName());
-			columns[i].getParser().addLine(outRow[i]);
+			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
+			columns[col].getParser().addLine(outRow[col]);
 		}
 
 		//update stats
