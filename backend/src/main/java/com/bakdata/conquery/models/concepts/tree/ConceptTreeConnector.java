@@ -72,12 +72,13 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override
-	public void calculateCBlock(CBlock cBlock, Bucket bucket, Import imp) {
+	public void calculateCBlock(CBlock cBlock, Bucket bucket) {
 
 		final Column column = getColumn();
 
 		final TreeConcept treeConcept = getConcept();
 
+		final Import imp = bucket.getImp();
 		final ImportId importId = imp.getId();
 
 		final AStringType<?> stringType;
