@@ -5,9 +5,12 @@ import static com.bakdata.conquery.resources.ResourceConstants.API;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriBuilder;
 
-public interface RequestAwareUriBuilder {
+import lombok.experimental.UtilityClass;
 
-	public static UriBuilder fromRequest(HttpServletRequest request) {
+@UtilityClass
+public class RequestAwareUriBuilder {
+
+	public UriBuilder fromRequest(HttpServletRequest request) {
 		return UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(API);
 	}
 }
