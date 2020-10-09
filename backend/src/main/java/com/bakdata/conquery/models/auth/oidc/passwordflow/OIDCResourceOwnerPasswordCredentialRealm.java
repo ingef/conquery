@@ -139,8 +139,8 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	 * Is called by the CacheLoader, so the Token is not validated on every request.
 	 */
 	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws ParseException, IOException {
-		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(serverConf.getTokenIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
-				
+		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(serverConf.getIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
+		
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
 		
 		if (!response.indicatesSuccess()) {
