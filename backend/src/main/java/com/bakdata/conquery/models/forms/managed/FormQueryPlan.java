@@ -67,7 +67,7 @@ public class FormQueryPlan implements QueryPlan {
 			resultValues.addAll(
 				ResultModifier.modify(
 					subResult,
-					subPlan,
+					subPlan.getAggregators(),
 					v->addConstants(v, dateContext)
 				)
 			);

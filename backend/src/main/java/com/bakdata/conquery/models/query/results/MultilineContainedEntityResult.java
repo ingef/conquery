@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.results;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.Min;
@@ -47,5 +48,16 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 	public int columnCount() {
 		// We look at the first result line to determine the number of columns
 		return values.get(0).length;
+	}
+
+	@Override
+	public void modifyResultLinesInplace(UnaryOperator<Object[]> lineModifier) {
+		values.replaceAll(lineModifier);
+	}
+
+	@Override
+	public List<Object[]> listResultLines() {
+		// TODO Auto-generated method stub
+		return values;
 	}
 }
