@@ -54,7 +54,7 @@ public class PrintSettings implements SelectNameExtractor {
 			sb.append(cqLabel);
 			sb.append(" - ");
 		}
-		else {
+		else if(columnInfo.getCqConcept().getIds().size() > 0) {
 			// When no Label was set within the query, get the labels of all ids that are in the CQConcept
 			String concatElementLabels = columnInfo.getCqConcept().getIds().stream()
 			.map(datasetRegistry::resolve)
