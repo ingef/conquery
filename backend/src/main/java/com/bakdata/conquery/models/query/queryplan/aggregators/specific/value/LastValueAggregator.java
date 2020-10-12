@@ -46,7 +46,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 				selectedBucket = bucket;
 				selectedEvent = OptionalInt.of(event);
 			} else {
-				log.warn("There is more than one value for the {} on a table without validity date. Choosing the very first one", this.getClass().getSimpleName());
+				log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 			}
 			return;			
 		}
@@ -63,6 +63,9 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			date = next;
 			selectedEvent = OptionalInt.of(event);
 			selectedBucket = bucket;
+		}
+		else if (next == date) {
+			log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 		}
 	}
 

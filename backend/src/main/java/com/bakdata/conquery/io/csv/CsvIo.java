@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.csv;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.univocity.parsers.csv.CsvParser;
@@ -50,9 +49,6 @@ public class CsvIo {
 	 * @throws IOException if an I/O error occurs.
 	 */
 	public static boolean isGZipped(@NonNull File file) throws IOException {
-		String contentType = Files.probeContentType(file.toPath());
-		if(contentType != null && contentType.contains("gzip"))
-			return true;
-		return false;
+		return file.getName().endsWith(".csv.gz");
 	}
 }
