@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,7 +8,7 @@ import lombok.Getter;
 
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
-public class ByteStore extends ColumnStoreAdapter<Byte, ByteStore> {
+public class ByteStore extends ColumnStoreAdapter<Long, ByteStore> {
 
 	private final byte nullValue;
 	private final byte[] values;
@@ -21,22 +19,18 @@ public class ByteStore extends ColumnStoreAdapter<Byte, ByteStore> {
 		this.values = values;
 	}
 
+	public static ByteStore create(int size) {
+		return new ByteStore(new byte[size], Byte.MAX_VALUE);
+	}
+
 	@Override
-	public ByteStore merge(List<ByteStore> stores) {
-
-
-		final int newSize = stores.stream().map(ByteStore.class::cast).mapToInt(store -> store.values.length).sum();
-		final byte[] mergedValues = new byte[newSize];
-
-		int start = 0;
-
-		for (ByteStore store : stores) {
-
-			System.arraycopy(store.values, 0, mergedValues, start, store.values.length);
-			start += store.values.length;
+	public void set(int event, Long value) {
+		if(value == null){
+			values[event] = nullValue;
+			return;
 		}
 
-		return new ByteStore(mergedValues, nullValue);
+		values[event] = value.byteValue();
 	}
 
 	@Override
@@ -45,7 +39,7 @@ public class ByteStore extends ColumnStoreAdapter<Byte, ByteStore> {
 	}
 
 	@Override
-	public Byte get(int event) {
-		return values[event];
+	public Long get(int event) {
+		return (long) values[event];
 	}
 }

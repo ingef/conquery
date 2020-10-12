@@ -25,19 +25,8 @@ public class VarIntTypeByte extends VarIntType {
 	}
 
 	@Override
-	public ColumnStore createStore(Integer[] objects) {
-		byte[] values = new byte[objects.length];
-
-		for (int index = 0; index < objects.length; index++) {
-			if (objects[index] == null) {
-				values[index] = Byte.MAX_VALUE;
-				continue;
-			}
-
-			values[index] = ((Number) objects[index]).byteValue();
-		}
-
-		return new ByteStore(values, Byte.MAX_VALUE);
+	public ColumnStore createStore(int size) {
+		return ByteStore.create(size);
 	}
 
 	@Override

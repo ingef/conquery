@@ -3,70 +3,66 @@ package com.bakdata.conquery.models.preproc;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.IntSummaryStatistics;
 import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.types.parser.Transformer;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.esotericsoftware.kryo.io.Output;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import io.dropwizard.util.Size;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
 @Data
 @Slf4j
 public class Preprocessed {
-	
+
 	private final InputFile file;
 	private final String name;
 	private final PPColumn primaryColumn;
 	private final PPColumn[] columns;
 	private final TableImportDescriptor descriptor;
+	// by-column by-entity
+	private final transient Table<Integer, Integer, List> entries;
+	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 	private long rows = 0;
 	private CDateRange eventRange;
 	private long writtenGroups = 0;
-
 	private IntSet entities = new IntAVLTreeSet();
-
-	private Object[][] columnValues;
-
+	private ColumnStore[] columnValues;
 	private Int2IntMap entityStart = new Int2IntAVLTreeMap();
 	private Int2IntMap entityEnd = new Int2IntAVLTreeMap();
-
-	// by-column by-entity
-	private final transient Table<Integer, Integer, List<Object>> entries;
-	
-	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 
 	public Preprocessed(TableImportDescriptor descriptor) throws IOException {
 		this.file = descriptor.getInputFile();
 		this.name = descriptor.getName();
 		this.descriptor = descriptor;
-		
+
 		TableInputDescriptor input = descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
-		
-		
+
+
 		primaryColumn = new PPColumn(input.getPrimary().getColumnDescription().getName());
 		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser());
-		
-		if(!(primaryColumn.getParser() instanceof StringParser)) {
+
+		if (!(primaryColumn.getParser() instanceof StringParser)) {
 			throw new IllegalStateException("The primary column must be an ENTITY_ID or STRING column");
 		}
 
@@ -80,41 +76,55 @@ public class Preprocessed {
 		}
 	}
 
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void write(HCFile outFile) throws IOException {
-		if(!outFile.isWrite()){
+		if (!outFile.isWrite()) {
 			throw new IllegalArgumentException("outfile was opened in read-only mode.");
-		}
-
-		final IntSummaryStatistics statistics = entries.column(0).values().stream().mapToInt(List::size).summaryStatistics();
-
-		log.info("Average size = {}", statistics.getAverage());
-
-		columnValues = new Object[columns.length][(int) statistics.getSum()];
-
-		for (int column = 0; column < entries.length; column++) {
-			Int2ObjectMap<List<Object>> values = entries[column];
-			int start = 0;
-
-			for (Integer entity : entities) {
-				final Object[] vals = values.get(entity.intValue()).toArray();
-				System.arraycopy(vals, 0, columnValues[column], start, vals.length);
-
-				entityStart.put(entity.intValue(), start);
-				entityEnd.put(entity.intValue(), start + vals.length);
-			}
 		}
 
 		// Write content to file
 		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 
-		try (Output out = new Output(outFile.writeContent())) {
-			for(int entityId = 0; entityId < entries.size(); entityId++) {
-				List<Object[]> events = entries.getOrDefault(entityId, Collections.emptyList());
+		final IntSummaryStatistics statistics = entries.row(0).values().stream().mapToInt(List::size).summaryStatistics();
 
-				if(!events.isEmpty()) {
-					writeRowsToFile(out, imp, entityId, events);
+		final int nEvents = (int) statistics.getSum();
+
+		log.info("Average size = {}", statistics.getAverage());
+
+		//TODO make these the column stores
+		columnValues = new ColumnStore[columns.length];
+
+
+		ImportColumn[] impColumns = imp.getColumns();
+
+		for (int index = 0; index < impColumns.length; index++) {
+			final PPColumn ppColumn = columns[index];
+
+			final ColumnStore store = ppColumn.getType().createStore(nEvents);
+
+			Map<Integer, List> values = entries.row(index);
+			int start = 0;
+
+			for (Integer entity : entries.columnKeySet()) {
+				List<?> entityValues = values.get(entity);
+				int length = values.get(entity).size();
+
+				entityStart.put(entity.intValue(), start);
+
+				for (int event = 0; event < length; event++) {
+					store.set(start + event, entityValues.get(event));
 				}
+
+				start += length;
+				entityEnd.put(entity.intValue(), start);
 			}
+
+			columnValues[index] = store;
+		}
+
+
+		try (OutputStream out = new GzipCompressorOutputStream(outFile.writeContent())) {
+			Jackson.BINARY_MAPPER.writerFor(DataContainer.class).writeValue(out, new DataContainer(entityStart, entityEnd, columnValues));
 		}
 
 		// Then write headers.
@@ -136,12 +146,13 @@ public class Preprocessed {
 			try {
 				Jackson.BINARY_MAPPER.writeValue(out, header);
 				primaryColumn.getType().writeHeader(out);
-				for(PPColumn col:columns) {
+				for (PPColumn col : columns) {
 					col.getType().writeHeader(out);
 				}
 				out.flush();
-			} catch (Exception e) {
-				throw new RuntimeException("Failed to serialize header "+header, e);
+			}
+			catch (Exception e) {
+				throw new RuntimeException("Failed to serialize header " + header, e);
 			}
 		}
 	}
@@ -154,8 +165,8 @@ public class Preprocessed {
 
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
 		for (int col = 0; col < outRow.length; col++) {
-			entries[col].computeIfAbsent(primaryId, (id) -> new ArrayList<>())
-									   .add(outRow[col]);
+			entries.row(col).computeIfAbsent(primaryId, (id) -> new ArrayList<>())
+				   .add(outRow[col]);
 
 			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
@@ -175,51 +186,28 @@ public class Preprocessed {
 				extendEventRange((CDateRange) outRow[i]);
 			}
 		}
-		
+
 	}
 
 	/**
 	 * Collect date span of all data.
 	 */
 	private void extendEventRange(CDateRange range) {
-		if(eventRange == null) {
+		if (eventRange == null) {
 			eventRange = range;
 		}
-		else if(range != null) {
+		else if (range != null) {
 			eventRange = eventRange.spanClosed(range);
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void writeRowsToFile(Output out, Import imp, int entityId, List<Object[]> rows) throws IOException {
-		//transform values to their current subType
-		//we can't map the primary column since we do a lot of work which would destroy any compression anyway
-		//entityId = (Integer)primaryColumn.getType().transformFromMajorType(primaryColumn.getOriginalType(), Integer.valueOf(entityId));
-
-		for(ImportColumn importColumn : imp.getColumns()) {
-
-			PPColumn column = columns[importColumn.getPosition()];
-			Transformer transformer = column.getTransformer();
-
-			for(Object[] row : rows) {
-				if (row[importColumn.getPosition()] == null) {
-					continue;
-				}
-
-				row[importColumn.getPosition()] = transformer.transform(row[importColumn.getPosition()]);
-			}
-			transformer.finishTransform();
-		}
-		
-		Bucket bucket = imp.getBlockFactory().create(imp, rows);
-		
-		out.writeInt(entityId, true);
-		bucket.writeContent(buffer);
-		out.writeInt(buffer.position(), true);
-		out.writeBytes(buffer.getBuffer(), 0, buffer.position());
-		
-		buffer.reset();
-		writtenGroups++;
+	@Data
+	@AllArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class DataContainer {
+		private final Map<Integer, Integer> starts;
+		private final Map<Integer, Integer> ends;
+		private final ColumnStore[] values;
 	}
+
 
 }

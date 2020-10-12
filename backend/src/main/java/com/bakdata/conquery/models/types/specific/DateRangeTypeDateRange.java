@@ -19,8 +19,8 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 	}
 
 	@Override
-	public ColumnStore createStore(CDateRange[] objects) {
-		return new DateRangeStore(objects);
+	public ColumnStore createStore(int size) {
+		return DateRangeStore.create(size);
 	}
 
 	@Override

@@ -35,7 +35,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 
 	public void init(DatasetId dataset) {}
 
-	public abstract ColumnStore createStore(MAJOR_JAVA_TYPE[] objects);
+	public abstract ColumnStore createStore(int size);
 
 
 	public Object createScriptValue(JAVA_TYPE value) {

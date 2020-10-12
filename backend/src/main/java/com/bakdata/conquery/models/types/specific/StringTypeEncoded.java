@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -40,8 +39,8 @@ public class StringTypeEncoded extends AStringType<Number> {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-		return subType.createStore(column, objects);
+	public ColumnStore createStore(int size) {
+		return subType.createStore(size);
 	}
 
 	@Override

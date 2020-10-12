@@ -27,8 +27,8 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 	}
 
 	@Override
-	public ColumnStore createStore(Integer[] objects) {
-		return new SingletonStringStore(singleValue, new BooleanStore(new boolean[objects.length])); // todo
+	public ColumnStore createStore(int size) {
+		return new SingletonStringStore(singleValue, BooleanStore.create(size));
 	}
 
 

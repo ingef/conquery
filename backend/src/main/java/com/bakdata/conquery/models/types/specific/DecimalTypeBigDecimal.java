@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -17,8 +16,8 @@ public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 	}
 
 	@Override
-	public ColumnStore createStore(BigDecimal[] objects) {
-		return new DecimalStore(Arrays.stream(objects).map(BigDecimal.class::cast).toArray(BigDecimal[]::new));
+	public ColumnStore createStore(int size) {
+		return DecimalStore.create(size);
 	}
 
 	@Override

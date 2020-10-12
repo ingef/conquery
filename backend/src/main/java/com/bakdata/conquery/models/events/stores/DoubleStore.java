@@ -1,37 +1,33 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "DOUBLES", base = ColumnStore.class)
 @Getter
-public class DoubleStore extends ColumnStoreAdapter<DoubleStore> {
+public class DoubleStore extends ColumnStoreAdapter<Double, DoubleStore> {
 
 	private final double[] values;
 
+	@JsonCreator
 	public DoubleStore(double[] values) {
 		this.values = values;
 	}
 
+	public static DoubleStore create(int size) {
+		return new DoubleStore(new double[size]);
+	}
+
 	@Override
-	public DoubleStore merge(List<? extends DoubleStore> stores) {
-
-		final int newSize = stores.stream().map(DoubleStore.class::cast).mapToInt(store -> store.values.length).sum();
-		final double[] mergedValues = new double[newSize];
-
-		int start = 0;
-
-		for (ColumnStore<?> store : stores) {
-			final DoubleStore doubleStore = (DoubleStore) store;
-
-			System.arraycopy(doubleStore.values, 0, mergedValues, start, doubleStore.values.length);
-			start += doubleStore.values.length;
+	public void set(int event, Double value) {
+		if(value == null){
+			values[event] = Double.NaN;
+			return;
 		}
 
-		return new DoubleStore(mergedValues);
+		values[event] = value;
 	}
 
 	@Override
@@ -40,12 +36,7 @@ public class DoubleStore extends ColumnStoreAdapter<DoubleStore> {
 	}
 
 	@Override
-	public double getReal(int event) {
+	public Double get(int event) {
 		return values[event];
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return getReal(event);
 	}
 }

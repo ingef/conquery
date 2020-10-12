@@ -22,8 +22,8 @@ public class DateTypeVarInt extends CTypeVarInt<Integer> {
 	}
 
 	@Override
-	public ColumnStore createStore(Integer[] objects) {
-		return new DateStore(super.createStore(objects));
+	public ColumnStore createStore(int size) {
+		return DateStore.create(size);
 	}
 
 	@Override

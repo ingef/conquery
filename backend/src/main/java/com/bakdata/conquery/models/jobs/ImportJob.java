@@ -1,14 +1,13 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -21,6 +20,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.preproc.PPColumn;
+import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -41,9 +42,6 @@ import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.io.Cloner;
-import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -127,40 +125,38 @@ public class ImportJob extends Job {
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 
-			this.progressReporter.setMax(this.progressReporter.getMax() + header.getGroups());
-			ProgressReporter child = this.progressReporter.subJob(header.getGroups());
-			child.setMax(header.getGroups());
 
-			try (Input in = new Input(file.readContent())) {
-				for (long group = 0; group < header.getGroups(); group++) {
-					int entityId = primaryMapping.source2Target(in.readInt(true));
-					int size = in.readInt(true);
+			try (InputStream in = new GZIPInputStream(file.readContent())) {
+				final Preprocessed.DataContainer container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
+
+				final ColumnStore[] stores = container.getValues();
+
+				for (Integer entity : container.getStarts().keySet()) {
+					int entityId = primaryMapping.source2Target(entity);
 					int bucketNumber = Entity.getBucket(entityId, bucketSize);
-					ImportBucket bucket = buckets.computeIfAbsent(bucketNumber, b -> new ImportBucket(new BucketId(outImport.getId(), b)));
 
-					byte[] data = in.readBytes(size);
-					if (mappingRequired) {
-						try (InputStream bounded = new ByteArrayInputStream(data);
-							 ByteArrayOutputStream out = new ByteArrayOutputStream(data.length + 16)) {
-
-							Bucket value = inImport.getBlockFactory().readSingleValue(namespace.getNamespaces(), namespace.getDataset(),bucketNumber, inImport, bounded);
-							Bucket result = outImport.getBlockFactory().adaptValuesFrom(bucketNumber, outImport, value, header);
-							try (Output sOut = new Output(out)) {
-								result.writeContent(sOut);
-							}
-							data = out.toByteArray();
-						}
+					if(buckets.containsKey(bucketNumber)){
+						continue;
 					}
 
+					final HashMap<Integer, Integer> starts = new HashMap<>(container.getStarts());
+					final HashMap<Integer, Integer> ends = new HashMap<>(container.getEnds());
 
-					bucket.getIncludedEntities().add(entityId);
+					starts.keySet().removeIf(id -> Entity.getBucket(id, bucketSize) != bucketNumber);
+					ends.keySet().removeIf(id -> Entity.getBucket(id, bucketSize) != bucketNumber);
 
-					bytes.computeIfAbsent(bucketNumber, i -> new ArrayList<>()).add(data);
-
-					child.report(1);
+					buckets.put(bucketNumber, new ImportBucket(
+							new BucketId(outImport.getId(), bucketNumber),
+							new Bucket(
+									bucketNumber,
+									outImport.getId(),
+									ends.values().stream().mapToInt(i -> i).max().orElse(0),
+									stores,
+									starts,
+									ends,
+									starts.size()
+							)));
 				}
-
-				child.done();
 			}
 
 			sendBuckets(primaryMapping, buckets, bytes);
@@ -171,53 +167,27 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, boolean useOldType) {
-		Import imp = new Import();
-		imp.setName(header.getName());
-		imp.setTable(table);
-		imp.setNumberOfEntries(header.getRows());
-		imp.setSuffix(header.getSuffix());
-		imp.setColumns(new ImportColumn[header.getColumns().length]);
-		for (int i = 0; i < header.getColumns().length; i++) {
-			PPColumn src = header.getColumns()[i];
-			ImportColumn col = new ImportColumn();
-			col.setName(src.getName());
-			col.setType(
-					useOldType ?
-					Objects.requireNonNullElse(src.getOldType(), src.getType())
-							   :
-					src.getType()
-			);
-			col.setParent(imp);
-			col.setPosition(i);
-			imp.getColumns()[i] = col;
-		}
-		return imp;
-	}
+	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
+		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
+			PreprocessedHeader header = headerReader.readValue(in);
 
-	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
-		for (int bucketNumber : primaryMapping.getUsedBuckets()) {
-			ImportBucket bucket = buckets.get(bucketNumber);
-			//a bucket could be empty since the used buckets coming from the
-			//dictionary could contain ids that have no events (see filter)
-			if (bucket == null) {
-				continue;
+			log.info("Importing {} into {}", header.getName(), table);
+			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
+
+			header.assertMatch(tab);
+
+			log.debug("\tparsing dictionaries");
+			header.getPrimaryColumn().getType().readHeader(in);
+			for (PPColumn col : header.getColumns()) {
+				col.getType().readHeader(in);
 			}
 
-			List<byte[]> buffers = bytes.get(bucketNumber);
-			bucket.setBytes(buffers.toArray(new byte[0][]));
+			header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
+			for (PPColumn col : header.getColumns()) {
+				col.getType().init(namespace.getStorage().getDataset().getId());
+			}
 
-			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
-			if (responsibleWorker == null) {
-				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
-			}
-			try {
-				responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
-			}
-			catch (InterruptedException e) {
-				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
-			}
-			responsibleWorker.send(bucket);
+			return header;
 		}
 	}
 
@@ -286,6 +256,55 @@ public class ImportJob extends Job {
 		return mappingRequired;
 	}
 
+	private Import createImport(PreprocessedHeader header, boolean useOldType) {
+		Import imp = new Import();
+		imp.setName(header.getName());
+		imp.setTable(table);
+		imp.setNumberOfEntries(header.getRows());
+		imp.setSuffix(header.getSuffix());
+		imp.setColumns(new ImportColumn[header.getColumns().length]);
+		for (int i = 0; i < header.getColumns().length; i++) {
+			PPColumn src = header.getColumns()[i];
+			ImportColumn col = new ImportColumn();
+			col.setName(src.getName());
+			col.setType(
+					useOldType ?
+					Objects.requireNonNullElse(src.getOldType(), src.getType())
+							   :
+					src.getType()
+			);
+			col.setParent(imp);
+			col.setPosition(i);
+			imp.getColumns()[i] = col;
+		}
+		return imp;
+	}
+
+	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
+		for (int bucketNumber : primaryMapping.getUsedBuckets()) {
+			ImportBucket bucket = buckets.get(bucketNumber);
+			//a bucket could be empty since the used buckets coming from the
+			//dictionary could contain ids that have no events (see filter)
+			if (bucket == null) {
+				continue;
+			}
+
+			List<byte[]> buffers = bytes.get(bucketNumber);
+
+			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
+			if (responsibleWorker == null) {
+				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
+			}
+			try {
+				responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
+			}
+			catch (InterruptedException e) {
+				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
+			}
+			responsibleWorker.send(bucket);
+		}
+	}
+
 	private boolean createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {
 		AStringType<?> oldType = (AStringType<?>) col.getType();
 		Dictionary source = oldType.getUnderlyingDictionary();
@@ -319,30 +338,6 @@ public class ImportJob extends Job {
 		col.setValueMapping(mapping);
 		col.setType(newType);
 		return true;
-	}
-
-	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
-		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
-			PreprocessedHeader header = headerReader.readValue(in);
-
-			log.info("Importing {} into {}", header.getName(), table);
-			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
-
-			header.assertMatch(tab);
-
-			log.debug("\tparsing dictionaries");
-			header.getPrimaryColumn().getType().readHeader(in);
-			for (PPColumn col : header.getColumns()) {
-				col.getType().readHeader(in);
-			}
-
-			header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
-			for (PPColumn col : header.getColumns()) {
-				col.getType().init(namespace.getStorage().getDataset().getId());
-			}
-
-			return header;
-		}
 	}
 
 	@Override

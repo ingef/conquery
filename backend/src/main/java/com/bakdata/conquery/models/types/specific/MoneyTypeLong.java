@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -24,8 +23,8 @@ public class MoneyTypeLong extends CType<Long, Long> {
 	}
 
 	@Override
-	public ColumnStore createStore(Long[] objects) {
-		return new LongStore(Arrays.stream(objects).mapToLong(Long.class::cast).toArray(), Integer.MAX_VALUE);
+	public ColumnStore createStore(int size) {
+		return LongStore.create(size);
 	}
 
 	@Override

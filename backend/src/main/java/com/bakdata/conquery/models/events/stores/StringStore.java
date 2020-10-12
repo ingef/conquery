@@ -1,46 +1,41 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @Getter
 @CPSType(id = "STRINGS", base = ColumnStore.class)
-public class StringStore extends ColumnStoreAdapter<StringStore> {
+public class StringStore extends ColumnStoreAdapter<Integer, StringStore> {
 
-	private final ColumnStore<?> store;
+	private final ColumnStore<Long> store;
 
 	@JsonCreator
-	public StringStore(ColumnStore<?> store) {
+	public StringStore(ColumnStore<Long> store) {
 		this.store = store;
 	}
 
-	@Override
-	public StringStore merge(List<? extends StringStore> stores) {
-		final List<ColumnStore> collect = stores.stream().map(StringStore::getStore).collect(Collectors.toList());
-
-		final ColumnStore values = collect.get(0).merge(collect);
-
-		return new StringStore(values);
+	public static StringStore create(int size) {
+		return new StringStore(IntegerStore.create(size));
 	}
 
 	@Override
-	public int getString(int event) {
-		return (int) store.getInteger(event);
+	public Integer get(int event) {
+		return store.get(event).intValue();
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+		if(value == null){
+			store.set(event,null);
+			return;
+		}
+		store.set(event, value.longValue());
 	}
 
 	@Override
 	public boolean has(int event) {
 		return store.has(event);
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return getString(event);
 	}
 }

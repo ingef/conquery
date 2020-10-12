@@ -13,7 +13,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
@@ -53,10 +52,8 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	@Override
-	public ColumnStore createStore(ImportColumn column, Object[] objects) {
-
-
-		return new StringStore(column, super.createStore(objects));
+	public ColumnStore createStore(int size) {
+		return StringStore.create(size);
 	}
 
 	@Override

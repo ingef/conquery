@@ -1,28 +1,41 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.io.OutputStream;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "QUARTER_DATES", base = ColumnStore.class)
 @Getter
-public class QuarterDateStore extends ColumnStoreAdapter<QuarterDateStore> {
+public class QuarterDateStore extends ColumnStoreAdapter<CDateRange, QuarterDateStore> {
 
-	private final ColumnStore<?> store;
+	private final ColumnStore<Long> store;
 
 	@JsonCreator
-	public QuarterDateStore(ColumnStore<?> store) {
+	public QuarterDateStore(ColumnStore<Long> store) {
 		this.store = store;
+	}
+
+	public static QuarterDateStore create(int size) {
+		return new QuarterDateStore(IntegerStore.create(size));
+	}
+
+	@Override
+	public void set(int event, CDateRange value) {
+		if (value == null) {
+			store.set(event, null);
+		}
+		else if(value.hasLowerBound()) {
+			store.set(event, (long) value.getMinValue());
+		}
+		else {
+			throw new IllegalArgumentException("Cannot store open dates in QuarterStore");
+		}
 	}
 
 	@Override
@@ -31,32 +44,10 @@ public class QuarterDateStore extends ColumnStoreAdapter<QuarterDateStore> {
 	}
 
 	@Override
-	public QuarterDateStore merge(List<? extends QuarterDateStore> stores) {
-
-		final List<ColumnStore> collect = stores.stream().map(QuarterDateStore::getStore).collect(Collectors.toList());
-
-		final ColumnStore values = collect.get(0).merge(collect);
-
-		return new QuarterDateStore(values);
-	}
-
-	@Override
-	public CDateRange getDateRange(int event) {
+	public CDateRange get(int event) {
 		final int begin = (int) store.getInteger(event);
 		final LocalDate end = QuarterUtils.getLastDayOfQuarter(begin);
 
 		return CDateRange.of(begin, CDate.ofLocalDate(end));
 	}
-
-
-	@Override
-	public Object getAsObject(int event) {
-		return CDate.toLocalDate(getDate(event));
-	}
-
-	@Override
-	public void serialize(OutputStream outputStream) {
-
-	}
-
 }

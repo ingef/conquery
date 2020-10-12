@@ -14,8 +14,8 @@ public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
 	}
 
 	@Override
-	public ColumnStore createStore(Boolean[] objects) {
-		return new BooleanStore(new boolean[objects.length]); // TODO
+	public ColumnStore createStore(int size) {
+		return BooleanStore.create(size);
 	}
 
 	@Override

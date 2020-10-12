@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.types.specific;
 
-import java.util.Arrays;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.IntegerStore;
@@ -22,9 +20,8 @@ public class VarIntTypeInt extends VarIntType {
 	}
 
 	@Override
-	public ColumnStore createStore(Integer[] objects) {
-		// TODO: 03.09.2020 intStore
-		return new IntegerStore(Arrays.stream(objects).mapToInt(Integer.class::cast).toArray(), Integer.MAX_VALUE);
+	public ColumnStore createStore(int size) {
+		return IntegerStore.create(size);
 	}
 
 	@Override

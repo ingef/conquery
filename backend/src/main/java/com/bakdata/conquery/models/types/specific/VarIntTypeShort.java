@@ -20,20 +20,8 @@ public class VarIntTypeShort extends VarIntType {
 	}
 
 	@Override
-	public ColumnStore createStore(Integer[] objects) {
-		// TODO: 03.09.2020 short store
-		short[] values = new short[objects.length];
-
-		for (int index = 0; index < objects.length; index++) {
-			if (objects[index] == null) {
-				values[index] = Short.MAX_VALUE;
-				continue;
-			}
-
-			values[index] = ((Number) objects[index]).shortValue();
-		}
-
-		return new ShortStore(values, Short.MAX_VALUE);
+	public ColumnStore createStore(int size) {
+		return ShortStore.create(size);
 	}
 
 	@Override

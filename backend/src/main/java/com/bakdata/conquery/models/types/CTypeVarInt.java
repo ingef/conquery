@@ -16,8 +16,8 @@ public abstract class CTypeVarInt<MAJOR_JAVA_TYPE extends Number> extends CType<
 	}
 
 	@Override
-	public ColumnStore createStore(MAJOR_JAVA_TYPE[] objects) {
-		return numberType.createStore(objects);
+	public ColumnStore createStore(int size) {
+		return numberType.createStore(size);
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -19,25 +18,25 @@ public class DecimalStore extends ColumnStoreAdapter<BigDecimal, DecimalStore> {
 		this.values = values;
 	}
 
+	public static DecimalStore create(int size) {
+		return new DecimalStore(new BigDecimal[size]);
+	}
+
+	@Override
+	public void set(int event, BigDecimal value) {
+		if(value == null){
+			values[event] = null;
+			return;
+		}
+
+		values[event] = value;
+	}
+
 	@Override
 	public boolean has(int event) {
 		return values[event] != null;
 	}
 
-	@Override
-	public DecimalStore merge(List<DecimalStore> stores) {
-		final int newSize = stores.stream().map(DecimalStore.class::cast).mapToInt(store -> store.values.length).sum();
-		final BigDecimal[] mergedValues = new BigDecimal[newSize];
-
-		int start = 0;
-
-		for (DecimalStore store : stores) {
-			System.arraycopy(store.values, 0, mergedValues, start, store.values.length);
-			start += store.values.length;
-		}
-
-		return new DecimalStore(mergedValues);
-	}
 
 	@Override
 	public BigDecimal get(int event) {

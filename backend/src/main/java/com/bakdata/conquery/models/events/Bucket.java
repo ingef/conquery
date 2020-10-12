@@ -10,21 +10,19 @@ import java.util.stream.IntStream;
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceSerializer;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
@@ -38,18 +36,16 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor(onConstructor_ = {@JsonCreator})
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer> {
 
 	@Min(0)
-	private int bucket;
+	private final int bucket;
 
-	@NsIdRef
-	@JsonSerialize(using = NsIdReferenceSerializer.class)
-	private Import imp;
+	private final ImportId importId;
 
 	@Min(0)
-	private int numberOfEvents = 1; // todo
+	private final int numberOfEvents; // todo
 
 	private final ColumnStore[] stores;
 
@@ -57,27 +53,20 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	private final Map<Integer, Integer> start;
 	private final Map<Integer, Integer> end;
 
-	@Getter(lazy = true)
-	private final int bucketSize = start.size();
 
-	public static Bucket create(int bucket, Import imp, ColumnStore[] stores, int[] entities, int[] ends) {
-		Int2IntArrayMap start = new Int2IntArrayMap();
+	private final int bucketSize;
 
-		start.put(entities[0], 0);
-		for (int index = 1; index < entities.length - 1; index++) {
-			start.put(entities[index], ends[index + 1]);
-		}
-
-		return new Bucket(bucket, imp, ends[ends.length -1], stores, start, new Int2IntArrayMap(entities, ends));
-	}
+	@JsonIgnore
+	private transient Import imp;
 
 	@Override
 	public BucketId createId() {
-		return new BucketId(imp.getId(), bucket);
+		return new BucketId(importId, bucket);
 	}
 
 	/**
 	 * Iterate entities
+	 *
 	 * @return
 	 */
 	@Override
@@ -93,6 +82,19 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 		// TODO
 	}
 
+	public void read(Input input) {
+
+	}
+
+	public Iterable<BucketEntry> entries() {
+		return () -> start.keySet().stream()
+						  .flatMap(entity -> IntStream
+													 .range(getFirstEventOfLocal(entity), getLastEventOfLocal(entity))
+													 .mapToObj(e -> new BucketEntry(entity, e))
+						  )
+						  .iterator();
+	}
+
 	public int getFirstEventOfLocal(int localEntity) {
 		return start.get(localEntity);
 	}
@@ -100,21 +102,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	public int getLastEventOfLocal(int localEntity) {
 		return end.get(localEntity);
 	}
-
-
-	public void read(Input input) {
-
-	}
-
-	public Iterable<BucketEntry> entries() {
-		return () -> start.keySet().stream()
-							 .flatMap(entity -> IntStream
-													.range(getFirstEventOfLocal(entity), getLastEventOfLocal(entity))
-													.mapToObj(e -> new BucketEntry(entity, e))
-							 )
-							 .iterator();
-	}
-
 
 	public final boolean has(int event, Column column) {
 		return stores[column.getPosition()].has(event);
@@ -128,40 +115,39 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 		return stores[column.getPosition()].getInteger(event);
 	}
 
-	public boolean getBoolean(int event, Column column){
+	public boolean getBoolean(int event, Column column) {
 		return stores[column.getPosition()].getBoolean(event);
 	}
 
-	public double getReal(int event, Column column){
+	public double getReal(int event, Column column) {
 		return stores[column.getPosition()].getReal(event);
 	}
 
-	public BigDecimal getDecimal(int event, Column column){
+	public BigDecimal getDecimal(int event, Column column) {
 		return stores[column.getPosition()].getDecimal(event);
 	}
 
-	public long getMoney(int event, Column column){
+	public long getMoney(int event, Column column) {
 		return stores[column.getPosition()].getMoney(event);
 	}
 
-	public int getDate(int event, Column column){
+	public int getDate(int event, Column column) {
 		return stores[column.getPosition()].getDate(event);
 	}
 
-	public CDateRange getDateRange(int event, Column column){
-		return stores[column.getPosition()].getDateRange(event);
-	}
-
-	public CDateRange getAsDateRange(int event, Column currentColumn){
+	public CDateRange getAsDateRange(int event, Column currentColumn) {
 		return getDateRange(event, currentColumn);
 	}
 
+	public CDateRange getDateRange(int event, Column column) {
+		return stores[column.getPosition()].getDateRange(event);
+	}
 
 	public Object getAsObject(int event, Column column) {
 		return stores[column.getPosition()].getAsObject(event);
 	}
 
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges){
+	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
 		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
 	}
 
@@ -186,4 +172,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	}
 
 
+	public int toLocalId(int id) {
+		return id - bucketSize * bucket;
+	}
 }

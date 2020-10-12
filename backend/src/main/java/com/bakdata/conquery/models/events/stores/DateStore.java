@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -12,11 +10,25 @@ import lombok.Getter;
 @Getter
 public class DateStore extends ColumnStoreAdapter<Integer, DateStore> {
 
-	private final ColumnStore<Integer, ?> store;
+	private final ColumnStore<Long> store;
 
 	@JsonCreator
-	public DateStore(ColumnStore<Integer, ?> store) {
+	public DateStore(ColumnStore<Long> store) {
 		this.store = store;
+	}
+
+	public static DateStore create(int size) {
+		return new DateStore(IntegerStore.create(size));
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+		if (value == null) {
+			store.set(event, null);
+			return;
+		}
+
+		store.set(event, (long) value);
 	}
 
 	@Override
@@ -25,18 +37,12 @@ public class DateStore extends ColumnStoreAdapter<Integer, DateStore> {
 	}
 
 	@Override
-	public DateStore merge(List<DateStore> stores) {
-
-		final List<?> collect = stores.stream().map(DateStore::getStore).collect(Collectors.toList());
-
-		final ColumnStore<Integer, ?> values = ((ColumnStore) collect.get(0)).merge(collect);
-
-		return new DateStore(values);
+	public CDateRange getDateRange(int event) {
+		return CDateRange.exactly(get(event));
 	}
-
 
 	@Override
 	public Integer get(int event) {
-		return (int) store.getInteger(event);
+		return store.get(event).intValue();
 	}
 }

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.dictionary;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -19,8 +18,8 @@ public class DirectDictionary extends AStringType<Integer> {
 		this.dict = dict;
 	}
 	@Override
-	public ColumnStore createStore(Integer[] objects) {
-		return new LongStore(Arrays.stream(objects).mapToLong(Long.class::cast).toArray(), Integer.MAX_VALUE);
+	public ColumnStore createStore(int size) {
+		return LongStore.create(size);
 	}
 	
 	@Override

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.types.specific;
 
-import java.util.Arrays;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.DoubleStore;
@@ -21,8 +19,8 @@ public class RealTypeDouble extends CType<Double, Double> {
 	}
 
 	@Override
-	public ColumnStore createStore(Double[] objects) {
-		return new DoubleStore(Arrays.stream(objects).mapToDouble(Double.class::cast).toArray());
+	public ColumnStore createStore(int size) {
+		return DoubleStore.create(size);
 	}
 	
 	@Override

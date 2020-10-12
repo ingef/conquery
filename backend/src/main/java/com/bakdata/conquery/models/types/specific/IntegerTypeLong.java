@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.types.specific;
 
-import java.util.Arrays;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.LongStore;
@@ -25,8 +23,8 @@ public class IntegerTypeLong extends CType<Long, Long> {
 	}
 
 	@Override
-	public ColumnStore createStore(Long[] objects) {
-		return new LongStore(Arrays.stream(objects).mapToLong(Long.class::cast).toArray(), Long.MAX_VALUE);
+	public ColumnStore createStore(int size) {
+		return LongStore.create(size);
 	}
 
 	@Override

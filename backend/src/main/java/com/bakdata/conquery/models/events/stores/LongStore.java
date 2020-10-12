@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,7 +7,7 @@ import lombok.Getter;
 
 @CPSType(id = "LONGS", base = ColumnStore.class)
 @Getter
-public class LongStore extends ColumnStoreAdapter<LongStore> {
+public class LongStore extends ColumnStoreAdapter<Long, LongStore> {
 
 	private final long nullValue;
 	private final long[] values;
@@ -20,21 +18,19 @@ public class LongStore extends ColumnStoreAdapter<LongStore> {
 		this.values = values;
 	}
 
+	public static LongStore create(int size) {
+		return new LongStore(new long[size], Long.MAX_VALUE);
+	}
+
+
 	@Override
-	public LongStore merge(List<? extends LongStore> stores) {
-		final int newSize = stores.stream().map(LongStore.class::cast).mapToInt(store -> store.values.length).sum();
-		final long[] mergedValues = new long[newSize];
-
-		int start = 0;
-
-		for (ColumnStore<?> store : stores) {
-			final LongStore doubleStore = (LongStore) store;
-
-			System.arraycopy(doubleStore.values, 0, mergedValues, start, doubleStore.values.length);
-			start += doubleStore.values.length;
+	public void set(int event, Long value) {
+		if (value == null) {
+			values[event] = nullValue;
+			return;
 		}
 
-		return new LongStore(values, nullValue);
+		values[event] = value;
 	}
 
 	@Override
@@ -43,17 +39,7 @@ public class LongStore extends ColumnStoreAdapter<LongStore> {
 	}
 
 	@Override
-	public long getInteger(int event) {
+	public Long get(int event) {
 		return values[event];
-	}
-
-	@Override
-	public long getMoney(int event) {
-		return getInteger(event);
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return getInteger(event);
 	}
 }

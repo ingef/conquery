@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.stores;
 
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,7 +8,7 @@ import lombok.Getter;
 
 @CPSType(id = "INTEGERS", base = ColumnStore.class)
 @Getter
-public class IntegerStore extends ColumnStoreAdapter<IntegerStore> {
+public class IntegerStore extends ColumnStoreAdapter<Long, IntegerStore> {
 
 	private final int nullValue;
 	private final int[] values;
@@ -21,22 +19,18 @@ public class IntegerStore extends ColumnStoreAdapter<IntegerStore> {
 		this.values = values;
 	}
 
+	public static IntegerStore create(int size) {
+		return new IntegerStore(new int[size], Integer.MAX_VALUE);
+	}
+
 	@Override
-	public IntegerStore merge(List<? extends IntegerStore> stores) {
-
-		final int newSize = stores.stream().map(IntegerStore.class::cast).mapToInt(store -> store.values.length).sum();
-		final int[] mergedValues = new int[newSize];
-
-		int start = 0;
-
-		for (ColumnStore<?> store : stores) {
-			final IntegerStore doubleStore = (IntegerStore) store;
-
-			System.arraycopy(doubleStore.values, 0, mergedValues, start, doubleStore.values.length);
-			start += doubleStore.values.length;
+	public void set(int event, Long value) {
+		if(value == null) {
+			values[event] = nullValue;
+			return;
 		}
 
-		return new IntegerStore(mergedValues, nullValue);
+		values[event] = value.intValue();
 	}
 
 	@Override
@@ -45,12 +39,7 @@ public class IntegerStore extends ColumnStoreAdapter<IntegerStore> {
 	}
 
 	@Override
-	public long getInteger(int event) {
+	public Long get(int event) {
 		return (long) values[event];
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return getInteger(event);
 	}
 }
