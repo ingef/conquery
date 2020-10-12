@@ -55,7 +55,8 @@ public class StoredQueriesProcessor {
 						mq.buildStatus(
 							storage,
 							RequestAwareUriBuilder.fromRequest(req),
-							user));
+							user,
+							datasetRegistry));
 				}
 				catch (Exception e) {
 					log.warn("Could not build status of " + mq, e);
