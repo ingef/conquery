@@ -66,7 +66,7 @@ public class ImportJob extends Job {
 
 	@Override
 	public void execute() throws JSONException {
-		this.progressReporter.setMax(7);
+		getProgressReporter().setMax(7);
 
 		try (HCFile file = new HCFile(importFile, false)) {
 
@@ -75,6 +75,14 @@ public class ImportJob extends Job {
 			}
 
 			PreprocessedHeader header = readHeader(file);
+			
+			//check that there is acually data to import
+			long countImportGroups = header.getGroups();
+			if(countImportGroups <= 0) {
+				log.info("Skipping bucket creation for {} because it contianed {} groups for importing.", importFile, countImportGroups);
+				getProgressReporter().done();
+				return;
+			}
 
 			//check that all workers are connected
 			namespace.checkConnections();
@@ -82,7 +90,7 @@ public class ImportJob extends Job {
 			//update primary dictionary
 			boolean mappingRequired = createMappings(header);
 
-			this.progressReporter.report(1);
+			getProgressReporter().report(1);
 
 			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
 
@@ -116,7 +124,7 @@ public class ImportJob extends Job {
 			namespace.getStorage().updateImport(outImport);
 			namespace.sendToAll(new AddImport(outImport));
 
-			this.progressReporter.report(1);
+			getProgressReporter().report(1);
 
 
 			//import the actual data
@@ -127,12 +135,13 @@ public class ImportJob extends Job {
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 
-			this.progressReporter.setMax(this.progressReporter.getMax() + header.getGroups());
-			ProgressReporter child = this.progressReporter.subJob(header.getGroups());
-			child.setMax(header.getGroups());
+
+			getProgressReporter().setMax(getProgressReporter().getMax() + countImportGroups);
+			ProgressReporter child = getProgressReporter().subJob(countImportGroups);
+			child.setMax(countImportGroups);
 
 			try (Input in = new Input(file.readContent())) {
-				for (long group = 0; group < header.getGroups(); group++) {
+				for (long group = 0; group < countImportGroups; group++) {
 					int entityId = primaryMapping.source2Target(in.readInt(true));
 					int size = in.readInt(true);
 					int bucketNumber = Entity.getBucket(entityId, bucketSize);
@@ -224,7 +233,7 @@ public class ImportJob extends Job {
 	private boolean createMappings(PreprocessedHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
 		Dictionary entities = ((StringTypeEncoded) header.getPrimaryColumn().getType()).getSubType().getDictionary();
-		this.progressReporter.report(1);
+		getProgressReporter().report(1);
 		log.debug("\tcompute dictionary");
 		Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
 		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
@@ -235,7 +244,7 @@ public class ImportJob extends Job {
 		if (primaryMapping.getNewIds() == null) {
 			log.debug("\t\tno new ids");
 			primaryDict = oldPrimaryDict;
-			this.progressReporter.report(2);
+			getProgressReporter().report(2);
 		}
 		//but if there are new ids we have to
 		else {
@@ -245,13 +254,13 @@ public class ImportJob extends Job {
 
 			namespace.getStorage().updateDictionary(primaryDict);
 
-			this.progressReporter.report(1);
+			getProgressReporter().report(1);
 
 			log.debug("\t\tsending");
 
 			namespace.sendToAll(new UpdateDictionary(primaryDict));
 
-			this.progressReporter.report(1);
+			getProgressReporter().report(1);
 		}
 
 		boolean mappingRequired = false;
