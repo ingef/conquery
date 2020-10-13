@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +49,8 @@ import com.bakdata.conquery.util.io.Cloner;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
@@ -136,21 +139,18 @@ public class ImportJob extends Job {
 
 				final ColumnStore<?>[] stores = container.getValues();
 
+				Multimap<Integer, Integer> buckets2LocalEntities = LinkedHashMultimap.create();
+
 				for (Integer entity : container.getStarts().keySet()) {
 					int entityId = primaryMapping.source2Target(entity);
 					int currentBucket = Entity.getBucket(entityId, bucketSize);
+					buckets2LocalEntities.put(currentBucket, entity);
+				}
 
-					if(buckets.containsKey(currentBucket)){
-						continue;
-					}
+				for (Map.Entry<Integer, Collection<Integer>> bucket2entities : buckets2LocalEntities.asMap().entrySet()) {
 
-					final int[] entitiesByStart = container.getStarts()
-														  .entrySet()
-														  .stream()
-														  .filter(entry -> Entity.getBucket(primaryMapping.source2Target(entry.getKey()), bucketSize) == currentBucket)
-														  .sorted(Map.Entry.comparingByValue())
-														  .mapToInt(Map.Entry::getKey)
-														  .toArray();
+					int currentBucket = bucket2entities.getKey();
+					final Collection<Integer> entities = new ArrayList<>(bucket2entities.getValue());
 
 					int[] selStart = new int[entitiesByStart.length];
 					int[] selEnd = new int[entitiesByStart.length];
