@@ -19,6 +19,10 @@ public class ShortStore extends ColumnStoreAdapter<Long, ShortStore> {
 		this.values = values;
 	}
 
+	public ShortStore select(int[] starts, int[] ends) {
+		return new ShortStore(ColumnStore.selectArray(starts, ends, values, short[]::new), nullValue);
+	}
+
 	public static ShortStore create(int size) {
 		return new ShortStore(new short[size], Short.MAX_VALUE);
 	}

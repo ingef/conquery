@@ -22,6 +22,9 @@ public class LongStore extends ColumnStoreAdapter<Long, LongStore> {
 		return new LongStore(new long[size], Long.MAX_VALUE);
 	}
 
+	public LongStore select(int[] starts, int[] ends) {
+		return new LongStore(ColumnStore.selectArray(starts, ends, values, long[]::new), nullValue);
+	}
 
 	@Override
 	public void set(int event, Long value) {

@@ -17,6 +17,10 @@ public class DateRangeStore extends ColumnStoreAdapter<CDateRange, DateRangeStor
 		this.values = ranges;
 	}
 
+	public DateRangeStore select(int[] starts, int[] ends) {
+		return new DateRangeStore(ColumnStore.selectArray(starts, ends, values, CDateRange[]::new));
+	}
+
 	public static DateRangeStore create(int size) {
 		return new DateRangeStore(new CDateRange[size]);
 	}

@@ -3,10 +3,13 @@ package com.bakdata.conquery.models.jobs;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -47,6 +50,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
+import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
@@ -129,29 +134,67 @@ public class ImportJob extends Job {
 			try (InputStream in = new GZIPInputStream(file.readContent())) {
 				final Preprocessed.DataContainer container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
 
-				final ColumnStore[] stores = container.getValues();
+				final ColumnStore<?>[] stores = container.getValues();
 
 				for (Integer entity : container.getStarts().keySet()) {
 					int entityId = primaryMapping.source2Target(entity);
-					int bucketNumber = Entity.getBucket(entityId, bucketSize);
+					int currentBucket = Entity.getBucket(entityId, bucketSize);
 
-					if(buckets.containsKey(bucketNumber)){
+					if(buckets.containsKey(currentBucket)){
 						continue;
 					}
 
-					final HashMap<Integer, Integer> starts = new HashMap<>(container.getStarts());
-					final HashMap<Integer, Integer> ends = new HashMap<>(container.getEnds());
+					final int[] entitiesByStart = container.getStarts()
+														  .entrySet()
+														  .stream()
+														  .filter(entry -> Entity.getBucket(primaryMapping.source2Target(entry.getKey()), bucketSize) == currentBucket)
+														  .sorted(Map.Entry.comparingByValue())
+														  .mapToInt(Map.Entry::getKey)
+														  .toArray();
 
-					starts.keySet().removeIf(id -> Entity.getBucket(id, bucketSize) != bucketNumber);
-					ends.keySet().removeIf(id -> Entity.getBucket(id, bucketSize) != bucketNumber);
+					int[] selStart = new int[entitiesByStart.length];
+					int[] selEnd = new int[entitiesByStart.length];
 
-					buckets.put(bucketNumber, new ImportBucket(
-							new BucketId(outImport.getId(), bucketNumber),
+					for (int index = 0; index < entitiesByStart.length; index++) {
+						int localId = entitiesByStart[index];
+						selStart[index] = container.getStarts().get(localId);
+						selEnd[index] = container.getEnds().get(localId);
+					}
+
+					final List<ColumnStore<?>> list = new ArrayList<>(stores.length);
+					list.addAll(Arrays.asList(stores));
+
+					// copy only the parts of the bucket we need
+					list.replaceAll(store -> store.select(selStart, selEnd));
+
+					int[] lengths = IntStream.range(0, entitiesByStart.length)
+							.map(index -> selEnd[index] - selStart[index])
+							.toArray();
+
+					final Int2IntMap starts = new Int2IntAVLTreeMap();
+					final Int2IntMap ends = new Int2IntAVLTreeMap();
+
+					starts.put(primaryMapping.source2Target(entitiesByStart[0]), 0);
+					ends.put(primaryMapping.source2Target(entitiesByStart[0]), lengths[0]);
+
+					for (int index = 1; index < lengths.length; index++) {
+						int localId = entitiesByStart[index];
+						int globalId = primaryMapping.source2Target(localId);
+
+						final int previousEntity = primaryMapping.source2Target(entitiesByStart[index - 1]);
+
+						starts.put(globalId, ends.get(previousEntity) + 1);
+						ends.put(globalId, starts.get(globalId) + lengths[index] - 1);
+					}
+
+
+					buckets.put(currentBucket, new ImportBucket(
+							new BucketId(outImport.getId(), currentBucket),
 							new Bucket(
-									bucketNumber,
+									currentBucket,
 									outImport.getId(),
 									ends.values().stream().mapToInt(i -> i).max().orElse(0),
-									stores,
+									list.toArray(new ColumnStore[0]),
 									starts,
 									ends,
 									starts.size()

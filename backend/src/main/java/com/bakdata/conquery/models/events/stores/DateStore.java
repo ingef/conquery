@@ -21,6 +21,10 @@ public class DateStore extends ColumnStoreAdapter<Integer, DateStore> {
 		return new DateStore(IntegerStore.create(size));
 	}
 
+	public DateStore select(int[] starts, int[] ends) {
+		return new DateStore(store.select(starts,ends));
+	}
+
 	@Override
 	public void set(int event, Integer value) {
 		if (value == null) {

@@ -22,6 +22,10 @@ public class DecimalStore extends ColumnStoreAdapter<BigDecimal, DecimalStore> {
 		return new DecimalStore(new BigDecimal[size]);
 	}
 
+	public DecimalStore select(int[] starts, int[] ends) {
+		return new DecimalStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
+	}
+
 	@Override
 	public void set(int event, BigDecimal value) {
 		if(value == null){

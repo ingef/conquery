@@ -23,6 +23,10 @@ public class SingletonStringStore extends ColumnStoreAdapter<Integer, SingletonS
 		return new SingletonStringStore("", BooleanStore.create(size));
 	}
 
+	public SingletonStringStore select(int[] starts, int[] ends) {
+		return new SingletonStringStore(value, store.select(starts, ends));
+	}
+
 	@Override
 	public Integer get(int event) {
 		if(has(event)){

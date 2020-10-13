@@ -20,6 +20,10 @@ public class FloatStore extends ColumnStoreAdapter<Double, FloatStore> {
 		return new FloatStore(new float[size]);
 	}
 
+	public FloatStore select(int[] starts, int[] ends) {
+		return new FloatStore(ColumnStore.selectArray(starts, ends, values, float[]::new));
+	}
+
 	@Override
 	public void set(int event, Double value) {
 		if(value == null){

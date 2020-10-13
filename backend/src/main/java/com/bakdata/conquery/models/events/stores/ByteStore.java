@@ -23,6 +23,10 @@ public class ByteStore extends ColumnStoreAdapter<Long, ByteStore> {
 		return new ByteStore(new byte[size], Byte.MAX_VALUE);
 	}
 
+	public ByteStore select(int[] starts, int[] ends) {
+		return new ByteStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
+	}
+
 	@Override
 	public void set(int event, Long value) {
 		if(value == null){

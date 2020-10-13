@@ -25,6 +25,10 @@ public class QuarterDateStore extends ColumnStoreAdapter<CDateRange, QuarterDate
 		return new QuarterDateStore(IntegerStore.create(size));
 	}
 
+	public QuarterDateStore select(int[] starts, int[] ends) {
+		return new QuarterDateStore(store.select(starts, ends));
+	}
+
 	@Override
 	public void set(int event, CDateRange value) {
 		if (value == null) {

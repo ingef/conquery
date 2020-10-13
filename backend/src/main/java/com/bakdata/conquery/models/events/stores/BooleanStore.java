@@ -12,6 +12,8 @@ import lombok.Getter;
 @Getter
 public class BooleanStore extends ColumnStoreAdapter<Boolean, BooleanStore> {
 
+
+
 	@Getter
 	private final boolean[] values;
 
@@ -25,6 +27,9 @@ public class BooleanStore extends ColumnStoreAdapter<Boolean, BooleanStore> {
 		return new BooleanStore(new boolean[size]);
 	}
 
+	public BooleanStore select(int[] starts, int[] ends) {
+		return new BooleanStore(ColumnStore.selectArray(starts, ends, values, boolean[]::new));
+	}
 
 	@Override
 	public void set(int event, Boolean value) {

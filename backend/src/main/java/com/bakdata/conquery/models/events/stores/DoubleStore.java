@@ -20,6 +20,10 @@ public class DoubleStore extends ColumnStoreAdapter<Double, DoubleStore> {
 		return new DoubleStore(new double[size]);
 	}
 
+	public DoubleStore select(int[] starts, int[] ends) {
+		return new DoubleStore(ColumnStore.selectArray(starts, ends, values, double[]::new));
+	}
+
 	@Override
 	public void set(int event, Double value) {
 		if(value == null){

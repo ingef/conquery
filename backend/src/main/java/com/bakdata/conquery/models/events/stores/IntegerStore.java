@@ -23,6 +23,10 @@ public class IntegerStore extends ColumnStoreAdapter<Long, IntegerStore> {
 		return new IntegerStore(new int[size], Integer.MAX_VALUE);
 	}
 
+	public IntegerStore select(int[] starts, int[] ends) {
+		return new IntegerStore(ColumnStore.selectArray(starts, ends, values, int[]::new), nullValue);
+	}
+
 	@Override
 	public void set(int event, Long value) {
 		if(value == null) {

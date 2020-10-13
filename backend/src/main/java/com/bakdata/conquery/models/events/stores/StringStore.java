@@ -25,10 +25,14 @@ public class StringStore extends ColumnStoreAdapter<Integer, StringStore> {
 		return store.get(event).intValue();
 	}
 
+	public StringStore select(int[] starts, int[] ends) {
+		return new StringStore(store.select(starts, ends));
+	}
+
 	@Override
 	public void set(int event, Integer value) {
-		if(value == null){
-			store.set(event,null);
+		if (value == null) {
+			store.set(event, null);
 			return;
 		}
 		store.set(event, value.longValue());

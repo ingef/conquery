@@ -111,6 +111,22 @@ public interface ColumnStore<T> {
 		return out;
 	}
 
+	public static <T> T  selectArray(int[] starts, int[] ends, T values, Function<Integer, T> provider) {
+		final int length = ends[ends.length - 1] - starts[0];
+		final T out = provider.apply(length);
+
+		int pos = 0;
+
+		for (int index = 0; index < starts.length; index++) {
+			System.arraycopy(values, starts[index], out, pos, ends[index] - starts[index]);
+			pos += ends[index] - starts[index];
+		}
+
+		return out;
+	}
+
+	ColumnStore<T> select(int[] starts, int[] ends);
+
 	void set(int event, T value);
 
 	boolean has(int event);

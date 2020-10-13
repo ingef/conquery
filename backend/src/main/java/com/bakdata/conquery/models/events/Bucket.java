@@ -87,10 +87,10 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	}
 
 	public Iterable<BucketEntry> entries() {
-		return () -> start.keySet().stream()
-						  .flatMap(entity -> IntStream
-													 .range(getFirstEventOfLocal(entity), getLastEventOfLocal(entity))
-													 .mapToObj(e -> new BucketEntry(entity, e))
+		return () -> start.keySet()
+						  .stream()
+						  .flatMap(entity -> IntStream.range(getFirstEventOfLocal(entity), getLastEventOfLocal(entity))
+													  .mapToObj(e -> new BucketEntry(entity, e))
 						  )
 						  .iterator();
 	}
