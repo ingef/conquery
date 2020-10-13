@@ -131,16 +131,20 @@ public class ImportJob extends Job {
 			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
 
 			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-
 
 			try (InputStream in = new GZIPInputStream(file.readContent())) {
 				final Preprocessed.DataContainer container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
+
+				if(container.getStarts() == null){
+					log.warn("Import was empty. Skipping.");
+					return;
+				}
 
 				final ColumnStore<?>[] stores = container.getValues();
 
 				Multimap<Integer, Integer> buckets2LocalEntities = LinkedHashMultimap.create();
 
+				// collect entities into their buckets
 				for (Integer entity : container.getStarts().keySet()) {
 					int entityId = primaryMapping.source2Target(entity);
 					int currentBucket = Entity.getBucket(entityId, bucketSize);
@@ -150,13 +154,13 @@ public class ImportJob extends Job {
 				for (Map.Entry<Integer, Collection<Integer>> bucket2entities : buckets2LocalEntities.asMap().entrySet()) {
 
 					int currentBucket = bucket2entities.getKey();
-					final Collection<Integer> entities = new ArrayList<>(bucket2entities.getValue());
+					final List<Integer> entities = new ArrayList<>(bucket2entities.getValue());
 
-					int[] selStart = new int[entitiesByStart.length];
-					int[] selEnd = new int[entitiesByStart.length];
+					int[] selStart = new int[entities.size()];
+					int[] selEnd = new int[entities.size()];
 
-					for (int index = 0; index < entitiesByStart.length; index++) {
-						int localId = entitiesByStart[index];
+					for (int index = 0; index < entities.size(); index++) {
+						int localId = entities.get(index);
 						selStart[index] = container.getStarts().get(localId);
 						selEnd[index] = container.getEnds().get(localId);
 					}
@@ -167,24 +171,24 @@ public class ImportJob extends Job {
 					// copy only the parts of the bucket we need
 					list.replaceAll(store -> store.select(selStart, selEnd));
 
-					int[] lengths = IntStream.range(0, entitiesByStart.length)
+					int[] lengths = IntStream.range(0, selStart.length)
 							.map(index -> selEnd[index] - selStart[index])
 							.toArray();
 
 					final Int2IntMap starts = new Int2IntAVLTreeMap();
 					final Int2IntMap ends = new Int2IntAVLTreeMap();
 
-					starts.put(primaryMapping.source2Target(entitiesByStart[0]), 0);
-					ends.put(primaryMapping.source2Target(entitiesByStart[0]), lengths[0]);
+					starts.put(primaryMapping.source2Target(entities.get(0)), 0);
+					ends.put(primaryMapping.source2Target(entities.get(0)), lengths[0]);
 
 					for (int index = 1; index < lengths.length; index++) {
-						int localId = entitiesByStart[index];
+						int localId = entities.get(index);
 						int globalId = primaryMapping.source2Target(localId);
 
-						final int previousEntity = primaryMapping.source2Target(entitiesByStart[index - 1]);
+						final int previousEntity = primaryMapping.source2Target(entities.get(index - 1));
 
-						starts.put(globalId, ends.get(previousEntity) + 1);
-						ends.put(globalId, starts.get(globalId) + lengths[index] - 1);
+						starts.put(globalId, ends.get(previousEntity));
+						ends.put(globalId, starts.get(globalId) + lengths[index]);
 					}
 
 
@@ -202,7 +206,7 @@ public class ImportJob extends Job {
 				}
 			}
 
-			sendBuckets(primaryMapping, buckets, bytes);
+			sendBuckets(primaryMapping, buckets);
 			getProgressReporter().done();
 		}
 		catch (IOException e) {
@@ -323,7 +327,7 @@ public class ImportJob extends Job {
 		return imp;
 	}
 
-	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
+	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets) {
 		for (int bucketNumber : primaryMapping.getUsedBuckets()) {
 			ImportBucket bucket = buckets.get(bucketNumber);
 			//a bucket could be empty since the used buckets coming from the
@@ -332,7 +336,6 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			List<byte[]> buffers = bytes.get(bucketNumber);
 
 			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
 			if (responsibleWorker == null) {

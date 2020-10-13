@@ -52,6 +52,11 @@ public class MatchingStats {
 			numberOfEvents++;
 			for(Column c : table.getColumns()) {
 				if(c.getType().isDateCompatible()) {
+
+					if(!bucket.has(event,c)){
+						continue;
+					}
+
 					final CDateRange time = bucket.getAsDateRange(event, c);
 
 					if(time == null){

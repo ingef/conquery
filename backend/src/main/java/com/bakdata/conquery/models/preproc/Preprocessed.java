@@ -89,24 +89,22 @@ public class Preprocessed {
 
 		final int nEvents = (int) statistics.getSum();
 
-		log.info("Average size = {}", statistics.getAverage());
+		log.info("Statistics = {}", statistics);
 
-		//TODO make these the column stores
 		columnValues = new ColumnStore[columns.length];
-
 
 		ImportColumn[] impColumns = imp.getColumns();
 
-		for (int index = 0; index < impColumns.length; index++) {
-			final PPColumn ppColumn = columns[index];
+		for (int colIdx = 0; colIdx < impColumns.length; colIdx++) {
+			final PPColumn ppColumn = columns[colIdx];
 
 			final ColumnStore store = ppColumn.getType().createStore(nEvents);
 
-			Map<Integer, List> values = entries.row(index);
+			Map<Integer, List> values = entries.row(colIdx);
 			int start = 0;
 
 			for (Integer entity : entries.columnKeySet()) {
-				List<?> entityValues = values.get(entity);
+				List entityValues = values.get(entity);
 				int length = values.get(entity).size();
 
 				entityStart.put(entity.intValue(), start);
@@ -119,7 +117,7 @@ public class Preprocessed {
 				entityEnd.put(entity.intValue(), start);
 			}
 
-			columnValues[index] = store;
+			columnValues[colIdx] = store;
 		}
 
 

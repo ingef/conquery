@@ -160,7 +160,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 		Map<String, Object> out = new HashMap<>(stores.length);
 
 		for (int i = 0; i < stores.length; i++) {
-			ColumnStore store = stores[i];
+			ColumnStore<?> store = stores[i];
 			if (!store.has(event)) {
 				continue;
 			}
