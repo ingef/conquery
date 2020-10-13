@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,23 +49,39 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		if (preResult.isFailed() || !preResult.isContained()) {
 			return preResult;
 		}
-
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
+		
+		// generate date contexts 
 		BitMapCDateSet dateSet = BitMapCDateSet.parse(Objects.toString(contained.getValues()[0]));
 		final OptionalInt sampled = indexSelector.sample(dateSet);
-
-		// dateset is empty or sampling failed.
-		if (sampled.isEmpty()) {
-			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
-			return preResult;
-		}
-
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
 			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
-
+		
+		// create feature and outcome plans
 		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
 		FormQueryPlan outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
+
+		// determine result length and check against aggregators in query
+		int featureLength = featureSubquery.columnCount();
+		int outcomeLength = outcomeSubquery.columnCount();
+
+		/*
+		 * Whole result is the concatenation of the subresults. The final output format
+		 * combines resolution info, index and eventdate of both sub queries. The
+		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX],
+		 * [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... The wanted
+		 * format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR],
+		 * [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 */
+		int size = featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
+		
+		// dateset is empty or sampling failed.
+		if (sampled.isEmpty()) {
+			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
+			return EntityResult.multilineOf(entity.getId(), ImmutableList.of(new Object[size]));
+		}
+
 
 		MultilineContainedEntityResult featureResult = featureSubquery.execute(ctx, entity);
 		MultilineContainedEntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
@@ -78,18 +95,9 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// determine result length and check against aggregators in query
-		int featureLength = determineResultWidth(featureSubquery, featureResult);
-		int outcomeLength = determineResultWidth(outcomeSubquery, outcomeResult);
+		checkResultWidth(featureResult, size);
+		checkResultWidth(outcomeResult, size);
 
-		/*
-		 * Whole result is the concatenation of the subresults. The final output format
-		 * combines resolution info, index and eventdate of both sub queries. The
-		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX],
-		 * [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... The wanted
-		 * format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR],
-		 * [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
-		 */
-		int size = featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 
 		int resultStartIndex = 0;
 		List<Object[]> values = new ArrayList<>();
@@ -130,11 +138,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return EntityResult.multilineOf(entity.getId(), values);
 	}
 
-	private int determineResultWidth(FormQueryPlan subquery, MultilineContainedEntityResult subResult) {
-		// This is sufficient for NOT_CONTAINTED subresults
-		int resultWidth = subquery.columnCount();
-		// When it's a contained result also check whether the result really has the awaited width
-
+	private int checkResultWidth(EntityResult subResult, int resultWidth) {
 		int resultColumnCount = subResult.asContained().columnCount();
 
 		if(resultColumnCount != resultWidth) {
