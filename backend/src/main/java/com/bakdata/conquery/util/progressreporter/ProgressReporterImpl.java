@@ -61,7 +61,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	}
 	
 	public long getAbsoluteMax() {
-		long absoluteMax = innerProgress;
+		long absoluteMax = max;
 
 		for (ProgressReporterImpl child : children) {
 			absoluteMax += child.getAbsoluteMax();

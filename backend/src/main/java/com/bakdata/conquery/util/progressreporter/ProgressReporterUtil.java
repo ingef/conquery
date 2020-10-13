@@ -9,8 +9,10 @@ import java.time.temporal.ChronoField;
 
 import com.google.common.math.DoubleMath;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 @UtilityClass
+@Slf4j
 public class ProgressReporterUtil {
 
 	private final static DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
@@ -24,8 +26,17 @@ public class ProgressReporterUtil {
 		if (done) {
 			return ProgressReporterUtil.MAX_PROGRESS;
 		}
+		
+		boolean canEstimate = true;
+		long estimateMillis = 0;
+		try {			
+			estimateMillis = DoubleMath.roundToLong(elapsedMillis / progress - elapsedMillis, RoundingMode.HALF_UP);
+		}catch (Exception e) {
+			log.warn("Could not estimate the progress for the current state: done({}), progress({}), elapsedMillis({}), waitedMillis({})", done, progress, elapsedMillis, waitedMillis,e);
+			canEstimate = false;
+		}
 
-		if (progress == 0) {
+		if (progress == 0 || !canEstimate) {
 			return String.format(
 					"waited %s - %3d%% - est. %s",
 					ProgressReporterUtil.TIME_FORMATTER.format(LocalTime.MIDNIGHT.plus(Duration.ofMillis(waitedMillis))),
@@ -34,7 +45,6 @@ public class ProgressReporterUtil {
 			);
 		}
 
-		long estimateMillis = DoubleMath.roundToLong(elapsedMillis / progress - elapsedMillis, RoundingMode.HALF_UP);
 
 		Duration estimate = Duration.ofMillis(estimateMillis);
 
