@@ -63,19 +63,13 @@ public class BucketManager {
 		Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 		Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
 		
-		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets().clone();
-		log.trace("Trying to load these buckets: {}", requiredBuckets);
+		IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets().clone();
+		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 		for (Bucket bucket : storage.getAllBuckets()) {
-			if(!requiredBuckets.contains(bucket.getBucket())) {
+			if(!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
-			else {
-				requiredBuckets.remove(bucket.getBucket());
-			}
 			registerBucket(bucket, entities, storage);
-		}
-		if(!requiredBuckets.isEmpty()) {
-			log.warn("Not all required Buckets were loaded from the storage. Missing Buckets: {}", requiredBuckets);
 		}
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
