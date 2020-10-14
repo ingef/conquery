@@ -1,15 +1,19 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.function.UnaryOperator;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -54,6 +58,18 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		// generate date contexts 
 		BitMapCDateSet dateSet = BitMapCDateSet.parse(Objects.toString(contained.getValues()[0]));
 		final OptionalInt sampled = indexSelector.sample(dateSet);
+		
+		// dateset is empty or sampling failed.
+		if (sampled.isEmpty()) {
+			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
+			List<DateContext> contextsDummy = List.of(new DateContext(CDateRange.all(),FeatureGroup.FEATURE,null,LocalDate.ofEpochDay(0), DateContextMode.COMPLETE),new DateContext(CDateRange.all(),FeatureGroup.OUTCOME,null,LocalDate.ofEpochDay(0), DateContextMode.COMPLETE));
+			// create feature and outcome plans
+			FormQueryPlan featureSubqueryDummy = createSubQuery(featurePlan, contextsDummy, FeatureGroup.FEATURE);
+			FormQueryPlan outcomeSubqueryDummy = createSubQuery(outcomePlan, contextsDummy, FeatureGroup.OUTCOME);
+			// TODO remove this double wrapping 
+			return EntityResult.multilineOf(entity.getId(), ResultModifier.modify(EntityResult.multilineOf(entity.getId(), ImmutableList.of(new Object[calculateCompleteLength(featureSubqueryDummy.columnCount(), outcomeSubqueryDummy.columnCount())])), UnaryOperator.identity()));
+		}
+		
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
 			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
@@ -66,21 +82,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		int featureLength = featureSubquery.columnCount();
 		int outcomeLength = outcomeSubquery.columnCount();
 
-		/*
-		 * Whole result is the concatenation of the subresults. The final output format
-		 * combines resolution info, index and eventdate of both sub queries. The
-		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX],
-		 * [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... The wanted
-		 * format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR],
-		 * [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
-		 */
-		int size = featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
-		
-		// dateset is empty or sampling failed.
-		if (sampled.isEmpty()) {
-			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
-			return EntityResult.multilineOf(entity.getId(), ImmutableList.of(new Object[size]));
-		}
+		int size = calculateCompleteLength(featureLength, outcomeLength);
 
 
 		MultilineContainedEntityResult featureResult = featureSubquery.execute(ctx, entity);
@@ -95,8 +97,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// determine result length and check against aggregators in query
-		checkResultWidth(featureResult, size);
-		checkResultWidth(outcomeResult, size);
+		checkResultWidth(featureResult, featureLength);
+		checkResultWidth(outcomeResult, outcomeLength);
 
 
 		int resultStartIndex = 0;
@@ -136,6 +138,18 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		return EntityResult.multilineOf(entity.getId(), values);
+	}
+
+	private int calculateCompleteLength(int featureLength, int outcomeLength) {
+		/*
+		 * Whole result is the concatenation of the subresults. The final output format
+		 * combines resolution info, index and eventdate of both sub queries. The
+		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX],
+		 * [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... The wanted
+		 * format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR],
+		 * [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 */
+		return featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 	}
 
 	private int checkResultWidth(EntityResult subResult, int resultWidth) {
