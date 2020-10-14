@@ -31,17 +31,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	public WorkerId createId() {
 		return new WorkerId(dataset, getName());
 	}
-	
-	@JsonIgnore
-	public int findLargestEntityId() {
-		int max = -1;
-		for(Integer bucket : includedBuckets) {			
-			if(bucket > max) {
-				max = bucket;
-			}
-		}
-		return max;
-	}
 
 	@Override
 	public ShardNodeInformation getMessageParent() {
