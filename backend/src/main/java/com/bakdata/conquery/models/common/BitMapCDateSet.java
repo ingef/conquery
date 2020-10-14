@@ -44,7 +44,7 @@ public class BitMapCDateSet {
 	private boolean openMin = false;
 	private boolean openMax = false;
 
-	private BitMapCDateSet() {
+	protected BitMapCDateSet() {
 		this(new BitSet(), new BitSet());
 	}
 
