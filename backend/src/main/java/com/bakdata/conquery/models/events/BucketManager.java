@@ -63,7 +63,7 @@ public class BucketManager {
 		Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 		Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
 		
-		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets();
+		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets().clone();
 		log.trace("Trying to load these buckets: {}", requiredBuckets);
 		for (Bucket bucket : storage.getAllBuckets()) {
 			if(!requiredBuckets.contains(bucket.getBucket())) {
