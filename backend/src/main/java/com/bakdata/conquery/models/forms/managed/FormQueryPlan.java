@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 
 @Getter
@@ -57,7 +58,9 @@ public class FormQueryPlan implements QueryPlan {
 						
 			ArrayConceptQueryPlan subPlan = features.clone(clCtx);
 	
-			BitMapCDateSet dateRestriction = BitMapCDateSet.create(ctx.getDateRestriction());
+			BitMapCDateSet dateRestriction = QueryUtils.createPreAllocatedDateSet();
+			dateRestriction.addAll(ctx.getDateRestriction());
+
 			dateRestriction.retainAll(dateContext.getDateRange());
 			EntityResult subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
 			

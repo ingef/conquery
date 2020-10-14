@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -92,7 +93,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
-		BitMapCDateSet dateSet = BitMapCDateSet.create();
+		BitMapCDateSet dateSet = QueryUtils.createPreAllocatedDateSet();
 		int resultInsertIdx = specialDateUnion ? 1 : 0;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {

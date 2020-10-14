@@ -8,13 +8,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.util.QueryUtils;
 
 /**
  * Aggregator, counting the number of days present.
  */
 public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
-	private BitMapCDateSet set = BitMapCDateSet.create();
+	private BitMapCDateSet set = QueryUtils.createPreAllocatedDateSet();
 	private BitMapCDateSet dateRestriction;
 
 	public DurationSumAggregator(Column column) {

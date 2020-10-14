@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,14 +34,11 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		//if there was no date restriction we can just use the restriction BitMapCDateSet
-		if(ctx.getDateRestriction().isAll()) {
-			ctx = ctx.withDateRestriction(BitMapCDateSet.create(restriction));
-		}
-		else {
-			BitMapCDateSet dateRestriction = BitMapCDateSet.create(ctx.getDateRestriction());
-			dateRestriction.retainAll(restriction);
-			ctx = ctx.withDateRestriction(dateRestriction);
-		}
+		final BitMapCDateSet restricted = QueryUtils.createPreAllocatedDateSet();
+		restricted.addAll(restriction);
+		restricted.retainAll(restriction);
+
+		ctx = ctx.withDateRestriction(restricted);
 		super.nextTable(ctx, currentTable);
 
 

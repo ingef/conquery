@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 
 /**
@@ -125,7 +126,8 @@ public class TemporalQueryNode extends QPNode {
 		}
 
 		// Create copy as we are mutating the set
-		BitMapCDateSet precedingDurations = BitMapCDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
+		BitMapCDateSet precedingDurations = QueryUtils.createPreAllocatedDateSet();
+		precedingDurations.addAll(getPreceding().getChild().getSpecialDateUnion().getResultSet());
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 
