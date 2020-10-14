@@ -6,9 +6,7 @@ import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.Transformer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -21,8 +19,6 @@ public class PPColumn {
 	@SuppressWarnings("rawtypes") @NotNull
 	private CType type;
 	@SuppressWarnings("rawtypes") @JsonIgnore
-	private transient Transformer transformer = null;
-	@SuppressWarnings("rawtypes") @JsonIgnore
 	private transient Parser parser = null;
 	@JsonIgnore
 	private transient DictionaryMapping valueMapping;
@@ -32,6 +28,5 @@ public class PPColumn {
 	public void findBestType() {
 		Decision typeDecision = parser.findBestType();
 		type = typeDecision.getType();
-		transformer = typeDecision.getTransformer();
 	}
 }

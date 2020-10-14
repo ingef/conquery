@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.StringStore;
+import com.bakdata.conquery.models.events.stores.NumberStringStore;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -33,7 +33,7 @@ public class StringTypeNumber extends AStringType<Number> {
 
 	@Override
 	public ColumnStore createStore(int size) {
-		return StringStore.create(size);
+		return NumberStringStore.create(size);
 	}
 
 	@Override

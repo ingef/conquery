@@ -9,22 +9,15 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.types.parser.specific.DateParser;
-import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
-import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import io.dropwizard.util.Size;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -41,14 +34,8 @@ public class Preprocessed {
 	private final TableImportDescriptor descriptor;
 	// by-column by-entity
 	private final transient Table<Integer, Integer, List> entries;
-	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 	private long rows = 0;
-	private CDateRange eventRange;
-	private long writtenGroups = 0;
-	private IntSet entities = new IntAVLTreeSet();
-	private ColumnStore[] columnValues;
-	private Int2IntMap entityStart = new Int2IntAVLTreeMap();
-	private Int2IntMap entityEnd = new Int2IntAVLTreeMap();
+
 
 	public Preprocessed(TableImportDescriptor descriptor) throws IOException {
 		this.file = descriptor.getInputFile();
@@ -91,7 +78,10 @@ public class Preprocessed {
 
 		log.info("Statistics = {}", statistics);
 
-		columnValues = new ColumnStore[columns.length];
+		Int2IntMap entityStart = new Int2IntAVLTreeMap();
+		Int2IntMap entityEnd = new Int2IntAVLTreeMap();
+
+		ColumnStore[] columnValues = new ColumnStore[columns.length];
 
 		ImportColumn[] impColumns = imp.getColumns();
 
@@ -134,8 +124,6 @@ public class Preprocessed {
 					descriptor.getTable(),
 					imp.getSuffix(),
 					rows,
-					writtenGroups,
-					eventRange,
 					primaryColumn,
 					columns,
 					hash
@@ -157,7 +145,6 @@ public class Preprocessed {
 
 	public synchronized int addPrimary(int primary) {
 		primaryColumn.getParser().addLine(primary);
-		entities.add(primary);
 		return primary;
 	}
 
@@ -172,32 +159,9 @@ public class Preprocessed {
 
 		//update stats
 		rows++;
-		for (int i = 0; i < columns.length; i++) {
-			if (outRow[i] == null) {
-				continue;
-			}
-
-			if (columns[i].getParser() instanceof DateParser) {
-				extendEventRange(CDateRange.exactly((Integer) outRow[i]));
-			}
-			else if (columns[i].getParser() instanceof DateRangeParser) {
-				extendEventRange((CDateRange) outRow[i]);
-			}
-		}
-
 	}
 
-	/**
-	 * Collect date span of all data.
-	 */
-	private void extendEventRange(CDateRange range) {
-		if (eventRange == null) {
-			eventRange = range;
-		}
-		else if (range != null) {
-			eventRange = eventRange.spanClosed(range);
-		}
-	}
+
 
 	@Data
 	@AllArgsConstructor(onConstructor_ = @JsonCreator)

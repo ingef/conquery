@@ -26,7 +26,7 @@ public class StringTypeSuffix extends AChainedStringType {
 
 	@Override
 	public ColumnStore createStore(int size) {
-		return StringStore.create(size);
+		return StringStore.create(size, subType.getUnderlyingDictionary());
 	}
 
 	@Override

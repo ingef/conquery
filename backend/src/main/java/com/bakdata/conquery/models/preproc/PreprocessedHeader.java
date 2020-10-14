@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.preproc;
 
 import java.util.StringJoiner;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,16 +32,6 @@ public class PreprocessedHeader {
 	 * Number of rows in the Preprocessed file.
 	 */
 	private long rows;
-
-	/**
-	 * Number of entities in the file.
-	 */
-	private long groups;
-
-	/**
-	 * Range spanning all data over all date based columns.
-	 */
-	private CDateRange eventRange;
 
 	/**
 	 * Name of the primary column.

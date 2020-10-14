@@ -53,7 +53,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@Override
 	public ColumnStore createStore(int size) {
-		return StringStore.create(size);
+		return StringStore.create(size, getDictionary());
 	}
 
 	@Override

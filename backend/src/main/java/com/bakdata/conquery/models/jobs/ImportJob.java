@@ -380,7 +380,6 @@ public class ImportJob extends Job {
 
 		newType.adaptUnderlyingDictionary(shared, decision.getType());
 		col.setOldType(oldType);
-		col.setTransformer(decision.getTransformer());
 		col.setValueMapping(mapping);
 		col.setType(newType);
 		return true;

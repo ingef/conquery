@@ -1,33 +1,29 @@
 package com.bakdata.conquery.models.events.stores;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @Getter
-@CPSType(id = "STRINGS", base = ColumnStore.class)
-public class StringStore extends ColumnStoreAdapter<Integer, StringStore> {
+@CPSType(id = "NUMBER_STRINGS", base = ColumnStore.class)
+public class NumberStringStore extends ColumnStoreAdapter<Integer, NumberStringStore> {
 
 	private final ColumnStore<Long> store;
 
-	private final Dictionary dictionary;
 
 	@JsonCreator
-	public StringStore(ColumnStore<Long> store, @NsIdRef Dictionary dictionary) {
+	public NumberStringStore(ColumnStore<Long> store) {
 		this.store = store;
-		this.dictionary = dictionary;
 	}
 
 	@Override
 	public Object getAsObject(int event) {
-		return dictionary.getElement(get(event));
+		return Integer.toString(get(event));
 	}
 
-	public static StringStore create(int size, @NsIdRef Dictionary dictionary) {
-		return new StringStore(IntegerStore.create(size), dictionary);
+	public static NumberStringStore create(int size) {
+		return new NumberStringStore(IntegerStore.create(size));
 	}
 
 	@Override
@@ -35,8 +31,8 @@ public class StringStore extends ColumnStoreAdapter<Integer, StringStore> {
 		return store.get(event).intValue();
 	}
 
-	public StringStore select(int[] starts, int[] ends) {
-		return new StringStore(store.select(starts, ends), dictionary);
+	public NumberStringStore select(int[] starts, int[] ends) {
+		return new NumberStringStore(store.select(starts, ends));
 	}
 
 	@Override
