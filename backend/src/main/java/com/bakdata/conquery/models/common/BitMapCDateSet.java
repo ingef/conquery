@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -32,6 +34,7 @@ import lombok.NonNull;
  */
 @JsonDeserialize(using = CDateSetDeserializer.class)
 @JsonSerialize(using = CDateSetSerializer.class)
+@Getter(AccessLevel.PROTECTED)
 public class BitMapCDateSet {
 
 	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
@@ -78,13 +81,13 @@ public class BitMapCDateSet {
 	}
 
 	public static BitMapCDateSet create(BitMapCDateSet orig) {
-		final BitMapCDateSet set = createPreallocated(orig.negativeBits.length(), orig.positiveBits.length());
+		final BitMapCDateSet set = createPreallocated(orig.getNegativeBits().length(), orig.getPositiveBits().length());
 
-		set.positiveBits.or(orig.positiveBits);
-		set.negativeBits.or(orig.negativeBits);
+		set.positiveBits.or(orig.getPositiveBits());
+		set.negativeBits.or(orig.getNegativeBits());
 
-		set.openMax = orig.openMax;
-		set.openMin = orig.openMin;
+		set.openMax = orig.isOpenMax();
+		set.openMin = orig.isOpenMin();
 
 		return set;
 	}
@@ -205,19 +208,19 @@ public class BitMapCDateSet {
 	}
 
 	public void addAll(BitMapCDateSet other) {
-		positiveBits.or(other.positiveBits);
-		negativeBits.or(other.negativeBits);
+		positiveBits.or(other.getPositiveBits());
+		negativeBits.or(other.getNegativeBits());
 
-		openMax = openMax || other.openMax;
-		openMin = openMin || other.openMin;
+		openMax = openMax || other.isOpenMax();
+		openMin = openMin || other.isOpenMin();
 	}
 
 	public void removeAll(BitMapCDateSet other) {
-		positiveBits.andNot(other.positiveBits);
-		negativeBits.andNot(other.negativeBits);
+		positiveBits.andNot(other.getPositiveBits());
+		negativeBits.andNot(other.getNegativeBits());
 
-		openMin = !other.openMin && openMin;
-		openMax = !other.openMax && openMax;
+		openMin = !other.isOpenMin() && openMin;
+		openMax = !other.isOpenMax() && openMax;
 	}
 
 	public void addAll(Iterable<CDateRange> ranges) {
@@ -586,11 +589,11 @@ public class BitMapCDateSet {
 		}
 
 		if (isAll()) {
-			negativeBits.or(retained.negativeBits);
-			positiveBits.or(retained.positiveBits);
+			negativeBits.or(retained.getNegativeBits());
+			positiveBits.or(retained.getPositiveBits());
 
-			openMin = openMin && retained.openMin;
-			openMax = openMax && retained.openMax;
+			openMin = openMin && retained.isOpenMin();
+			openMax = openMax && retained.isOpenMax();
 
 			return;
 		}
@@ -604,11 +607,11 @@ public class BitMapCDateSet {
 			setRange(retained.getMinRealValue(), getMinRealValue());
 		}
 
-		negativeBits.and(retained.negativeBits);
-		positiveBits.and(retained.positiveBits);
+		negativeBits.and(retained.getNegativeBits());
+		positiveBits.and(retained.getPositiveBits());
 
-		openMin = openMin && retained.openMin;
-		openMax = openMax && retained.openMax;
+		openMin = openMin && retained.isOpenMin();
+		openMax = openMax && retained.isOpenMax();
 	}
 
 	public void retainAll(CDateRange retained) {
