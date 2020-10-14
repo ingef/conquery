@@ -27,7 +27,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	protected SingletonStore<StructureNode[]> structure;
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator, config, directory);
+		super(validator, config, directory, true);
 	}
 
 
