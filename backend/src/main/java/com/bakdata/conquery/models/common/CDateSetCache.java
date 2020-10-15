@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.common;
 
 import java.lang.ref.Cleaner;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -13,7 +15,7 @@ import org.apache.commons.collections4.queue.SynchronizedQueue;
 @Slf4j
 public class CDateSetCache {
 
-	protected final Queue<Container> pool;
+	protected final Queue<Reference<Container>> pool;
 	private final Cleaner cleaner = Cleaner.create();
 
 	public CDateSetCache() {
@@ -27,20 +29,23 @@ public class CDateSetCache {
 
 		cleaner.register(back, () -> {
 			log.info("Releasing Object");
-			pool.add(container);
-		});
 
-		back.clear();
+			container.getLeft().clear();
+			container.getRight().clear();
+
+			pool.add(new WeakReference<>(container));
+		});
 
 		return back;
 	}
 
 	private BitMapCDateSet doAcquire() {
-		Container id = pool.poll();
+		Reference<Container> reference;
+		Container container;
 
-		if (id != null) {
+		while ((reference = pool.poll()) != null && (container = reference.get()) != null) {
 			log.info("Found prior Object");
-			return new BitMapCDateSet(id.getLeft(), id.getRight());
+			return new BitMapCDateSet(container.getLeft(), container.getRight());
 		}
 
 		log.info("Creating new new Object.");
