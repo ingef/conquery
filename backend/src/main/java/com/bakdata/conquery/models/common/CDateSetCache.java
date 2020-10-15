@@ -42,8 +42,6 @@ public class CDateSetCache {
 		final Container container = new Container(out.getNegativeBits(), out.getPositiveBits());
 
 		cleaner.register(out, () -> {
-			log.trace("Object was released.");
-
 			// Reset the bitsets
 			container.getLeft().clear();
 			container.getRight().clear();
@@ -62,10 +60,6 @@ public class CDateSetCache {
 		Reference<Container> reference;
 		Container container;
 
-		if(log.isTraceEnabled()) {
-			log.trace("Have {} Objects available", pool.size());
-		}
-
 		while (true) {
 			reference = pool.poll();
 
@@ -81,11 +75,9 @@ public class CDateSetCache {
 				continue;
 			}
 
-			log.trace("Found prior Object");
 			return new BitMapCDateSet(container.getLeft(), container.getRight());
 		}
 
-		log.trace("Creating new new Object.");
 		return BitMapCDateSet.create();
 	}
 
