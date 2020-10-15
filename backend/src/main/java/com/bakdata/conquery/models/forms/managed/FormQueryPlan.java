@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.UnaryOperator;
+import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDateSetCache;
@@ -49,7 +49,7 @@ public class FormQueryPlan implements QueryPlan {
 		features.init(ctx,entity);
 
 		if (!isOfInterest(entity)) {
-			return EntityResult.multilineOf(entity.getId(), ResultModifier.modify(EntityResult.notContained(), features.getAggregators(), UnaryOperator.identity()));
+			return createResultForNotContained(entity, null);
 		}
 
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
@@ -66,16 +66,30 @@ public class FormQueryPlan implements QueryPlan {
 			dateRestriction.retainAll(dateContext.getDateRange());
 			EntityResult subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
 			
+			if(subResult.isFailed()) {
+				throw subResult.asFailed().getError();
+			}
+			
+			if(!subResult.isContained()) {
+				resultValues.addAll(createResultForNotContained(entity, dateContext).listResultLines());
+				continue;
+			}
+			
 			resultValues.addAll(
 				ResultModifier.modify(
-					subResult,
-					subPlan.getAggregators(),
-					v->addConstants(v, dateContext)
-				)
+					subResult.asContained(),
+					ResultModifier.existAggValuesSetterFor(subPlan.getAggregators(), OptionalInt.of(0)).unaryAndThen(v->addConstants(v, dateContext))
+				).listResultLines()
 			);
 		}
 		
 		return EntityResult.multilineOf(entity.getId(), resultValues);
+	}
+
+	private MultilineContainedEntityResult createResultForNotContained(Entity entity, DateContext dateContext) {
+		List<Object[]> result = new ArrayList<>();
+		result.add(new Object[getAggregators().size()]);
+		return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), result), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0)).unaryAndThen( v->addConstants(v, dateContext)));
 	}
 	
 	public List<Aggregator<?>> getAggregators() {
@@ -85,6 +99,10 @@ public class FormQueryPlan implements QueryPlan {
 	private Object[] addConstants(Object[] values, DateContext dateContext) {		
 		Object[] result = new Object[values.length + constantCount];
 		System.arraycopy(values, 0, result, constantCount, values.length);
+		
+		if(dateContext == null) {
+			return result;
+		}
 		
 		//add resolution indicator
 		result[0] = dateContext.getSubdivisionMode().toString();	
