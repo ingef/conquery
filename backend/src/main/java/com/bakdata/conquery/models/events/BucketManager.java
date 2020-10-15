@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
+import com.google.common.collect.HashBasedTable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -58,11 +59,17 @@ public class BucketManager {
 	 * Connector -> Bucket -> [CBlock]
 	 */
 	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks;
-	
+
+	/**
+	 * Table -> BucketId -> [Buckets]
+	 */
+	private final com.google.common.collect.Table<TableId, Integer, List<Bucket>> bucketTables;
+
 	public static BucketManager create(Worker worker, WorkerStorage storage) {
 		Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 		Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
-		
+		com.google.common.collect.Table<TableId, Integer, List<Bucket>> bucketTables = HashBasedTable.create();
+
 		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets: {}", requiredBuckets);
 		for (Bucket bucket : storage.getAllBuckets()) {
@@ -72,7 +79,7 @@ public class BucketManager {
 			else {
 				requiredBuckets.remove(bucket.getBucket());
 			}
-			registerBucket(bucket, entities, storage);
+			registerBucket(bucket, entities, storage, bucketTables);
 		}
 		if(!requiredBuckets.isEmpty()) {
 			log.warn("Not all required Buckets were loaded from the storage. Missing Buckets: {}", requiredBuckets);
@@ -82,7 +89,7 @@ public class BucketManager {
 			registerCBlock(cBlock, entities, storage, connectorCBlocks);
 		}
 		
-		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks);
+		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks, bucketTables);
 	}
 
 	@SneakyThrows
@@ -123,10 +130,19 @@ public class BucketManager {
 		}
 	}
 
-	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage) {
+	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage, com.google.common.collect.Table<TableId, Integer, List<Bucket>> bucketTables) {
 		for (int entity : bucket) {
 			entities.computeIfAbsent(entity, createEntityFor(bucket, storage));
 		}
+		final TableId table = bucket.getImp().getTable();
+		List<Bucket> buckets = bucketTables.get(table, bucket.getBucket());
+
+		if(buckets == null){
+			buckets = new ArrayList<>();
+			bucketTables.put(table, bucket.getBucket(), buckets);
+		}
+
+		buckets.add(bucket);
 	}
 
 	/**
@@ -168,7 +184,7 @@ public class BucketManager {
 
 	public void addBucket(Bucket bucket) {
 		storage.addBucket(bucket);
-		registerBucket(bucket, entities, storage);
+		registerBucket(bucket, entities, storage, bucketTables);
 
 		for (Concept<?> c : storage.getAllConcepts()) {
 			for (Connector con : c.getConnectors()) {
@@ -351,26 +367,11 @@ public class BucketManager {
 		return storage.getBucket(id);
 	}
 
+
+
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
 		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
-
-		final List<Bucket> buckets = new ArrayList<>();
-
-		for (Import imp : storage.getAllImports()) {
-			if (!imp.getTable().equals(tableId)) {
-				continue;
-			}
-			
-			final Bucket bucket = getBucket(new BucketId(imp.getId(), bucketId));
-
-			if(bucket == null){
-				continue;
-			}
-
-			buckets.add(bucket);
-		}
-
-		return buckets;
+		return bucketTables.get(tableId, bucketId);
 	}
 
 
