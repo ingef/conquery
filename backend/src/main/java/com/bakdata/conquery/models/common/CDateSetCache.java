@@ -62,7 +62,9 @@ public class CDateSetCache {
 		Reference<Container> reference;
 		Container container;
 
-		log.trace("Have {} Objects available", pool.size());
+		if(log.isTraceEnabled()) {
+			log.trace("Have {} Objects available", pool.size());
+		}
 
 		while (true) {
 			reference = pool.poll();
