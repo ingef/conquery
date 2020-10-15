@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,7 +34,7 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		//if there was no date restriction we can just use the restriction BitMapCDateSet
-		final BitMapCDateSet restricted = QueryUtils.createPreAllocatedDateSet();
+		final BitMapCDateSet restricted = CDateSetCache.createPreAllocatedDateSet();
 		restricted.addAll(restriction);
 		restricted.retainAll(restriction);
 

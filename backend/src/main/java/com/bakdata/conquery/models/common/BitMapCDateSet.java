@@ -38,12 +38,13 @@ public class BitMapCDateSet {
 
 	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
 
-	/**
-	 * @implNote bit 0 of negativeBits is never set as it overlaps with bit 0 of positiveBits. This is a waste of 1 bit to make code easier to read.
-	 */
+
 	@Getter(AccessLevel.PACKAGE)
 	private final BitSet positiveBits;
 
+	/**
+	 * @implNote bit 0 of negativeBits is never set as it overlaps with bit 0 of positiveBits. This is a waste of 1 bit to make code easier to read.
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final BitSet negativeBits;
 

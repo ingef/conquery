@@ -13,17 +13,26 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Cache to avoid constant reallocation of huge CDateSets, instead cache/reuse their BitSets by way of a {@link Cleaner} that hooks into the GC and will give us those objects back.
- *
+ * <p>
  * The underlying data-structures are also maintained as {@link SoftReference} such that they are also subject to GC when memory is demanded.
  */
 @Slf4j
 public class CDateSetCache {
 
+	private static final CDateSetCache dateSetCache = new CDateSetCache();
 	protected final Queue<Reference<Container>> pool;
 	private final Cleaner cleaner = Cleaner.create();
 
-	public CDateSetCache() {
+	private CDateSetCache() {
 		pool = new ConcurrentLinkedQueue<>();
+	}
+
+	/**
+	 * Preallocate the DateSet, such that typical queries don't have to grow them while executing.
+	 * The numbers are just best guesses and can be fine tuned if desired but configuration is probably not important.
+	 */
+	public static BitMapCDateSet createPreAllocatedDateSet() {
+		return dateSetCache.acquire();
 	}
 
 	public BitMapCDateSet acquire() {
@@ -59,14 +68,14 @@ public class CDateSetCache {
 			reference = pool.poll();
 
 			// Pool is empty?
-			if(reference == null){
+			if (reference == null) {
 				break;
 			}
 
 			container = reference.get();
 
 			// Reference was cleared by GC?
-			if(container == null){
+			if (container == null) {
 				continue;
 			}
 

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.concept.specific;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -133,7 +132,7 @@ public class CQExternal implements CQElement {
 		EVENT_DATE {
 			@Override
 			public BitMapCDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return BitMapCDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]]))));
+				return BitMapCDateSet.create(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]])));
 			}
 		},
 		START_END_DATE {
@@ -141,30 +140,24 @@ public class CQExternal implements CQElement {
 			public BitMapCDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.parseToLocalDate(row[dateIndices[0]]);
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
-					null :
-								 DateFormats.parseToLocalDate(row[dateIndices[1]]);
+								null :
+								DateFormats.parseToLocalDate(row[dateIndices[1]]);
 
 				CDateRange range;
-				if (start != null && end != null) {
-					range = CDateRange.of(start, end);
-				}
-				else if (start != null) {
-					range = CDateRange.atLeast(start);
-				}
-				else if (end != null) {
-					range = CDateRange.atMost(end);
-				}
-				else {
+				if (start == null && end == null) {
 					return null;
 				}
+				else {
+					range = CDateRange.of(start, end);
+				}
 
-				return BitMapCDateSet.create(Collections.singleton(range));
+				return BitMapCDateSet.create(range);
 			}
 		},
 		DATE_RANGE {
 			@Override
 			public BitMapCDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return BitMapCDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]])));
+				return BitMapCDateSet.create(DateRangeParser.parseISORange(row[dateIndices[0]]));
 			}
 		},
 		DATE_SET {
