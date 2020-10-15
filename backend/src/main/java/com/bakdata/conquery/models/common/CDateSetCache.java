@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.common;
 
 import java.lang.ref.Cleaner;
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -33,7 +33,7 @@ public class CDateSetCache {
 			container.getLeft().clear();
 			container.getRight().clear();
 
-			pool.add(new WeakReference<>(container));
+			pool.add(new SoftReference<>(container));
 		});
 
 		return back;
@@ -43,7 +43,13 @@ public class CDateSetCache {
 		Reference<Container> reference;
 		Container container;
 
-		while ((reference = pool.poll()) != null && (container = reference.get()) != null) {
+		while ((reference = pool.poll()) != null) {
+			container = reference.get();
+
+			if(container == null){
+				continue;
+			}
+
 			log.info("Found prior Object");
 			return new BitMapCDateSet(container.getLeft(), container.getRight());
 		}
