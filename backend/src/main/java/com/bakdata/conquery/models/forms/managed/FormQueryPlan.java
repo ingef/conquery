@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDateSetCache;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
@@ -47,7 +49,7 @@ public class FormQueryPlan implements QueryPlan {
 		features.init(ctx,entity);
 
 		if (!isOfInterest(entity)) {
-			return EntityResult.multilineOf(entity.getId(), new ArrayList<>(columnCount()));
+			return EntityResult.multilineOf(entity.getId(), ResultModifier.modify(EntityResult.notContained(), features.getAggregators(), UnaryOperator.identity()));
 		}
 
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
@@ -74,6 +76,10 @@ public class FormQueryPlan implements QueryPlan {
 		}
 		
 		return EntityResult.multilineOf(entity.getId(), resultValues);
+	}
+	
+	public List<Aggregator<?>> getAggregators() {
+		return features.getAggregators();
 	}
 	
 	private Object[] addConstants(Object[] values, DateContext dateContext) {		

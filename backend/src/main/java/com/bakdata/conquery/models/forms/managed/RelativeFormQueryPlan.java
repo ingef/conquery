@@ -19,11 +19,13 @@ import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampl
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,8 +68,10 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			// create feature and outcome plans
 			FormQueryPlan featureSubqueryDummy = createSubQuery(featurePlan, contextsDummy, FeatureGroup.FEATURE);
 			FormQueryPlan outcomeSubqueryDummy = createSubQuery(outcomePlan, contextsDummy, FeatureGroup.OUTCOME);
+			List<Object[]> results = new ArrayList<>();
+			results.add(new Object[calculateCompleteLength(featureSubqueryDummy.columnCount(), outcomeSubqueryDummy.columnCount())]);
 			// TODO remove this double wrapping 
-			return EntityResult.multilineOf(entity.getId(), ResultModifier.modify(EntityResult.multilineOf(entity.getId(), ImmutableList.of(new Object[calculateCompleteLength(featureSubqueryDummy.columnCount(), outcomeSubqueryDummy.columnCount())])), UnaryOperator.identity()));
+			return EntityResult.multilineOf(entity.getId(), ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), UnaryOperator.identity()));
 		}
 		
 		int sample = sampled.getAsInt();
@@ -195,6 +199,10 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		// copy daterange
 		result[OUTCOME_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
 		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, 1 + featureLength, value.length - (DATE_RANGE_SUB_RESULT+1));
+	}
+	
+	public List<Aggregator<?>> getAggregators() {
+		return ImmutableList.copyOf(Iterables.concat(featurePlan.getAggregators(),outcomePlan.getAggregators()));
 	}
 
 	@Override
