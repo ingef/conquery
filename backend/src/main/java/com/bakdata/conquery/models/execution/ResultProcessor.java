@@ -38,7 +38,7 @@ public class ResultProcessor {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
-		ManagedExecution<?> exec = namespaces.getMetaStorage().getExecution(queryId);
+		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
 		
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
@@ -46,7 +46,7 @@ public class ResultProcessor {
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 		
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get());
+		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 		try {

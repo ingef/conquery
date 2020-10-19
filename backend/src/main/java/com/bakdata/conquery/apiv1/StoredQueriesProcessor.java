@@ -32,11 +32,11 @@ import lombok.extern.slf4j.Slf4j;
 public class StoredQueriesProcessor {
 
 	@Getter
-	private final DatasetRegistry datasets;
+	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
 
 	public StoredQueriesProcessor(DatasetRegistry datasets) {
-		this.datasets = datasets;
+		this.datasetRegistry = datasets;
 		this.storage = datasets.getMetaStorage();
 	}
 
@@ -55,7 +55,8 @@ public class StoredQueriesProcessor {
 						mq.buildStatus(
 							storage,
 							RequestAwareUriBuilder.fromRequest(req),
-							user));
+							user,
+							datasetRegistry));
 				}
 				catch (Exception e) {
 					log.warn("Could not build status of " + mq, e);
@@ -88,8 +89,8 @@ public class StoredQueriesProcessor {
 		storage.updateExecution(execution);
 		
 		// Patch this query in other datasets
-		List<Dataset> remainingDatasets = datasets.getAllDatasets(() -> new ArrayList<>());
-		remainingDatasets.remove(datasets.get(executionId.getDataset()).getDataset());
+		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets(() -> new ArrayList<>());
+		remainingDatasets.remove(datasetRegistry.get(executionId.getDataset()).getDataset());
 		for(Dataset dataset : remainingDatasets) {
 			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(),executionId.getExecution());
 			execution = storage.getExecution(id);

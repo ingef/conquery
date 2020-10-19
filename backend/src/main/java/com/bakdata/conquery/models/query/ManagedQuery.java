@@ -144,10 +144,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions();
+			columnDescriptions = generateColumnDescriptions(datasetRegistry);
 		}
 		status.setColumnDescriptions(columnDescriptions);
 	}
@@ -155,7 +155,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	/**
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
-	public List<ColumnDescriptor> generateColumnDescriptions() {
+	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 		// First add the id columns to the descriptor list. The are the first columns
 		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
@@ -165,7 +165,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 				.build());
 		}
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry);
 		collectResultInfos().getInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;
 	}
