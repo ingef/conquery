@@ -218,6 +218,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
 	public final Optional<URL> getDownloadURL(UriBuilder url, User user) {
 		if(url == null || !isReadyToDownload(url, user)) {
+			// url might be null because no url was wished and no builder was provided
 			return Optional.empty();
 		}
 		return Optional.ofNullable(getDownloadURLInternal(url));

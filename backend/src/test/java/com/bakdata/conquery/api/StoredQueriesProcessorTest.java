@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class StoredQueriesProcessorTest {
@@ -64,10 +65,11 @@ public class StoredQueriesProcessorTest {
 		mockManagedQueryFrontEnd(USERS[1], QUERY_ID_3, NEW),		// not included: missing permission
 		mockManagedQueryFrontEnd(USERS[1], QUERY_ID_4, DONE),	// included
 		mockManagedQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED), 	// not included: wrong state
-		mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW) 	// not included: wrong state
+		mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW) 	// not included: wrong query structure
 		);
 	
-	static {
+	@BeforeAll
+	public static void beforeAll() {
 		// setup storage mock
 		doAnswer((invocation) -> {
 			UserId id = (UserId) invocation.getArgument(0);
