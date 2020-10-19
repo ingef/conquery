@@ -54,7 +54,7 @@ public class BucketManager {
 	private final Worker worker;
 	@Getter
 	private final Int2ObjectMap<Entity> entities;
-	
+
 	/**
 	 * Connector -> Bucket -> [CBlock]
 	 */
@@ -90,7 +90,7 @@ public class BucketManager {
 		for (CBlock cBlock : storage.getAllCBlocks()) {
 			registerCBlock(cBlock, entities, storage, connectorCBlocks);
 		}
-		
+
 		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks, tableBuckets);
 	}
 
@@ -136,12 +136,11 @@ public class BucketManager {
 		for (int entity : bucket) {
 			entities.computeIfAbsent(entity, createEntityFor(bucket, storage));
 		}
-		final TableId table = bucket.getImp().getTable();
-		final List<Bucket> buckets = tableBuckets
-									   .computeIfAbsent(table, id -> new Int2ObjectAVLTreeMap<>())
-									   .computeIfAbsent(bucket.getBucket(), n -> new ArrayList<>());
 
-		buckets.add(bucket);
+		tableBuckets
+				.computeIfAbsent(bucket.getImp().getTable(), id -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(bucket.getBucket(), n -> new ArrayList<>())
+				.add(bucket);
 	}
 
 	/**
@@ -188,10 +187,8 @@ public class BucketManager {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
 					Import imp = bucket.getImp();
 					if (con.getTable().getId().equals(bucket.getImp().getTable())) {
-						CBlockId cBlockId = new CBlockId(
-								bucket.getId(),
-								con.getId()
-						);
+						CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
+
 						if (storage.getCBlock(cBlockId) == null) {
 							job.addCBlock(imp, bucket, cBlockId);
 						}
