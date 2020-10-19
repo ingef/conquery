@@ -52,8 +52,6 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "FORM_TEST", base = ConqueryTestSpec.class)
 public class FormTest extends ConqueryTestSpec {
 	
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true, Locale.ENGLISH);
-	
 	/*
 	 * parse form as json first, because it may contain namespaced ids, that can only be resolved after
 	 * concepts and tables have been imported.
@@ -125,10 +123,10 @@ public class FormTest extends ConqueryTestSpec {
 
 		log.info("{} QUERIES EXECUTED", getLabel());
 
-		checkResults((ManagedForm) managedForm, support.getTestUser());
+		checkResults(support, (ManagedForm) managedForm, support.getTestUser());
 	}
 
-	private void checkResults(ManagedForm managedForm, User user) throws IOException {
+	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
 		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
 		IdMappingState mappingState = idMapping
 			.initToExternal(user, managedForm);
@@ -136,7 +134,7 @@ public class FormTest extends ConqueryTestSpec {
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 			List<String> actual = QueryToCSVRenderer
 				.toCSV(
-					PRINT_SETTINGS,
+					new PrintSettings(true,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces()),
 					managed.getValue(),
 					mappingState)
 				.collect(Collectors.toList());
