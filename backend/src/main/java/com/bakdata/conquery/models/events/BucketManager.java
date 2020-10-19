@@ -162,19 +162,16 @@ public class BucketManager {
 	}
 
 	private static void registerCBlock(CBlock cBlock, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks) {
+
 		Bucket bucket = storage.getBucket(cBlock.getBucket());
 		if (bucket == null) {
 			throw new NoSuchElementException("Could not find an element called '"+cBlock.getBucket()+"'");
 		}
-		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(cBlock, storage));
-		}
 
-		List<CBlock> forCBlock = connectorCBlocks
-										 .computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
-										 .computeIfAbsent(bucket.getId().getBucket(), bucketId -> new ArrayList<>(3));
-
-		forCBlock.add(cBlock);
+		connectorCBlocks
+				.computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(bucket.getId().getBucket(), bucketId -> new ArrayList<>(3))
+				.add(cBlock);
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
@@ -253,8 +250,9 @@ public class BucketManager {
 		}
 
 		bucketTables.getOrDefault(bucket.getImp().getTable(), Int2ObjectMaps.emptyMap())
-					.getOrDefault(bucket.getBucket(), Collections.emptyList())
-					.remove(bucket);
+					.get(bucket.getBucket())
+					.removeIf(bkt -> bkt.getId().equals(bucket.getId()));
+
 	}
 
 	private void deregisterCBlock(CBlockId cBlockId) {
@@ -264,7 +262,7 @@ public class BucketManager {
 		}
 
 		connectorCBlocks.getOrDefault(cBlockId.getConnector(), Int2ObjectMaps.emptyMap())
-						.getOrDefault(cBlockId.getBucket().getBucket(), Collections.emptyList())
+						.get(cBlockId.getBucket().getBucket())
 						.removeIf(cblock -> cblock.getId().equals(cBlockId));
 
 		for (int entityId : bucket) {
