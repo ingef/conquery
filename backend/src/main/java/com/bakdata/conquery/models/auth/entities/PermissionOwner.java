@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
@@ -36,6 +37,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NonNull
 	@NotNull
 	@NotEmpty
+	@ToString.Include
 	protected String name;
 	
 	@Getter
@@ -43,8 +45,10 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NonNull
 	@NotNull
 	@NotEmpty
+	@ToString.Include
 	protected String label;
 	
+	@ToString.Exclude
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
 	
 	
