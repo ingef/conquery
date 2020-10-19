@@ -4,16 +4,20 @@ import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-@Getter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
+
+@Getter
+@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@JsonSerialize(as = Void.class)
 public class ImmutableProgressReporter implements ProgressReporter{
-	private long absoluteProgress = 0;
-	private long max = 0;
-	private boolean done = false;
-	private boolean started = false;
-	private long creationTimeMillis; //millis
-	private long startTimeMillis; //millis
+	private final long absoluteProgress;
+	private final long max;
+	private final boolean done;
+	private final boolean started;
+	private final long creationTimeMillis; //millis
+	private final long startTimeMillis; //millis
 	
 	public ImmutableProgressReporter(ProgressReporter pr) {
 		absoluteProgress = pr.getAbsoluteProgress();

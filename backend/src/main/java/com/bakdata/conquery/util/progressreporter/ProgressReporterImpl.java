@@ -2,8 +2,8 @@ package com.bakdata.conquery.util.progressreporter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -137,5 +137,12 @@ public class ProgressReporterImpl implements ProgressReporter {
 		}
 
 		innerProgress = max - reservedForChildren;
+	}
+	
+
+	
+	@JsonValue
+	public ImmutableProgressReporter toImmutable() {
+		return new ImmutableProgressReporter(this);
 	}
 }

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.util.progressreporter;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(as = ImmutableProgressReporter.class)
@@ -18,19 +18,16 @@ public interface ProgressReporter {
 	
 	public void start();
 	
-	@JsonValue
-	default ImmutableProgressReporter toImmutable() {
-		return new ImmutableProgressReporter(this);
-	}
-	
 	long getStartTimeMillis();
 	boolean isStarted();
 
 
+	@JsonIgnore
 	double getProgress();
 	long getAbsoluteProgress();
 
 	ProgressReporter subJob(long steps);
+	@JsonIgnore
 	String getEstimate();
 
 	void report(int steps);
