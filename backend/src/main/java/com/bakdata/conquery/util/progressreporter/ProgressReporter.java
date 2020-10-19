@@ -19,16 +19,16 @@ public interface ProgressReporter {
 	public void start();
 	
 	@JsonValue
-	default ImmutableProgressReporter.Values toImmutable() {
-		return new ImmutableProgressReporter(this).getValues();
+	default ImmutableProgressReporter toImmutable() {
+		return new ImmutableProgressReporter(this);
 	}
 	
-	long getWaitedSeconds();
-	long getStartTime();
+	long getStartTimeMillis();
 	boolean isStarted();
 
 
 	double getProgress();
+	long getAbsoluteProgress();
 
 	ProgressReporter subJob(long steps);
 	String getEstimate();
@@ -40,4 +40,6 @@ public interface ProgressReporter {
 
 	void done();
 	boolean isDone();
+
+	long getCreationTimeMillis();
 }

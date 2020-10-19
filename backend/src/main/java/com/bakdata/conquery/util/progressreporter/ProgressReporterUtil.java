@@ -22,21 +22,13 @@ public class ProgressReporterUtil {
 	/* package */ final static String UNKNOWN = "unknown     ";
 	/* package */ final static String MAX_PROGRESS = "done";
 
-	/* package */ String buildProgressReportString(boolean done, double progress, long elapsedMillis, long waitedMillis) {
+	/* package */ String buildProgressReportString(boolean done, long progress, long maxProgress, long elapsedMillis, long waitedMillis) {
 		if (done) {
 			return ProgressReporterUtil.MAX_PROGRESS;
 		}
 		
-		boolean canEstimate = true;
-		long estimateMillis = 0;
-		try {			
-			estimateMillis = DoubleMath.roundToLong(elapsedMillis / progress - elapsedMillis, RoundingMode.HALF_UP);
-		}catch (Exception e) {
-			log.warn("Could not estimate the progress for the current state: done({}), progress({}), elapsedMillis({}), waitedMillis({})", done, progress, elapsedMillis, waitedMillis,e);
-			canEstimate = false;
-		}
-
-		if (progress == 0 || !canEstimate) {
+		if (progress == 0 || maxProgress == 0) {
+			// When no estimate can be calculated
 			return String.format(
 					"waited %s - %3d%% - est. %s",
 					ProgressReporterUtil.TIME_FORMATTER.format(LocalTime.MIDNIGHT.plus(Duration.ofMillis(waitedMillis))),
@@ -44,11 +36,15 @@ public class ProgressReporterUtil {
 					UNKNOWN
 			);
 		}
+		
+
+		long remainingProgress = maxProgress - progress;
+		long estimateMillis = DoubleMath.roundToLong((elapsedMillis / progress) * remainingProgress, RoundingMode.HALF_UP);
 
 
 		Duration estimate = Duration.ofMillis(estimateMillis);
 
-		int percent = DoubleMath.roundToInt(progress * 100, RoundingMode.FLOOR);
+		int percent = DoubleMath.roundToInt(progress/maxProgress * 100, RoundingMode.FLOOR);
 
 		return String.format("waited %s - %3d%% - est. %s",
 							 ProgressReporterUtil.TIME_FORMATTER.format(LocalTime.MIDNIGHT.plus(Duration.ofMillis(waitedMillis))),

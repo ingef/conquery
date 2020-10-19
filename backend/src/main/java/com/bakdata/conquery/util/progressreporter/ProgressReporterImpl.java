@@ -17,12 +17,14 @@ public class ProgressReporterImpl implements ProgressReporter {
 	private long reservedForChildren = 0;
 	private final List<ProgressReporterImpl> children = new ArrayList<ProgressReporterImpl>();
 
-	private final long waitBegin;
-	private long begin = -1;
-	private long end = -1;
+	@Getter
+	private final long creationTimeMillis;
+	@Getter
+	private long startTimeMillis = -1;
+	private long endTimeMillis = -1;
 
 	public ProgressReporterImpl(){
-		waitBegin = System.currentTimeMillis();
+		creationTimeMillis = System.currentTimeMillis();
 	}
 
 	@Override
@@ -31,17 +33,17 @@ public class ProgressReporterImpl implements ProgressReporter {
 			log.warn("Progress Reporter is already started");
 		}
 
-		begin = System.currentTimeMillis();
+		startTimeMillis = System.currentTimeMillis();
 	}
 
 	@Override
 	public boolean isStarted() {
-		return begin > 0;
+		return startTimeMillis > 0;
 	}
 
 	@Override
 	public boolean isDone() {
-		return end > 0;
+		return endTimeMillis > 0;
 	}
 
 	@Override
@@ -89,7 +91,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 	@Override
 	public String getEstimate() {
-		return ProgressReporterUtil.buildProgressReportString(isDone(), getProgress(), System.currentTimeMillis() - begin, begin - waitBegin);
+		return ProgressReporterUtil.buildProgressReportString(isDone(), getAbsoluteProgress(), getAbsoluteMax(), System.currentTimeMillis() - startTimeMillis, startTimeMillis - creationTimeMillis);
 	}
 
 	@Override
@@ -118,11 +120,11 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 	@Override
 	public void done() {
-		if(end > -1) {
+		if(endTimeMillis > -1) {
 			log.warn("Done was called again for {}", this);
 			return;
 		}
-		end = System.currentTimeMillis();
+		endTimeMillis = System.currentTimeMillis();
 
 		for (ProgressReporter child : children) {
 			if (!child.isDone()) {
@@ -135,16 +137,5 @@ public class ProgressReporterImpl implements ProgressReporter {
 		}
 
 		innerProgress = max - reservedForChildren;
-	}
-
-	@Override
-	public long getWaitedSeconds() {
-		return TimeUnit.MILLISECONDS.toSeconds(begin - waitBegin);
-	}
-
-	@Override
-	// given in Seconds
-	public long getStartTime() {
-		return TimeUnit.MILLISECONDS.toSeconds(begin);
 	}
 }
