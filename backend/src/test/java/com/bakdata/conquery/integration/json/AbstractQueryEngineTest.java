@@ -38,9 +38,6 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	protected abstract ResourceFile getExpectedCsv();
 
-	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,Locale.ENGLISH, columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
-
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
@@ -78,6 +75,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			assertThat(v).hasSameSizeAs(resultInfos.getInfos())
 		);
 
+		PrintSettings PRINT_SETTINGS = new PrintSettings(false,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo, dr) -> columnInfo.getSelect().getId().toStringWithoutDataset());
 		List<String> actual = QueryToCSVRenderer
 			.toCSV(
 				PRINT_SETTINGS,

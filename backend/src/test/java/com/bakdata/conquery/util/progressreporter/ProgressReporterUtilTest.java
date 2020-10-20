@@ -12,7 +12,7 @@ class ProgressReporterUtilTest {
 
 	@Test
 	void buildProgressReportString() {
-		assertThat(ProgressReporterUtil.buildProgressReportString(false, 0.2d, TimeUnit.MINUTES.toMillis(2),0)).endsWith("est. 00h 08m 00s ");
-		assertThat(ProgressReporterUtil.buildProgressReportString(false, 0.1d, TimeUnit.MINUTES.toMillis(2),0)).endsWith("est. 00h 18m 00s ");
+		assertThat(ProgressReporterUtil.buildProgressReportString(false, 20, 100, TimeUnit.MINUTES.toMillis(2),0)).endsWith("est. 00h 08m 00s ");
+		assertThat(ProgressReporterUtil.buildProgressReportString(false, 1, 10, TimeUnit.MINUTES.toMillis(2),0)).endsWith("est. 00h 18m 00s ");
 	}
 }
