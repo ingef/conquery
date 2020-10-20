@@ -22,7 +22,7 @@ import lombok.Setter;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CQExternalResolved implements CQElement {
+public class CQExternalResolved extends CQElement {
 
 	@Getter @NotNull @NonNull
 	private Map<Integer, BitMapCDateSet> values;

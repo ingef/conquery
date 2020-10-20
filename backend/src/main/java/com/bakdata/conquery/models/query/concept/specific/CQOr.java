@@ -30,7 +30,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @CPSType(id = "OR", base = CQElement.class)
-public class CQOr implements CQElement {
+public class CQOr extends CQElement {
 	@Getter
 	@Setter
 	@NotEmpty
@@ -88,7 +88,7 @@ public class CQOr implements CQElement {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		CQElement.super.visit(visitor);
+		super.visit(visitor);
 		for (CQElement c : children) {
 			c.visit(visitor);
 		}

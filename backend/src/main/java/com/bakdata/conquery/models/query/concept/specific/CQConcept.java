@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
-public class CQConcept implements CQElement, NamespacedIdHolding {
+public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@ToString.Include
 	private String label;

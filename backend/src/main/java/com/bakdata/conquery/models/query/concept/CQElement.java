@@ -16,32 +16,32 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface CQElement extends Visitable {
+public abstract class CQElement implements Visitable {
 
-	default CQElement resolve(QueryResolveContext context) {
+	public CQElement resolve(QueryResolveContext context) {
 		return this;
 	}
 
-	QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
+	public abstract QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
-	default void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
 	
 	
-	default Set<ManagedExecutionId> collectRequiredQueries() {
+	public Set<ManagedExecutionId> collectRequiredQueries() {
 		HashSet<ManagedExecutionId> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}
 
-	default ResultInfoCollector collectResultInfos() {
+	public ResultInfoCollector collectResultInfos() {
 		ResultInfoCollector collector = new ResultInfoCollector();
 		collectResultInfos(collector);
 		return collector;
 	}
 	
-	void collectResultInfos(ResultInfoCollector collector);
+	public abstract void collectResultInfos(ResultInfoCollector collector);
 
-	default void visit(Consumer<Visitable> visitor) {
+	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 	}
 }

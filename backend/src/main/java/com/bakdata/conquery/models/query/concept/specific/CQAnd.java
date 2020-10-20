@@ -25,7 +25,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "AND", base = CQElement.class)
-public class CQAnd implements CQElement {
+public class CQAnd extends CQElement {
 	@Getter
 	@Setter
 	@NotEmpty
@@ -80,7 +80,7 @@ public class CQAnd implements CQElement {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		CQElement.super.visit(visitor);
+		super.visit(visitor);
 		for (CQElement c : children) {
 			c.visit(visitor);
 		}

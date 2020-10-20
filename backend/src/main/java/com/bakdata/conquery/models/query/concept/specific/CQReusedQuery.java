@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @CPSType(id="SAVED_QUERY", base=CQElement.class)
 @RequiredArgsConstructor @AllArgsConstructor(onConstructor_=@JsonCreator)
-public class CQReusedQuery implements CQElement, NamespacedIdHolding {
+public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 
 	@Getter @NotNull @Valid
 	private final ManagedExecutionId query;
@@ -56,7 +56,7 @@ public class CQReusedQuery implements CQElement, NamespacedIdHolding {
 	
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		CQElement.super.visit(visitor);
+		super.visit(visitor);
 		if(resolvedQuery != null) {
 			resolvedQuery.visit(visitor);
 		}
