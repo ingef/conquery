@@ -3,8 +3,6 @@ package com.bakdata.conquery.io.xodus;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import javax.validation.Validator;
 
@@ -44,8 +42,14 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
+	/**
+	 * true if imports need to be registered with {@link Connector#addImport(Import)}.
+	 */
+	private final boolean registerImports;
+
+	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory, boolean registerImports) {
 		super(validator,config);
+		this.registerImports = registerImports;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
 		
 	}
@@ -97,10 +101,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					c.getSelects().forEach(centralRegistry::register);
 				}
 				//add imports of table
-				for(Import imp: getAllImports()) {
-					for(Connector con : concept.getConnectors()) {
-						if(con.getTable().getId().equals(imp.getTable())) {
-							con.addImport(imp);
+				if(registerImports) {
+					for (Import imp : getAllImports()) {
+						for (Connector con : concept.getConnectors()) {
+							if (con.getTable().getId().equals(imp.getTable())) {
+								con.addImport(imp);
+							}
 						}
 					}
 				}
@@ -117,10 +123,13 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
 			.onAdd(imp-> {
 				imp.loadExternalInfos(this);
-				for(Concept<?> c: getAllConcepts()) {
-					for(Connector con : c.getConnectors()) {
-						if(con.getTable().getId().equals(imp.getTable())) {
-							con.addImport(imp);
+
+				if (registerImports) {
+					for (Concept<?> c : getAllConcepts()) {
+						for (Connector con : c.getConnectors()) {
+							if (con.getTable().getId().equals(imp.getTable())) {
+								con.addImport(imp);
+							}
 						}
 					}
 				}
