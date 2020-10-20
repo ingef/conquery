@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "AND Test",
+  "label": "OR Test",
   "expectedCsv": "tests/query/OR_TREECONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
