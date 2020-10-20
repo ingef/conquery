@@ -73,7 +73,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 	
 	@Override
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {
+	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
 		dictionary.setName(dictionaryId.getDictionary());
 		dictionary.setDataset(dictionaryId.getDataset());
 		dictionaryConsumer.accept(dictionary);

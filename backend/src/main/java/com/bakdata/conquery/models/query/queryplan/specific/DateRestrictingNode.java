@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -33,14 +34,11 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		//if there was no date restriction we can just use the restriction BitMapCDateSet
-		if(ctx.getDateRestriction().isAll()) {
-			ctx = ctx.withDateRestriction(BitMapCDateSet.create(restriction));
-		}
-		else {
-			BitMapCDateSet dateRestriction = BitMapCDateSet.create(ctx.getDateRestriction());
-			dateRestriction.retainAll(restriction);
-			ctx = ctx.withDateRestriction(dateRestriction);
-		}
+		final BitMapCDateSet restricted = CDateSetCache.createPreAllocatedDateSet();
+		restricted.addAll(restriction);
+		restricted.retainAll(restriction);
+
+		ctx = ctx.withDateRestriction(restricted);
 		super.nextTable(ctx, currentTable);
 
 

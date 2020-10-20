@@ -31,29 +31,8 @@ public class ExecutionManager {
 	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset) {
 		return execute(datasets, createExecution(datasets, query, userId, submittedDataset));
 	}
-	
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
-		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset));
-	}
-	
 
-	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset) {
-		return createQuery( datasets, query, UUID.randomUUID(), userId, submittedDataset);
-	}
-
-	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
-		// Transform the submitted query into an initialized execution
-		ManagedExecution<?> managed = query.toManagedExecution( datasets, userId, submittedDataset);
-
-		managed.setQueryId(queryId);
-		
-		// Store the execution
-		datasets.getMetaStorage().addExecution(managed);
-
-		return managed;
-	}
-
-	public static ManagedExecution<?> execute(DatasetRegistry datasets, ManagedExecution<?> execution){
+	public static ManagedExecution<?> execute(DatasetRegistry datasets, ManagedExecution<?> execution) {
 		// Initialize the query / create subqueries
 		execution.initExecutable(datasets);
 
@@ -66,10 +45,14 @@ public class ExecutionManager {
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
-		for(Namespace namespace : execution.getRequiredDatasets()) {
+		for (Namespace namespace : execution.getRequiredDatasets()) {
 			namespace.getQueryManager().executeQueryInNamespace(execution);
 		}
 		return execution;
+	}
+
+	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset) {
+		return createQuery(datasets, query, UUID.randomUUID(), userId, submittedDataset);
 	}
 
 	/**
@@ -83,8 +66,25 @@ public class ExecutionManager {
 		return query;
 	}
 
+	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+		// Transform the submitted query into an initialized execution
+		ManagedExecution<?> managed = query.toManagedExecution(datasets, userId, submittedDataset);
+
+		managed.setQueryId(queryId);
+
+		// Store the execution
+		datasets.getMetaStorage().addExecution(managed);
+
+		return managed;
+	}
+
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset));
+	}
+
 	/**
 	 * Receive part of query result and store into query.
+	 *
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
@@ -93,7 +93,7 @@ public class ExecutionManager {
 		final E query = (E) getQuery(result.getQueryId());
 		query.addResult(storage, result);
 
-		if(query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED){
+		if (query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED) {
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(query.getOwner()), storage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
@@ -103,7 +103,7 @@ public class ExecutionManager {
 	}
 
 	public ManagedExecution<?> getQuery(@NonNull ManagedExecutionId id) {
-		return Objects.requireNonNull(namespace.getStorage().getMetaStorage().getExecution(id),"Unable to find query " + id.toString());
+		return Objects.requireNonNull(namespace.getStorage().getMetaStorage().getExecution(id), "Unable to find query " + id.toString());
 	}
 
 }
