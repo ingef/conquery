@@ -229,20 +229,20 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@Nullable
 	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user) {
-		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class), datasetRegistry);
 	}
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
-		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag, DatasetRegistry datasetRegistry) {
+		return buildStatus(storage, url, user, EnumSet.of(creationFlag), datasetRegistry);
 	}
 	
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags, DatasetRegistry datasetRegistry) {
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
 		for(CreationFlag flag : creationFlags) {
 			switch (flag) {
 				case WITH_COLUMN_DESCIPTION:
-					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 					break;
 				case WITH_SOURCE:
 					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
@@ -255,7 +255,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 

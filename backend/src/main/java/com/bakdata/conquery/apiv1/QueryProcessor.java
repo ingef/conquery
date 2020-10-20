@@ -102,7 +102,7 @@ public class QueryProcessor {
 
 				final ManagedExecution<?> mq = ExecutionManager.execute( datasetRegistry, storage.getExecution(executionId));
 
-				return getStatus(dataset, mq, urlb, user);
+				return getStatus(mq, urlb, user);
 			}
 
 		}
@@ -118,7 +118,7 @@ public class QueryProcessor {
 		}
 
 		// return status
-		return getStatus(dataset, mq, urlb, user);
+		return getStatus(mq, urlb, user);
 	}
 
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
@@ -150,8 +150,8 @@ public class QueryProcessor {
 		}
 	}
 
-	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb, User user) {
-		return query.buildStatus(storage, urlb, user, CreationFlag.WITH_COLUMN_DESCIPTION);
+	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
+		return query.buildStatus(storage, urlb, user, CreationFlag.WITH_COLUMN_DESCIPTION, datasetRegistry);
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
