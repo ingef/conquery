@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParser;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -38,8 +37,8 @@ public abstract class AChainedStringType extends AStringType<Number> {
 	}
 	
 	@Override
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {
-		subType.storeExternalInfos(storage, dictionaryConsumer);
+	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
+		subType.storeExternalInfos(dictionaryConsumer);
 	}
 	
 	@Override

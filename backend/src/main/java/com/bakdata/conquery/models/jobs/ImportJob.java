@@ -279,7 +279,6 @@ public class ImportJob extends Job {
 
 			//store external infos into ManagerNode and ShardNodes
 			col.getType().storeExternalInfos(
-					namespace.getStorage(),
 					(Consumer<Dictionary>) (dict -> {
 						try {
 							namespace.getStorage().updateDictionary(dict);
