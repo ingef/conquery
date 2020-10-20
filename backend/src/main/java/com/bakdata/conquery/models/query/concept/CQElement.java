@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -13,10 +14,18 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Getter;
+import lombok.Setter;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public abstract class CQElement implements Visitable {
+
+	/**
+	 * Allows the user to define labels.
+	 */
+	@Getter @Setter
+	private String label = getClass().getAnnotation(CPSType.class).id();
 
 	public CQElement resolve(QueryResolveContext context) {
 		return this;

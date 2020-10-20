@@ -78,7 +78,7 @@ public class CQOr extends CQElement {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		if(summariseExists){
-			collector.add(new SimpleResultInfo("OR", ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(getLabel(), ResultType.BOOLEAN));
 		}
 
 		for (CQElement c : children) {

@@ -70,7 +70,7 @@ public class CQAnd extends CQElement {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		if(summariseExists){
-			collector.add(new SimpleResultInfo("AND", ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(getLabel(), ResultType.BOOLEAN));
 		}
 
 		for (CQElement c : children) {
