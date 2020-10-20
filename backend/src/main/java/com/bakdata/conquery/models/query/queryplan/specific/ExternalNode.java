@@ -6,7 +6,7 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
-
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -47,7 +47,8 @@ public class ExternalNode extends QPNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if(contained != null) {
-			BitMapCDateSet newSet = BitMapCDateSet.create(ctx.getDateRestriction());
+			BitMapCDateSet newSet = CDateSetCache.createPreAllocatedDateSet();
+			newSet.addAll(ctx.getDateRestriction());
 			newSet.retainAll(contained);
 			ctx = ctx.withDateRestriction(newSet);
 		}

@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.io.BaseEncoding;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -104,8 +103,8 @@ public class StringTypeEncoded extends AStringType<Number> {
 	}
 	
 	@Override
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {
-		subType.storeExternalInfos(storage, dictionaryConsumer);
+	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
+		subType.storeExternalInfos(dictionaryConsumer);
 	}
 	
 	@Override

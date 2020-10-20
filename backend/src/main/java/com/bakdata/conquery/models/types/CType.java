@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.math.LongMath;
 import com.google.common.primitives.Primitives;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +42,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 
 	public void writeHeader(OutputStream out) throws IOException {}
 	public void readHeader(JsonParser input) throws IOException {}
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {}
+	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {}
 	public void loadExternalInfos(NamespacedStorage storage) {}
 
 	@Override

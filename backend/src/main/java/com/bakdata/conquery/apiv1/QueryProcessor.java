@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -39,6 +38,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
+
 @Slf4j
 @RequiredArgsConstructor
 public class QueryProcessor {
@@ -53,16 +53,13 @@ public class QueryProcessor {
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
 		authorize(user, dataset.getId(), Ability.READ);
-		
-		// Initialize the query
-		query = query.resolve(new QueryResolveContext(dataset.getId(), datasetRegistry));
-		
+
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
 		// For the future a better data structure might be desired that also regards similar QueryVisitors of different configuration
 		ClassToInstanceMap<QueryVisitor> visitors = MutableClassToInstanceMap.create();
 		query.addVisitors(visitors);
-		
+
 		// Initialize checks that need to traverse the query tree
 		visitors.putInstance(QueryUtils.SingleReusedChecker.class, new QueryUtils.SingleReusedChecker());
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
@@ -70,18 +67,18 @@ public class QueryProcessor {
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getName).orElse("none");
 
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
-		
-		
+
+
 		// Chain all Consumers
 		Consumer<Visitable> consumerChain = QueryUtils.getNoOpEntryPoint();
-		for(QueryVisitor visitor : visitors.values()) {
+		for (QueryVisitor visitor : visitors.values()) {
 			consumerChain = consumerChain.andThen(visitor);
 		}
 
 		// Apply consumers to the query tree
 		query.visit(consumerChain);
 
-		
+
 		Set<Permission> permissions = new HashSet<>();
 		query.collectPermissions(visitors, permissions, dataset.getId());
 		user.checkPermissions(permissions);
@@ -100,20 +97,20 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedExecution<?> mq = ExecutionManager.execute( datasetRegistry, storage.getExecution(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, storage.getExecution(executionId));
 
 				return getStatus(mq, urlb, user);
 			}
 
 		}
-		
+
 		// Run the query on behalf of the user
 		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId());
-		
+
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
 
-		if(query instanceof IQuery) {
+		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
 		}
 
@@ -129,19 +126,21 @@ public class QueryProcessor {
 				|| targetNamespace.getDataset().equals(dataset)) {
 				continue;
 			}
-			
+
 			// Ensure that user is allowed to read all sub-queries of the actual query.
-			
+
 			if (!translateable.collectRequiredQueries().stream()
-				.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
-				continue;				
+							  .allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
+				continue;
 			}
-			
+
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
-				
+				final ManagedExecution<?>
+						mqTranslated =
+						ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
+
 				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}
 			catch (Exception e) {

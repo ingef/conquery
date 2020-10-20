@@ -100,6 +100,10 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
+
+					// Must contain the import.
+					assertThat(workerStorage.getImport(importId))
+							.isNotNull();
 				}
 			}
 
@@ -149,12 +153,17 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
 							.filteredOn(cBlock -> cBlock.getBucket().getImp().equals(importId))
 							.isEmpty();
+					
+					// Import should not exists anymore
+					assertThat(workerStorage.getImport(importId))
+					.describedAs("Import for Worker %s", worker.getInfo().getId())
+					.isNull();
 				}
 			}
 
 			log.info("Executing query after deletion");
 
-			// Issue a query and asseert that it has less content.
+			// Issue a query and assert that it has less content.
 			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
 		}
 
