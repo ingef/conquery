@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -25,7 +24,7 @@ public abstract class CQElement implements Visitable {
 	 * Allows the user to define labels.
 	 */
 	@Getter @Setter
-	private String label = getClass().getAnnotation(CPSType.class).id();
+	private String label = null;
 
 	public CQElement resolve(QueryResolveContext context) {
 		return this;

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -70,7 +71,7 @@ public class CQAnd extends CQElement {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		if(createExists){
-			collector.add(new SimpleResultInfo(getLabel(), ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "AND"), ResultType.BOOLEAN));
 		}
 
 		for (CQElement c : children) {
