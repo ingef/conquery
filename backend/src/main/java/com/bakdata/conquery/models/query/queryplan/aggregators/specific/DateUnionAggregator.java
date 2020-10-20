@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -8,14 +9,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.util.QueryUtils;
 
 /**
  * Aggregator, listing all days present.
  */
 public class DateUnionAggregator extends SingleColumnAggregator<String> {
 
-	private final BitMapCDateSet set = QueryUtils.createPreAllocatedDateSet();
+	private final BitMapCDateSet set = CDateSetCache.createPreAllocatedDateSet();
 
 	private BitMapCDateSet dateRestriction;
 

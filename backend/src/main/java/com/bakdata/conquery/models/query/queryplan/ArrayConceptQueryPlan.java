@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -92,7 +93,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
-		BitMapCDateSet dateSet = BitMapCDateSet.create();
+		BitMapCDateSet dateSet = CDateSetCache.createPreAllocatedDateSet();
 		int resultInsertIdx = specialDateUnion ? 1 : 0;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {
