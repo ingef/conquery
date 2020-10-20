@@ -118,8 +118,8 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb, User user) {
-		return query.buildStatus(storage, urlb, user, CreationFlag.WITH_COLUMN_DESCIPTION);
+	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb, User user) {
+		return query.buildStatus(storage, urlb, user, datasetRegistry);
 	}
 
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
@@ -153,11 +153,11 @@ public class QueryProcessor {
 		}
 	}
 
-	public ExecutionStatus getStatus(ManagedExecution<?> query, URLBuilder urlb, User user) {
+	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
 		return query.buildStatus(storage, urlb, user, CreationFlag.WITH_COLUMN_DESCIPTION, datasetRegistry);
 	}
 
-	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb) {
+	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
 		return null;
 	}
