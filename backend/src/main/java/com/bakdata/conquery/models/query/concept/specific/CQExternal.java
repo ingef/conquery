@@ -64,7 +64,10 @@ public class CQExternal implements CQElement {
 												.filter(Objects::nonNull)
 												.distinct()
 												.collect(MoreCollectors.toOptional());
-		int[] dateIndices = format.stream().filter(fc -> fc.getDateFormat() != null).mapToInt(format::indexOf).toArray();
+		int[] dateIndices = format.stream()
+								  .filter(fc -> fc.getDateFormat() != null)
+								  .mapToInt(format::indexOf)
+								  .toArray();
 
 		Int2ObjectMap<BitMapCDateSet> includedEntities = new Int2ObjectOpenHashMap<>();
 
@@ -76,12 +79,14 @@ public class CQExternal implements CQElement {
 		);
 		List<List<String>> nonResolved = new ArrayList<>();
 
+		if (values[0].length != format.size()) {
+			throw new ConqueryError.ExternalResolveError(format.size(), values[0].length);
+		}
+
+
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
-			if (row.length != format.size()) {
-				throw new ConqueryError.ExternalResolveError(format.size(), row.length);
-			}
 
 			//read the dates from the row
 			try {
@@ -93,16 +98,13 @@ public class CQExternal implements CQElement {
 						throw new RuntimeException(e);
 					}
 				})
-												 .orElseGet(() -> BitMapCDateSet.createAll());
+												 .orElseGet(BitMapCDateSet::createAll);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
 				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.selectIdFields(row, format));
 
 				int resolvedId;
 				if (id != null && (resolvedId = primary.getId(id.getCsvId())) != -1) {
-					includedEntities.put(
-							resolvedId,
-							Objects.requireNonNull(dates)
-					);
+					includedEntities.put(resolvedId, dates);
 				}
 				else {
 					nonResolved.add(Arrays.asList(row));
@@ -139,19 +141,16 @@ public class CQExternal implements CQElement {
 			@Override
 			public BitMapCDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.parseToLocalDate(row[dateIndices[0]]);
+
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
 								null :
 								DateFormats.parseToLocalDate(row[dateIndices[1]]);
 
-				CDateRange range;
 				if (start == null && end == null) {
 					return null;
 				}
-				else {
-					range = CDateRange.of(start, end);
-				}
 
-				return BitMapCDateSet.create(range);
+				return BitMapCDateSet.create(CDateRange.of(start, end));
 			}
 		},
 		DATE_RANGE {

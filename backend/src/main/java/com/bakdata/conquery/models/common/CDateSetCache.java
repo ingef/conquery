@@ -57,18 +57,16 @@ public class CDateSetCache {
 	 * Try to reuse old BitSets if available. Else create a new one.
 	 */
 	private BitMapCDateSet doAcquire() {
-		Reference<Container> reference;
-		Container container;
-
+		// Iterate as long as pool is not empty (which is either because there are no BitSets available, or that they have all been GCd)
 		while (true) {
-			reference = pool.poll();
+			Reference<Container> reference = pool.poll();
 
 			// Pool is empty?
 			if (reference == null) {
 				break;
 			}
 
-			container = reference.get();
+			Container container = reference.get();
 
 			// Reference was cleared by GC?
 			if (container == null) {
