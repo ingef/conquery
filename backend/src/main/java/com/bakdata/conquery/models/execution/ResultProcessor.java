@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultProcessor {
 	
-	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, DatasetRegistry namespaces, ConqueryConfig config) {
+	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, datasetId, Ability.READ);
