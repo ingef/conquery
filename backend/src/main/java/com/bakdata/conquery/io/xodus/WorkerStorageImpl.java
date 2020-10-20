@@ -29,12 +29,13 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	private IdentifiableStore<CBlock> cBlocks;
 	
 	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator, config, directory);
+		super(validator, config, directory, false);
 	}
 
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 		super.createStores(environmentToStores);
+
 		worker = StoreInfo.WORKER.singleton(getConfig(), environment, getValidator());
 		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());

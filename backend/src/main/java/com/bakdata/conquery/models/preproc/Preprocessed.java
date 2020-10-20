@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.esotericsoftware.kryo.io.Output;
-import io.dropwizard.util.Size;
+import io.dropwizard.util.DataSize;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Data;
@@ -38,7 +38,7 @@ public class Preprocessed {
 	private long writtenGroups = 0;
 	private Int2ObjectMap<List<Object[]>> entries = new Int2ObjectAVLTreeMap<>();
 	
-	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
+	private final Output buffer = new Output((int) DataSize.megabytes(50).toBytes());
 
 	public Preprocessed(TableImportDescriptor descriptor, ParserConfig parserConfig) throws IOException {
 		this.file = descriptor.getInputFile();
