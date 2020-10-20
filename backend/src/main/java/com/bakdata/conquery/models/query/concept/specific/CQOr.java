@@ -39,7 +39,7 @@ public class CQOr extends CQElement {
 
 	@Getter
 	@Setter
-	private boolean summariseExists = false;
+	private boolean createExists = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -51,12 +51,11 @@ public class CQOr extends CQElement {
 
 		final QPNode or = OrNode.of(Arrays.asList(nodes));
 
-		if (summariseExists) {
+		if (createExists) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(or.collectRequiredTables());
 			existsAggregator.setReference(or);
 			plan.addAggregator(existsAggregator);
 		}
-
 
 		return or;
 	}
@@ -72,12 +71,12 @@ public class CQOr extends CQElement {
 	public CQElement resolve(QueryResolveContext context) {
 		var copy = new ArrayList<>(children);
 		copy.replaceAll(c -> c.resolve(context));
-		return new CQOr(copy, isSummariseExists());
+		return new CQOr(copy, isCreateExists());
 	}
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		if(summariseExists){
+		if(createExists){
 			collector.add(new SimpleResultInfo(getLabel(), ResultType.BOOLEAN));
 		}
 

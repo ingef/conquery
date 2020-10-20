@@ -33,7 +33,7 @@ public class CQAnd extends CQElement {
 	private List<CQElement> children;
 
 	@Getter @Setter
-	boolean summariseExists = false;
+	boolean createExists = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -44,7 +44,7 @@ public class CQAnd extends CQElement {
 
 		final QPNode node = AndNode.of(Arrays.asList(nodes));
 
-		if (summariseExists) {
+		if (createExists) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(node.collectRequiredTables());
 			existsAggregator.setReference(node);
 			plan.addAggregator(existsAggregator);
@@ -69,7 +69,7 @@ public class CQAnd extends CQElement {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		if(summariseExists){
+		if(createExists){
 			collector.add(new SimpleResultInfo(getLabel(), ResultType.BOOLEAN));
 		}
 

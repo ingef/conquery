@@ -1,11 +1,11 @@
 {
   "type": "QUERY_TEST",
-  "label": "AND Test",
-  "expectedCsv": "tests/query/OR_TREECONCEPT_QUERY/expected.csv",
+  "label": "OR Test",
+  "expectedCsv": "tests/query/AND_TREECONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type": "OR",
+      "type": "AND",
       "createExists" : true,
       "children": [
         {
@@ -73,7 +73,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/OR_TREECONCEPT_QUERY/content.csv",
+        "csv": "tests/query/AND_TREECONCEPT_QUERY/content.csv",
         "name": "test_table",
         "primaryColumn": {
           "name": "pid",
