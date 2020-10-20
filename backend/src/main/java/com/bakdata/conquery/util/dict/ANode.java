@@ -23,27 +23,21 @@ public abstract class ANode<N extends ANode<N>> extends NodeParent<N> {
 				if(left!=oldNode) {
 					throw new IllegalStateException();
 				}
-				else {
-					this.setLeft(newNode);
-				}
+				this.setLeft(newNode);
 				return;
 			}
 			case MIDDLE: {
 				if(middle!=oldNode) {
 					throw new IllegalStateException();
 				}
-				else {
-					this.setMiddle(newNode);
-				}
+				this.setMiddle(newNode);
 				return;
 			}
 			case RIGHT: {
 				if(right!=oldNode) {
 					throw new IllegalStateException();
 				}
-				else {
-					this.setRight(newNode);
-				}
+				this.setRight(newNode);
 				return;
 			}
 			default:

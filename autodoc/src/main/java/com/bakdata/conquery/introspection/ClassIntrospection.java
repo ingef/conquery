@@ -65,9 +65,7 @@ public class ClassIntrospection extends AbstractJavadocIntrospection<ClassOrInte
 		if(f.isPresent()) {
 			return new AbstractJavadocIntrospection<>(file, f.get());
 		}
-		else {
-			log.warn("Could not find field "+field.getName());
-			return super.findField(field);
-		}
+		log.warn("Could not find field "+field.getName());
+		return super.findField(field);
 	}
 }

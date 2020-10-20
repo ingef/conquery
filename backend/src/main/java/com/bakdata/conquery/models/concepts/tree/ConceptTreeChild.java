@@ -98,8 +98,6 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		if (getLocalId() < 64) {
 			return 1L << getLocalId();
 		}
-		else {
-			return getParent().calculateBitMask();
-		}
+		return getParent().calculateBitMask();
 	}
 }

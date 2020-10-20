@@ -47,9 +47,8 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	public long getWaitedSeconds() {
 		if(values.started) {
 			return values.waitedSeconds;
-		} else {
-			return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - values.createdTime;
 		}
+		return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - values.createdTime;
 	}
 	
 	@Override

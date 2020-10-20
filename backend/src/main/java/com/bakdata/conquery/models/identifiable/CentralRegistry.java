@@ -74,13 +74,9 @@ public class CentralRegistry implements Injectable {
 			if(alternative == null) {
 				return null;
 			}
-			else {
-				return alternative.getMetaRegistry();
-			}
+			return alternative.getMetaRegistry();
 		}
-		else {
-			return result;
-		}
+		return result;
 	}
 
 	public static CentralRegistry getForDataset(DeserializationContext ctxt, DatasetId datasetId) throws JsonMappingException {

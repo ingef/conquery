@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,9 +33,7 @@ public abstract class SelectId extends AId<Select> implements NamespacedId {
 			if (parts.remaining() == 3) {
 				return ConceptSelectId.Parser.INSTANCE.parse(parts);
 			}
-			else {
-				return ConnectorSelectId.Parser.INSTANCE.parse(parts);
-			}
+			return ConnectorSelectId.Parser.INSTANCE.parse(parts);
 		}
 	}
 }

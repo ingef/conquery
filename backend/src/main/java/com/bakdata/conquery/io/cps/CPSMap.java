@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,13 +65,9 @@ public class CPSMap implements Iterable<Entry<Class<?>, String>>{
 			if(anno == null) {
 				throw new IllegalStateException("There is no id for the class "+suggestedType+" for.");
 			}
-			else {
-				return anno.id();
-			}
+			return anno.id();
 		}
-		else {
-			return ids.iterator().next();
-		}
+		return ids.iterator().next();
 	}
 
 	public Collection<String> getTypeIds() {

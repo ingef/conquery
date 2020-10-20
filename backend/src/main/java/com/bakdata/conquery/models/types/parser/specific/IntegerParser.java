@@ -63,12 +63,10 @@ public class IntegerParser extends Parser<Long> {
 				new IntegerTypeVarInt(subDecision.getType())
 			);
 		}
-		else {
-			return new Decision<Long, Long, IntegerTypeLong>(
-				new NoopTransformer<>(),
-				new IntegerTypeLong(minValue, maxValue)
-			);
-		}
+		return new Decision<Long, Long, IntegerTypeLong>(
+			new NoopTransformer<>(),
+			new IntegerTypeLong(minValue, maxValue)
+		);
 	}
 
 }
