@@ -327,6 +327,7 @@ public class BucketManager {
 
 			((TreeConcept) concept).removeImportCache(imp);
 		}
+		storage.removeImport(imp);
 	}
 
 	public boolean hasCBlock(CBlockId id) {
