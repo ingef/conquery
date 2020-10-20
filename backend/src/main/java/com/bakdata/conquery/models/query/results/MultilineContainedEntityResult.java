@@ -57,7 +57,6 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 
 	@Override
 	public List<Object[]> listResultLines() {
-		// TODO Auto-generated method stub
 		return values;
 	}
 }
