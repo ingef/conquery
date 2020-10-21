@@ -54,6 +54,8 @@ public class BucketManager {
 	private final Int2ObjectMap<Entity> entities;
 
 	/**
+	 * The final Map is the way the APIs expect the data to be delivered.
+	 *
 	 * Connector -> Bucket -> [BucketId -> CBlock]
 	 */
 	private final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorToCblocks;
@@ -68,29 +70,26 @@ public class BucketManager {
 		Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks = new HashMap<>();
 		Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
 
-
-		
-		log.trace("Trying to load these buckets: {}", requiredBuckets);
 		IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
+
 		for (Bucket bucket : storage.getAllBuckets()) {
 			if(!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
 			registerBucket(bucket, entities, storage, tableBuckets);
 		}
-		if (!requiredBuckets.isEmpty()) {
-			log.warn("Not all required Buckets were loaded from the storage. Missing Buckets: {}", requiredBuckets);
-		}
-
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
-			registerCBlock(cBlock, entities, storage, connectorCBlocks);
+			registerCBlock(cBlock, storage, connectorCBlocks);
 		}
 
 		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks, tableBuckets);
 	}
 
+	/**
+	 * register entities, and create query specific indices for bucket
+	 */
 	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets) {
 		for (int entity : bucket) {
 			entities.computeIfAbsent(entity, createEntityFor(bucket, storage));
@@ -102,7 +101,10 @@ public class BucketManager {
 				.add(bucket);
 	}
 
-	private static void registerCBlock(CBlock cBlock, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks) {
+	/**
+	 * Assert validity of operation, and create index for CBlocks.
+	 */
+	private static void registerCBlock(CBlock cBlock, WorkerStorage storage, Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks) {
 
 		Bucket bucket = storage.getBucket(cBlock.getBucket());
 		if (bucket == null) {
@@ -171,7 +173,7 @@ public class BucketManager {
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
-		registerCBlock(cBlock, entities, storage, connectorToCblocks);
+		registerCBlock(cBlock, storage, connectorToCblocks);
 	}
 
 	public void addBucket(Bucket bucket) {
