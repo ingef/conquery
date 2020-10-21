@@ -37,6 +37,16 @@ public class SingletonStringStore extends ColumnStoreAdapter<Integer, SingletonS
 	}
 
 	@Override
+	public Object getAsObject(int event) {
+		if(has(event)){
+			return value;
+		}
+
+
+		throw new IllegalStateException();
+	}
+
+	@Override
 	public void set(int event, Integer value) {
 		store.set(event, value != null);
 	}

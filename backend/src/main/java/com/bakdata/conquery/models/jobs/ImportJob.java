@@ -135,12 +135,35 @@ public class ImportJob extends Job {
 			try (InputStream in = new GZIPInputStream(file.readContent())) {
 				final Preprocessed.DataContainer container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
 
-				if(container.getStarts() == null){
+				if (container.getStarts() == null) {
 					log.warn("Import was empty. Skipping.");
 					return;
 				}
 
 				final ColumnStore<?>[] stores = container.getValues();
+
+				// but first remap String values
+
+				if (mappingRequired) {
+					for (int i = 0; i < stores.length; i++) {
+						ColumnStore<?> store = stores[i];
+						final PPColumn column = header.getColumns()[i];
+
+						if (!column.getType().getTypeId().equals(MajorTypeId.STRING)) {
+							continue;
+						}
+
+						if (column.getValueMapping() == null) {
+							return;
+						}
+
+						for (int row = 0; row < header.getRows(); row++) {
+							((ColumnStore<Integer>) store).set(row, column.getValueMapping().source2Target(store.getString(row)));
+						}
+
+					}
+				}
+
 
 				Multimap<Integer, Integer> buckets2LocalEntities = LinkedHashMultimap.create();
 
@@ -150,6 +173,7 @@ public class ImportJob extends Job {
 					int currentBucket = Entity.getBucket(entityId, bucketSize);
 					buckets2LocalEntities.put(currentBucket, entity);
 				}
+
 
 				for (Map.Entry<Integer, Collection<Integer>> bucket2entities : buckets2LocalEntities.asMap().entrySet()) {
 
@@ -172,8 +196,8 @@ public class ImportJob extends Job {
 					list.replaceAll(store -> store.select(selStart, selEnd));
 
 					int[] lengths = IntStream.range(0, selStart.length)
-							.map(index -> selEnd[index] - selStart[index])
-							.toArray();
+											 .map(index -> selEnd[index] - selStart[index])
+											 .toArray();
 
 					final Int2IntMap starts = new Int2IntAVLTreeMap();
 					final Int2IntMap ends = new Int2IntAVLTreeMap();
@@ -202,7 +226,8 @@ public class ImportJob extends Job {
 									starts,
 									ends,
 									starts.size()
-							)));
+							)
+					));
 				}
 			}
 
@@ -241,10 +266,14 @@ public class ImportJob extends Job {
 	private boolean createMappings(PreprocessedHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
 		Dictionary entities = ((StringTypeEncoded) header.getPrimaryColumn().getType()).getSubType().getDictionary();
+
 		this.progressReporter.report(1);
+
 		log.debug("\tcompute dictionary");
+
 		Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
 		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
+
 		log.debug("\tmap values");
 		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
 
@@ -257,7 +286,6 @@ public class ImportJob extends Job {
 		//but if there are new ids we have to
 		else {
 			log.debug("\t\t {} new ids {}", primaryMapping.getNumberOfNewIds(), primaryMapping.getNewIds());
-			log.debug("\t\texample of new id: {}", new String(primaryDict.getElement(primaryMapping.getNewIds().getMin())));
 			log.debug("\t\tstoring");
 
 			namespace.getStorage().updateDictionary(primaryDict);

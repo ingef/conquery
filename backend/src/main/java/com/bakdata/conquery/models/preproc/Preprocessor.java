@@ -265,9 +265,9 @@ public class Preprocessor {
 				);
 
 				for (PPColumn c : result.getColumns()) {
-					log.trace("Compute best Subtype for  Column[{}] with {}", c.getName(), c.getParser());
+					log.info("Compute best Subtype for  Column[{}] with {}", c.getName(), c.getParser());
 					c.findBestType();
-					log.trace("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
+					log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
 				}
 
 				//estimate memory weight

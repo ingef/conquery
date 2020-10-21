@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.stores;
 
+import java.nio.charset.StandardCharsets;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -23,7 +25,7 @@ public class StringStore extends ColumnStoreAdapter<Integer, StringStore> {
 
 	@Override
 	public Object getAsObject(int event) {
-		return dictionary.getElement(get(event));
+		return new String(dictionary.getElement(get(event)), StandardCharsets.UTF_8);
 	}
 
 	public static StringStore create(int size, @NsIdRef Dictionary dictionary) {
