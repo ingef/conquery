@@ -77,12 +77,12 @@ public class CQOr extends CQElement {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		if (createExists) {
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "OR"), ResultType.BOOLEAN));
-		}
-
 		for (CQElement c : children) {
 			c.collectResultInfos(collector);
+		}
+
+		if (createExists) {
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "OR"), ResultType.BOOLEAN));
 		}
 	}
 

@@ -70,12 +70,12 @@ public class CQAnd extends CQElement {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		if(createExists){
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "AND"), ResultType.BOOLEAN));
-		}
-
 		for (CQElement c : children) {
 			c.collectResultInfos(collector);
+		}
+
+		if(createExists){
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "AND"), ResultType.BOOLEAN));
 		}
 	}
 
