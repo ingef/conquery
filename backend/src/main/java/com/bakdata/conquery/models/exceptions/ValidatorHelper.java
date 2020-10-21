@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 
+import io.dropwizard.logback.shaded.guava.base.Optional;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 
@@ -21,7 +22,8 @@ public final class ValidatorHelper {
 	
 	public static <V extends ConstraintViolation<?>> void failOnError(Logger log, Set<V> violations, String context) throws JSONException {
 		
-		Map<Object, List<V>> mapByLeaf = violations.stream().collect(Collectors.groupingBy(ConstraintViolation::getLeafBean));
+		// Wrap grouper in Optional to also catch null values.
+		Map<Optional<Object>, List<V>> mapByLeaf = violations.stream().collect(Collectors.groupingBy(v -> Optional.of(v.getLeafBean())));
 		
 		throw new JSONException(mapByLeaf.entrySet().stream().map(ValidatorHelper::createViolationString).collect(Collectors.joining(VERTICAL_DIVIDER)));
 	}
@@ -29,8 +31,8 @@ public final class ValidatorHelper {
 	/**
 	 * Combines all violations for a given leaf object and gives the path to the root object if possible.
 	 */
-	private static <V extends ConstraintViolation<?>> String createViolationString(Map.Entry<Object, List<V>> objectToViolation) {
-		Object leaf = objectToViolation.getKey();
+	private static <V extends ConstraintViolation<?>> String createViolationString(Map.Entry<Optional<Object>, List<V>> objectToViolation) {
+		Object leaf = objectToViolation.getKey().orNull();
 		List<V> violations = objectToViolation.getValue();
 		V firstViolation = violations.get(0);
 		
@@ -40,7 +42,7 @@ public final class ValidatorHelper {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("\nThe object of type ").append(leaf.getClass()).append(" caused the following problem(s):\n");
+		sb.append("\nThe object of type ").append(leaf.getClass()).append(" caused the following problem(s):\n)");
 		for(V violation : violations) {
 			sb.append(violation.getMessage()).append("\n");
 		}
