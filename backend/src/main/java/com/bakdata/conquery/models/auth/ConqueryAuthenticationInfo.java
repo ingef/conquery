@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.SimplePrincipalCollection;
@@ -12,6 +13,7 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
  */
 @SuppressWarnings("serial")
 @Getter
+@FieldNameConstants
 public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 
 	private final SimplePrincipalCollection principals = new SimplePrincipalCollection();

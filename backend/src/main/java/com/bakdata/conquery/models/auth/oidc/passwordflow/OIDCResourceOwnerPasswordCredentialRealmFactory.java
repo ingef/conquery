@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import static com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealm.CONFIDENTIAL_CREDENTIAL;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
@@ -102,7 +103,7 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 			return false;
 		}
 		
-		Object secret = credentials.get("CONFIDENTIAL_CREDENTIAL");
+		Object secret = credentials.get(CONFIDENTIAL_CREDENTIAL);
 		if(secret == null) {
 			return false;
 		}
@@ -111,6 +112,6 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 			return false;
 		}
 		
-		return ((String)secret).isBlank();
+		return !((String)secret).isBlank();
 	}
 }

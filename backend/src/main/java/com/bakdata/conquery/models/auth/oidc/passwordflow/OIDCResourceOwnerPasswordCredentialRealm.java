@@ -43,6 +43,8 @@ import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.TypelessAccessToken;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -143,7 +145,8 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
 		
 		if (!response.indicatesSuccess()) {
-			log.error(response.toErrorResponse().getErrorObject().toString());
+			HTTPResponse httpResponse = response.toHTTPResponse();
+			log.error("Received the following error from the auth server while validating a token: {} {} {}",  httpResponse.getStatusCode(), httpResponse.getStatusMessage(), httpResponse.getContent());
 			throw new AuthenticationException("Unable to retrieve access token from auth server.");
 		}
 		else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
@@ -190,7 +193,8 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
 		if (!response.indicatesSuccess()) {
-			log.error( response.toErrorResponse().getErrorObject().toString());
+			HTTPResponse httpResponse = response.toHTTPResponse();
+			log.error("Received the following error from the auth server while validating username and password:\n\tPath: {}\n\tStatus code: {}\n\tStatus message: {}\n\tContent: {}", tokenEndpoint, httpResponse.getStatusCode(), httpResponse.getStatusMessage(), httpResponse.getContent());
 			throw new IllegalStateException("Unable to retrieve access token from auth server.");
 		}
 		else if (!(response instanceof AccessTokenResponse)) {

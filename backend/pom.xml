@@ -9,6 +9,10 @@
 		<version>0.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>backend</artifactId>
+	
+	<properties>
+		<mock-server.version>5.11.1</mock-server.version>
+	</properties>
 
 	<build>
 		<resources>
@@ -48,24 +52,24 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <!-- Override io.dropwizard.dropwizard-project's defaults -->
-                <executions>
-                    <execution>
-                        <id>analyze</id>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <configuration>                            
-                            <ignoredUnusedDeclaredDependencies>
-                            	<ignoredUnusedDeclaredDependency>io.dropwizard:dropwizard-http2</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<!-- Override io.dropwizard.dropwizard-project's defaults -->
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<goals>
+							<goal>analyze-only</goal>
+						</goals>
+						<configuration>
+							<ignoredUnusedDeclaredDependencies>
+								<ignoredUnusedDeclaredDependency>io.dropwizard:dropwizard-http2</ignoredUnusedDeclaredDependency>
+							</ignoredUnusedDeclaredDependencies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -108,7 +112,7 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.8.0</version>
 		</dependency>
-        <dependency>
+		<dependency>
 			<groupId>com.univocity</groupId>
 			<artifactId>univocity-parsers</artifactId>
 			<version>2.9.0</version>
@@ -149,6 +153,18 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-netty</artifactId>
+			<version>${mock-server.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-client-java</artifactId>
+			<version>${mock-server.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -218,19 +234,19 @@
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-metrics-graphite</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-graphite</artifactId>
-        </dependency>
 		<dependency>
-		    <groupId>com.nimbusds</groupId>
-		    <artifactId>oauth2-oidc-sdk</artifactId>
-		    <version>8.23.1</version>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-graphite</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.keycloak</groupId>
-		    <artifactId>keycloak-authz-client</artifactId>
-		    <version>11.0.2</version>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>oauth2-oidc-sdk</artifactId>
+			<version>8.23.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-authz-client</artifactId>
+			<version>11.0.2</version>
 		</dependency>
 	</dependencies>
 </project>

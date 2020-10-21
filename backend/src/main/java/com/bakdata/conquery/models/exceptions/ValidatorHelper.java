@@ -27,7 +27,9 @@ public final class ValidatorHelper {
 		Map<Optional<Object>, List<V>> mapByLeaf = violations.stream().collect(Collectors.groupingBy(v -> Optional.of(v.getLeafBean())));
 		
 		// Combine all leaf fail reports into a single exception.
-		throw new ValidationException(mapByLeaf.entrySet().stream().map(ValidatorHelper::createViolationString).collect(Collectors.joining(VERTICAL_DIVIDER)));
+		if(!mapByLeaf.isEmpty()) {
+			throw new ValidationException(mapByLeaf.entrySet().stream().map(ValidatorHelper::createViolationString).collect(Collectors.joining(VERTICAL_DIVIDER)));			
+		}
 	}
 	
 	/**
@@ -45,10 +47,10 @@ public final class ValidatorHelper {
 		
 		// Build report for a specific failing leaf.
 		StringBuilder sb = new StringBuilder();
-		sb.append("\nThe object of type ").append(leaf.getClass()).append(" caused the following problem(s):\n)");
+		sb.append("\nThe object of type ").append(leaf.getClass()).append(" caused the following problem(s):\n");
 		for(V violation : violations) {
 			// List all the violations for the specific leaf. 
-			sb.append(violation.getMessage()).append("\n");
+			sb.append("\t- ").append(violation.getMessage()).append("\n");
 		}
 		if(firstViolation.getRootBean() != null && !firstViolation.getRootBean().equals(firstViolation.getLeafBean())) {
 			// Extract the path to the failing leaf from the root object.
