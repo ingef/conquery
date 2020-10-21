@@ -51,7 +51,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 
 	// todo these three can be combined
 	private final Map<Integer, Integer> start;
-	private final Map<Integer, Integer> end;
+	private final Map<Integer, Integer> length;
 
 
 	private final int bucketSize;
@@ -100,7 +100,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	}
 
 	public int getLastEventOfLocal(int localEntity) {
-		return end.get(localEntity);
+		return start.get(localEntity) + length.get(localEntity);
 	}
 
 	public final boolean has(int event, Column column) {

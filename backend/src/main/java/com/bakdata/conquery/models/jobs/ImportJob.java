@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -72,7 +71,7 @@ public class ImportJob extends Job {
 
 	@Override
 	public void execute() throws JSONException {
-		this.progressReporter.setMax(7);
+
 
 		try (HCFile file = new HCFile(importFile, false)) {
 
@@ -88,7 +87,6 @@ public class ImportJob extends Job {
 			//update primary dictionary
 			boolean mappingRequired = createMappings(header);
 
-			this.progressReporter.report(1);
 
 			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
 
@@ -122,8 +120,6 @@ public class ImportJob extends Job {
 			namespace.getStorage().updateImport(outImport);
 			namespace.sendToAll(new AddImport(outImport));
 
-			this.progressReporter.report(1);
-
 
 			//import the actual data
 			log.info("\timporting");
@@ -145,6 +141,7 @@ public class ImportJob extends Job {
 				// but first remap String values
 
 				if (mappingRequired) {
+
 					for (int i = 0; i < stores.length; i++) {
 						ColumnStore<?> store = stores[i];
 						final PPColumn column = header.getColumns()[i];
@@ -181,38 +178,34 @@ public class ImportJob extends Job {
 					final List<Integer> entities = new ArrayList<>(bucket2entities.getValue());
 
 					int[] selStart = new int[entities.size()];
-					int[] selEnd = new int[entities.size()];
+					int[] selLength = new int[entities.size()];
 
 					for (int index = 0; index < entities.size(); index++) {
 						int localId = entities.get(index);
 						selStart[index] = container.getStarts().get(localId);
-						selEnd[index] = container.getEnds().get(localId);
+						selLength[index] = container.getLengths().get(localId);
 					}
 
 					final List<ColumnStore<?>> list = new ArrayList<>(stores.length);
 					list.addAll(Arrays.asList(stores));
 
 					// copy only the parts of the bucket we need
-					list.replaceAll(store -> store.select(selStart, selEnd));
-
-					int[] lengths = IntStream.range(0, selStart.length)
-											 .map(index -> selEnd[index] - selStart[index])
-											 .toArray();
+					list.replaceAll(store -> store.select(selStart, selLength));
 
 					final Int2IntMap starts = new Int2IntAVLTreeMap();
-					final Int2IntMap ends = new Int2IntAVLTreeMap();
+					final Int2IntMap lengths = new Int2IntAVLTreeMap();
 
 					starts.put(primaryMapping.source2Target(entities.get(0)), 0);
-					ends.put(primaryMapping.source2Target(entities.get(0)), lengths[0]);
+					lengths.put(primaryMapping.source2Target(entities.get(0)), selLength[0]);
 
-					for (int index = 1; index < lengths.length; index++) {
+					for (int index = 1; index < selLength.length; index++) {
 						int localId = entities.get(index);
 						int globalId = primaryMapping.source2Target(localId);
 
 						final int previousEntity = primaryMapping.source2Target(entities.get(index - 1));
 
-						starts.put(globalId, ends.get(previousEntity));
-						ends.put(globalId, starts.get(globalId) + lengths[index]);
+						starts.put(globalId, starts.get(previousEntity) + lengths.get(previousEntity));
+						lengths.put(globalId, selLength[index]);
 					}
 
 
@@ -221,10 +214,10 @@ public class ImportJob extends Job {
 							new Bucket(
 									currentBucket,
 									outImport.getId(),
-									ends.values().stream().mapToInt(i -> i).max().orElse(0),
+									Arrays.stream(selLength).sum(),
 									list.toArray(new ColumnStore[0]),
 									starts,
-									ends,
+									lengths,
 									starts.size()
 							)
 					));
@@ -232,7 +225,6 @@ public class ImportJob extends Job {
 			}
 
 			sendBuckets(primaryMapping, buckets);
-			getProgressReporter().done();
 		}
 		catch (IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
@@ -267,7 +259,6 @@ public class ImportJob extends Job {
 		log.debug("\tupdating primary dictionary");
 		Dictionary entities = ((StringTypeEncoded) header.getPrimaryColumn().getType()).getSubType().getDictionary();
 
-		this.progressReporter.report(1);
 
 		log.debug("\tcompute dictionary");
 
@@ -281,7 +272,7 @@ public class ImportJob extends Job {
 		if (primaryMapping.getNewIds() == null) {
 			log.debug("\t\tno new ids");
 			primaryDict = oldPrimaryDict;
-			this.progressReporter.report(2);
+
 		}
 		//but if there are new ids we have to
 		else {
@@ -290,13 +281,11 @@ public class ImportJob extends Job {
 
 			namespace.getStorage().updateDictionary(primaryDict);
 
-			this.progressReporter.report(1);
 
 			log.debug("\t\tsending");
 
 			namespace.sendToAll(new UpdateDictionary(primaryDict));
 
-			this.progressReporter.report(1);
 		}
 
 		boolean mappingRequired = false;
@@ -312,7 +301,7 @@ public class ImportJob extends Job {
 			if (tableCol.getType() == MajorTypeId.STRING && tableCol.getSharedDictionary() != null) {
 				mappingRequired |= createSharedDictionary(col, tableCol);
 			}
-
+			// TODO this can be completely inlined
 			//store external infos into master and slaves
 			col.getType().storeExternalInfos(
 					namespace.getStorage(),

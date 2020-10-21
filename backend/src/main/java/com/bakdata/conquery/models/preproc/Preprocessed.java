@@ -79,7 +79,7 @@ public class Preprocessed {
 		log.info("Statistics = {}", statistics);
 
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
-		Int2IntMap entityEnd = new Int2IntAVLTreeMap();
+		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
 		ColumnStore[] columnValues = new ColumnStore[columns.length];
 
@@ -103,8 +103,9 @@ public class Preprocessed {
 					store.set(start + event, entityValues.get(event));
 				}
 
+				entityLength.put(entity.intValue(), length);
+
 				start += length;
-				entityEnd.put(entity.intValue(), start);
 			}
 
 			columnValues[colIdx] = store;
@@ -112,7 +113,8 @@ public class Preprocessed {
 
 
 		try (OutputStream out = new GzipCompressorOutputStream(outFile.writeContent())) {
-			Jackson.BINARY_MAPPER.writerFor(DataContainer.class).writeValue(out, new DataContainer(entityStart, entityEnd, columnValues));
+			Jackson.BINARY_MAPPER.writerFor(DataContainer.class)
+								 .writeValue(out, new DataContainer(entityStart, entityLength, columnValues));
 		}
 
 		// Then write headers.
@@ -167,7 +169,7 @@ public class Preprocessed {
 	@AllArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class DataContainer {
 		private final Map<Integer, Integer> starts;
-		private final Map<Integer, Integer> ends;
+		private final Map<Integer, Integer> lengths;
 		private final ColumnStore[] values;
 	}
 

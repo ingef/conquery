@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -11,21 +12,22 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public interface ColumnStore<T> {
 
-	public static <T> T selectArray(int[] starts, int[] ends, T values, Function<Integer, T> provider) {
-		final int length = ends[ends.length - 1] - starts[0];
+	public static <T> T selectArray(int[] starts, int[] lengths, T values, Function<Integer, T> provider) {
+		int length = Arrays.stream(lengths).sum();
+
 		final T out = provider.apply(length);
 
 		int pos = 0;
 
 		for (int index = 0; index < starts.length; index++) {
-			System.arraycopy(values, starts[index], out, pos, ends[index] - starts[index]);
-			pos += ends[index] - starts[index];
+			System.arraycopy(values, starts[index], out, pos, lengths[index]);
+			pos += lengths[index];
 		}
 
 		return out;
 	}
 
-	ColumnStore<T> select(int[] starts, int[] ends);
+	ColumnStore<T> select(int[] starts, int[] length);
 
 	void set(int event, T value);
 

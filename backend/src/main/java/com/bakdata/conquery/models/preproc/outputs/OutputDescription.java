@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import java.io.Serializable;
 import java.util.InputMismatchException;
-import java.util.Objects;
 import java.util.StringJoiner;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -56,14 +55,13 @@ public abstract class OutputDescription implements Serializable {
 		 * Parse row and test for NULL values, throwing an exception when Required but missing.
 		 */
 		public Object createOutput(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
-			if(OutputDescription.this.isRequired()) {
-				return Objects.requireNonNull(
-						parseLine(row, type, sourceLine),
-						() -> String.format("Required Output[%s] produced NULL value at line %d=%s", OutputDescription.this.getName(), sourceLine, row)
-				);
+			final Object parsed = parseLine(row, type, sourceLine);
+
+			if(OutputDescription.this.isRequired() && parsed == null) {
+				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
 			}
 
-			return parseLine(row, type, sourceLine);
+			return parsed;
 		}
 	}
 
