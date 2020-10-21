@@ -1,34 +1,32 @@
 {
   "type": "QUERY_TEST",
   "label": "AND Test",
-  "expectedCsv": "tests/query/AND_TREECONCEPT_QUERY/expected.csv",
+  "expectedCsv": "tests/query/LOGICAL/AND/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "AND",
-      "createExists" : true,
+      "createExists": true,
       "children": [
         {
           "type": "CONCEPT",
           "ids": [
-            "${dataset}.test_tree.test_child1"
+            "${dataset}.tree.a"
           ],
           "tables": [
             {
-              "id": "${dataset}.test_tree.test_column",
-              "filters": []
+              "id": "${dataset}.tree.connector"
             }
           ]
         },
         {
           "type": "CONCEPT",
           "ids": [
-            "${dataset}.test_tree.test_child2"
+            "${dataset}.tree.b"
           ],
           "tables": [
             {
-              "id": "${dataset}.test_tree.test_column",
-              "filters": []
+              "id": "${dataset}.tree.connector"
             }
           ]
         }
@@ -37,33 +35,30 @@
   },
   "concepts": [
     {
-      "label": "test_tree",
+      "name": "tree",
       "type": "TREE",
       "connectors": {
-        "label": "tree_label",
-        "name": "test_column",
-        "column": "test_table.test_column",
+        "name": "connector",
+        "column": "table.column",
         "validityDates": {
-          "label": "datum",
-          "column": "test_table.datum"
+          "name": "datum",
+          "column": "table.datum"
         }
       },
       "children": [
         {
-          "label": "test_child1",
-          "description": " ",
+          "name": "a",
           "condition": {
             "type": "PREFIX_LIST",
-            "prefixes": "A1"
+            "prefixes": "A"
           },
           "children": []
         },
         {
-          "label": "test_child2",
-          "description": " ",
+          "name": "b",
           "condition": {
             "type": "PREFIX_LIST",
-            "prefixes": "B2"
+            "prefixes": "B"
           },
           "children": []
         }
@@ -73,8 +68,8 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/AND_TREECONCEPT_QUERY/content.csv",
-        "name": "test_table",
+        "csv": "tests/query/LOGICAL/AND/content.csv",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -85,7 +80,7 @@
             "type": "DATE"
           },
           {
-            "name": "test_column",
+            "name": "column",
             "type": "STRING"
           }
         ]
