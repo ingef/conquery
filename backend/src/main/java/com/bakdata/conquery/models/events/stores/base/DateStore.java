@@ -1,14 +1,15 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "DATES", base = ColumnStore.class)
 @Getter
-public class DateStore extends ColumnStoreAdapter<Integer, DateStore> {
+public class DateStore extends ColumnStoreAdapter<Integer> {
 
 	private final ColumnStore<Long> store;
 
@@ -47,6 +48,6 @@ public class DateStore extends ColumnStoreAdapter<Integer, DateStore> {
 
 	@Override
 	public Integer get(int event) {
-		return store.get(event).intValue();
+		return (int) store.getInteger(event);
 	}
 }

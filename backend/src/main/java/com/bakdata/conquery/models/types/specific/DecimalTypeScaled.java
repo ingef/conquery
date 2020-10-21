@@ -5,7 +5,7 @@ import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.DecimalStore;
+import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,7 +22,7 @@ public class DecimalTypeScaled extends CType<BigDecimal, Number> {
 	
 	@JsonCreator
 	public DecimalTypeScaled(int scale, CType subType) {
-		super(MajorTypeId.DECIMAL, subType.getPrimitiveType());
+		super(MajorTypeId.DECIMAL);
 		this.scale = scale;
 		this.subType = subType;
 	}
@@ -35,11 +35,6 @@ public class DecimalTypeScaled extends CType<BigDecimal, Number> {
 	@Override
 	public BigDecimal createScriptValue(Number value) {
 		return scale(scale, (Long)subType.createScriptValue(value));
-	}
-	
-	@Override
-	public boolean canStoreNull() {
-		return subType.canStoreNull();
 	}
 
 	public static BigInteger unscale(int scale, BigDecimal value) {

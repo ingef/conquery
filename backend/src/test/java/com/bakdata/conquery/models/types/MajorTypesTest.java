@@ -17,8 +17,5 @@ public class MajorTypesTest {
 		assertThat(type.getTypeId())
 			.isNotNull()
 			.isEqualTo(typeId);
-		
-		assertThat(type.getPrimitiveType())
-			.isNotNull();
 	}
 }

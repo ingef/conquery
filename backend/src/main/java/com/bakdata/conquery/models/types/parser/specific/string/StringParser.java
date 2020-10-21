@@ -80,11 +80,12 @@ public class StringParser extends Parser<Integer> {
 				type = new StringTypeSingleton(strings.keySet().iterator().next());
 			}
 			setLineCounts(type);
-			return new Decision<Integer, Boolean, StringTypeSingleton>(
-				new Transformer<Integer, Boolean>() {
+			//TODO !
+			return new Decision<Integer, Integer, StringTypeSingleton>(
+				new Transformer<Integer, Integer>() {
 					@Override
-					public Boolean transform(@NonNull Integer value) {
-						return Boolean.TRUE;
+					public Integer transform(@NonNull Integer value) {
+						return 1;
 					}
 				},
 				type

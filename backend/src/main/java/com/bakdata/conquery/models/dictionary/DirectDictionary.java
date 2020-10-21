@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.LongStore;
+import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import jersey.repackaged.com.google.common.collect.Iterators;
@@ -14,7 +14,7 @@ public class DirectDictionary extends AStringType<Integer> {
 	private final Dictionary dict;
 	
 	public DirectDictionary(Dictionary dict) {
-		super(int.class);
+		super();
 		this.dict = dict;
 	}
 	@Override
@@ -48,11 +48,6 @@ public class DirectDictionary extends AStringType<Integer> {
 
 	public int put(String value) {
 		return dict.put(value.getBytes(StandardCharsets.UTF_8));
-	}
-
-	@Override
-	public boolean canStoreNull() {
-		return false;
 	}
 
 	@Override

@@ -1,12 +1,14 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.string;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "SINGLETON_STRING", base = ColumnStore.class)
-public class SingletonStringStore extends ColumnStoreAdapter<Integer, SingletonStringStore>{
+public class SingletonStringStore extends ColumnStoreAdapter<Integer> {
 
 	@Getter
 	private final String value;

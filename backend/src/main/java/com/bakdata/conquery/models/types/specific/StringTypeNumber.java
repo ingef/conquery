@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.NumberStringStore;
+import com.bakdata.conquery.models.events.stores.string.NumberStringStore;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -26,7 +26,7 @@ public class StringTypeNumber extends AStringType<Number> {
 	
 	@JsonCreator
 	public StringTypeNumber(Range<Integer> range, VarIntType numberType) {
-		super(numberType.getPrimitiveType());
+		super();
 		this.range = range;
 		this.numberType = numberType;
 	}
@@ -36,11 +36,6 @@ public class StringTypeNumber extends AStringType<Number> {
 		return NumberStringStore.create(size);
 	}
 
-	@Override
-	public boolean canStoreNull() {
-		return numberType.canStoreNull();
-	}
-	
 	@Override
 	public long estimateMemoryBitWidth() {
 		return numberType.estimateMemoryBitWidth();

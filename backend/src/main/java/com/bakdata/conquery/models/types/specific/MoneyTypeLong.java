@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.LongStore;
+import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,7 +19,7 @@ public class MoneyTypeLong extends CType<Long, Long> {
 		.pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits());
 	
 	public MoneyTypeLong() {
-		super(MajorTypeId.MONEY, long.class);
+		super(MajorTypeId.MONEY);
 	}
 
 	@Override
@@ -27,11 +27,6 @@ public class MoneyTypeLong extends CType<Long, Long> {
 		return LongStore.create(size);
 	}
 
-	@Override
-	public boolean canStoreNull() {
-		return true;
-	}
-	
 	@Override
 	public long estimateMemoryBitWidth() {
 		return Long.SIZE;

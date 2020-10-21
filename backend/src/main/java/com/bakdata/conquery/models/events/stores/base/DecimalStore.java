@@ -1,15 +1,16 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.base;
 
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
-public class DecimalStore extends ColumnStoreAdapter<BigDecimal, DecimalStore> {
+public class DecimalStore extends ColumnStoreAdapter<BigDecimal> {
 
 	private final BigDecimal[] values;
 

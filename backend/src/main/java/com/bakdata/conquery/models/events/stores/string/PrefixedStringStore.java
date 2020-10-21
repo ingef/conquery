@@ -1,15 +1,17 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.string;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @Getter
 @CPSType(id = "PREFIXED_STRINGS", base = ColumnStore.class)
-public class PrefixedStringStore extends ColumnStoreAdapter<Integer, PrefixedStringStore> {
+public class PrefixedStringStore extends ColumnStoreAdapter<Integer> {
 
 	private final StringStore store;
 
@@ -26,8 +28,8 @@ public class PrefixedStringStore extends ColumnStoreAdapter<Integer, PrefixedStr
 		return prefix + store.getString(event);
 	}
 
-	public static PrefixedStringStore create(int size, String prefix, @NsIdRef Dictionary dictionary) {
-		return new PrefixedStringStore(StringStore.create(size, dictionary), prefix);
+	public static PrefixedStringStore create(int size, String prefix, @NsIdRef Dictionary dictionary, StringTypeEncoded.Encoding encoding) {
+		return new PrefixedStringStore(StringStore.create(size, encoding, dictionary), prefix);
 	}
 
 	@Override

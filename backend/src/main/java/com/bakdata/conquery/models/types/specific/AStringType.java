@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**every implementation must guarantee IDs between 0 and size**/
 public abstract class AStringType<JAVA_TYPE> extends CType<Integer, JAVA_TYPE> implements Iterable<String> {
 
-	public AStringType(Class<?> primitiveType) {
-		super(MajorTypeId.STRING, primitiveType);
+	public AStringType() {
+		super(MajorTypeId.STRING);
 	}
 
 	public abstract String getElement(int id);

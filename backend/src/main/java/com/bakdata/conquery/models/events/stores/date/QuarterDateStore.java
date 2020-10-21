@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.date;
 
 import java.time.LocalDate;
 
@@ -7,12 +7,14 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "QUARTER_DATES", base = ColumnStore.class)
 @Getter
-public class QuarterDateStore extends ColumnStoreAdapter<CDateRange, QuarterDateStore> {
+public class QuarterDateStore extends ColumnStoreAdapter<CDateRange> {
 
 	private final ColumnStore<Long> store;
 

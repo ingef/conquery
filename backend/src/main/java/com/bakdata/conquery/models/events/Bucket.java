@@ -165,7 +165,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 				continue;
 			}
 
-			out.put(imp.getColumns()[i].getName(), store.getAsObject(event));
+			out.put(imp.getColumns()[i].getName(), getImp().getColumns()[i].getType().createScriptValue(store.get(event)));
 		}
 
 		return out;

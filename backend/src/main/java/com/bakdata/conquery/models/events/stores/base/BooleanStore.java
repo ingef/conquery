@@ -1,16 +1,17 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.base;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 
 @CPSType(id = "BOOLEANS", base = ColumnStore.class)
 @Getter
-public class BooleanStore extends ColumnStoreAdapter<Boolean, BooleanStore> {
+public class BooleanStore extends ColumnStoreAdapter<Boolean> {
 
 
 

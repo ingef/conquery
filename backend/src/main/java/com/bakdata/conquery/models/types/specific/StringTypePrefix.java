@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.StringStore;
+import com.bakdata.conquery.models.events.stores.string.StringStore;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -26,7 +26,9 @@ public class StringTypePrefix extends AChainedStringType {
 
 	@Override
 	public ColumnStore createStore(int size) {
-		return StringStore.create(size, subType.getUnderlyingDictionary());
+
+
+		return StringStore.create(size, null, subType.getUnderlyingDictionary());
 	}
 
 	@Override

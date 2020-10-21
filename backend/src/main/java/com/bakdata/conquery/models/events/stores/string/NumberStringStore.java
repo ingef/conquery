@@ -1,13 +1,15 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.string;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @Getter
 @CPSType(id = "NUMBER_STRINGS", base = ColumnStore.class)
-public class NumberStringStore extends ColumnStoreAdapter<Integer, NumberStringStore> {
+public class NumberStringStore extends ColumnStoreAdapter<Number> {
 
 	private final ColumnStore<Long> store;
 
@@ -19,7 +21,7 @@ public class NumberStringStore extends ColumnStoreAdapter<Integer, NumberStringS
 
 	@Override
 	public Object getAsObject(int event) {
-		return Integer.toString(get(event));
+		return Long.toString(get(event));
 	}
 
 	public static NumberStringStore create(int size) {
@@ -27,8 +29,8 @@ public class NumberStringStore extends ColumnStoreAdapter<Integer, NumberStringS
 	}
 
 	@Override
-	public Integer get(int event) {
-		return store.get(event).intValue();
+	public Long get(int event) {
+		return store.getInteger(event);
 	}
 
 	public NumberStringStore select(int[] starts, int[] ends) {
@@ -36,7 +38,7 @@ public class NumberStringStore extends ColumnStoreAdapter<Integer, NumberStringS
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void set(int event, Number value) {
 		if (value == null) {
 			store.set(event, null);
 			return;

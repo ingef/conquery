@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.StringStore;
+import com.bakdata.conquery.models.events.stores.string.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
@@ -53,7 +53,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@Override
 	public ColumnStore createStore(int size) {
-		return StringStore.create(size, getDictionary());
+		return StringStore.create(size, null, getDictionary());
 	}
 
 	@Override
@@ -125,6 +125,5 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 			);
 		}
 		numberType = newNumberType;
-		this.setPrimitiveType(newNumberType.getPrimitiveType());
 	}
 }

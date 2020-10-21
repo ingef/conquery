@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.datasets;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -27,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.primitives.Ints;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -52,15 +50,6 @@ public class Import extends NamedImpl<ImportId> {
 	@Override
 	public ImportId createId() {
 		return new ImportId(table, getName());
-	}
-
-	@JsonIgnore
-	public int getNullWidth() {
-		//count the columns which can not store null
-		return Ints.checkedCast(Arrays.stream(columns).
-				filter(col -> col.getType().requiresExternalNullStore()
-						&& col.getType().getNullLines() < col.getType().getLines())
-				.count());
 	}
 
 	public void loadExternalInfos(NamespacedStorage storage) {

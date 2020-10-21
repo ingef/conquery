@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.types.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.date.DateRangeStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import lombok.Setter;
 public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 
 	public DateRangeTypeDateRange() {
-		super(MajorTypeId.DATE_RANGE, CDateRange.class);
+		super(MajorTypeId.DATE_RANGE);
 	}
 
 	@Override
@@ -30,11 +30,6 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 		}
 
 		return value;
-	}
-
-	@Override
-	public boolean canStoreNull() {
-		return true;
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.LongStore;
+import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,7 +17,7 @@ public class IntegerTypeLong extends CType<Long, Long> {
 	
 	@JsonCreator
 	public IntegerTypeLong(long minValue, long maxValue) {
-		super(MajorTypeId.INTEGER, long.class);
+		super(MajorTypeId.INTEGER);
 		this.minValue = minValue;
 		this.maxValue = maxValue;
 	}
@@ -27,11 +27,6 @@ public class IntegerTypeLong extends CType<Long, Long> {
 		return LongStore.create(size);
 	}
 
-	@Override
-	public boolean canStoreNull() {
-		return true;
-	}
-	
 	@Override
 	public long estimateMemoryBitWidth() {
 		return Long.SIZE;

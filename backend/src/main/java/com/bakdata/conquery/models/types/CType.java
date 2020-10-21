@@ -14,9 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.math.LongMath;
-import com.google.common.primitives.Primitives;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -27,8 +25,6 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 
 	@JsonIgnore
 	private transient final MajorTypeId typeId;
-	@JsonIgnore @NonNull
-	private transient Class<?> primitiveType;
 
 	private long lines = 0;
 	private long nullLines = 0;
@@ -36,7 +32,6 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 	public void init(DatasetId dataset) {}
 
 	public abstract ColumnStore createStore(int size);
-
 
 	public Object createScriptValue(JAVA_TYPE value) {
 		return value;
@@ -54,22 +49,10 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 		return this.getClass().getSimpleName();
 	}
 
-	public abstract boolean canStoreNull();
 
-	public boolean requiresExternalNullStore() {
-		return !canStoreNull() && getNullLines()>0;
-	}
-
-	@JsonIgnore
-	public Class<?> getBoxedType(){
-		return Primitives.wrap(getPrimitiveType());
-	}
-	
 	public long estimateMemoryConsumption() {
 		long width = estimateMemoryBitWidth();
-		if(!canStoreNull()) {
-			width++;
-		}
+
 		return LongMath.divide(
 			(lines-nullLines) * width + nullLines * Math.min(Long.SIZE, width),
 			8, RoundingMode.CEILING

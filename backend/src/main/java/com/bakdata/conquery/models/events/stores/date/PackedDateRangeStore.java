@@ -1,15 +1,17 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.date;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.util.PackedUnsigned1616;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "PACKED_DATE_RANGES", base = ColumnStore.class)
 @Getter
-public class PackedDateRangeStore extends ColumnStoreAdapter<CDateRange, PackedDateRangeStore> {
+public class PackedDateRangeStore extends ColumnStoreAdapter<CDateRange> {
 
 	private final IntegerStore store;
 

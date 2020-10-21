@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.types.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.PackedDateRangeStore;
+import com.bakdata.conquery.models.events.stores.date.PackedDateRangeStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.util.PackedUnsigned1616;
@@ -17,7 +17,7 @@ public class DateRangeTypePacked extends CType<Integer, Integer> {
 	private int minValue;
 	
 	public DateRangeTypePacked() {
-		super(MajorTypeId.DATE_RANGE, int.class);
+		super(MajorTypeId.DATE_RANGE);
 	}
 
 	@Override
@@ -37,11 +37,6 @@ public class DateRangeTypePacked extends CType<Integer, Integer> {
 		);
 	}
 
-	@Override
-	public boolean canStoreNull() {
-		return false;
-	}
-	
 	@Override
 	public long estimateMemoryBitWidth() {
 		return Integer.SIZE;

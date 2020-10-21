@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParser;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -23,7 +22,7 @@ public abstract class AChainedStringType extends AStringType<Number> {
 	protected AStringType<Number> subType;
 	
 	public AChainedStringType(AStringType<Number> subType) {
-		super(subType.getPrimitiveType());
+		super();
 		this.subType = subType;
 	}
 	
@@ -51,12 +50,7 @@ public abstract class AChainedStringType extends AStringType<Number> {
 	public void writeHeader(OutputStream out) throws IOException {
 		subType.writeHeader(out);
 	}
-	
-	@Override
-	public boolean canStoreNull() {
-		return subType.canStoreNull();
-	}
-	
+
 	@Override
 	public int size() {
 		return subType.size();
@@ -85,6 +79,5 @@ public abstract class AChainedStringType extends AStringType<Number> {
 	@Override
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		subType.adaptUnderlyingDictionary(newDict, newNumberType);
-		this.setPrimitiveType(newNumberType.getPrimitiveType());
 	}
 }

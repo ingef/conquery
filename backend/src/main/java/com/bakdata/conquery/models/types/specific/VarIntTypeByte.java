@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ByteStore;
+import com.bakdata.conquery.models.events.stores.base.ByteStore;
 import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
 
@@ -14,7 +14,7 @@ public class VarIntTypeByte extends VarIntType {
 	private final byte minValue;
 
 	public VarIntTypeByte(byte minValue, byte maxValue) {
-		super(byte.class);
+		super();
 		this.minValue = minValue;
 		this.maxValue = maxValue;
 	}

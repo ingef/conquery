@@ -6,7 +6,9 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
 
-abstract class ColumnStoreAdapter<T, ID extends ColumnStore<T>> implements ColumnStore<T> {
+public abstract class ColumnStoreAdapter<T> implements ColumnStore<T> {
+
+	public abstract T get(int event);
 
 	@Override
 	public int getString(int event) {

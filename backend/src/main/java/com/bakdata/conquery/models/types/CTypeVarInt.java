@@ -11,18 +11,13 @@ public abstract class CTypeVarInt<MAJOR_JAVA_TYPE extends Number> extends CType<
 	protected VarIntType numberType;
 
 	public CTypeVarInt(MajorTypeId typeId, VarIntType numberType) {
-		super(typeId, numberType.getPrimitiveType());
+		super(typeId);
 		this.numberType = numberType;
 	}
 
 	@Override
 	public ColumnStore createStore(int size) {
 		return numberType.createStore(size);
-	}
-
-	@Override
-	public boolean canStoreNull() {
-		return numberType.canStoreNull();
 	}
 
 	@Override

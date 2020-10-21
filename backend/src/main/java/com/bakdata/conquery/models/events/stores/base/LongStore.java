@@ -1,13 +1,14 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(id = "LONGS", base = ColumnStore.class)
 @Getter
-public class LongStore extends ColumnStoreAdapter<Long, LongStore> {
+public class LongStore extends ColumnStoreAdapter<Long> {
 
 	private final long nullValue;
 	private final long[] values;

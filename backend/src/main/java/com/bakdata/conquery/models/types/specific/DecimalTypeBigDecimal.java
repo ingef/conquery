@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.DecimalStore;
+import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 
 	public DecimalTypeBigDecimal() {
-		super(MajorTypeId.DECIMAL, BigDecimal.class);
+		super(MajorTypeId.DECIMAL);
 	}
 
 	@Override
@@ -20,11 +20,6 @@ public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 		return DecimalStore.create(size);
 	}
 
-	@Override
-	public boolean canStoreNull() {
-		return true;
-	}
-	
 	@Override
 	public long estimateMemoryBitWidth() {
 		return 500;

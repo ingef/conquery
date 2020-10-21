@@ -6,8 +6,8 @@ import java.util.Iterator;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.BooleanStore;
-import com.bakdata.conquery.models.events.stores.SingletonStringStore;
+import com.bakdata.conquery.models.events.stores.base.BooleanStore;
+import com.bakdata.conquery.models.events.stores.string.SingletonStringStore;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jersey.repackaged.com.google.common.collect.Iterators;
@@ -16,13 +16,13 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_SINGLETON")
-public class StringTypeSingleton extends AStringType<Boolean> {
+public class StringTypeSingleton extends AStringType<Integer> {
 
 	private final String singleValue;
 
 	@JsonCreator
 	public StringTypeSingleton(String singleValue) {
-		super(boolean.class);
+		super();
 		this.singleValue = singleValue;
 	}
 
@@ -43,15 +43,10 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 	}
 	
 	@Override
-	public String createScriptValue(Boolean value) {
+	public String createScriptValue(Integer value) {
 		return singleValue;
 	}
 
-	@Override
-	public boolean canStoreNull() {
-		return true;
-	}
-	
 	@Override
 	public int getId(String value) {
 		if(value != null && value.equals(singleValue)) {

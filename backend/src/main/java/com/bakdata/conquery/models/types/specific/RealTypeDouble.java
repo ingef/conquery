@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.DoubleStore;
+import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
@@ -10,12 +10,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 public class RealTypeDouble extends CType<Double, Double> {
 
 	public RealTypeDouble() {
-		super(MajorTypeId.REAL, double.class);
-	}
-
-	@Override
-	public boolean canStoreNull() {
-		return false;
+		super(MajorTypeId.REAL);
 	}
 
 	@Override
