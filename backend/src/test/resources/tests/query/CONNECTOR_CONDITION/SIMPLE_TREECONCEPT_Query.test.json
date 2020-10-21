@@ -25,7 +25,7 @@
         "condition": {
           "type": "COLUMN_EQUAL",
           "column": "include",
-          "values": "1"
+          "values": "A"
         },
         "label": "tree_label",
         "name": "test_column",
