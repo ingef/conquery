@@ -50,5 +50,4 @@ public final class ValidatorHelper {
 		sb.append("String representation of the failing object:\n").append(leaf);
 		return sb.toString();
 	}
-
 }
