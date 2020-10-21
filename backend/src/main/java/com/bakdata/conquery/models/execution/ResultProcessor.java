@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultProcessor {
 	
-	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, datasetId, Ability.READ);
@@ -46,7 +46,7 @@ public class ResultProcessor {
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 		
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 		try {

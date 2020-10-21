@@ -1,6 +1,5 @@
 package com.bakdata.conquery.util;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,8 +11,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -37,20 +34,7 @@ import org.apache.shiro.authz.Permission;
 @UtilityClass
 public class QueryUtils {
 
-	/**
-	 * Preallocate the DateSet, such that typical queries don't have to grow them while executing.
-	 * The numbers are just best guesses and can be fine tuned if desired but configuration is probably not important.
-	 *
-	 */
-	// TODO: 22.09.2020 FK: if we want to configure the preallocation period, add EventIterating::init and a QueryConfiguration for that purpose.
-	public static BitMapCDateSet createPreAllocatedDateSet() {
-		return BitMapCDateSet.createPreallocated(
-				CDate.ofLocalDate(LocalDate.of(1950, 01, 01)),
-				CDate.ofLocalDate(LocalDate.now())
-		);
-	}
 
-	
 	/**
 	 * Provides a starting operator for consumer chains, that does nothing.
 	 */

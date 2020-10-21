@@ -14,7 +14,7 @@ public abstract class Job {
 	protected final UUID jobId = UUID.randomUUID();
 
 	@Setter
-	protected ProgressReporter progressReporter = ProgressReporter.createWaiting();
+	private ProgressReporter progressReporter = ProgressReporter.createWaiting();
 
 	private AtomicBoolean cancelledState = new AtomicBoolean(false);
 
