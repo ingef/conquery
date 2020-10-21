@@ -100,10 +100,7 @@ public class StoredQueriesProcessorTest {
 		
 		doAnswer((invocation) -> {
 			ConqueryPermission perm = (ConqueryPermission) invocation.getArgument(0);
-			if(allowedQueryIds.contains(ManagedExecutionId.Parser.INSTANCE.parse(perm.getInstances().iterator().next()))) {
-				return true;				
-			}
-			return false;
+			return allowedQueryIds.contains(ManagedExecutionId.Parser.INSTANCE.parse(perm.getInstances().iterator().next()));
 		}).when(user).isPermitted(any(ConqueryPermission.class));
 		return user; 
 		
