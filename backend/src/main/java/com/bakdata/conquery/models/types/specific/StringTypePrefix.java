@@ -26,9 +26,7 @@ public class StringTypePrefix extends AChainedStringType {
 
 	@Override
 	public ColumnStore createStore(int size) {
-
-
-		return StringStore.create(size, null, subType.getUnderlyingDictionary());
+		return StringStore.create(size, StringTypeEncoded.Encoding.UTF8, subType.getUnderlyingDictionary());
 	}
 
 	@Override

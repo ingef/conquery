@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -140,7 +141,8 @@ public class CalculateCBlocksJob extends Job {
 
 		treeConcept.initializeIdCache(stringType, importId);
 
-		cBlock.setMostSpecificChildren(new ArrayList<>(bucket.getNumberOfEvents()));
+		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
+		cBlock.setMostSpecificChildren(Arrays.asList(mostSpecificChildren));
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 
@@ -151,7 +153,6 @@ public class CalculateCBlocksJob extends Job {
 				// Events without values are skipped
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (!bucket.has(event, connector.getColumn())) {
-					cBlock.getMostSpecificChildren().add(null);
 					continue;
 				}
 
@@ -163,26 +164,24 @@ public class CalculateCBlocksJob extends Job {
 
 
 				if((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))){
-					cBlock.getMostSpecificChildren().add(null);
 					continue;
 				}
 
 				ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
 				// Add all Concepts and their path to the root to the CBlock
-				if (child != null) {
-					cBlock.getMostSpecificChildren().add(child.getPrefix());
-					ConceptTreeNode<?> it = child;
-					while (it != null) {
-						cBlock.getIncludedConcepts()
-							  .put(entry.getLocalEntity(), cBlock.getIncludedConcepts().getOrDefault(entry.getLocalEntity(), 0) | it.calculateBitMask());
-
-						it = it.getParent();
-					}
+				if (child == null) {
+					continue;
 				}
-				else {
-					// see #174 improve handling by copying the relevant things from the old project
-					cBlock.getMostSpecificChildren().add(null);
+
+				mostSpecificChildren[event] = child.getPrefix();
+
+				ConceptTreeNode<?> it = child;
+				while (it != null) {
+					cBlock.getIncludedConcepts()
+						  .put(entry.getLocalEntity(), cBlock.getIncludedConcepts().getOrDefault(entry.getLocalEntity(), 0) | it.calculateBitMask());
+
+					it = it.getParent();
 				}
 			}
 			catch (ConceptConfigurationException ex) {

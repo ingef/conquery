@@ -51,9 +51,13 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 		dictionary.setDataset(dataset);
 	}
 
+	public StringStore createStore(int size, StringTypeEncoded.Encoding encoding) {
+		return StringStore.create(size, encoding, getDictionary());
+	}
+
 	@Override
 	public ColumnStore createStore(int size) {
-		return StringStore.create(size, null, getDictionary());
+		return StringStore.create(size, StringTypeEncoded.Encoding.UTF8, getDictionary());
 	}
 
 	@Override

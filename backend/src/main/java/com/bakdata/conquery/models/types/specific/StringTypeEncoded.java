@@ -41,7 +41,7 @@ public class StringTypeEncoded extends AStringType<Number> {
 
 	@Override
 	public ColumnStore createStore(int size) {
-		return subType.createStore(size);
+		return subType.createStore(size, encoding);
 	}
 
 	@Override

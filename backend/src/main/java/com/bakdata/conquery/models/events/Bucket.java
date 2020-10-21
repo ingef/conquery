@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -20,7 +21,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -44,6 +44,9 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 
 	private final ImportId importId;
 
+	@NsIdRef
+	private Import imp;
+
 	@Min(0)
 	private final int numberOfEvents; // todo
 
@@ -56,8 +59,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 
 	private final int bucketSize;
 
-	@JsonIgnore
-	private transient Import imp;
 
 	@Override
 	public BucketId createId() {

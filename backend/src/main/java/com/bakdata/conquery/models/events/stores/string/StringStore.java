@@ -32,7 +32,7 @@ public class StringStore extends ColumnStoreAdapter<Integer> {
 
 	@Override
 	public Object getAsObject(int event) {
-		return getEncoding().encode(dictionary.getElement(getString(event)));
+		return getString(event);
 	}
 
 	public Integer get(int event) {
