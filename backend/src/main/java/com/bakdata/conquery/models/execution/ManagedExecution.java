@@ -201,7 +201,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
-		status.setOwn(getOwner().equals(user.getId()));
+		status.setOwn(owner.equals(user.getId()));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
@@ -217,7 +217,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
 	public final Optional<URL> getDownloadURL(UriBuilder url, User user) {
-		if(!isReadyToDownload(url, user)) {
+		if(url == null || !isReadyToDownload(url, user)) {
+			// url might be null because no url was wished and no builder was provided
 			return Optional.empty();
 		}
 		return Optional.ofNullable(getDownloadURLInternal(url));

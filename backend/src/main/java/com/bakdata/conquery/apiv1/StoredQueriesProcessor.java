@@ -18,43 +18,46 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j @RequiredArgsConstructor
 public class StoredQueriesProcessor {
 
 	@Getter
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
 
-	public StoredQueriesProcessor(DatasetRegistry datasets) {
-		this.datasetRegistry = datasets;
-		this.storage = datasets.getMetaStorage();
-	}
-
 	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
+		return getQueriesFiltered(namespace.getDataset().getId(), RequestAwareUriBuilder.fromRequest(req), user, allQueries);
+	}
+
+	public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries) {
 		return allQueries
 			.stream()
 			// to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
-			.filter(q -> q.getDataset().equals(namespace.getDataset().getId()))
+			.filter(q -> q.getDataset().equals(datasetId))
+			.filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
 			.flatMap(mq -> {
 				try {
 					return Stream.of(
 						mq.buildStatus(
 							storage,
-							RequestAwareUriBuilder.fromRequest(req),
+							uriBuilder,
 							user,
 							datasetRegistry));
 				}
