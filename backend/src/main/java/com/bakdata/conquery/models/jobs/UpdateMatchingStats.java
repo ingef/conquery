@@ -37,13 +37,13 @@ public class UpdateMatchingStats extends Job {
 	public void execute() throws Exception {
 		if (worker.getStorage().getAllCBlocks().isEmpty()) {
 			log.debug("Worker {} is empty, skipping.", worker);
-			progressReporter.done();
+			getProgressReporter().done();
 			return;
 		}
 
 		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(worker.getExecutorService());
 
-		progressReporter.setMax(worker.getStorage().getAllConcepts().size());
+		getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
 
 		log.info("Starting to update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
@@ -69,7 +69,7 @@ public class UpdateMatchingStats extends Job {
 			log.warn("Results were empty.");
 		}
 
-		progressReporter.done();
+		getProgressReporter().done();
 	}
 
 	public void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results) {
@@ -120,7 +120,7 @@ public class UpdateMatchingStats extends Job {
 			}
 		}
 
-		progressReporter.report(1);
+		getProgressReporter().report(1);
 
 
 		synchronized (results){

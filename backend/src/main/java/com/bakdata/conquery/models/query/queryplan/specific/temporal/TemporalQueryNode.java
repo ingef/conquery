@@ -4,6 +4,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -125,7 +126,8 @@ public class TemporalQueryNode extends QPNode {
 		}
 
 		// Create copy as we are mutating the set
-		BitMapCDateSet precedingDurations = BitMapCDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
+		BitMapCDateSet precedingDurations = CDateSetCache.createPreAllocatedDateSet();
+		precedingDurations.addAll(getPreceding().getChild().getSpecialDateUnion().getResultSet());
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 

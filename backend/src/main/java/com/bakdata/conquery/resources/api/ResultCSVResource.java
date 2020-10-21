@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.ws.rs.GET;
@@ -50,9 +51,9 @@ public class ResultCSVResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public Response getAsCsv(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @QueryParam("charset") String queryCharset, @HeaderParam("user-agent") String userAgent) {
+	public Response getAsCsv(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId,@HeaderParam("user-agent") String userAgent,  @QueryParam("charset") String queryCharset, @QueryParam("pretty") Optional<Boolean> pretty) {
 		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, user.getId(), user.getName());
-		return getResult(user, datasetId, queryId, userAgent, queryCharset, namespaces, config).build();
+		return getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE), namespaces, config).build();
 	}
 
 	public static StreamingOutput resultAsStreamingOutput(ManagedExecutionId id, PrintSettings settings, List<ManagedQuery> queries, IdMappingState state, Charset charset, String lineSeparator) {

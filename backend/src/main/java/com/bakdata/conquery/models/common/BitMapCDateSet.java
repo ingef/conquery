@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -36,19 +38,24 @@ public class BitMapCDateSet {
 
 	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
 
+
+	@Getter(AccessLevel.PACKAGE)
+	private final BitSet positiveBits;
+
 	/**
 	 * @implNote bit 0 of negativeBits is never set as it overlaps with bit 0 of positiveBits. This is a waste of 1 bit to make code easier to read.
 	 */
-	private final BitSet positiveBits, negativeBits;
+	@Getter(AccessLevel.PACKAGE)
+	private final BitSet negativeBits;
 
 	private boolean openMin = false;
 	private boolean openMax = false;
 
-	private BitMapCDateSet() {
+	protected BitMapCDateSet() {
 		this(new BitSet(), new BitSet());
 	}
 
-	private BitMapCDateSet(BitSet positiveBits, BitSet negativeBits) {
+	BitMapCDateSet(BitSet positiveBits, BitSet negativeBits) {
 		this.positiveBits = positiveBits;
 		this.negativeBits = negativeBits;
 	}

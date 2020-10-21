@@ -69,20 +69,20 @@ public class BucketManager {
 		Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
 
 
-		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets();
+		
 		log.trace("Trying to load these buckets: {}", requiredBuckets);
+		IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
+		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 		for (Bucket bucket : storage.getAllBuckets()) {
-			if (!requiredBuckets.contains(bucket.getBucket())) {
+			if(!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
-			}
-			else {
-				requiredBuckets.remove(bucket.getBucket());
 			}
 			registerBucket(bucket, entities, storage, tableBuckets);
 		}
 		if (!requiredBuckets.isEmpty()) {
 			log.warn("Not all required Buckets were loaded from the storage. Missing Buckets: {}", requiredBuckets);
 		}
+
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
 			registerCBlock(cBlock, entities, storage, connectorCBlocks);
@@ -366,6 +366,7 @@ public class BucketManager {
 
 			((TreeConcept) concept).removeImportCache(imp);
 		}
+		storage.removeImport(imp);
 	}
 
 	public boolean hasCBlock(CBlockId id) {

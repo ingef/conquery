@@ -45,7 +45,7 @@ public class CalculateCBlocksJob extends Job {
 
 	@Override
 	public void execute() throws Exception {
-		this.progressReporter.setMax(infos.size());
+		getProgressReporter().setMax(infos.size());
 
 		for (CalculationInformation info : infos) {
 			try {
@@ -75,10 +75,10 @@ public class CalculateCBlocksJob extends Job {
 				);
 			}
 			finally {
-				this.progressReporter.report(1);
+				getProgressReporter().report(1);
 			}
 		}
-		progressReporter.done();
+		getProgressReporter().done();
 	}
 
 	/**

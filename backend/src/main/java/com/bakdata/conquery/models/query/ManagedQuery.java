@@ -56,6 +56,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
 	private IQuery query;
+
+	// resolved on manager node, but overwritten on startup
+	private IQuery resolvedQuery;
 	
 	@JsonIgnore
 	protected transient Namespace namespace;
@@ -87,6 +90,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		synchronized (getExecution()) {
 			this.namespace = namespaces.get(getDataset());
 			this.involvedWorkers = namespace.getWorkers().size();
+			this.resolvedQuery = query.resolve(new QueryResolveContext(getDataset(), namespaces));
 		}
 	}
 	
@@ -180,7 +184,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context) {
 		if(context.getDataset().equals(getDataset())) {			
-			return Map.of(this.getId(), query.createQueryPlan(context));
+			return Map.of(this.getId(), resolvedQuery.createQueryPlan(context));
 		}
 		log.trace("Did not create a QueryPlan for the query {} because the plan corresponds to dataset {} but the execution worker belongs to {}.", getId(), getDataset(), context.getDataset());
 		return Collections.emptyMap();
