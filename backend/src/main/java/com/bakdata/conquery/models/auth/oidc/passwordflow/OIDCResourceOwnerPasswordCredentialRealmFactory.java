@@ -17,6 +17,7 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authorization.client.AuthzClient;
+import io.dropwizard.validation.ValidationMethod;
 import org.keycloak.authorization.client.Configuration;
 
 @Slf4j
@@ -82,5 +83,34 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 			});
 		}
 		return new OIDCResourceOwnerPasswordCredentialRealm<>(controller.getStorage(), this);
+	}
+	
+	
+	@ValidationMethod(message = "Realm was emtpy")
+	public boolean isRealmFilled() {
+		return realm != null && !realm.isBlank();
+	}
+	
+	@ValidationMethod(message = "Resource was emtpy")
+	public boolean isResourceFilled() {
+		return resource != null && !resource.isBlank();
+	}
+	
+	@ValidationMethod(message = "Secret not found")
+	public boolean isSecretFilled() {		
+		if(credentials == null) {
+			return false;
+		}
+		
+		Object secret = credentials.get("CONFIDENTIAL_CREDENTIAL");
+		if(secret == null) {
+			return false;
+		}
+		
+		if(!(secret instanceof String)) {
+			return false;
+		}
+		
+		return ((String)secret).isBlank();
 	}
 }

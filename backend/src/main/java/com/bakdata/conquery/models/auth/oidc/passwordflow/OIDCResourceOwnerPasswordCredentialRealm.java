@@ -66,6 +66,7 @@ import org.apache.shiro.authc.ExpiredCredentialsException;
 @RequiredArgsConstructor
 public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticationConfig> extends ConqueryAuthenticationRealm implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
 
+	public static final String CONFIDENTIAL_CREDENTIAL = "secret";
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 	private static final String GROUPS_CLAIM = "groups";
 	
