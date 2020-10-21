@@ -33,14 +33,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *
  * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
@@ -56,9 +54,9 @@ public class BucketManager {
 	private final Int2ObjectMap<Entity> entities;
 
 	/**
-	 * Connector -> Bucket -> [CBlock]
+	 * Connector -> Bucket -> [BucketId -> CBlock]
 	 */
-	private final Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorToCblocks;
+	private final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorToCblocks;
 
 	/**
 	 * Table -> BucketN -> [Buckets]
@@ -67,15 +65,14 @@ public class BucketManager {
 
 	public static BucketManager create(Worker worker, WorkerStorage storage) {
 		Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
-		Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks = new HashMap<>(150);
+		Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks = new HashMap<>();
 		Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
-
 
 
 		IntArraySet requiredBuckets = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets: {}", requiredBuckets);
 		for (Bucket bucket : storage.getAllBuckets()) {
-			if(!requiredBuckets.contains(bucket.getBucket())) {
+			if (!requiredBuckets.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
 			else {
@@ -83,7 +80,7 @@ public class BucketManager {
 			}
 			registerBucket(bucket, entities, storage, tableBuckets);
 		}
-		if(!requiredBuckets.isEmpty()) {
+		if (!requiredBuckets.isEmpty()) {
 			log.warn("Not all required Buckets were loaded from the storage. Missing Buckets: {}", requiredBuckets);
 		}
 
@@ -92,6 +89,47 @@ public class BucketManager {
 		}
 
 		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks, tableBuckets);
+	}
+
+	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets) {
+		for (int entity : bucket) {
+			entities.computeIfAbsent(entity, createEntityFor(bucket, storage));
+		}
+
+		tableBuckets
+				.computeIfAbsent(bucket.getImp().getTable(), id -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(bucket.getBucket(), n -> new ArrayList<>())
+				.add(bucket);
+	}
+
+	private static void registerCBlock(CBlock cBlock, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks) {
+
+		Bucket bucket = storage.getBucket(cBlock.getBucket());
+		if (bucket == null) {
+			throw new NoSuchElementException("Could not find an element called '" + cBlock.getBucket() + "'");
+		}
+
+		connectorCBlocks
+				.computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(bucket.getId().getBucket(), bucketId -> new HashMap<>(3))
+				.put(cBlock.getBucket(), cBlock);
+	}
+
+	/**
+	 * Logic for tracing the creation of new Entities.
+	 */
+	private static IntFunction<Entity> createEntityFor(Identifiable<?> idable, WorkerStorage storage) {
+
+		return id -> {
+
+			if (log.isDebugEnabled() && idable.getId() instanceof NamespacedId) {
+				byte[] thename = storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
+
+				log.trace("Creating new Entitiy[{}]=`{}` for Bucket[{}]", id, new String(thename), idable.getId());
+			}
+
+			return new Entity(id);
+		};
 	}
 
 	@SneakyThrows
@@ -115,7 +153,7 @@ public class BucketManager {
 							CBlockId cBlockId = new CBlockId(bucketId, conName);
 
 							if (storage.getCBlock(cBlockId) != null) {
-								log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.",cBlockId);
+								log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
 								continue;
 							}
 
@@ -130,47 +168,6 @@ public class BucketManager {
 				}
 			}
 		}
-	}
-
-	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets) {
-		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(bucket, storage));
-		}
-
-		tableBuckets
-				.computeIfAbsent(bucket.getImp().getTable(), id -> new Int2ObjectAVLTreeMap<>())
-				.computeIfAbsent(bucket.getBucket(), n -> new ArrayList<>())
-				.add(bucket);
-	}
-
-	/**
-	* Logic for tracing the creation of new Entities.
-	*/
-	private static IntFunction<Entity> createEntityFor(Identifiable<?> idable, WorkerStorage storage) {
-
-		return id -> {
-
-			if(log.isDebugEnabled() && idable.getId() instanceof NamespacedId){
-				byte[] thename = storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
-
-				log.trace("Creating new Entitiy[{}]=`{}` for Bucket[{}]", id, new String(thename), idable.getId());
-			}
-
-			return new Entity(id);
-		};
-	}
-
-	private static void registerCBlock(CBlock cBlock, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<ConnectorId, Int2ObjectMap<List<CBlock>>> connectorCBlocks) {
-
-		Bucket bucket = storage.getBucket(cBlock.getBucket());
-		if (bucket == null) {
-			throw new NoSuchElementException("Could not find an element called '"+cBlock.getBucket()+"'");
-		}
-
-		connectorCBlocks
-				.computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
-				.computeIfAbsent(bucket.getId().getBucket(), bucketId -> new ArrayList<>(3))
-				.add(cBlock);
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
@@ -212,7 +209,7 @@ public class BucketManager {
 					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
-						Bucket bucket = storage.getBucket(bucketId) ;
+						Bucket bucket = storage.getBucket(bucketId);
 
 						if (storage.getBucket(bucketId) == null) {
 							continue;
@@ -238,41 +235,19 @@ public class BucketManager {
 		for (int entityId : bucket) {
 			final Entity entity = entities.get(entityId);
 
-			if(entity == null)
+			if (entity == null) {
 				continue;
+			}
 
-			if(isEntityEmpty(entity)) {
+			if (isEntityEmpty(entity)) {
 				entities.remove(entityId);
 			}
 		}
 
 		tableToBuckets.getOrDefault(bucket.getImp().getTable(), Int2ObjectMaps.emptyMap())
-					  .get(bucket.getBucket())
+					  .getOrDefault(bucket.getBucket(), Collections.emptyList())
 					  .removeIf(bkt -> bkt.getId().equals(bucket.getId()));
 
-	}
-
-	private void deregisterCBlock(CBlockId cBlockId) {
-		Bucket bucket = storage.getBucket(cBlockId.getBucket());
-		if (bucket == null) {
-			throw new NoSuchElementException("Could not find an element called '"+cBlockId.getBucket()+"'");
-		}
-
-		connectorToCblocks.getOrDefault(cBlockId.getConnector(), Int2ObjectMaps.emptyMap())
-						  .get(cBlockId.getBucket().getBucket())
-						  .removeIf(cblock -> cblock.getId().equals(cBlockId));
-
-		for (int entityId : bucket) {
-			final Entity entity = entities.get(entityId);
-
-			if(entity == null)
-				continue;
-
-			//TODO Verify that this is enough.
-			if(isEntityEmpty(entity)) {
-				entities.remove(entityId);
-			}
-		}
 	}
 
 	public void removeBucket(BucketId bucketId) {
@@ -292,17 +267,6 @@ public class BucketManager {
 		deregisterBucket(bucket);
 
 		storage.removeBucket(bucketId);
-	}
-
-	private void removeCBlock(CBlockId cBlockId) {
-		if (storage.getCBlock(cBlockId) == null) {
-			log.trace("Cannot remove CBlock[{}], because it is not present for worker[{}]", cBlockId, worker);
-			return;
-		}
-
-		deregisterCBlock(cBlockId);
-
-		storage.removeCBlock(cBlockId);
 	}
 
 	public void removeConcept(ConceptId conceptId) {
@@ -331,6 +295,55 @@ public class BucketManager {
 		storage.removeConcept(conceptId);
 	}
 
+	private void removeCBlock(CBlockId cBlockId) {
+		if (storage.getCBlock(cBlockId) == null) {
+			log.trace("Cannot remove CBlock[{}], because it is not present for worker[{}]", cBlockId, worker);
+			return;
+		}
+
+		deregisterCBlock(cBlockId);
+
+		storage.removeCBlock(cBlockId);
+	}
+
+	private void deregisterCBlock(CBlockId cBlockId) {
+		Bucket bucket = storage.getBucket(cBlockId.getBucket());
+		if (bucket == null) {
+			throw new NoSuchElementException("Could not find an element called '" + cBlockId.getBucket() + "'");
+		}
+
+		connectorToCblocks.getOrDefault(cBlockId.getConnector(), Int2ObjectMaps.emptyMap())
+						  .getOrDefault(cBlockId.getBucket().getBucket(), Collections.emptyMap())
+						  .values()
+						  .removeIf(cblock -> cblock.getId().equals(cBlockId));
+
+		for (int entityId : bucket) {
+			final Entity entity = entities.get(entityId);
+
+			if (entity == null) {
+				continue;
+			}
+
+			//TODO Verify that this is enough.
+			if (isEntityEmpty(entity)) {
+				entities.remove(entityId);
+			}
+		}
+	}
+
+	/**
+	 * Test if there is any known associated data to the Entity in the {@link BucketManager}
+	 *
+	 * @param entity
+	 */
+	public boolean isEntityEmpty(Entity entity) {
+		return !hasBucket(Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize()));
+	}
+
+	private boolean hasBucket(int id) {
+		return storage.getAllBuckets().stream().map(Bucket::getBucket).anyMatch(bucket -> bucket == id);
+	}
+
 	/**
 	 * Remove all buckets comprising the import. Which will in-turn remove all CBLocks.
 	 */
@@ -347,8 +360,9 @@ public class BucketManager {
 		}
 
 		for (Concept<?> concept : storage.getAllConcepts()) {
-			if(!(concept instanceof TreeConcept))
+			if (!(concept instanceof TreeConcept)) {
 				continue;
+			}
 
 			((TreeConcept) concept).removeImportCache(imp);
 		}
@@ -362,56 +376,26 @@ public class BucketManager {
 		return storage.getBucket(id) != null;
 	}
 
-	private boolean hasBucket(int id) {
-		return  storage.getAllBuckets().stream().map(Bucket::getBucket).anyMatch(bucket -> bucket == id);
-	}
-
 	public Bucket getBucket(BucketId id) {
 		return storage.getBucket(id);
 	}
 
-
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
 		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
-		return tableToBuckets.getOrDefault(tableId, Int2ObjectMaps.emptyMap()).getOrDefault(bucketId, Collections.emptyList());
+		return tableToBuckets.getOrDefault(tableId, Int2ObjectMaps.emptyMap())
+							 .getOrDefault(bucketId, Collections.emptyList());
 	}
 
-
 	public Map<BucketId, CBlock> getEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
-
-		final Int2ObjectMap<List<CBlock>> forConnector = connectorToCblocks.get(connectorId);
-
-		if(forConnector == null){
-			return Collections.emptyMap();
-		}
-
 		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
 
-		final List<CBlock> forBucket = forConnector.get(bucketId);
-
-		if(forBucket == null){
-			return Collections.emptyMap();
-		}
-
-		Map<BucketId, CBlock> out = new Object2ObjectArrayMap<>(forBucket.size());
-
-		for (CBlock cBlock : forBucket) {
-			out.put(cBlock.getBucket(), cBlock);
-		}
-
-		return out;
+		return connectorToCblocks.getOrDefault(connectorId, Int2ObjectMaps.emptyMap())
+								 .getOrDefault(bucketId, Collections.emptyMap());
 	}
 
 	public boolean hasEntityCBlocksForConnector(Entity entity, ConnectorId connectorId) {
 		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
-		return connectorToCblocks.getOrDefault(connectorId, Int2ObjectMaps.emptyMap()).containsKey(bucketId);
-	}
-
-	/**
-	 * Test if there is any known associated data to the Entity in the {@link BucketManager}
-	 * @param entity
-	 */
-	public boolean isEntityEmpty(Entity entity) {
-		return !hasBucket(Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize()));
+		return connectorToCblocks.getOrDefault(connectorId, Int2ObjectMaps.emptyMap())
+								 .containsKey(bucketId);
 	}
 }
