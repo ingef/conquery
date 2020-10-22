@@ -46,6 +46,9 @@ public interface Form extends QueryDescription {
 		// Check if user is allowed to create this form
 		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));
 	}
+	
+	@Override
+	Form resolve(QueryResolveContext context);
 
 	/**
 	 * Utility function for forms that usually have at least one query as a prerequisite.
