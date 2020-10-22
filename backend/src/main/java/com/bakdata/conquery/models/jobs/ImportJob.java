@@ -302,14 +302,7 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			// todo move to value mapping, also remove value mapping from column.
-			for (int row = 0; row < header.getRows(); row++) {
-				if (!store.has(row)) {
-					continue;
-				}
-
-				((ColumnStore<Integer>) store).set(row, column.getValueMapping().source2Target(store.getString(row)));
-			}
+			column.getValueMapping().applyToStore(((ColumnStore<Integer>) store), header.getRows());
 		}
 	}
 

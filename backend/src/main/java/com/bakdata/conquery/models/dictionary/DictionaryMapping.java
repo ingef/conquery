@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -66,12 +67,26 @@ public class DictionaryMapping {
 		return source2TargetMap[sourceId];
 	}
 
+
 	public int getNumberOfNewIds() {
 		if (newIds == null) {
 			return 0;
 		}
 		else {
 			return newIds.getMax() - newIds.getMin() + 1;
+		}
+	}
+
+	/**
+	 * Mutably applies mapping to store.
+	 */
+	public void applyToStore(ColumnStore<Integer> store, long rows) {
+		for (int row = 0; row < rows; row++) {
+			if (!store.has(row)) {
+				continue;
+			}
+
+			store.set(row, source2Target(store.getString(row)));
 		}
 	}
 }
