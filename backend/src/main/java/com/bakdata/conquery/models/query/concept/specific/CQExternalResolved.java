@@ -22,6 +22,7 @@ import lombok.Setter;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Deprecated
 public class CQExternalResolved implements CQElement {
 
 	@Getter @NotNull @NonNull
