@@ -76,10 +76,9 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	}
 
 	@Override
-	public ExportForm resolve(QueryResolveContext context) {
+	public void resolve(QueryResolveContext context) {
 		timeMode.resolve(context);
 		prerequisite = Form.resolvePrerequisite(context, queryGroup);
-		return this;
 	}
 
 }

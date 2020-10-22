@@ -56,6 +56,8 @@ public interface Form extends QueryDescription {
 		if(!(prerequisiteExe instanceof ManagedQuery)) {
 			throw new IllegalArgumentException("The prerequisite query must be of type " + ManagedQuery.class.getName());
 		}
-		return ((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
+		IQuery query = ((ManagedQuery)prerequisiteExe).getQuery();
+		query.resolve(context);
+		return query;
 	}
 }

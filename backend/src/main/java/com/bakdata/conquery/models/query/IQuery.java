@@ -25,7 +25,7 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
 	
 	@Override
-	public abstract IQuery resolve(QueryResolveContext context);
+	public abstract void resolve(QueryResolveContext context);
 	
 	public Set<ManagedExecutionId> collectRequiredQueries() {
 		HashSet<ManagedExecutionId> set = new HashSet<>();

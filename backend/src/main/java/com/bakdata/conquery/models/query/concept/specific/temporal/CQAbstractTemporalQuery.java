@@ -25,15 +25,18 @@ public abstract class CQAbstractTemporalQuery implements CQElement {
 	 * The query being executed, compared to index. Events in preceding will be cut-off to be always before index, or at the same day, depending on the queries specific implementations.
 	 */
 	protected final CQSampled preceding;
-
-	@Override
-	public abstract CQAbstractTemporalQuery resolve(QueryResolveContext context);
 	
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		CQElement.super.visit(visitor);
 		index.getChild().visit(visitor);
 		preceding.getChild().visit(visitor);
+	}
+	
+	@Override
+	public void resolve(QueryResolveContext context) {
+		index.resolve(context);
+		preceding.resolve(context);
 	}
 	
 	@Override

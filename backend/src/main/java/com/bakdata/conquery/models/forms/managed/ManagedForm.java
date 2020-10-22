@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -88,11 +89,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public void initExecutable(@NonNull DatasetRegistry datasets) {
+	public void initExecutable(@NonNull DatasetRegistry datasetRegistry) {
 		// init all subqueries
 		synchronized (getExecution()) {
-			subQueries = submittedForm.createSubQueries(datasets, super.getOwner(), super.getDataset());
-			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasets));
+			submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
+			subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
+			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry));
 		}
 	}
 	
