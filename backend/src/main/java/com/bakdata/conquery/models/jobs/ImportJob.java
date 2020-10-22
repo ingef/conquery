@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -241,32 +242,24 @@ public class ImportJob extends Job {
 			PPColumn col = header.getColumns()[colPos];
 			Column tableCol = table.getColumns()[colPos];
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
-			if (tableCol.getType() != MajorTypeId.STRING) {
-				continue;
-			}
-
-			if (tableCol.getSharedDictionary() == null) {
+			if (tableCol.getType() == MajorTypeId.STRING && tableCol.getSharedDictionary() != null) {
 				mappingRequired |= createSharedDictionary(col, tableCol);
 			}
 
-			final Dictionary dict = ((AStringType) col.getType()).getUnderlyingDictionary();
-
-			if (dict == null) {
-				continue;
-			}
-
-			// todo this makes no sense
-			dict.setName(dict.getId().getDictionary());
-			dict.setDataset(namespace.getDataset().getId());
-
-
-			try {
-				namespace.getStorage().updateDictionary(dict);
-				namespace.sendToAll(new UpdateDictionary(dict));
-			}
-			catch (Exception e) {
-				throw new RuntimeException("Failed to store dictionary " + dict, e);
-			}
+			// TODO this can be completely inlined, storeExternalInfos does nothing beside setting the name and dataset of the dict.
+			//store external infos into master and slaves
+			col.getType().storeExternalInfos(
+					namespace.getStorage(),
+					(Consumer<Dictionary>) (dict -> {
+						try {
+							namespace.getStorage().updateDictionary(dict);
+							namespace.sendToAll(new UpdateDictionary(dict));
+						}
+						catch (Exception e) {
+							throw new RuntimeException("Failed to store dictionary " + dict, e);
+						}
+					})
+			);
 		}
 		header.getPrimaryColumn().setValueMapping(primaryMapping);
 		return mappingRequired;
