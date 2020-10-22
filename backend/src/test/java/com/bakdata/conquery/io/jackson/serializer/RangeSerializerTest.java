@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.core.type.TypeReference;
-
 import lombok.AllArgsConstructor;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @AllArgsConstructor
 public class RangeSerializerTest {
@@ -28,9 +26,7 @@ public class RangeSerializerTest {
 				if (first < second) {
 					return Range.of(first, second);
 				}
-				else {
-					return Range.of(second, first);
-				}
+				return Range.of(second, first);
 			})
 			.filter(Range::isOrdered)
 			.flatMap(range -> Stream.of(

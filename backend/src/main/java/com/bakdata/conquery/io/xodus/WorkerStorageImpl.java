@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Validator;
 
@@ -11,51 +12,44 @@ import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.functions.Collector;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import com.google.common.collect.Multimap;
+import jetbrains.exodus.env.Environment;
+import lombok.SneakyThrows;
 
-@Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
-	@Getter
-	private BucketManager bucketManager;
 	
 	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator, config, directory);
-	}
-	
-	@Override
-	public void setBucketManager(BucketManager bucketManager) {
-		this.bucketManager = bucketManager;
+		super(validator, config, directory, false);
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		super.createStores(collector);
-		worker = StoreInfo.WORKER.singleton(getConfig(), getEnvironment(), getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
+	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
+		super.createStores(environmentToStores);
+
+		worker = StoreInfo.WORKER.singleton(getConfig(), environment, getValidator());
+		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
+		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 		
-		collector
-			.collect(worker)
-			.collect(blocks)
-			.collect(cBlocks);
+		environmentToStores.putAll(environment, List.of(
+			worker, 
+			blocks, 
+			cBlocks
+			));
 	}
 	
 	@Override
-	public void addCBlock(CBlock cBlock) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addCBlock(CBlock cBlock) {
 		cBlocks.add(cBlock);
 	}
 
@@ -65,7 +59,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void updateCBlock(CBlock cBlock) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateCBlock(CBlock cBlock) {
 		cBlocks.update(cBlock);
 	}
 
@@ -80,11 +75,9 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public void addBucket(Bucket bucket) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addBucket(Bucket bucket) {
 		blocks.add(bucket);
-		if(this.getBucketManager() != null) {
-			this.getBucketManager().addBucket(bucket);
-		}
 	}
 
 	@Override
@@ -95,9 +88,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void removeBucket(BucketId id) {
 		blocks.remove(id);
-		if(this.getBucketManager() != null) {
-			this.getBucketManager().removeBucket(id);
-		}
 	}
 	
 	@Override
@@ -111,39 +101,27 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public void setWorker(WorkerInformation worker) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void setWorker(WorkerInformation worker) {
 		this.worker.add(worker);
 	}
 
 	@Override
-	public void updateWorker(WorkerInformation worker) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
 	}
 	
 	//block manager overrides
 	@Override
-	public void updateConcept(Concept<?> concept) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateConcept(Concept<?> concept) {
 		concepts.update(concept);
-		if(bucketManager != null) {
-			bucketManager.removeConcept(concept.getId());
-			bucketManager.addConcept(concept);
-		}
 	}
 
 	@Override
 	public void removeConcept(ConceptId id) {
 		concepts.remove(id);
-		if(bucketManager != null) {
-			bucketManager.removeConcept(id);
-		}
 	}
 
-	@Override
-	public void removeImport(ImportId id){
-		imports.remove(id);
-
-		if (bucketManager != null){
-			bucketManager.removeImport(id);
-		}
-	}
 }

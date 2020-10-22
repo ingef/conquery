@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types.parser.specific;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
@@ -22,7 +23,12 @@ public class DecimalParser extends Parser<BigDecimal> {
 
 	private transient int maxScale = Integer.MIN_VALUE;
 	private transient BigDecimal maxAbs;
-	
+	private transient ParserConfig config;
+
+	public DecimalParser(ParserConfig config) {
+		this.config = config;
+	}
+
 	@Override
 	protected BigDecimal parseValue(String value) throws ParsingException {
 		return NumberParsing.parseBig(value);
@@ -57,7 +63,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 			);
 		}
 
-		IntegerParser sub = new IntegerParser();
+		IntegerParser sub = new IntegerParser(config);
 		sub.registerValue(unscaled.longValueExact());
 		sub.registerValue(-unscaled.longValueExact());
 		sub.setLines(getLines());

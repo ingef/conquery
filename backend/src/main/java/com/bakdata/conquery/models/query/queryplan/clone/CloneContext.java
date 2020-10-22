@@ -2,15 +2,14 @@ package com.bakdata.conquery.models.query.queryplan.clone;
 
 import java.util.IdentityHashMap;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
-
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CloneContext {
 	@Getter
-	private final WorkerStorage storage;
+	private final ModificationShieldedWorkerStorage storage;
 	private final IdentityHashMap<CtxCloneable<?>, CtxCloneable<?>> cloneCache = new IdentityHashMap<>();
 
 	/**
@@ -24,7 +23,7 @@ public class CloneContext {
 			throw new IllegalStateException();
 		}
 
-		return (T) obj;
+		return obj;
 	}
 
 
@@ -34,7 +33,7 @@ public class CloneContext {
 			value = obj.doClone(this);
 			CtxCloneable<?> old = cloneCache.put(obj, value);
 			if(old != null) {
-				throw new IllegalStateException();
+				throw new IllegalStateException("Object was cloned twice");
 			}
 		}
 		return (T) value;

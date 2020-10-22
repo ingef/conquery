@@ -2,13 +2,11 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.DaysBeforeOrNeverPrecedenceMatcher;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
-
 import lombok.Getter;
 
 /**
@@ -26,12 +24,14 @@ public class CQDaysBeforeOrNeverTemporalQuery extends CQAbstractTemporalQuery {
 	}
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext registry, ConceptQueryPlan plan) {
-		return new TemporalQueryNode(index.createQueryPlan(registry, plan), preceding.createQueryPlan(registry, plan), new DaysBeforeOrNeverPrecedenceMatcher(days), plan.getSpecialDateUnion());
-	}
-	
-	@Override
-	public CQDaysBeforeOrNeverTemporalQuery resolve(QueryResolveContext context) {
-		return new CQDaysBeforeOrNeverTemporalQuery(index.resolve(context), preceding.resolve(context), days);
+	public QPNode createQueryPlan(QueryPlanContext ctx, ConceptQueryPlan plan) {
+		ctx = ctx.withGenerateSpecialDateUnion(true);
+
+		return new TemporalQueryNode(
+				index.createQueryPlan(ctx, plan),
+				preceding.createQueryPlan(ctx, plan),
+				new DaysBeforeOrNeverPrecedenceMatcher(days),
+				plan.getSpecialDateUnion()
+		);
 	}
 }

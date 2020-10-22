@@ -214,7 +214,7 @@ public class ImportJob extends Job {
 		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
 
 		log.debug("\tmap values");
-		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
+		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict, bucketSize);
 
 		//if no new ids we shouldn't recompress and store
 		if (primaryMapping.getNewIds() == null) {
@@ -249,7 +249,6 @@ public class ImportJob extends Job {
 			// TODO this can be completely inlined, storeExternalInfos does nothing beside setting the name and dataset of the dict.
 			//store external infos into master and slaves
 			col.getType().storeExternalInfos(
-					namespace.getStorage(),
 					(Consumer<Dictionary>) (dict -> {
 						try {
 							namespace.getStorage().updateDictionary(dict);
@@ -266,7 +265,7 @@ public class ImportJob extends Job {
 	}
 
 	private Import createImport(PreprocessedHeader header, boolean useOldType) {
-		Import imp = new Import();
+		Import imp = new Import(bucketSize);
 		imp.setName(header.getName());
 		imp.setTable(table);
 		imp.setNumberOfEntries(header.getRows());
@@ -323,7 +322,7 @@ public class ImportJob extends Job {
 			throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
 		}
 		try {
-			responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
+			responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
 		}
 		catch (InterruptedException e) {
 			log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
@@ -344,7 +343,8 @@ public class ImportJob extends Job {
 		Dictionary shared = namespace.getStorage().computeDictionary(sharedId);
 		DictionaryMapping mapping = DictionaryMapping.create(
 				source,
-				shared
+				shared,
+				bucketSize
 		);
 
 		AStringType<?> newType = Cloner.clone(oldType);

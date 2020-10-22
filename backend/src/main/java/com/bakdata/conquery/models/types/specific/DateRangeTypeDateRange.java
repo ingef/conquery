@@ -29,7 +29,7 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 			return "";
 		}
 
-		return value;
+		return value.toString();
 	}
 
 	@Override

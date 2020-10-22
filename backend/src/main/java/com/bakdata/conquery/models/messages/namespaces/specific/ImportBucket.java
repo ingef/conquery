@@ -22,7 +22,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		// todo get import via idRef instead.
 		bucket.setImp(context.getStorage().getImport(bucket.getImportId()));
-		context.getStorage().addBucket(bucket);
+		context.addBucket(bucket);
 	}
 
 	@Override

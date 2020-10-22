@@ -7,12 +7,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
@@ -22,7 +23,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.QueryUtils;
-import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -42,10 +42,10 @@ public class QueryCleanupTask extends Task {
     public static final String EXPIRATION_PARAM = "expiration";
     private static final Predicate<String> UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
 
-    private final MasterMetaStorage storage;
+    private final MetaStorage storage;
     private Duration queryExpiration;
 
-    public QueryCleanupTask(MasterMetaStorage storage, Duration queryExpiration) {
+    public QueryCleanupTask(MetaStorage storage, Duration queryExpiration) {
 		super("cleanup");
 		this.storage = storage;
 		this.queryExpiration = queryExpiration;
@@ -56,7 +56,7 @@ public class QueryCleanupTask extends Task {
 	}
 
 	@Override
-	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
 
 	    Duration queryExpiration = this.queryExpiration;
 
@@ -65,7 +65,7 @@ public class QueryCleanupTask extends Task {
 	            log.warn("Will not respect more than one expiration time. Have `{}`",parameters.get(EXPIRATION_PARAM));
             }
 
-            queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).asList().get(0));
+            queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).get(0));
         }
 
 	    if(queryExpiration == null){
@@ -146,7 +146,7 @@ public class QueryCleanupTask extends Task {
 	 * 
 	 * @return The number of deleted permissions.
 	 */
-	public static int deleteQueryPermissionsWithMissingRef(MasterMetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
+	public static int deleteQueryPermissionsWithMissingRef(MetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
 		int countDeleted = 0;
 		// Do the loop-di-loop
 		for (PermissionOwner<?> owner : owners) {

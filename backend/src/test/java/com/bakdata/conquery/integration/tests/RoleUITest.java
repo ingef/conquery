@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -32,7 +32,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
-	private MasterMetaStorage storage;
+	private MetaStorage storage;
 	private Role mandator = new Role("testMandatorName", "testMandatorLabel");
 	private RoleId mandatorId = mandator.getId();
 	private User user = new User("testUser@test.de", "testUserName");
@@ -43,7 +43,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 	public void execute(StandaloneSupport conquery) throws Exception {
 		try {
 	
-			storage = conquery.getMasterMetaStorage();
+			storage = conquery.getMetaStorage();
 			storage.addRole(mandator);
 			storage.addUser(user);
 			// override permission object, because it might have changed by the subject

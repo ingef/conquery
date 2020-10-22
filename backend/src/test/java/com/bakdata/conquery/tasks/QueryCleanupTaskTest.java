@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
-import com.google.common.collect.ImmutableMultimap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,13 +56,13 @@ class QueryCleanupTaskTest {
 		return managedQuery;
 	}
 
-	private MasterMetaStorage storageMock;
+	private MetaStorage storageMock;
 	private Map<ManagedExecutionId, ? super ManagedExecution<?>> executions;
 	private Map<UserId,User> users;
 
 	@BeforeAll
 	void setUpAllTests() {
-		storageMock = Mockito.mock(MasterMetaStorage.class);
+		storageMock = Mockito.mock(MetaStorage.class);
 
 		executions = new HashMap<>();
 		users = new HashMap<>();
@@ -110,7 +109,7 @@ class QueryCleanupTaskTest {
 
 		createManagedQuery();
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(QueryCleanupTask.EXPIRATION_PARAM, "PT719H"), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(QueryCleanupTask.EXPIRATION_PARAM, List.of("PT719H")), null);
 
 		assertThat(executions).isEmpty();
 	}
@@ -123,7 +122,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setLabel("test");
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions.values()).containsExactlyInAnyOrder(managedQuery);
 	}
@@ -136,7 +135,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setLabel(UUID.randomUUID().toString());
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions.values()).isEmpty();
 	}
@@ -150,7 +149,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions).isEmpty();
 	}
@@ -167,7 +166,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions.values()).containsExactlyInAnyOrder(managedQuery, managedQueryReused);
 	}
@@ -183,7 +182,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions.values()).containsExactlyInAnyOrder(managedQueryReused);
 	}
@@ -199,7 +198,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions.values()).containsExactlyInAnyOrder(managedQueryReused, managedQuery);
 	}
@@ -215,7 +214,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions.values()).containsExactlyInAnyOrder(managedQueryReused);
 	}
@@ -231,7 +230,7 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storageMock, queryExpiration).execute( ImmutableMultimap.of(), null);
+		new QueryCleanupTask(storageMock, queryExpiration).execute( Map.of(), null);
 
 		assertThat(executions.values()).containsExactlyInAnyOrder(managedQueryReused);
 	}

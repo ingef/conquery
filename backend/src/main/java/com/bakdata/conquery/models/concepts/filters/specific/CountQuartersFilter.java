@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,8 +36,6 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
 			return new RangeFilterNode(value, new CountQuartersOfDateRangeAggregator(getColumn()));
 		}
-		else {
-			return new RangeFilterNode(value, new CountQuartersOfDatesAggregator(getColumn()));
-		}
+		return new RangeFilterNode(value, new CountQuartersOfDatesAggregator(getColumn()));
 	}
 }

@@ -39,9 +39,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
-import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
@@ -57,8 +57,8 @@ import lombok.RequiredArgsConstructor;
 public enum StoreInfo implements IStoreInfo {
 	DATASET(Dataset.class, Boolean.class),
 	ID_MAPPING(PersistentIdMap.class, Boolean.class),
-	NAMESPACES(Namespaces.class, Boolean.class),
-	SLAVE(SlaveInformation.class, Boolean.class),
+	NAMESPACES(DatasetRegistry.class, Boolean.class),
+	SLAVE(ShardNodeInformation.class, Boolean.class),
 	DICTIONARIES(Dictionary.class, DictionaryId.class),
 	IMPORTS(Import.class, ImportId.class),
 	CONCEPTS(Concept.class, ConceptId.class),

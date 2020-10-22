@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +22,7 @@ public class UpdateDataset extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		log.info("Recieved update of dataset {}", dataset.getId());
 		synchronized (context.getStorage()) {
-			context.getStorage().updateDataset(dataset);
+			context.updateDataset(dataset);
 		}
 	}
 }

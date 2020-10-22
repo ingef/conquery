@@ -41,7 +41,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 
 	public void writeHeader(OutputStream out) throws IOException {}
 	public void readHeader(JsonParser input) throws IOException {}
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {}
+	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {}
 	public void loadExternalInfos(NamespacedStorage storage) {}
 
 	@Override

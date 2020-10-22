@@ -2,9 +2,10 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -31,7 +32,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 	private final ConceptQueryPlan query;
 	private final SecondaryId secondaryId;
-	private Column currentSecondaryIdColumn;
 	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
 
 	/**
@@ -41,46 +41,33 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 */
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		if (!query.isOfInterest(entity)) {
-			return EntityResult.notContained();
-		}
 
-		query.checkRequiredTables(ctx.getStorage());
-		query.init(entity);
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
 		}
 
+		query.checkRequiredTables(ctx.getStorage());
+		query.init(entity, ctx);
+
+		if (!query.isOfInterest(entity)) {
+			return EntityResult.notContained();
+		}
+
+		List<TableId> tablesWithoutSecondary = new ArrayList<>();
+		//first execute only tables with secondaryIds
 		for (TableId currentTable : query.getRequiredTables().get()) {
-
-			currentSecondaryIdColumn = findSecondaryIdColumn(currentTable, ctx.getStorage());
-			nextTable(ctx, currentTable);
-
-			for (Bucket bucket : entity.getBucket(currentTable)) {
-				AStringType<?> secondaryIdType = (AStringType<?>) currentSecondaryIdColumn.getTypeFor(bucket);
-				nextBlock(bucket);
-				if (!bucket.containsEntity(entity.getId())) {
-					continue;
-				}
-
-				if (!isOfInterest(bucket)) {
-					continue;
-				}
-
-				int start = bucket.getEntityStart(entity.getId());
-				int end = bucket.getEntityEnd(entity.getId());
-				for (int event = start; event < end; event++) {
-					//we ignore events with no value in the secondaryIdColumn
-					if (!bucket.has(event, currentSecondaryIdColumn)) {
-						continue;
-					}
-
-					String key = secondaryIdType.getElement(bucket.getString(event, currentSecondaryIdColumn));
-					childPerKey.computeIfAbsent(key, k -> this.createChild(k, ctx, bucket))
-							   .nextEvent(bucket, event);
-				}
+			Column secondaryIdColumn = findSecondaryIdColumn(currentTable, ctx.getStorage());
+			if (secondaryIdColumn != null) {
+				executeQueriesWithSecondaryId(ctx, entity, secondaryIdColumn);
 			}
+			else {
+				tablesWithoutSecondary.add(currentTable);
+			}
+		}
+		//afterwards the remaining tables, since we now spawned all children
+		for (TableId currentTable : tablesWithoutSecondary) {
+			executeQueriesWithoutSecondaryId(ctx, entity, currentTable);
 		}
 
 
@@ -99,7 +86,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	/**
 	 * selects the right column for the given secondaryId from a table
 	 */
-	private Column findSecondaryIdColumn(TableId tableId, NamespacedStorage storage) {
+	private Column findSecondaryIdColumn(TableId tableId, ModificationShieldedWorkerStorage storage) {
 		final Table table = storage.getDataset().getTables().getOrFail(tableId);
 
 		for (Column col : table.getColumns()) {
@@ -110,7 +97,63 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 			return col;
 		}
 
-		throw new IllegalStateException(String.format("Table[%s] should not appear in a query about SecondaryId[%s]", table, secondaryId));
+		return null;
+	}
+
+	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, Column secondaryIdColumn) {
+		TableId currentTable = secondaryIdColumn.getTable().getId();
+		nextTable(ctx, currentTable);
+
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+
+		for (Bucket bucket : tableBuckets) {
+			int localEntity = entity.getId();
+
+			AStringType<?> secondaryIdType = (AStringType<?>) secondaryIdColumn.getTypeFor(bucket);
+
+			nextBlock(bucket);
+
+			if (!bucket.containsEntity(localEntity) || !isOfInterest(bucket)) {
+				continue;
+			}
+
+			int start = bucket.getEntityStart(localEntity);
+			int end = bucket.getEntityEnd(localEntity);
+
+			for (int event = start; event < end; event++) {
+				//we ignore events with no value in the secondaryIdColumn
+				if (!bucket.has(event, secondaryIdColumn)) {
+					continue;
+				}
+
+				String key = secondaryIdType.getElement(bucket.getString(event, secondaryIdColumn));
+				childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumn, ctx, bucket))
+						   .nextEvent(bucket, event);
+			}
+		}
+	}
+
+	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, TableId currentTable) {
+		nextTable(ctx, currentTable);
+
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+
+		for (Bucket bucket : tableBuckets) {
+			int localEntity = entity.getId();
+			nextBlock(bucket);
+			if (!bucket.containsEntity(localEntity) || !isOfInterest(bucket)) {
+				continue;
+			}
+
+			int start = bucket.getEntityStart(localEntity);
+			int end = bucket.getEntityEnd(localEntity);
+
+			for (int event = start; event < end; event++) {
+				for (ConceptQueryPlan child : childPerKey.values()) {
+					child.nextEvent(bucket, event);
+				}
+			}
+		}
 	}
 
 	private void nextTable(QueryExecutionContext ctx, TableId currentTable) {
@@ -128,9 +171,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	private boolean isOfInterest(Bucket bucket) {
-		for (ConceptQueryPlan c : childPerKey.values()) {
-			c.isOfInterest(bucket);
-		}
 		return query.isOfInterest(bucket);
 	}
 
@@ -138,12 +178,15 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 * if a new distinct secondaryId was found we create a new clone of the ConceptQueryPlan
 	 * and bring it up to speed
 	 */
-	private ConceptQueryPlan createChild(Object key, QueryExecutionContext currentContext, Bucket currentBucket) {
+	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket) {
+
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
-		plan.init(query.getEntity());
-		plan.nextTable(currentContext, currentSecondaryIdColumn.getId().getTable());
+
+		plan.init(query.getEntity(), currentContext);
+		plan.nextTable(currentContext, secondaryIdColumn.getId().getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
+
 		return plan;
 	}
 

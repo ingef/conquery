@@ -26,15 +26,23 @@ public class DateRangeTypePacked extends CType<Integer, Integer> {
 	}
 
 	@Override
+	public CDateRange createScriptValue(Integer value) {
+		if(value == null) {
+			return null;
+		}
+		return CDateRange.of(
+			PackedUnsigned1616.getLeft(value)+minValue,
+			PackedUnsigned1616.getRight(value)+minValue
+		);
+	}
+	
+	@Override
 	public Object createPrintValue(Integer value) {
 		if (value == null) {
 			return "";
 		}
 
-		return CDateRange.of(
-			PackedUnsigned1616.getLeft(value)+minValue,
-			PackedUnsigned1616.getRight(value)+minValue
-		);
+		return createScriptValue(value).toString();
 	}
 
 	@Override

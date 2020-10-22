@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.List;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -53,7 +51,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Nodes in the tree are simply enumerated.
 	 */
 	@Valid
-	private List<int[]> mostSpecificChildren;
+	private int[][] mostSpecificChildren;
 	
 	public CBlock(BucketId bucket, ConnectorId connector) {
 		this.bucket = bucket;
@@ -67,6 +65,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 
 	public void initIndizes(int bucketSize) {
 		includedConcepts = new Int2LongArrayMap();
+		includedConcepts.defaultReturnValue(0);
+
 		minDate = new Int2IntArrayMap();
 		minDate.defaultReturnValue(Integer.MAX_VALUE);
 

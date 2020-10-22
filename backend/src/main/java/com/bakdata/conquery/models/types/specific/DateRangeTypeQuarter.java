@@ -31,4 +31,9 @@ public class DateRangeTypeQuarter extends CType<CDateRange, Integer> {
 	public long estimateMemoryBitWidth() {
 		return Integer.SIZE;
 	}
+	
+	@Override
+		public Object createPrintValue(Integer value) {
+			return createScriptValue(value).toString();
+		}
 }

@@ -1,31 +1,49 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.ThreadPoolDefinition;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
+import com.bakdata.conquery.models.query.entity.Entity;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
+	// Making this private to have more control over adding and deleting and keeping a consistent state
+	private final WorkerStorage storage;
+	
 	@Getter
 	private final JobManager jobManager;
 	@Getter
-	private final WorkerStorage storage;
-	@Getter
 	private final QueryExecutor queryExecutor;
-	@Getter
-	private final WorkerInformation info;
 	@Setter
 	private NetworkSession session;
 	/**
@@ -33,15 +51,70 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 */
 	@Getter
 	private final ExecutorService executorService;
+	@Getter 
+	private final BucketManager bucketManager;
 	
-	public Worker(WorkerInformation info, JobManager jobManager, WorkerStorage storage, QueryExecutor queryExecutor, ExecutorService executorService) {
-		this.info = info;
-		this.jobManager = jobManager;
+	
+	private Worker(
+		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+		@NonNull WorkerStorage storage,
+		@NonNull ExecutorService executorService
+		) {
+		this.jobManager = new JobManager(storage.getWorker().getName());
 		this.storage = storage;
+		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		this.executorService = executorService;
-		BucketManager bucketManager = new BucketManager(jobManager, storage, info);
-		storage.setBucketManager(bucketManager);
-		this.queryExecutor = queryExecutor;
+		this.bucketManager = BucketManager.create(this, storage);
+		
+	}
+
+	public static Worker newWorker(
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService executorService,
+			@NonNull WorkerStorage storage,
+			int entityBucketSize) {
+
+		return new Worker(queryThreadPoolDefinition, storage, executorService);
+	}
+
+	public static Worker newWorker(
+		@NonNull Dataset dataset,
+		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+		@NonNull ExecutorService executorService,
+		@NonNull StorageConfig config,
+		@NonNull File directory,
+		@NonNull Validator validator,
+		int entityBucketSize) {
+
+		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
+		if (workerStorage != null) {
+			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
+		}
+
+
+		WorkerInformation info = new WorkerInformation();
+		info.setDataset(dataset.getId());
+		info.setName(directory.getName());
+		info.setEntityBucketSize(entityBucketSize);
+
+		workerStorage = new WorkerStorageImpl(validator, config, directory);
+		workerStorage.loadData();
+		workerStorage.updateDataset(dataset);
+		workerStorage.setWorker(info);
+
+		return new Worker(queryThreadPoolDefinition, workerStorage, executorService);
+	}
+	
+	public ModificationShieldedWorkerStorage getStorage() {
+		return new ModificationShieldedWorkerStorage(storage);
+	}
+	
+	public WorkerInformation getInfo() {
+		return storage.getWorker();
+	}
+	
+	public Int2ObjectMap<Entity> getEntities(){
+		return bucketManager.getEntities();
 	}
 
 	@Override
@@ -50,21 +123,78 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	@Override
-	public MasterMessage transform(NamespaceMessage message) {
-		return new ForwardToNamespace(info.getDataset(), message);
+	public MessageToManagerNode transform(NamespaceMessage message) {
+		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
 	
 	@Override
-	public void close() throws IOException {
-		queryExecutor.close();
-		storage.close();
+	public void close() {
+		// We do not close the executorService here because it does not belong to this class
+		try {
+			queryExecutor.close();
+		}
+		catch (IOException e) {
+			log.error("Unable to close worker query executor of {}.", this, e);
+		}
+
+		try {
+			jobManager.close();
+		}catch (Exception e) {
+			log.error("Unable to close worker query executor of {}.", this, e);
+		}
+
+		try {
+			storage.close();
+		}
+		catch (IOException e) {
+			log.error("Unable to close worker storage of {}.", this, e);
+		}
 	}
 	
 	@Override
 	public String toString() {
-		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";
+		return "Worker[" + getInfo().getId() + ", " + session.getLocalAddress() + "]";
 	}
 	public boolean isBusy() {
 		return queryExecutor.isBusy();
 	}
+
+	public void addImport(Import imp) {
+		storage.addImport(imp);
+	}
+
+	public void removeImport(ImportId importId) {
+		bucketManager.removeImport(importId);
+	}
+
+	public void addBucket(Bucket bucket) {
+		bucketManager.addBucket(bucket);
+	}
+
+	public void removeConcept(ConceptId conceptId) {
+		bucketManager.removeConcept(conceptId);
+	}
+
+	public void updateConcept(Concept<?> concept) {
+		bucketManager.removeConcept(concept.getId());
+		bucketManager.addConcept(concept);
+	}
+
+	public void updateDataset(Dataset dataset) {
+		storage.updateDataset(dataset);
+	}
+
+	public void updateDictionary(Dictionary dictionary) {
+		storage.updateDictionary(dictionary);
+	}
+
+	public void updateWorkerInfo(WorkerInformation info) {
+		storage.updateWorker(info);
+	}
+
+	public void remove() {
+		storage.clear();
+		close();
+	}
+
 }

@@ -13,12 +13,10 @@ public interface Injectable {
 				)
 			);
 		}
-		else {
-			return reader
-				.with(
-					inject(new MutableInjectableValues())
-				);
-		}
+		return reader
+			.with(
+				inject(new MutableInjectableValues())
+			);
 	}
 	
 	public default ObjectMapper injectInto(ObjectMapper mapper) {
@@ -30,13 +28,11 @@ public interface Injectable {
 					)
 				);
 		}
-		else {
-			return mapper
-				.copy()
-				.setInjectableValues(
-					inject(new MutableInjectableValues())
-				);
-		}
+		return mapper
+			.copy()
+			.setInjectableValues(
+				inject(new MutableInjectableValues())
+			);
 	}
 
 	public MutableInjectableValues inject(MutableInjectableValues values);

@@ -44,9 +44,8 @@ public class ConceptQuery extends IQuery {
 	}
 
 	@Override
-	public ConceptQuery resolve(QueryResolveContext context) {
-		this.root = root.resolve(context);
-		return this;
+	public void resolve(QueryResolveContext context) {
+		root.resolve(context);
 	}
 
 	@Override

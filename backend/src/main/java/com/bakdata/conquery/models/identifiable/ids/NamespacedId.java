@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
 
 public interface NamespacedId {
 

@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-import jersey.repackaged.com.google.common.collect.Iterators;
+import com.google.common.collect.Iterators;
 
 public class DirectDictionary extends AStringType<Integer> {
 

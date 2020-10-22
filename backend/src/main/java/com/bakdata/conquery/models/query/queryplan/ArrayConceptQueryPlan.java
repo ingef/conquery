@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -64,12 +65,10 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	 * union handling. It acts as a gate keeper, so all child queries either have a
 	 * SpecialDateUnion or none.
 	 *
-	 * @param childQueries
-	 *            The queries that are individually executed, for which QueryPlans
-	 *            are generated uniformly regarding the SpecialDateContext.
-	 * @param context
-	 *            Primarily used to decide if a SpecialDateUnion needs to be
-	 *            generated.
+	 * @param childQueries The queries that are individually executed, for which QueryPlans
+	 *                     are generated uniformly regarding the SpecialDateContext.
+	 * @param context      Primarily used to decide if a SpecialDateUnion needs to be
+	 *                     generated.
 	 */
 	public void addChildPlans(List<ConceptQuery> childQueries, QueryPlanContext context) {
 		childPlans = new ArrayList<>();
@@ -78,16 +77,23 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		}
 	}
 
+	public void init(QueryExecutionContext ctx, Entity entity) {
+		childPlans.forEach(plan -> plan.init(entity, ctx));
+	}
+
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		if(!isOfInterest(entity)){
+
+		init(ctx, entity);
+
+		if (!isOfInterest(entity)) {
 			return EntityResult.notContained();
 		}
 
 
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
-		CDateSet dateSet = CDateSet.create();
+		BitMapCDateSet dateSet = CDateSetCache.createPreAllocatedDateSet();
 		int resultInsertIdx = specialDateUnion ? 1 : 0;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {
@@ -101,12 +107,12 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 				continue;
 			}
 
-			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult)result;
+			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult) result;
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
 			if (specialDateUnion) {
-				dateSet.addAll(CDateSet.parse(Objects.toString(singleLineResult.getValues()[0])));
+				dateSet.addAll(BitMapCDateSet.parse(Objects.toString(singleLineResult.getValues()[0])));
 				// Skip overwriting the first value: daterange
 				srcCopyPos = 1;
 			}
@@ -160,7 +166,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		List<Aggregator<?>> aggregators = new ArrayList<>();
 		for (ConceptQueryPlan child : childPlans) {
 			List<Aggregator<?>> allAggs = child.getAggregators();
-			aggregators.addAll(allAggs.subList((specialDateUnion? 1 : 0), allAggs.size()));
+			aggregators.addAll(allAggs.subList((specialDateUnion ? 1 : 0), allAggs.size()));
 		}
 
 		return aggregators;

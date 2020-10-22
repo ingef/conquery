@@ -1,13 +1,12 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.Closeable;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.exceptions.JSONException;
 
-public interface Store<KEY, VALUE> extends Closeable {
+public interface Store<KEY, VALUE> {
 
 	public void add(KEY key, VALUE value) throws JSONException;
 

@@ -12,7 +12,6 @@ import com.bakdata.conquery.io.jackson.serializer.BytesTTMapDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.BytesTTMapSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -105,13 +104,11 @@ public class BytesTTMap extends NodeParent<ABytesNode> {
 			size = 1;
 			return -1;
 		}
-		else {
-			int res = root.put(this, this, MIDDLE, key, 0, value);
-			if(res==-1) {
-				size++;
-			}
-			return res;
+		int res = root.put(this, this, MIDDLE, key, 0, value);
+		if(res==-1) {
+			size++;
 		}
+		return res;
 	}
 
 	@Override
@@ -121,9 +118,7 @@ public class BytesTTMap extends NodeParent<ABytesNode> {
 				if(root!=oldNode) {
 					throw new IllegalStateException();
 				}
-				else {
-					root = newNode;
-				}
+				root = newNode;
 				return;
 			}
 			default:

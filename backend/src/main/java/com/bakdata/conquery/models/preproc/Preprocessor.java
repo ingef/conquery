@@ -17,6 +17,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -70,9 +71,7 @@ public class Preprocessor {
 					log.info("\tHASH STILL VALID");
 					return false;
 				}
-				else {
-					log.info("\tHASH OUTDATED");
-				}
+				log.info("\tHASH OUTDATED");
 			} catch (Exception e) {
 				log.error("\tHEADER READING FAILED", e);
 				return false;
@@ -102,7 +101,7 @@ public class Preprocessor {
 	 *
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link CType}.
 	 */
-	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress) throws IOException {
+	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
 
 
 		//create temporary folders and check for correct permissions
@@ -128,7 +127,7 @@ public class Preprocessor {
 
 		int errors = 0;
 
-		final Preprocessed result = new Preprocessed(descriptor);
+		final Preprocessed result = new Preprocessed(descriptor, config.getPreprocessor().getParsers());
 
 		long lineId = 0;
 
@@ -155,10 +154,11 @@ public class Preprocessor {
 				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
 					long progress = 0;
 
+					CSVConfig csvSettings = config.getCsv();
 					// Create CSV parser according to config, but overriding some behaviour.
-					parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
+					parser = new CsvParser(csvSettings.withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
 
-					parser.beginParsing(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn);
+					parser.beginParsing(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
 
 					final String[] headers = parser.getContext().parsedHeaders();
 
@@ -201,12 +201,12 @@ public class Preprocessor {
 
 							errors++;
 
-							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+							if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
 							}
-							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+							else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("More erroneous lines occurred. Only the first "
-										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
+										 + config.getPreprocessor().getMaximumPrintedErrors()
 										 + " were printed.");
 							}
 
@@ -216,12 +216,12 @@ public class Preprocessor {
 
 							errors++;
 
-							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+							if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("Failed to parse line: {} content: {}", lineId, row, e);
 							}
-							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+							else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("More erroneous lines occurred. Only the first "
-										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
+										 + config.getPreprocessor().getMaximumPrintedErrors()
 										 + " were printed.");
 							}
 						}
@@ -302,7 +302,7 @@ public class Preprocessor {
 			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%f.2", 100d * (double) errors / (double) lineId), errors, lineId);
 		}
 
-		if((double) errors / (double) lineId > ConqueryConfig.getInstance().getPreprocessor().getFaultyLineThreshold()){
+		if((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()){
 			throw new RuntimeException("Too many faulty lines.");
 		}
 

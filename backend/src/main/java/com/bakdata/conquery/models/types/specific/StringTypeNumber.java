@@ -76,9 +76,7 @@ public class StringTypeNumber extends AStringType<Number> {
 			if(range.contains(result)) {
 				return result;
 			}
-			else {
-				return -1;
-			}
+			return -1;
 		}
 		catch(NumberFormatException e) {
 			return -1;

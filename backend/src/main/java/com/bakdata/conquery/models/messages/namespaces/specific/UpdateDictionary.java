@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,8 +19,6 @@ public class UpdateDictionary extends WorkerMessage.Slow {
 
 	@Override
 	public void react(Worker context) throws Exception {
-		synchronized (context.getStorage()) {
-			context.getStorage().updateDictionary(dictionary);
-		}
+		context.updateDictionary(dictionary);
 	}
 }

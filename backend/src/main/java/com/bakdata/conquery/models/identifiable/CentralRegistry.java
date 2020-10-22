@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -8,9 +7,10 @@ import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.NoArgsConstructor;
@@ -36,7 +36,7 @@ public class CentralRegistry implements Injectable {
 		}
 		Supplier<Identifiable<?>> supplier = cacheables.get(name);
 		if(supplier == null) {
-			throw new NoSuchElementException("Could not find an "+name.getClass().getSimpleName()+" element called '"+name+"'");
+			throw new ExecutionCreationResolveError(name);
 		}
 		return (T)supplier.get();
 	}
@@ -70,21 +70,17 @@ public class CentralRegistry implements Injectable {
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {
 		CentralRegistry result = (CentralRegistry) ctxt.findInjectableValue(CentralRegistry.class.getName(), null, null);
 		if(result == null) {
-			NamespaceCollection alternative = (NamespaceCollection)ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+			IdResolveContext alternative = (IdResolveContext)ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
 			if(alternative == null) {
 				return null;
 			}
-			else {
-				return alternative.getMetaRegistry();
-			}
+			return alternative.getMetaRegistry();
 		}
-		else {
-			return result;
-		}
+		return result;
 	}
 
 	public static CentralRegistry getForDataset(DeserializationContext ctxt, DatasetId datasetId) throws JsonMappingException {
-		NamespaceCollection alternative = (NamespaceCollection)ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+		IdResolveContext alternative = (IdResolveContext)ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
 
 		if(alternative == null)
 			return null;

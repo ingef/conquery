@@ -1,16 +1,17 @@
 package com.bakdata.conquery.models.exceptions;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.ConstraintViolation;
+import javax.ws.rs.core.Request;
+
 import io.dropwizard.jersey.validation.ConstraintMessage;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.model.Invocable;
 import org.slf4j.Logger;
-
-import javax.validation.ConstraintViolation;
-import javax.ws.rs.core.Request;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @UtilityClass
 public final class ValidatorHelper {
@@ -38,9 +39,7 @@ public final class ValidatorHelper {
 			if(context!=null) {
 				throw new JSONException("Failed with "+violations.size()+" errors in "+context+".");
 			}
-			else {
-				throw new JSONException("Failed with "+violations.size()+" errors.");
-			}
+			throw new JSONException("Failed with "+violations.size()+" errors.");
 		}
 	}
 

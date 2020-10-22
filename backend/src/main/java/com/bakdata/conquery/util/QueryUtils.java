@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
-import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -33,7 +32,8 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @UtilityClass
 public class QueryUtils {
-	
+
+
 	/**
 	 * Provides a starting operator for consumer chains, that does nothing.
 	 */
@@ -59,7 +59,7 @@ public class QueryUtils {
 
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof CQExternal || element instanceof CQExternalResolved) {
+			if (element instanceof CQExternal) {
 				elements.add((CQElement) element);
 			}
 		}

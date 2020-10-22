@@ -10,7 +10,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -75,7 +76,7 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException{
-		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		MetaStorage storage = mock(MetaStorage.class);
 		User user = new User("user", "user");
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
@@ -96,7 +97,7 @@ public class SerializationTests {
 	
 	@Test
 	public void group() throws IOException, JSONException {
-		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		MetaStorage storage = mock(MetaStorage.class);
 		Group group = new Group("group", "group");
 		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group
@@ -206,5 +207,23 @@ public class SerializationTests {
 		SerializationTestUtil
 			.forType(ManagedExecution.class)
 			.test(execution);
+	}
+	
+	@Test
+	public void executionCreationPlanError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
+		
+		SerializationTestUtil
+			.forType(ConqueryError.class)
+			.test(error);
+	}
+	
+	@Test
+	public void executionCreationResolveError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test"));
+		
+		SerializationTestUtil
+			.forType(ConqueryError.class)
+			.test(error);
 	}
 }

@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.MoreCollectors;
@@ -25,7 +25,7 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
 	
 	@Override
-	public abstract IQuery resolve(QueryResolveContext context);
+	public abstract void resolve(QueryResolveContext context);
 	
 	public Set<ManagedExecutionId> collectRequiredQueries() {
 		HashSet<ManagedExecutionId> set = new HashSet<>();
@@ -42,7 +42,7 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void collectResultInfos(ResultInfoCollector collector);
 	
 	@Override
-	public ManagedQuery toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+	public ManagedQuery toManagedExecution(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset) {
 		return new ManagedQuery(this,userId, submittedDataset);
 	}
 

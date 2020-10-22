@@ -44,9 +44,7 @@ public class StringTypePrefix extends AChainedStringType {
 		if(value.startsWith(prefix)) {
 			return subType.getId(value.substring(prefix.length()));
 		}
-		else {
-			return -1;
-		}
+		return -1;
 	}
 	
 	@Override
