@@ -10,12 +10,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
@@ -50,10 +49,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
-import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,11 +63,11 @@ public class ImportJob extends Job {
 	private final Namespace namespace;
 	private final TableId table;
 	private final File importFile;
+	private final int bucketSize;
+
 
 	@Override
 	public void execute() throws JSONException {
-
-
 		try (HCFile file = new HCFile(importFile, false)) {
 
 			if (log.isInfoEnabled()) {
@@ -122,10 +119,6 @@ public class ImportJob extends Job {
 			//import the actual data
 			log.info("\timporting");
 
-			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
-
-			Int2ObjectMap<ImportBucket> buckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-
 			try (InputStream in = new GZIPInputStream(file.readContent())) {
 				final Preprocessed.DataContainer container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
 
@@ -141,7 +134,7 @@ public class ImportJob extends Job {
 					remapStores(header, stores);
 				}
 
-				Map<Integer, List<Integer>> buckets2LocalEntities = groupByBucket(primaryMapping, bucketSize, container.getStarts().keySet());
+				Map<Integer, List<Integer>> buckets2LocalEntities = groupByBucket(container.getStarts().keySet(), primaryMapping, bucketSize);
 
 
 				for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
@@ -149,57 +142,47 @@ public class ImportJob extends Job {
 					int currentBucket = bucket2entities.getKey();
 					final List<Integer> entities = bucket2entities.getValue();
 
+					int[] globalIds = entities.stream().mapToInt(primaryMapping::source2Target).toArray();
 
-					int[] selStart = entities.stream().mapToInt(container.getStarts()::get).toArray();
-					int[] selLength = entities.stream().mapToInt(container.getLengths()::get).toArray();
+					int[] selectionStart = entities.stream().mapToInt(container.getStarts()::get).toArray();
+					int[] entityLengths = entities.stream().mapToInt(container.getLengths()::get).toArray();
+
+					// First entity of Bucket starts at 0, the following are appended.
+					int[] entityStarts = IntStream.range(1, entityLengths.length)
+												  .map(entity -> entityLengths[entity - 1])
+												  .toArray();
+
 
 					// copy only the parts of the bucket we need
 					final ColumnStore<?>[] bucketStores =
 							Arrays.stream(stores)
-								  .map(store -> store.select(selStart, selLength))
+								  .map(store -> store.select(selectionStart, entityLengths))
 								  .toArray(ColumnStore[]::new);
 
-					// we store the global Ids in the buckets
-					final Int2IntMap starts = new Int2IntAVLTreeMap();
-					final Int2IntMap lengths = new Int2IntAVLTreeMap();
 
-					starts.put(primaryMapping.source2Target(entities.get(0)), 0);
-					lengths.put(primaryMapping.source2Target(entities.get(0)), selLength[0]);
-
-					for (int index = 1; index < selLength.length; index++) {
-						int localId = entities.get(index);
-						int globalId = primaryMapping.source2Target(localId);
-
-						final int previousEntity = primaryMapping.source2Target(entities.get(index - 1));
-
-						starts.put(globalId, starts.get(previousEntity) + lengths.get(previousEntity));
-						lengths.put(globalId, selLength[index]);
-					}
-
-
-					buckets.put(currentBucket, new ImportBucket(
-							new BucketId(outImport.getId(), currentBucket),
+					sendBucket(new ImportBucket(
 							new Bucket(
 									currentBucket,
 									outImport.getId(),
-									Arrays.stream(selLength).sum(),
+									Arrays.stream(entityLengths).sum(),
 									bucketStores,
-									starts,
-									lengths,
-									starts.size()
+									new Int2IntArrayMap(globalIds, entityStarts),
+									new Int2IntArrayMap(globalIds,entityLengths),
+									globalIds.length
 							)
 					));
 				}
 			}
-
-			sendBuckets(primaryMapping, buckets);
 		}
 		catch (IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
 		}
 	}
 
-	public Map<Integer, List<Integer>> groupByBucket(DictionaryMapping primaryMapping, int bucketSize, Set<Integer> entities) {
+	/**
+	 * Group entities by their global bucket id.
+	 */
+	public Map<Integer, List<Integer>> groupByBucket(Set<Integer> entities, DictionaryMapping primaryMapping, int bucketSize) {
 		return entities.stream()
 					   .collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
 
@@ -265,8 +248,6 @@ public class ImportJob extends Job {
 		//if no new ids we shouldn't recompress and store
 		if (primaryMapping.getNewIds() == null) {
 			log.debug("\t\tno new ids");
-			primaryDict = oldPrimaryDict;
-
 		}
 		//but if there are new ids we have to
 		else {
@@ -275,11 +256,9 @@ public class ImportJob extends Job {
 
 			namespace.getStorage().updateDictionary(primaryDict);
 
-
 			log.debug("\t\tsending");
 
 			namespace.sendToAll(new UpdateDictionary(primaryDict));
-
 		}
 
 		boolean mappingRequired = false;
@@ -338,28 +317,27 @@ public class ImportJob extends Job {
 		return imp;
 	}
 
+
 	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets) {
 		for (int bucketNumber : primaryMapping.getUsedBuckets()) {
-			ImportBucket bucket = buckets.get(bucketNumber);
-			//a bucket could be empty since the used buckets coming from the
-			//dictionary could contain ids that have no events (see filter)
-			if (bucket == null) {
-				continue;
-			}
-
-
-			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
-			if (responsibleWorker == null) {
-				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
-			}
-			try {
-				responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
-			}
-			catch (InterruptedException e) {
-				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
-			}
-			responsibleWorker.send(bucket);
+			sendBucket(buckets.get(bucketNumber));
 		}
+	}
+
+	private void sendBucket(ImportBucket bucket) {
+		int bucketNumber = bucket.getBucket().getBucket();
+
+		WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
+		if (responsibleWorker == null) {
+			throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
+		}
+		try {
+			responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
+		}
+		catch (InterruptedException e) {
+			log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
+		}
+		responsibleWorker.send(bucket);
 	}
 
 	private boolean createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {

@@ -1,11 +1,7 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
@@ -20,19 +16,17 @@ import lombok.Setter;
 @Setter
 public class ImportBucket extends WorkerMessage.Slow {
 
-	@Nonnull
-	@NotNull
-	private final BucketId bucketId;
 	private final Bucket bucket;
 
 	@Override
 	public void react(Worker context) throws Exception {
+		// todo get import via idRef instead.
 		bucket.setImp(context.getStorage().getImport(bucket.getImportId()));
 		context.getStorage().addBucket(bucket);
 	}
 
 	@Override
 	public String toString() {
-		return "Importing " + bucketId;
+		return String.format("Importing Bucket[%s]", bucket.getId());
 	}
 }

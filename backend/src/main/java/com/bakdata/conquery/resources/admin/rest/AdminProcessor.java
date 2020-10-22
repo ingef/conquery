@@ -189,7 +189,8 @@ public class AdminProcessor {
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			namespaces.get(dataset.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
+					  .addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile,
+												ConqueryConfig.getInstance().getCluster().getEntityBucketSize()));
 		}
 	}
 
