@@ -67,9 +67,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 */
 	private Form submittedForm;
 	
-	@JsonIgnore
-	private Form submittedFormResolved;
-	
 	/**
 	 * Mapping of a result table name to a set of queries.
 	 * This is required by forms that have multiple results (CSVs) as output.
@@ -95,8 +92,8 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	public void initExecutable(@NonNull DatasetRegistry datasetRegistry) {
 		// init all subqueries
 		synchronized (getExecution()) {
-			submittedFormResolved = submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
-			subQueries = submittedFormResolved.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
+			submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
+			subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
 			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry));
 		}
 	}

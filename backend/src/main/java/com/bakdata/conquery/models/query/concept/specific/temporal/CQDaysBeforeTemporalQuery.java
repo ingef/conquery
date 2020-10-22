@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -35,10 +34,5 @@ public class CQDaysBeforeTemporalQuery extends CQAbstractTemporalQuery {
 				new DaysBeforePrecedenceMatcher(days),
 				plan.getSpecialDateUnion()
 		);
-	}
-
-	@Override
-	public CQDaysBeforeTemporalQuery resolve(QueryResolveContext context) {
-		return new CQDaysBeforeTemporalQuery(index.resolve(context), preceding.resolve(context), days);
 	}
 }

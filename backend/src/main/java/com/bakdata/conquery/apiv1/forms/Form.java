@@ -46,9 +46,6 @@ public interface Form extends QueryDescription {
 		// Check if user is allowed to create this form
 		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));
 	}
-	
-	@Override
-	Form resolve(QueryResolveContext context);
 
 	/**
 	 * Utility function for forms that usually have at least one query as a prerequisite.
@@ -59,6 +56,8 @@ public interface Form extends QueryDescription {
 		if(!(prerequisiteExe instanceof ManagedQuery)) {
 			throw new IllegalArgumentException("The prerequisite query must be of type " + ManagedQuery.class.getName());
 		}
-		return ((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
+		IQuery query = ((ManagedQuery)prerequisiteExe).getQuery();
+		query.resolve(context);
+		return query;
 	}
 }

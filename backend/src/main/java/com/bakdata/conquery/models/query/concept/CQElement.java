@@ -24,14 +24,12 @@ public interface CQElement extends Visitable {
 	/**
 	 * Allows a query element to initialize data structures from resources, that are only available on the {@link ManagerNode}.
 	 * The contract is:
-	 * 	- no data structures are allowed to be altered, that were are deserialized from a request and serialized into a permanent storage
+	 * 	- no data structures are allowed to be altered, that were deserialized from a request and are serialized into a permanent storage
 	 *  - all initialized data structures must be annotated with {@link InternalOnly} so they only exist at runtime between and in the communication between {@link ManagerNode} and {@link ShardNode}s
 	 * @param context
 	 * @return
 	 */
-	default CQElement resolve(QueryResolveContext context) {
-		return this;
-	}
+	default void resolve(QueryResolveContext context) {}
 
 	QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 

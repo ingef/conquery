@@ -65,7 +65,7 @@ public class CQExternal implements CQElement {
 
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
+	public void resolve(QueryResolveContext context) {
 		DirectDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream()
 												.map(FormatColumn::getDateFormat)
@@ -130,7 +130,6 @@ public class CQExternal implements CQElement {
 					nonResolved.subList(0, Math.min(nonResolved.size(), 10))
 			);
 		}
-		return this;
 	}
 
 	@Override

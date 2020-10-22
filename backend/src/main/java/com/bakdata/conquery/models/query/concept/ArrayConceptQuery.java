@@ -41,11 +41,8 @@ public class ArrayConceptQuery extends IQuery {
 	}
 
 	@Override
-	public ArrayConceptQuery resolve(QueryResolveContext context) {
-		for(ConceptQuery child : childQueries) {
-			child = child.resolve(context);
-		}
-		return this;
+	public void resolve(QueryResolveContext context) {
+		childQueries.forEach(c -> c.resolve(context));
 	}
 
 	@Override
