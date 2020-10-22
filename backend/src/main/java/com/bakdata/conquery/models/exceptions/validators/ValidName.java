@@ -18,7 +18,6 @@ import javax.validation.Payload;
 
 import com.bakdata.conquery.models.exceptions.validators.ValidName.ValidNameList;
 import com.bakdata.conquery.models.exceptions.validators.ValidName.ValidNameValidator;
-
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -54,13 +53,11 @@ public @interface ValidName {
 					.addConstraintViolation();
 				return false;
 			}
-			else {
-				if(value.length()==0) {
-					context
-						.buildConstraintViolationWithTemplate("A name can not be an empty string")
-						.addConstraintViolation();
-					return false;
-				}
+			if(value.length()==0) {
+				context
+					.buildConstraintViolationWithTemplate("A name can not be an empty string")
+					.addConstraintViolation();
+				return false;
 			}
 			return true;
 		}

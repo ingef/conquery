@@ -58,9 +58,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		if(cache.isEmpty()) {
 			return store.count();
 		}
-		else {
-			return cache.size();
-		}
+		return cache.size();
 	}
 
 	@Override

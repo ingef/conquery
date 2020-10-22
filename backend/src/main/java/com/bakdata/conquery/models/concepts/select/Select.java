@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,7 +39,6 @@ public abstract class Select extends Labeled<SelectId> {
 		if(holder instanceof Connector) {
 			return new ConnectorSelectId(((Connector)holder).getId(), getName());
 		}
-		else
-			return new ConceptSelectId(holder.findConcept().getId(), getName());
+		return new ConceptSelectId(holder.findConcept().getId(), getName());
 	}
 }

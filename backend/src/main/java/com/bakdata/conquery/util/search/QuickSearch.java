@@ -17,12 +17,6 @@
  */
 package com.bakdata.conquery.util.search;
 
-import com.bakdata.conquery.util.search.graph.QSGraph;
-import com.bakdata.conquery.util.search.model.QuickSearchStats;
-import com.bakdata.conquery.util.search.model.Result;
-import com.bakdata.conquery.util.search.model.ResultItem;
-import com.zigurs.karlis.utils.sort.MagicSort;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +29,12 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import com.bakdata.conquery.util.search.graph.QSGraph;
+import com.bakdata.conquery.util.search.model.QuickSearchStats;
+import com.bakdata.conquery.util.search.model.Result;
+import com.bakdata.conquery.util.search.model.ResultItem;
+import com.zigurs.karlis.utils.sort.MagicSort;
 
 
 /**
@@ -338,11 +338,10 @@ public class QuickSearch<T extends Comparable<T>> {
 
         if (results.isEmpty()) {
             return Collections.emptyList();
-        } else {
-            return results.stream()
-                    .map(SearchResult::unwrap)
-                    .collect(Collectors.toList());
         }
+		return results.stream()
+		        .map(SearchResult::unwrap)
+		        .collect(Collectors.toList());
     }
 
 	/**
@@ -406,17 +405,16 @@ public class QuickSearch<T extends Comparable<T>> {
 
         if (results.isEmpty()) {
             return new Result<>(searchString, Collections.emptyList(), numberOfTopItems);
-        } else {
-            return new Result<>(
-                    searchString,
-                    results.stream().map(i -> new ResultItem<>(
-                            i.unwrap(),
-                            graph.getItemKeywords(i.unwrap()),
-                            i.getScore())
-                    ).collect(Collectors.toList()),
-                    numberOfTopItems
-            );
         }
+		return new Result<>(
+		        searchString,
+		        results.stream().map(i -> new ResultItem<>(
+		                i.unwrap(),
+		                graph.getItemKeywords(i.unwrap()),
+		                i.getScore())
+		        ).collect(Collectors.toList()),
+		        numberOfTopItems
+		);
     }
 
     /**

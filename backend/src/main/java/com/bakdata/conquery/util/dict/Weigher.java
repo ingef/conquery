@@ -32,9 +32,7 @@ public class Weigher {
 		if (node == null) {
 			return 0;
 		}
-		else {
-			return node.key().length + calculateWeight(node.getLeft()) + calculateWeight(node.getRight())
-					+ calculateWeight(node.getMiddle());
-		}
+		return node.key().length + calculateWeight(node.getLeft()) + calculateWeight(node.getRight())
+				+ calculateWeight(node.getMiddle());
 	}
 }

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.deser.ContextualKeyDeserializer;
-
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -31,9 +30,7 @@ public class IdKeyDeserializer<ID extends IId<?>> extends KeyDeserializer implem
 			if(dataset != null) {
 				return idParser.parsePrefixed(dataset.getName(), key);
 			}
-			else {
-				return idParser.parse(key);
-			}
+			return idParser.parse(key);
 		} catch(Exception e) {
 			throw new IllegalArgumentException("Could not parse an "+idClass.getSimpleName()+" from "+key, e);
 		}
