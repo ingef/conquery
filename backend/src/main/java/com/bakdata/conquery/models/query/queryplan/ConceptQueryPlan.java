@@ -124,9 +124,8 @@ public class ConceptQueryPlan implements QueryPlan {
 			nextTable(ctx, currentTableId);
 
 			for (Bucket bucket : entity.getBucket(currentTableId)) {
-				int localEntity = entity.getId();
 
-				if (!bucket.containsEntity(localEntity)) {
+				if (!bucket.containsEntity(entity.getId())) {
 					continue;
 				}
 
@@ -135,8 +134,8 @@ public class ConceptQueryPlan implements QueryPlan {
 				}
 
 				nextBlock(bucket);
-				int start = bucket.getFirstEventOfLocal(localEntity);
-				int end = bucket.getLastEventOfLocal(localEntity);
+				int start = bucket.getEntityStart(entity.getId());
+				int end = bucket.getEntityEnd(entity.getId());
 				for (int event = start; event < end; event++) {
 					nextEvent(bucket, event);
 				}

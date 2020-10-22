@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.events.generation;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.PrimitiveIterator;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -35,24 +34,14 @@ public class EmptyBucket extends Bucket {
 		return false;
 	}
 
-	@Override
-	public void initFields(int numberOfEntities) {
-		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
-	}
-
 
 	@Override
-	public PrimitiveIterator.OfInt iterator() {
+	public int getEntityStart(int entityId) {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
-	public int getFirstEventOfLocal(int localEntity) {
-		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
-	}
-
-	@Override
-	public int getLastEventOfLocal(int localEntity) {
+	public int getEntityEnd(int entityId) {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 

@@ -29,6 +29,7 @@ public class BooleanStore extends ColumnStoreAdapter<Boolean> {
 	}
 
 	public BooleanStore select(int[] starts, int[] ends) {
+		// todo use bitset
 		return new BooleanStore(ColumnStore.selectArray(starts, ends, values, boolean[]::new));
 	}
 

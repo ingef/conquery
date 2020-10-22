@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores.string;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
@@ -20,13 +19,13 @@ public class StringStore extends ColumnStoreAdapter<Integer> {
 
 
 	@JsonCreator
-	public StringStore(ColumnStore<Long> store, StringTypeEncoded.Encoding encoding, @NsIdRef Dictionary dictionary) {
+	public StringStore(ColumnStore<Long> store, StringTypeEncoded.Encoding encoding, Dictionary dictionary) {
 		this.store = store;
 		this.encoding = encoding;
 		this.dictionary = dictionary;
 	}
 
-	public static StringStore create(int size, StringTypeEncoded.Encoding encoding, @NsIdRef Dictionary dictionary) {
+	public static StringStore create(int size, StringTypeEncoded.Encoding encoding, Dictionary dictionary) {
 		return new StringStore(IntegerStore.create(size), encoding, dictionary);
 	}
 

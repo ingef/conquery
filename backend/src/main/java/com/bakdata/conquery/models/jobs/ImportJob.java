@@ -3,13 +3,13 @@ package com.bakdata.conquery.models.jobs;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -48,8 +48,6 @@ import com.bakdata.conquery.util.io.Cloner;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
@@ -139,59 +137,29 @@ public class ImportJob extends Job {
 				final ColumnStore<?>[] stores = container.getValues();
 
 				// but first remap String values
-
 				if (mappingRequired) {
-
-					for (int i = 0; i < stores.length; i++) {
-						ColumnStore<?> store = stores[i];
-						final PPColumn column = header.getColumns()[i];
-
-						if (!column.getType().getTypeId().equals(MajorTypeId.STRING)) {
-							continue;
-						}
-
-						if (column.getValueMapping() == null) {
-							return;
-						}
-
-						for (int row = 0; row < header.getRows(); row++) {
-							((ColumnStore<Integer>) store).set(row, column.getValueMapping().source2Target(store.getString(row)));
-						}
-
-					}
+					remapStores(header, stores);
 				}
 
-
-				Multimap<Integer, Integer> buckets2LocalEntities = LinkedHashMultimap.create();
-
-				// collect entities into their buckets
-				for (Integer entity : container.getStarts().keySet()) {
-					int entityId = primaryMapping.source2Target(entity);
-					int currentBucket = Entity.getBucket(entityId, bucketSize);
-					buckets2LocalEntities.put(currentBucket, entity);
-				}
+				Map<Integer, List<Integer>> buckets2LocalEntities = groupByBucket(primaryMapping, bucketSize, container.getStarts().keySet());
 
 
-				for (Map.Entry<Integer, Collection<Integer>> bucket2entities : buckets2LocalEntities.asMap().entrySet()) {
+				for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 
 					int currentBucket = bucket2entities.getKey();
-					final List<Integer> entities = new ArrayList<>(bucket2entities.getValue());
+					final List<Integer> entities = bucket2entities.getValue();
 
-					int[] selStart = new int[entities.size()];
-					int[] selLength = new int[entities.size()];
 
-					for (int index = 0; index < entities.size(); index++) {
-						int localId = entities.get(index);
-						selStart[index] = container.getStarts().get(localId);
-						selLength[index] = container.getLengths().get(localId);
-					}
-
-					final List<ColumnStore<?>> list = new ArrayList<>(stores.length);
-					list.addAll(Arrays.asList(stores));
+					int[] selStart = entities.stream().mapToInt(container.getStarts()::get).toArray();
+					int[] selLength = entities.stream().mapToInt(container.getLengths()::get).toArray();
 
 					// copy only the parts of the bucket we need
-					list.replaceAll(store -> store.select(selStart, selLength));
+					final ColumnStore<?>[] bucketStores =
+							Arrays.stream(stores)
+								  .map(store -> store.select(selStart, selLength))
+								  .toArray(ColumnStore[]::new);
 
+					// we store the global Ids in the buckets
 					final Int2IntMap starts = new Int2IntAVLTreeMap();
 					final Int2IntMap lengths = new Int2IntAVLTreeMap();
 
@@ -215,7 +183,7 @@ public class ImportJob extends Job {
 									currentBucket,
 									outImport.getId(),
 									Arrays.stream(selLength).sum(),
-									list.toArray(new ColumnStore[0]),
+									bucketStores,
 									starts,
 									lengths,
 									starts.size()
@@ -228,6 +196,32 @@ public class ImportJob extends Job {
 		}
 		catch (IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
+		}
+	}
+
+	public Map<Integer, List<Integer>> groupByBucket(DictionaryMapping primaryMapping, int bucketSize, Set<Integer> entities) {
+		return entities.stream()
+					   .collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
+
+	}
+
+	public void remapStores(PreprocessedHeader header, ColumnStore<?>[] stores) {
+		for (int i = 0; i < stores.length; i++) {
+			ColumnStore<?> store = stores[i];
+			final PPColumn column = header.getColumns()[i];
+
+			if (!column.getType().getTypeId().equals(MajorTypeId.STRING)) {
+				continue;
+			}
+
+			if (column.getValueMapping() == null) {
+				continue;
+			}
+
+			// todo move to value mapping, also remove value mapping from column.
+			for (int row = 0; row < header.getRows(); row++) {
+				((ColumnStore<Integer>) store).set(row, column.getValueMapping().source2Target(store.getString(row)));
+			}
 		}
 	}
 

@@ -92,7 +92,7 @@ public class BucketManager {
 	}
 
 	private void registerBucket(Bucket bucket) {
-		for (int entity : bucket) {
+		for (int entity : bucket.entities()) {
 			entities.computeIfAbsent(entity, createEntityFor(bucket))
 					.addBucket(storage.getCentralRegistry().resolve(bucket.getImp().getTable()).getId(), bucket);
 		}
@@ -117,7 +117,7 @@ public class BucketManager {
 
 	private void registerCBlock(CBlock cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
-		for (int entity : bucket) {
+		for (int entity : bucket.entities()) {
 			entities.computeIfAbsent(entity, createEntityFor(cBlock))
 					.addCBlock(
 							storage.getCentralRegistry().resolve(cBlock.getConnector()),
@@ -193,7 +193,7 @@ public class BucketManager {
 	}
 
 	private void deregisterBucket(Bucket bucket) {
-		for (int entityId : bucket) {
+		for (int entityId : bucket.entities()) {
 			final Entity entity = entities.get(entityId);
 
 			if(entity == null)
@@ -210,7 +210,7 @@ public class BucketManager {
 
 	private void deregisterCBlock(CBlockId cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
-		for (int entityId : bucket) {
+		for (int entityId : bucket.entities()) {
 			final Entity entity = entities.get(entityId);
 
 			if(entity == null)

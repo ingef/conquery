@@ -1,15 +1,13 @@
 package com.bakdata.conquery.models.events;
 
-import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -18,8 +16,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @ToString
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer> {
+public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)
 	private final int bucket;
@@ -48,14 +44,20 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	private Import imp;
 
 	@Min(0)
-	private final int numberOfEvents; // todo
+	private final int numberOfEvents;
 
 	private final ColumnStore[] stores;
 
-	// todo these three can be combined
-	private final Map<Integer, Integer> start;
-	private final Map<Integer, Integer> length;
 
+	/**
+	 * start of each Entity in {@code stores}.
+	 */
+	private final Map<Integer, Integer> start;
+
+	/**
+	 * Number of events per Entity in {@code stores}.
+	 */
+	private final Map<Integer, Integer> length;
 
 	private final int bucketSize;
 
@@ -67,41 +69,30 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 
 	/**
 	 * Iterate entities
-	 *
-	 * @return
 	 */
-	@Override
-	public Iterator<Integer> iterator() {
-		return start.keySet().iterator();
+	public Collection<Integer> entities() {
+		return start.keySet();
 	}
 
 	public boolean containsEntity(int localEntity) {
 		return start.containsKey(localEntity);
 	}
 
-	public void initFields(int numberOfEntities) {
-		// TODO
-	}
-
-	public void read(Input input) {
-
-	}
-
 	public Iterable<BucketEntry> entries() {
 		return () -> start.keySet()
 						  .stream()
-						  .flatMap(entity -> IntStream.range(getFirstEventOfLocal(entity), getLastEventOfLocal(entity))
+						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
 													  .mapToObj(e -> new BucketEntry(entity, e))
 						  )
 						  .iterator();
 	}
 
-	public int getFirstEventOfLocal(int localEntity) {
-		return start.get(localEntity);
+	public int getEntityStart(int entityId) {
+		return start.get(entityId);
 	}
 
-	public int getLastEventOfLocal(int localEntity) {
-		return start.get(localEntity) + length.get(localEntity);
+	public int getEntityEnd(int entityId) {
+		return start.get(entityId) + length.get(entityId);
 	}
 
 	public final boolean has(int event, Column column) {
@@ -153,10 +144,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 	}
 
 
-	public final void writeContent(Output output) throws IOException {
-		Jackson.BINARY_MAPPER.writeValue(output, this);
-	}
-
 	public Map<String, Object> calculateMap(int event, Import imp) {
 		Map<String, Object> out = new HashMap<>(stores.length);
 
@@ -166,14 +153,10 @@ public class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integ
 				continue;
 			}
 
+			// todo this is ugly
 			out.put(imp.getColumns()[i].getName(), getImp().getColumns()[i].getType().createScriptValue(store.get(event)));
 		}
 
 		return out;
-	}
-
-
-	public int toLocalId(int id) {
-		return id - bucketSize * bucket;
 	}
 }
