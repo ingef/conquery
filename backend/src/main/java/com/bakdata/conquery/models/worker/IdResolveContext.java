@@ -13,7 +13,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import io.dropwizard.jackson.Jackson;
 
+/**
+ * Superclass for implementations that map ids to existing objects in the conquery id system.
+ * This is a bridge between {@link Jackson} and conquery id serdes.
+ */
 public abstract class IdResolveContext implements Injectable {
 
 	public static IdResolveContext get(DeserializationContext ctxt) throws JsonMappingException {

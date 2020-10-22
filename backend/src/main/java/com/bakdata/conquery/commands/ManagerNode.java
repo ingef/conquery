@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
@@ -54,6 +55,11 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
+/**
+ * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to 
+ * {@link ShardNode}s and respectively the {@link Worker}s hosted on them. The {@link ManagerNode} can also
+ * forward queries or results to statistic backends. Finally it collects the results of queries for access over the api.
+ */
 @Slf4j
 @Getter
 public class ManagerNode extends IoHandlerAdapter implements Managed {
