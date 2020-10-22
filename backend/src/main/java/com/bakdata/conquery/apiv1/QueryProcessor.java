@@ -154,7 +154,7 @@ public class QueryProcessor {
 	}
 
 	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
-		return query.buildStatus(storage, urlb, user, CreationFlag.WITH_COLUMN_DESCIPTION, datasetRegistry);
+		return query.buildStatus(storage, urlb, user, datasetRegistry, CreationFlag.WITH_COLUMN_DESCIPTION);
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
