@@ -70,7 +70,6 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.ValidityDateContainer;
-import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.resources.api.APIResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
@@ -154,7 +153,6 @@ public class Constants {
 			.base(new Base(QueryDescription.class, ""))
 			.base(new Base(CQElement.class, ""))
 			.base(new Base(FilterValue.class, ""))
-			.hide(CQExternalResolved.class)
 			.hide(Response.class)
 			.hide(ZonedDateTime.class)
 			.hide(Range.class)

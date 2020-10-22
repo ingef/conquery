@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -219,5 +220,10 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 		namespacedIds.addAll(ids);
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
+	}
+
+	@Override
+	public void resolve(QueryResolveContext context) {
+		// Do nothing
 	}
 }

@@ -27,7 +27,6 @@ import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
@@ -56,7 +55,7 @@ public class LoadingUtil {
 			final CsvParser parser = new CsvParser(support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createCsvParserSettings());
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
-			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data)).resolve(new QueryResolveContext(support.getDataset().getId(), support.getNamespace().getNamespaces()));
+			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 
 			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
 			user.addPermission(support.getMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));

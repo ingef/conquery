@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -28,10 +27,5 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 			new BeforeOrSameTemporalMatcher(), 
 			plan.getSpecialDateUnion()
 		);
-	}
-	
-	@Override
-	public CQBeforeOrSameTemporalQuery resolve(QueryResolveContext context) {
-		return new CQBeforeOrSameTemporalQuery(index.resolve(context), preceding.resolve(context));
 	}
 }
