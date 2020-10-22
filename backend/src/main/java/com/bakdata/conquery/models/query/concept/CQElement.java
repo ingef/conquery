@@ -29,7 +29,7 @@ public interface CQElement extends Visitable {
 	 * @param context
 	 * @return
 	 */
-	default void resolve(QueryResolveContext context) {}
+	void resolve(QueryResolveContext context);
 
 	QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
