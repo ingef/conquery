@@ -171,7 +171,11 @@ public class AuthorizationHelper {
 		User user = Objects.requireNonNull(storage.getUser(userId), () -> String.format("User with id %s was not found", userId));
 		Set<Permission> userPermissions = user.getPermissions();
 		Set<Permission> tmpView = userPermissions;
-		for (Role role : user.getRoles()) {
+		for (RoleId roleId : user.getRoles()) {
+			Role role = storage.getRole(roleId);
+			if (role == null) {
+				log.warn("Could not resolve role id [{}]", roleId);
+			}
 			// In order to avoid copying, we build a 'tree' of Sets as a SetView,
 			tmpView = Sets.union(tmpView, role.getPermissions());
 
@@ -200,7 +204,11 @@ public class AuthorizationHelper {
 
 		Set<Permission> groupPermissions = group.getPermissions();
 		Set<Permission> tmpView = groupPermissions;
-		for (Role role : group.getRoles()) {
+		for (RoleId roleId : group.getRoles()) {
+			Role role = storage.getRole(roleId);
+			if (role == null) {
+				log.warn("Could not resolve role id [{}]", roleId);
+			}
 			Set<Permission> currentView = Sets.union(tmpView, role.getPermissions());
 			tmpView = currentView;
 		}

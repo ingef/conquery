@@ -265,8 +265,8 @@ public class OIDCResourceOwnerPasswordCredentialRealmTest {
 			.isEqualTo(new ConqueryAuthenticationInfo(new UserId(USER_2_NAME), USER_2_TOKEN_WRAPPED, REALM, true));
 		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_2_NAME, USER_2_LABEL));
 		assertThat(STORAGE.getAllGroups()).hasSize(2); // Pre-existing group and a second group that has been added in the process
-		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(STORAGE.getUser(new UserId(USER_2_NAME)));
-		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_2)).getMembers()).contains(STORAGE.getUser(new UserId(USER_2_NAME)));
+		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(new UserId(USER_2_NAME));
+		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_2)).getMembers()).contains(new UserId(USER_2_NAME));
 	}
 	
 	@Test
@@ -275,7 +275,7 @@ public class OIDCResourceOwnerPasswordCredentialRealmTest {
 		STORAGE.addUser(user);
 		GROUP_1_EXISTING.addMember(STORAGE, user);
 		
-		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(STORAGE.getUser(new UserId(USER_3_NAME)));
+		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(new UserId(USER_3_NAME));
 		
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER_3_TOKEN_WRAPPED);
 		
@@ -285,7 +285,7 @@ public class OIDCResourceOwnerPasswordCredentialRealmTest {
 			.isEqualTo(new ConqueryAuthenticationInfo(new UserId(USER_3_NAME), USER_3_TOKEN_WRAPPED, REALM, true));
 		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_3_NAME, USER_3_LABEL));
 		assertThat(STORAGE.getAllGroups()).hasSize(1); // Pre-existing group 
-		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).doesNotContain(STORAGE.getUser(new UserId(USER_3_NAME)));
+		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).doesNotContain(new UserId(USER_3_NAME));
 	}
 
 	@AfterAll
