@@ -47,7 +47,7 @@ public class DateTypeVarInt extends CType<Integer, Integer> {
 
 	@Override
 	public void set(int event, Integer value) {
-
+		store.set(event, value);
 	}
 
 	@Override
