@@ -7,11 +7,11 @@
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "${dataset}.test_tree.test_child1"
+        "${dataset}.tree.a1"
       ],
       "tables": [
         {
-          "id": "${dataset}.test_tree.test_column",
+          "id": "${dataset}.tree.connector",
           "filters": []
         }
       ]
@@ -19,7 +19,7 @@
   },
   "concepts": [
     {
-      "label": "test_tree",
+      "label": "tree",
       "type": "TREE",
       "connectors": {
         "condition": {
@@ -27,18 +27,16 @@
           "column": "include",
           "values": "A"
         },
-        "label": "tree_label",
-        "name": "test_column",
-        "column": "test_table.test_column",
+        "name": "connector",
+        "column": "table.column",
         "validityDates": {
           "label": "datum",
-          "column": "test_table.datum"
+          "column": "table.datum"
         }
       },
       "children": [
         {
-          "label": "test_child1",
-          "description": " ",
+          "label": "a1",
           "condition": {
             "type": "PREFIX_LIST",
             "prefixes": "A1"
@@ -46,8 +44,7 @@
           "children": []
         },
         {
-          "label": "test_child2",
-          "description": " ",
+          "label": "b2",
           "condition": {
             "type": "PREFIX_LIST",
             "prefixes": "B2"
@@ -61,7 +58,7 @@
     "tables": [
       {
         "csv": "tests/query/CONNECTOR_CONDITION/content.csv",
-        "name": "test_table",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -72,7 +69,7 @@
             "type": "DATE"
           },
           {
-            "name": "test_column",
+            "name": "column",
             "type": "STRING"
           },
           {

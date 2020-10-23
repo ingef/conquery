@@ -1,4 +1,4 @@
-pid,datum,test_column,include
+pid,datum,column,include
 1,2012-01-01,"A1","A"
 2,2010-07-15,"B2","A"
 3,2013-11-10,"A1","A"
