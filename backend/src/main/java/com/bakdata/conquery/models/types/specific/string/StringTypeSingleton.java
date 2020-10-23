@@ -81,12 +81,12 @@ public class StringTypeSingleton extends StringType {
 
 	@Override
 	public void set(int event, Integer value){
-		getDelegate().set(event, true);
+		getDelegate().set(event, value != null && value == 0);
 	}
 
 	@Override
 	public boolean has(int event){
-		return getDelegate().has(event);
+		return getDelegate().get(event);
 	}
 
 	@Override
