@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.BiMap;

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific;
+package com.bakdata.conquery.models.types.specific.string;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
+import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific;
+package com.bakdata.conquery.models.types.specific.string;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonParser;
@@ -34,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends CTypeVarInt {
+public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@NotNull
 	@Nonnull
@@ -64,15 +65,14 @@ public class StringTypeDictionary extends CTypeVarInt {
 	}
 
 	@Override
-	public Object createScriptValue(Long value) {
-		return null;
+	public Object createScriptValue(Integer value) {
+		return getElement(value);
 	}
 
 	@Override
-	public Object createPrintValue(Long value) {
-		return null;
+	public Object createPrintValue(Integer value) {
+		return getElement(value);
 	}
-
 
 	public byte[] getElement(Long value) {
 		return getElement(numberType.toInt(value));
@@ -143,5 +143,10 @@ public class StringTypeDictionary extends CTypeVarInt {
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
 		return new StringTypeDictionary(numberType.select(starts, length), dictionary);
+	}
+
+	@Override
+	public Integer get(int event) {
+		return getNumberType().get(event).intValue() ;
 	}
 }

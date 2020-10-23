@@ -17,9 +17,9 @@
 //import com.bakdata.conquery.models.identifiable.CentralRegistry;
 //import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 //import com.bakdata.conquery.models.types.MajorTypeId;
-//import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
-//import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
-//import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+//import com.bakdata.conquery.models.types.specific.string.StringTypeDictionary;
+//import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
+//import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
 //import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 //import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 //import com.bakdata.conquery.util.CalculatedValue;

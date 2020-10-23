@@ -11,13 +11,12 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
-public class MoneyTypeVarInt extends CTypeVarInt {
+public class MoneyTypeVarInt extends CTypeVarInt<Long> {
 
 	@JsonCreator
 	public MoneyTypeVarInt(VarIntType numberType) {
 		super(MajorTypeId.MONEY, numberType);
 	}
-
 
 	@Override
 	public Long createScriptValue(Long value) {
@@ -34,4 +33,8 @@ public class MoneyTypeVarInt extends CTypeVarInt {
 		return new MoneyTypeVarInt(numberType.select(starts, length));
 	}
 
+	@Override
+	public Long get(int event) {
+		return numberType.get(event);
+	}
 }

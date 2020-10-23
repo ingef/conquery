@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.types.parser.specific.string;
 
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.types.parser.Decision;
-import com.bakdata.conquery.models.types.specific.StringType;
-import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.models.types.specific.string.StringType;
+import com.bakdata.conquery.models.types.specific.string.StringTypeDictionary;
+import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

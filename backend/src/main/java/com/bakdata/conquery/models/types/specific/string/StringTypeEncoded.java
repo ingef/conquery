@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific;
+package com.bakdata.conquery.models.types.specific.string;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.io.BaseEncoding;
@@ -57,6 +58,7 @@ public class StringTypeEncoded extends StringType {
 	public void loadExternalInfos(NamespacedStorage storage) {
 		subType.loadExternalInfos(storage);
 	}
+
 
 	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
@@ -136,17 +138,12 @@ public class StringTypeEncoded extends StringType {
 
 	@Override
 	public void set(int event, Integer value) {
-		if (value == null) {
-			subType.set(event, null);
-		}
-		else {
-			subType.set(event, value.longValue());
-		}
+		subType.set(event, value);
 	}
 
 	@Override
 	public Integer get(int event) {
-		return subType.get(event).intValue();
+		return subType.get(event);
 	}
 
 	@Override

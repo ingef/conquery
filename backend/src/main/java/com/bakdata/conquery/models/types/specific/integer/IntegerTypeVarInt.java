@@ -11,7 +11,7 @@ import lombok.Setter;
 
 @CPSType(base=ColumnStore.class, id="INTEGER_VARINT")
 @Getter @Setter
-public class IntegerTypeVarInt extends CTypeVarInt {
+public class IntegerTypeVarInt extends CTypeVarInt<Long> {
 
 
 	@JsonCreator
@@ -35,4 +35,8 @@ public class IntegerTypeVarInt extends CTypeVarInt {
 		return new IntegerTypeVarInt(numberType.select(starts, length));
 	}
 
+	@Override
+	public Long get(int event) {
+		return numberType.get(event);
+	}
 }

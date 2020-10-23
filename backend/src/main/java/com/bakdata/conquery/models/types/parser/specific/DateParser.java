@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.stores.base.DateStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -36,7 +37,7 @@ public class DateParser extends Parser<Integer> {
 	protected Decision decideType() {
 		Decision<VarIntType> subDecision = subType.findBestType();
 		return new Decision<>(
-				new DateTypeVarInt(subDecision.getType())
+				new DateTypeVarInt(new DateStore(subDecision.getType()))
 		);
 	}
 }

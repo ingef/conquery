@@ -25,7 +25,7 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;

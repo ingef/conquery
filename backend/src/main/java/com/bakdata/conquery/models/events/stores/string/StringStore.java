@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
+import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 

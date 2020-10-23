@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
+import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;

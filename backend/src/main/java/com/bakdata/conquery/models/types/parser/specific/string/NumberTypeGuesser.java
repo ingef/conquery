@@ -7,8 +7,8 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
-import com.bakdata.conquery.models.types.specific.StringTypeNumber;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.models.types.specific.string.StringTypeNumber;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

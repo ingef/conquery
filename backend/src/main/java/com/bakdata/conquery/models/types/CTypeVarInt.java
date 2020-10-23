@@ -4,8 +4,9 @@ import com.bakdata.conquery.models.types.specific.VarIntType;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
-public abstract class CTypeVarInt extends CType<Long, Long> {
+@Getter
+@Setter
+public abstract class CTypeVarInt<T extends Number> extends CType<Long, T> {
 
 	protected VarIntType numberType;
 
@@ -15,29 +16,29 @@ public abstract class CTypeVarInt extends CType<Long, Long> {
 	}
 
 	@Override
-	public abstract Object createScriptValue(Long value);
+	public abstract Object createScriptValue(T value);
 
 	@Override
-	public abstract Object createPrintValue(Long value);
+	public abstract Object createPrintValue(T value);
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"[numberType=" + numberType + "]";
+		return this.getClass().getSimpleName() + "[numberType=" + numberType + "]";
 	}
-	
+
 	@Override
 	public long estimateMemoryBitWidth() {
 		return numberType.estimateMemoryBitWidth();
 	}
 
 	@Override
-	public void set(int event, Long value) {
-		numberType.set(event, value);
-	}
-
-	@Override
-	public Long get(int event) {
-		return numberType.get(event);
+	public void set(int event, T value) {
+		if (value == null) {
+			numberType.set(event, null);
+		}
+		else {
+			numberType.set(event, value.longValue());
+		}
 	}
 
 	@Override

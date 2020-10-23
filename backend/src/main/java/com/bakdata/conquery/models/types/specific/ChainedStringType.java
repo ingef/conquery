@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.fasterxml.jackson.core.JsonParser;
 import lombok.Getter;
 import lombok.Setter;

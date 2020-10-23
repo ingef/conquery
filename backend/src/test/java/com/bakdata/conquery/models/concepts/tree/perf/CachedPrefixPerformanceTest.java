@@ -9,9 +9,9 @@
 //import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 //import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
 //import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-//import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
-//import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
-//import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+//import com.bakdata.conquery.models.types.specific.string.StringTypeDictionary;
+//import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
+//import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
 //import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 //import com.bakdata.conquery.util.CalculatedValue;
 //import com.bakdata.conquery.util.dict.SuccinctTrie;
