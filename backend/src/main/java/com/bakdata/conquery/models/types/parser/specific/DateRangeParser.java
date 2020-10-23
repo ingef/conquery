@@ -83,14 +83,10 @@ public class DateRangeParser extends Parser<CDateRange> {
 		// min or max can be Integer.MIN/MAX_VALUE when this happens, the left expression overflows causing it to be true when it is not.
 		// We allow this exception to happen as it would imply erroneous data.
 		if (Math.subtractExact(maxValue, minValue) < PackedUnsigned1616.MAX_VALUE) {
-			DateRangeTypePacked type = new DateRangeTypePacked(PackedDateRangeStore.create(getLines()));
-			type.setMinValue(minValue);
-			type.setMaxValue(maxValue);
-
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
 
 			return new Decision(
-					type
+					new DateRangeTypePacked(minValue, maxValue, PackedDateRangeStore.create(getLines()))
 			);
 		}
 

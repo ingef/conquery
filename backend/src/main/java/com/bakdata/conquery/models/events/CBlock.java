@@ -68,9 +68,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		includedConcepts.defaultReturnValue(0);
 
 		minDate = new Int2IntArrayMap();
-		minDate.defaultReturnValue(Integer.MAX_VALUE);
 
 		maxDate = new Int2IntArrayMap();
-		minDate.defaultReturnValue(Integer.MIN_VALUE);
 	}
 }

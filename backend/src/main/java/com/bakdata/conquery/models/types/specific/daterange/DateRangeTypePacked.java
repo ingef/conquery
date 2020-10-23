@@ -6,19 +6,23 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.date.PackedDateRangeStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(base=ColumnStore.class, id="DATE_RANGE_2UINT16") @Getter @Setter
 public class DateRangeTypePacked extends CType<Integer, CDateRange> {
 
-	private int maxValue;
-	private int minValue;
+	private final int minValue;
+	private final int maxValue;
 
 	private final PackedDateRangeStore store;
 
-	public DateRangeTypePacked(PackedDateRangeStore store) {
+	@JsonCreator
+	public DateRangeTypePacked(int minValue, int maxValue, PackedDateRangeStore store) {
 		super(MajorTypeId.DATE_RANGE);
+		this.minValue = minValue;
+		this.maxValue = maxValue;
 		this.store = store;
 	}
 
@@ -46,7 +50,7 @@ public class DateRangeTypePacked extends CType<Integer, CDateRange> {
 
 	@Override
 	public DateRangeTypePacked select(int[] starts, int[] length) {
-		return new DateRangeTypePacked(store.select(starts, length));
+		return new DateRangeTypePacked(minValue, maxValue, store.select(starts, length));
 	}
 
 	@Override
