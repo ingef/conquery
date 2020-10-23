@@ -109,7 +109,7 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
 	}
 
-	private UserId extractId(TokenIntrospectionSuccessResponse successResponse) {
+	private static UserId extractId(TokenIntrospectionSuccessResponse successResponse) {
 		String identifier = successResponse.getUsername();
 		if(StringUtils.isBlank(identifier)) {
 			identifier = successResponse.getStringParameter("preferred_username");
@@ -124,7 +124,7 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 		return new UserId(identifier);
 	}
 	
-	private String extractDisplayName(TokenIntrospectionSuccessResponse successResponse) {
+	private static String extractDisplayName(TokenIntrospectionSuccessResponse successResponse) {
 		String username = successResponse.getUsername();
 		if(StringUtils.isBlank(username)) {
 			username = successResponse.getStringParameter("name");
