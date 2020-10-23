@@ -28,6 +28,8 @@ import org.apache.shiro.authz.Permission;
  * 
  * @implNote It can be tedious to maintain several Api classes for different end points that have
  * overlapping information. GraphQL might be a solution for this.
+ * 
+ * NOT USED AT THE MOMENT
  */
 @AllArgsConstructor
 @Getter

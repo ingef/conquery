@@ -21,7 +21,6 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
-import com.bakdata.conquery.apiv1.StoredQuerySingleInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -47,11 +46,11 @@ public class StoredQueriesResource extends HDatasets {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public StoredQuerySingleInfo getSingleQueryInfo(@PathParam(QUERY) ManagedExecutionId queryId) {
+	public ExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecutionId queryId) {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 		
-		StoredQuerySingleInfo status = processor.getQueryWithSource(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
+		ExecutionStatus status = processor.getQueryWithSource(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 		if (status == null) {
 			throw new WebApplicationException("Unknown query " + queryId, Status.NOT_FOUND);
 		}
@@ -60,7 +59,7 @@ public class StoredQueriesResource extends HDatasets {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public StoredQuerySingleInfo patchQuery(@PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) throws JSONException {
+	public ExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 		processor.patchQuery(user, queryId, patch);
 		
