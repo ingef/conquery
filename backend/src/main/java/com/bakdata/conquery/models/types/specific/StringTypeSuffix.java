@@ -4,8 +4,6 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.string.StringStore;
-import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NonNull;
@@ -13,7 +11,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(base = CType.class, id = "STRING_SUFFIX")
+@CPSType(base = ColumnStore.class, id = "STRING_SUFFIX")
 public class StringTypeSuffix extends ChainedStringType {
 
 	@NonNull
@@ -23,11 +21,6 @@ public class StringTypeSuffix extends ChainedStringType {
 	public StringTypeSuffix(StringType subType, String suffix) {
 		super(subType);
 		this.suffix = suffix;
-	}
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return StringStore.create(size, StringTypeEncoded.Encoding.UTF8, subType.getUnderlyingDictionary());
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific;
+package com.bakdata.conquery.models.types.specific.integer;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -9,22 +9,20 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(base=CType.class, id="INTEGER") @Getter @Setter
+@CPSType(base=ColumnStore.class, id="INTEGER") @Getter @Setter
 public class IntegerTypeLong extends CType<Long, Long> {
 
 	private final long minValue;
 	private final long maxValue;
+
+	private final LongStore store;
 	
 	@JsonCreator
-	public IntegerTypeLong(long minValue, long maxValue) {
+	public IntegerTypeLong(long minValue, long maxValue, LongStore store) {
 		super(MajorTypeId.INTEGER);
 		this.minValue = minValue;
 		this.maxValue = maxValue;
-	}
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return LongStore.create(size);
+		this.store = store;
 	}
 
 	@Override
@@ -33,22 +31,22 @@ public class IntegerTypeLong extends CType<Long, Long> {
 	}
 
 	@Override
-	public ColumnStore<Long> select(int[] starts, int[] length) {
-		return null;
+	public IntegerTypeLong select(int[] starts, int[] length) {
+		return new IntegerTypeLong(minValue,  maxValue, store.select(starts, length));
 	}
 
 	@Override
 	public void set(int event, Long value) {
-
+		store.set(event, value);
 	}
 
 	@Override
 	public Long get(int event) {
-		return null;
+		return store.get(event);
 	}
 
 	@Override
 	public boolean has(int event) {
-		return false;
+		return store.has(event);
 	}
 }

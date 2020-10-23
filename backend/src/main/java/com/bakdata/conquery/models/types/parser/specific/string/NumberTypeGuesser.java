@@ -34,6 +34,8 @@ public class NumberTypeGuesser implements TypeGuesser {
 				range = range.span(new IntegerRange(intValue, intValue));
 				numberParser.addLine(intValue);
 			}
+
+			numberParser.setLines(p.getLines());
 			
 			//do not use a number type if the range is much larger than the number if distinct values
 			//e.g. if the column contains only 0 and 5M

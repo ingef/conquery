@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
@@ -47,14 +48,14 @@ public class DecimalParser extends Parser<BigDecimal> {
 	protected Decision<? extends CType<BigDecimal, ?>> decideType() {
 		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
 			return new Decision<DecimalTypeBigDecimal>(
-				new DecimalTypeBigDecimal()
+				new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
 			);
 		}
 
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
 			return new Decision<DecimalTypeBigDecimal>(
-				new DecimalTypeBigDecimal()
+				new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
 			);
 		}
 
@@ -64,6 +65,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 		sub.setLines(getLines());
 		sub.setNullLines(getNullLines());
 		Decision<? extends CType<Long, ? extends Number>> subDecision = sub.findBestType();
+
 		return new Decision<DecimalTypeScaled>(
 				new DecimalTypeScaled(maxScale, subDecision.getType())
 		);

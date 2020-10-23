@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.string.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,8 +33,8 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-@CPSType(base = CType.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends CTypeVarInt<Long> {
+@CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
+public class StringTypeDictionary extends CTypeVarInt {
 
 	@NotNull
 	@Nonnull
@@ -65,20 +64,14 @@ public class StringTypeDictionary extends CTypeVarInt<Long> {
 	}
 
 	@Override
-	public Object createScriptValue(Number value) {
+	public Object createScriptValue(Long value) {
 		return null;
 	}
 
 	@Override
-	public Object createPrintValue(Number value) {
+	public Object createPrintValue(Long value) {
 		return null;
 	}
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return StringStore.create(size, StringTypeEncoded.Encoding.UTF8, getDictionary());
-	}
-
 
 
 	public byte[] getElement(Long value) {
@@ -150,21 +143,5 @@ public class StringTypeDictionary extends CTypeVarInt<Long> {
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
 		return new StringTypeDictionary(numberType.select(starts, length), dictionary);
-	}
-
-
-	@Override
-	public void set(int event, Number value) {
-		numberType.set(event, value.longValue());
-	}
-
-	@Override
-	public Long get(int event) {
-		return numberType.get(event);
-	}
-
-	@Override
-	public boolean has(int event) {
-		return numberType.has(event);
 	}
 }

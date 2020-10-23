@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.io.BaseEncoding;
@@ -24,7 +23,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(base = CType.class, id = "STRING_ENCODED")
+@CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
 public class StringTypeEncoded extends StringType {
 
 	@Nonnull
@@ -37,11 +36,6 @@ public class StringTypeEncoded extends StringType {
 		super();
 		this.subType = subType;
 		this.encoding = encoding;
-	}
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return subType.createStore(size, encoding);
 	}
 
 	@Override
@@ -142,7 +136,12 @@ public class StringTypeEncoded extends StringType {
 
 	@Override
 	public void set(int event, Integer value) {
-		subType.set(event, value);
+		if (value == null) {
+			subType.set(event, null);
+		}
+		else {
+			subType.set(event, value.longValue());
+		}
 	}
 
 	@Override

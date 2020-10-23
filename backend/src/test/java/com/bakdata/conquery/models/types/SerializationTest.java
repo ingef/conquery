@@ -17,11 +17,11 @@
 //import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 //import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
 //import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
-//import com.bakdata.conquery.models.types.specific.DateTypeVarInt;
+//import com.bakdata.conquery.models.types.specific.date.DateTypeVarInt;
 //import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
 //import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
-//import com.bakdata.conquery.models.types.specific.IntegerTypeLong;
-//import com.bakdata.conquery.models.types.specific.IntegerTypeVarInt;
+//import com.bakdata.conquery.models.types.specific.integer.IntegerTypeLong;
+//import com.bakdata.conquery.models.types.specific.integer.IntegerTypeVarInt;
 //import com.bakdata.conquery.models.types.specific.MoneyTypeLong;
 //import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
 //import com.bakdata.conquery.models.types.specific.RealTypeDouble;

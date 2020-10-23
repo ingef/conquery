@@ -9,18 +9,16 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(base = CType.class, id = "DATE_RANGE_DATE_RANGE")
+@CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
 public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 
-	public DateRangeTypeDateRange() {
-		super(MajorTypeId.DATE_RANGE);
-	}
+	private final DateRangeStore store;
 
-	@Override
-	public ColumnStore createStore(int size) {
-		return DateRangeStore.create(size);
+	public DateRangeTypeDateRange(DateRangeStore store) {
+		super(MajorTypeId.DATE_RANGE);
+		this.store = store;
 	}
 
 	@Override
@@ -38,8 +36,8 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 	}
 
 	@Override
-	public ColumnStore<CDateRange> select(int[] starts, int[] length) {
-		return null;
+	public DateRangeTypeDateRange select(int[] starts, int[] length) {
+		return new DateRangeTypeDateRange(store.select(starts, length));
 	}
 
 	@Override

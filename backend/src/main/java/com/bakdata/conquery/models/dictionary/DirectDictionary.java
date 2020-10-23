@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.dictionary;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
-import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.google.common.collect.Iterators;
@@ -18,11 +16,6 @@ public class DirectDictionary extends StringType {
 		this.dict = dict;
 	}
 
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return LongStore.create(size);
-	}
 
 	// TODO why is this a StringType at all?
 

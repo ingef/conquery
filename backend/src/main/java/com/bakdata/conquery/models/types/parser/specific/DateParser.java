@@ -7,8 +7,8 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.specific.DateTypeVarInt;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.models.types.specific.date.DateTypeVarInt;
 import com.bakdata.conquery.util.DateFormats;
 import lombok.ToString;
 

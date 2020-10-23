@@ -89,7 +89,7 @@ public class Preprocessed {
 		for (int colIdx = 0; colIdx < impColumns.length; colIdx++) {
 			final PPColumn ppColumn = columns[colIdx];
 
-			final ColumnStore store = ppColumn.getType().createStore(nEvents);
+			final ColumnStore store = ppColumn.getType();
 
 			Map<Integer, List> values = entries.row(colIdx);
 			int start = 0;

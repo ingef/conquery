@@ -4,15 +4,13 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.string.StringStore;
-import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
 @Getter @Setter
-@CPSType(base = CType.class, id = "STRING_PREFIX")
+@CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
 public class StringTypePrefix extends ChainedStringType {
 
 	@NonNull
@@ -22,11 +20,6 @@ public class StringTypePrefix extends ChainedStringType {
 	public StringTypePrefix(StringType subType, String prefix) {
 		super(subType);
 		this.prefix = prefix;
-	}
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return StringStore.create(size, StringTypeEncoded.Encoding.UTF8, subType.getUnderlyingDictionary());
 	}
 
 	@Override

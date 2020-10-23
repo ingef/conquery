@@ -5,22 +5,17 @@ import java.io.OutputStream;
 import java.math.RoundingMode;
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.math.LongMath;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
-@CPSBase
 @Getter @Setter @RequiredArgsConstructor
 public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> implements MajorTypeIdHolder {
 
@@ -31,8 +26,6 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 	private int nullLines = 0;
 
 	public void init(DatasetId dataset) {}
-
-	public abstract ColumnStore createStore(int size);
 
 	public Object createScriptValue(JAVA_TYPE value) {
 		return value;
@@ -65,5 +58,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 	public long estimateTypeSize() {
 		return 0;
 	}
+
+	public abstract CType<MAJOR_JAVA_TYPE, JAVA_TYPE> select(int[] starts, int[] lengths);
 
 }

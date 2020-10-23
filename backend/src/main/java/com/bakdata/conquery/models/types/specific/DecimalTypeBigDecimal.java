@@ -8,16 +8,14 @@ import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
-@CPSType(base=CType.class, id="DECIMAL_BIG_DECIMAL")
+@CPSType(base=ColumnStore.class, id="DECIMAL_BIG_DECIMAL")
 public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 
-	public DecimalTypeBigDecimal() {
-		super(MajorTypeId.DECIMAL);
-	}
+	private final DecimalStore store;
 
-	@Override
-	public ColumnStore createStore(int size) {
-		return DecimalStore.create(size);
+	public DecimalTypeBigDecimal(DecimalStore store) {
+		super(MajorTypeId.DECIMAL);
+		this.store = store;
 	}
 
 	@Override
@@ -26,22 +24,22 @@ public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 	}
 
 	@Override
-	public ColumnStore<BigDecimal> select(int[] starts, int[] length) {
-		return null;
+	public DecimalTypeBigDecimal select(int[] starts, int[] length) {
+		return new DecimalTypeBigDecimal(store.select(starts, length));
 	}
 
 	@Override
 	public void set(int event, BigDecimal value) {
-
+		store.set(event, value);
 	}
 
 	@Override
 	public BigDecimal get(int event) {
-		return null;
+		return store.get(event);
 	}
 
 	@Override
 	public boolean has(int event) {
-		return false;
+		return store.has(event);
 	}
 }

@@ -5,20 +5,19 @@ import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
-@CPSType(base=CType.class, id="DECIMAL_SCALED") @ToString
-public class DecimalTypeScaled extends CType<BigDecimal, Number> {
+@CPSType(base=ColumnStore.class, id="DECIMAL_SCALED") @ToString
+public class DecimalTypeScaled extends CType<BigDecimal, BigDecimal> {
 
 	@Getter @ToString.Include
 	private final int scale;
 	@Getter @ToString.Include
-	private final CType subType;
+	private final CType<?, Long> subType;
 	
 	@JsonCreator
 	public DecimalTypeScaled(int scale, CType subType) {
@@ -27,14 +26,11 @@ public class DecimalTypeScaled extends CType<BigDecimal, Number> {
 		this.subType = subType;
 	}
 
-	@Override
-	public ColumnStore createStore(int size) {
-		return DecimalStore.create(size);
-	}
+	// TODO this class is a mess
 
 	@Override
-	public BigDecimal createScriptValue(Number value) {
-		return scale(scale, (Long)subType.createScriptValue(value));
+	public BigDecimal createScriptValue(BigDecimal value) {
+		return null;
 	}
 
 	public static BigInteger unscale(int scale, BigDecimal value) {
@@ -56,18 +52,18 @@ public class DecimalTypeScaled extends CType<BigDecimal, Number> {
 	}
 
 	@Override
-	public ColumnStore<Number> select(int[] starts, int[] length) {
-		return null;
+	public DecimalTypeScaled select(int[] starts, int[] length) {
+		return new DecimalTypeScaled(scale, subType.select(starts, length));
 	}
 
 	@Override
-	public void set(int event, Number value) {
+	public void set(int event, BigDecimal value) {
 
 	}
 
 	@Override
-	public Number get(int event) {
-		return null;
+	public BigDecimal get(int event) {
+		return scale(scale, subType.get(event));
 	}
 
 	@Override

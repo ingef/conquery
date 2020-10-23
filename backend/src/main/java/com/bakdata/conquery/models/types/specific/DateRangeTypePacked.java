@@ -6,38 +6,32 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.date.PackedDateRangeStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.util.PackedUnsigned1616;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(base=CType.class, id="DATE_RANGE_2UINT16") @Getter @Setter
-public class DateRangeTypePacked extends CType<Integer, Integer> {
+@CPSType(base=ColumnStore.class, id="DATE_RANGE_2UINT16") @Getter @Setter
+public class DateRangeTypePacked extends CType<Integer, CDateRange> {
 
 	private int maxValue;
 	private int minValue;
-	
-	public DateRangeTypePacked() {
+
+	private final PackedDateRangeStore store;
+
+	public DateRangeTypePacked(PackedDateRangeStore store) {
 		super(MajorTypeId.DATE_RANGE);
+		this.store = store;
 	}
 
 	@Override
-	public ColumnStore createStore(int size) {
-		return PackedDateRangeStore.create(size);
-	}
-
-	@Override
-	public CDateRange createScriptValue(Integer value) {
+	public CDateRange createScriptValue(CDateRange value) {
 		if(value == null) {
 			return null;
 		}
-		return CDateRange.of(
-			PackedUnsigned1616.getLeft(value)+minValue,
-			PackedUnsigned1616.getRight(value)+minValue
-		);
+		return value;
 	}
 	
 	@Override
-	public Object createPrintValue(Integer value) {
+	public Object createPrintValue(CDateRange value) {
 		if (value == null) {
 			return "";
 		}
@@ -51,22 +45,22 @@ public class DateRangeTypePacked extends CType<Integer, Integer> {
 	}
 
 	@Override
-	public ColumnStore<Integer> select(int[] starts, int[] length) {
-		return null;
+	public DateRangeTypePacked select(int[] starts, int[] length) {
+		return new DateRangeTypePacked(store.select(starts, length));
 	}
 
 	@Override
-	public void set(int event, Integer value) {
-
+	public void set(int event, CDateRange value) {
+		store.set(event,value);
 	}
 
 	@Override
-	public Integer get(int event) {
-		return null;
+	public CDateRange get(int event) {
+		return store.get(event);
 	}
 
 	@Override
 	public boolean has(int event) {
-		return false;
+		return store.has(event);
 	}
 }

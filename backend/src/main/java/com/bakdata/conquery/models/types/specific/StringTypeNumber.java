@@ -9,14 +9,12 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.string.NumberStringStore;
-import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-@CPSType(base = CType.class, id = "STRING_NUMBER")
+@CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
 public class StringTypeNumber extends StringType {
 
 	//used as a compact intset
@@ -29,11 +27,6 @@ public class StringTypeNumber extends StringType {
 		super();
 		this.range = range;
 		this.delegate = numberType;
-	}
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return NumberStringStore.create(size);
 	}
 
 	@Override

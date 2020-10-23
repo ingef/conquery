@@ -3,11 +3,10 @@ package com.bakdata.conquery.models.types.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.ByteStore;
-import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
-@CPSType(base = CType.class, id = "VAR_INT_BYTE")
+@CPSType(base = ColumnStore.class, id = "VAR_INT_BYTE")
 @Getter
 public class VarIntTypeByte extends VarIntType {
 
@@ -31,11 +30,6 @@ public class VarIntTypeByte extends VarIntType {
 	@Override
 	public int toInt(Long value) {
 		return value.byteValue();
-	}
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return ByteStore.create(size);
 	}
 
 	@Override

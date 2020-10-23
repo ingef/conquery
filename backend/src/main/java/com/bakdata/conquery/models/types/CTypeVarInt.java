@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.types;
 
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public abstract class CTypeVarInt<MAJOR_JAVA_TYPE extends Number> extends CType<MAJOR_JAVA_TYPE, Number> {
+public abstract class CTypeVarInt extends CType<Long, Long> {
 
 	protected VarIntType numberType;
 
@@ -16,15 +15,10 @@ public abstract class CTypeVarInt<MAJOR_JAVA_TYPE extends Number> extends CType<
 	}
 
 	@Override
-	public abstract Object createScriptValue(Number value);
+	public abstract Object createScriptValue(Long value);
 
 	@Override
-	public abstract Object createPrintValue(Number value);
-
-	@Override
-	public ColumnStore createStore(int size) {
-		return numberType.createStore(size);
-	}
+	public abstract Object createPrintValue(Long value);
 
 	@Override
 	public String toString() {
@@ -34,5 +28,20 @@ public abstract class CTypeVarInt<MAJOR_JAVA_TYPE extends Number> extends CType<
 	@Override
 	public long estimateMemoryBitWidth() {
 		return numberType.estimateMemoryBitWidth();
+	}
+
+	@Override
+	public void set(int event, Long value) {
+		numberType.set(event, value);
+	}
+
+	@Override
+	public Long get(int event) {
+		return numberType.get(event);
+	}
+
+	@Override
+	public final boolean has(int event) {
+		return numberType.has(event);
 	}
 }

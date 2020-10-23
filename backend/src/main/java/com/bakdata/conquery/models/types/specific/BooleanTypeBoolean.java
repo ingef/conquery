@@ -6,16 +6,14 @@ import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
-@CPSType(base=CType.class, id="BOOLEAN_BOOLEAN")
+@CPSType(base=ColumnStore.class, id="BOOLEAN_BOOLEAN")
 public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
 
-	public BooleanTypeBoolean() {
-		super(MajorTypeId.BOOLEAN);
-	}
+	private final BooleanStore store;
 
-	@Override
-	public ColumnStore createStore(int size) {
-		return BooleanStore.create(size);
+	public BooleanTypeBoolean(BooleanStore store) {
+		super(MajorTypeId.BOOLEAN);
+		this.store = store;
 	}
 
 	@Override
@@ -24,22 +22,22 @@ public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
 	}
 
 	@Override
-	public ColumnStore<Boolean> select(int[] starts, int[] length) {
-		return null;
+	public BooleanTypeBoolean select(int[] starts, int[] length) {
+		return new BooleanTypeBoolean(store.select(starts, length));
 	}
 
 	@Override
 	public void set(int event, Boolean value) {
-
+		store.set(event, value);
 	}
 
 	@Override
 	public Boolean get(int event) {
-		return null;
+		return store.get(event);
 	}
 
 	@Override
 	public boolean has(int event) {
-		return false;
+		return store.has(event);
 	}
 }

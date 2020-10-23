@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
-@CPSType(base=CType.class, id="REAL_DOUBLE")
+@CPSType(base=ColumnStore.class, id="REAL_DOUBLE")
 public class RealTypeDouble extends CType<Double, Double> {
 
 	private final DoubleStore delegate;
@@ -17,17 +17,12 @@ public class RealTypeDouble extends CType<Double, Double> {
 	}
 
 	@Override
-	public ColumnStore createStore(int size) {
-		return DoubleStore.create(size);
-	}
-	
-	@Override
 	public long estimateMemoryBitWidth() {
 		return Double.SIZE;
 	}
 
 	@Override
-	public ColumnStore<Double> select(int[] starts, int[] length) {
+	public RealTypeDouble select(int[] starts, int[] length) {
 		return new RealTypeDouble(delegate.select(starts,length));
 	}
 

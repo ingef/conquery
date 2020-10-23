@@ -2,17 +2,16 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(base = CType.class, id = "MONEY_VARINT")
+@CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
-public class MoneyTypeVarInt extends CTypeVarInt<Long> {
+public class MoneyTypeVarInt extends CTypeVarInt {
 
 	@JsonCreator
 	public MoneyTypeVarInt(VarIntType numberType) {
@@ -21,32 +20,18 @@ public class MoneyTypeVarInt extends CTypeVarInt<Long> {
 
 
 	@Override
-	public Long createScriptValue(Number value) {
-		return (long) numberType.createScriptValue(value.longValue());
+	public Long createScriptValue(Long value) {
+		return (long) numberType.createScriptValue(value);
 	}
 
 	@Override
-	public Object createPrintValue(Number value) {
+	public Object createPrintValue(Long value) {
 		return createScriptValue(value);
 	}
 
 	@Override
-	public ColumnStore<Number> select(int[] starts, int[] length) {
-		return null;
+	public MoneyTypeVarInt select(int[] starts, int[] length) {
+		return new MoneyTypeVarInt(numberType.select(starts, length));
 	}
 
-	@Override
-	public void set(int event, Number value) {
-
-	}
-
-	@Override
-	public Number get(int event) {
-		return null;
-	}
-
-	@Override
-	public boolean has(int event) {
-		return false;
-	}
 }

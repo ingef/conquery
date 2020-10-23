@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types.parser.specific;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
@@ -36,7 +37,7 @@ public class BooleanParser extends Parser<Boolean> {
 	@Override
 	protected Decision<? extends CType<Boolean, ?>> decideType() {
 		return new Decision<>(
-			new BooleanTypeBoolean()
+			new BooleanTypeBoolean(BooleanStore.create(getLines()))
 		);
 	}
 }

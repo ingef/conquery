@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 
-@CPSType(base=CType.class, id="REAL_FLOAT")
+@CPSType(base= ColumnStore.class, id="REAL_FLOAT")
 public class RealTypeFloat extends CType<Double, Double> {
 
 	@Getter
@@ -19,18 +19,13 @@ public class RealTypeFloat extends CType<Double, Double> {
 	}
 
 	@Override
-	public ColumnStore<Double> createStore(int size) {
-		return FloatStore.create(size);
-	}
-
-	@Override
 	public long estimateMemoryBitWidth() {
 		return Float.SIZE;
 	}
 
 	@Override
 	public RealTypeFloat select(int[] starts, int[] length) {
-		return null;
+		return new RealTypeFloat(delegate.select(starts,length));
 	}
 
 	@Override

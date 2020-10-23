@@ -1,13 +1,14 @@
 package com.bakdata.conquery.models.types.parser.specific;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.specific.IntegerTypeLong;
-import com.bakdata.conquery.models.types.specific.IntegerTypeVarInt;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.models.types.specific.integer.IntegerTypeLong;
+import com.bakdata.conquery.models.types.specific.integer.IntegerTypeVarInt;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
 
@@ -55,7 +56,7 @@ public class IntegerParser extends Parser<Long> {
 			);
 		}
 		return new Decision<IntegerTypeLong>(
-			new IntegerTypeLong(minValue, maxValue)
+			new IntegerTypeLong(minValue, maxValue, LongStore.create(getLines()))
 		);
 	}
 
