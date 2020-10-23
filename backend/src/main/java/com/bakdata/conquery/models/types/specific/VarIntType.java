@@ -7,7 +7,9 @@ import lombok.Getter;
 @Getter
 public abstract class VarIntType extends CType<Integer, Long> {
 
-	public abstract ColumnStore<Long> getDelegate();
+	public VarIntType() {
+		super(null);
+	}
 
 	public abstract VarIntType select(int[] starts, int[] ends);
 
@@ -15,6 +17,8 @@ public abstract class VarIntType extends CType<Integer, Long> {
 	public Long get(int event) {
 		return getDelegate().get(event);
 	}
+
+	public abstract ColumnStore<Long> getDelegate();
 
 	@Override
 	public void set(int event, Long value) {
@@ -24,10 +28,6 @@ public abstract class VarIntType extends CType<Integer, Long> {
 	@Override
 	public boolean has(int event) {
 		return getDelegate().has(event);
-	}
-
-	public VarIntType() {
-		super(null);
 	}
 
 	public abstract int toInt(Long value);

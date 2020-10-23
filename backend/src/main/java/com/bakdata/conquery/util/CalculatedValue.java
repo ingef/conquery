@@ -9,7 +9,7 @@ import lombok.ToString;
 /**
  * Lazy evaluated Supplier, that also stores if it has been evaluated or not.
  */
-@RequiredArgsConstructor @ToString(of="value")
+@RequiredArgsConstructor @ToString(of="calculation")
 public class CalculatedValue<T> {
 	@NonNull
 	private Supplier<T> calculation;

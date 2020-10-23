@@ -14,15 +14,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
 public class StringTypeNumber extends StringType {
 
-	//used as a compact intset
-	private Range<Integer> range;
 	@Nonnull
 	protected VarIntType delegate;
-	
+	//used as a compact intset
+	private Range<Integer> range;
+
 	@JsonCreator
 	public StringTypeNumber(Range<Integer> range, VarIntType numberType) {
 		super();
@@ -34,7 +35,7 @@ public class StringTypeNumber extends StringType {
 	public long estimateMemoryBitWidth() {
 		return delegate.estimateMemoryBitWidth();
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + "[numberType=" + delegate + "]";
@@ -43,12 +44,12 @@ public class StringTypeNumber extends StringType {
 	@Override
 	public Iterator<String> iterator() {
 		return IntStream
-			.rangeClosed(
-				range.getMin(),
-				range.getMax()
-			)
-			.mapToObj(Integer::toString)
-			.iterator();
+					   .rangeClosed(
+							   range.getMin(),
+							   range.getMax()
+					   )
+					   .mapToObj(Integer::toString)
+					   .iterator();
 	}
 
 	@Override
@@ -75,12 +76,12 @@ public class StringTypeNumber extends StringType {
 	public int getId(String value) {
 		try {
 			int result = Integer.parseInt(value);
-			if(range.contains(result)) {
+			if (range.contains(result)) {
 				return result;
 			}
 			return -1;
 		}
-		catch(NumberFormatException e) {
+		catch (NumberFormatException e) {
 			return -1;
 		}
 	}
@@ -106,12 +107,17 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void set(int event, Integer value){
-		getDelegate().set(event, value.longValue());
+	public void set(int event, Integer value) {
+		if (value == null) {
+			getDelegate().set(event, null);
+		}
+		else {
+			getDelegate().set(event, value.longValue());
+		}
 	}
 
 	@Override
-	public boolean has(int event){
+	public boolean has(int event) {
 		return getDelegate().has(event);
 	}
 }
