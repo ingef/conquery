@@ -17,18 +17,18 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_NUMBER")
-public class StringTypeNumber extends AStringType<Number> {
+public class StringTypeNumber extends StringType {
 
 	//used as a compact intset
 	private Range<Integer> range;
 	@Nonnull
-	protected VarIntType numberType;
+	protected VarIntType delegate;
 	
 	@JsonCreator
 	public StringTypeNumber(Range<Integer> range, VarIntType numberType) {
 		super();
 		this.range = range;
-		this.numberType = numberType;
+		this.delegate = numberType;
 	}
 
 	@Override
@@ -38,12 +38,12 @@ public class StringTypeNumber extends AStringType<Number> {
 
 	@Override
 	public long estimateMemoryBitWidth() {
-		return numberType.estimateMemoryBitWidth();
+		return delegate.estimateMemoryBitWidth();
 	}
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"[numberType=" + numberType + "]";
+		return this.getClass().getSimpleName() + "[numberType=" + delegate + "]";
 	}
 
 	@Override
@@ -58,15 +58,23 @@ public class StringTypeNumber extends AStringType<Number> {
 	}
 
 	@Override
+	public Object createPrintValue(Integer value) {
+		return value;
+	}
+
+	@Override
+	public Object createScriptValue(Integer value) {
+		return value.toString();
+	}
+
+	@Override
 	public String getElement(int id) {
 		return Integer.toString(id);
 	}
 
 	@Override
 	public int size() {
-		return range.getMax()
-			- range.getMin()
-			+ 1;
+		return range.getMax() - range.getMin() + 1;
 	}
 
 	@Override
@@ -91,5 +99,25 @@ public class StringTypeNumber extends AStringType<Number> {
 	@Override
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public StringTypeNumber select(int[] starts, int[] length) {
+		return new StringTypeNumber(range, delegate.select(starts, length));
+	}
+
+	@Override
+	public Integer get(int event) {
+		return getDelegate().get(event).intValue();
+	}
+
+	@Override
+	public void set(int event, Integer value){
+		getDelegate().set(event, value.longValue());
+	}
+
+	@Override
+	public boolean has(int event){
+		return getDelegate().has(event);
 	}
 }

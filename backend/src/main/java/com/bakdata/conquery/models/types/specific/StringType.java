@@ -6,11 +6,15 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**every implementation must guarantee IDs between 0 and size**/
-public abstract class AStringType<JAVA_TYPE> extends CType<Integer, JAVA_TYPE> implements Iterable<String> {
+// TODO remove Iterable implementationm and change to explicit accessor instead
+public abstract class StringType extends CType<Integer, Integer> implements Iterable<String> {
 
-	public AStringType() {
+	public StringType() {
 		super(MajorTypeId.STRING);
 	}
+
+	@Override
+	public abstract StringType select(int[] starts, int[] length) ;
 
 	public abstract String getElement(int id);
 	

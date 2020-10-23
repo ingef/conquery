@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
@@ -85,7 +85,7 @@ public class DatasetsUIResource extends HAdmin {
 								.stream()
 								.flatMap(i -> Arrays.stream(i.getColumns()))
 								.filter(c -> c.getType().getTypeId() == MajorTypeId.STRING)
-								.map(c -> (AStringType) c.getType())
+								.map(c -> (StringType) c.getType())
 								.filter(c -> c.getUnderlyingDictionary() != null)
 								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
 								.values()

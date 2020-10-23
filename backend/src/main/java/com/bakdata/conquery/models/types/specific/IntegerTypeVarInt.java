@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -20,6 +21,31 @@ public class IntegerTypeVarInt extends CTypeVarInt<Long> {
 
 	@Override
 	public Long createScriptValue(Number value) {
-		return numberType.createScriptValue(value).longValue();
+		return numberType.createScriptValue((long) value).longValue();
+	}
+
+	@Override
+	public Object createPrintValue(Number value) {
+		return createPrintValue(value);
+	}
+
+	@Override
+	public ColumnStore<Number> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, Number value) {
+
+	}
+
+	@Override
+	public Number get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
 	}
 }

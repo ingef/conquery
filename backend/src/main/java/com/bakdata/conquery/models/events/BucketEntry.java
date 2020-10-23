@@ -8,6 +8,6 @@ import lombok.ToString;
 @RequiredArgsConstructor @Getter
 @Data @ToString
 public class BucketEntry {
-	private final int localEntity;
+	private final int entity;
 	private final int event;
 }

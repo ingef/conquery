@@ -6,17 +6,20 @@ import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
 
-@CPSType(base=CType.class, id="VAR_INT_INT32")
+@CPSType(base = CType.class, id = "VAR_INT_INT32")
 @Getter
 public class VarIntTypeInt extends VarIntType {
 
 	private final int maxValue;
 	private final int minValue;
-	
-	public VarIntTypeInt(int minValue, int maxValue) {
+
+	private final IntegerStore delegate;
+
+	public VarIntTypeInt(int minValue, int maxValue, IntegerStore delegate) {
 		super();
 		this.minValue = minValue;
 		this.maxValue = maxValue;
+		this.delegate = delegate;
 	}
 
 	@Override
@@ -25,10 +28,15 @@ public class VarIntTypeInt extends VarIntType {
 	}
 
 	@Override
-	public int toInt(Number value) {
+	public VarIntType select(int[] starts, int[] ends) {
+		return new VarIntTypeInt(minValue, maxValue, delegate.select(starts, ends));
+	}
+
+	@Override
+	public int toInt(Long value) {
 		return value.intValue();
 	}
-	
+
 	@Override
 	public long estimateMemoryBitWidth() {
 		return Integer.SIZE;

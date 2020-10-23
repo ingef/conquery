@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,7 +33,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((AStringType) getColumn().getTypeFor(bucket)).getId(filterValue);
+		selectedId = ((StringType) getColumn().getTypeFor(bucket)).getId(filterValue);
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
+		return ((StringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
 	}
 
 	@Override

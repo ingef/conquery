@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -21,13 +22,13 @@ import lombok.Setter;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 @Getter @Setter @RequiredArgsConstructor
-public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHolder {
+public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> implements MajorTypeIdHolder {
 
 	@JsonIgnore
 	private transient final MajorTypeId typeId;
 
-	private long lines = 0;
-	private long nullLines = 0;
+	private int lines = 0;
+	private int nullLines = 0;
 
 	public void init(DatasetId dataset) {}
 

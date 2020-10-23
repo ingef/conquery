@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 
 
 /**
@@ -24,7 +24,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		selectedId = ((AStringType) getColumn().getTypeFor(bucket)).getId(selected);
+		selectedId = ((StringType) getColumn().getTypeFor(bucket)).getId(selected);
 	}
 
 	@Override
@@ -62,6 +62,6 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return super.isOfInterest(bucket) &&
-			   ((AStringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) != -1;
+			   ((StringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) != -1;
 	}
 }

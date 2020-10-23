@@ -7,9 +7,7 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
-import com.bakdata.conquery.models.types.parser.NoopTransformer;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
@@ -64,12 +62,11 @@ public class DateRangeParser extends Parser<CDateRange> {
 	}
 
 	@Override
-	protected Decision<CDateRange, ?, ? extends CType<CDateRange, ?>> decideType() {
+	protected Decision<? extends CType<CDateRange, ?>> decideType() {
 		// We cannot yet do meaningful compression for open dateranges.
 		// TODO: 27.04.2020 consider packed compression with extra value as null value.
 		if (anyOpen) {
 			return new Decision<>(
-					new NoopTransformer<>(),
 					new DateRangeTypeDateRange()
 			);
 		}
@@ -77,12 +74,6 @@ public class DateRangeParser extends Parser<CDateRange> {
 		if (onlyQuarters) {
 			DateRangeTypeQuarter type = new DateRangeTypeQuarter();
 			return new Decision<>(
-					new Transformer<CDateRange, Integer>() {
-						@Override
-						public Integer transform(CDateRange value) {
-							return value.getMinValue();
-						}
-					},
 					type
 			);
 		}
@@ -96,18 +87,11 @@ public class DateRangeParser extends Parser<CDateRange> {
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
 
 			return new Decision(
-					new Transformer<CDateRange, Integer>() {
-						@Override
-						public Integer transform(CDateRange value) {
-							return PackedUnsigned1616.pack(value.getMinValue() - minValue, value.getMaxValue() - minValue);
-						}
-					},
 					type
 			);
 		}
 
 		return new Decision<>(
-				new NoopTransformer<>(),
 				new DateRangeTypeDateRange()
 		);
 	}

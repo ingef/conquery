@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
@@ -49,5 +50,10 @@ public class DateStore extends ColumnStoreAdapter<Integer> {
 	@Override
 	public Integer get(int event) {
 		return (int) store.getInteger(event);
+	}
+
+	@Override
+	public Object getAsObject(int event) {
+		return CDate.toLocalDate(getDate(event));
 	}
 }

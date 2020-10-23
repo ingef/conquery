@@ -11,15 +11,16 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @CPSType(base = CType.class, id = "STRING_SUFFIX")
-public class StringTypeSuffix extends AChainedStringType {
+public class StringTypeSuffix extends ChainedStringType {
 
 	@NonNull
 	private String suffix;
-	
+
 	@JsonCreator
-	public StringTypeSuffix(AStringType<Number> subType, String suffix) {
+	public StringTypeSuffix(StringType subType, String suffix) {
 		super(subType);
 		this.suffix = suffix;
 	}
@@ -30,19 +31,24 @@ public class StringTypeSuffix extends AChainedStringType {
 	}
 
 	@Override
-	public String getElement(int value) {
-		return subType.getElement(value)+suffix;
+	public StringType select(int[] starts, int[] length) {
+		return new StringTypeSuffix(subType.select(starts, length), suffix);
 	}
-	
+
 	@Override
-	public String createScriptValue(Number value) {
-		return subType.createScriptValue(value)+suffix;
+	public String getElement(int value) {
+		return subType.getElement(value) + suffix;
+	}
+
+	@Override
+	public String createScriptValue(Integer value) {
+		return subType.createScriptValue(value) + suffix;
 	}
 
 	@Override
 	public int getId(String value) {
-		if(value.endsWith(suffix)) {
-			return subType.getId(value.substring(0, value.length()-suffix.length()));
+		if (value.endsWith(suffix)) {
+			return subType.getId(value.substring(0, value.length() - suffix.length()));
 		}
 		return -1;
 	}
@@ -58,7 +64,7 @@ public class StringTypeSuffix extends AChainedStringType {
 
 			@Override
 			public String next() {
-				return subIt.next()+suffix;
+				return subIt.next() + suffix;
 			}
 		};
 	}

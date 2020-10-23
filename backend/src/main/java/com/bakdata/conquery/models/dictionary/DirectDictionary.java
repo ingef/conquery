@@ -5,11 +5,11 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.LongStore;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.google.common.collect.Iterators;
 
-public class DirectDictionary extends AStringType<Integer> {
+public class DirectDictionary extends StringType {
 
 	private final Dictionary dict;
 	
@@ -17,11 +17,25 @@ public class DirectDictionary extends AStringType<Integer> {
 		super();
 		this.dict = dict;
 	}
+
+
 	@Override
 	public ColumnStore createStore(int size) {
 		return LongStore.create(size);
 	}
-	
+
+	// TODO why is this a StringType at all?
+
+	@Override
+	public StringType select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+
+	}
+
 	@Override
 	public String getElement(int id) {
 		return new String(dict.getElement(id), StandardCharsets.UTF_8);
@@ -63,5 +77,15 @@ public class DirectDictionary extends AStringType<Integer> {
 	@Override
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Integer get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
 	}
 }

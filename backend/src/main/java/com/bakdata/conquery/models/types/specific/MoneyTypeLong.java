@@ -31,4 +31,24 @@ public class MoneyTypeLong extends CType<Long, Long> {
 	public long estimateMemoryBitWidth() {
 		return Long.SIZE;
 	}
+
+	@Override
+	public ColumnStore<Long> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, Long value) {
+
+	}
+
+	@Override
+	public Long get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
+	}
 }

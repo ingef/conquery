@@ -31,20 +31,29 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter @Slf4j
+@Getter
+@Setter
+@Slf4j
 @CPSType(base = CType.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends CTypeVarInt<Integer> {
+public class StringTypeDictionary extends CTypeVarInt<Long> {
 
-	@NotNull @Nonnull
+	@NotNull
+	@Nonnull
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
+
 	@JsonIgnore
 	private transient Dictionary dictionary = new MapDictionary(dictionaryId);
-	
+
+	protected StringTypeDictionary(VarIntType numberType, Dictionary dict) {
+		this(numberType);
+		dictionary = dict;
+	}
+
 	@JsonCreator
 	public StringTypeDictionary(VarIntType numberType) {
 		super(MajorTypeId.STRING, numberType);
 	}
-	
+
 	@Override
 	public void init(DatasetId dataset) {
 		dictionaryId = new DictionaryId(dataset, dictionaryId.getDictionary());
@@ -56,23 +65,30 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	@Override
+	public Object createScriptValue(Number value) {
+		return null;
+	}
+
+	@Override
+	public Object createPrintValue(Number value) {
+		return null;
+	}
+
+	@Override
 	public ColumnStore createStore(int size) {
 		return StringStore.create(size, StringTypeEncoded.Encoding.UTF8, getDictionary());
 	}
 
-	@Override
-	public byte[] createScriptValue(Number value) {
-		return getElement(value);
+
+
+	public byte[] getElement(Long value) {
+		return getElement(numberType.toInt(value));
 	}
-	
+
 	public byte[] getElement(int value) {
 		return dictionary.getElement(value);
 	}
-	
-	public byte[] getElement(Number value) {
-		return getElement(numberType.toInt(value));
-	}
-	
+
 	@Override
 	public void writeHeader(OutputStream out) throws IOException {
 		Jackson.BINARY_MAPPER.writeValue(out, dictionary);
@@ -82,7 +98,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	public void readHeader(JsonParser input) throws IOException {
 		dictionary = Jackson.BINARY_MAPPER.readValue(input, Dictionary.class);
 	}
-	
+
 	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
 		dictionary.setName(dictionaryId.getDictionary());
@@ -94,11 +110,11 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	public void loadExternalInfos(NamespacedStorage storage) {
 		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
 	}
-	
+
 	public int size() {
 		return dictionary.size();
 	}
-	
+
 	public int getId(byte[] value) {
 		return dictionary.getId(value);
 	}
@@ -106,12 +122,12 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	public Iterator<byte[]> iterator() {
 		return Iterators.transform(dictionary.iterator(), DictionaryEntry::getValue);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "StringTypeDictionary[dictionary=" + dictionary + ", numberType=" + numberType + "]";
 	}
-	
+
 	@Override
 	public long estimateTypeSize() {
 		return dictionary.estimateMemoryConsumption();
@@ -120,14 +136,35 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		dictionaryId = newDict.getId();
 		dictionary = newDict;
-		if(newNumberType.estimateMemoryBitWidth() > numberType.estimateMemoryBitWidth()) {
+		if (newNumberType.estimateMemoryBitWidth() > numberType.estimateMemoryBitWidth()) {
 			log.warn(
-				"The width of a column is increased from {} to {} bits because of the shared dictionary {}",
-				numberType.estimateMemoryBitWidth(),
-				newNumberType.estimateMemoryBitWidth(),
-				newDict.getId()
+					"The width of a column is increased from {} to {} bits because of the shared dictionary {}",
+					numberType.estimateMemoryBitWidth(),
+					newNumberType.estimateMemoryBitWidth(),
+					newDict.getId()
 			);
 		}
 		numberType = newNumberType;
+	}
+
+	@Override
+	public StringTypeDictionary select(int[] starts, int[] length) {
+		return new StringTypeDictionary(numberType.select(starts, length), dictionary);
+	}
+
+
+	@Override
+	public void set(int event, Number value) {
+		numberType.set(event, value.longValue());
+	}
+
+	@Override
+	public Long get(int event) {
+		return numberType.get(event);
+	}
+
+	@Override
+	public boolean has(int event) {
+		return numberType.has(event);
 	}
 }

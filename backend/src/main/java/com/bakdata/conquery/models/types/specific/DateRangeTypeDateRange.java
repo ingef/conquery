@@ -36,4 +36,24 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 	public long estimateMemoryBitWidth() {
 		return 128 + Long.SIZE;
 	}
+
+	@Override
+	public ColumnStore<CDateRange> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, CDateRange value) {
+
+	}
+
+	@Override
+	public CDateRange get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
+	}
 }

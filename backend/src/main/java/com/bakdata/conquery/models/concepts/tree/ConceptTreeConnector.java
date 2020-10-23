@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -81,14 +81,14 @@ public class ConceptTreeConnector extends Connector {
 		final Import imp = bucket.getImp();
 		final ImportId importId = imp.getId();
 
-		final AStringType<?> stringType;
+		final StringType stringType;
 
 		// If we have a column and it is of string-type, we create indices and caches.
-		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof AStringType) {
+		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof StringType) {
 
 			CType<?, ?> cType = imp.getColumns()[column.getPosition()].getType();
 
-			stringType = (AStringType<?>) cType;
+			stringType = (StringType) cType;
 
 			// Create index and insert into Tree.
 			TreeChildPrefixIndex.putIndexInto(treeConcept);
@@ -154,7 +154,7 @@ public class ConceptTreeConnector extends Connector {
 				ConceptTreeNode<?> it = child;
 				while (it != null) {
 					cBlock.getIncludedConcepts()
-						  .put(entry.getLocalEntity(), cBlock.getIncludedConcepts().getOrDefault(entry.getLocalEntity(), 0) | it.calculateBitMask());
+						  .put(entry.getEntity(), cBlock.getIncludedConcepts().getOrDefault(entry.getEntity(), 0) | it.calculateBitMask());
 					it = it.getParent();
 				}
 			}

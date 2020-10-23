@@ -16,6 +16,12 @@ public abstract class CTypeVarInt<MAJOR_JAVA_TYPE extends Number> extends CType<
 	}
 
 	@Override
+	public abstract Object createScriptValue(Number value);
+
+	@Override
+	public abstract Object createPrintValue(Number value);
+
+	@Override
 	public ColumnStore createStore(int size) {
 		return numberType.createStore(size);
 	}

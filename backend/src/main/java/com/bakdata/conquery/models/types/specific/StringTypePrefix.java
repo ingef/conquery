@@ -13,13 +13,13 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_PREFIX")
-public class StringTypePrefix extends AChainedStringType {
+public class StringTypePrefix extends ChainedStringType {
 
 	@NonNull
 	private String prefix;
 	
 	@JsonCreator
-	public StringTypePrefix(AStringType<Number> subType, String prefix) {
+	public StringTypePrefix(StringType subType, String prefix) {
 		super(subType);
 		this.prefix = prefix;
 	}
@@ -35,7 +35,7 @@ public class StringTypePrefix extends AChainedStringType {
 	}
 	
 	@Override
-	public String createScriptValue(Number value) {
+	public String createScriptValue(Integer value) {
 		return prefix+subType.createScriptValue(value);
 	}
 	
@@ -66,5 +66,10 @@ public class StringTypePrefix extends AChainedStringType {
 	@Override
 	public String toString() {
 		return "StringTypePrefix[prefix=" + prefix + ", subType=" + subType + "]";
+	}
+
+	@Override
+	public StringTypePrefix select(int[] starts, int[] length) {
+		return new StringTypePrefix(subType.select(starts, length),getPrefix());
 	}
 }

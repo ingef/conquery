@@ -16,14 +16,14 @@ import lombok.ToString;
 
 @Getter @Setter
 @ToString
-public abstract class AChainedStringType extends AStringType<Number> {
+public abstract class ChainedStringType extends StringType {
 
 	@Nonnull
-	protected AStringType<Number> subType;
+	protected StringType subType;
 	
-	public AChainedStringType(AStringType<Number> subType) {
+	public ChainedStringType(StringType subType) {
 		super();
-		this.subType = subType;
+		this.subType = ((StringType) subType);
 	}
 	
 	@Override
@@ -79,5 +79,20 @@ public abstract class AChainedStringType extends AStringType<Number> {
 	@Override
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		subType.adaptUnderlyingDictionary(newDict, newNumberType);
+	}
+
+	@Override
+	public Integer get(int event) {
+		return subType.get(event);
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+		subType.set(event, value);
+	}
+
+	@Override
+	public boolean has(int event) {
+		return subType.has(event);
 	}
 }

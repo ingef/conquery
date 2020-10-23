@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -109,7 +109,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		for (Bucket bucket : tableBuckets) {
 			int localEntity = entity.getId();
 
-			AStringType<?> secondaryIdType = (AStringType<?>) secondaryIdColumn.getTypeFor(bucket);
+			StringType secondaryIdType = (StringType) secondaryIdColumn.getTypeFor(bucket);
 
 			nextBlock(bucket);
 

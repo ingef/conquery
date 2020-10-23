@@ -1,14 +1,15 @@
 package com.bakdata.conquery.models.types.parser.specific;
 
+import com.bakdata.conquery.models.events.stores.base.ByteStore;
+import com.bakdata.conquery.models.events.stores.base.IntegerStore;
+import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
-import lombok.NonNull;
 import lombok.ToString;
 
 @ToString(callSuper = true)
@@ -34,42 +35,25 @@ public class VarIntParser extends Parser<Integer> {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Decision<Integer, Number, VarIntType> findBestType() {
-		return (Decision<Integer, Number, VarIntType>) super.findBestType();
+	public Decision<VarIntType> findBestType() {
+		return (Decision<VarIntType>) super.findBestType();
 	}
 	
 	@Override
-	public Decision<Integer, Number, VarIntType> decideType() {
+	public Decision<VarIntType> decideType() {
 		if(maxValue+1 <= Byte.MAX_VALUE && minValue >= Byte.MIN_VALUE) {
-			return new Decision<Integer, Number, VarIntType>(
-				new Transformer<Integer, Number>() {
-					@Override
-					public Number transform(@NonNull Integer value) {
-						return value.byteValue();
-					}
-				},
-				new VarIntTypeByte((byte)minValue, (byte)maxValue)
+			return new Decision<>(
+					new VarIntTypeByte((byte) minValue, (byte) maxValue, ByteStore.create(getLines()))
 			);
 		}
 		if(maxValue+1 <= Short.MAX_VALUE && minValue >= Short.MIN_VALUE) {
-			return new Decision<Integer, Number, VarIntType>(
-				new Transformer<Integer, Number>() {
-					@Override
-					public Number transform(@NonNull Integer value) {
-						return value.shortValue();
-					}
-				},
-				new VarIntTypeShort((short)minValue, (short)maxValue)
+			return new Decision<VarIntType>(
+
+				new VarIntTypeShort((short)minValue, (short)maxValue, ShortStore.create(getLines()))
 			);
 		}
-		return new Decision<Integer, Number, VarIntType>(
-			new Transformer<Integer, Number>() {
-				@Override
-				public Number transform(@NonNull Integer value) {
-					return value;
-				}
-			},
-			new VarIntTypeInt(minValue, maxValue)
+		return new Decision<VarIntType>(
+				new VarIntTypeInt(minValue, maxValue, IntegerStore.create(getLines()))
 		);
 	}
 }

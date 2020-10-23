@@ -22,4 +22,24 @@ public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
 	public long estimateMemoryBitWidth() {
 		return Byte.SIZE;
 	}
+
+	@Override
+	public ColumnStore<Boolean> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, Boolean value) {
+
+	}
+
+	@Override
+	public Boolean get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
+	}
 }

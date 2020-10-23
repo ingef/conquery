@@ -24,4 +24,24 @@ public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 	public long estimateMemoryBitWidth() {
 		return 500;
 	}
+
+	@Override
+	public ColumnStore<BigDecimal> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, BigDecimal value) {
+
+	}
+
+	@Override
+	public BigDecimal get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
+	}
 }

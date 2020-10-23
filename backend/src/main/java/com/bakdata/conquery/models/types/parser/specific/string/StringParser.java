@@ -13,16 +13,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
 import com.bakdata.conquery.models.types.parser.specific.string.TypeGuesser.Guess;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.StringTypePrefix;
 import com.bakdata.conquery.models.types.specific.StringTypeSingleton;
@@ -31,7 +31,6 @@ import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,28 +71,22 @@ public class StringParser extends Parser<Integer> {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	protected Decision<Integer, ?, ? extends CType<Integer, ?>> decideType() {
-		Decision<Integer, Number, VarIntType> subDecision = indexType.findBestType();
+	protected Decision<? extends CType<Integer, ?>> decideType() {
+		Decision<VarIntType> subDecision = indexType.findBestType();
 
 		//check if a singleton type is enough
 		if(strings.size() <= 1) {
 			StringTypeSingleton type;
 			if(strings.isEmpty()) {
-				type = new StringTypeSingleton(null);
+				type = new StringTypeSingleton(null, BooleanStore.create(getLines()));
 			}
 			else {
-				type = new StringTypeSingleton(strings.keySet().iterator().next());
+				type = new StringTypeSingleton(strings.keySet().iterator().next(), BooleanStore.create(getLines()));
 			}
 			setLineCounts(type);
 			//TODO !
-			return new Decision<Integer, Integer, StringTypeSingleton>(
-				new Transformer<Integer, Integer>() {
-					@Override
-					public Integer transform(@NonNull Integer value) {
-						return 1;
-					}
-				},
-				type
+			return new Decision<StringTypeSingleton>(
+					type
 			);
 		}
 		
@@ -133,7 +126,7 @@ public class StringParser extends Parser<Integer> {
 			dictionaryId
 		);
 		
-		AStringType<Number> result = guess.getType();
+		StringType result = guess.getType();
 		//wrap in prefix suffix
 		if(!StringUtils.isEmpty(prefix)) {
 			result = new StringTypePrefix(result, prefix);
@@ -144,8 +137,7 @@ public class StringParser extends Parser<Integer> {
 			setLineCounts(result);
 		}
 		return new Decision(
-			guess.getTransformer(),
-			result
+				result
 		);
 	}
 	

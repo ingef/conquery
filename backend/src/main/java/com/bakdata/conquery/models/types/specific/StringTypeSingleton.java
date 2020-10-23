@@ -16,14 +16,16 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_SINGLETON")
-public class StringTypeSingleton extends AStringType<Integer> {
+public class StringTypeSingleton extends StringType {
 
 	private final String singleValue;
+	private final BooleanStore delegate;
 
 	@JsonCreator
-	public StringTypeSingleton(String singleValue) {
+	public StringTypeSingleton(String singleValue, BooleanStore delegate) {
 		super();
 		this.singleValue = singleValue;
+		this.delegate = delegate;
 	}
 
 	@Override
@@ -35,6 +37,11 @@ public class StringTypeSingleton extends AStringType<Integer> {
 	@Override
 	public int size() {
 		return singleValue == null ?0:1;
+	}
+
+	@Override
+	public StringTypeSingleton select(int[] starts, int[] length) {
+		return new StringTypeSingleton(singleValue,delegate.select(starts, length));
 	}
 
 	@Override
@@ -76,5 +83,20 @@ public class StringTypeSingleton extends AStringType<Integer> {
 	@Override
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void set(int event, Integer value){
+		getDelegate().set(event, true);
+	}
+
+	@Override
+	public boolean has(int event){
+		return getDelegate().has(event);
+	}
+
+	@Override
+	public Integer get(int event) {
+		return 0;
 	}
 }

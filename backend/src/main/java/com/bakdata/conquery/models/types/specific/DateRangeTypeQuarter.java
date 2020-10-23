@@ -36,4 +36,24 @@ public class DateRangeTypeQuarter extends CType<CDateRange, Integer> {
 		public Object createPrintValue(Integer value) {
 			return createScriptValue(value).toString();
 		}
+
+	@Override
+	public ColumnStore<Integer> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+
+	}
+
+	@Override
+	public Integer get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
+	}
 }

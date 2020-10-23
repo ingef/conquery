@@ -1,8 +1,7 @@
 package com.bakdata.conquery.models.types.parser.specific.string;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.types.parser.Transformer;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,8 +12,7 @@ public interface TypeGuesser{
 	@AllArgsConstructor @Getter
 	static class Guess implements Comparable<Guess> {
 		private final TypeGuesser guesser;
-		private final AStringType<Number> type;
-		private final Transformer<Integer, ?> transformer;
+		private final StringType type;
 		private final long memoryEstimate;
 		private final long typeMemoryEstimate;
 		

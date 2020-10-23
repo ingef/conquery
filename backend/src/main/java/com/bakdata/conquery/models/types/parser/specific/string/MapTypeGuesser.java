@@ -2,11 +2,10 @@ package com.bakdata.conquery.models.types.parser.specific.string;
 
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.types.parser.Decision;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -16,7 +15,7 @@ public class MapTypeGuesser implements TypeGuesser {
 
 	@Override
 	public Guess createGuess() {
-		Decision<Integer, Number, VarIntType> indexDecision = p.getIndexType().decideType();
+		Decision<VarIntType> indexDecision = p.getIndexType().decideType();
 		
 		StringTypeDictionary type = new StringTypeDictionary(indexDecision.getType());
 		long mapSize = MapDictionary.estimateMemoryConsumption(
@@ -33,12 +32,11 @@ public class MapTypeGuesser implements TypeGuesser {
 		return new Guess(
 			this,
 			result,
-			indexDecision.getTransformer(),
 			indexDecision.getType().estimateMemoryConsumption(),
 			mapSize
 		) {
 			@Override
-			public AStringType<Number> getType() {
+			public StringType getType() {
 				MapDictionary map = new MapDictionary();
 				for(byte[] v : p.getDecoded()) {
 					map.add(v);

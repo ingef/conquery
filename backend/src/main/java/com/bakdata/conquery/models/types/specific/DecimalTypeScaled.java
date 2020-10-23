@@ -54,4 +54,24 @@ public class DecimalTypeScaled extends CType<BigDecimal, Number> {
 	public long estimateMemoryBitWidth() {
 		return subType.estimateMemoryBitWidth();
 	}
+
+	@Override
+	public ColumnStore<Number> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, Number value) {
+
+	}
+
+	@Override
+	public Number get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
+	}
 }

@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.types.parser.specific.string;
 
 import com.bakdata.conquery.models.types.parser.Decision;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -16,7 +15,7 @@ public class TrieTypeGuesser implements TypeGuesser {
 
 	@Override
 	public Guess createGuess() {
-		Decision<Integer, Number, VarIntType> indexDecision = p.getIndexType().decideType();
+		Decision<VarIntType> indexDecision = p.getIndexType().decideType();
 		
 		StringTypeDictionary type = new StringTypeDictionary(indexDecision.getType());
 		SuccinctTrie trie = new SuccinctTrie();
@@ -34,12 +33,11 @@ public class TrieTypeGuesser implements TypeGuesser {
 		return new Guess(
 			this,
 			result,
-			indexDecision.getTransformer(),
 			indexDecision.getType().estimateMemoryConsumption(),
 			trieSize
 		) {
 			@Override
-			public AStringType<Number> getType() {
+			public StringType getType() {
 				trie.compress();
 				type.setDictionary(trie);
 				return super.getType();

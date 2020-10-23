@@ -49,4 +49,24 @@ public class DateRangeTypePacked extends CType<Integer, Integer> {
 	public long estimateMemoryBitWidth() {
 		return Integer.SIZE;
 	}
+
+	@Override
+	public ColumnStore<Integer> select(int[] starts, int[] length) {
+		return null;
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+
+	}
+
+	@Override
+	public Integer get(int event) {
+		return null;
+	}
+
+	@Override
+	public boolean has(int event) {
+		return false;
+	}
 }

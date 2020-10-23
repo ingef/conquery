@@ -102,9 +102,18 @@ public class CalculateCBlocksJob extends Job {
 
 				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
 
-				cBlock.getMinDate().put(entry.getLocalEntity(), Math.min(cBlock.getMinDate().get(entry.getLocalEntity()), range.getMinValue()));
+				cBlock.getMinDate()
+					  .put(
+							  entry.getEntity(),
+							  Math.min(cBlock.getMinDate().getOrDefault(entry.getEntity(), Integer.MAX_VALUE), range.getMinValue())
+					  );
 
-				cBlock.getMinDate().put(entry.getLocalEntity(), Math.max(cBlock.getMaxDate().get(entry.getLocalEntity()), range.getMaxValue()));
+				cBlock.getMaxDate()
+					  .put(
+							  entry.getEntity(),
+							  Math.max(cBlock.getMaxDate()
+											 .getOrDefault(entry.getEntity(), Integer.MIN_VALUE), range.getMaxValue())
+					  );
 			}
 		}
 	}

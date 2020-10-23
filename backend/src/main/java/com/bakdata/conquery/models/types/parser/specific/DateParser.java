@@ -33,11 +33,10 @@ public class DateParser extends Parser<Integer> {
 	}
 
 	@Override
-	protected Decision<Integer, ?, DateTypeVarInt> decideType() {
-		Decision<Integer, Number, VarIntType> subDecision = subType.findBestType();
-		return new Decision<Integer, Number, DateTypeVarInt>(
-			subDecision.getTransformer(),
-			new DateTypeVarInt(subDecision.getType())
+	protected Decision decideType() {
+		Decision<VarIntType> subDecision = subType.findBestType();
+		return new Decision<>(
+				new DateTypeVarInt(subDecision.getType())
 		);
 	}
 }

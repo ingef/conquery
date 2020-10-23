@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,7 +33,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		AStringType type = (AStringType) getColumn().getTypeFor(bucket);
+		StringType type = (StringType) getColumn().getTypeFor(bucket);
 
 		for (int index = 0; index < filterValue.length; index++) {
 			String select = filterValue[index];
@@ -68,7 +68,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : getFilterValue()) {
-			if(((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(selected) != -1) {
+			if(((StringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(selected) != -1) {
 				return true;
 			}
 		}

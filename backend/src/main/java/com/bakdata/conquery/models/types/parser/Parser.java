@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE> {
-	private long lines = 0;
-	private long nullLines = 0;
+	private int lines = 0;
+	private int nullLines = 0;
 	
 	public MAJOR_JAVA_TYPE parse(String v) throws ParsingException {
 		if(v==null) {
@@ -35,10 +35,10 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 
 	protected void registerValue(MAJOR_JAVA_TYPE v) {};
 	
-	protected abstract Decision<MAJOR_JAVA_TYPE, ?, ? extends CType<MAJOR_JAVA_TYPE, ?>> decideType();
+	protected abstract Decision<? extends CType<MAJOR_JAVA_TYPE, ?>> decideType();
 	
-	public Decision<MAJOR_JAVA_TYPE, ?, ? extends CType<MAJOR_JAVA_TYPE, ?>> findBestType() {
-		Decision<MAJOR_JAVA_TYPE, ?, ? extends CType<MAJOR_JAVA_TYPE, ?>> dec = decideType();
+	public Decision<? extends CType<MAJOR_JAVA_TYPE, ?>> findBestType() {
+		Decision<? extends CType<MAJOR_JAVA_TYPE, ?>> dec = decideType();
 		setLineCounts(dec.getType());
 		return dec;
 	}

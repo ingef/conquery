@@ -12,11 +12,14 @@ public class VarIntTypeShort extends VarIntType {
 
 	private final short maxValue;
 	private final short minValue;
+
+	private final ShortStore delegate;
 	
-	public VarIntTypeShort(short minValue, short maxValue) {
+	public VarIntTypeShort(short minValue, short maxValue, ShortStore delegate) {
 		super();
 		this.minValue = minValue;
 		this.maxValue = maxValue;
+		this.delegate = delegate;
 	}
 
 	@Override
@@ -25,7 +28,12 @@ public class VarIntTypeShort extends VarIntType {
 	}
 
 	@Override
-	public int toInt(Number value) {
+	public VarIntType select(int[] starts, int[] ends) {
+		return new VarIntTypeShort(minValue, maxValue, delegate.select(starts, ends));
+	}
+
+	@Override
+	public int toInt(Long value) {
 		return value.shortValue();
 	}
 	

@@ -25,7 +25,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = CType.class, id = "STRING_ENCODED")
-public class StringTypeEncoded extends AStringType<Number> {
+public class StringTypeEncoded extends StringType {
 
 	@Nonnull
 	protected StringTypeDictionary subType;
@@ -50,8 +50,8 @@ public class StringTypeEncoded extends AStringType<Number> {
 	}
 
 	@Override
-	public String createScriptValue(Number value) {
-		return encoding.encode(subType.getElement(value));
+	public String createScriptValue(Integer value) {
+		return encoding.encode(subType.getElement(value.longValue()));
 	}
 
 	@Override
@@ -133,6 +133,26 @@ public class StringTypeEncoded extends AStringType<Number> {
 	@Override
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		subType.adaptUnderlyingDictionary(newDict, newNumberType);
+	}
+
+	@Override
+	public StringTypeEncoded select(int[] starts, int[] length) {
+		return new StringTypeEncoded(subType.select(starts, length), getEncoding());
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+		subType.set(event, value);
+	}
+
+	@Override
+	public Integer get(int event) {
+		return subType.get(event).intValue();
+	}
+
+	@Override
+	public boolean has(int event) {
+		return subType.has(event);
 	}
 
 	@RequiredArgsConstructor

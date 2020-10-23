@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class PPColumn {
 	@NonNull
 	private String name;
+
 	@SuppressWarnings("rawtypes") @NotNull
 	private CType type;
 	@SuppressWarnings("rawtypes") @JsonIgnore

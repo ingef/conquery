@@ -6,12 +6,9 @@ import java.util.Map.Entry;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.types.parser.Decision;
-import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
 import com.bakdata.conquery.models.types.specific.StringTypeNumber;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -45,18 +42,12 @@ public class NumberTypeGuesser implements TypeGuesser {
 				return null;
 			}
 			
-			Decision<Integer, Number, VarIntType> decision = numberParser.findBestType();
+			Decision<VarIntType> decision = numberParser.findBestType();
 			p.setLineCounts(decision.getType());
 			
 			return new Guess(
 				this,
 				new StringTypeNumber(range, decision.getType()),
-				new Transformer<Integer, Number>() {
-					@Override
-					public Number transform(@NonNull Integer value) {
-						return decision.getTransformer().transform(intMap[value]);
-					}
-				},
 				decision.getType().estimateMemoryConsumption(),
 				0
 			);

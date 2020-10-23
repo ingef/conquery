@@ -37,7 +37,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
-import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -331,7 +331,7 @@ public class ImportJob extends Job {
 	}
 
 	private boolean createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {
-		AStringType<?> oldType = (AStringType<?>) col.getType();
+		StringType oldType = (StringType) col.getType();
 		Dictionary source = oldType.getUnderlyingDictionary();
 		//could be null if the strin column has no (or too few) values
 		if (source == null) {
@@ -347,7 +347,7 @@ public class ImportJob extends Job {
 				bucketSize
 		);
 
-		AStringType<?> newType = Cloner.clone(oldType);
+		StringType newType = Cloner.clone(oldType);
 		//find the new number type to represent the ids
 		int minTargetId = Ints.min(mapping.getSource2TargetMap());
 		int maxTargetId = Ints.max(mapping.getSource2TargetMap());
@@ -356,7 +356,7 @@ public class ImportJob extends Job {
 		numberParser.registerValue(maxTargetId);
 		numberParser.setLines(oldType.getLines());
 		numberParser.setNullLines(oldType.getNullLines());
-		Decision<Integer, Number, VarIntType> decision = numberParser.findBestType();
+		Decision<VarIntType> decision = numberParser.findBestType();
 
 		newType.adaptUnderlyingDictionary(shared, decision.getType());
 		col.setOldType(oldType);
