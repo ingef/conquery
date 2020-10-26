@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 @Slf4j
 public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 
+	@JsonProperty
 	private Set<RoleId> roles = Collections.synchronizedSet( new HashSet<>());
 
 	@Getter @Setter @JsonIgnore
