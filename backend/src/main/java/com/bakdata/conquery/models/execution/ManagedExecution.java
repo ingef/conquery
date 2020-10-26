@@ -253,6 +253,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 					break;
 				case WITH_GROUPS:
 					setAdditionalFieldsForStatusWithGroups(storage, user, status);
+					break;
 				default:
 					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
 			}
