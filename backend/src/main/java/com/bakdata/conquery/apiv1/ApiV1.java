@@ -45,7 +45,8 @@ public class ApiV1 implements ResourcesProvider {
 			}
 		});
 
-		environment.register(new CORSPreflightRequestFilter());
+		environment.register(CORSPreflightRequestFilter.class);
+		environment.register(CORSResponseFilter.class);
 
 		environment.register(new ActiveUsersFilter(manager.getStorage(), Duration.ofMinutes(manager.getConfig()
 																										.getMetricsConfig()
@@ -62,7 +63,6 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new ResultCSVResource(datasets, manager.getConfig()));
 		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
-		environment.register(CORSResponseFilter.class);
 		environment.register(new ConfigResource(manager.getConfig()));
 		environment.register(FormConfigResource.class);
 
