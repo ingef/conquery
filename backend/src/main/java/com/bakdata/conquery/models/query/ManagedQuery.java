@@ -5,18 +5,23 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
+import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -30,11 +35,15 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -83,11 +92,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public void initExecutable(@NonNull DatasetRegistry namespaces) {
-		synchronized (getExecution()) {
-			this.namespace = namespaces.get(getDataset());
-			this.involvedWorkers = namespace.getWorkers().size();
-			query.resolve(new QueryResolveContext(getDataset(), namespaces));
+	protected void doInitExecutable(@NonNull DatasetRegistry namespaces) {
+		this.namespace = namespaces.get(getDataset());
+		this.involvedWorkers = namespace.getWorkers().size();
+		query.resolve(new QueryResolveContext(getDataset(), namespaces));
+		if(label == null) {
+			label = makeAutoLabel();
 		}
 	}
 	
@@ -218,5 +228,52 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
 			.build()
 			.toURL();
+	}
+
+	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 20;
+	@Override
+	protected void makeDefaultLabel(final StringBuilder sb) {
+		final Map<Class<? extends Visitable>,List<Visitable>> sortedContents = new HashMap<>();
+		QueryVisitor visitor = new QueryVisitor() {
+			
+			@Override
+			public void accept(Visitable t) {
+				sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
+			}
+		};
+		query.visit(visitor);
+		
+		List<Visitable> externals = sortedContents.computeIfAbsent(CQExternal.class, (clazz)-> List.of());
+		if(!externals.isEmpty()) {
+			if (sb.length() > 0) {
+				sb.append(" ");
+			}
+			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).external());
+		}
+		
+		if( !sortedContents.computeIfAbsent(CQReusedQuery.class, (clazz)-> List.of()).isEmpty()) {
+			if (sb.length() > 0) {
+				sb.append(" ");
+			}
+			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).reused());
+		}
+		
+//		final AtomicInteger totalConceptNumber = new AtomicInteger();
+//		final AtomicInteger takenConceptNumber = new AtomicInteger();
+		final AtomicInteger length = new AtomicInteger();
+		String usedConcepts = sortedContents.computeIfAbsent(CQConcept.class, (clazz)-> List.of()).stream()
+			.map((CQConcept.class::cast))
+			.map(CQConcept::getLabel)
+			.distinct()
+//			.peek((elem) -> totalConceptNumber.incrementAndGet()) 
+			.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
+//			.peek((elem) -> takenConceptNumber.incrementAndGet()) 
+			.collect(Collectors.joining("-"));
+		
+		if (sb.length() > 0 && usedConcepts.length() > 0) {
+			sb.append(" ");
+		}
+		sb.append(usedConcepts);
+		
 	}
 }

@@ -75,6 +75,11 @@ import org.apache.shiro.authz.Permission;
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
+	
+	/**
+	 * Some unusual suffix. Its not too bad if someone actually this. 
+	 */
+	public final static String AUTO_LABEL_SUFFIX = "\t@§$";
 
 	protected DatasetId dataset;
 	protected UUID queryId;
@@ -112,7 +117,16 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Executed right before execution submission.
 	 * @param namespaces
 	 */
-	public abstract void initExecutable(DatasetRegistry namespaces);
+	public void initExecutable(DatasetRegistry namespaces) {
+		synchronized (getExecution()) {
+			if(label == null) {
+				label = makeAutoLabel();
+			}
+			doInitExecutable(namespaces);
+		}
+	}
+
+	protected abstract void doInitExecutable(DatasetRegistry namespaces);
 
 	/**
 	 * Returns the set of namespaces, this execution needs to be executed on.
@@ -347,4 +361,28 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	@JsonIgnore
 	public abstract QueryDescription getSubmitted();
+
+	@JsonIgnore
+	public String getLabelWithoutAutoLabelSuffix() {
+		int idx;
+		if(label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1){
+		
+			return label.substring(0, idx);
+		}
+		return label;
+	}
+	
+	@JsonIgnore
+	public boolean isAutoLabeled() {
+		return label != null ? label.endsWith(AUTO_LABEL_SUFFIX) : false;
+	}
+	
+	@JsonIgnore
+	abstract protected void makeDefaultLabel(StringBuilder sb);
+	
+	protected String makeAutoLabel() {
+		StringBuilder sb = new StringBuilder();
+		makeDefaultLabel(sb);
+		return sb.append(AUTO_LABEL_SUFFIX).toString();
+	}
 }
