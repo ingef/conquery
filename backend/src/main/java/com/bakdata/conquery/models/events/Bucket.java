@@ -80,6 +80,13 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	}
 
 	public boolean containsLocalEntity(int localEntity) {
+		if(offsets.length != 1 || offsets.length != getBucketSize()) {
+			log.warn("Encountered unexpected bucket size of {}. This does not correspond to a single entity bucket (1) nor to a combined bucket ({})",offsets.length, getBucketSize());
+			return false;
+		}
+		if(offsets.length < localEntity) {
+			return false;
+		}
 		return offsets[localEntity] != -1;
 	}
 
