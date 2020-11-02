@@ -38,9 +38,14 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	@JsonIgnore
 	private transient Dictionary dictionary = new MapDictionary(dictionaryId);
 	
-	@JsonCreator
 	public StringTypeDictionary(VarIntType numberType) {
 		super(MajorTypeId.STRING, numberType);
+	}
+
+	@JsonCreator
+	public StringTypeDictionary(VarIntType numberType, DictionaryId dictionaryId) {
+		super(MajorTypeId.STRING, numberType);
+		this.dictionaryId = dictionaryId;
 	}
 	
 	@Override
