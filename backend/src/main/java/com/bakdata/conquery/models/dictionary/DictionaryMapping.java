@@ -4,7 +4,6 @@ package com.bakdata.conquery.models.dictionary;
 import java.util.Arrays;
 
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -29,7 +28,7 @@ public class DictionaryMapping {
 	private final Range<Integer> newIds;
 	private final IntSet usedBuckets;
 
-	public static DictionaryMapping create(Dictionary from, Dictionary to) {
+	public static DictionaryMapping create(Dictionary from, Dictionary to, int entityBucketSize) {
 
 		int[] source2TargetMap = new int[from.size()];
 		Range<Integer> newIds = null;
@@ -52,7 +51,7 @@ public class DictionaryMapping {
 			}
 			source2TargetMap[id] = targetId;
 
-			int bucket = Entity.getBucket(targetId, ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
+			int bucket = Entity.getBucket(targetId, entityBucketSize);
 			buckets.add(bucket);
 		}
 		if (Arrays.stream(source2TargetMap).distinct().count() < source2TargetMap.length) {
@@ -70,8 +69,6 @@ public class DictionaryMapping {
 		if (newIds == null) {
 			return 0;
 		}
-		else {
-			return newIds.getMax() - newIds.getMin() + 1;
-		}
+		return newIds.getMax() - newIds.getMin() + 1;
 	}
 }

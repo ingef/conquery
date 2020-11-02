@@ -2,10 +2,13 @@ package com.bakdata.conquery.models.execution;
 
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
@@ -61,8 +64,14 @@ public class ExecutionStatus {
 		 */
 		private ConqueryErrorInfo error;
 		
+		/**
+		 * The groups this execution is shared with.
+		 */
+		private Collection<IdLabel<GroupId>> groups;
+		
 		public static enum CreationFlag{
 			WITH_COLUMN_DESCIPTION,
+			WITH_GROUPS,
 			WITH_SOURCE;
 		}
 }

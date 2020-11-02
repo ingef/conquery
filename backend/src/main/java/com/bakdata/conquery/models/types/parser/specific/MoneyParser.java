@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types.parser.specific;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
@@ -27,6 +28,10 @@ public class MoneyParser extends Parser<Long> {
 	@JsonIgnore @Getter(lazy = true)
 	private final BigDecimal moneyFactor = BigDecimal.valueOf(10)
 		.pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits());
+
+	public MoneyParser(ParserConfig config) {
+
+	}
 
 	@Override
 	protected Long parseValue(String value) throws ParsingException {
@@ -65,12 +70,10 @@ public class MoneyParser extends Parser<Long> {
 				new MoneyTypeVarInt(subDecision.getType())
 			);
 		}
-		else {
-			return new Decision<Long, Long, MoneyTypeLong>(
-				new NoopTransformer<>(),
-				new MoneyTypeLong()
-			);
-		}
+		return new Decision<Long, Long, MoneyTypeLong>(
+			new NoopTransformer<>(),
+			new MoneyTypeLong()
+		);
 	}
 
 }

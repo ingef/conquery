@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.generation.EmptyBucket;
@@ -63,7 +63,7 @@ public class ConceptQueryPlan implements QueryPlan {
 		return clone;
 	}
 
-	protected void checkRequiredTables(WorkerStorage storage) {
+	protected void checkRequiredTables(ModificationShieldedWorkerStorage storage) {
 		if (requiredTables.get() != null) {
 			return;
 		}
@@ -81,9 +81,9 @@ public class ConceptQueryPlan implements QueryPlan {
 		}
 	}
 
-	public void init(Entity entity) {
+	public void init(Entity entity, QueryExecutionContext ctx) {
 		this.entity = entity;
-		child.init(entity);
+		child.init(entity, ctx);
 	}
 
 	public void nextEvent(Bucket bucket, int event) {
@@ -103,14 +103,15 @@ public class ConceptQueryPlan implements QueryPlan {
 	@Override
 	public SinglelineEntityResult execute(QueryExecutionContext ctx, Entity entity) {
 
-		if(!isOfInterest(entity)){
+ 		checkRequiredTables(ctx.getStorage());
+
+		if (requiredTables.get().isEmpty()) {
 			return EntityResult.notContained();
 		}
 
-		checkRequiredTables(ctx.getStorage());
-		init(entity);
+		init(entity, ctx);
 
-		if (requiredTables.get().isEmpty()) {
+		if(!isOfInterest(entity)){
 			return EntityResult.notContained();
 		}
 
@@ -119,11 +120,24 @@ public class ConceptQueryPlan implements QueryPlan {
 		nextBlock(EmptyBucket.getInstance());
 		nextEvent(EmptyBucket.getInstance(), 0);
 
+
+
 		for (TableId currentTableId : requiredTables.get()) {
+
+			if(currentTableId.equals(ctx.getStorage().getDataset().getAllIdsTableId())){
+				continue;
+			}
 
 			nextTable(ctx, currentTableId);
 
-			for (Bucket bucket : entity.getBucket(currentTableId)) {
+			final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTableId);
+
+			for (Bucket bucket : tableBuckets) {
+
+				if(bucket == null){
+					continue;
+				}
+
 				int localEntity = bucket.toLocal(entity.getId());
 
 				if (!bucket.containsLocalEntity(localEntity)) {

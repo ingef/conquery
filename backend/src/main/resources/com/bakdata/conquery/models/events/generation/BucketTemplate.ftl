@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.lang.Integer;
 import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.common.Range;
 
@@ -187,27 +187,6 @@ public class Bucket_${suffix} extends Bucket {
 		</#list>
 	} 
 
-	@Override
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		if(!this.has(event, column)) {
-			return false;
-		}
-		switch(column.getPosition()) {
-		<#list imp.columns as col>
-            <#if col.type.lines != col.type.nullLines>
-                <#if col.type.typeId == "DATE">
-                    case ${col.position}:
-                    return dateRanges.contains(<@f.getMajor col/>(event));
-                <#elseif col.type.typeId == "DATE_RANGE">
-                    case ${col.position}:
-                    return dateRanges.intersects(<@f.getMajor col/>(event));
-                </#if>
-            </#if>
-		</#list>
-		default:
-		throw new IllegalArgumentException("Column "+column+" is not a date type");
-		}
-	}
 
 	@Override
 	public CDateRange getAsDateRange(int event, Column column) {

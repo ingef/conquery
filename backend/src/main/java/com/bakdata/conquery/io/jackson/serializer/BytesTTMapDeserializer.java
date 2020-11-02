@@ -29,9 +29,7 @@ public class BytesTTMapDeserializer extends JsonDeserializer<BytesTTMap> {
 		if(n == null) {
 			return new BytesTTMap();
 		}
-		else {
-			return new BytesTTMap(n);
-		}
+		return new BytesTTMap(n);
 	}
 	
 	private ABytesNode read(JsonParser p, DeserializationContext ctxt) throws IOException {

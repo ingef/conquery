@@ -55,7 +55,7 @@ public class DatasetsUIResource extends HAdmin {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		if (namespace == null) {
 			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
 		}
@@ -125,8 +125,6 @@ public class DatasetsUIResource extends HAdmin {
 		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
 			return new UIView<>("idmapping.html.ftl", processor.getUIContext(), mapping.getCsvIdToExternalIdMap());
 		}
-		else {
-			return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
-		}
+		return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
 	}
 }

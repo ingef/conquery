@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -22,7 +22,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @NoArgsConstructor @AllArgsConstructor
 @CPSType(id="OR", base=CQElement.class)
@@ -47,10 +46,8 @@ public class CQOr implements CQElement {
 	}
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
-		var copy = new ArrayList<>(children);
-		copy.replaceAll(c->c.resolve(context));
-		return new CQOr(copy);
+	public void resolve(QueryResolveContext context) {
+		children.forEach(c->c.resolve(context));
 	}
 	
 	@Override

@@ -4,7 +4,6 @@ import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.MA
 import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.UNKNOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +48,7 @@ public class ProgressReporterTest {
 	}
 	
 	@Test
-	public void basicTest() throws IOException, InterruptedException {
+	public void basicTest() throws InterruptedException {
 		
 		ProgressReporter pr = ProgressReporter.createStarted();
 		pr.setMax(100);

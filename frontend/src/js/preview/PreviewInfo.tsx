@@ -10,6 +10,7 @@ import {
 import type { ColumnDescriptionType } from "./Preview";
 import ColumnStats from "./ColumnStats";
 import { StatsHeadline } from "./StatsHeadline";
+import StatsSubline from "./StatsSubline";
 
 const TopRow = styled("div")`
   margin: 12px 0 20px;
@@ -137,6 +138,9 @@ const PreviewInfo: FC<PropsT> = ({
           <StatsHeadline>
             {T.translate("preview.statisticsHeadline")}
           </StatsHeadline>
+          <StatsSubline>
+            {T.translate("preview.statisticsSubline")}
+          </StatsSubline>
           <StatsContainer>
             {rawPreviewData[0].map((col, j) => (
               <ColumnStats

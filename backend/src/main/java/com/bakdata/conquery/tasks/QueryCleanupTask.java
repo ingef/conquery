@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
@@ -42,10 +42,10 @@ public class QueryCleanupTask extends Task {
     public static final String EXPIRATION_PARAM = "expiration";
     private static final Predicate<String> UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
 
-    private final MasterMetaStorage storage;
+    private final MetaStorage storage;
     private Duration queryExpiration;
 
-    public QueryCleanupTask(MasterMetaStorage storage, Duration queryExpiration) {
+    public QueryCleanupTask(MetaStorage storage, Duration queryExpiration) {
 		super("cleanup");
 		this.storage = storage;
 		this.queryExpiration = queryExpiration;
@@ -146,7 +146,7 @@ public class QueryCleanupTask extends Task {
 	 * 
 	 * @return The number of deleted permissions.
 	 */
-	public static int deleteQueryPermissionsWithMissingRef(MasterMetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
+	public static int deleteQueryPermissionsWithMissingRef(MetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
 		int countDeleted = 0;
 		// Do the loop-di-loop
 		for (PermissionOwner<?> owner : owners) {

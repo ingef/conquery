@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -36,13 +37,13 @@ public class UpdateMatchingStats extends Job {
 	public void execute() throws Exception {
 		if (worker.getStorage().getAllCBlocks().isEmpty()) {
 			log.debug("Worker {} is empty, skipping.", worker);
-			progressReporter.done();
+			getProgressReporter().done();
 			return;
 		}
 
 		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(worker.getExecutorService());
 
-		progressReporter.setMax(worker.getStorage().getAllConcepts().size());
+		getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
 
 		log.info("Starting to update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
@@ -68,7 +69,7 @@ public class UpdateMatchingStats extends Job {
 			log.warn("Results were empty.");
 		}
 
-		progressReporter.done();
+		getProgressReporter().done();
 	}
 
 	public void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results) {
@@ -89,13 +90,21 @@ public class UpdateMatchingStats extends Job {
 				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
 
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
-					if (!(concept instanceof TreeConcept) || cBlock.getMostSpecificChildren() == null || cBlock.getMostSpecificChildren().get(event) == null) {
+					if (!(concept instanceof TreeConcept)
+						|| cBlock.getMostSpecificChildren() == null
+						|| cBlock.getMostSpecificChildren()[event] == null) {
+
 						messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
 								.addEvent(table, bucket, cBlock, event);
+
 						continue;
 					}
 
-					int[] localIds = cBlock.getMostSpecificChildren().get(event);
+					int[] localIds = cBlock.getMostSpecificChildren()[event];
+					
+					if(Connector.isNotContained(localIds)) {
+						continue;
+					}
 
 					ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
 
@@ -111,7 +120,7 @@ public class UpdateMatchingStats extends Job {
 			}
 		}
 
-		progressReporter.report(1);
+		getProgressReporter().report(1);
 
 
 		synchronized (results){

@@ -5,7 +5,6 @@ import java.util.Iterator;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -38,9 +37,7 @@ public class StringTypePrefix extends AChainedStringType {
 		if(value.startsWith(prefix)) {
 			return subType.getId(value.substring(prefix.length()));
 		}
-		else {
-			return -1;
-		}
+		return -1;
 	}
 	
 	@Override

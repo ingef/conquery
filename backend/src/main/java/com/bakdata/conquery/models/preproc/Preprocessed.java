@@ -9,6 +9,7 @@ import java.util.List;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.Bucket;
@@ -17,7 +18,7 @@ import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.esotericsoftware.kryo.io.Output;
-import io.dropwizard.util.Size;
+import io.dropwizard.util.DataSize;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Data;
@@ -37,9 +38,9 @@ public class Preprocessed {
 	private long writtenGroups = 0;
 	private Int2ObjectMap<List<Object[]>> entries = new Int2ObjectAVLTreeMap<>();
 	
-	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
+	private final Output buffer = new Output((int) DataSize.megabytes(50).toBytes());
 
-	public Preprocessed(TableImportDescriptor descriptor) throws IOException {
+	public Preprocessed(TableImportDescriptor descriptor, ParserConfig parserConfig) throws IOException {
 		this.file = descriptor.getInputFile();
 		this.name = descriptor.getName();
 		this.descriptor = descriptor;
@@ -49,7 +50,7 @@ public class Preprocessed {
 		
 		
 		primaryColumn = new PPColumn(input.getPrimary().getColumnDescription().getName());
-		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser());
+		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser(parserConfig));
 		
 		if(!(primaryColumn.getParser() instanceof StringParser)) {
 			throw new IllegalStateException("The primary column must be an ENTITY_ID or STRING column");
@@ -58,7 +59,7 @@ public class Preprocessed {
 		for(int i=0;i<input.getWidth();i++) {
 			ColumnDescription columnDescription = input.getColumnDescription(i);
 			columns[i] = new PPColumn(columnDescription.getName());
-			columns[i].setParser(columnDescription.getType().createParser());
+			columns[i].setParser(columnDescription.getType().createParser(parserConfig));
 		}
 	}
 
@@ -164,7 +165,6 @@ public class Preprocessed {
 					event[ic.getPosition()] = transformer.transform(event[ic.getPosition()]);
 				}
 			}
-			transformer.finishTransform();
 		}
 		
 		Bucket bucket = imp.getBlockFactory().create(imp, events);

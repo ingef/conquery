@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
+import java.io.IOException;
+import java.util.InputMismatchException;
+import java.util.Objects;
+import java.util.Optional;
+
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -19,11 +24,6 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.InputMismatchException;
-import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor @NoArgsConstructor
@@ -55,9 +55,7 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 				throw e;
 			}
 		}
-		else {
-			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
-		}
+		return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
 	}
 	
 	@Override

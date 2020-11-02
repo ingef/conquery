@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -17,11 +18,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SpecialDateUnion implements Aggregator<String> {
 
-	private CDateSet set = CDateSet.create();
+
+	private final BitMapCDateSet set = CDateSetCache.createPreAllocatedDateSet();
 
 	private Column currentColumn;
-	private CDateSet dateRestriction;
 
+	private BitMapCDateSet dateRestriction;
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId table) {
@@ -31,26 +33,27 @@ public class SpecialDateUnion implements Aggregator<String> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (currentColumn != null) {
-			CDateRange range = bucket.getAsDateRange(event, currentColumn);
-			if(range != null) {
-				CDateSet add = CDateSet.create(dateRestriction);
-				add.retainAll(CDateSet.create(range));
-				getResultSet().addAll(add);
-				return;
+		if (currentColumn == null) {
+			if(!dateRestriction.isEmpty()) {
+				getResultSet().addAll(dateRestriction);
 			}
+			return;
 		}
 
-		if(!dateRestriction.isEmpty()) {
-			getResultSet().addAll(dateRestriction);
+		CDateRange range = bucket.getAsDateRange(event, currentColumn);
+
+		if (range == null) {
+			return;
 		}
+
+		set.maskedAdd(range, dateRestriction);
 	}
 
 	/**
 	 * Helper method to insert dates from outside.
-	 * @param other CDateSet to be included.
+	 * @param other BitMapCDateSet to be included.
 	 */
-	public void merge(CDateSet other){
+	public void merge(BitMapCDateSet other){
 		set.addAll(other);
 	}
 
@@ -64,7 +67,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 		return set.toString();
 	}
 	
-	public CDateSet getResultSet() {
+	public BitMapCDateSet getResultSet() {
 		return set;
 	}
 	

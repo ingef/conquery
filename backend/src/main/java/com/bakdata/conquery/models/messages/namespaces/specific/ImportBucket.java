@@ -4,9 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
 import javax.annotation.Nonnull;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.jakewharton.byteunits.BinaryByteUnit;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +54,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 			getProgressReporter().report(1);
 		}
 
-		context.getStorage().addBucket(factory.combine(includedEntities, buckets));
+		context.addBucket(factory.combine(includedEntities, buckets));
 	}
 	
 	@Override

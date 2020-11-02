@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -10,13 +11,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -31,10 +33,11 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
@@ -86,11 +89,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public void initExecutable(@NonNull Namespaces namespaces) {
+	public void initExecutable(@NonNull DatasetRegistry datasetRegistry) {
 		// init all subqueries
 		synchronized (getExecution()) {
-			subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
-			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(namespaces));
+			submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
+			subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
+			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry));
 		}
 	}
 	
@@ -132,7 +136,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 * Distribute the result to a sub query.
 	 */
 	@Override
-	public void addResult(@NonNull MasterMetaStorage storage, FormSharedResult result) {
+	public void addResult(@NonNull MetaStorage storage, FormSharedResult result) {
 		ManagedExecutionId subquery = result.getSubqueryId();
 		if(result.getError().isPresent()) {
 			fail(storage, result.getError().get());
@@ -194,9 +198,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
-	public Set<Namespace> getRequiredNamespaces() {
+	public Set<Namespace> getRequiredDatasets() {
 		return flatSubQueries.values().stream()
-			.map(ManagedQuery::getRequiredNamespaces)
+			.map(ManagedQuery::getRequiredDatasets)
 			.flatMap(Set::stream)
 			.collect(Collectors.toSet());
 	}
@@ -218,12 +222,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
 			// If subqueries was not set the Execution was not initialized
-			this.initExecutable(storage.getNamespaces());
+			this.initExecutable(storage.getDatasetRegistry());
 		}
 		if(subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
@@ -239,13 +243,18 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 				getSubmitted().getClass().getSimpleName());
 			return;
 		}
-		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions());
+		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(datasetRegistry));
 	}
 
 
 	@Override
-	protected URL getDownloadURL(URLBuilder url) {
-		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-			.to(ResultCSVResource.GET_CSV_PATH).get();
+	protected URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
+		return url
+			.path(ResultCSVResource.class)
+			.resolveTemplate(ResourceConstants.DATASET, dataset.getName())
+			.path(ResultCSVResource.class, ResultCSVResource.GET_CSV_PATH_METHOD)
+			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
+			.build()
+			.toURL();
 	}
 }

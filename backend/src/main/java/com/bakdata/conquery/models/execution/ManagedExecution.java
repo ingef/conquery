@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -21,14 +22,18 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
 
+import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
@@ -36,6 +41,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
@@ -44,8 +50,8 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -55,6 +61,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -105,14 +112,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Executed right before execution submission.
 	 * @param namespaces
 	 */
-	public abstract void initExecutable(Namespaces namespaces);
+	public abstract void initExecutable(DatasetRegistry namespaces);
 
 	/**
 	 * Returns the set of namespaces, this execution needs to be executed on.
 	 * The {@link ExecutionManager} then submits the queries to these namespaces.
 	 */
 	@JsonIgnore
-	public abstract Set<Namespace> getRequiredNamespaces();
+	public abstract Set<Namespace> getRequiredDatasets();
 
 
 	@Override
@@ -126,7 +133,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	protected void fail(MasterMetaStorage storage, ConqueryErrorInfo error) {
+	protected void fail(MetaStorage storage, ConqueryErrorInfo error) {
 		if(this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -144,7 +151,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish(MasterMetaStorage storage, ExecutionState executionState) {
+	protected void finish(MetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
 			log.error("Query[{}] was never run.", getId());			
 		}
@@ -192,50 +199,61 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : label);
 		status.setPristineLabel(label == null || queryId.toString().equals(label));
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
-		status.setOwn(getOwner().equals(user.getId()));
+		status.setOwn(owner.equals(user.getId()));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
-		status.setResultUrl(
-			isReadyToDownload(url, user)
-				? getDownloadURL(url)
-				: null);
+		status.setResultUrl(getDownloadURL(url, user).orElse(null));
 		if (state.equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
 	}
+	
+
+	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
+	public final Optional<URL> getDownloadURL(UriBuilder url, User user) {
+		if(url == null || !isReadyToDownload(url, user)) {
+			// url might be null because no url was wished and no builder was provided
+			return Optional.empty();
+		}
+		return Optional.ofNullable(getDownloadURLInternal(url));
+	}
 
 	/**
 	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
 	 */
-	protected abstract URL getDownloadURL(URLBuilder url);
+	@Nullable
+	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
-		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		return buildStatus(storage, url, user, datasetRegistry, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
 	}
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag) {
-		return buildStatus(storage, url, user, EnumSet.of(creationFlag));
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, datasetRegistry, EnumSet.of(creationFlag));
 	}
 	
-	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
 		for(CreationFlag flag : creationFlags) {
 			switch (flag) {
 				case WITH_COLUMN_DESCIPTION:
-					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 					break;
 				case WITH_SOURCE:
 					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+					break;
+				case WITH_GROUPS:
+					setAdditionalFieldsForStatusWithGroups(storage, user, status);
 					break;
 				default:
 					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
@@ -245,14 +263,31 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus status) {
+		/* Calculate which groups can see this query.
+		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 */
+		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
+		for(Group group : storage.getAllGroups()) {
+			for(Permission perm : group.getPermissions()) {
+				if(perm.implies(QueryPermission.onInstance(Ability.READ, this.getId()))) {
+					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+					continue;
+				}
+			}
+		}
+		
+		status.setGroups(permittedGroups);
+	}
+
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
@@ -266,7 +301,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	public boolean isReadyToDownload(URLBuilder url, User user) {
+	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user) {
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
@@ -274,7 +309,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return url != null && state == ExecutionState.DONE && isPermittedDownload;
+		return state == ExecutionState.DONE && isPermittedDownload;
 	}
 
 	/**
@@ -297,10 +332,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
 
-	public abstract void addResult(@NonNull MasterMetaStorage storage, R result);
+	public abstract void addResult(@NonNull MetaStorage storage, R result);
 
 	/**
-	 * Initializes the result that is send from a worker to the Master.
+	 * Initializes the result that is send from a worker to the ManagerNode.
 	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
 	 * matched to its subqueries.
 	 */

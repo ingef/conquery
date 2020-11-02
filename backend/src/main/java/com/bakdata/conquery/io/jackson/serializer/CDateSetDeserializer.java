@@ -2,7 +2,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,30 +10,30 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
-public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
+public class CDateSetDeserializer extends StdDeserializer<BitMapCDateSet> {
 
 	private static final long serialVersionUID = 1L;
 
 	public CDateSetDeserializer() {
-		super(CDateSet.class);
+		super(BitMapCDateSet.class);
 	}
 
 	@Override
-	public CDateSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public BitMapCDateSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		if (p.currentToken() == JsonToken.START_ARRAY) {
 			int[] ints = p.readValueAs(int[].class);
-			
-			CDateSet set = CDateSet.create();
-			for(int i=0; i<ints.length; i+=2) {
-				set.add(CDateRange.of(ints[i], ints[i+1]));
+
+			BitMapCDateSet set = BitMapCDateSet.create();
+			for (int i = 0; i < ints.length; i += 2) {
+				set.add(CDateRange.of(ints[i], ints[i + 1]));
 			}
 			return set;
 		}
-		else if(p.currentToken() == JsonToken.VALUE_STRING) {
-			return CDateSet.parse(p.readValueAs(String.class));
+		else if (p.currentToken() == JsonToken.VALUE_STRING) {
+			return BitMapCDateSet.parse(p.readValueAs(String.class));
 		}
 		else {
-			return (CDateSet) ctxt.handleUnexpectedToken(CDateSet.class, p.currentToken(), p, "can't deserialize CDateSet");
+			return (BitMapCDateSet) ctxt.handleUnexpectedToken(BitMapCDateSet.class, p.currentToken(), p, "can't deserialize BitMapCDateSet");
 		}
 	}
 }

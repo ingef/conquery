@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class SingletonNamespaceCollection extends NamespaceCollection {
+public class SingletonNamespaceCollection extends IdResolveContext {
 	private final CentralRegistry registry;
 
 	@Override

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.concepts;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -16,12 +17,15 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid.ValidationMethod2;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -38,6 +42,7 @@ import lombok.Setter;
 @Getter @Setter @DetailedValid
 public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
 
+	public static final int[] NOT_CONTAINED = new int[]{-1};
 	private static final long serialVersionUID = 1L;
 
 	@NotNull @JsonManagedReference
@@ -153,12 +158,14 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return (T)allFiltersMap.getOrFail(id);
 	}
 
-	public Column getValidityDateColumn(String name) {
-		for(ValidityDate vDate:validityDates) {
-			if(vDate.getName().equals(name))
+	public Column getValidityDateColumn(ValidityDateId id) {
+		for (ValidityDate vDate : validityDates) {
+			if (vDate.getId().equals(id)) {
 				return vDate.getColumn();
+			}
 		}
-		throw new NoSuchElementException("There is no validityDate called '"+name+"' in "+this);
+
+		throw new NoSuchElementException("There is no validityDate called '" + id + "' in " + this);
 	}
 
 	public synchronized void addImport(Import imp) {
@@ -166,4 +173,15 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			f.addImport(imp);
 		}
 	}
+
+	public static boolean isNotContained(int[] mostSpecificChildren) {
+		return Arrays.equals(mostSpecificChildren, NOT_CONTAINED);
+	}
+
+	/**
+	 * @param cBlock
+	 * @param bucket
+	 * @param imp
+	 */
+	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket);
 }

@@ -2,9 +2,8 @@ package com.bakdata.conquery.util.progressreporter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,45 +15,61 @@ public class ProgressReporterImpl implements ProgressReporter {
 	private long max = 1;
 	private long innerProgress = 0;
 	private long reservedForChildren = 0;
-	private final List<ChildProgressReporter> children = new ArrayList<ChildProgressReporter>();
+	private final List<ProgressReporterImpl> children = new ArrayList<ProgressReporterImpl>();
 
-	private final long waitBegin;
-	private long begin = -1;
-	private long end = -1;
+	@Getter
+	private final long creationTimeMillis;
+	@Getter
+	private long startTimeMillis = -1;
+	private long endTimeMillis = -1;
 
 	public ProgressReporterImpl(){
-		waitBegin = System.currentTimeMillis();
+		creationTimeMillis = System.currentTimeMillis();
 	}
 
 	@Override
 	public void start() {
 		if (isStarted()) {
-			throw new IllegalStateException("Progress Reporter is already started");
+			log.warn("Progress Reporter is already started");
 		}
 
-		begin = System.currentTimeMillis();
+		startTimeMillis = System.currentTimeMillis();
 	}
 
 	@Override
 	public boolean isStarted() {
-		return begin > 0;
+		return startTimeMillis > 0;
 	}
 
 	@Override
 	public boolean isDone() {
-		return end > 0;
+		return endTimeMillis > 0;
 	}
 
 	@Override
 	/*Value between zero and one*/
 	public double getProgress() {
-		long realProgress = innerProgress;
+		return (double) getAbsoluteProgress() / (double) getAbsoluteMax();
+	}
+	
+	public long getAbsoluteProgress() {
+		long absoluteProgress = innerProgress;
 
-		for (ChildProgressReporter child : children) {
-			realProgress += child.getProgress() * child.externalSteps;
+		for (ProgressReporterImpl child : children) {
+			absoluteProgress += child.getAbsoluteProgress();
 		}
+		
+		return absoluteProgress;
+	}
+	
+	public long getAbsoluteMax() {
+		long absoluteMax = max;
 
-		return (double) realProgress / (double) max;
+		for (ProgressReporterImpl child : children) {
+			absoluteMax += child.getAbsoluteMax();
+		}
+		
+		return absoluteMax;
 	}
 
 	@Override
@@ -67,22 +82,23 @@ public class ProgressReporterImpl implements ProgressReporter {
 		}
 		reservedForChildren += steps;
 
-		ChildProgressReporter childPr = new ChildProgressReporter();
+		ProgressReporterImpl childPr = new ProgressReporterImpl();
 		childPr.start();
-		childPr.setExternalSteps(steps);
+		childPr.setMax(steps);
 		children.add(childPr);
 		return childPr;
 	}
 
 	@Override
 	public String getEstimate() {
-		return ProgressReporterUtil.buildProgressReportString(isDone(), getProgress(), System.currentTimeMillis() - begin, begin - waitBegin);
+		return ProgressReporterUtil.buildProgressReportString(isDone(), getAbsoluteProgress(), getAbsoluteMax(), System.currentTimeMillis() - startTimeMillis, startTimeMillis - creationTimeMillis);
 	}
 
 	@Override
 	public void report(int steps) {
 		if (innerProgress + reservedForChildren + steps > max) {
-			throw new IllegalArgumentException("Progress + Steps is bigger than the Maximum Progress");
+			log.warn("Progress({}) + ChildProgressReserve({}) + Steps({}) is bigger than the maximum Progress({}). There might be to many reports in the code.", innerProgress, reservedForChildren, steps, max);
+			return;
 		}
 
 		innerProgress += steps;
@@ -90,8 +106,9 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 	@Override
 	public void setMax(long max) {
-		if (getProgress() > max) {
-			throw new IllegalStateException("Max cannot be less than already made progress.");
+		if (this.max > max) {
+			log.warn("Max cannot be decreased.");
+			return;
 		}
 
 		if (max <= 0) {
@@ -103,36 +120,29 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 	@Override
 	public void done() {
-		end = System.currentTimeMillis();
+		if(endTimeMillis > -1) {
+			log.warn("Done was called again for {}", this);
+			return;
+		}
+		endTimeMillis = System.currentTimeMillis();
 
-		for (ChildProgressReporter child : children) {
+		for (ProgressReporter child : children) {
 			if (!child.isDone()) {
-				throw new IllegalStateException("One or more Children are not done yet");
+				log.warn("One or more Children are not done yet");
 			}
 		}
-
-		final double progress = getProgress();
-		if (progress != max) {
-			log.warn("ProgressReporter is done but Progress is just {}/{}", getProgress(), getMax());
+		
+		if(getAbsoluteProgress()<max) {
+			log.trace("Done was called before all steps were been reported. There might be missing reporting steps in the code.");
 		}
 
 		innerProgress = max - reservedForChildren;
 	}
+	
 
-
-	@Data
-	private static class ChildProgressReporter extends ProgressReporterImpl {
-		private long externalSteps;
-	}
-
-	@Override
-	public long getWaitedSeconds() {
-		return TimeUnit.MILLISECONDS.toSeconds(begin - waitBegin);
-	}
-
-	@Override
-	// given in Seconds
-	public long getStartTime() {
-		return TimeUnit.MILLISECONDS.toSeconds(begin);
+	
+	@JsonValue
+	public ImmutableProgressReporter toImmutable() {
+		return new ImmutableProgressReporter(this);
 	}
 }

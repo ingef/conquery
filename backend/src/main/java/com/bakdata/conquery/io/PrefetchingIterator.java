@@ -1,14 +1,14 @@
 package com.bakdata.conquery.io;
 
-import com.google.common.collect.AbstractIterator;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.collect.AbstractIterator;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Iterator asynchronously prefetching values of supplied iterator. Can be used when supplied iterator comes from IO.
@@ -52,9 +52,7 @@ public class PrefetchingIterator<T> extends AbstractIterator<T> implements Close
 			if(next == marker) {
 				return endOfData();
 			}
-			else {
-				return (T) next;
-			}
+			return (T) next;
 		}
 		catch(InterruptedException e) {
 			throw new RuntimeException("Interrupted in CSV Parsing Thread", e);

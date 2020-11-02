@@ -24,9 +24,7 @@ public interface ISingleColumnFilter {
 				.addConstraintViolation();
 			return false;
 		}
-		else {
-			return true;
-		}
+		return true;
 	}
 	
 	@JsonIgnore

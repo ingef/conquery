@@ -62,16 +62,14 @@ public class VarIntParser extends Parser<Integer> {
 				new VarIntTypeShort((short)minValue, (short)maxValue)
 			);
 		}
-		else {
-			return new Decision<Integer, Number, VarIntType>(
-				new Transformer<Integer, Number>() {
-					@Override
-					public Number transform(@NonNull Integer value) {
-						return value;
-					}
-				},
-				new VarIntTypeInt(minValue, maxValue)
-			);
-		}
+		return new Decision<Integer, Number, VarIntType>(
+			new Transformer<Integer, Number>() {
+				@Override
+				public Number transform(@NonNull Integer value) {
+					return value;
+				}
+			},
+			new VarIntTypeInt(minValue, maxValue)
+		);
 	}
 }

@@ -23,13 +23,11 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 		if(v==null) {
 			return null;
 		}
-		else {
-			try {
-				return parseValue(v);
-			}
-			catch(Exception e) {
-				throw new ParsingException("Failed to parse '"+v+"' with "+this.getClass().getSimpleName(), e);
-			}
+		try {
+			return parseValue(v);
+		}
+		catch(Exception e) {
+			throw new ParsingException("Failed to parse '"+v+"' with "+this.getClass().getSimpleName(), e);
 		}
 	}
 	

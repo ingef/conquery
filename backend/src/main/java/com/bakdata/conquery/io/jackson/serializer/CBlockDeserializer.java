@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -21,7 +21,9 @@ import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor @NoArgsConstructor
 public class CBlockDeserializer extends JsonDeserializer<CBlock> implements ContextualDeserializer {
 
@@ -31,15 +33,27 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
 		
-		Connector con = NamespaceCollection.get(ctxt).getOptional(block.getConnector()).get();
+		Connector con = IdResolveContext.get(ctxt).getOptional(block.getConnector()).get();
 		Concept<?> concept = con.getConcept();
 		if(concept instanceof TreeConcept && block.getMostSpecificChildren() != null) {
 			TreeConcept tree = (TreeConcept) concept;
-			block.getMostSpecificChildren().replaceAll(c->c==null?c:tree.getElementByLocalId(c).getPrefix());
+
+			// deduplicate concrete paths after loading from disk.
+			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
+				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
+
+				if (mostSpecificChildren == null || Connector.isNotContained(mostSpecificChildren)) {
+					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
+					continue;
+				}
+
+				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
+				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(mostSpecificChildren).getPrefix();
+			}
 		}
 		return block;
 	}
-	
+
 	@Override
 	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);
