@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import com.bakdata.conquery.io.xodus.stores.SerializingStore;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -57,7 +58,10 @@ public class ResultProcessor {
 			String label = exec.getLabel();
 			if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 				// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
-				response.header("Content-Disposition", String.format("attachment; filename=\"%s.%s\"", exec.getLabel(), fileExtension));
+				response.header("Content-Disposition", String.format(
+					"attachment; filename=\"%s.%s\"",
+					SerializingStore.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
+					fileExtension));
 			}
 			return response;
 		}
