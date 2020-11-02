@@ -117,6 +117,37 @@ public class DefaultLabelTest {
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
 	
+	
+	@ParameterizedTest
+	@CsvSource({
+		"de,Hochgeladene-Liste Frühere-Anfrage Concept2-Concept3",
+		"en,Uploaded-List Previous-Query Concept2-Concept3"})
+	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
+		I18n.LOCALE.set(locale);
+		
+		CQAnd and = new CQAnd();
+		CQConcept concept1 = new CQConcept();
+		concept1.setLabel(null);
+		CQConcept concept2 = new CQConcept();
+		concept2.setLabel("Concept2");
+		CQConcept concept3 = new CQConcept();
+		concept3.setLabel("Concept3");
+		and.setChildren(List.of(
+			new CQExternal(List.of(), new String[0][0]),
+			new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID())),
+			concept1,
+			concept2,
+			concept3
+			));
+		ConceptQuery cq = new ConceptQuery(and);
+		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
+
+		mQuery.setLabel(mQuery.makeAutoLabel());
+
+		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
+		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
+	}
+	
 	@ParameterizedTest
 	@CsvSource({
 		"de,Export 2020-10-30 12:37",

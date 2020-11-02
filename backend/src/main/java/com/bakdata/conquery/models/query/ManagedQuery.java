@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -258,16 +259,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).reused());
 		}
 		
-//		final AtomicInteger totalConceptNumber = new AtomicInteger();
-//		final AtomicInteger takenConceptNumber = new AtomicInteger();
 		final AtomicInteger length = new AtomicInteger();
 		String usedConcepts = sortedContents.computeIfAbsent(CQConcept.class, (clazz)-> List.of()).stream()
 			.map((CQConcept.class::cast))
 			.map(CQConcept::getLabel)
 			.distinct()
-//			.peek((elem) -> totalConceptNumber.incrementAndGet()) 
+			.filter(Objects::nonNull)
 			.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
-//			.peek((elem) -> takenConceptNumber.incrementAndGet()) 
 			.collect(Collectors.joining("-"));
 		
 		if (sb.length() > 0 && usedConcepts.length() > 0) {
