@@ -15,6 +15,5 @@ public class ShutdownWorkerStorage extends WorkerMessage {
 
 	@Override
 	public void react(Worker context) throws Exception {
-		context.getStorage().close();
-	}
-}
+		context.close();
+	}}

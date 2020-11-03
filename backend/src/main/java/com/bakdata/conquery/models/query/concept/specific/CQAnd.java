@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -19,7 +20,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @CPSType(id="AND", base=CQElement.class)
 public class CQAnd implements CQElement {
@@ -43,9 +43,8 @@ public class CQAnd implements CQElement {
 	}
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
-		children.replaceAll(c->c.resolve(context));
-		return this;
+	public void resolve(QueryResolveContext context) {
+		children.forEach(c->c.resolve(context));
 	}
 	
 	@Override

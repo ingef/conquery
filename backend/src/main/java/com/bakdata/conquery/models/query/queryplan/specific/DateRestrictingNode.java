@@ -3,7 +3,8 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Map;
 import java.util.Objects;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -11,7 +12,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -22,45 +22,50 @@ import lombok.Setter;
 @Setter
 public class DateRestrictingNode extends QPChainNode {
 
-	protected final CDateSet restriction;
+	protected final BitMapCDateSet restriction;
 	protected Column validityDateColumn;
-	protected Map<BucketId, EntityRow> preCurrentRow = null;
+	protected Map<BucketId, CBlock> preCurrentRow = null;
 
-	public DateRestrictingNode(CDateSet restriction, QPNode child) {
+	public DateRestrictingNode(BitMapCDateSet restriction, QPNode child) {
 		super(child);
 		this.restriction = restriction;
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		//if there was no date restriction we can just use the restriction CDateSet
-		if(ctx.getDateRestriction().isAll()) {
-			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
-		}
-		else {
-			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
-			dateRestriction.retainAll(restriction);
-			ctx = ctx.withDateRestriction(dateRestriction);
-		}
+		//if there was no date restriction we can just use the restriction BitMapCDateSet
+		final BitMapCDateSet restricted = CDateSetCache.createPreAllocatedDateSet();
+		restricted.addAll(restriction);
+		restricted.retainAll(restriction);
+
+		ctx = ctx.withDateRestriction(restricted);
 		super.nextTable(ctx, currentTable);
 
 
-		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
-		preCurrentRow = entity.getCBlockPreSelect(context.getConnector().getId());
+		preCurrentRow = ctx.getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector().getId());
+		validityDateColumn = context.getValidityDateColumn();
 
-		if (!validityDateColumn.getType().isDateCompatible()) {
+		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 	}
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		EntityRow currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
-		CBlock cBlock = currentRow.getCBlock();
+		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+
+		if(validityDateColumn == null) {
+			// If there is no validity date set for a concept there is nothing to restrict
+			return true;
+		}
+
 		int localId = bucket.toLocal(entity.getId());
+
+		// This means the Entity is not contained.
 		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
 			return false;
 		}
+
 		CDateRange range = CDateRange.of(
 			cBlock.getMinDate()[localId],
 			cBlock.getMaxDate()[localId]
@@ -73,9 +78,10 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
-			getChild().acceptEvent(bucket, event);
+		if (validityDateColumn != null && !bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
+			return;
 		}
+		getChild().acceptEvent(bucket, event);
 	}
 
 	@Override

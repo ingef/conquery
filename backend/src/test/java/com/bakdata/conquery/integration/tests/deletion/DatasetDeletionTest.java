@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -11,8 +11,8 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -39,9 +39,9 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		StandaloneSupport conquery = testConquery.getSupport(name);
-		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		final MetaStorage storage = conquery.getMetaStorage();
 		final Dataset dataset = conquery.getDataset();
-		Namespace namespace = storage.getNamespaces().get(dataset.getId());
+		Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
@@ -71,13 +71,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(dataset.getId()))
 					.isNotEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
-					final WorkerStorage workerStorage = value.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
@@ -136,13 +136,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					.filteredOn(imp -> imp.getId().getTable().getDataset().equals(dataset.getId()))
 					.isEmpty();
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
-				for (Worker value : slave.getWorkers().getWorkers().values()) {
+			for (ShardNode node : conquery.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
 					if (!value.getInfo().getDataset().equals(dataset.getId())) {
 						continue;
 					}
 
-					final WorkerStorage workerStorage = value.getStorage();
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
@@ -179,7 +179,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			final StandaloneSupport conquery2 =
 					new StandaloneSupport(
 							testConquery,
-							storage.getNamespaces()
+							storage.getDatasetRegistry()
 								   .get(dataset.getId()),
 							newDataset,
 							conquery.getTmpDir(),
@@ -189,7 +189,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					);
 
 
-			namespace = storage.getNamespaces().get(dataset.getId());
+			namespace = storage.getDatasetRegistry().get(dataset.getId());
 
 			// only import the deleted import/table
 			for (RequiredTable table : test.getContent().getTables()) {
@@ -206,16 +206,16 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery2, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			assertThat(conquery2.getDatasetsProcessor().getNamespaces().get(dataset.getId()))
+			assertThat(conquery2.getDatasetsProcessor().getDatasetRegistry().get(dataset.getId()))
 					.describedAs("Dataset after re-import.")
 					.isNotNull();
 
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (SlaveCommand slave : conquery.getSlaves()) {
-				assertThat(slave.getWorkers().getWorkers().values())
+			for (ShardNode node : conquery.getShardNodes()) {
+				assertThat(node.getWorkers().getWorkers().values())
 						.filteredOn(w -> w.getInfo().getDataset().equals(dataset.getId()))
-						.describedAs("Workers for slave {}", slave.getLabel())
+						.describedAs("Workers for node {}", node.getName())
 						.isNotEmpty();
 			}
 
@@ -238,13 +238,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (SlaveCommand slave : conquery2.getSlaves()) {
-					for (Worker value : slave.getWorkers().getWorkers().values()) {
+				for (ShardNode node : conquery2.getShardNodes()) {
+					for (Worker value : node.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
 						}
 
-						final WorkerStorage workerStorage = value.getStorage();
+						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getDataset().equals(dataset.getId())))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())

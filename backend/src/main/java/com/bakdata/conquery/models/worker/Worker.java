@@ -11,17 +11,25 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
-import com.bakdata.conquery.models.messages.network.MasterMessage;
+import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import com.bakdata.conquery.models.query.entity.Entity;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -29,10 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
+	// Making this private to have more control over adding and deleting and keeping a consistent state
+	private final WorkerStorage storage;
+	
 	@Getter
 	private final JobManager jobManager;
-	@Getter
-	private final WorkerStorage storage;
 	@Getter
 	private final QueryExecutor queryExecutor;
 	@Setter
@@ -42,6 +51,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 */
 	@Getter
 	private final ExecutorService executorService;
+	@Getter 
+	private final BucketManager bucketManager;
 	
 	
 	private Worker(
@@ -53,38 +64,39 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.storage = storage;
 		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		this.executorService = executorService;
-		
-		storage.setBucketManager(new BucketManager(this.jobManager, this.storage, getInfo()));
+		this.bucketManager = BucketManager.create(this, storage);
 		
 	}
-	
+
 	public static Worker newWorker(
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService executorService,
-		@NonNull WorkerStorage storage) {
-			
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService executorService,
+			@NonNull WorkerStorage storage,
+			int entityBucketSize) {
+
 		return new Worker(queryThreadPoolDefinition, storage, executorService);
 	}
-	
+
 	public static Worker newWorker(
 		@NonNull Dataset dataset,
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull ExecutorService executorService,
 		@NonNull StorageConfig config,
 		@NonNull File directory,
-		@NonNull Validator validator) {
+		@NonNull Validator validator,
+		int entityBucketSize) {
 
 		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
 		if (workerStorage != null) {
 			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
 		}
-		
+
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setIncludedBuckets(new IntArrayList());
 		info.setName(directory.getName());
-		
+		info.setEntityBucketSize(entityBucketSize);
+
 		workerStorage = new WorkerStorageImpl(validator, config, directory);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
@@ -93,8 +105,16 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		return new Worker(queryThreadPoolDefinition, workerStorage, executorService);
 	}
 	
+	public ModificationShieldedWorkerStorage getStorage() {
+		return new ModificationShieldedWorkerStorage(storage);
+	}
+	
 	public WorkerInformation getInfo() {
 		return storage.getWorker();
+	}
+	
+	public Int2ObjectMap<Entity> getEntities(){
+		return bucketManager.getEntities();
 	}
 
 	@Override
@@ -103,7 +123,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	@Override
-	public MasterMessage transform(NamespaceMessage message) {
+	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
 	
@@ -116,13 +136,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		catch (IOException e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
-		
+
 		try {
 			jobManager.close();
 		}catch (Exception e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
-		
+
 		try {
 			storage.close();
 		}
@@ -138,4 +158,43 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public boolean isBusy() {
 		return queryExecutor.isBusy();
 	}
+
+	public void addImport(Import imp) {
+		storage.addImport(imp);
+	}
+
+	public void removeImport(ImportId importId) {
+		bucketManager.removeImport(importId);
+	}
+
+	public void addBucket(Bucket bucket) {
+		bucketManager.addBucket(bucket);
+	}
+
+	public void removeConcept(ConceptId conceptId) {
+		bucketManager.removeConcept(conceptId);
+	}
+
+	public void updateConcept(Concept<?> concept) {
+		bucketManager.removeConcept(concept.getId());
+		bucketManager.addConcept(concept);
+	}
+
+	public void updateDataset(Dataset dataset) {
+		storage.updateDataset(dataset);
+	}
+
+	public void updateDictionary(Dictionary dictionary) {
+		storage.updateDictionary(dictionary);
+	}
+
+	public void updateWorkerInfo(WorkerInformation info) {
+		storage.updateWorker(info);
+	}
+
+	public void remove() {
+		storage.clear();
+		close();
+	}
+
 }

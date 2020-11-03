@@ -3,8 +3,11 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.QueryProcessor;
@@ -13,7 +16,7 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
@@ -33,12 +36,12 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		final MasterMetaStorage storage = conquery.getMasterMetaStorage();
+		final MetaStorage storage = conquery.getMetaStorage();
 		final Dataset dataset = conquery.getDataset();
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset.getId(), testJson);
 		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
-		final QueryProcessor processor = new QueryProcessor(storage.getNamespaces(), storage);
+		final QueryProcessor processor = new QueryProcessor(storage.getDatasetRegistry(), storage);
 		final User user  = new User("testUser", "testUserLabel");
 
 		// Manually import data, so we can do our own work.
@@ -82,8 +85,8 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		}
 	}
 	
-	public static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MasterMetaStorage storage ) {
-		ExecutionStatus status = processor.postQuery(dataset, query, null, user);
+	public static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MetaStorage storage ) {
+		ExecutionStatus status = processor.postQuery(dataset, query, UriBuilder.fromUri(URI.create("http://localhost")), user);
 		Objects.requireNonNull(storage.getExecution(status.getId()), "Execution was not found in storage, even though it was startet")
 			.awaitDone(2, TimeUnit.MINUTES);
 	}

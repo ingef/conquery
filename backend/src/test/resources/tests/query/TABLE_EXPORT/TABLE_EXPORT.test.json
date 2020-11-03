@@ -1,0 +1,150 @@
+{
+  "type": "QUERY_TEST",
+  "label": "TABLE_EXPORT Test",
+  "expectedCsv": "tests/query/TABLE_EXPORT/expected.csv",
+  "query": {
+    "type": "TABLE_EXPORT",
+    "tables": [
+      {
+        "id": "${dataset}.number.number_connector",
+        "dateColumn": {
+          "value": "${dataset}.number.number_connector.datum"
+        }
+      },
+      {
+        "id": "${dataset}.number.number_connector2",
+        "dateColumn": {
+          "value": "${dataset}.number.number_connector2.datum"
+        }
+      }
+    ],
+    "dateRange": {
+      "min": "2000-01-01",
+      "max": "2020-12-31"
+    },
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "ids": [
+          "${dataset}.number"
+        ],
+        "type": "CONCEPT",
+        "label": "vs",
+        "tables": [
+          {
+            "id": "${dataset}.number.number_connector",
+            "filters": [
+              {
+                "filter": "${dataset}.number.number_connector.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          },
+          {
+            "id": "${dataset}.number.number_connector2",
+            "filters": [
+              {
+                "filter": "${dataset}.number.number_connector2.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "VIRTUAL",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "vers_stamm",
+          "validityDates": {
+            "label": "datum",
+            "column": "vers_stamm.datum"
+          },
+          "filter": {
+            "label": "value",
+            "description": "xy",
+            "column": "vers_stamm.value",
+            "type": "NUMBER"
+          }
+        },
+        {
+          "label": "number_connector2",
+          "table": "vers_stamm2",
+          "validityDates": {
+            "label": "datum",
+            "column": "vers_stamm2.datum"
+          },
+          "filter": {
+            "label": "value",
+            "description": "xy",
+            "column": "vers_stamm2.value",
+            "type": "NUMBER"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/TABLE_EXPORT/content.csv",
+        "name": "vers_stamm",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "secondary"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/TABLE_EXPORT/content2.csv",
+        "name": "vers_stamm2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "secondary"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}

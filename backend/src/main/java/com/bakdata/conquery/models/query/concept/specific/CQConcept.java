@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -46,7 +48,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
@@ -129,6 +130,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 					concepts,
 					calculateBitMask(concepts),
 					table,
+					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 					new ValidityDateNode(
 						selectValidityDateColumn(table),
 						filtersNode
@@ -190,20 +192,18 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 		return nodes;
 	}
 
-	private Column selectValidityDateColumn(CQTable t) {
-		if(t.selectedValidityDate() != null) {
-			return t
-				.getResolvedConnector()
-				.getValidityDateColumn(t.selectedValidityDate());
+	private Column selectValidityDateColumn(CQTable table) {
+		if (table.getDateColumn() != null) {
+			return table.getResolvedConnector()
+						.getValidityDateColumn(table.getDateColumn().getValue());
 		}
 
 		//else use this first defined validity date column
-		else if(!t.getResolvedConnector().getValidityDates().isEmpty()) {
-			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
+		if (!table.getResolvedConnector().getValidityDates().isEmpty()) {
+			return table.getResolvedConnector().getValidityDates().get(0).getColumn();
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -220,5 +220,10 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 		namespacedIds.addAll(ids);
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
+	}
+
+	@Override
+	public void resolve(QueryResolveContext context) {
+		// Do nothing
 	}
 }

@@ -39,7 +39,7 @@ public class AdminConceptsResource extends HAdmin {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.concept = namespace.getStorage().getConcept(conceptId);
 		if (this.concept == null) {
 			throw new WebApplicationException("Could not find concept " + conceptId, Status.NOT_FOUND);

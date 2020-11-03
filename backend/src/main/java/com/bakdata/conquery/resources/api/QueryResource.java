@@ -26,14 +26,13 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.QueryProcessor;
-import com.bakdata.conquery.apiv1.URLBuilder;
+import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
@@ -50,19 +49,18 @@ public class QueryResource {
 	@Inject
 	public QueryResource(QueryProcessor processor) {
 		this.processor= processor;
-		dsUtil = new ResourceUtil(processor.getNamespaces());
+		dsUtil = new ResourceUtil(processor.getDatasetRegistry());
 	}
 
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
-		query.resolve(new QueryResolveContext(datasetId, processor.getNamespaces()));
 		log.info("Query posted on dataset {} by user {} ({}).", datasetId, user.getId(), user.getName());
 
 		return Response.ok(
 			processor.postQuery(
 			dsUtil.getDataset(datasetId),
 			query,
-			URLBuilder.fromRequest(req),
+			RequestAwareUriBuilder.fromRequest(req),
 			user))
 			.status(Status.CREATED)
 			.build();
@@ -77,7 +75,7 @@ public class QueryResource {
 		return processor.cancel(
 			dsUtil.getDataset(datasetId),
 			dsUtil.getManagedQuery(queryId),
-			URLBuilder.fromRequest(req));
+			RequestAwareUriBuilder.fromRequest(req));
 	}
 
 	@GET
@@ -88,9 +86,8 @@ public class QueryResource {
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
-			dsUtil.getDataset(datasetId),
 			query,
-			URLBuilder.fromRequest(req),
+			RequestAwareUriBuilder.fromRequest(req),
 			user);
 	}
 }

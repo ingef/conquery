@@ -24,6 +24,6 @@ public class RemoveImportJob extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		log.info("Deleting Import[{}]", importId);
 
-		context.getStorage().removeImport(importId);
+		context.removeImport(importId);
 	}
 }

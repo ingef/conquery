@@ -2,8 +2,7 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.List;
 
 import javax.validation.Validator;
 
@@ -28,25 +27,36 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.util.functions.Collector;
+import com.google.common.collect.Multimap;
+import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.env.Environments;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
 
+	protected final Environment environment;
 	protected SingletonStore<Dataset> dataset;
 	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator,config,directory);
+	/**
+	 * true if imports need to be registered with {@link Connector#addImport(Import)}.
+	 */
+	private final boolean registerImports;
+
+	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory, boolean registerImports) {
+		super(validator,config);
+		this.registerImports = registerImports;
+		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
+		
 	}
 
 	@Override
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), getEnvironment(), getValidator())
+	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
+		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), environment, getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
 				for(Table t:ds.getTables().values()) {
@@ -67,13 +77,13 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			});
 
 		if(ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
-			dictionaries =	StoreInfo.DICTIONARIES.weakBig(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
+			dictionaries =	StoreInfo.DICTIONARIES.weakBig(getConfig(), environment, getValidator(), getCentralRegistry());
 		}
 		else {
-			dictionaries =	StoreInfo.DICTIONARIES.big(getConfig(), getEnvironment(), getValidator(), getCentralRegistry());
+			dictionaries =	StoreInfo.DICTIONARIES.big(getConfig(), environment, getValidator(), getCentralRegistry());
 		}
 
-		concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry())
+		concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
 			.onAdd(concept -> {
 				Dataset ds = centralRegistry.resolve(
 					concept.getDataset() == null
@@ -91,10 +101,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					c.getSelects().forEach(centralRegistry::register);
 				}
 				//add imports of table
-				for(Import imp: getAllImports()) {
-					for(Connector con : concept.getConnectors()) {
-						if(con.getTable().getId().equals(imp.getTable())) {
-							con.addImport(imp);
+				if(registerImports) {
+					for (Import imp : getAllImports()) {
+						for (Connector con : concept.getConnectors()) {
+							if (con.getTable().getId().equals(imp.getTable())) {
+								con.addImport(imp);
+							}
 						}
 					}
 				}
@@ -108,24 +120,32 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					centralRegistry.remove(c.getId());
 				}
 			});
-		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig(), getEnvironment(), getValidator(), getCentralRegistry())
+		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
 			.onAdd(imp-> {
 				imp.loadExternalInfos(this);
-				for(Concept<?> c: getAllConcepts()) {
-					for(Connector con : c.getConnectors()) {
-						if(con.getTable().getId().equals(imp.getTable())) {
-							con.addImport(imp);
+
+				if (registerImports) {
+					for (Concept<?> c : getAllConcepts()) {
+						for (Connector con : c.getConnectors()) {
+							if (con.getTable().getId().equals(imp.getTable())) {
+								con.addImport(imp);
+							}
 						}
 					}
 				}
 			});
 
-
-		collector
-			.collect(dataset)
-			.collect(dictionaries)
-			.collect(concepts)
-			.collect(imports);
+		// Order is important here
+		environmentToStores.putAll(environment, List.of(
+			dataset, 
+			dictionaries, 
+			concepts, 
+			imports));
+	}
+	
+	@Override
+	public String getStorageOrigin() {
+		return environment.getLocation();
 	}
 
 	@Override
@@ -140,7 +160,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void addDictionary(Dictionary dict) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addDictionary(Dictionary dict) {
 		dictionaries.add(dict);
 	}
 
@@ -155,7 +176,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateDictionary(Dictionary dict) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateDictionary(Dictionary dict) {
 		dictionaries.update(dict);
 		for(Import imp : getAllImports()) {
 			imp.loadExternalInfos(this);
@@ -168,7 +190,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Dictionary computeDictionary(DictionaryId id) throws JSONException {
+	public Dictionary computeDictionary(DictionaryId id) {
 		Dictionary e = getDictionary(id);
 		if (e == null) {
 			e = new MapDictionary(id);
@@ -178,7 +200,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void addImport(Import imp) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void addImport(Import imp) {
 		imports.add(imp);
 	}
 
@@ -193,7 +216,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateImport(Import imp) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateImport(Import imp) {
 		imports.update(imp);
 	}
 
@@ -204,8 +228,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 	@Override
 	public Concept<?> getConcept(ConceptId id) {
-		return Optional.ofNullable(concepts.get(id))
-			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
+		return concepts.get(id);
 	}
 
 	@Override
@@ -214,7 +237,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void updateConcept(Concept<?> concept) throws JSONException {
+	@SneakyThrows(JSONException.class)
+	public void updateConcept(Concept<?> concept) {
 		concepts.update(concept);
 	}
 

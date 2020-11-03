@@ -15,9 +15,7 @@ public class EndCheckableInputStream extends PushbackInputStream {
 		if(b == -1) {
 			return true;
 		}
-		else {
-			this.unread(b);
-			return false;
-		}
+		this.unread(b);
+		return false;
 	}
 }

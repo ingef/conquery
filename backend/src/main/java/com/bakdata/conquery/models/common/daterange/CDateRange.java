@@ -133,7 +133,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange all() {
-		return CDateRangeOpen.INSTANCE;
+		return CDateRangeAll.INSTANCE;
 	}
 
 	@Override
@@ -367,6 +367,13 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	public Range<LocalDate> toSimpleRange() {
 		return new Range<>(getMin(), getMax());
 	}
+	
+	/**
+	 * The String representation of a DateRange follows the ISO definition.
+	 * For open ended ranges a positive or negative ∞ is used. 
+	 */
+	@Override
+	public abstract String toString();
 
 	/**
 	 * Returns the years that are part of this date range.

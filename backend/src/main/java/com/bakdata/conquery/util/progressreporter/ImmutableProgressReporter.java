@@ -3,53 +3,44 @@ package com.bakdata.conquery.util.progressreporter;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-@Getter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
+
+@Getter
+@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@JsonSerialize(as = Void.class)
 public class ImmutableProgressReporter implements ProgressReporter{
-	@Getter(onMethod_=@JsonValue)
-	private final Values values;
-	
-	@Data
-	public static final class Values {
-		private double progress = 0;
-		private long max = 0;
-		private boolean done = false;
-		private boolean started = false;
-		private long waitedSeconds;
-		private long createdTime;
-		private long startTime;
-	}
+	private final long absoluteProgress;
+	private final long max;
+	private final boolean done;
+	private final boolean started;
+	private final long creationTimeMillis; //millis
+	private final long startTimeMillis; //millis
 	
 	public ImmutableProgressReporter(ProgressReporter pr) {
-		values = new Values();
-		values.progress = pr.getProgress();
-		values.startTime = pr.getStartTime();
-		values.done = pr.isDone();
-		values.started = pr.isStarted();
-		values.max = pr.getMax();
-
-		if(!values.started) {
-			values.createdTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - pr.getWaitedSeconds();
-		}
+		absoluteProgress = pr.getAbsoluteProgress();
+		startTimeMillis = pr.getStartTimeMillis();
+		done = pr.isDone();
+		started = pr.isStarted();
+		max = pr.getMax();
+		creationTimeMillis = pr.getCreationTimeMillis();
 	}
 
 	@Override
 	public String getEstimate() {
-		long elapsed = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - values.startTime;
-		return ProgressReporterUtil.buildProgressReportString(values.done, values.progress, elapsed, values.waitedSeconds);
+		long elapsedMillis = System.currentTimeMillis() - startTimeMillis;
+		long waitedMillis = System.currentTimeMillis() - creationTimeMillis;
+		return ProgressReporterUtil.buildProgressReportString(done, absoluteProgress, max, elapsedMillis, waitedMillis);
 	}
 	
-	@Override @JsonProperty
+	@JsonIgnore
 	public long getWaitedSeconds() {
-		if(values.started) {
-			return values.waitedSeconds;
-		} else {
-			return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - values.createdTime;
+		if(started) {
+			return TimeUnit.MILLISECONDS.toSeconds(startTimeMillis - creationTimeMillis);
 		}
+		return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - creationTimeMillis);
 	}
 	
 	@Override
@@ -78,27 +69,10 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	}
 
 	@Override
-	public long getStartTime() {
-		return values.getStartTime();
-	}
-
-	@Override
-	public long getMax() {
-		return values.getMax();
-	}
-
-	@Override
-	public boolean isStarted() {
-		return values.isStarted();
-	}
-
-	@Override
 	public double getProgress() {
-		return values.getProgress();
-	}
-
-	@Override
-	public boolean isDone() {
-		return values.isDone();
+		if(max <= 0) {
+			return 0;
+		}
+		return ((double)absoluteProgress)/max;
 	}
 }

@@ -2,16 +2,20 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSetCache;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 
 @Getter
@@ -40,9 +44,12 @@ public class FormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		if(!isOfInterest(entity)){
-			return EntityResult.notContained();
+	public MultilineContainedEntityResult execute(QueryExecutionContext ctx, Entity entity) {
+
+		features.init(ctx,entity);
+
+		if (!isOfInterest(entity)) {
+			return createResultForNotContained(entity, null);
 		}
 
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
@@ -53,25 +60,49 @@ public class FormQueryPlan implements QueryPlan {
 						
 			ArrayConceptQueryPlan subPlan = features.clone(clCtx);
 	
-			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			BitMapCDateSet dateRestriction = CDateSetCache.createPreAllocatedDateSet();
+			dateRestriction.addAll(ctx.getDateRestriction());
+
 			dateRestriction.retainAll(dateContext.getDateRange());
 			EntityResult subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
 			
+			if(subResult.isFailed()) {
+				throw subResult.asFailed().getError();
+			}
+			
+			if(!subResult.isContained()) {
+				resultValues.addAll(createResultForNotContained(entity, dateContext).listResultLines());
+				continue;
+			}
+			
 			resultValues.addAll(
 				ResultModifier.modify(
-					subResult,
-					subPlan,
-					v->addConstants(v, dateContext)
-				)
+					subResult.asContained(),
+					ResultModifier.existAggValuesSetterFor(subPlan.getAggregators(), OptionalInt.of(0)).unaryAndThen(v->addConstants(v, dateContext))
+				).listResultLines()
 			);
 		}
 		
 		return EntityResult.multilineOf(entity.getId(), resultValues);
 	}
+
+	private MultilineContainedEntityResult createResultForNotContained(Entity entity, DateContext dateContext) {
+		List<Object[]> result = new ArrayList<>();
+		result.add(new Object[getAggregators().size()]);
+		return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), result), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0)).unaryAndThen( v->addConstants(v, dateContext)));
+	}
+	
+	public List<Aggregator<?>> getAggregators() {
+		return features.getAggregators();
+	}
 	
 	private Object[] addConstants(Object[] values, DateContext dateContext) {		
 		Object[] result = new Object[values.length + constantCount];
 		System.arraycopy(values, 0, result, constantCount, values.length);
+		
+		if(dateContext == null) {
+			return result;
+		}
 		
 		//add resolution indicator
 		result[0] = dateContext.getSubdivisionMode().toString();	

@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.BucketDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
@@ -73,7 +73,6 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 
 	@Override
 	public PrimitiveIterator.OfInt iterator() {
-		log.info("Bucket[{}] size = {}", getId(), getBucketSize()); // TODO: 21.07.2020 FK: This is just temporary for bug-finding in CI.
 		return IntStream.range(0, getBucketSize())
 						.filter(this::containsLocalEntity)
 						.map(this::toGlobal)
@@ -176,7 +175,9 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
 
-	public abstract boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges);
+	public boolean eventIsContainedIn(int event, Column column, BitMapCDateSet dateRanges) {
+		return dateRanges.intersects(getAsDateRange(event, column));
+	}
 
 	public abstract CDateRange getAsDateRange(int event, Column currentColumn);
 

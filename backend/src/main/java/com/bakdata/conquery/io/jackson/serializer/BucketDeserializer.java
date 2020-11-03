@@ -1,9 +1,15 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.worker.NamespaceCollection;
+import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.esotericsoftware.kryo.io.Input;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,12 +17,6 @@ import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class BucketDeserializer extends JsonDeserializer<Bucket> {
 
@@ -37,7 +37,7 @@ public class BucketDeserializer extends JsonDeserializer<Bucket> {
 		if (!p.nextFieldName(FIELD_IMPORT)) {
 			ctxt.handleUnexpectedToken(Bucket.class, p.currentToken(), p, "expected field 'imp'");
 		}
-		Import imp = NamespaceCollection.get(ctxt).resolve(ImportId.Parser.INSTANCE.parse(p.nextTextValue()));
+		Import imp = IdResolveContext.get(ctxt).resolve(ImportId.Parser.INSTANCE.parse(p.nextTextValue()));
 		
 		if (!p.nextFieldName(FIELD_NUMBER_OF_EVENTS)) {
 			ctxt.handleUnexpectedToken(Bucket.class, p.currentToken(), p, "expected field 'numberOfEvents'");

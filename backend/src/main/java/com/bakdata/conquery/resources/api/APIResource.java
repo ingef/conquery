@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import lombok.Setter;
 
@@ -24,7 +25,7 @@ public class APIResource extends HAuthorized {
 	
 	@GET
 	@Path("datasets")
-	public List<IdLabel> getDatasets() {
+	public List<IdLabel<DatasetId>> getDatasets() {
 		return processor.getDatasets(user);
 	}
 }

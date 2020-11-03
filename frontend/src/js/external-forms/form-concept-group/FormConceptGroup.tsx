@@ -492,8 +492,8 @@ const FormConceptGroup = (props: PropsType) => {
 
       return value.concepts.reduce(
         (curVal, concept) =>
-          addConcept(newVal, curVal.length, copyConcept(concept)),
-        currentValue
+          addConcept(curVal, curVal.length - 1, copyConcept(concept)),
+        newVal
       );
     }, props.input.value);
 

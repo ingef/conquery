@@ -29,10 +29,8 @@ public interface IId<TYPE> {
 		if(old == null) {
 			return id;
 		}
-		else {
-			checkConflict(id, old);
-			return old;
-		}
+		checkConflict(id, old);
+		return old;
 	}
 	
 	interface Parser<ID extends IId<?>> {
@@ -83,9 +81,7 @@ public interface IId<TYPE> {
 					checkConflict(result, secondResult);
 					return secondResult;
 				}
-				else {
-					return result;
-				}
+				return result;
 			}
 			parts.consumeAll();
 			return result;
@@ -125,9 +121,7 @@ public interface IId<TYPE> {
 					)
 				);
 			}
-			else {
-				return id;
-			}
+			return id;
 		}
 	}
 	

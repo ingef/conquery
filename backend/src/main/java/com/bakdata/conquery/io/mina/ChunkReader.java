@@ -124,9 +124,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 				chunkedMessage.addBuffer(copy);
 				return chunkedMessage;
 			}
-			else {
-				return new ChunkedMessage.Singleton(in.getSlice(length));
-			}
+			return new ChunkedMessage.Singleton(in.getSlice(length));
 		}
 
 		public ChunkedMessage addBuffer(UUID id, IoBuffer in, int length) {
@@ -143,12 +141,10 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 			if(id.equals(lastId)) {
 				return lastMessage;
 			}
-			else {
-				ChunkedMessage.List msg = messages.computeIfAbsent(id, a->new ChunkedMessage.List());
-				lastId = id;
-				lastMessage = msg;
-				return msg;
-			}
+			ChunkedMessage.List msg = messages.computeIfAbsent(id, a->new ChunkedMessage.List());
+			lastId = id;
+			lastMessage = msg;
+			return msg;
 		}
 
 		private void remove(UUID id) {

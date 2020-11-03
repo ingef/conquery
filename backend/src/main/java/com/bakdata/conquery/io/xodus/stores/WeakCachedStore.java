@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -37,10 +36,6 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final Store<KEY, VALUE> store;
 	
-	@Override
-	public void close() throws IOException {
-	}
-
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		try {

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -11,12 +12,13 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -33,8 +35,8 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
@@ -54,7 +56,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
 	private IQuery query;
-	
+
 	@JsonIgnore
 	protected transient Namespace namespace;
 	/**
@@ -81,15 +83,16 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public void initExecutable(@NonNull Namespaces namespaces) {
+	public void initExecutable(@NonNull DatasetRegistry namespaces) {
 		synchronized (getExecution()) {
 			this.namespace = namespaces.get(getDataset());
 			this.involvedWorkers = namespace.getWorkers().size();
+			query.resolve(new QueryResolveContext(getDataset(), namespaces));
 		}
 	}
 	
 	@Override
-	public void addResult(@NonNull MasterMetaStorage storage, ShardResult result) {
+	public void addResult(@NonNull MetaStorage storage, ShardResult result) {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 
 		if(result.getError().isPresent()) {
@@ -120,7 +123,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void finish(@NonNull MasterMetaStorage storage, ExecutionState executionState) {
+	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
 		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
 
 		super.finish(storage, executionState);
@@ -136,16 +139,16 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MasterMetaStorage storage, URLBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MasterMetaStorage storage, URLBuilder url, User user, ExecutionStatus status) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions();
+			columnDescriptions = generateColumnDescriptions(datasetRegistry);
 		}
 		status.setColumnDescriptions(columnDescriptions);
 	}
@@ -153,7 +156,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	/**
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
-	public List<ColumnDescriptor> generateColumnDescriptions() {
+	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 		// First add the id columns to the descriptor list. The are the first columns
 		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
@@ -163,7 +166,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 				.build());
 		}
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get());
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry);
 		collectResultInfos().getInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;
 	}
@@ -192,7 +195,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public Set<Namespace> getRequiredNamespaces() {
+	public Set<Namespace> getRequiredDatasets() {
 		return Set.of(namespace);
 	}
 
@@ -207,8 +210,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected URL getDownloadURL(URLBuilder url) {
-		return url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-			.to(ResultCSVResource.GET_CSV_PATH).get();
+	protected URL getDownloadURLInternal(@NonNull UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
+		return url
+			.path(ResultCSVResource.class)
+			.resolveTemplate(ResourceConstants.DATASET, dataset.getName())
+			.path(ResultCSVResource.class, ResultCSVResource.GET_CSV_PATH_METHOD)
+			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
+			.build()
+			.toURL();
 	}
 }

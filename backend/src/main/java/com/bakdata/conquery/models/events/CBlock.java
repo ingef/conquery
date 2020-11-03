@@ -1,14 +1,15 @@
 package com.bakdata.conquery.models.events;
 
 import java.util.Arrays;
-import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -36,22 +37,28 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	
 	/**
 	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
+	 *
+	 * Per Entity.
 	 */
 	private long[] includedConcepts;
-	
+
+	// TODO: 02.09.2020 FK: Make chop this onto a per-column basis
 	/**
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
+	 *
+	 * Per Entity.
 	 */
-	private int[] minDate;
-	private int[] maxDate;
+	private int[] minDate, maxDate;
 	
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
+	 *
+	 * Per Event.
 	 */
-	@Valid
-	private List<int[]> mostSpecificChildren;
+	@Nullable
+	private int[][] mostSpecificChildren = null;
 	
 	public CBlock(BucketId bucket, ConnectorId connector) {
 		this.bucket = bucket;
@@ -69,5 +76,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		maxDate = new int[bucketSize];
 		Arrays.fill(minDate, Integer.MAX_VALUE);
 		Arrays.fill(maxDate, Integer.MIN_VALUE);
+	}
+
+	public void addEntityIncludedConcept(int localEntity, ConceptTreeNode<?> node) {
+		getIncludedConcepts()[localEntity] |= node.calculateBitMask();
 	}
 }

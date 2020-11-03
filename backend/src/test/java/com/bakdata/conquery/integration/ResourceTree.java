@@ -8,15 +8,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.common.base.Joiner;
-
 import io.github.classgraph.Resource;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor @Getter @ToString
 public class ResourceTree {
@@ -65,8 +63,6 @@ public class ResourceTree {
 		if (children.size() == 1) {
 			return children.values().iterator().next().reduce();
 		}
-		else {
-			return this;
-		}
+		return this;
 	}
 }

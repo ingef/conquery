@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
@@ -33,10 +33,10 @@ public interface Form extends QueryDescription {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
 
-	public abstract Map<String, List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
+	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
 	
 	@Override
-	public default ManagedForm toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+	public default ManagedForm toManagedExecution(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
 		return new ManagedForm(this, userId, submittedDataset);
 	}
 		
@@ -52,10 +52,12 @@ public interface Form extends QueryDescription {
 	 */
 	public static IQuery resolvePrerequisite(QueryResolveContext context, ManagedExecutionId prerequisiteId) {
 		// Resolve the prerequisite
-		ManagedExecution<?> prerequisiteExe = context.getNamespaces().getMetaStorage().getExecution(prerequisiteId);
+		ManagedExecution<?> prerequisiteExe = context.getDatasetRegistry().getMetaStorage().getExecution(prerequisiteId);
 		if(!(prerequisiteExe instanceof ManagedQuery)) {
 			throw new IllegalArgumentException("The prerequisite query must be of type " + ManagedQuery.class.getName());
 		}
-		return ((ManagedQuery)prerequisiteExe).getQuery().resolve(context);
+		IQuery query = ((ManagedQuery)prerequisiteExe).getQuery();
+		query.resolve(context);
+		return query;
 	}
 }

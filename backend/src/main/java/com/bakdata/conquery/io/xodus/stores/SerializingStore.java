@@ -137,11 +137,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void close() throws IOException {
-		store.close();
-	}
-
-	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
@@ -210,7 +205,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				return;
 			}
 
-			// Apply the conusmer to key and value
+			// Apply the consumer to key and value
 			try {
 				consumer.accept(key, value, v.getLength());
 			}
@@ -221,7 +216,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		});
 		// Print some statistics
 		int total = result.getTotalProcessed();
-		log.info(
+		log.debug(
 			String.format(
 				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
 				this.storeInfo.getXodusName(),

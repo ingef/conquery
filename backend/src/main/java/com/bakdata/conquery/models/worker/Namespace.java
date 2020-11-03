@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * Keep track of all data assigned to a single dataset. Each Slave has one {@link Worker} per {@link Dataset} / {@link Namespace}.
+ * Keep track of all data assigned to a single dataset. Each ShardNode has one {@link Worker} per {@link Dataset} / {@link Namespace}.
  * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
  */
 @Slf4j
@@ -57,7 +57,7 @@ public class Namespace implements Closeable {
 	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
 
 	@JsonIgnore
-	private transient Namespaces namespaces;
+	private transient DatasetRegistry namespaces;
 
 	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
@@ -70,10 +70,10 @@ public class Namespace implements Closeable {
 
 	public void checkConnections() {
 		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w -> w.getConnectedSlave() != null);
+		l.removeIf(w -> w.getConnectedShardNode() != null);
 
 		if (!l.isEmpty()) {
-			throw new IllegalStateException("Not all known slaves are connected. Missing " + l);
+			throw new IllegalStateException("Not all known ShardNodes are connected. Missing " + l);
 		}
 	}
 
@@ -112,7 +112,7 @@ public class Namespace implements Closeable {
 	}
 
 	public synchronized void addWorker(WorkerInformation info) {
-		Objects.requireNonNull(info.getConnectedSlave(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
+		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);
@@ -152,6 +152,6 @@ public class Namespace implements Closeable {
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + '[' + storage.getEnvironment().getLocation() + ']';
+		return this.getClass().getSimpleName() + '[' + storage.getStorageOrigin() + ']';
 	}
 }

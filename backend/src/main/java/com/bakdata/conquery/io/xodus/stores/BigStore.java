@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
+import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -28,19 +29,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
-import io.dropwizard.util.Size;
+import io.dropwizard.util.DataSize;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IteratorUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Store for big files. Files are stored in chunks of 100MB, it therefore requires two stores: one for metadata maintained in {@link BigStoreMetaKeys} the other for the data. BigStoreMeta contains a list of {@link UUID} which describe a single value in the store, to be read in order.
  */
-@Slf4j
 @Getter
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
@@ -53,7 +51,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Getter
 	@Setter
-	private int chunkSize = Ints.checkedCast(Size.megabytes(100).toBytes());
+	private int chunkSize = Ints.checkedCast(DataSize.megabytes(100).toBytes());
 
 
 	public BigStore(StorageConfig config, Validator validator, Environment env, StoreInfo storeInfo) {
@@ -85,12 +83,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		this.valueWriter = Jackson.BINARY_MAPPER.writerFor(storeInfo.getValueType());
 		this.valueReader = Jackson.BINARY_MAPPER.readerFor(storeInfo.getValueType());
-	}
-
-	@Override
-	public void close() throws IOException {
-		metaStore.close();
-		dataStore.close();
 	}
 
 	@Override

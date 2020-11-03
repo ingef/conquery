@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.github.powerlibraries.io.In;
 import lombok.experimental.UtilityClass;
@@ -41,7 +41,7 @@ public class FixedQueriesLoadingUtil {
 	/**
 	 * Parses the query template with the supplied dataset.
 	 */
-	public static List<ConceptQuery> parseQueriesWithDataset(String queryString, DatasetId datasetId, Namespaces namespaces) {
+	public static List<ConceptQuery> parseQueriesWithDataset(String queryString, DatasetId datasetId, DatasetRegistry namespaces) {
 		queryString = queryString.replace("${dataset}", datasetId.toString());
 		ObjectReader reader = namespaces.injectInto(Jackson.MAPPER.copy().readerFor(ConceptQuery[].class));
 		try {
@@ -55,7 +55,7 @@ public class FixedQueriesLoadingUtil {
 	/**
 	 * Parses the query template with the supplied dataset.
 	 */
-	public static List<CQElement> parseFeaturesWithDataset(String featureString, DatasetId datasetId, Namespaces namespaces) {
+	public static List<CQElement> parseFeaturesWithDataset(String featureString, DatasetId datasetId, DatasetRegistry namespaces) {
 		featureString = featureString.replace("${dataset}", datasetId.toString());
 		ObjectReader reader = namespaces.injectInto(Jackson.MAPPER.copy().readerFor(CQElement[].class));
 		try {
@@ -69,7 +69,7 @@ public class FixedQueriesLoadingUtil {
 	/**
 	 * Parses the query template with the supplied dataset.
 	 */
-	public static List<FilterValue<?>> parseFiltersWithDataset(String featureString, DatasetId datasetId, Namespaces namespaces) {
+	public static List<FilterValue<?>> parseFiltersWithDataset(String featureString, DatasetId datasetId, DatasetRegistry namespaces) {
 		featureString = featureString.replace("${dataset}", datasetId.toString());
 		ObjectReader reader = namespaces.injectInto(Jackson.MAPPER.copy().readerFor(FilterValue[].class));
 		try {

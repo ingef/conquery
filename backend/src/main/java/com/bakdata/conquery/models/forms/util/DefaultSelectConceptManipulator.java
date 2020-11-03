@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -31,7 +31,7 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 	private  FillMethod method = FillMethod.ADD_TO_COMPLETE_EMPTY;
 
 	@Override
-	public void consume(CQConcept concept, Namespaces namespaces) {
+	public void consume(CQConcept concept, DatasetRegistry namespaces) {
 		// Obtain the concept Id
 		List<ConceptElementId<?>> conceptIds = concept.getIds();
 		if(conceptIds.isEmpty()) {

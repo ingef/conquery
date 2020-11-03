@@ -13,7 +13,7 @@ public class RealTypeDouble extends CType<Double, Double> {
 
 	@Override
 	public boolean canStoreNull() {
-		return false;
+		return true;
 	}
 	
 	@Override

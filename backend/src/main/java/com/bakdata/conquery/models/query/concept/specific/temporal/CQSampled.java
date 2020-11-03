@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.SampledNode;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,7 +47,7 @@ public class CQSampled {
 	/**
 	 * @see CQElement#resolve(QueryResolveContext)
 	 */
-	public CQSampled resolve(QueryResolveContext context) {
-		return new CQSampled(child.resolve(context), sampler);
+	public void resolve(QueryResolveContext context) {
+		child.resolve(context);
 	}
 }

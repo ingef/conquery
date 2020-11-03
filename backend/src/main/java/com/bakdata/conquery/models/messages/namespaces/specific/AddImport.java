@@ -21,7 +21,7 @@ public class AddImport extends WorkerMessage.Slow {
 	@Override
 	public void react(Worker context) throws Exception {
 		log.info("Received Import[{}], containing {} entries.", imp.getId(), imp.getNumberOfEntries());
-		context.getStorage().addImport(imp);
+		context.addImport(imp);
 	}
 
 }
