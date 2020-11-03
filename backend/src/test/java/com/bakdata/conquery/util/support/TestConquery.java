@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
+import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -196,10 +197,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 		// define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(TestBootstrappingConquery.class, config, app -> {
-			standaloneCommand = new StandaloneCommand((TestBootstrappingConquery) app);
-			return new TestCommandWrapper(config, standaloneCommand);
+			standaloneCommand = new StandaloneCommand((Conquery) app);
+			return standaloneCommand;
 		});
-
 		// start server
 		dropwizard.before();
 

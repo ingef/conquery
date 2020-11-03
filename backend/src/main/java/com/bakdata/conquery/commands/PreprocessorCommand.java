@@ -89,7 +89,6 @@ public class PreprocessorCommand extends ConqueryCommand {
 				.help("Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
 
 		group.addArgument("--fast-fail")
-	        	.dest(PreprocessorCommand.Fields.isFailFast)
 	        	.action(Arguments.storeTrue())
 	        	.help("Stop preprocessing and exit with failure if an error occures that prevents the generation of a cqpp.");
 		
@@ -105,7 +104,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
-		isFailFast = namespace.get(PreprocessorCommand.Fields.isFailFast);
+		isFailFast = namespace.get("fast-fail") == null ? false : namespace.get("fast-fail");
 
 		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.singletonList(null);
 
