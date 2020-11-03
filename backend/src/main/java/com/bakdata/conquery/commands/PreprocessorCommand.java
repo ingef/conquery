@@ -162,8 +162,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 		ConqueryMDC.clearLocation();
 		
 		if(!skipped.isEmpty()) {			
-			log.info("Skipped {} Imports because not all source files existed for a tag:", success.size());
-			success.forEach(desc -> log.info("\tSkipped Preprocessing for {}", desc));
+			log.info("Skipped {} Imports because not all source files existed for a tag", skipped.size());
+			skipped.forEach(desc -> log.trace("\tSkipped Preprocessing for {}", desc));
 		}
 
 		if(!success.isEmpty()){
