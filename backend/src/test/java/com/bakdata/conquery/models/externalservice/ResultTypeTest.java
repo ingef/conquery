@@ -33,7 +33,6 @@ public class ResultTypeTest {
 	public static Stream<Arguments> testData() {
 		//init global default config
 		ConqueryConfig cfg = new ConqueryConfig();
-		cfg.getLocale().setNumberParsingLocale(Locale.ROOT);
 		cfg.getLocale().setCurrency(Currency.getInstance("EUR"));
 		return Stream.of(
 			Arguments.of(PRETTY, ResultType.BOOLEAN, true,	"t"),
@@ -43,9 +42,13 @@ public class ResultTypeTest {
 			Arguments.of(PRETTY_DE, ResultType.RESOLUTION, DateContextMode.COMPLETE, "Gesamt"),
 			Arguments.of(PRETTY, ResultType.DATE, LocalDate.of(2013, 07, 12), "2013-07-12"),
 			Arguments.of(PRETTY, ResultType.INTEGER, 51839274, "51,839,274"),
+			Arguments.of(PRETTY_DE, ResultType.INTEGER, 51839274, "51.839.274"),
 			Arguments.of(PRETTY, ResultType.MONEY, 51839274L, "518,392.74"),
+			Arguments.of(PRETTY_DE, ResultType.MONEY, 51839274L, "518.392,74"),
 			Arguments.of(PRETTY, ResultType.NUMERIC, 0.2, "0.2"),
+			Arguments.of(PRETTY_DE, ResultType.NUMERIC, 0.2, "0,2"),
 			Arguments.of(PRETTY, ResultType.NUMERIC, new BigDecimal("716283712389817246892743124.12312"), "716,283,712,389,817,246,892,743,124.12312"),
+			Arguments.of(PRETTY_DE, ResultType.NUMERIC, new BigDecimal("716283712389817246892743124.12312"), "716.283.712.389.817.246.892.743.124,12312"),
 			Arguments.of(PRETTY, ResultType.STRING, "test", "test"),
 			
 			Arguments.of(PLAIN, ResultType.BOOLEAN, true,	"t"),
@@ -63,7 +66,7 @@ public class ResultTypeTest {
 	}
 	
 	
-	@ParameterizedTest(name="{0} {1}: {2}") @MethodSource("testData")
+	@ParameterizedTest(name="{0} {1}: {2} -> {3}") @MethodSource("testData")
 	public void testPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
 		assertThat(type.printNullable(cfg, value)).isEqualTo(expected);
 		String str = Jackson.MAPPER.writeValueAsString(value);
