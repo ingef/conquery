@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -51,6 +52,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
+import org.apache.shiro.util.InstantiationException;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.representation.ServerConfiguration;
 
@@ -69,9 +71,8 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	private final OIDCResourceOwnerPasswordCredentialRealmFactory config;
 	
 	private ClientAuthentication clientAuthentication;
-	private AuthzClient authzClient;
 	
-	private ServerConfiguration serverConf;
+	private Optional<ServerConfiguration> serverConf;
 	
 	/**
 	 * We only hold validated Tokens for some minutes to recheck them regulary with Keycloak.
@@ -87,8 +88,27 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
 		this.clientAuthentication = new ClientSecretBasic(new ClientID(config.getResource()), new Secret((String)config.getCredentials().get("secret")));
 		
-		authzClient = AuthzClient.create(config);
-		serverConf = authzClient.getServerConfiguration();
+		serverConf = Optional.of(getAuthServerConf(config));
+	}
+	
+	private static ServerConfiguration getAuthServerConf(OIDCResourceOwnerPasswordCredentialRealmFactory config) {
+		AuthzClient authzClient;
+		try {
+			// This tries to contact the identity providers discovery endpoint and can possibly timeout
+			authzClient = AuthzClient.create(config);
+		} catch (Exception e) {
+			log.warn("Unable to estatblish connection to auth server.", log.isTraceEnabled()? e : null );
+			return null;
+		}
+		return authzClient.getServerConfiguration();
+	}
+	
+	private synchronized Optional<ServerConfiguration> tryGetAuthServerConf() {
+		if (serverConf.isPresent()) {
+			return serverConf;
+		}
+		serverConf = Optional.of(getAuthServerConf(config));
+		return serverConf;
 	}
 	
 	@Override
@@ -139,7 +159,12 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	 * Is called by the CacheLoader, so the Token is not validated on every request.
 	 */
 	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws ParseException, IOException {
-		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(serverConf.getIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
+		Optional<ServerConfiguration> servConf = tryGetAuthServerConf();
+		if(servConf.isEmpty()) {
+			throw new InstantiationException("Unable to gain server configuration");
+		}
+		
+		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(servConf.get().getIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
 		
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
 		
@@ -178,11 +203,16 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	@Override
 	@SneakyThrows
 	public String checkCredentialsAndCreateJWT(String username, char[] password) {
+		Optional<ServerConfiguration> servConf = tryGetAuthServerConf();
+		if(servConf.isEmpty()) {
+			throw new InstantiationException("Unable to gain server configuration");
+		}
+		
 		Secret passwordSecret = new Secret(new String(password));
 
 		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
 		
-		URI tokenEndpoint =  UriBuilder.fromUri(serverConf.getTokenEndpoint()).build();
+		URI tokenEndpoint =  UriBuilder.fromUri(servConf.get().getTokenEndpoint()).build();
 
 		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, clientAuthentication, grant, Scope.parse("openid"));
 		
