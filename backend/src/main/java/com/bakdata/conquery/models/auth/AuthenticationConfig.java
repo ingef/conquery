@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.auth;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.dropwizard.setup.Environment;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -14,5 +16,5 @@ public interface AuthenticationConfig {
 	 * @return The realm.
 	 */
 	@JsonIgnore
-	ConqueryAuthenticationRealm createRealm(AuthorizationController controller);
+	ConqueryAuthenticationRealm createRealm(Environment environment, ManagerNode manager);
 }
