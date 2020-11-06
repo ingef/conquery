@@ -8,13 +8,13 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
@@ -24,11 +24,8 @@ import org.keycloak.authorization.client.Configuration;
 public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configuration implements OIDCAuthenticationConfig {
 	
 	private AuthzClient authClient;
-	
-	@Getter
-	private ClientAuthentication clientAuthentication = new ClientSecretBasic(new ClientID(getClientId()), new Secret(getClientSecret()));
 
-	
+	@JsonIgnore
 	private AuthzClient getAuthClient(boolean exceptionOnFailedRetrieval) {
 		if(authClient != null) {
 			return authClient;
@@ -36,7 +33,6 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 		try {
 			// This tries to contact the identity providers discovery endpoint and can possibly timeout
 			AuthzClient authzClient = AuthzClient.create(this);
-			clientAuthentication = new ClientSecretBasic(new ClientID(getClientId()), new Secret(getClientSecret()));
 			return authzClient;
 		} catch (RuntimeException e) {
 			log.warn("Unable to estatblish connection to auth server.", log.isTraceEnabled()? e : null );
@@ -47,25 +43,29 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 		return null;
 	}
 	
+	@JsonIgnore
 	public String getTokenEndpoint(){
 		return getAuthClient(true).getServerConfiguration().getTokenEndpoint();
 	}
-	
+
+	@JsonIgnore
 	public String getIntrospectionEndpoint() {
 		return getAuthClient(true).getServerConfiguration().getIntrospectionEndpoint();
 	}
-	
+
+	@JsonIgnore
 	private String getClientId() {
 		return getAuthClient(true).getConfiguration().getResource();
 	}
-	
+
+	@JsonIgnore
 	private String getClientSecret() {
 		return getAuthClient(true).getConfiguration().getClientKeyPassword();
 	}
 	
-	
-	public final ClientAuthentication getClientAuthentication() {
 
+	@JsonIgnore
+	public final ClientAuthentication getClientAuthentication() {
 		return new ClientSecretBasic(new ClientID(getClientId()), new Secret(getClientSecret()));
 	}
 
@@ -81,6 +81,6 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 				}
 			});
 		}
-		return new OIDCResourceOwnerPasswordCredentialRealm(controller.getStorage(), this);
+		return new OIDCResourceOwnerPasswordCredentialRealm<>(controller.getStorage(), this);
 	}
 }
