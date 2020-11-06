@@ -38,7 +38,6 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.TypelessAccessToken;
 import io.dropwizard.jersey.DropwizardResourceConfig;
-import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -60,7 +59,6 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 	
-	private final Environment environment;
 	private final MetaStorage storage;
 	private final OIDCAuthenticationConfig authProviderConf;
 	

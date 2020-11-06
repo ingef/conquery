@@ -4,9 +4,9 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
@@ -70,7 +70,7 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 	}
 
 	@Override
-	public ConqueryAuthenticationRealm createRealm(Environment environment, ManagerNode manager) {
+	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController controller) {
 		this.authClient = getAuthClient(false);
 		if(environment != null && environment.admin() != null) {
 			environment.admin().addTask(new Task("keycloak-update-authz-client") {
@@ -81,6 +81,6 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 				}
 			});
 		}
-		return new OIDCResourceOwnerPasswordCredentialRealm(manager.getStorage(), this);
+		return new OIDCResourceOwnerPasswordCredentialRealm(controller.getStorage(), this);
 	}
 }

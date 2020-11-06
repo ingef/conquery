@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth;
 
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -16,5 +15,5 @@ public interface AuthenticationConfig {
 	 * @return The realm.
 	 */
 	@JsonIgnore
-	ConqueryAuthenticationRealm createRealm(Environment environment, ManagerNode manager);
+	ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController controller);
 }
