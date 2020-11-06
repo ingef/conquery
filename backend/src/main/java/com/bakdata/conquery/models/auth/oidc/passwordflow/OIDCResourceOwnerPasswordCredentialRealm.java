@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -35,12 +34,11 @@ import com.nimbusds.oauth2.sdk.TokenIntrospectionSuccessResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
-import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
-import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.TypelessAccessToken;
 import io.dropwizard.jersey.DropwizardResourceConfig;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -50,9 +48,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
-import org.apache.shiro.util.InstantiationException;
-import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.authorization.client.representation.ServerConfiguration;
 
 /**
  * Realm that supports the Open ID Connect Resource-Owner-Password-Credential-Flow with a Keycloak IdP.
@@ -61,16 +56,16 @@ import org.keycloak.authorization.client.representation.ServerConfiguration;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthenticationRealm implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
+public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticationConfig> extends ConqueryAuthenticationRealm implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 	
+	private final Environment environment;
 	private final MetaStorage storage;
-	private final OIDCResourceOwnerPasswordCredentialRealmFactory config;
+	private final OIDCAuthenticationConfig authProviderConf;
 	
 	private ClientAuthentication clientAuthentication;
 	
-	private Optional<ServerConfiguration> serverConf;
 	
 	/**
 	 * We only hold validated Tokens for some minutes to recheck them regulary with Keycloak.
@@ -84,29 +79,6 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		super.onInit();
 		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
-		this.clientAuthentication = new ClientSecretBasic(new ClientID(config.getResource()), new Secret((String)config.getCredentials().get("secret")));
-		
-		serverConf = Optional.of(getAuthServerConf(config));
-	}
-	
-	private static ServerConfiguration getAuthServerConf(OIDCResourceOwnerPasswordCredentialRealmFactory config) {
-		AuthzClient authzClient;
-		try {
-			// This tries to contact the identity providers discovery endpoint and can possibly timeout
-			authzClient = AuthzClient.create(config);
-		} catch (Exception e) {
-			log.warn("Unable to estatblish connection to auth server.", log.isTraceEnabled()? e : null );
-			return null;
-		}
-		return authzClient.getServerConfiguration();
-	}
-	
-	private synchronized Optional<ServerConfiguration> tryGetAuthServerConf() {
-		if (serverConf.isPresent()) {
-			return serverConf;
-		}
-		serverConf = Optional.of(getAuthServerConf(config));
-		return serverConf;
 	}
 	
 	@Override
@@ -140,12 +112,7 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	 * Is called by the CacheLoader, so the Token is not validated on every request.
 	 */
 	private TokenIntrospectionSuccessResponse validateToken(AuthenticationToken token) throws ParseException, IOException {
-		Optional<ServerConfiguration> servConf = tryGetAuthServerConf();
-		if(servConf.isEmpty()) {
-			throw new InstantiationException("Unable to gain server configuration");
-		}
-		
-		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(servConf.get().getIntrospectionEndpoint()) , clientAuthentication, new TypelessAccessToken((String) token.getCredentials()));
+		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(authProviderConf.getIntrospectionEndpoint()) , authProviderConf.getClientAuthentication(), new TypelessAccessToken((String) token.getCredentials()));
 		
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
 		
@@ -184,18 +151,14 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	@Override
 	@SneakyThrows
 	public String checkCredentialsAndCreateJWT(String username, char[] password) {
-		Optional<ServerConfiguration> servConf = tryGetAuthServerConf();
-		if(servConf.isEmpty()) {
-			throw new InstantiationException("Unable to gain server configuration");
-		}
 		
 		Secret passwordSecret = new Secret(new String(password));
 
 		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
 		
-		URI tokenEndpoint =  UriBuilder.fromUri(servConf.get().getTokenEndpoint()).build();
+		URI tokenEndpoint =  UriBuilder.fromUri(authProviderConf.getTokenEndpoint()).build();
 
-		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, clientAuthentication, grant, Scope.parse("openid"));
+		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, authProviderConf.getClientAuthentication(), grant, Scope.parse("openid"));
 		
 		
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());

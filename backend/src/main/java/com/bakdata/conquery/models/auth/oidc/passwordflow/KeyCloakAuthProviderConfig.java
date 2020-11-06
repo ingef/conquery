@@ -4,10 +4,6 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.auth.AuthenticationConfig;
-import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
@@ -17,17 +13,29 @@ import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.authorization.client.Configuration;
 
 @Slf4j
-@CPSType(base = AuthenticationConfig.class, id = "OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION")
-public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configuration implements OIDCAuthenticationConfig {
-	
+public class KeyCloakAuthProviderConfig implements OIDCAuthenticationConfig {
+
+	private OIDCResourceOwnerPasswordCredentialRealmFactory config;
 	private AuthzClient authClient;
 	
 	@Getter
 	private ClientAuthentication clientAuthentication = new ClientSecretBasic(new ClientID(getClientId()), new Secret(getClientSecret()));
-
+	
+	public KeyCloakAuthProviderConfig(OIDCResourceOwnerPasswordCredentialRealmFactory config, Environment environment) {
+		this.config = config;
+		this.authClient = getAuthClient(false);
+		if(environment != null && environment.admin() != null) {
+			environment.admin().addTask(new Task("keycloak-update-authz-client") {
+				
+				@Override
+				public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+					authClient = getAuthClient(true);
+				}
+			});
+		}
+	}
 	
 	private AuthzClient getAuthClient(boolean exceptionOnFailedRetrieval) {
 		if(authClient != null) {
@@ -35,7 +43,7 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 		}
 		try {
 			// This tries to contact the identity providers discovery endpoint and can possibly timeout
-			AuthzClient authzClient = AuthzClient.create(this);
+			AuthzClient authzClient = AuthzClient.create(config);
 			clientAuthentication = new ClientSecretBasic(new ClientID(getClientId()), new Secret(getClientSecret()));
 			return authzClient;
 		} catch (RuntimeException e) {
@@ -69,18 +77,4 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 		return new ClientSecretBasic(new ClientID(getClientId()), new Secret(getClientSecret()));
 	}
 
-	@Override
-	public ConqueryAuthenticationRealm createRealm(Environment environment, ManagerNode manager) {
-		this.authClient = getAuthClient(false);
-		if(environment != null && environment.admin() != null) {
-			environment.admin().addTask(new Task("keycloak-update-authz-client") {
-				
-				@Override
-				public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
-					authClient = getAuthClient(true);
-				}
-			});
-		}
-		return new OIDCResourceOwnerPasswordCredentialRealm(manager.getStorage(), this);
-	}
 }
