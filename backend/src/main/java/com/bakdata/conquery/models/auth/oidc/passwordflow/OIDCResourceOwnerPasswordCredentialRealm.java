@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -116,12 +114,6 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		
 		TokenIntrospectionSuccessResponse successResponse = tokenCache.get((JwtToken) token);
-		
-//		TODO check why tokens are invalidated too early
-//		if(isExpired(successResponse)){
-//			tokenCache.invalidate(token);
-//			throw new ExpiredCredentialsException();
-//		}
 
 		String username = successResponse.getUsername();
 		if(StringUtils.isBlank(username)) {
@@ -142,17 +134,6 @@ public class OIDCResourceOwnerPasswordCredentialRealm extends ConqueryAuthentica
 		}
 
 		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
-	}
-	
-	private boolean isExpired(TokenIntrospectionSuccessResponse tokenInstrospection) {
-		LocalDateTime expTime = tokenInstrospection.getExpirationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-		LocalDateTime now = LocalDateTime.now();
-		
-		boolean result = expTime.isBefore(now);
-		if(result) {
-			log.debug("Provided token expired at {} ( now is {})", expTime, now);
-		}
-		return result;
 	}
 
 	/**
