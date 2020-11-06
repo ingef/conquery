@@ -1,9 +1,10 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
+import static com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealm.CONFIDENTIAL_CREDENTIAL;
+
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
-import static com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealm.CONFIDENTIAL_CREDENTIAL;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
@@ -16,9 +17,9 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authorization.client.AuthzClient;
-import io.dropwizard.validation.ValidationMethod;
 import org.keycloak.authorization.client.Configuration;
 
 @Slf4j
@@ -57,12 +58,12 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 
 	@JsonIgnore
 	private String getClientId() {
-		return getAuthClient(true).getConfiguration().getResource();
+		return getResource();
 	}
 
 	@JsonIgnore
 	private String getClientSecret() {
-		return getAuthClient(true).getConfiguration().getClientKeyPassword();
+		return (String) credentials.get(CONFIDENTIAL_CREDENTIAL);
 	}
 	
 
