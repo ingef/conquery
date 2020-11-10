@@ -50,7 +50,7 @@ public class ExecutionStatus {
 		private List<ColumnDescriptor> columnDescriptions;
 		
 		/**
-		 * Indicates if the concepts that are included in the query description can be accesed by the user.
+		 * Indicates if the concepts that are included in the query description can be accessed by the user.
 		 */
 		private boolean canExpand;
 		

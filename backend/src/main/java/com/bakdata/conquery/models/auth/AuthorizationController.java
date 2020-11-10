@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,8 @@ public final class AuthorizationController implements Managed{
 	public static AuthorizationController INSTANCE;
 	
 	@NonNull
+	private final Environment environment;
+	@NonNull
 	private final AuthorizationConfig authorizationConfig;
 	@NonNull
 	private final List<AuthenticationConfig> authenticationConfigs;
@@ -68,9 +71,9 @@ public final class AuthorizationController implements Managed{
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);
 
-		// Init authentication realms provided by with the config.
+		// Init authentication realms provided by the config.
 		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
-			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(this);
+			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(environment, this);
 			authenticationRealms.add(realm);
 			realms.add(realm);
 		}

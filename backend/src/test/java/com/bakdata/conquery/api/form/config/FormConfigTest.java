@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.jersey.validation.Validators;
+import io.dropwizard.setup.Environment;
 import org.apache.commons.collections4.map.HashedMap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -189,7 +190,7 @@ public class FormConfigTest {
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
 		.add(IdResolveContext.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storageMock);
-		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(), Collections.emptyList(), storageMock);
+		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(), Collections.emptyList(), storageMock);
 		controller.init();
 		controller.start();
 	}
