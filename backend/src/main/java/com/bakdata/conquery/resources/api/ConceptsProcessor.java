@@ -168,6 +168,7 @@ public class ConceptsProcessor {
 		try{
 			fullResult = searchCache.get(Pair.of(filter, text));
 		} catch (ExecutionException e) {
+			log.warn("Could not get a search result for the term \"{}\".", text, log.isTraceEnabled()? e : null);
 			return ImmutableList.of();
 		}
 		int startIncl = fullResult.isEmpty()? 0 : Math.min(itemsPerPage*pageNumber, fullResult.size());
