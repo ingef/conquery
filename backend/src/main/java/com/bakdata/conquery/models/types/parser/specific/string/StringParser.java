@@ -62,7 +62,7 @@ public class StringParser extends Parser<Integer> {
 
 	@Override
 	protected Integer parseValue(String value) throws ParsingException {
-		return strings.computeIfAbsent(value, this::parseNewValue);
+		return strings.computeIfAbsent(value, this::processNewValue);
 	}
 	
 	@Override
