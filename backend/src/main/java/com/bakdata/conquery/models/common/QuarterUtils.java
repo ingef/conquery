@@ -10,7 +10,6 @@ import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-
 import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class QuarterUtils {
@@ -107,9 +106,7 @@ public final class QuarterUtils {
 				return temporal.with(ChronoField.MONTH_OF_YEAR, 1)
 					.with(ChronoField.YEAR, (temporal).get(ChronoField.YEAR) + 1);
 			}
-			else {
-				return temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR) + 1).getValue());
-			}
+			return temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR) + 1).getValue());
 		};
 	}
 

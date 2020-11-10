@@ -49,18 +49,10 @@ public class RelativeFormQuery extends IQuery {
 	private final List<DateContextMode> resolutions;
 	
 	@Override
-	public RelativeFormQuery resolve(QueryResolveContext context) {
-		return new RelativeFormQuery(
-			query.resolve(context),
-			features.resolve(context),
-			outcomes.resolve(context),
-			indexSelector,
-			indexPlacement,
-			timeCountBefore,
-			timeCountAfter,
-			timeUnit,
-			resolutions
-		);
+	public void resolve(QueryResolveContext context) {
+		query.resolve(context);
+		features.resolve(context);
+		outcomes.resolve(context);
 	}
 	
 	@Override

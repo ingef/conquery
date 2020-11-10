@@ -25,12 +25,15 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
+import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
@@ -38,6 +41,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
@@ -201,7 +205,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
-		status.setOwn(getOwner().equals(user.getId()));
+		status.setOwn(owner.equals(user.getId()));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
@@ -217,7 +221,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
 	public final Optional<URL> getDownloadURL(UriBuilder url, User user) {
-		if(!isReadyToDownload(url, user)) {
+		if(url == null || !isReadyToDownload(url, user)) {
+			// url might be null because no url was wished and no builder was provided
 			return Optional.empty();
 		}
 		return Optional.ofNullable(getDownloadURLInternal(url));
@@ -230,13 +235,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
 	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class), datasetRegistry);
+		return buildStatus(storage, url, user, datasetRegistry, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
 	}
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, EnumSet.of(creationFlag), datasetRegistry);
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, datasetRegistry, EnumSet.of(creationFlag));
 	}
 	
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags, DatasetRegistry datasetRegistry) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
 		for(CreationFlag flag : creationFlags) {
@@ -247,12 +252,32 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				case WITH_SOURCE:
 					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
 					break;
+				case WITH_GROUPS:
+					setAdditionalFieldsForStatusWithGroups(storage, user, status);
+					break;
 				default:
 					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
 			}
 		}
 		return status;
 		
+	}
+
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus status) {
+		/* Calculate which groups can see this query.
+		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 */
+		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
+		for(Group group : storage.getAllGroups()) {
+			for(Permission perm : group.getPermissions()) {
+				if(perm.implies(QueryPermission.onInstance(Ability.READ, this.getId()))) {
+					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+					continue;
+				}
+			}
+		}
+		
+		status.setGroups(permittedGroups);
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {

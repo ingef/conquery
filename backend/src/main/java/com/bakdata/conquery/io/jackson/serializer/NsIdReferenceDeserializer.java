@@ -74,9 +74,7 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 				throw new RuntimeException("Error while resolving entry "+text+" of type "+type, e);
 			}
 		}
-		else {
-			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
-		}
+		return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
 	}
 	
 	@Override

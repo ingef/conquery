@@ -4,12 +4,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -26,12 +28,12 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -50,14 +52,20 @@ public class CQExternal implements CQElement {
 	@NotEmpty
 	private final String[][] values;
 
+	@Getter @InternalOnly
+	private Map<Integer, BitMapCDateSet> valuesResolved;
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
+		if (valuesResolved == null) {			
+			throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
+		}
+		return new ExternalNode(context.getStorage().getDataset().getAllIdsTableId(), valuesResolved, plan.getSpecialDateUnion());
 	}
 
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
+	public void resolve(QueryResolveContext context) {
 		DirectDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream()
 												.map(FormatColumn::getDateFormat)
@@ -69,7 +77,7 @@ public class CQExternal implements CQElement {
 								  .mapToInt(format::indexOf)
 								  .toArray();
 
-		Int2ObjectMap<BitMapCDateSet> includedEntities = new Int2ObjectOpenHashMap<>();
+		valuesResolved = new Int2ObjectOpenHashMap<>();
 
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
@@ -104,7 +112,7 @@ public class CQExternal implements CQElement {
 
 				int resolvedId;
 				if (id != null && (resolvedId = primary.getId(id.getCsvId())) != -1) {
-					includedEntities.put(resolvedId, dates);
+					valuesResolved.put(resolvedId, dates);
 				}
 				else {
 					nonResolved.add(Arrays.asList(row));
@@ -122,8 +130,6 @@ public class CQExternal implements CQElement {
 					nonResolved.subList(0, Math.min(nonResolved.size(), 10))
 			);
 		}
-
-		return new CQExternalResolved(includedEntities);
 	}
 
 	@Override

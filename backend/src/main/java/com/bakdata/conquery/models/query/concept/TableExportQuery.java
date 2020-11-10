@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -57,6 +58,7 @@ public class TableExportQuery extends IQuery {
 	@NotEmpty
 	@Valid
 	private List<CQUnfilteredTable> tables;
+	@InternalOnly
 	private List<ColumnId> resolvedHeader;
 
 	@Override
@@ -96,8 +98,8 @@ public class TableExportQuery extends IQuery {
 	}
 
 	@Override
-	public TableExportQuery resolve(QueryResolveContext context) {
-		this.query = query.resolve(context);
+	public void resolve(QueryResolveContext context) {
+		query.resolve(context);
 		resolvedHeader = new ArrayList<>();
 
 		for (CQUnfilteredTable table : tables) {
@@ -115,7 +117,6 @@ public class TableExportQuery extends IQuery {
 			}
 		}
 
-		return this;
 	}
 
 	@Override

@@ -125,8 +125,6 @@ public class DatasetsUIResource extends HAdmin {
 		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
 			return new UIView<>("idmapping.html.ftl", processor.getUIContext(), mapping.getCsvIdToExternalIdMap());
 		}
-		else {
-			return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
-		}
+		return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
 	}
 }

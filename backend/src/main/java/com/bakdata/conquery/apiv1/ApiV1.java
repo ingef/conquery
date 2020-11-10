@@ -41,11 +41,12 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new MeProcessor(manager.getStorage())).to(MeProcessor.class);
 				bind(new QueryProcessor(datasets, manager.getStorage())).to(QueryProcessor.class);
 				bind(new FormConfigProcessor(manager.getValidator(),manager.getStorage())).to(FormConfigProcessor.class);
-				bind(new StoredQueriesProcessor(manager.getDatasetRegistry())).to(StoredQueriesProcessor.class);
+				bind(new StoredQueriesProcessor(manager.getDatasetRegistry(), manager.getStorage())).to(StoredQueriesProcessor.class);
 			}
 		});
 
-		environment.register(new CORSPreflightRequestFilter());
+		environment.register(CORSPreflightRequestFilter.class);
+		environment.register(CORSResponseFilter.class);
 
 		environment.register(new ActiveUsersFilter(manager.getStorage(), Duration.ofMinutes(manager.getConfig()
 																										.getMetricsConfig()
@@ -62,7 +63,6 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new ResultCSVResource(datasets, manager.getConfig()));
 		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
-		environment.register(CORSResponseFilter.class);
 		environment.register(new ConfigResource(manager.getConfig()));
 		environment.register(FormConfigResource.class);
 
