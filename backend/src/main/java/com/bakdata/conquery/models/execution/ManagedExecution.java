@@ -77,7 +77,7 @@ import org.apache.shiro.authz.Permission;
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
 	
 	/**
-	 * Some unusual suffix. Its not too bad if someone actually this. 
+	 * Some unusual suffix. Its not too bad if someone actually uses this. 
 	 */
 	public final static String AUTO_LABEL_SUFFIX = "\t@§$";
 
