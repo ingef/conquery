@@ -204,7 +204,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		InputFile file = InputFile.fromDescriptionFile(descriptionFile, description, tag);
 		try {
 			TableImportDescriptor descr = file.readDescriptor(validator, tag);
-			
+			// Test if all Inputs exist
 			for(TableInputDescriptor inputs : descr.getInputs()) {
 				if(!inputs.getSourceFile().exists()) {
 					log.trace("Skipping import {} because source file {} does not exists.", descriptionFile, inputs.getSourceFile());
