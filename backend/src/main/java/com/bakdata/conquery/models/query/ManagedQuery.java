@@ -244,6 +244,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	protected void makeDefaultLabel(final StringBuilder sb) {
 		final Map<Class<? extends Visitable>,List<Visitable>> sortedContents = new HashMap<>();
+		
+		int sbStartSize = sb.length();
+		
 		QueryVisitor visitor = new QueryVisitor() {
 			
 			@Override
@@ -253,6 +256,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		};
 		query.visit(visitor);
 		
+		// Check for CQExternal
 		List<Visitable> externals = sortedContents.computeIfAbsent(CQExternal.class, (clazz)-> List.of());
 		if(!externals.isEmpty()) {
 			if (sb.length() > 0) {
@@ -261,6 +265,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).external());
 		}
 		
+		// Check for CQReused
 		if( !sortedContents.computeIfAbsent(CQReusedQuery.class, (clazz)-> List.of()).isEmpty()) {
 			if (sb.length() > 0) {
 				sb.append(" ");
@@ -268,6 +273,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).reused());
 		}
 		
+		// Check for CQConcept
 		final AtomicInteger length = new AtomicInteger();
 		String usedConcepts = sortedContents.computeIfAbsent(CQConcept.class, (clazz)-> List.of()).stream()
 			.map((CQConcept.class::cast))
@@ -282,5 +288,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		}
 		sb.append(usedConcepts);
 		
+		// Fallback to id if nothing could be extracted from the query description
+		if(sbStartSize == sb.length()) {
+			sb.append(getId().getExecution());
+		}
 	}
 }

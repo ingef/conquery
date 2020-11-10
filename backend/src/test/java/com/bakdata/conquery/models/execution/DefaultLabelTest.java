@@ -51,6 +51,26 @@ public class DefaultLabelTest {
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
 	
+	@ParameterizedTest
+	@CsvSource({
+		"de",
+		"en"})
+	void autoLabelConceptQueryFallback(Locale locale) {
+		I18n.LOCALE.set(locale);
+		
+		CQConcept concept = new CQConcept();
+		concept.setLabel(null);
+		ConceptQuery cq = new ConceptQuery(concept);
+		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
+		UUID uuid = UUID.randomUUID();
+		mQuery.setQueryId(uuid);
+
+		mQuery.setLabel(mQuery.makeAutoLabel());
+		
+		assertThat(mQuery.getLabel()).isEqualTo(uuid+AUTO_LABEL_SUFFIX);
+		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(uuid.toString());
+	}
+	
 	
 	@ParameterizedTest
 	@CsvSource({
