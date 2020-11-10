@@ -31,15 +31,16 @@ public class DecimalParser extends Parser<BigDecimal> {
 	protected BigDecimal parseValue(String value) throws ParsingException {
 		return NumberParsing.parseBig(value);
 	}
-	
+
 	@Override
 	protected void registerValue(BigDecimal v) {
-		log.trace("Registering `{}`",v);
+		log.trace("Registering `{}`", v);
 
 		BigDecimal abs = v.abs();
-		if(v.scale() > maxScale)
+		if (v.scale() > maxScale) {
 			maxScale = v.scale();
-		if(maxAbs == null || maxAbs.compareTo(abs)<0) {
+		}
+		if (maxAbs == null || maxAbs.compareTo(abs) < 0) {
 			maxAbs = abs;
 		}
 	}
@@ -48,14 +49,14 @@ public class DecimalParser extends Parser<BigDecimal> {
 	protected Decision<? extends CType<BigDecimal, ?>> decideType() {
 		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
 			return new Decision<DecimalTypeBigDecimal>(
-				new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
+					new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
 			);
 		}
 
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
 			return new Decision<DecimalTypeBigDecimal>(
-				new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
+					new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
 			);
 		}
 

@@ -11,14 +11,17 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
-@CPSType(base=ColumnStore.class, id="DECIMAL_SCALED") @ToString
+@CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
+@ToString
 public class DecimalTypeScaled extends CType<BigDecimal, BigDecimal> {
 
-	@Getter @ToString.Include
+	@Getter
+	@ToString.Include
 	private final int scale;
-	@Getter @ToString.Include
+	@Getter
+	@ToString.Include
 	private final CType<?, Long> subType;
-	
+
 	@JsonCreator
 	public DecimalTypeScaled(int scale, CType subType) {
 		super(MajorTypeId.DECIMAL);
@@ -26,26 +29,16 @@ public class DecimalTypeScaled extends CType<BigDecimal, BigDecimal> {
 		this.subType = subType;
 	}
 
-	// TODO this class is a mess
-
-	@Override
+		@Override
 	public BigDecimal createScriptValue(BigDecimal value) {
 		return null;
 	}
 
-	public static BigInteger unscale(int scale, BigDecimal value) {
-		return value.movePointRight(scale).toBigIntegerExact();
-	}
-	
-	public static BigDecimal scale(int scale, long value) {
-		return BigDecimal.valueOf(value, scale);
-	}
-	
 	@Override
 	public String toString() {
 		return "DecimalTypeScaled[numberType=" + subType + "]";
 	}
-	
+
 	@Override
 	public long estimateMemoryBitWidth() {
 		return subType.estimateMemoryBitWidth();
@@ -58,7 +51,16 @@ public class DecimalTypeScaled extends CType<BigDecimal, BigDecimal> {
 
 	@Override
 	public void set(int event, BigDecimal value) {
+		if (value == null) {
+			subType.set(event, null);
+		}
+		else {
+			subType.set(event, unscale(scale, value).longValue());
+		}
+	}
 
+	public static BigInteger unscale(int scale, BigDecimal value) {
+		return value.movePointRight(scale).toBigIntegerExact();
 	}
 
 	@Override
@@ -66,8 +68,12 @@ public class DecimalTypeScaled extends CType<BigDecimal, BigDecimal> {
 		return scale(scale, subType.get(event));
 	}
 
+	public static BigDecimal scale(int scale, long value) {
+		return BigDecimal.valueOf(value, scale);
+	}
+
 	@Override
 	public boolean has(int event) {
-		return false;
+		return subType.has(event);
 	}
 }

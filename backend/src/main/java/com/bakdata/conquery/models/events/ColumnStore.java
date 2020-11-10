@@ -29,8 +29,14 @@ public interface ColumnStore<T> {
 
 	ColumnStore<T> select(int[] starts, int[] length);
 
+	/**
+	 * Set the event. If null, the store will store a null value.
+	 */
 	void set(int event, T value);
 
+	/**
+	 * Try and retrieve a value if there is one present. Is only valid, if {@linkplain ColumnStore#has(int)} is true.
+	 */
 	T get(int event);
 
 	boolean has(int event);
@@ -52,5 +58,4 @@ public interface ColumnStore<T> {
 	CDateRange getDateRange(int event);
 
 	Object getAsObject(int event);
-
 }

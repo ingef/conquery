@@ -153,8 +153,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 				continue;
 			}
 
-			// todo this is ugly
-			out.put(imp.getColumns()[i].getName(), getImp().getColumns()[i].getType().createScriptValue(store.get(event)));
+			out.put(imp.getColumns()[i].getName(), imp.getColumns()[i].getType().createScriptValue(store.get(event)));
 		}
 
 		return out;
