@@ -6,15 +6,19 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.date.QuarterDateStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 /**
  * a type to store effectively a date range by only storing the first epoch day of the quarter
  **/
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
+@Getter
 public class DateRangeTypeQuarter extends CType<CDateRange, CDateRange> {
 
 	private final QuarterDateStore store;
 
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeTypeQuarter(QuarterDateStore store) {
 		super(MajorTypeId.DATE_RANGE);
 		this.store = store;
