@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -32,14 +31,12 @@ import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 @Slf4j
 @UtilityClass
@@ -263,36 +260,6 @@ public class Preprocessor {
 						result.getPrimaryColumn().getParser(),
 						result.getPrimaryColumn().getType()
 				);
-
-				for (PPColumn c : result.getColumns()) {
-					log.info("Compute best Subtype for  Column[{}] with {}", c.getName(), c.getParser());
-					c.findBestType();
-					log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
-				}
-
-				//estimate memory weight
-				log.trace(
-						"estimated total memory consumption: {} + n*{}",
-						BinaryByteUnit.format(
-								Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateMemoryConsumption).sum()
-								+ result.getPrimaryColumn().getType().estimateMemoryConsumption()
-						),
-						BinaryByteUnit.format(
-								Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateTypeSize).sum()
-								+ result.getPrimaryColumn().getType().estimateTypeSize()
-						)
-				);
-
-				for (PPColumn c : ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
-					long typeConsumption = c.getType().estimateTypeSize();
-					log.trace(
-							"\t{}.{}: {}{}",
-							result.getName(),
-							c.getName(),
-							BinaryByteUnit.format(c.getType().estimateMemoryConsumption()),
-							typeConsumption == 0 ? "" : (" + n*" + BinaryByteUnit.format(typeConsumption))
-					);
-				}
 			}
 
 			result.write(outFile);

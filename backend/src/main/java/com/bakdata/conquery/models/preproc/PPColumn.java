@@ -11,23 +11,35 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Data @RequiredArgsConstructor @NoArgsConstructor
+@Slf4j
+@Data
+@RequiredArgsConstructor
+@NoArgsConstructor
 public class PPColumn {
 	@NonNull
 	private String name;
 
-	@SuppressWarnings("rawtypes") @NotNull
+	@SuppressWarnings("rawtypes")
+	@NotNull
 	private CType type;
-	@SuppressWarnings("rawtypes") @JsonIgnore
+	@SuppressWarnings("rawtypes")
+	@JsonIgnore
 	private transient Parser parser = null;
 	@JsonIgnore
 	private transient DictionaryMapping valueMapping;
 	@JsonIgnore
 	private transient CType oldType;
 
-	public void findBestType() {
+	public CType findBestType() {
+		log.info("Compute best Subtype for  Column[{}] with {}", getName(), getParser());
 		Decision typeDecision = parser.findBestType();
-		type = typeDecision.getType();
+		// this only creates the headers
+		type = typeDecision.getType().select(new int[]{0}, new int[]{0});
+
+		log.info("\t{}: {} -> {}", getName(), getParser(), getType());
+
+		return typeDecision.getType();
 	}
 }
