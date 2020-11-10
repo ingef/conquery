@@ -13,7 +13,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
-import com.bakdata.conquery.io.xodus.stores.SerializingStore;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -24,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +60,7 @@ public class ResultProcessor {
 				// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 				response.header("Content-Disposition", String.format(
 					"attachment; filename=\"%s.%s\"",
-					SerializingStore.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
+					FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
 					fileExtension));
 			}
 			return response;
