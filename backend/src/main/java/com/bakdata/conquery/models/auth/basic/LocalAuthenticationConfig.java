@@ -7,7 +7,9 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationController;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.config.XodusConfig;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,7 +34,7 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	private String storeName = "authenticationStore";
 	
 	@Override
-	public LocalAuthenticationRealm createRealm(AuthorizationController controller) {
+	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController controller) {
 		return new LocalAuthenticationRealm(controller, this);
 	}
 }
