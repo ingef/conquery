@@ -37,6 +37,11 @@ public class StringTypeNumber extends StringType {
 		this.delegate = numberType;
 	}
 
+	public StringTypeNumber(Range<Integer> range, VarIntType numberType, Map<Integer, String> dictionary) {
+		this(range, numberType);
+		this.dictionary = dictionary;
+	}
+
 	@Override
 	public long estimateMemoryBitWidth() {
 		return delegate.estimateMemoryBitWidth();

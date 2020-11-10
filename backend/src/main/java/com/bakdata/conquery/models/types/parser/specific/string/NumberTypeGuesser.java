@@ -47,8 +47,7 @@ public class NumberTypeGuesser implements TypeGuesser {
 			Decision<VarIntType> decision = numberParser.findBestType();
 			p.setLineCounts(decision.getType());
 
-			final StringTypeNumber type = new StringTypeNumber(range, decision.getType());
-			type.setDictionary(p.getStrings().inverse());
+			final StringTypeNumber type = new StringTypeNumber(range, decision.getType(), p.getStrings().inverse());
 
 			return new Guess(
 				this,
