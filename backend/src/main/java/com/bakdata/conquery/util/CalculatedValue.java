@@ -4,12 +4,11 @@ import java.util.function.Supplier;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 /**
  * Lazy evaluated Supplier, that also stores if it has been evaluated or not.
  */
-@RequiredArgsConstructor @ToString(of="calculation")
+@RequiredArgsConstructor
 public class CalculatedValue<T> {
 	@NonNull
 	private Supplier<T> calculation;

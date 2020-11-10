@@ -27,7 +27,7 @@
           "column": "include"
         },
         "name": "connector",
-        "column": "table.connector",
+        "column": "table.test_column",
         "validityDates": {
           "label": "datum",
           "column": "table.datum"
@@ -68,7 +68,7 @@
             "type": "DATE"
           },
           {
-            "name": "column",
+            "name": "test_column",
             "type": "STRING"
           },
           {
