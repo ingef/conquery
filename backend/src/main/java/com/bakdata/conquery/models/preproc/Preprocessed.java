@@ -94,6 +94,8 @@ public class Preprocessed {
 			Map<Integer, List> values = entries.row(colIdx);
 			int start = 0;
 
+			// TODO compute start length first once, instead of doing it on-line, it makes the code hard to read
+
 			for (Integer entity : entries.columnKeySet()) {
 				List entityValues = values.get(entity);
 				int length = values.get(entity).size();

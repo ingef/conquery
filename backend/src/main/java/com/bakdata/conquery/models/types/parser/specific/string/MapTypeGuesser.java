@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.types.parser.specific.string;
 
 import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.types.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
@@ -15,7 +17,7 @@ public class MapTypeGuesser implements TypeGuesser {
 
 	@Override
 	public Guess createGuess() {
-		Decision<VarIntType> indexDecision = p.getIndexType().decideType();
+		Decision<VarIntType> indexDecision = new Decision<>(new VarIntTypeInt(0, Integer.MAX_VALUE, IntegerStore.create(p.getLines())));
 		
 		StringTypeDictionary type = new StringTypeDictionary(indexDecision.getType());
 		long mapSize = MapDictionary.estimateMemoryConsumption(

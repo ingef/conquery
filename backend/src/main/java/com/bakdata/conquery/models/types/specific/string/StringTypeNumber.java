@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.types.specific.string;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +25,10 @@ public class StringTypeNumber extends StringType {
 	protected VarIntType delegate;
 	//used as a compact intset
 	private Range<Integer> range;
+
+	// Only used for setting values in Preprocessing.
+	@JsonIgnore
+	private transient Map<Integer, String> dictionary;
 
 	@JsonCreator
 	public StringTypeNumber(Range<Integer> range, VarIntType numberType) {
@@ -112,7 +118,7 @@ public class StringTypeNumber extends StringType {
 			getDelegate().set(event, null);
 		}
 		else {
-			getDelegate().set(event, value.longValue());
+			getDelegate().set(event, Long.valueOf(dictionary.get(value)));
 		}
 	}
 
