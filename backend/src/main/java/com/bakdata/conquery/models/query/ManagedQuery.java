@@ -232,6 +232,15 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 20;
+	
+	/**
+	 * Creates a default label based on the submitted {@link QueryDescription}.
+	 * The Label is customized by mentioning that a description contained a 
+	 * {@link CQExternal}, {@link CQReusedQuery} or {@link CQConcept}, in this order.
+	 * In case of one ore more {@link CQConcept} the distinct labels of the concepts are chosen
+	 * and concatinated until a length of {@value #MAX_CONCEPT_LABEL_CONCAT_LENGTH} is reached.
+	 * All further labels are dropped.
+	 */
 	@Override
 	protected void makeDefaultLabel(final StringBuilder sb) {
 		final Map<Class<? extends Visitable>,List<Visitable>> sortedContents = new HashMap<>();
