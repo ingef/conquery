@@ -50,7 +50,7 @@ public class StringParser extends Parser<Integer> {
 
 	}
 	
-	private int parseNewValue(String value) {
+	private int processNewValue(String value) {
 
 		//set longest common prefix and suffix
 		prefix = Strings.commonPrefix(value, Objects.requireNonNullElse(prefix, value));
