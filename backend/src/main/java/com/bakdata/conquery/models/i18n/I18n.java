@@ -9,9 +9,7 @@ import c10n.annotations.En;
 
 public final class I18n {
 
-	public static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
-
-	public static final ThreadLocal<Locale> LOCALE = ThreadLocal.withInitial(() -> Locale.ENGLISH);
+	public static final ThreadLocal<Locale> LOCALE = ThreadLocal.withInitial(() -> Locale.ROOT);
 
 	public static void init() {
 		C10N.configure(new C10NConfigBase() {
