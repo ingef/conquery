@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPColumn;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,33 +19,22 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Description of imported data.
  */
-@Getter @Slf4j
-@RequiredArgsConstructor
+@Getter
+@Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @Setter
 public class Import extends NamedImpl<ImportId> {
 
 
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private final TableId table;
 
 	private long numberOfEntries;
 
-	@JsonManagedReference @NotNull
+	@JsonManagedReference
+	@NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
-
-
-	@Override
-	public ImportId createId() {
-		return new ImportId(table, getName());
-	}
-
-	public void loadExternalInfos(NamespacedStorage storage) {
-		for(ImportColumn col:columns) {
-			col.getType().loadExternalInfos(storage);
-		}
-	}
-
-
 
 	public static Import createForPreprocessing(String table, String tag, PPColumn[] columns) {
 		Import imp = new Import(
@@ -52,7 +42,7 @@ public class Import extends NamedImpl<ImportId> {
 		); // is not yet used here.
 		imp.setName(tag);
 		ImportColumn[] impCols = new ImportColumn[columns.length];
-		for(int c = 0; c < impCols.length; c++) {
+		for (int c = 0; c < impCols.length; c++) {
 			ImportColumn col = new ImportColumn();
 			col.setName(columns[c].getName());
 			col.setParent(imp);
@@ -63,6 +53,17 @@ public class Import extends NamedImpl<ImportId> {
 		imp.setColumns(impCols);
 
 		return imp;
+	}
+
+	@Override
+	public ImportId createId() {
+		return new ImportId(table, getName());
+	}
+
+	public void loadExternalInfos(NamespacedStorage storage) {
+		for (ImportColumn col : columns) {
+			col.getType().loadExternalInfos(storage);
+		}
 	}
 
 	public long estimateMemoryConsumption() {
