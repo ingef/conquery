@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.FloatStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(base= ColumnStore.class, id="REAL_FLOAT")
@@ -13,6 +14,7 @@ public class RealTypeFloat extends CType<Double, Double> {
 	@Getter
 	private final FloatStore delegate;
 
+	@JsonCreator
 	public RealTypeFloat(FloatStore delegate) {
 		super(MajorTypeId.REAL);
 		this.delegate = delegate;

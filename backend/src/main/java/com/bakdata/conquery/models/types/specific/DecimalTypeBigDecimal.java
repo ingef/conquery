@@ -7,12 +7,16 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 @CPSType(base=ColumnStore.class, id="DECIMAL_BIG_DECIMAL")
+@Getter
 public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 
 	private final DecimalStore store;
 
+	@JsonCreator
 	public DecimalTypeBigDecimal(DecimalStore store) {
 		super(MajorTypeId.DECIMAL);
 		this.store = store;

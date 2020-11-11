@@ -10,7 +10,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(base=ColumnStore.class, id="DATE_RANGE_2UINT16") @Getter @Setter
+@CPSType(base = ColumnStore.class, id = "DATE_RANGE_2UINT16")
+@Getter
+@Setter
 public class DateRangeTypePacked extends CType<Integer, CDateRange> {
 
 	private final int minValue;
@@ -27,20 +29,20 @@ public class DateRangeTypePacked extends CType<Integer, CDateRange> {
 	}
 
 	@Override
-	public CDateRange createScriptValue(CDateRange value) {
-		if(value == null) {
-			return null;
-		}
-		return value;
-	}
-	
-	@Override
 	public Object createPrintValue(CDateRange value) {
 		if (value == null) {
 			return "";
 		}
 
 		return createScriptValue(value).toString();
+	}
+
+	@Override
+	public CDateRange createScriptValue(CDateRange value) {
+		if (value == null) {
+			return null;
+		}
+		return value;
 	}
 
 	@Override
@@ -55,7 +57,7 @@ public class DateRangeTypePacked extends CType<Integer, CDateRange> {
 
 	@Override
 	public void set(int event, CDateRange value) {
-		store.set(event,value);
+		store.set(event, value);
 	}
 
 	@Override

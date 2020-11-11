@@ -5,12 +5,16 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 
 @CPSType(base=ColumnStore.class, id="BOOLEAN_BOOLEAN")
+@Getter
 public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
 
 	private final BooleanStore store;
 
+	@JsonCreator
 	public BooleanTypeBoolean(BooleanStore store) {
 		super(MajorTypeId.BOOLEAN);
 		this.store = store;

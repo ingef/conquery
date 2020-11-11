@@ -9,17 +9,12 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
-import lombok.ToString;
 
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
-@ToString
+@Getter
 public class DecimalTypeScaled extends CType<BigDecimal, BigDecimal> {
 
-	@Getter
-	@ToString.Include
 	private final int scale;
-	@Getter
-	@ToString.Include
 	private final CType<?, Long> subType;
 
 	@JsonCreator

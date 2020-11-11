@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.date.DateRangeStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,7 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 
 	private final DateRangeStore store;
 
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeTypeDateRange(DateRangeStore store) {
 		super(MajorTypeId.DATE_RANGE);
 		this.store = store;

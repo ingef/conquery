@@ -5,12 +5,15 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 @CPSType(base = ColumnStore.class, id = "MONEY_LONG")
+@Getter
 public class MoneyTypeLong extends CType<Long, Long> {
 
 	@JsonIgnore
@@ -18,8 +21,12 @@ public class MoneyTypeLong extends CType<Long, Long> {
 	private final BigDecimal moneyFactor = BigDecimal.valueOf(10)
 													 .pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits());
 
-	public MoneyTypeLong() {
+	private final LongStore store;
+
+	@JsonCreator
+	public MoneyTypeLong(LongStore store) {
 		super(MajorTypeId.MONEY);
+		this.store = store;
 	}
 
 	@Override
@@ -29,21 +36,21 @@ public class MoneyTypeLong extends CType<Long, Long> {
 
 	@Override
 	public MoneyTypeLong select(int[] starts, int[] length) {
-		return null;
+		return new MoneyTypeLong(store.select(starts, length));
 	}
 
 	@Override
 	public void set(int event, Long value) {
-		//TODO!
+		store.set(event, value);
 	}
 
 	@Override
 	public Long get(int event) {
-		return null;
+		return store.get(event);
 	}
 
 	@Override
 	public boolean has(int event) {
-		return false;
+		return store.has(event);
 	}
 }
