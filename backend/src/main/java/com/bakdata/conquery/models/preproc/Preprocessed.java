@@ -127,7 +127,6 @@ public class Preprocessed {
 			PreprocessedHeader header = new PreprocessedHeader(
 					descriptor.getName(),
 					descriptor.getTable(),
-					imp.getSuffix(),
 					rows,
 					primaryColumn,
 					columns,

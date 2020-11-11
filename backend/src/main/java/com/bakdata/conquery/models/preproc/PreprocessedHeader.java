@@ -13,7 +13,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @implSpec The Columns and their order must directly match the layout in the data.
  */
-@Data @NoArgsConstructor @AllArgsConstructor @Slf4j
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Slf4j
 public class PreprocessedHeader {
 	/**
 	 * The name/tag of an import.
@@ -24,9 +27,6 @@ public class PreprocessedHeader {
 	 * The specific table id to be loaded into.
 	 */
 	private String table;
-
-	// TODO: 14.07.2020 FK: Is this actually used? It doesn't seem so.
-	private String suffix;
 
 	/**
 	 * Number of rows in the Preprocessed file.
@@ -73,7 +73,7 @@ public class PreprocessedHeader {
 
 		if (errors.length() != 0) {
 			log.error(errors.toString());
-			throw new IllegalArgumentException(String.format("Headers[%s.%s.%s] do not match Table[%s]", getTable(), getName(), getSuffix(), table.getId()));
+			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]", getTable(), getName(), table.getId()));
 		}
 	}
 }
