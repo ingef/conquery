@@ -12,7 +12,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.HashBasedTable;
@@ -82,14 +82,14 @@ public class Preprocessed {
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
-		ColumnStore[] columnValues = new ColumnStore[columns.length];
+		CType[] columnValues = new CType[columns.length];
 
 		ImportColumn[] impColumns = imp.getColumns();
 
 		for (int colIdx = 0; colIdx < impColumns.length; colIdx++) {
 			final PPColumn ppColumn = columns[colIdx];
 
-			final ColumnStore store = ppColumn.findBestType();
+			final CType store = ppColumn.findBestType();
 
 			Map<Integer, List> values = entries.row(colIdx);
 			int start = 0;
@@ -173,7 +173,7 @@ public class Preprocessed {
 	public static class DataContainer {
 		private final Map<Integer, Integer> starts;
 		private final Map<Integer, Integer> lengths;
-		private final ColumnStore[] values;
+		private final CType[] values;
 	}
 
 

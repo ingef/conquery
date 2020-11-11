@@ -36,7 +36,8 @@ public class PPColumn {
 		log.info("Compute best Subtype for  Column[{}] with {}", getName(), getParser());
 		Decision typeDecision = parser.findBestType();
 		// this only creates the headers
-		type = typeDecision.getType().select(new int[]{0}, new int[]{0});
+		// todo wrap in method
+		type = typeDecision.getType().select(new int[0], new int[0]);
 
 		log.info("\t{}: {} -> {}", getName(), getParser(), getType());
 

@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
@@ -126,11 +127,16 @@ public class ImportJob extends Job {
 				return;
 			}
 
+			header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
+			for (CType col : container.getValues()) {
+				col.init(namespace.getStorage().getDataset().getId());
+			}
+
 			final ColumnStore<?>[] stores = container.getValues();
 
 			// but first remap String values
 			if (mappingRequired) {
-				remapStores(header, stores);
+				remapStores(header.getColumns(), stores, header.getRows());
 			}
 
 			Map<Integer, List<Integer>> buckets2LocalEntities = groupByBucket(container.getStarts().keySet(), primaryMapping, bucketSize);
@@ -169,9 +175,7 @@ public class ImportJob extends Job {
 						new Int2IntArrayMap(globalIds, entityLengths),
 						globalIds.length
 				);
-				sendBucket(new ImportBucket(
-						bucket
-				));
+				sendBucket(new ImportBucket(bucket));
 			}
 		}
 		catch (IOException exception) {
@@ -288,10 +292,10 @@ public class ImportJob extends Job {
 		return imp;
 	}
 
-	public void remapStores(PreprocessedHeader header, ColumnStore<?>[] stores) {
+	public void remapStores(PPColumn[] columns, ColumnStore<?>[] stores, long nRows) {
 		for (int i = 0; i < stores.length; i++) {
 			ColumnStore<?> store = stores[i];
-			final PPColumn column = header.getColumns()[i];
+			final PPColumn column = columns[i];
 
 			if (!column.getType().getTypeId().equals(MajorTypeId.STRING)) {
 				continue;
@@ -301,7 +305,7 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			column.getValueMapping().applyToStore(((ColumnStore<Integer>) store), header.getRows());
+			column.getValueMapping().applyToStore(((ColumnStore<Integer>) store), nRows);
 		}
 	}
 
@@ -331,6 +335,7 @@ public class ImportJob extends Job {
 	}
 
 	private boolean createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {
+		// todo this can trivially be simplified to remove the boolean return value, further simplifying this section.
 		StringType oldType = (StringType) col.getType();
 		Dictionary source = oldType.getUnderlyingDictionary();
 		//could be null if the strin column has no (or too few) values
