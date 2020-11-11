@@ -127,7 +127,7 @@ public class ImportJob extends Job {
 				return;
 			}
 
-			header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
+			// todo don't think this does anything useful
 			for (CType col : container.getValues()) {
 				col.init(namespace.getStorage().getDataset().getId());
 			}
