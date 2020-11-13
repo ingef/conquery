@@ -19,8 +19,8 @@ import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -89,14 +89,19 @@ public class ImportJob extends Job {
 				col.init(namespace.getStorage().getDataset().getId());
 			}
 
+			// todo use a constant
 			DictionaryMapping primaryMapping = importPrimaryDictionary(container.getDictionaries().get("primary_dictionary"));
 			//update primary dictionary
 
+			importDictionaries(header, container.getValues());
+
 			for (CType<?, ?> column : container.getValues()) {
+				// todo if we import the dictionaries first, then load them into the columns and remap them we don't need this
+				// todo for that we need to map the relation from column to dict better, which also allows us to do the mapping
 				column.loadExternalInfos(dict -> container.getDictionaries().get(dict.getDictionary()));
 			}
 
-			importDictionaries(header, container.getValues());
+
 
 			// Distribute the new IDs between the slaves
 			log.debug("\tpartition new IDs");
@@ -128,7 +133,6 @@ public class ImportJob extends Job {
 
 
 			// but first remap String values
-			// remapStores(header.getColumns(), stores, header.getRows());
 
 			Map<Integer, List<Integer>> buckets2LocalEntities = groupByBucket(container.getStarts().keySet(), primaryMapping, bucketSize);
 
@@ -192,10 +196,21 @@ public class ImportJob extends Job {
 
 		log.debug("\tcompute dictionary");
 
-		Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
-		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
+
+		final DictionaryId dictionaryId = ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset());
+
+
+		Dictionary orig = namespace.getStorage().getDictionary(dictionaryId);
+
+		// Start with an empty Dictionary and merge into it
+		if(orig == null){
+			orig = new MapDictionary(namespace.getDataset().getId(), "primary_dictionary");
+		}
+
+		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
 		log.debug("\tmap values");
+
 		DictionaryMapping primaryMapping = DictionaryMapping.create(underlyingDictionary, primaryDict, bucketSize);
 
 		//if no new ids we shouldn't recompress and store
@@ -258,7 +273,7 @@ public class ImportJob extends Job {
 	private Import createImport(PreprocessedHeader header, CType<?,?>[] columns) {
 		// todo what does this function do actually?
 		Import imp = new Import(table);
-
+		//TODO also store the dictionary ids in here then remove them on deletion of the import
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
 		imp.setColumns(new ImportColumn[header.getColumns().length]);
@@ -267,29 +282,12 @@ public class ImportJob extends Job {
 			PPColumn src = header.getColumns()[i];
 			ImportColumn col = new ImportColumn();
 			col.setName(src.getName());
-			col.setType(columns[i].select(new int[0], new int[0]));
+			col.setType(columns[i].select(new int[0], new int[0])); // ie just the representation
 			col.setParent(imp);
 			col.setPosition(i);
 			imp.getColumns()[i] = col;
 		}
 		return imp;
-	}
-
-	public void remapStores(PPColumn[] columns, ColumnStore<?>[] stores, long nRows) {
-		for (int i = 0; i < stores.length; i++) {
-			ColumnStore<?> store = stores[i];
-			final PPColumn column = columns[i];
-
-			if (!(store instanceof StringType)) {
-				continue;
-			}
-
-			if (column.getValueMapping() == null) {
-				continue;
-			}
-
-			column.getValueMapping().applyToStore(((ColumnStore<Integer>) store), nRows);
-		}
 	}
 
 	/**
@@ -302,6 +300,7 @@ public class ImportJob extends Job {
 	}
 
 	private void sendBucket(ImportBucket bucket) {
+		// todo this can be done in parallel
 		int bucketNumber = bucket.getBucket().getBucket();
 
 		WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
@@ -318,17 +317,19 @@ public class ImportJob extends Job {
 	}
 
 	private void createSharedDictionary(Dictionary incoming, DictionaryId targetDictionary, StringType stringType) throws JSONException {
-		// todo this can trivially be simplified to remove the boolean return value, further simplifying this section.
-
 
 		log.info("\t\tmerging into shared Dictionary[{}]", targetDictionary);
 
-		Dictionary shared = namespace.getStorage().computeDictionary(targetDictionary);
+		Dictionary shared = namespace.getStorage().getDictionary(targetDictionary);
 
-		DictionaryMapping mapping = DictionaryMapping.create(incoming, shared, bucketSize);
+		if (shared == null) {
+			shared = incoming;
+		}
+		else {
+			DictionaryMapping mapping = DictionaryMapping.create(incoming, shared, bucketSize);
+			mapping.applyToStore(stringType, stringType.getLines());
+		}
 
-
-		mapping.applyToStore(stringType, stringType.getLines());
 		stringType.adaptUnderlyingDictionary(shared);
 
 		namespace.getStorage().updateDictionary(shared);

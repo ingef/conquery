@@ -17,7 +17,7 @@ public interface NamespacedStorage extends ConqueryStorage {
 	Dictionary getDictionary(DictionaryId id);
 	void updateDictionary(Dictionary dict);
 	void removeDictionary(DictionaryId id);
-	Dictionary computeDictionary(DictionaryId id);
+	Dictionary computeDictionary(DictionaryId id); // todo inline this
 	DirectDictionary getPrimaryDictionary();
 	
 	void addImport(Import imp);

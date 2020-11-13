@@ -30,6 +30,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	@JsonIgnore
 	private transient Dictionary dictionary;
 
+	// todo use NsIdRef
 	private String name;
 	private DatasetId dataset;
 
