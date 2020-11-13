@@ -10,12 +10,9 @@ import java.util.Locale;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.concepts.select.connector.specific.CountSelect;
-import com.bakdata.conquery.models.query.ColumnDescriptor;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
@@ -24,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.memory.RootAllocator;
+import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
@@ -39,15 +37,15 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class ArrowResultGenerationTest {
 
-	@Test
-	void test() {
-		ManagedQuery mQuery = new ManagedQuery(null, null, null);
-
-		List<EntityResult> results = mQuery.getResults();
-		List<ColumnDescriptor> columnDes = mQuery.getColumnDescriptions();
-		ResultInfoCollector infos = mQuery.collectResultInfos();
-
-	}
+//	@Test
+//	void test() {
+//		ManagedQuery mQuery = new ManagedQuery(null, null, null);
+//
+//		List<EntityResult> results = mQuery.getResults();
+//		List<ColumnDescriptor> columnDes = mQuery.getColumnDescriptions();
+//		ResultInfoCollector infos = mQuery.collectResultInfos();
+//
+//	}
 
 	@Test
 	void generateSchema() throws IOException {
@@ -83,62 +81,81 @@ public class ArrowResultGenerationTest {
 
 		});
 
-		List<EntityResult> results = List.of(new SinglelineContainedEntityResult(1, new Object[] { 1 }));
+		List<EntityResult> results = List.of(new SinglelineContainedEntityResult(1, new Object[] { 1, "test" }));
 
+		log.info("Starting result write");
 		writer.start();
-
+		RowConsumer pipeline = generateWriterPipeline(root);
 		root.setRowCount(1);
-		for (EntityResult result : results) {
+		int lineCount = 0;
+		for (int resultCount = 0; resultCount < results.size(); resultCount++) {
+			EntityResult result = results.get(resultCount);
 			for (Object[] line : result.asContained().listResultLines()) {
-				for (int i = 0; i < line.length; i++) {
-					((IntVector) root.getVector(i)).set(0, (int) line[i]);
-				}
+				pipeline.accept(lineCount, line);
 			}
 		}
+		log.info("Writing batch");
 		writer.writeBatch();
 
+		log.info("Finishing result write");
 		writer.end();
 		writer.close();
 	}
 
 	private final static Function<String, Field> NAMED_FIELD_DATE_DAY = (name) -> new Field(name,
 		FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null);
+	
+	private static RowConsumer generateWriterPipeline(VectorSchemaRoot root){
+		RowConsumer start = (n, r) -> {};
+		for (int vecI = 0; vecI < root.getFieldVectors().size(); vecI++) {
+			FieldVector vector = root.getVector(vecI);
+			if(vector instanceof IntVector) {
+				final int pos = vecI;
+				start = start.andThen((rowNumber, line) -> ((IntVector)vector).set(rowNumber, (int) line[pos]));
+				continue;
+			}
+			throw new UnsupportedOperationException("Vector type for writing result: "+ vector.getClass());
+		}
+		return start;
+		
+	}
 
 	private static Schema generateSchema(@NonNull List<ResultInfo> infos, PrintSettings settings) {
 
-		ImmutableList.Builder<Field> childrenBuilder = ImmutableList.builder();
+		ImmutableList.Builder<Field> fields = ImmutableList.builder();
+		ImmutableList.Builder<Class<?>> fieldCasters = ImmutableList.builder();
 
 		for (ResultInfo info : infos) {
 			MajorTypeId internalType = info.getInternalType();
 			switch (internalType) {
 				case BOOLEAN:
-					childrenBuilder.add(new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null));
+					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null));
 					break;
 				case DATE:
-					childrenBuilder.add(NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings)));
+					fields.add(NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings)));
 					break;
 				case DATE_RANGE:
-					childrenBuilder.add(
+					fields.add(
 						new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Struct.INSTANCE),
 							ImmutableList.of(NAMED_FIELD_DATE_DAY.apply("begin"), NAMED_FIELD_DATE_DAY.apply("end"))));
 					break;
 				case DECIMAL:
 					// Not sure at the moment how to determine the right scale and precision
-					childrenBuilder.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Decimal(0, 0)), null));
+					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Decimal(0, 0)), null));
 					break;
 				case INTEGER:
-					childrenBuilder.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null));
+					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null));
 					break;
 				case MONEY:
-					childrenBuilder.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Decimal(2, 0)), null));
+					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Decimal(2, 0)), null));
 					break;
 				case REAL:
-					childrenBuilder.add(
+					fields.add(
 						new Field(info.getUniqueName(settings),
 							FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.SINGLE)), null));
 					break;
 				case STRING:
-					childrenBuilder.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.LargeUtf8()), null));
+					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null));
 					break;
 				default:
 					throw new IllegalStateException("Unknown column type " + internalType);
@@ -146,8 +163,9 @@ public class ArrowResultGenerationTest {
 
 		}
 
-		return new Schema(childrenBuilder.build(), null);
+		return new Schema(fields.build(), null);
 
 	}
+	
 
 }
