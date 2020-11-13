@@ -2,8 +2,6 @@ package com.bakdata.conquery.io.jackson;
 
 import java.util.Locale;
 
-import org.apache.shiro.authz.Permission;
-
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -17,7 +15,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import org.apache.shiro.authz.Permission;
 
 public class Jackson {
 	public static final ObjectMapper MAPPER;
@@ -53,6 +53,7 @@ public class Jackson {
 			.registerModule(new JavaTimeModule())
 			.registerModule(new ParameterNamesModule())
 			.registerModule(new GuavaModule())
+			.registerModule(new AfterburnerModule())
 			.registerModule(ConquerySerializersModule.INSTANCE)
 			.setSerializationInclusion(Include.ALWAYS)
 			.setDefaultPropertyInclusion(Include.ALWAYS)
