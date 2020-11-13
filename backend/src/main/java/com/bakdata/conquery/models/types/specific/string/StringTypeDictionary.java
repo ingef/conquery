@@ -105,19 +105,10 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 		return dictionary.estimateMemoryConsumption();
 	}
 
-	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+
+	public void adaptUnderlyingDictionary(Dictionary newDict) {
 		name = newDict.getName();
 		dictionary = newDict;
-
-		if (newNumberType.estimateMemoryBitWidth() > numberType.estimateMemoryBitWidth()) {
-			log.warn(
-					"The width of a column is increased from {} to {} bits because of the shared dictionary {}",
-					numberType.estimateMemoryBitWidth(),
-					newNumberType.estimateMemoryBitWidth(),
-					newDict.getId()
-			);
-		}
-		numberType = newNumberType;
 	}
 
 	@Override

@@ -128,7 +128,7 @@ public class ImportJob extends Job {
 
 
 			// but first remap String values
-			remapStores(header.getColumns(), stores, header.getRows());
+			// remapStores(header.getColumns(), stores, header.getRows());
 
 			Map<Integer, List<Integer>> buckets2LocalEntities = groupByBucket(container.getStarts().keySet(), primaryMapping, bucketSize);
 
@@ -327,7 +327,9 @@ public class ImportJob extends Job {
 
 		DictionaryMapping mapping = DictionaryMapping.create(incoming, shared, bucketSize);
 
+
 		mapping.applyToStore(stringType, stringType.getLines());
+		stringType.adaptUnderlyingDictionary(shared);
 
 		namespace.getStorage().updateDictionary(shared);
 		namespace.sendToAll(new UpdateDictionary(shared));

@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.io.BaseEncoding;
 import lombok.Getter;
@@ -115,8 +114,8 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
-		subType.adaptUnderlyingDictionary(newDict, newNumberType);
+	public void adaptUnderlyingDictionary(Dictionary newDict) {
+		subType.adaptUnderlyingDictionary(newDict);
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.types.specific.string;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**every implementation must guarantee IDs between 0 and size**/
@@ -26,5 +25,5 @@ public abstract class StringType extends CType<Integer, Integer> implements Iter
 	@JsonIgnore
 	public abstract Dictionary getUnderlyingDictionary();
 
-	public abstract void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType);
+	public abstract void adaptUnderlyingDictionary(Dictionary newDict);
 }

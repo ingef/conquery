@@ -103,7 +103,7 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+	public void adaptUnderlyingDictionary(Dictionary newDict) {
 		throw new UnsupportedOperationException();
 	}
 

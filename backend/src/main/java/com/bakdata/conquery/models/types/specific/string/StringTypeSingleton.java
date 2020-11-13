@@ -7,7 +7,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
-import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
@@ -75,7 +74,7 @@ public class StringTypeSingleton extends StringType {
 	}
 	
 	@Override
-	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+	public void adaptUnderlyingDictionary(Dictionary newDict) {
 		throw new UnsupportedOperationException();
 	}
 

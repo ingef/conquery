@@ -66,8 +66,8 @@ public abstract class ChainedStringType extends StringType {
 	}
 	
 	@Override
-	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
-		subType.adaptUnderlyingDictionary(newDict, newNumberType);
+	public void adaptUnderlyingDictionary(Dictionary newDict) {
+		subType.adaptUnderlyingDictionary(newDict);
 	}
 
 	@Override
