@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +13,10 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
+import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -30,6 +33,9 @@ public class Preprocessed {
 
 	private final InputFile file;
 	private final String name;
+	/**
+	 * @implSpec this is ALWAYS {@link StringType}.
+	 */
 	private final PPColumn primaryColumn;
 	private final PPColumn[] columns;
 	private final TableImportDescriptor descriptor;
@@ -82,12 +88,12 @@ public class Preprocessed {
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
-		CType[] columnValues = new CType[columns.length];
+		CType[] columns = new CType[this.columns.length];
 
 		ImportColumn[] impColumns = imp.getColumns();
 
 		for (int colIdx = 0; colIdx < impColumns.length; colIdx++) {
-			final PPColumn ppColumn = columns[colIdx];
+			final PPColumn ppColumn = this.columns[colIdx];
 
 			final CType store = ppColumn.findBestType();
 
@@ -111,13 +117,22 @@ public class Preprocessed {
 				start += length;
 			}
 
-			columnValues[colIdx] = store;
+			columns[colIdx] = store;
 		}
 
+		Map<String, Dictionary> dicts = new HashMap<>();
+
+
+		// todo fix name
+		((CType<?, ?>)primaryColumn.getType()).storeExternalInfos(dict -> dicts.put("primary_dictionary", dict));
+
+		for (CType column : columns) {
+			((CType<?, ?>) column).storeExternalInfos(dict -> dicts.put(dict.getName(),dict));
+		}
 
 		try (OutputStream out = new GzipCompressorOutputStream(outFile.writeContent())) {
 			Jackson.BINARY_MAPPER.writerFor(DataContainer.class)
-								 .writeValue(out, new DataContainer(entityStart, entityLength, columnValues));
+								 .writeValue(out, new DataContainer(entityStart, entityLength, columns, dicts));
 		}
 
 		// Then write headers.
@@ -129,16 +144,12 @@ public class Preprocessed {
 					descriptor.getTable(),
 					rows,
 					primaryColumn,
-					columns,
+					this.columns,
 					hash
 			);
 
 			try {
 				Jackson.BINARY_MAPPER.writeValue(out, header);
-				primaryColumn.getType().writeHeader(out);
-				for (PPColumn col : columns) {
-					col.getType().writeHeader(out);
-				}
 				out.flush();
 			}
 			catch (Exception e) {
@@ -173,6 +184,8 @@ public class Preprocessed {
 		private final Map<Integer, Integer> starts;
 		private final Map<Integer, Integer> lengths;
 		private final CType[] values;
+
+		private final Map<String, Dictionary> dictionaries;
 	}
 
 

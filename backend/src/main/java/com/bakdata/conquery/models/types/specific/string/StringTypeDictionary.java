@@ -1,14 +1,11 @@
 package com.bakdata.conquery.models.types.specific.string;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -19,7 +16,6 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,21 +31,25 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	private transient Dictionary dictionary;
 
 	private String name;
+	private DatasetId dataset;
 
-	public StringTypeDictionary(VarIntType numberType, Dictionary dictionary, String name) {
+	public StringTypeDictionary(VarIntType numberType, Dictionary dictionary, DatasetId dataset, String name) {
 		super(MajorTypeId.STRING, numberType);
 		this.dictionary = dictionary;
 		this.name = name;
+		this.dataset = dataset;
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(VarIntType numberType, String name) {
+	public StringTypeDictionary(VarIntType numberType, DatasetId dataset, String name) {
 		super(MajorTypeId.STRING, numberType);
 		this.name = name;
+		this.dataset = dataset;
 	}
 
 	@Override
 	public void init(DatasetId dataset) {
+		this.dataset = dataset;
 	}
 
 	@Override
@@ -71,26 +71,16 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	@Override
-	public void writeHeader(OutputStream out) throws IOException {
-		Jackson.BINARY_MAPPER.writeValue(out, dictionary);
-	}
-
-	@Override
-	public void readHeader(JsonParser input) throws IOException {
-		dictionary = Jackson.BINARY_MAPPER.readValue(input, Dictionary.class);
-	}
-
-	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
 		dictionaryConsumer.accept(dictionary);
 	}
 
 	@Override
-	public void loadExternalInfos(NamespacedStorage storage) {
+	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {
 		// todo consider implementing this with Id-Injection instead of hand-wiring.
-		final DictionaryId dictionaryId = new DictionaryId(storage.getDataset().getId(), getName());
+		final DictionaryId dictionaryId = new DictionaryId(getDataset(), getName());
 
-		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
+		dictionary = Objects.requireNonNull(storage.apply(dictionaryId));
 	}
 
 	public int size() {
@@ -132,7 +122,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), dictionary, getName());
+		return new StringTypeDictionary(numberType.select(starts, length), dictionary, getDataset(), getName());
 	}
 
 	@Override

@@ -6,9 +6,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -35,19 +33,12 @@ import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.parser.Decision;
-import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
-import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.models.types.specific.string.StringType;
-import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.io.Cloner;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.RequiredArgsConstructor;
@@ -78,11 +69,34 @@ public class ImportJob extends Job {
 			//check that all workers are connected
 			namespace.checkConnections();
 
+
+			//import the actual data
+			log.info("\timporting");
+			final Preprocessed.DataContainer container;
+			try (InputStream in = new GZIPInputStream(file.readContent())) {
+				container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
+			}
+
+			if (container.getStarts() == null) {
+				log.warn("Import was empty. Skipping.");
+				return;
+			}
+
+			final CType<?, ?>[] stores = container.getValues();
+
+			// todo don't think this does anything useful
+			for (CType<?, ?> col : container.getValues()) {
+				col.init(namespace.getStorage().getDataset().getId());
+			}
+
+			DictionaryMapping primaryMapping = importPrimaryDictionary(container.getDictionaries().get("primary_dictionary"));
 			//update primary dictionary
-			boolean mappingRequired = createMappings(header);
 
+			for (CType<?, ?> column : container.getValues()) {
+				column.loadExternalInfos(dict -> container.getDictionaries().get(dict.getDictionary()));
+			}
 
-			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
+			importDictionaries(header, container.getValues());
 
 			// Distribute the new IDs between the slaves
 			log.debug("\tpartition new IDs");
@@ -106,36 +120,17 @@ public class ImportJob extends Job {
 			//create data import and store/send it
 			log.info("\tupdating import information");
 			//if mapping is not required we can also use the old infos here
-			Import outImport = createImport(header, !mappingRequired);
+			Import outImport = createImport(header, stores);
 
 
 			namespace.getStorage().updateImport(outImport);
 			namespace.sendToAll(new AddImport(outImport));
 
 
-			//import the actual data
-			log.info("\timporting");
-			final Preprocessed.DataContainer container;
-			try (InputStream in = new GZIPInputStream(file.readContent())) {
-				container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
-			}
 
-			if (container.getStarts() == null) {
-				log.warn("Import was empty. Skipping.");
-				return;
-			}
-
-			// todo don't think this does anything useful
-			for (CType col : container.getValues()) {
-				col.init(namespace.getStorage().getDataset().getId());
-			}
-
-			final ColumnStore<?>[] stores = container.getValues();
 
 			// but first remap String values
-			if (mappingRequired) {
-				remapStores(header.getColumns(), stores, header.getRows());
-			}
+			remapStores(header.getColumns(), stores, header.getRows());
 
 			Map<Integer, List<Integer>> buckets2LocalEntities = groupByBucket(container.getStarts().keySet(), primaryMapping, bucketSize);
 
@@ -158,10 +153,10 @@ public class ImportJob extends Job {
 				}
 
 				// copy only the parts of the bucket we need
-				final ColumnStore<?>[] bucketStores =
+				final CType<?,?>[] bucketStores =
 						Arrays.stream(stores)
 							  .map(store -> store.select(selectionStart, entityLengths))
-							  .toArray(ColumnStore[]::new);
+							  .toArray(CType<?,?>[]::new);
 
 
 				final Bucket bucket = new Bucket(
@@ -190,24 +185,12 @@ public class ImportJob extends Job {
 
 			header.assertMatch(tab);
 
-			log.debug("\tparsing dictionaries");
-			header.getPrimaryColumn().getType().readHeader(in);
-			for (PPColumn col : header.getColumns()) {
-				col.getType().readHeader(in);
-			}
-
-			header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
-			for (PPColumn col : header.getColumns()) {
-				col.getType().init(namespace.getStorage().getDataset().getId());
-			}
-
 			return header;
 		}
 	}
 
-	private boolean createMappings(PreprocessedHeader header) throws JSONException {
+	private DictionaryMapping importPrimaryDictionary(Dictionary underlyingDictionary) {
 		log.debug("\tupdating primary dictionary");
-		Dictionary entities = ((StringTypeEncoded) header.getPrimaryColumn().getType()).getUnderlyingDictionary();
 
 		log.debug("\tcompute dictionary");
 
@@ -215,7 +198,7 @@ public class ImportJob extends Job {
 		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
 
 		log.debug("\tmap values");
-		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict, bucketSize);
+		DictionaryMapping primaryMapping = DictionaryMapping.create(underlyingDictionary, primaryDict, bucketSize);
 
 		//if no new ids we shouldn't recompress and store
 		if (primaryMapping.getNewIds() == null) {
@@ -232,56 +215,61 @@ public class ImportJob extends Job {
 
 			namespace.sendToAll(new UpdateDictionary(primaryDict));
 		}
+		return primaryMapping;
+	}
 
-		boolean mappingRequired = false;
-
+	private void importDictionaries(PreprocessedHeader header, CType<?, ?>[] columns) throws JSONException {
 		log.debug("\tsending secondary dictionaries");
 
 		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
 
 		for (int colPos = 0; colPos < header.getColumns().length; colPos++) {
-			PPColumn col = header.getColumns()[colPos];
 			Column tableCol = table.getColumns()[colPos];
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
-			if (tableCol.getType() == MajorTypeId.STRING && tableCol.getSharedDictionary() != null) {
-				mappingRequired |= createSharedDictionary(col, tableCol);
+
+			if (!(columns[colPos] instanceof StringType)) {
+				continue;
 			}
 
-			// TODO this can be completely inlined, storeExternalInfos does nothing beside setting the name and dataset of the dict.
-			//store external infos into master and slaves
-			col.getType().storeExternalInfos(
-					(Consumer<Dictionary>) (dict -> {
-						try {
-							dict.setDataset(namespace.getDataset().getId());
-							namespace.getStorage().updateDictionary(dict);
-							namespace.sendToAll(new UpdateDictionary(dict));
-						}
-						catch (Exception e) {
-							throw new RuntimeException("Failed to store dictionary " + dict, e);
-						}
-					})
-			);
+			final StringType type = (StringType) columns[colPos];
+
+			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
+			if (tableCol.getSharedDictionary() != null) {
+				createSharedDictionary(
+						type.getUnderlyingDictionary(),
+						new DictionaryId(namespace.getDataset().getId(), tableCol.getSharedDictionary()),
+						type
+				);
+			}
+			else if (type.getUnderlyingDictionary() != null) {
+				//store external infos into master and slaves
+				final Dictionary dict = type.getUnderlyingDictionary();
+				try {
+					dict.setDataset(namespace.getDataset().getId());
+					namespace.getStorage().updateDictionary(dict);
+					namespace.sendToAll(new UpdateDictionary(dict));
+				}
+				catch (Exception e) {
+					throw new RuntimeException("Failed to store dictionary " + dict, e);
+				}
+			}
 		}
-		header.getPrimaryColumn().setValueMapping(primaryMapping);
-		return mappingRequired;
+
 	}
 
-	private Import createImport(PreprocessedHeader header, boolean useOldType) {
+	private Import createImport(PreprocessedHeader header, CType<?,?>[] columns) {
 		// todo what does this function do actually?
 		Import imp = new Import(table);
+
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
 		imp.setColumns(new ImportColumn[header.getColumns().length]);
+
 		for (int i = 0; i < header.getColumns().length; i++) {
 			PPColumn src = header.getColumns()[i];
 			ImportColumn col = new ImportColumn();
 			col.setName(src.getName());
-			col.setType(
-					useOldType ?
-					Objects.requireNonNullElse(src.getOldType(), src.getType())
-							   :
-					src.getType()
-			);
+			col.setType(columns[i].select(new int[0], new int[0]));
 			col.setParent(imp);
 			col.setPosition(i);
 			imp.getColumns()[i] = col;
@@ -294,7 +282,7 @@ public class ImportJob extends Job {
 			ColumnStore<?> store = stores[i];
 			final PPColumn column = columns[i];
 
-			if (!column.getType().getTypeId().equals(MajorTypeId.STRING)) {
+			if (!(store instanceof StringType)) {
 				continue;
 			}
 
@@ -331,40 +319,20 @@ public class ImportJob extends Job {
 		responsibleWorker.send(bucket);
 	}
 
-	private boolean createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {
+	private void createSharedDictionary(Dictionary incoming, DictionaryId targetDictionary, StringType stringType) throws JSONException {
 		// todo this can trivially be simplified to remove the boolean return value, further simplifying this section.
-		StringType oldType = (StringType) col.getType();
-		Dictionary source = oldType.getUnderlyingDictionary();
-		//could be null if the strin column has no (or too few) values
-		if (source == null) {
-			return false;
-		}
-		DictionaryId sharedId = new DictionaryId(namespace.getDataset().getId(), tableCol.getSharedDictionary());
-		log.info("\t\tmerging {} into shared dictionary {}", col.getName(), sharedId);
 
-		Dictionary shared = namespace.getStorage().computeDictionary(sharedId);
-		DictionaryMapping mapping = DictionaryMapping.create(
-				source,
-				shared,
-				bucketSize
-		);
 
-		StringType newType = Cloner.clone(oldType);
-		//find the new number type to represent the ids
-		int minTargetId = Ints.min(mapping.getSource2TargetMap());
-		int maxTargetId = Ints.max(mapping.getSource2TargetMap());
-		VarIntParser numberParser = new VarIntParser();
-		numberParser.registerValue(minTargetId);
-		numberParser.registerValue(maxTargetId);
-		numberParser.setLines(oldType.getLines());
-		numberParser.setNullLines(oldType.getNullLines());
-		Decision<VarIntType> decision = numberParser.findBestType();
+		log.info("\t\tmerging into shared Dictionary[{}]", targetDictionary);
 
-		newType.adaptUnderlyingDictionary(shared, decision.getType());
-		col.setOldType(oldType);
-		col.setValueMapping(mapping);
-		col.setType(newType);
-		return true;
+		Dictionary shared = namespace.getStorage().computeDictionary(targetDictionary);
+
+		DictionaryMapping mapping = DictionaryMapping.create(incoming, shared, bucketSize);
+
+		mapping.applyToStore(stringType, stringType.getLines());
+
+		namespace.getStorage().updateDictionary(shared);
+		namespace.sendToAll(new UpdateDictionary(shared));
 	}
 
 	@Override

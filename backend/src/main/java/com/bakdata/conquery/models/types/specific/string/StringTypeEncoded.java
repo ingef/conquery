@@ -1,21 +1,19 @@
 package com.bakdata.conquery.models.types.specific.string;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.io.BaseEncoding;
 import lombok.Getter;
 import lombok.NonNull;
@@ -55,7 +53,7 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void loadExternalInfos(NamespacedStorage storage) {
+	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {
 		subType.loadExternalInfos(storage);
 	}
 
@@ -63,16 +61,6 @@ public class StringTypeEncoded extends StringType {
 	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
 		subType.storeExternalInfos(dictionaryConsumer);
-	}
-
-	@Override
-	public void readHeader(JsonParser input) throws IOException {
-		subType.readHeader(input);
-	}
-
-	@Override
-	public void writeHeader(OutputStream out) throws IOException {
-		subType.writeHeader(out);
 	}
 
 	@Override

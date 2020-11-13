@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@Min(0)
 	private final int numberOfEvents;
 
-	private final ColumnStore[] stores;
+	private final CType<?,?>[] stores;
 
 
 	/**
@@ -153,7 +154,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 				continue;
 			}
 
-			out.put(imp.getColumns()[i].getName(), imp.getColumns()[i].getType().createScriptValue(store.get(event)));
+			out.put(imp.getColumns()[i].getName(), ((CType) imp.getColumns()[i].getType()).createScriptValue(store.get(event)));
 		}
 
 		return out;

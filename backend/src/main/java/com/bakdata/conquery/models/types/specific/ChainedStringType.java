@@ -1,16 +1,14 @@
 package com.bakdata.conquery.models.types.specific;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.specific.string.StringType;
-import com.fasterxml.jackson.core.JsonParser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -33,23 +31,13 @@ public abstract class ChainedStringType extends StringType {
 	}
 	
 	@Override
-	public void loadExternalInfos(NamespacedStorage storage) {
+	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {
 		subType.loadExternalInfos(storage);
 	}
 	
 	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
 		subType.storeExternalInfos(dictionaryConsumer);
-	}
-	
-	@Override
-	public void readHeader(JsonParser input) throws IOException {
-		subType.readHeader(input);
-	}
-	
-	@Override
-	public void writeHeader(OutputStream out) throws IOException {
-		subType.writeHeader(out);
 	}
 
 	@Override

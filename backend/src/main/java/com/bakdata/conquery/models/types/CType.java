@@ -1,16 +1,14 @@
 package com.bakdata.conquery.models.types;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.math.RoundingMode;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.math.LongMath;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,10 +31,8 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 
 	public Object createPrintValue(JAVA_TYPE value) { return value != null ? createScriptValue(value) : ""; }
 
-	public void writeHeader(OutputStream out) throws IOException {}
-	public void readHeader(JsonParser input) throws IOException {}
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {}
-	public void loadExternalInfos(NamespacedStorage storage) {}
+	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {}
 
 	@Override
 	public String toString() {

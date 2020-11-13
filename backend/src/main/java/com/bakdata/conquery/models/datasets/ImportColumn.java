@@ -18,7 +18,7 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 	@JsonBackReference @NotNull
 	private Import parent;
 	@NotNull @Valid
-	private CType type;
+	private CType<?,?> type;
 	@Min(0)
 	private int position = -1;
 	
