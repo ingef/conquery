@@ -127,8 +127,6 @@ public class ImportJob extends Job {
 			namespace.sendToAll(new AddImport(outImport));
 
 
-
-
 			// but first remap String values
 			remapStores(header.getColumns(), stores, header.getRows());
 

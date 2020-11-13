@@ -6,7 +6,6 @@ import java.util.Map;
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
@@ -97,7 +96,7 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public Map<String, Object> calculateMap(int event, Import imp) {
+	public Map<String, Object> calculateMap(int event) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 

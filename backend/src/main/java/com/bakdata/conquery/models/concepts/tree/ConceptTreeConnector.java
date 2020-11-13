@@ -129,7 +129,7 @@ public class ConceptTreeConnector extends Connector {
 				}
 
 				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, imp));
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event));
 
 
 				if ((getCondition() != null && !getCondition().matches(stringValue, rowMap))) {

@@ -41,6 +41,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 
 	private final ImportId importId;
 
+	// todo try to reduce reliance on import and use internal components instead
 	@NsIdRef
 	private Import imp;
 
@@ -145,7 +146,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 
-	public Map<String, Object> calculateMap(int event, Import imp) {
+	public Map<String, Object> calculateMap(int event) {
 		Map<String, Object> out = new HashMap<>(stores.length);
 
 		for (int i = 0; i < stores.length; i++) {
@@ -154,7 +155,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 				continue;
 			}
 
-			out.put(imp.getColumns()[i].getName(), ((CType) imp.getColumns()[i].getType()).createScriptValue(store.get(event)));
+			out.put(imp.getColumns()[i].getName(), ((CType) stores[i]).createScriptValue(store.get(event)));
 		}
 
 		return out;

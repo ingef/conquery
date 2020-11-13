@@ -31,6 +31,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 
 	public Object createPrintValue(JAVA_TYPE value) { return value != null ? createScriptValue(value) : ""; }
 
+	// todo these can be moved to StringType and simplified to be much more specific.
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {}
 	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {}
 
