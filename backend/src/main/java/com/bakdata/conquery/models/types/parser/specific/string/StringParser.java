@@ -13,8 +13,6 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -36,7 +34,8 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 public class StringParser extends Parser<Integer> {
 
-	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
+	private String name = UUID.randomUUID().toString();
+
 	private BiMap<String, Integer> strings = HashBiMap.create();
 	private List<byte[]> decoded;
 	private Encoding encoding;
@@ -113,7 +112,7 @@ public class StringParser extends Parser<Integer> {
 				"\tUsing {}(est. {}) for {}",
 				guess.getGuesser().getClass().getSimpleName(),
 				BinaryByteUnit.format(guess.estimate()),
-				dictionaryId
+				getName()
 		);
 
 		StringType result = guess.getType();
@@ -133,7 +132,7 @@ public class StringParser extends Parser<Integer> {
 
 	private void decode() {
 		encoding = findEncoding();
-		log.info("\tChosen encoding is {} for {}", encoding, dictionaryId);
+		log.info("\tChosen encoding is {} for {}", encoding, getName());
 		setEncoding(encoding);
 	}
 

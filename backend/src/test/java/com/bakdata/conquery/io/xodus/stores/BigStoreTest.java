@@ -51,9 +51,7 @@ public class BigStoreTest {
 			StoreInfo.DICTIONARIES);
 		store.setChunkSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
-		Dictionary nDict = new MapDictionary();
-		nDict.setName("dict");
-		nDict.setDataset(new DatasetId("test"));
+		Dictionary nDict = new MapDictionary(new DatasetId("test"), "dict");
 		DirectDictionary direct = new DirectDictionary(nDict);
 
 		for (int v = 0; v < 1000000; v++) {
@@ -89,9 +87,7 @@ public class BigStoreTest {
 			StoreInfo.DICTIONARIES);
 		store.setChunkSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
-		Dictionary nDict = new MapDictionary();
-		nDict.setName("dict");
-		nDict.setDataset(new DatasetId("test"));
+		Dictionary nDict = new MapDictionary(new DatasetId("test"), "dict");
 
 		// check if manual serialization deserialization works
 		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);

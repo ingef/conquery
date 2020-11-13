@@ -200,7 +200,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Dictionary computeDictionary(DictionaryId id) {
 		Dictionary e = getDictionary(id);
 		if (e == null) {
-			e = new MapDictionary(id);
+			e = new MapDictionary(id.getDataset(), id.getDictionary());
 			updateDictionary(e);
 		}
 		return e;

@@ -107,7 +107,6 @@ public class ImportJob extends Job {
 			log.info("\tupdating import information");
 			//if mapping is not required we can also use the old infos here
 			Import outImport = createImport(header, !mappingRequired);
-			Import inImport = createImport(header, true);
 
 
 			namespace.getStorage().updateImport(outImport);
@@ -208,8 +207,7 @@ public class ImportJob extends Job {
 
 	private boolean createMappings(PreprocessedHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
-		Dictionary entities = ((StringTypeEncoded) header.getPrimaryColumn().getType()).getSubType().getDictionary();
-
+		Dictionary entities = ((StringTypeEncoded) header.getPrimaryColumn().getType()).getUnderlyingDictionary();
 
 		log.debug("\tcompute dictionary");
 
@@ -254,6 +252,7 @@ public class ImportJob extends Job {
 			col.getType().storeExternalInfos(
 					(Consumer<Dictionary>) (dict -> {
 						try {
+							dict.setDataset(namespace.getDataset().getId());
 							namespace.getStorage().updateDictionary(dict);
 							namespace.sendToAll(new UpdateDictionary(dict));
 						}

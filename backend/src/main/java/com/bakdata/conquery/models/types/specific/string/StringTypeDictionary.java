@@ -4,20 +4,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.Consumer;
-
-import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.string.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CTypeVarInt;
@@ -37,36 +31,34 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
 public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
-	@NotNull
-	@Nonnull
-	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
-
 	@JsonIgnore
-	private transient Dictionary dictionary = new MapDictionary(dictionaryId);
+	private transient Dictionary dictionary;
 
-	protected StringTypeDictionary(VarIntType numberType, Dictionary dict) {
-		this(numberType);
-		dictionary = dict;
+	private String name;
+
+	public StringTypeDictionary(VarIntType numberType, Dictionary dictionary, String name) {
+		super(MajorTypeId.STRING, numberType);
+		this.dictionary = dictionary;
+		this.name = name;
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(VarIntType numberType) {
+	public StringTypeDictionary(VarIntType numberType, String name) {
 		super(MajorTypeId.STRING, numberType);
+		this.name = name;
 	}
 
 	@Override
 	public void init(DatasetId dataset) {
-		dictionaryId = new DictionaryId(dataset, dictionaryId.getDictionary());
-		dictionary.setDataset(dataset);
-	}
-
-	public StringStore createStore(int size, StringTypeEncoded.Encoding encoding) {
-		return StringStore.create(size, encoding, getDictionary());
 	}
 
 	@Override
 	public Object createScriptValue(Integer value) {
 		return getElement(value);
+	}
+
+	public byte[] getElement(int value) {
+		return dictionary.getElement(value);
 	}
 
 	@Override
@@ -76,10 +68,6 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	public byte[] getElement(Long value) {
 		return getElement(numberType.toInt(value));
-	}
-
-	public byte[] getElement(int value) {
-		return dictionary.getElement(value);
 	}
 
 	@Override
@@ -94,13 +82,14 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
-		dictionary.setName(dictionaryId.getDictionary());
-		dictionary.setDataset(dictionaryId.getDataset());
 		dictionaryConsumer.accept(dictionary);
 	}
 
 	@Override
 	public void loadExternalInfos(NamespacedStorage storage) {
+		// todo consider implementing this with Id-Injection instead of hand-wiring.
+		final DictionaryId dictionaryId = new DictionaryId(storage.getDataset().getId(), getName());
+
 		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
 	}
 
@@ -127,8 +116,9 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
-		dictionaryId = newDict.getId();
+		name = newDict.getName();
 		dictionary = newDict;
+
 		if (newNumberType.estimateMemoryBitWidth() > numberType.estimateMemoryBitWidth()) {
 			log.warn(
 					"The width of a column is increased from {} to {} bits because of the shared dictionary {}",
@@ -142,11 +132,11 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), dictionary);
+		return new StringTypeDictionary(numberType.select(starts, length), dictionary, getName());
 	}
 
 	@Override
 	public Integer get(int event) {
-		return getNumberType().get(event).intValue() ;
+		return getNumberType().get(event).intValue();
 	}
 }

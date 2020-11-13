@@ -19,14 +19,14 @@ public class TrieTypeGuesser implements TypeGuesser {
 		// todo this is confusing and unnecessary
 		VarIntType indexType = new VarIntTypeInt(0, Integer.MAX_VALUE, IntegerStore.create(p.getLines()));
 
-		StringTypeDictionary type = new StringTypeDictionary(indexType);
-		SuccinctTrie trie = new SuccinctTrie();
+		SuccinctTrie trie = new SuccinctTrie(null, p.getName());
+		StringTypeDictionary type = new StringTypeDictionary(indexType, trie, trie.getName());
+
 		for (byte[] v : p.getDecoded()) {
 			trie.add(v);
 		}
-		long trieSize = trie.estimateMemoryConsumption();
 
-		type.setDictionaryId(p.getDictionaryId());
+
 		p.setLineCounts(type);
 		StringTypeEncoded result = new StringTypeEncoded(type, p.getEncoding());
 		p.setLineCounts(result);
@@ -36,12 +36,11 @@ public class TrieTypeGuesser implements TypeGuesser {
 				this,
 				result,
 				indexType.estimateMemoryConsumption(),
-				trieSize
+				trie.estimateMemoryConsumption()
 		) {
 			@Override
 			public StringType getType() {
 				trie.compress();
-				type.setDictionary(trie);
 				return super.getType();
 			}
 		};

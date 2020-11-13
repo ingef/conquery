@@ -10,10 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
@@ -25,8 +21,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class SuccinctTrieTest {
@@ -37,10 +35,8 @@ public class SuccinctTrieTest {
 
 	@Test
 	public void replicationTest() throws IOException {
-		SuccinctTrie dict = new SuccinctTrie();
+		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
 		DirectDictionary direct = new DirectDictionary(dict);
-		dict.setDataset(new DatasetId("dataset"));
-		dict.setName("dict");
 
 		data().forEach(direct::put);
 
@@ -65,7 +61,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie dict = new SuccinctTrie();
+		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
 		DirectDictionary direct = new DirectDictionary(dict);
 
 		int distinctValues = 0;
@@ -91,7 +87,7 @@ public class SuccinctTrieTest {
 	public void serializationTest()
 			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 
-		SuccinctTrie dict = new SuccinctTrie();
+		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
 		DirectDictionary direct = new DirectDictionary(dict);
 		dict.setDataset(new DatasetId("test"));
 		dict.setName("testDict");
@@ -110,7 +106,7 @@ public class SuccinctTrieTest {
 	@ParameterizedTest(name="seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie();
+		final SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
 		DirectDictionary direct = new DirectDictionary(dict);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 
