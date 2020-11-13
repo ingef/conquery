@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -24,5 +25,8 @@ public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterati
 
 	@JsonIgnore
 	ResultType getResultType();
+
+	@JsonIgnore
+	MajorTypeId getInternalType();
 
 }

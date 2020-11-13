@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 
 /**
@@ -65,5 +66,10 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return false;
+	}
+
+	@Override
+	public MajorTypeId getInternalType() {
+		return MajorTypeId.DECIMAL;
 	}
 }
