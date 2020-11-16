@@ -64,10 +64,6 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 		return getElement(value);
 	}
 
-	public byte[] getElement(Long value) {
-		return getElement(numberType.toInt(value));
-	}
-
 	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
 		dictionaryConsumer.accept(dictionary);

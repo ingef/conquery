@@ -42,7 +42,7 @@ public class StringTypeEncoded extends StringType {
 
 	@Override
 	public String createScriptValue(Integer value) {
-		return encoding.encode(subType.getElement(value.longValue()));
+		return encoding.encode(subType.getElement(value));
 	}
 
 	@Override
