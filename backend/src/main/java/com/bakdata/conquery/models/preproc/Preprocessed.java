@@ -62,7 +62,7 @@ public class Preprocessed {
 
 
 		primaryColumn = new PPColumn(input.getPrimary().getColumnDescription().getName());
-		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser(parserConfig));
+		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser(input.getPrimary().getColumnDescription(), parserConfig));
 
 		if (!(primaryColumn.getParser() instanceof StringParser)) {
 			throw new IllegalStateException("The primary column must be an ENTITY_ID or STRING column");
@@ -74,7 +74,7 @@ public class Preprocessed {
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName());
-			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
+			columns[index].setParser(columnDescription.getType().createParser(columnDescription, parserConfig));
 		}
 	}
 

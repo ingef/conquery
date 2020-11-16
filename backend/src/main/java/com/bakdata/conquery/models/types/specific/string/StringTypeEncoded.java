@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.io.BaseEncoding;
@@ -44,11 +43,6 @@ public class StringTypeEncoded extends StringType {
 	@Override
 	public String createScriptValue(Integer value) {
 		return encoding.encode(subType.getElement(value.longValue()));
-	}
-
-	@Override
-	public void init(DatasetId dataset) {
-		subType.init(dataset);
 	}
 
 	@Override
@@ -114,8 +108,8 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void setUnderlyingDictionary(Dictionary newDict) {
-		subType.adaptUnderlyingDictionary(newDict);
+	public void setUnderlyingDictionary(DictionaryId newDict) {
+		subType.setUnderlyingDictionary(newDict);
 	}
 
 	@Override

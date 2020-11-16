@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -103,8 +104,8 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void setUnderlyingDictionary(Dictionary newDict) {
-		throw new UnsupportedOperationException();
+	public void setUnderlyingDictionary(DictionaryId newDict) {
+
 	}
 
 	@Override

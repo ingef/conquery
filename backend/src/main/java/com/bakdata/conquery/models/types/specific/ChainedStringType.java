@@ -6,7 +6,6 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import lombok.Getter;
@@ -24,12 +23,7 @@ public abstract class ChainedStringType extends StringType {
 		super();
 		this.subType = ((StringType) subType);
 	}
-	
-	@Override
-	public void init(DatasetId dataset) {
-		subType.init(dataset);
-	}
-	
+
 	@Override
 	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {
 		subType.loadExternalInfos(storage);
@@ -66,7 +60,7 @@ public abstract class ChainedStringType extends StringType {
 	}
 	
 	@Override
-	public void setUnderlyingDictionary(Dictionary newDict) {
+	public void setUnderlyingDictionary(DictionaryId newDict) {
 		subType.setUnderlyingDictionary(newDict);
 	}
 

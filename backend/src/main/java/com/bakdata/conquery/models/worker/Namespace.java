@@ -86,6 +86,16 @@ public class Namespace implements Closeable {
 		}
 	}
 
+	public void sendToAllAsync(WorkerMessage msg){
+		if (workers.isEmpty()) {
+			throw new IllegalStateException("There are no workers yet");
+		}
+
+		for (WorkerInformation w : workers) {
+			new Thread(() -> w.send(msg), w.getName()).start();
+		}
+	}
+
 
 	/**
 	 * Find the assigned worker for the bucket. If there is none return null.

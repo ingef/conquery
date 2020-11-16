@@ -6,7 +6,6 @@ import java.util.function.Function;
 
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.math.LongMath;
@@ -22,8 +21,6 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 
 	private int lines = 0;
 	private int nullLines = 0;
-
-	public void init(DatasetId dataset) {}
 
 	public Object createScriptValue(JAVA_TYPE value) {
 		return value;

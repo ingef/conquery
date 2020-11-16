@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -32,24 +33,20 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	// todo use NsIdRef
 	private String name;
+
+	@InternalOnly
 	private DatasetId dataset;
 
-	public StringTypeDictionary(VarIntType numberType, Dictionary dictionary, DatasetId dataset, String name) {
+	public StringTypeDictionary(VarIntType numberType, Dictionary dictionary, String name) {
 		super(MajorTypeId.STRING, numberType);
 		this.dictionary = dictionary;
 		this.name = name;
-		this.dataset = dataset;
 	}
 
 	@JsonCreator
 	public StringTypeDictionary(VarIntType numberType, DatasetId dataset, String name) {
 		super(MajorTypeId.STRING, numberType);
 		this.name = name;
-		this.dataset = dataset;
-	}
-
-	@Override
-	public void init(DatasetId dataset) {
 		this.dataset = dataset;
 	}
 
@@ -107,14 +104,14 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 
-	public void adaptUnderlyingDictionary(Dictionary newDict) {
-		name = newDict.getName();
-		dictionary = newDict;
+	public void setUnderlyingDictionary(DictionaryId newDict) {
+		name = newDict.getDictionary();
+		this.dataset = newDict.getDataset();
 	}
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), dictionary, getDataset(), getName());
+		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
 	}
 
 	@Override

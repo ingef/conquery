@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -34,16 +34,17 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 public class StringParser extends Parser<Integer> {
 
-	private String name = UUID.randomUUID().toString();
+	private final String name;
 
 	private BiMap<String, Integer> strings = HashBiMap.create();
+
 	private List<byte[]> decoded;
 	private Encoding encoding;
 	private String prefix = null;
 	private String suffix = null;
 
-	public StringParser(ParserConfig config) {
-
+	public StringParser(ColumnDescription description, ParserConfig config) {
+		this.name = description.getName();
 	}
 
 	@Override
@@ -125,9 +126,7 @@ public class StringParser extends Parser<Integer> {
 			result = new StringTypeSuffix(result, suffix);
 			setLineCounts(result);
 		}
-		return new Decision(
-				result
-		);
+		return new Decision(result);
 	}
 
 	private void decode() {

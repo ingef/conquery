@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.dictionary;
 
-import java.util.UUID;
-
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -15,11 +13,6 @@ import lombok.Setter;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iterable<DictionaryEntry> {
-
-	public static String generateName() {
-		return UUID.randomUUID().toString();
-	}
-
 
 	@Getter @Setter
 	private DatasetId dataset;

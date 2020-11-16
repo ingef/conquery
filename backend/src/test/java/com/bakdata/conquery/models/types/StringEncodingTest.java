@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +23,6 @@ public class StringEncodingTest {
 
 	public static final int SEED = 7;
 
-	private UUID randomUUID(Random random) {
-		byte[] randomBytes = new byte[16];
-		random.nextBytes(randomBytes);
-
-		return UUID.nameUUIDFromBytes(randomBytes);
-	}
-
 	@TestFactory
 	public Stream<DynamicTest> testEncodings() {
 
@@ -37,19 +31,26 @@ public class StringEncodingTest {
 		StringTypeEncoded.Encoding encoding = StringTypeEncoded.Encoding.Base64;
 
 		return Stream.generate(() -> randomUUID(random).toString().replace("-", ""))
-				.map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
-					byte[] decoded = encoding.decode(uuid);
-					String encoded = encoding.encode(decoded);
+					 .map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
+						 byte[] decoded = encoding.decode(uuid);
+						 String encoded = encoding.encode(decoded);
 
-					assertThat(encoded).isEqualTo(uuid);
-					assertThat(decoded.length).isLessThan(uuid.length());
-				}))
-				.limit(100);
+						 assertThat(encoded).isEqualTo(uuid);
+						 assertThat(decoded.length).isLessThan(uuid.length());
+					 }))
+					 .limit(100);
+	}
+
+	private UUID randomUUID(Random random) {
+		byte[] randomBytes = new byte[16];
+		random.nextBytes(randomBytes);
+
+		return UUID.nameUUIDFromBytes(randomBytes);
 	}
 
 	@Test
 	public void testHexStreamStringType() {
-		StringParser parser = new StringParser(new ParserConfig());
+		StringParser parser = new StringParser(new ColumnDescription("name", MajorTypeId.STRING), new ParserConfig());
 
 		Stream
 				.generate(() -> UUID.randomUUID().toString().replace("-", ""))
@@ -57,7 +58,8 @@ public class StringEncodingTest {
 				.mapToInt(v -> {
 					try {
 						return parser.parse(v);
-					} catch (ParsingException e) {
+					}
+					catch (ParsingException e) {
 						return 0; // We know that StringTypeVarInt is able to parse our strings.
 					}
 				})

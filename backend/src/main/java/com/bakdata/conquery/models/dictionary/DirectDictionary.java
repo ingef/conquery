@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.dictionary;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.google.common.collect.Iterators;
 
@@ -67,8 +68,8 @@ public class DirectDictionary extends StringType {
 	}
 	
 	@Override
-	public void setUnderlyingDictionary(Dictionary newDict) {
-		throw new UnsupportedOperationException();
+	public void setUnderlyingDictionary(DictionaryId newDict) {
+
 	}
 
 	@Override

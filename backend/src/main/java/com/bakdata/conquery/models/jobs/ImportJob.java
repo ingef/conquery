@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -86,25 +88,27 @@ public class ImportJob extends Job {
 			log.info("Done reading data. Contains {} Entities.", container.getStarts().size());
 
 
-			final CType<?, ?>[] stores = container.getValues();
+			final Table tableDescription = namespace.getStorage().getDataset().getTables().get(this.table);
 
-			// todo don't think this does anything useful
-			for (CType<?, ?> col : container.getValues()) {
-				col.init(namespace.getStorage().getDataset().getId());
-			}
+			final CType<?, ?>[] stores = container.getValues();
 
 			// todo use a constant
 			DictionaryMapping primaryMapping = importPrimaryDictionary(container.getDictionaries().get("primary_dictionary"));
 			//update primary dictionary
 
-			importDictionaries(header, container.getValues());
+			final Map<String, DictionaryMapping> mappings = importDictionaries(header, container.getDictionaries());
+
+			CType<?, ?>[] values = container.getValues();
+			setDictionaryIds(header, tableDescription, values);
+
+			applyDictionaryMappings(tableDescription, mappings, values);
+
 
 			for (CType<?, ?> column : container.getValues()) {
 				// todo if we import the dictionaries first, then load them into the columns and remap them we don't need this
 				// todo for that we need to map the relation from column to dict better, which also allows us to do the mapping
-				column.loadExternalInfos(dict -> container.getDictionaries().get(dict.getDictionary()));
+				column.loadExternalInfos(dict -> namespace.getStorage().getDictionary(dict));
 			}
-
 
 
 			// Distribute the new IDs between the slaves
@@ -159,10 +163,10 @@ public class ImportJob extends Job {
 				}
 
 				// copy only the parts of the bucket we need
-				final CType<?,?>[] bucketStores =
+				final CType<?, ?>[] bucketStores =
 						Arrays.stream(stores)
 							  .map(store -> store.select(selectionStart, entityLengths))
-							  .toArray(CType<?,?>[]::new);
+							  .toArray(CType<?, ?>[]::new);
 
 
 				final Bucket bucket = new Bucket(
@@ -231,7 +235,10 @@ public class ImportJob extends Job {
 		return primaryMapping;
 	}
 
-	private void importDictionaries(PreprocessedHeader header, CType<?, ?>[] columns) throws JSONException {
+	private Map<String, DictionaryMapping> importDictionaries(PreprocessedHeader header, Map<String, Dictionary> dicts)
+			throws JSONException {
+		final Map<String, DictionaryMapping> out = new HashMap<>();
+
 		log.debug("sending secondary dictionaries");
 
 		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
@@ -240,23 +247,28 @@ public class ImportJob extends Job {
 			Column tableCol = table.getColumns()[colPos];
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
 
-			if (!(columns[colPos] instanceof StringType)) {
+			if (tableCol.getType() != MajorTypeId.STRING) {
 				continue;
 			}
-
-			final StringType type = (StringType) columns[colPos];
 
 			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
 			if (tableCol.getSharedDictionary() != null) {
 				final DictionaryId sharedDictionaryId = new DictionaryId(namespace.getDataset().getId(), tableCol.getSharedDictionary());
-				importSharedDictionary(type.getUnderlyingDictionary(), sharedDictionaryId, type);
-			}
+				final Dictionary dictionary = dicts.get(tableCol.getName());
 
-			if (type.getUnderlyingDictionary() != null) {
+				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
+
+				out.put(tableCol.getName(), mapping);
+			}
+			else if (dicts.containsKey(tableCol.getName())) {
 				//store external infos into master and slaves
-				final Dictionary dict = type.getUnderlyingDictionary();
+				final Dictionary dict = dicts.get(tableCol.getName());
+				final DictionaryId dictionaryId = computeDefaultDictionaryId(header.getName(), tableCol);
+
 				try {
-					dict.setDataset(namespace.getDataset().getId());
+					dict.setDataset(dictionaryId.getDataset());
+					dict.setName(dictionaryId.getDictionary());
+
 					namespace.getStorage().updateDictionary(dict);
 					namespace.sendToAll(new UpdateDictionary(dict));
 				}
@@ -266,9 +278,59 @@ public class ImportJob extends Job {
 			}
 		}
 
+		return out;
 	}
 
-	private Import createImport(PreprocessedHeader header, CType<?,?>[] columns) {
+	public void setDictionaryIds(PreprocessedHeader header, Table tableDescription, CType<?, ?>[] values) {
+		for (int i = 0; i < tableDescription.getColumns().length; i++) {
+			Column column = tableDescription.getColumns()[i];
+
+			if (column.getType() != MajorTypeId.STRING) {
+				continue;
+			}
+
+			CType<?, ?> storeColumn = values[i];
+			final StringType stringType = (StringType) storeColumn;
+
+			// if no mapping provided, use incoming dict
+			if (column.getSharedDictionary() != null) {
+				stringType.setUnderlyingDictionary(computeSharedDictionaryId(column));
+			}
+			else {
+				stringType.setUnderlyingDictionary(computeDefaultDictionaryId(header.getName(), column));
+
+			}
+		}
+	}
+
+	public void applyDictionaryMappings(Table tableDescription, Map<String, DictionaryMapping> mappings, CType<?, ?>[] values) {
+		for (int i = 0; i < values.length; i++) {
+			Column column = tableDescription.getColumns()[i];
+
+			if (column.getType() != MajorTypeId.STRING) {
+				continue;
+			}
+
+			CType<?, ?> storeColumn = values[i];
+			final StringType stringType = (StringType) storeColumn;
+
+			if (!mappings.containsKey(column.getName())) {
+				continue;
+			}
+
+			// apply mapping
+			final DictionaryMapping mapping = mappings.get(column.getName());
+
+			// mapping is null, if this is the first dict to be loaded.
+			if (mapping == null) {
+				continue;
+			}
+
+			mapping.applyToStore(stringType, storeColumn.getLines());
+		}
+	}
+
+	private Import createImport(PreprocessedHeader header, CType<?, ?>[] columns) {
 		// todo what does this function do actually?
 		Import imp = new Import(table);
 		//TODO also store the dictionary ids in here then remove them on deletion of the import
@@ -298,43 +360,55 @@ public class ImportJob extends Job {
 	}
 
 	private void sendBucket(ImportBucket bucket) {
-		// todo this can be done in parallel
 		int bucketNumber = bucket.getBucket().getBucket();
 
 		WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
 		if (responsibleWorker == null) {
 			throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
 		}
+		// todo send this async
+
 		try {
 			responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
 		}
 		catch (InterruptedException e) {
 			log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
 		}
+
 		responsibleWorker.send(bucket);
 	}
 
-
-	private DictionaryMapping importSharedDictionary(Dictionary incoming, DictionaryId targetDictionary, StringType stringType) throws JSONException {
+	private DictionaryMapping importSharedDictionary(Dictionary incoming, DictionaryId targetDictionary) throws JSONException {
 
 		log.info("merging into shared Dictionary[{}]", targetDictionary);
 
 		Dictionary shared = namespace.getStorage().getDictionary(targetDictionary);
 		DictionaryMapping mapping = null;
 
+		// we can reuse the incoming dict if there is no prior.
 		if (shared == null) {
 			shared = incoming;
+			shared.setDataset(targetDictionary.getDataset());
+			shared.setName(targetDictionary.getDictionary());
 		}
 		else {
-			 mapping = DictionaryMapping.create(incoming, shared, bucketSize);
+			mapping = DictionaryMapping.create(incoming, Dictionary.copyUncompressed(shared), bucketSize);
+			mapping.getTargetDictionary().setName(targetDictionary.getDictionary());
+			mapping.getTargetDictionary().setDataset(targetDictionary.getDataset());
 		}
-
-		stringType.setUnderlyingDictionary(shared);
 
 		namespace.getStorage().updateDictionary(shared);
 		namespace.sendToAll(new UpdateDictionary(shared));
 
 		return mapping;
+	}
+
+	public DictionaryId computeDefaultDictionaryId(String importName, Column column) {
+		return new DictionaryId(namespace.getDataset().getId(), String.format("%s#%s", importName, column.getId().toString()));
+	}
+
+	private DictionaryId computeSharedDictionaryId(Column column) {
+		return new DictionaryId(namespace.getDataset().getId(), column.getSharedDictionary());
 	}
 
 	@Override
