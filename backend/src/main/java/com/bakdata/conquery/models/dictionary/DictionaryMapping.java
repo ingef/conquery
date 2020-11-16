@@ -3,12 +3,8 @@ package com.bakdata.conquery.models.dictionary;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +22,13 @@ public class DictionaryMapping {
 	private final Dictionary targetDictionary;
 
 	private final int[] source2TargetMap;
-	private final Range<Integer> newIds;
-	private final IntSet usedBuckets;
 
-	public static DictionaryMapping create(Dictionary from, Dictionary to, int entityBucketSize) {
+	private final int numberOfNewIds;
+
+	public static DictionaryMapping create(Dictionary from, Dictionary to) {
 
 		int[] source2TargetMap = new int[from.size()];
-		Range<Integer> newIds = null;
-		IntSet buckets = new IntOpenHashSet();
+		int newIds = 0;
 
 		for (int id = 0; id < from.size(); id++) {
 
@@ -43,23 +38,16 @@ public class DictionaryMapping {
 			//if id was unknown until now
 			if (targetId == -1L) {
 				targetId = to.add(value);
-				if (newIds == null) {
-					newIds = Range.exactly(targetId);
-				}
-				else {
-					newIds = newIds.span(Range.exactly(targetId));
-				}
+				newIds++;
 			}
 			source2TargetMap[id] = targetId;
 
-			int bucket = Entity.getBucket(targetId, entityBucketSize);
-			buckets.add(bucket);
 		}
 		if (Arrays.stream(source2TargetMap).distinct().count() < source2TargetMap.length) {
 			throw new IllegalStateException("Multiple source ids map to the same target");
 		}
 
-		return new DictionaryMapping(from, to, source2TargetMap, newIds, buckets);
+		return new DictionaryMapping(from, to, source2TargetMap, newIds);
 	}
 
 	public int source2Target(int sourceId) {
@@ -67,12 +55,6 @@ public class DictionaryMapping {
 	}
 
 
-	public int getNumberOfNewIds() {
-		if (newIds == null) {
-			return 0;
-		}
-		return newIds.getMax() - newIds.getMin() + 1;
-	}
 
 	/**
 	 * Mutably applies mapping to store.

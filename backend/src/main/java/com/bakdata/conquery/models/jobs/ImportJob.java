@@ -116,7 +116,9 @@ public class ImportJob extends Job {
 
 			// Allocate a responsibility for all yet unassigned buckets.
 			synchronized (namespace) {
-				for (int bucket : primaryMapping.getUsedBuckets()) {
+				for (int entity : primaryMapping.getSource2TargetMap()) {
+					int bucket = Entity.getBucket(entity, bucketSize);
+
 					if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
 						continue;
 					}
@@ -216,15 +218,15 @@ public class ImportJob extends Job {
 
 		log.debug("Map values");
 
-		DictionaryMapping primaryMapping = DictionaryMapping.create(underlyingDictionary, primaryDict, bucketSize);
+		DictionaryMapping primaryMapping = DictionaryMapping.create(underlyingDictionary, primaryDict);
 
 		//if no new ids we shouldn't recompress and store
-		if (primaryMapping.getNewIds() == null) {
+		if (primaryMapping.getNumberOfNewIds() == 0) {
 			log.debug("no new ids");
 		}
 		//but if there are new ids we have to
 		else {
-			log.debug("{} new ids {}", primaryMapping.getNumberOfNewIds(), primaryMapping.getNewIds());
+			log.debug("{} new ids", primaryMapping.getNumberOfNewIds());
 
 			namespace.getStorage().updateDictionary(primaryDict);
 
@@ -385,6 +387,7 @@ public class ImportJob extends Job {
 		Dictionary shared = namespace.getStorage().getDictionary(targetDictionary);
 		DictionaryMapping mapping = null;
 
+		// todo is reusing worth the code weirdness?
 		// we can reuse the incoming dict if there is no prior.
 		if (shared == null) {
 			shared = incoming;
@@ -392,7 +395,7 @@ public class ImportJob extends Job {
 			shared.setName(targetDictionary.getDictionary());
 		}
 		else {
-			mapping = DictionaryMapping.create(incoming, Dictionary.copyUncompressed(shared), bucketSize);
+			mapping = DictionaryMapping.create(incoming, Dictionary.copyUncompressed(shared));
 			mapping.getTargetDictionary().setName(targetDictionary.getDictionary());
 			mapping.getTargetDictionary().setDataset(targetDictionary.getDataset());
 		}
