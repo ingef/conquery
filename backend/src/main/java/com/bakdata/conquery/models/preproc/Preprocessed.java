@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.HashBasedTable;
@@ -197,6 +198,11 @@ public class Preprocessed {
 		private final CType<?,?>[] values;
 
 		private final Map<String, Dictionary> dictionaries;
+
+		@JsonIgnore
+		public boolean isEmpty() {
+			return getStarts() == null;
+		}
 	}
 
 

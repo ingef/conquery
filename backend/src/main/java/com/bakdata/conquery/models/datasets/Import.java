@@ -68,7 +68,7 @@ public class Import extends NamedImpl<ImportId> {
 
 	public void loadExternalInfos(NamespacedStorage storage) {
 		for (ImportColumn col : columns) {
-			col.getType().loadExternalInfos(storage);
+			col.getType().loadDictionaries(storage);
 		}
 	}
 

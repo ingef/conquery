@@ -46,8 +46,8 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void loadExternalInfos(NamespacedStorage storage) {
-		subType.loadExternalInfos(storage);
+	public void loadDictionaries(NamespacedStorage storage) {
+		subType.loadDictionaries(storage);
 	}
 
 

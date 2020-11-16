@@ -29,7 +29,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 
 	// todo these can be moved to StringType and simplified to be much more specific.
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {}
-	public void loadExternalInfos(NamespacedStorage storage) {}
+	public void loadDictionaries(NamespacedStorage storage) {}
 
 	@Override
 	public String toString() {

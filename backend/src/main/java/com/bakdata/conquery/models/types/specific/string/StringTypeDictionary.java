@@ -74,7 +74,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	@Override
-	public void loadExternalInfos(NamespacedStorage storage) {
+	public void loadDictionaries(NamespacedStorage storage) {
 		// todo consider implementing this with Id-Injection instead of hand-wiring.
 		final DictionaryId dictionaryId = new DictionaryId(getDataset(), getName());
 

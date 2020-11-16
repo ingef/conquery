@@ -23,7 +23,7 @@ public class AddImport extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		log.info("Received Import[{}], containing {} entries.", imp.getId(), imp.getNumberOfEntries());
 		for (ImportColumn column : imp.getColumns()) {
-			column.getType().loadExternalInfos(context.getStorage());
+			column.getType().loadDictionaries(context.getStorage());
 		}
 		context.addImport(imp);
 	}
