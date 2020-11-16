@@ -66,8 +66,8 @@ public abstract class ChainedStringType extends StringType {
 	}
 	
 	@Override
-	public void adaptUnderlyingDictionary(Dictionary newDict) {
-		subType.adaptUnderlyingDictionary(newDict);
+	public void setUnderlyingDictionary(Dictionary newDict) {
+		subType.setUnderlyingDictionary(newDict);
 	}
 
 	@Override

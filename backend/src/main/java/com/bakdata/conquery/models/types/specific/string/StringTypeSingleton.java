@@ -74,7 +74,7 @@ public class StringTypeSingleton extends StringType {
 	}
 	
 	@Override
-	public void adaptUnderlyingDictionary(Dictionary newDict) {
+	public void setUnderlyingDictionary(Dictionary newDict) {
 		throw new UnsupportedOperationException();
 	}
 

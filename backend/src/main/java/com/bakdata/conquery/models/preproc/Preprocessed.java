@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +20,8 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
@@ -30,6 +34,10 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 @Data
 @Slf4j
 public class Preprocessed {
+
+	private static final ObjectReader containerReader = Jackson.BINARY_MAPPER.readerFor(DataContainer.class);
+	private static final ObjectWriter containerWriter = Jackson.BINARY_MAPPER.writerFor(DataContainer.class);
+
 
 	private final InputFile file;
 	private final String name;
@@ -68,6 +76,10 @@ public class Preprocessed {
 			columns[index] = new PPColumn(columnDescription.getName());
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 		}
+	}
+
+	public static DataContainer readContainer(InputStream in) throws IOException {
+		return containerReader.readValue(in);
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
@@ -130,9 +142,8 @@ public class Preprocessed {
 			((CType<?, ?>) column).storeExternalInfos(dict -> dicts.put(dict.getName(),dict));
 		}
 
-		try (OutputStream out = new GzipCompressorOutputStream(outFile.writeContent())) {
-			Jackson.BINARY_MAPPER.writerFor(DataContainer.class)
-								 .writeValue(out, new DataContainer(entityStart, entityLength, columns, dicts));
+		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {
+			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, columns, dicts));
 		}
 
 		// Then write headers.
@@ -183,7 +194,7 @@ public class Preprocessed {
 	public static class DataContainer {
 		private final Map<Integer, Integer> starts;
 		private final Map<Integer, Integer> lengths;
-		private final CType[] values;
+		private final CType<?,?>[] values;
 
 		private final Map<String, Dictionary> dictionaries;
 	}

@@ -25,5 +25,5 @@ public abstract class StringType extends CType<Integer, Integer> implements Iter
 	@JsonIgnore
 	public abstract Dictionary getUnderlyingDictionary();
 
-	public abstract void adaptUnderlyingDictionary(Dictionary newDict);
+	public abstract void setUnderlyingDictionary(Dictionary newDict);
 }

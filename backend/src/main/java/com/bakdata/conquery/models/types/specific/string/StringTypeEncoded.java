@@ -114,7 +114,7 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void adaptUnderlyingDictionary(Dictionary newDict) {
+	public void setUnderlyingDictionary(Dictionary newDict) {
 		subType.adaptUnderlyingDictionary(newDict);
 	}
 

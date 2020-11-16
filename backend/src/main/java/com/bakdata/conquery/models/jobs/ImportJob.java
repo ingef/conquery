@@ -65,22 +65,26 @@ public class ImportJob extends Job {
 			}
 
 			PreprocessedHeader header = readHeader(file);
+			log.info("Importing {} into {}", header.getName(), table);
 
 			//check that all workers are connected
 			namespace.checkConnections();
 
-
 			//import the actual data
-			log.info("\timporting");
+			log.info("Begin reading data.");
 			final Preprocessed.DataContainer container;
 			try (InputStream in = new GZIPInputStream(file.readContent())) {
-				container = Jackson.BINARY_MAPPER.readerFor(Preprocessed.DataContainer.class).readValue(in);
+				container = Preprocessed.readContainer(in);
 			}
+
 
 			if (container.getStarts() == null) {
 				log.warn("Import was empty. Skipping.");
 				return;
 			}
+
+			log.info("Done reading data. Contains {} Entities.", container.getStarts().size());
+
 
 			final CType<?, ?>[] stores = container.getValues();
 
@@ -104,7 +108,7 @@ public class ImportJob extends Job {
 
 
 			// Distribute the new IDs between the slaves
-			log.debug("\tpartition new IDs");
+			log.debug("partition new IDs");
 
 			// Allocate a responsibility for all yet unassigned buckets.
 			synchronized (namespace) {
@@ -123,7 +127,7 @@ public class ImportJob extends Job {
 			}
 
 			//create data import and store/send it
-			log.info("\tupdating import information");
+			log.info("updating import information");
 			//if mapping is not required we can also use the old infos here
 			Import outImport = createImport(header, stores);
 
@@ -182,7 +186,7 @@ public class ImportJob extends Job {
 		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
 			PreprocessedHeader header = headerReader.readValue(in);
 
-			log.info("Importing {} into {}", header.getName(), table);
+
 			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
 
 			header.assertMatch(tab);
@@ -192,39 +196,35 @@ public class ImportJob extends Job {
 	}
 
 	private DictionaryMapping importPrimaryDictionary(Dictionary underlyingDictionary) {
-		log.debug("\tupdating primary dictionary");
-
-		log.debug("\tcompute dictionary");
-
+		log.info("Updating primary dictionary");
 
 		final DictionaryId dictionaryId = ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset());
-
 
 		Dictionary orig = namespace.getStorage().getDictionary(dictionaryId);
 
 		// Start with an empty Dictionary and merge into it
-		if(orig == null){
-			orig = new MapDictionary(namespace.getDataset().getId(), "primary_dictionary");
+		if (orig == null) {
+			log.debug("No prior Dictionary[{}], creating one", dictionaryId);
+			orig = new MapDictionary(namespace.getDataset().getId(), dictionaryId.getDictionary());
 		}
 
 		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
-		log.debug("\tmap values");
+		log.debug("Map values");
 
 		DictionaryMapping primaryMapping = DictionaryMapping.create(underlyingDictionary, primaryDict, bucketSize);
 
 		//if no new ids we shouldn't recompress and store
 		if (primaryMapping.getNewIds() == null) {
-			log.debug("\t\tno new ids");
+			log.debug("no new ids");
 		}
 		//but if there are new ids we have to
 		else {
-			log.debug("\t\t {} new ids {}", primaryMapping.getNumberOfNewIds(), primaryMapping.getNewIds());
-			log.debug("\t\tstoring");
+			log.debug("{} new ids {}", primaryMapping.getNumberOfNewIds(), primaryMapping.getNewIds());
 
 			namespace.getStorage().updateDictionary(primaryDict);
 
-			log.debug("\t\tsending");
+			log.debug("sending");
 
 			namespace.sendToAll(new UpdateDictionary(primaryDict));
 		}
@@ -232,7 +232,7 @@ public class ImportJob extends Job {
 	}
 
 	private void importDictionaries(PreprocessedHeader header, CType<?, ?>[] columns) throws JSONException {
-		log.debug("\tsending secondary dictionaries");
+		log.debug("sending secondary dictionaries");
 
 		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
 
@@ -248,13 +248,11 @@ public class ImportJob extends Job {
 
 			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
 			if (tableCol.getSharedDictionary() != null) {
-				createSharedDictionary(
-						type.getUnderlyingDictionary(),
-						new DictionaryId(namespace.getDataset().getId(), tableCol.getSharedDictionary()),
-						type
-				);
+				final DictionaryId sharedDictionaryId = new DictionaryId(namespace.getDataset().getId(), tableCol.getSharedDictionary());
+				importSharedDictionary(type.getUnderlyingDictionary(), sharedDictionaryId, type);
 			}
-			else if (type.getUnderlyingDictionary() != null) {
+
+			if (type.getUnderlyingDictionary() != null) {
 				//store external infos into master and slaves
 				final Dictionary dict = type.getUnderlyingDictionary();
 				try {
@@ -316,24 +314,27 @@ public class ImportJob extends Job {
 		responsibleWorker.send(bucket);
 	}
 
-	private void createSharedDictionary(Dictionary incoming, DictionaryId targetDictionary, StringType stringType) throws JSONException {
 
-		log.info("\t\tmerging into shared Dictionary[{}]", targetDictionary);
+	private DictionaryMapping importSharedDictionary(Dictionary incoming, DictionaryId targetDictionary, StringType stringType) throws JSONException {
+
+		log.info("merging into shared Dictionary[{}]", targetDictionary);
 
 		Dictionary shared = namespace.getStorage().getDictionary(targetDictionary);
+		DictionaryMapping mapping = null;
 
 		if (shared == null) {
 			shared = incoming;
 		}
 		else {
-			DictionaryMapping mapping = DictionaryMapping.create(incoming, shared, bucketSize);
-			mapping.applyToStore(stringType, stringType.getLines());
+			 mapping = DictionaryMapping.create(incoming, shared, bucketSize);
 		}
 
-		stringType.adaptUnderlyingDictionary(shared);
+		stringType.setUnderlyingDictionary(shared);
 
 		namespace.getStorage().updateDictionary(shared);
 		namespace.sendToAll(new UpdateDictionary(shared));
+
+		return mapping;
 	}
 
 	@Override
