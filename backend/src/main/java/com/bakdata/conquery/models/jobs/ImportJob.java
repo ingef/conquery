@@ -9,9 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -126,7 +123,6 @@ public class ImportJob extends Job {
 
 		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(starts.keySet(), primaryMapping, bucketSize);
 
-		ExecutorService executor = Executors.newCachedThreadPool();
 
 		// per incoming bucket:
 		// 	- remap Entity-Ids to global
@@ -134,44 +130,41 @@ public class ImportJob extends Job {
 		// 	- split stores
 		// 	- send store to responsible workers
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
-			executor.execute(() -> {
-				int currentBucket = bucket2entities.getKey();
-				final List<Integer> entities = bucket2entities.getValue();
+			int currentBucket = bucket2entities.getKey();
+			final List<Integer> entities = bucket2entities.getValue();
 
-				int[] globalIds = entities.stream().mapToInt(primaryMapping::source2Target).toArray();
+			int[] globalIds = entities.stream().mapToInt(primaryMapping::source2Target).toArray();
 
-				int[] selectionStart = entities.stream().mapToInt(starts::get).toArray();
-				final Map<Integer, Integer> lengths = container.getLengths();
-				int[] entityLengths = entities.stream().mapToInt(lengths::get).toArray();
+			int[] selectionStart = entities.stream().mapToInt(starts::get).toArray();
+			final Map<Integer, Integer> lengths = container.getLengths();
+			int[] entityLengths = entities.stream().mapToInt(lengths::get).toArray();
 
-				// First entity of Bucket starts at 0, the following are appended.
-				int[] entityStarts = Arrays.copyOf(entityLengths, entityLengths.length);
-				entityStarts[0] = 0;
-				for (int index = 1; index < entityLengths.length; index++) {
-					entityStarts[index] = entityStarts[index - 1] + entityLengths[index - 1];
-				}
+			// First entity of Bucket starts at 0, the following are appended.
+			int[] entityStarts = Arrays.copyOf(entityLengths, entityLengths.length);
+			entityStarts[0] = 0;
+			for (int index = 1; index < entityLengths.length; index++) {
+				entityStarts[index] = entityStarts[index - 1] + entityLengths[index - 1];
+			}
 
-				// copy only the parts of the bucket we need
-				final CType<?, ?>[] bucketStores =
-						Arrays.stream(stores)
-							  .map(store -> store.select(selectionStart, entityLengths))
-							  .toArray(CType<?, ?>[]::new);
+			// copy only the parts of the bucket we need
+			final CType<?, ?>[] bucketStores =
+					Arrays.stream(stores)
+						  .map(store -> store.select(selectionStart, entityLengths))
+						  .toArray(CType<?, ?>[]::new);
 
 
-				sendBucket(new Bucket(
-						currentBucket,
-						outImport.getId(),
-						Arrays.stream(entityLengths).sum(),
-						bucketStores,
-						new Int2IntArrayMap(globalIds, entityStarts),
-						new Int2IntArrayMap(globalIds, entityLengths),
-						globalIds.length
-				));
-			});
+			sendBucket(new Bucket(
+					currentBucket,
+					outImport.getId(),
+					Arrays.stream(entityLengths).sum(),
+					bucketStores,
+					new Int2IntArrayMap(globalIds, entityStarts),
+					new Int2IntArrayMap(globalIds, entityLengths),
+					globalIds.length
+			));
+
 		}
 
-		executor.shutdown();
-		executor.awaitTermination(24, TimeUnit.HOURS);
 	}
 
 	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
