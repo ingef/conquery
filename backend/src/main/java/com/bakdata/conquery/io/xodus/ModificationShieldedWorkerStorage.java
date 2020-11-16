@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import javax.validation.Validator;
@@ -19,12 +20,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
- * Provides a view on the storage that does not allow modification of the storage (update, delete). 
+ * Provides a view on the storage that does not allow modification of the storage (update, delete).
  */
 @RequiredArgsConstructor
-public class ModificationShieldedWorkerStorage {
+public class ModificationShieldedWorkerStorage implements WorkerStorage {
 
 	private final WorkerStorage delegate;
 
@@ -36,12 +38,52 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getCentralRegistry();
 	}
 
+	@Override
+	public void loadData() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void clear() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public String getStorageOrigin() {
+		return delegate.getStorageOrigin();
+	}
+
+	@Override
+	public void addDictionary(Dictionary dict) {
+		throw new NotImplementedException();
+	}
+
 	public Dictionary getDictionary(DictionaryId id) {
 		return delegate.getDictionary(id);
 	}
 
+	@Override
+	public void updateDictionary(Dictionary dict) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void removeDictionary(DictionaryId id) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Dictionary computeDictionary(DictionaryId id) {
+		throw new NotImplementedException();
+	}
+
 	public DirectDictionary getPrimaryDictionary() {
 		return delegate.getPrimaryDictionary();
+	}
+
+	@Override
+	public void addImport(Import imp) {
+		throw new NotImplementedException();
 	}
 
 	public Import getImport(ImportId id) {
@@ -52,8 +94,23 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getAllImports();
 	}
 
+	@Override
+	public void updateImport(Import imp) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void removeImport(ImportId id) {
+		throw new NotImplementedException();
+	}
+
 	public Dataset getDataset() {
 		return delegate.getDataset();
+	}
+
+	@Override
+	public void updateDataset(Dataset dataset) {
+		throw new NotImplementedException();
 	}
 
 	public Concept<?> getConcept(ConceptId id) {
@@ -64,6 +121,16 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.hasConcept(id);
 	}
 
+	@Override
+	public void updateConcept(Concept<?> concept) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void removeConcept(ConceptId id) {
+		throw new NotImplementedException();
+	}
+
 	public Collection<? extends Concept<?>> getAllConcepts() {
 		return delegate.getAllConcepts();
 	}
@@ -72,19 +139,59 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getWorker();
 	}
 
+	@Override
+	public void setWorker(WorkerInformation worker) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void updateWorker(WorkerInformation worker) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void addBucket(Bucket bucket) {
+		throw new NotImplementedException();
+	}
+
 	public Bucket getBucket(BucketId id) {
 		return delegate.getBucket(id);
+	}
+
+	@Override
+	public void removeBucket(BucketId id) {
+		throw new NotImplementedException();
 	}
 
 	public Collection<Bucket> getAllBuckets() {
 		return delegate.getAllBuckets();
 	}
 
+	@Override
+	public void addCBlock(CBlock cBlock) {
+		throw new NotImplementedException();
+	}
+
 	public CBlock getCBlock(CBlockId id) {
 		return delegate.getCBlock(id);
 	}
 
+	@Override
+	public void updateCBlock(CBlock cBlock) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void removeCBlock(CBlockId id) {
+		throw new NotImplementedException();
+	}
+
 	public Collection<CBlock> getAllCBlocks() {
 		return delegate.getAllCBlocks();
+	}
+
+	@Override
+	public void close() throws IOException {
+		throw new NotImplementedException();
 	}
 }

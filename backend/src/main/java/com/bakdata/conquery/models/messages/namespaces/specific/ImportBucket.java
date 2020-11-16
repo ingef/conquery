@@ -25,7 +25,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 		// todo encapsulate this better.
 		for (CType<?, ?> store : bucket.getStores()) {
-			store.loadExternalInfos(context.getStorage()::getDictionary);
+			store.loadExternalInfos(context.getStorage());
 		}
 
 		bucket.setImp(context.getStorage().getImport(bucket.getImportId()));

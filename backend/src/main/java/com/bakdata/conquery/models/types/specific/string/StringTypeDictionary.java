@@ -3,10 +3,10 @@ package com.bakdata.conquery.models.types.specific.string;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -74,11 +74,11 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	@Override
-	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {
+	public void loadExternalInfos(NamespacedStorage storage) {
 		// todo consider implementing this with Id-Injection instead of hand-wiring.
 		final DictionaryId dictionaryId = new DictionaryId(getDataset(), getName());
 
-		dictionary = Objects.requireNonNull(storage.apply(dictionaryId));
+		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
 	}
 
 	public int size() {

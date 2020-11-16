@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.types.specific;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.specific.string.StringType;
@@ -25,7 +25,7 @@ public abstract class ChainedStringType extends StringType {
 	}
 
 	@Override
-	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {
+	public void loadExternalInfos(NamespacedStorage storage) {
 		subType.loadExternalInfos(storage);
 	}
 	

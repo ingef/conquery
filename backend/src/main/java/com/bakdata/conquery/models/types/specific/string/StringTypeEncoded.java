@@ -3,11 +3,11 @@ package com.bakdata.conquery.models.types.specific.string;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -46,7 +46,7 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {
+	public void loadExternalInfos(NamespacedStorage storage) {
 		subType.loadExternalInfos(storage);
 	}
 

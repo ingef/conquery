@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPColumn;
-import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
@@ -63,7 +62,7 @@ public class Import extends NamedImpl<ImportId> {
 
 	public void loadExternalInfos(NamespacedStorage storage) {
 		for (ImportColumn col : columns) {
-			((CType<?, ?>) col.getType()).loadExternalInfos(storage::getDictionary);
+			col.getType().loadExternalInfos(storage);
 		}
 	}
 

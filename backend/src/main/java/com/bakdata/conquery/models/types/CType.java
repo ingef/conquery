@@ -2,11 +2,10 @@ package com.bakdata.conquery.models.types;
 
 import java.math.RoundingMode;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.math.LongMath;
 import lombok.Getter;
@@ -30,7 +29,7 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 
 	// todo these can be moved to StringType and simplified to be much more specific.
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {}
-	public void loadExternalInfos(Function<DictionaryId, Dictionary> storage) {}
+	public void loadExternalInfos(NamespacedStorage storage) {}
 
 	@Override
 	public String toString() {

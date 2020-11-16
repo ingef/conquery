@@ -90,7 +90,6 @@ public class ImportJob extends Job {
 
 			final Table tableDescription = namespace.getStorage().getDataset().getTables().get(this.table);
 
-			final CType<?, ?>[] stores = container.getValues();
 
 			// todo use a constant
 			DictionaryMapping primaryMapping = importPrimaryDictionary(container.getDictionaries().get("primary_dictionary"));
@@ -98,16 +97,17 @@ public class ImportJob extends Job {
 
 			final Map<String, DictionaryMapping> mappings = importDictionaries(header, container.getDictionaries());
 
-			CType<?, ?>[] values = container.getValues();
-			setDictionaryIds(header, tableDescription, values);
+			final CType<?, ?>[] stores = container.getValues();
 
-			applyDictionaryMappings(tableDescription, mappings, values);
+			setDictionaryIds(stores, tableDescription.getColumns(), header.getName());
+
+			applyDictionaryMappings(tableDescription, mappings, stores);
 
 
 			for (CType<?, ?> column : container.getValues()) {
 				// todo if we import the dictionaries first, then load them into the columns and remap them we don't need this
 				// todo for that we need to map the relation from column to dict better, which also allows us to do the mapping
-				column.loadExternalInfos(dict -> namespace.getStorage().getDictionary(dict));
+				column.loadExternalInfos(namespace.getStorage());
 			}
 
 
@@ -115,26 +115,13 @@ public class ImportJob extends Job {
 			log.debug("partition new IDs");
 
 			// Allocate a responsibility for all yet unassigned buckets.
-			synchronized (namespace) {
-				for (int entity : primaryMapping.getSource2TargetMap()) {
-					int bucket = Entity.getBucket(entity, bucketSize);
-
-					if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
-						continue;
-					}
-
-					namespace.addResponsibility(bucket);
-				}
-
-				// While we hold the lock on the namespace distribute the new, consistent state among the workers
-				for (WorkerInformation w : namespace.getWorkers()) {
-					w.send(new UpdateWorkerBucket(w));
-				}
-			}
+			distributeWorkerResponsibilities(primaryMapping);
 
 			//create data import and store/send it
 			log.info("updating import information");
 			//if mapping is not required we can also use the old infos here
+
+			// todo register Dictionaries
 			Import outImport = createImport(header, stores);
 
 
@@ -185,6 +172,25 @@ public class ImportJob extends Job {
 		}
 		catch (IOException exception) {
 			throw new IllegalStateException("Failed to load the file " + importFile, exception);
+		}
+	}
+
+	public void distributeWorkerResponsibilities(DictionaryMapping primaryMapping) {
+		synchronized (namespace) {
+			for (int entity : primaryMapping.getSource2TargetMap()) {
+				int bucket = Entity.getBucket(entity, bucketSize);
+
+				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
+					continue;
+				}
+
+				namespace.addResponsibility(bucket);
+			}
+
+			// While we hold the lock on the namespace distribute the new, consistent state among the workers
+			for (WorkerInformation w : namespace.getWorkers()) {
+				w.send(new UpdateWorkerBucket(w));
+			}
 		}
 	}
 
@@ -283,9 +289,9 @@ public class ImportJob extends Job {
 		return out;
 	}
 
-	public void setDictionaryIds(PreprocessedHeader header, Table tableDescription, CType<?, ?>[] values) {
-		for (int i = 0; i < tableDescription.getColumns().length; i++) {
-			Column column = tableDescription.getColumns()[i];
+	public void setDictionaryIds(CType<?, ?>[] values, Column[] columns, String importName) {
+		for (int i = 0; i < columns.length; i++) {
+			Column column = columns[i];
 
 			if (column.getType() != MajorTypeId.STRING) {
 				continue;
@@ -299,7 +305,7 @@ public class ImportJob extends Job {
 				stringType.setUnderlyingDictionary(computeSharedDictionaryId(column));
 			}
 			else {
-				stringType.setUnderlyingDictionary(computeDefaultDictionaryId(header.getName(), column));
+				stringType.setUnderlyingDictionary(computeDefaultDictionaryId(importName, column));
 
 			}
 		}
