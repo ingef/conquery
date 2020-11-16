@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPColumn;
@@ -35,6 +38,9 @@ public class Import extends NamedImpl<ImportId> {
 	@JsonManagedReference
 	@NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
+
+	@NotNull
+	private Set<DictionaryId> dictionaries;
 
 	public static Import createForPreprocessing(String table, String tag, PPColumn[] columns) {
 		Import imp = new Import(

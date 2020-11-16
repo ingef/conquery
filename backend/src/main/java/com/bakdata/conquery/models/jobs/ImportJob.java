@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,8 +106,6 @@ public class ImportJob extends Job {
 
 
 			for (CType<?, ?> column : container.getValues()) {
-				// todo if we import the dictionaries first, then load them into the columns and remap them we don't need this
-				// todo for that we need to map the relation from column to dict better, which also allows us to do the mapping
 				column.loadExternalInfos(namespace.getStorage());
 			}
 
@@ -122,7 +121,7 @@ public class ImportJob extends Job {
 			//if mapping is not required we can also use the old infos here
 
 			// todo register Dictionaries
-			Import outImport = createImport(header, stores);
+			Import outImport = createImport(header, stores, tableDescription.getColumns());
 
 
 			namespace.getStorage().updateImport(outImport);
@@ -338,10 +337,11 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, CType<?, ?>[] columns) {
+	private Import createImport(PreprocessedHeader header, CType<?, ?>[] stores, Column[] columns) {
 		// todo what does this function do actually?
 		Import imp = new Import(table);
 		//TODO also store the dictionary ids in here then remove them on deletion of the import
+
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
 		imp.setColumns(new ImportColumn[header.getColumns().length]);
@@ -350,11 +350,25 @@ public class ImportJob extends Job {
 			PPColumn src = header.getColumns()[i];
 			ImportColumn col = new ImportColumn();
 			col.setName(src.getName());
-			col.setType(columns[i].select(new int[0], new int[0])); // ie just the representation
+			col.setType(stores[i].select(new int[0], new int[0])); // ie just the representation
 			col.setParent(imp);
 			col.setPosition(i);
 			imp.getColumns()[i] = col;
 		}
+
+		Set<DictionaryId> dictionaries = new HashSet<>();
+
+		for (Column column : columns) {
+			// only non-shared dictionaries need to be registered here
+			// shared dictionaries are not related to a specific import.
+			if(column.getType() != MajorTypeId.STRING && column.getSharedDictionary() != null){
+				continue;
+			}
+
+			dictionaries.add(computeDefaultDictionaryId(header.getName(), column));
+		}
+
+		imp.setDictionaries(dictionaries);
 		return imp;
 	}
 
