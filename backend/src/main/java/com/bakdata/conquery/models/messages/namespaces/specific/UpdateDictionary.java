@@ -7,12 +7,14 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="UPDATE_DICTIONARY", base=NamespacedMessage.class)
 @AllArgsConstructor(onConstructor_=@JsonCreator)
 @ToString
+@Getter
 @Slf4j
 public class UpdateDictionary extends WorkerMessage.Slow {
 
