@@ -1,9 +1,9 @@
 package com.bakdata.conquery.io.result.arrow;
 
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.generateFieldsFromIdMapping;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.generateFieldsFromResultType;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
-import static com.bakdata.conquery.io.result.arrow.QueryToArrowStreamRenderer.generateFieldsFromIdMapping;
-import static com.bakdata.conquery.io.result.arrow.QueryToArrowStreamRenderer.generateFieldsFromResultType;
-import static com.bakdata.conquery.io.result.arrow.QueryToArrowStreamRenderer.renderToStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -37,7 +37,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
+import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.types.DateUnit;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
@@ -103,6 +105,7 @@ public class ArrowResultGenerationTest {
 
 	@Test
 	void writeAndRead() throws IOException {
+		// Prepare every input data
 		PrintSettings printSettings  = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
 		List<ContainedEntityResult> results = List.of(
 			new SinglelineContainedEntityResult(1,new Object[] { Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContextMode.DAYS.toString(), 5646, "test_string", 4521 }),
@@ -121,13 +124,16 @@ public class ArrowResultGenerationTest {
 			public List<EntityResult> getResults() {
 				return new ArrayList<>(results);
 			}
-			
 		};
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		
-		renderToStream(output, printSettings, mquery, (cer) -> new String[]{Integer.toString(cer.getEntityId()),Integer.toString(cer.getEntityId())}, idMapping.getPrintIdFields());
+		renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+			printSettings, 
+			mquery, 
+			(cer) -> new String[]{Integer.toString(cer.getEntityId()),Integer.toString(cer.getEntityId())},
+			idMapping.getPrintIdFields());
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 		

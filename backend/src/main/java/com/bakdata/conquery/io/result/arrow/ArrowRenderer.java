@@ -4,7 +4,6 @@ import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DA
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -26,8 +25,6 @@ import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.dictionary.DictionaryProvider;
-import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
@@ -37,12 +34,12 @@ import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.util.Text;
 
 @Slf4j
-public class QueryToArrowStreamRenderer {
+public class ArrowRenderer {
 	
 
 	private static final int BATCH_SIZE = 10;
 	
-	public static void renderToStream(OutputStream out, PrintSettings cfg, ManagedQuery query, Function<ContainedEntityResult,String[]> idMapper, String[] idHeaders) throws IOException {
+	public static void renderToStream(Function<VectorSchemaRoot, ArrowWriter> writerProducer, PrintSettings cfg, ManagedQuery query, Function<ContainedEntityResult,String[]> idMapper, String[] idHeaders) throws IOException {
 
 		// Combine id and value Fields to one vector to build a schema
 		List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
@@ -58,7 +55,7 @@ public class QueryToArrowStreamRenderer {
 		List<ContainedEntityResult> results = query.getResults().stream().filter(ContainedEntityResult.class::isInstance).map(ContainedEntityResult.class::cast).collect(Collectors.toList());
 
 		// Write the data
-		try(ArrowWriter writer = new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), out)) {			
+		try(ArrowWriter writer = writerProducer.apply(root)) {			
 			write(writer, root, idPipeline, valuePipeline, idMapper, results);
 		}
 		
