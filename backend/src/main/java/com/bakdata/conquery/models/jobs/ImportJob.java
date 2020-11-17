@@ -242,8 +242,7 @@ public class ImportJob extends Job {
 			throws JSONException {
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
-		log.debug("sending secondary dictionaries");
-
+		log.debug("Import contains Dictionaries = {}", dicts);
 
 		for (Column column : columns) {
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
@@ -315,9 +314,10 @@ public class ImportJob extends Job {
 		for (int i = 0; i < values.length; i++) {
 			Column column = columns[i];
 
-			if (column.getType() != MajorTypeId.STRING) {
+			if (column.getType() != MajorTypeId.STRING && mappings.containsKey(column.getName())) {
 				continue;
 			}
+
 
 			// apply mapping
 			final DictionaryMapping mapping = Objects.requireNonNull(mappings.get(column.getName()), "Missing Dictionary Mapping for " + column.getName());

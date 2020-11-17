@@ -73,7 +73,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	public void loadDictionaries(NamespacedStorage storage) {
 		// todo consider implementing this with Id-Injection instead of hand-wiring.
 		final DictionaryId dictionaryId = new DictionaryId(getDataset(), getName());
-		log.debug("Loading Dictionary[{}]", dictionaryId);
+		log.trace("Loading Dictionary[{}]", dictionaryId);
 		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
 	}
 
