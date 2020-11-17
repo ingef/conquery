@@ -405,8 +405,12 @@ public class ImportJob extends Job {
 		if (shared == null) {
 			shared = new MapDictionary(targetDictionary.getDataset(), targetDictionary.getDictionary());
 		}
+		shared = Dictionary.copyUncompressed(shared);
 
-		DictionaryMapping mapping = DictionaryMapping.create(incoming, Dictionary.copyUncompressed(shared));
+		DictionaryMapping mapping = DictionaryMapping.create(incoming, shared);
+
+		shared.setName(targetDictionary.getDictionary());
+		shared.setDataset(targetDictionary.getDataset());
 
 		namespace.getStorage().updateDictionary(shared);
 		namespace.sendToAll(new UpdateDictionary(shared));
