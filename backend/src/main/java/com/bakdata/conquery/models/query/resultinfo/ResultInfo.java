@@ -5,7 +5,6 @@ import java.util.HashMap;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
@@ -64,8 +63,6 @@ public abstract class ResultInfo {
 
 	@ToString.Include
 	public abstract ResultType getType();
-	@ToString.Include
-	public abstract MajorTypeId getInternalType();
 
 	public <T> void addAppendix(Class<T> cl, T obj) {
 		appendices.putInstance(cl, obj);

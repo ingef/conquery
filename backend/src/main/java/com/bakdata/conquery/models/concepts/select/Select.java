@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,9 +31,6 @@ public abstract class Select extends Labeled<SelectId> {
 	
 	@JsonIgnore @Getter(lazy=true)
 	private final ResultType resultType = createAggregator().getResultType();
-	
-	@JsonIgnore @Getter(lazy=true)
-	private final MajorTypeId internalType = createAggregator().getInternalType();
 
 	public abstract Aggregator<?> createAggregator();
 

@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,10 +39,5 @@ public class SelectResultInfo extends ResultInfo {
 			.type(getType().toString())
 			.selectId(select.getId())
 			.build();
-	}
-
-	@Override
-	public MajorTypeId getInternalType() {
-		return select.getInternalType();
 	}
 }

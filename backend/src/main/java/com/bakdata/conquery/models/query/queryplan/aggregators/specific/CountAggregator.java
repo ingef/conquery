@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.MajorTypeId;
 
 /**
  * Aggregator counting the number of present values in a column.
@@ -38,10 +37,5 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
-	}
-
-	@Override
-	public MajorTypeId getInternalType() {
-		return MajorTypeId.INTEGER;
 	}
 }
