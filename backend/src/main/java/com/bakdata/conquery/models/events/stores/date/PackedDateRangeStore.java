@@ -8,9 +8,11 @@ import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.util.PackedUnsigned1616;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.ToString;
 
 @CPSType(id = "PACKED_DATE_RANGES", base = ColumnStore.class)
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class PackedDateRangeStore extends ColumnStoreAdapter<CDateRange> {
 
 	private final IntegerStore store;

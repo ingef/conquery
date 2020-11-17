@@ -11,9 +11,11 @@ import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.ToString;
 
 @CPSType(id = "QUARTER_DATES", base = ColumnStore.class)
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class QuarterDateStore extends ColumnStoreAdapter<CDateRange> {
 
 	private final ColumnStore<Long> store;

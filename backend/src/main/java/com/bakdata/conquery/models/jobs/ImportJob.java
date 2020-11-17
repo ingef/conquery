@@ -107,7 +107,7 @@ public class ImportJob extends Job {
 		distributeWorkerResponsibilities(primaryMapping);
 
 
-		final Map<String, DictionaryMapping> mappings = importDictionaries(container.getDictionaries(), table.getColumns(), header.getName());
+		final Map<String, DictionaryMapping> mappings = importDictionaries(container.getDictionaries(), table.getColumns(), header.getName(), stores);
 
 		setDictionaryIds(stores, table.getColumns(), header.getName());
 
@@ -238,13 +238,14 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName)
+	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, CType<?, ?>[] stores)
 			throws JSONException {
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
 		log.debug("Import contains Dictionaries = {}", dicts);
 
-		for (Column column : columns) {
+		for (int i = 0; i < columns.length; i++) {
+			Column column = columns[i];
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
 
 			if (column.getType() != MajorTypeId.STRING) {
@@ -256,7 +257,7 @@ public class ImportJob extends Job {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
 				final Dictionary dictionary = dicts.get(column.getName());
 
-				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column, sharedDictionaryId);
+				log.info("Column[{}.{}] = `{}` part of shared Dictionary[{}]", importName, column, stores[i], sharedDictionaryId);
 
 				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
 
@@ -314,7 +315,7 @@ public class ImportJob extends Job {
 		for (int i = 0; i < values.length; i++) {
 			Column column = columns[i];
 
-			if (column.getType() != MajorTypeId.STRING && mappings.containsKey(column.getName())) {
+			if (column.getType() != MajorTypeId.STRING && column.getSharedDictionary() != null) {
 				continue;
 			}
 

@@ -7,9 +7,11 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.ToString;
 
 @CPSType(id = "DATES", base = ColumnStore.class)
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class DateStore extends ColumnStoreAdapter<Integer> {
 
 	private final ColumnStore<Long> store;

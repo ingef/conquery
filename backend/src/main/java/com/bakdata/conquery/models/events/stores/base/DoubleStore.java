@@ -5,9 +5,11 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.ToString;
 
 @CPSType(id = "DOUBLES", base = ColumnStore.class)
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class DoubleStore extends ColumnStoreAdapter<Double> {
 
 	private final double[] values;
