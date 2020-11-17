@@ -1,4 +1,6 @@
-package com.bakdata.conquery.models.query;
+package com.bakdata.conquery.io.result.csv;
+
+import static com.bakdata.conquery.io.result.ResultUtil.createId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,12 +12,12 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -75,14 +77,7 @@ public class QueryToCSVRenderer {
 			.flatMap(res -> createCSVLine(writer, cfg, infos, res));
 	}
 
-	private static ExternalEntityId createId(Namespace namespace, ContainedEntityResult cer, IdMappingState mappingState) {
-		DirectDictionary dict = namespace.getStorage().getPrimaryDictionary();
-		return ID_MAPPING
-			.toExternal(
-				new CsvEntityId(dict.getElement(cer.getEntityId())),
-				namespace,
-				mappingState);
-	}
+
 	
 	private static Stream<String> createCSVLine(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, Pair<ExternalEntityId, ContainedEntityResult> idResult) {
 		return idResult
