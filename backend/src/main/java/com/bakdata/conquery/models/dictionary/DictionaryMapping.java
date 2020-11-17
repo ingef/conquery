@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -16,11 +17,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
+@ToString
 public class DictionaryMapping {
 
 	private final Dictionary sourceDictionary;
 	private final Dictionary targetDictionary;
 
+	@ToString.Exclude
 	private final int[] source2TargetMap;
 
 	private final int numberOfNewIds;

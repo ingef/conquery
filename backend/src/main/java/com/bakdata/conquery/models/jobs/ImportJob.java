@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -244,8 +245,7 @@ public class ImportJob extends Job {
 		log.debug("sending secondary dictionaries");
 
 
-		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
-			Column column = columns[colIdx];
+		for (Column column : columns) {
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
 
 			if (column.getType() != MajorTypeId.STRING) {
@@ -257,6 +257,8 @@ public class ImportJob extends Job {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
 				final Dictionary dictionary = dicts.get(column.getName());
 
+				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column, sharedDictionaryId);
+
 				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
 
 				out.put(column.getName(), mapping);
@@ -265,6 +267,7 @@ public class ImportJob extends Job {
 			}
 
 			if (!dicts.containsKey(column.getName())) {
+				log.warn("Missing Dictionary for Column[{}]", column);
 				continue;
 			}
 
@@ -276,6 +279,7 @@ public class ImportJob extends Job {
 				dict.setDataset(dictionaryId.getDataset());
 				dict.setName(dictionaryId.getDictionary());
 
+				log.info("Sending {} to all Workers", dict);
 				namespace.getStorage().updateDictionary(dict);
 				namespace.sendToAll(new UpdateDictionary(dict));
 			}
@@ -295,8 +299,7 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			CType<?, ?> storeColumn = values[i];
-			final StringType stringType = (StringType) storeColumn;
+			final StringType stringType = (StringType) values[i];
 
 			// if not shared use default naming
 			if (column.getSharedDictionary() != null) {
@@ -304,7 +307,6 @@ public class ImportJob extends Job {
 			}
 			else {
 				stringType.setUnderlyingDictionary(computeDefaultDictionaryId(importName, column));
-
 			}
 		}
 	}
@@ -318,12 +320,9 @@ public class ImportJob extends Job {
 			}
 
 			// apply mapping
-			final DictionaryMapping mapping = mappings.get(column.getName());
+			final DictionaryMapping mapping = Objects.requireNonNull(mappings.get(column.getName()), "Missing Dictionary Mapping for " + column.getName());
 
-			// mapping is null, if this is the first dict to be loaded.
-			if (mapping == null) {
-				continue;
-			}
+			log.debug("Remapping Column[{}] = {} with {}", column.getId(), values[i], mapping);
 
 			mapping.applyToStore((StringType) values[i], values[i].getLines());
 		}
@@ -340,7 +339,10 @@ public class ImportJob extends Job {
 			PPColumn src = header.getColumns()[i];
 			ImportColumn col = new ImportColumn();
 			col.setName(src.getName());
+			//TODO this loses the size estimations?
 			col.setType(stores[i].select(new int[0], new int[0])); // ie just the representation
+			col.getType().setLines(stores[i].getLines());
+
 			col.setParent(imp);
 			col.setPosition(i);
 			imp.getColumns()[i] = col;
@@ -399,20 +401,12 @@ public class ImportJob extends Job {
 		log.info("merging into shared Dictionary[{}]", targetDictionary);
 
 		Dictionary shared = namespace.getStorage().getDictionary(targetDictionary);
-		DictionaryMapping mapping = null;
 
-		// todo is reusing worth the code weirdness?
-		// we can reuse the incoming dict if there is no prior.
 		if (shared == null) {
-			shared = incoming;
-			shared.setDataset(targetDictionary.getDataset());
-			shared.setName(targetDictionary.getDictionary());
+			shared = new MapDictionary(targetDictionary.getDataset(), targetDictionary.getDictionary());
 		}
-		else {
-			mapping = DictionaryMapping.create(incoming, Dictionary.copyUncompressed(shared));
-			mapping.getTargetDictionary().setName(targetDictionary.getDictionary());
-			mapping.getTargetDictionary().setDataset(targetDictionary.getDataset());
-		}
+
+		DictionaryMapping mapping = DictionaryMapping.create(incoming, Dictionary.copyUncompressed(shared));
 
 		namespace.getStorage().updateDictionary(shared);
 		namespace.sendToAll(new UpdateDictionary(shared));

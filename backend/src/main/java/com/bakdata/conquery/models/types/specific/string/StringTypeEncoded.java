@@ -42,7 +42,7 @@ public class StringTypeEncoded extends StringType {
 
 	@Override
 	public String createScriptValue(Integer value) {
-		return encoding.encode(subType.getElement(value));
+		return getElement(value);
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class StringTypeEncoded extends StringType {
 	@Override
 	public Iterator<String> iterator() {
 		Iterator<byte[]> subIt = subType.iterator();
-		return new Iterator<String>() {
+		return new Iterator<>() {
 			@Override
 			public boolean hasNext() {
 				return subIt.hasNext();

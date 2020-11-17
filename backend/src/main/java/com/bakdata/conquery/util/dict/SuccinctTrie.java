@@ -264,7 +264,7 @@ public class SuccinctTrie extends Dictionary {
 		checkCompressed("use compress before performing getReverse on the trie");
 
 		if (intValue >= reverseLookup.length) {
-			throw new IllegalArgumentException("intValue " + intValue + " to high, no such key in the trie");
+			throw new IllegalArgumentException(String.format("intValue %d too high, no such key in the trie (Have only %d values)", intValue, reverseLookup.length));
 		}
 		int nodeIndex = reverseLookup[intValue];
 		while (parentIndex[nodeIndex] != -1) {

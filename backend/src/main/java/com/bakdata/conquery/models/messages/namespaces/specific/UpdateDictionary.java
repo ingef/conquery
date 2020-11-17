@@ -7,15 +7,14 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 @CPSType(id="UPDATE_DICTIONARY", base=NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
+@AllArgsConstructor(onConstructor_=@JsonCreator)
+@ToString
 public class UpdateDictionary extends WorkerMessage.Slow {
 
-	private Dictionary dictionary;
+	private final Dictionary dictionary;
 
 	@Override
 	public void react(Worker context) throws Exception {
