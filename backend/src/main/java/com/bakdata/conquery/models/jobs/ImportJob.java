@@ -315,7 +315,7 @@ public class ImportJob extends Job {
 		for (int i = 0; i < values.length; i++) {
 			Column column = columns[i];
 
-			if (column.getType() != MajorTypeId.STRING && column.getSharedDictionary() != null) {
+			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
 				continue;
 			}
 
