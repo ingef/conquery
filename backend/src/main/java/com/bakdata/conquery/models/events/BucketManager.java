@@ -130,7 +130,7 @@ public class BucketManager {
 
 		return id -> {
 
-			if(log.isDebugEnabled() && idable.getId() instanceof NamespacedId){
+			if(log.isTraceEnabled() && idable.getId() instanceof NamespacedId){
 				byte[] thename = storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
 
 				log.trace("Creating new Entitiy[{}]=`{}` for Bucket[{}]", id, new String(thename), idable.getId());
