@@ -252,6 +252,13 @@ public class ImportJob extends Job {
 				continue;
 			}
 
+			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
+			// but could also be an error :/ Most likely the former
+			if (!dicts.containsKey(column.getName())) {
+				log.trace("No Dictionary for Column[{}]", column);
+				continue;
+			}
+
 			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
 			if (column.getSharedDictionary() != null) {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
@@ -266,10 +273,6 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			if (!dicts.containsKey(column.getName())) {
-				log.warn("Missing Dictionary for Column[{}]", column);
-				continue;
-			}
 
 			//store external infos into master and slaves
 			final Dictionary dict = dicts.get(column.getName());
