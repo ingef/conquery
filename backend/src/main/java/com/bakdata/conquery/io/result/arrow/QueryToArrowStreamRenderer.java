@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.result.arrow;
 
-import static com.bakdata.conquery.io.result.ResultUtil.createId;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
@@ -8,16 +7,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -46,43 +42,40 @@ public class QueryToArrowStreamRenderer {
 
 	private static final int BATCH_SIZE = 10;
 	
-	public static void renderToStream(OutputStream out, PrintSettings cfg, ManagedQuery query, IdMappingState mappingState) throws IOException {
-		
+	public static void renderToStream(OutputStream out, PrintSettings cfg, ManagedQuery query, Function<ContainedEntityResult,String[]> idMapper, String[] idHeaders) throws IOException {
 
-		String[] idHeaders = ResultUtil.ID_MAPPING.getPrintIdFields();
+		// Combine id and value Fields to one vector to build a schema
 		List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
 		List<ResultInfo> resultInfos = query.collectResultInfos().getInfos();
 		fields.addAll(generateFieldsFromResultType(resultInfos, cfg));
-		
-
-		
 		VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 		
+		// Build separate pipelines for id and value, as they have different sources but the same target
 		RowConsumer idPipeline = generateWriterPipeline(root, 0, idHeaders.length);
 		RowConsumer valuePipeline = generateWriterPipeline(root, idHeaders.length, resultInfos.size());
 
 		
-		Namespace namespace = Objects.requireNonNull(query.getNamespace());
 		List<ContainedEntityResult> results = query.getResults().stream().filter(ContainedEntityResult.class::isInstance).map(ContainedEntityResult.class::cast).collect(Collectors.toList());
+
+		// Write the data
+		try(ArrowWriter writer = new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), out)) {			
+			write(writer, root, idPipeline, valuePipeline, idMapper, results);
+		}
 		
-		write(out, mappingState, root, idPipeline, valuePipeline, namespace, results);
 	}
 
-	private static void write(OutputStream out, IdMappingState mappingState, VectorSchemaRoot root, RowConsumer idPipeline, RowConsumer valuePipeline, Namespace namespace, List<ContainedEntityResult> results) throws IOException {
+	public static void write(ArrowWriter writer, VectorSchemaRoot root, RowConsumer idPipeline, RowConsumer valuePipeline, Function<ContainedEntityResult,String[]> idMapper, List<ContainedEntityResult> results) throws IOException {
 		log.info("Starting result write");
-		ArrowWriter writer = new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), out);
 		writer.start();
-		int lineCount = 0;
 		int batchLineCount = 0;
+		root.setRowCount(BATCH_SIZE);
 		for (int resultCount = 0; resultCount < results.size(); resultCount++) {
-			root.setRowCount(BATCH_SIZE);
 			ContainedEntityResult result = results.get(resultCount);
 			for (Object[] line : result.listResultLines()) {
 				// Write id information
-				idPipeline.accept(lineCount, createId(namespace, result, mappingState).getExternalId());
+				idPipeline.accept(batchLineCount, idMapper.apply(result));
 				// Write values
-				valuePipeline.accept(lineCount, line);
-				lineCount++;
+				valuePipeline.accept(batchLineCount, line);
 				batchLineCount++;
 			}
 			if(batchLineCount >= BATCH_SIZE) {				
@@ -91,12 +84,12 @@ public class QueryToArrowStreamRenderer {
 			}
 		}
 		log.info("Writing final batch");
-		if(batchLineCount > 0) {				
+		if(batchLineCount > 0) {
+			root.setRowCount(batchLineCount);
 			writer.writeBatch();
 		}
 		log.info("Finishing result write");
 		writer.end();
-		writer.close();
 	}
 	
 	private static RowConsumer intVectorFiller(IntVector vector, int pos) {
@@ -160,13 +153,13 @@ public class QueryToArrowStreamRenderer {
 	}
 
 	
-	public static RowConsumer generateWriterPipeline(VectorSchemaRoot root, int offset, int numVectors){
-		Preconditions.checkArgument(offset >= 0, "Offset was negativ: %s", offset);
+	public static RowConsumer generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors){
+		Preconditions.checkArgument(vectorOffset >= 0, "Offset was negativ: %s", vectorOffset);
 		Preconditions.checkArgument(numVectors >= 0, "Number of vectors was negativ: %s", numVectors);
 		
 		RowConsumer start = (n, r) -> {};
-		for (int vecI = offset; vecI < root.getFieldVectors().size() && vecI < offset + numVectors; vecI++) {
-			final int pos = vecI;
+		for (int vecI = vectorOffset, resultPos = 0; vecI < root.getFieldVectors().size() && vecI < vectorOffset + numVectors; vecI++, resultPos++) {
+			final int pos = resultPos;
 			final FieldVector vector = root.getVector(vecI);
 			
 			if(vector instanceof IntVector) {
