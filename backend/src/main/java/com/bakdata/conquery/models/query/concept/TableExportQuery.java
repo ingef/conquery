@@ -69,13 +69,24 @@ public class TableExportQuery extends IQuery {
 			try {
 				Concept<?> concept = context.getCentralRegistry().resolve(table.getId().getConcept());
 				Connector connector = concept.getConnectorByName(table.getId().getConnector());
-				resolvedConnectors.add(
-						new TableExportDescription(
-								connector.getTable(),
-								connector.getValidityDateColumn(table.getDateColumn().getValue()),
-								totalColumns
-						)
+				final Column validityDateColumn;
+
+				// if no dateColumn is provided, we use the default instead which is always the first one.
+				if (table.getDateColumn() != null) {
+					validityDateColumn = connector.getValidityDateColumn(table.getDateColumn().getValue());
+				}
+				else {
+					validityDateColumn = connector.getValidityDates().get(0).getColumn();
+				}
+
+				final TableExportDescription exportDescription = new TableExportDescription(
+						connector.getTable(),
+						validityDateColumn,
+						totalColumns
 				);
+
+				resolvedConnectors.add(exportDescription);
+
 				totalColumns += connector.getTable().getColumns().length;
 			}
 			catch (NoSuchElementException exc) {
