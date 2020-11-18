@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
+import com.bakdata.conquery.models.execution.ResultProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -20,6 +21,8 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
+import com.bakdata.conquery.resources.api.ResultArrowFileResource;
+import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
@@ -42,6 +45,7 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new QueryProcessor(datasets, manager.getStorage())).to(QueryProcessor.class);
 				bind(new FormConfigProcessor(manager.getValidator(),manager.getStorage())).to(FormConfigProcessor.class);
 				bind(new StoredQueriesProcessor(manager.getDatasetRegistry(), manager.getStorage())).to(StoredQueriesProcessor.class);
+				bind(new ResultProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultProcessor.class);
 			}
 		});
 
@@ -60,7 +64,9 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(new ResultCSVResource(datasets, manager.getConfig()));
+		environment.register(ResultCSVResource.class);
+		environment.register(ResultArrowFileResource.class);
+		environment.register(ResultArrowStreamResource.class);
 		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(new ConfigResource(manager.getConfig()));
