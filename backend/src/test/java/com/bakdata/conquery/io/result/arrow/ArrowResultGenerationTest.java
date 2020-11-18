@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -109,7 +110,11 @@ public class ArrowResultGenerationTest {
 		PrintSettings printSettings  = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
 		List<ContainedEntityResult> results = List.of(
 			new SinglelineContainedEntityResult(1,new Object[] { Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContextMode.DAYS.toString(), 5646, "test_string", 4521 }),
-			new SinglelineContainedEntityResult(2, new Object[] { Boolean.FALSE, null, null, null, null, null, null, null }));
+			new SinglelineContainedEntityResult(2, new Object[] { Boolean.FALSE, null, null, null, null, null, null, null }),
+			new MultilineContainedEntityResult(3, List.of(
+				new Object[] { Boolean.TRUE, null, null, null, null, null, null, null },
+				new Object[] { Boolean.TRUE, null, null, null, null, null, null, 4 }
+				)));
 		
 		ManagedQuery mquery = new ManagedQuery(null, null, null) {
 			public ResultInfoCollector collectResultInfos() {
