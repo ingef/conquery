@@ -18,19 +18,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MajorTypeId implements MajorTypeIdHolder {
 
-	STRING(false, "String", StringParser::new),
-	INTEGER(false, "Integer", IntegerParser::new),
-	BOOLEAN(false, "Boolean", BooleanParser::new),
-	REAL(false, "Real", RealParser::new),
-	DECIMAL(false, "Decimal", DecimalParser::new),
-	MONEY(false, "Money", MoneyParser::new),
-	DATE(true, "Date", DateParser::new),
-	DATE_RANGE(true, "DateRange", DateRangeParser::new);
+	STRING(false, StringParser::new),
+	INTEGER(false, IntegerParser::new),
+	BOOLEAN(false, BooleanParser::new),
+	REAL(false, RealParser::new),
+	DECIMAL(false, DecimalParser::new),
+	MONEY(false, MoneyParser::new),
+	DATE(true, DateParser::new),
+	DATE_RANGE(true, DateRangeParser::new);
 
 	@Getter
 	private final boolean dateCompatible;
-	@Getter
-	private final String label;
 	private final Function<ParserConfig, Parser<?>> supplier;
 
 	public Parser<?> createParser(ParserConfig config) {
