@@ -19,7 +19,7 @@ public class TrieTypeGuesser implements TypeGuesser {
 		// todo this is confusing and unnecessary
 		VarIntType indexType = new VarIntTypeInt(0, Integer.MAX_VALUE, IntegerStore.create(p.getLines()));
 
-		SuccinctTrie trie = new SuccinctTrie(null, p.getName());
+		SuccinctTrie trie = new SuccinctTrie(null, "");
 		StringTypeDictionary type = new StringTypeDictionary(indexType, trie, trie.getName());
 
 		for (byte[] v : p.getDecoded()) {

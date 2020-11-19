@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -34,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 public class StringParser extends Parser<Integer> {
 
-	private final String name;
+	private final String name = "";
 
 	private BiMap<String, Integer> strings = HashBiMap.create();
 
@@ -43,8 +42,8 @@ public class StringParser extends Parser<Integer> {
 	private String prefix = null;
 	private String suffix = null;
 
-	public StringParser(ColumnDescription description, ParserConfig config) {
-		this.name = description.getName();
+	public StringParser(ParserConfig config) {
+
 	}
 
 	@Override
@@ -110,10 +109,9 @@ public class StringParser extends Parser<Integer> {
 							.get();
 
 		log.info(
-				"\tUsing {}(est. {}) for {}",
+				"\tUsing {}(est. {})",
 				guess.getGuesser().getClass().getSimpleName(),
-				BinaryByteUnit.format(guess.estimate()),
-				getName()
+				BinaryByteUnit.format(guess.estimate())
 		);
 
 		StringType result = guess.getType();
@@ -131,7 +129,7 @@ public class StringParser extends Parser<Integer> {
 
 	private void decode() {
 		encoding = findEncoding();
-		log.info("\tChosen encoding is {} for {}", encoding, getName());
+		log.info("\tChosen encoding is {}", encoding);
 		setEncoding(encoding);
 	}
 

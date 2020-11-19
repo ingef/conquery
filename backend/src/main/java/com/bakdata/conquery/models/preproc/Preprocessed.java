@@ -75,7 +75,7 @@ public class Preprocessed {
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName());
-			columns[index].setParser(columnDescription.getType().createParser(columnDescription, parserConfig));
+			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 		}
 	}
 
@@ -139,8 +139,10 @@ public class Preprocessed {
 		// todo fix name
 		((CType<?, ?>)primaryColumn.getType()).storeExternalInfos(dict -> dicts.put("primary_dictionary", dict));
 
-		for (CType column : columns) {
-			((CType<?, ?>) column).storeExternalInfos(dict -> dicts.put(dict.getName(),dict));
+		for (int i = 0; i < columns.length; i++) {
+			CType column = columns[i];
+			final String colName = impColumns[i].getName();
+			((CType<?, ?>) column).storeExternalInfos(dict -> dicts.put(colName, dict));
 		}
 
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {

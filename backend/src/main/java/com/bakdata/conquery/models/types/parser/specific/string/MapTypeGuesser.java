@@ -18,7 +18,7 @@ public class MapTypeGuesser implements TypeGuesser {
 	public Guess createGuess() {
 		VarIntType indexType = new VarIntTypeInt(0, Integer.MAX_VALUE, IntegerStore.create(p.getLines()));
 
-		final MapDictionary dictionaryEntries = new MapDictionary(null, p.getName());
+		final MapDictionary dictionaryEntries = new MapDictionary(null, "");
 
 		StringTypeDictionary type = new StringTypeDictionary(indexType, dictionaryEntries, dictionaryEntries.getName());
 		long mapSize = MapDictionary.estimateMemoryConsumption(
@@ -40,7 +40,7 @@ public class MapTypeGuesser implements TypeGuesser {
 		) {
 			@Override
 			public StringType getType() {
-				MapDictionary map = new MapDictionary(null, p.getName());
+				MapDictionary map = new MapDictionary(null, "");
 				for (byte[] v : p.getDecoded()) {
 					map.add(v);
 				}
