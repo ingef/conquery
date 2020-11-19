@@ -28,14 +28,16 @@ public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long>
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
+		
+		setHit();
 
 		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
 		quarters.add(date.getYear() * 4 + date.get(IsoFields.QUARTER_OF_YEAR));
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return quarters.isEmpty() ? null : (long) quarters.size();
+	public Long doGetAggregationResult() {
+		return (long) quarters.size();
 	}
 
 	@Override

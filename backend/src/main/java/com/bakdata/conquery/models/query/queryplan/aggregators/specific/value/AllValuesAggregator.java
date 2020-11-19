@@ -19,18 +19,20 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 
 	public AllValuesAggregator(Column column) {
 		super(column);
+		unhitDefault = null;
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.has(event, getColumn())) {
 			entries.add((VALUE) getColumn().getTypeFor(bucket).createPrintValue(bucket.getRaw(event, getColumn())));
+			setHit();
 		}
 	}
 
 	@Override
-	public Set<VALUE> getAggregationResult() {
-		return entries.isEmpty() ? null : entries;
+	public Set<VALUE> doGetAggregationResult() {
+		return entries;
 	}
 
 	@Override

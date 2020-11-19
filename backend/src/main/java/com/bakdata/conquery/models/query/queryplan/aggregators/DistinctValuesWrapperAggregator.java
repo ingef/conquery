@@ -28,8 +28,9 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
-		return aggregator.getAggregationResult();
+	public VALUE doGetAggregationResult() {
+		// We can call doGetAggregationResult directly because the hit state for this aggregator and the wrapped one is the same
+		return aggregator.doGetAggregationResult();
 	}
 
 	@Override
@@ -41,6 +42,9 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	public void acceptEvent(Bucket bucket, int event) {
 		if (observed.add(bucket.getAsObject(event, getColumn()))) {
 			aggregator.acceptEvent(bucket, event);
+			if(aggregator.isHit()) {
+				setHit();
+			}
 		}
 	}
 

@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
  */
 public class RealSumAggregator extends SingleColumnAggregator<Double> {
 
-	private boolean hit = false;
 	private double sum = 0d;
 
 	public RealSumAggregator(Column column) {
@@ -29,7 +28,7 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 			return;
 		}
 
-		hit = true;
+		setHit();
 
 		double addend = bucket.getReal(event, getColumn());
 
@@ -37,8 +36,8 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 	}
 
 	@Override
-	public Double getAggregationResult() {
-		return hit ? sum : null;
+	public Double doGetAggregationResult() {
+		return sum;
 	}
 	
 	@Override

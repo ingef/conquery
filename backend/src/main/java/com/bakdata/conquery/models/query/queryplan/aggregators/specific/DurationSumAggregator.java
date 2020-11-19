@@ -38,6 +38,7 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 			return;
 		}
 
+		setHit();
 		set.maskedAdd(bucket.getAsDateRange(event,getColumn()), dateRestriction);
 	}
 
@@ -47,8 +48,8 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return set.isEmpty() ? null : set.countDays();
+	public Long doGetAggregationResult() {
+		return set.countDays();
 	}
 	
 	@Override

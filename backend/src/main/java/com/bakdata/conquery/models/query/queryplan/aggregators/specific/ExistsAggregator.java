@@ -27,7 +27,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	private QPNode reference;
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {  }
+	public void acceptEvent(Bucket bucket, int event) { }
 
 	@Override
 	public Boolean getAggregationResult() {

@@ -13,6 +13,9 @@ import com.bakdata.conquery.models.types.CType;
  */
 public abstract class ColumnAggregator<T> implements Aggregator<T> {
 
+	private boolean hit = false;
+	protected T unhitDefault = null;
+
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {
 		for (Column column : getRequiredColumns()) {
@@ -22,6 +25,9 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 
 	public abstract Column[] getRequiredColumns();
 
+	/**
+	 * @implNote A {@link ColumnAggregator} must call {@link ColumnAggregator#setHit()} when it aggregates an event.
+	 */
 	@Override
 	public abstract void acceptEvent(Bucket bucket, int event);
 
@@ -49,4 +55,28 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 
 		return false;
 	}
+	
+	protected boolean isHit() {
+		return hit;
+	}
+	
+	/**
+	 * Is called by the Aggregator to signal that it accepted an event.
+	 * Hit should never be unset, which is why it is private.
+	 */
+	protected void setHit() {
+		hit = true;
+	}
+	
+	@Override
+	public final T getAggregationResult() {
+		return hit? doGetAggregationResult() : unhitDefault;
+	}
+	
+	/**
+	 * Is only called, when the {@link ColumnAggregator} signaled a hit when it accepted events.
+	 * @see ColumnAggregator#acceptEvent(Bucket, int)
+	 * @return
+	 */
+	abstract protected T doGetAggregationResult();
 }

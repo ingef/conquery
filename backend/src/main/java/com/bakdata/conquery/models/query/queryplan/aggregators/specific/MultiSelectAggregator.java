@@ -46,13 +46,14 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 		for (int index = 0; index < selectedValues.length; index++) {
 			if (selectedValues[index] == stringToken) {
 				hits[index]++;
+				setHit();
 				return;
 			}
 		}
 	}
 
 	@Override
-	public Map<String, Integer> getAggregationResult() {
+	public Map<String, Integer> doGetAggregationResult() {
 		Map<String, Integer> out = new HashMap<>();
 
 		for (int i = 0; i < hits.length; i++) {
@@ -62,7 +63,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 			}
 		}
 
-		return out.isEmpty() ? null : out;
+		return out;
 	}
 
 	@Override

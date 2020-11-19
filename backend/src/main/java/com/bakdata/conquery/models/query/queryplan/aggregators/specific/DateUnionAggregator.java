@@ -38,7 +38,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 		if(bucket.getAsDateRange(event, getColumn()).isOpen()) {
 			return;
 		}
-
+		setHit();
 		set.maskedAdd(bucket.getAsDateRange(event, getColumn()), dateRestriction);
 	}
 
@@ -48,7 +48,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 	}
 
 	@Override
-	public String getAggregationResult() {
+	public String doGetAggregationResult() {
 		return set.toString();
 	}
 	

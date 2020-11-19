@@ -35,14 +35,15 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 		// if performance is a problem we could find the prefix once in the dictionary
 		// and then only check the values
 		if (value.startsWith(prefix)) {
+			setHit();
 			entries.add(value);
 		}
 
 	}
 
 	@Override
-	public Set<String> getAggregationResult() {
-		return entries.isEmpty() ? null : entries;
+	public Set<String> doGetAggregationResult() {
+		return entries;
 	}
 
 	@Override

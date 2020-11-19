@@ -48,6 +48,8 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 
 		YearMonth minQuarter = YearMonth.from(monthInQuarter.adjustInto(dateRange.getMin()));
 		YearMonth maxQuarter = YearMonth.from(monthInQuarter.adjustInto(dateRange.getMax()));
+		
+		setHit();
 
 		if (minQuarter.equals(maxQuarter)) {
 			quarters.add(minQuarter.get(ChronoField.YEAR) * 4 + minQuarter.get(IsoFields.QUARTER_OF_YEAR));
@@ -64,8 +66,8 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return quarters.isEmpty() ? null : (long) quarters.size();
+	public Long doGetAggregationResult() {
+		return (long) quarters.size();
 	}
 	
 	@Override

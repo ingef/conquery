@@ -17,7 +17,6 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	@Getter
 	private Column subtrahendColumn;
 	private long sum = 0L;
-	private boolean hit;
 
 	public MoneyDiffSumAggregator(Column addend, Column subtrahend) {
 		this.addendColumn = addend;
@@ -41,7 +40,7 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 			return;
 		}
 
-		hit = true;
+		setHit();
 
 		long addend = bucket.has(event, getAddendColumn()) ? bucket.getMoney(event, getAddendColumn()) : 0;
 
@@ -51,8 +50,8 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return hit ? sum : null;
+	public Long doGetAggregationResult() {
+		return sum;
 	}
 	
 	@Override

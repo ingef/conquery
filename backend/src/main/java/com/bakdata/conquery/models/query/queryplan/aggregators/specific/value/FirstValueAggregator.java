@@ -62,6 +62,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			date = next;
 			selectedEvent = OptionalInt.of(event);
 			selectedBucket = bucket;
+			setHit();
 		}
 		else if (next == date) {
 			log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
@@ -69,7 +70,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
+	public VALUE doGetAggregationResult() {
 		if (selectedBucket == null && selectedEvent.isEmpty()) {
 			return null;
 		}

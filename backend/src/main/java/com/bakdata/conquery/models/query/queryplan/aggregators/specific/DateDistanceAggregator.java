@@ -21,7 +21,6 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	private ChronoUnit unit;
 
 	private long result = Long.MAX_VALUE;
-	private boolean hit;
 
 	public DateDistanceAggregator(Column column, ChronoUnit unit) {
 		super(column);
@@ -32,10 +31,9 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
 			reference = null;
+			return;
 		}
-		else {
-			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
-		}
+		reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
 	}
 
 	@Override
@@ -44,8 +42,8 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return result != Long.MAX_VALUE || hit ? result : null;
+	public Long doGetAggregationResult() {
+		return result != Long.MAX_VALUE ? result : null;
 	}
 
 	@Override
@@ -58,7 +56,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 			return;
 		}
 
-		hit = true;
+		setHit();
 
 		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
 

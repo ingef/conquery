@@ -60,7 +60,6 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}
-
 		set.maskedAdd(bucket.getAsDateRange(event, validityDateColumn), dateRestriction);
 	}
 
@@ -68,5 +67,4 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 	public ResultType getResultType() {
 		return ResultType.STRING;
 	}
-
 }

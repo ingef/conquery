@@ -36,6 +36,7 @@ public class ConceptQueryPlan implements QueryPlan {
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
+	private boolean setDefaultForUnhitted = false;
 
 	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
 		if (generateSpecialDateUnion) {
@@ -157,7 +158,7 @@ public class ConceptQueryPlan implements QueryPlan {
 			}
 		}
 
-		if (isContained()) {
+		if (isContained() || setDefaultForUnhitted) {
 			return result();
 		}
 		return EntityResult.notContained();

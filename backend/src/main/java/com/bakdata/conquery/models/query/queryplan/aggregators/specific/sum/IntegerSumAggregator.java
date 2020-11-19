@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
  */
 public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 
-	private boolean hit = false;
 	private long sum = 0;
 
 	public IntegerSumAggregator(Column column) {
@@ -29,7 +28,7 @@ public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 			return;
 		}
 
-		hit = true;
+		setHit();
 
 		long addend = bucket.getInteger(event, getColumn());
 
@@ -37,8 +36,8 @@ public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return hit ? sum : null;
+	public Long doGetAggregationResult() {
+		return sum;
 	}
 	
 	@Override

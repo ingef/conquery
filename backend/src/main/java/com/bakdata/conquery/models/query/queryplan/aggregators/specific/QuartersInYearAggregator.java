@@ -40,6 +40,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 		if (months == null) {
 			months = EnumSet.of(QuarterUtils.getFirstMonthOfQuarter(quarter));
 			quartersInYear.put(date.getYear(), months);
+			setHit();
 		}
 		else {
 			months.add(QuarterUtils.getFirstMonthOfQuarter(quarter));
@@ -47,7 +48,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long doGetAggregationResult() {
 		if(quartersInYear.isEmpty()) {
 			return null;
 		}

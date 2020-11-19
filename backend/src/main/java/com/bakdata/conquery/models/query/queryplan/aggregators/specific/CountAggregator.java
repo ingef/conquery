@@ -15,18 +15,20 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 
 	public CountAggregator(Column column) {
 		super(column);
+		unhitDefault = 0L;
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.has(event, getColumn())) {
 			count++;
+			setHit();
 		}
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return count > 0 ? count : null;
+	public Long doGetAggregationResult() {
+		return count;
 	}
 
 	@Override

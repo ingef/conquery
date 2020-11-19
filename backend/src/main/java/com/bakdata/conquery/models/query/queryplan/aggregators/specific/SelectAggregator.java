@@ -41,12 +41,13 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 		if (value == selectedId) {
 			hits++;
+			setHit();
 		}
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return hits > 0 ? hits : null;
+	public Long doGetAggregationResult() {
+		return hits;
 	}
 
 	@Override
