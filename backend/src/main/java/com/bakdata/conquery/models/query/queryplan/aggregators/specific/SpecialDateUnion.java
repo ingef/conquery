@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -24,6 +25,9 @@ public class SpecialDateUnion implements Aggregator<String> {
 	private Column currentColumn;
 
 	private BitMapCDateSet dateRestriction;
+	
+	@Getter
+	private boolean hit = false;
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId table) {
@@ -46,6 +50,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 			return;
 		}
 
+		hit = true;
 		set.maskedAdd(range, dateRestriction);
 	}
 

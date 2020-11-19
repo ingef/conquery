@@ -18,6 +18,8 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 
 	private final Object value;
 	private final ResultType type;
+	@Getter
+	private boolean hit = false;
 	
 	@Override
 	public ConstantValueAggregator doClone(CloneContext ctx) {
@@ -30,7 +32,9 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {}
+	public void acceptEvent(Bucket bucket, int event) {
+		hit = true;
+	}
 	
 	@Override
 	public ResultType getResultType() {

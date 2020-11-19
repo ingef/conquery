@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -18,6 +19,9 @@ import lombok.ToString;
 public class ExistsAggregator implements Aggregator<Boolean> {
 
 	private final Set<TableId> requiredTables;
+	
+	@Getter
+	private boolean hit = false;
 
 
 	public void setReference(QPNode ref) {
@@ -27,7 +31,9 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	private QPNode reference;
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) { }
+	public void acceptEvent(Bucket bucket, int event) { 
+		hit = true;
+	}
 
 	@Override
 	public Boolean getAggregationResult() {

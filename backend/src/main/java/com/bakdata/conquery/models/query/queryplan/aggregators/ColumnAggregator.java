@@ -56,7 +56,7 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 		return false;
 	}
 	
-	protected boolean isHit() {
+	public boolean isHit() {
 		return hit;
 	}
 	
