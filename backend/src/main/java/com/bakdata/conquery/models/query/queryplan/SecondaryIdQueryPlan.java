@@ -73,9 +73,15 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 		var result = new ArrayList<Object[]>(childPerKey.values().size());
 		for (var child : childPerKey.entrySet()) {
-			if (child.getValue().isContained()) {
-				result.add(ArrayUtils.insert(0, child.getValue().result().getValues(), child.getKey()));
+			ConceptQueryPlan plan = child.getValue();
+			Object[] values = new Object[plan.getAggregators().size()];
+			if (plan.isContained()) {
+				plan.fillAllAggregations(values);
 			}
+			else {
+				plan.fillDefaultValuesForUnhit(values);
+			}
+			result.add(ArrayUtils.insert(0, values, child.getKey()));
 		}
 		if (result.isEmpty()) {
 			return EntityResult.notContained();

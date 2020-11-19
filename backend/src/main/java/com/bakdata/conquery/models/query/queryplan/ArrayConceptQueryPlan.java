@@ -73,7 +73,9 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	public void addChildPlans(List<ConceptQuery> childQueries, QueryPlanContext context) {
 		childPlans = new ArrayList<>();
 		for (ConceptQuery child : childQueries) {
-			childPlans.add(child.createQueryPlan(context));
+			ConceptQueryPlan plan = child.createQueryPlan(context);
+			plan.setDefaultValueForUnhit(true);
+			childPlans.add(plan);
 		}
 	}
 

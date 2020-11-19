@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,7 +35,7 @@ public class ConceptQueryPlan implements QueryPlan {
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
-	private boolean setDefaultForUnhitted = false;
+	private boolean defaultValueForUnhit = false;
 
 	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
 		if (generateSpecialDateUnion) {
@@ -61,6 +60,7 @@ public class ConceptQueryPlan implements QueryPlan {
 
 		clone.specialDateUnion = ctx.clone(specialDateUnion);
 		clone.setRequiredTables(this.getRequiredTables());
+		clone.setDefaultValueForUnhit(defaultValueForUnhit);
 		return clone;
 	}
 
@@ -91,14 +91,33 @@ public class ConceptQueryPlan implements QueryPlan {
 		getChild().acceptEvent(bucket, event);
 	}
 
-	protected SinglelineContainedEntityResult result() {
-		Object[] values = new Object[aggregators.size()];
+	/**
+	 * Is called for entities that are contained in the query and sets all
+	 * aggregation results which might be {@code null}.
+	 * @param values
+	 */
+	protected void fillAllAggregations(Object[] values) {
 
 		for (int i = 0; i < values.length; i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
 		}
+	}
+	
+	/**
+	 * Is usually called on for an entity that is not contained in this query,
+	 * but for some aggregations a more meaning full default value than {@code null -> ""}
+	 * should be shown in the result.
+	 * @param values
+	 */
+	protected void fillDefaultValuesForUnhit(Object[] values) {
 
-		return EntityResult.of(entity.getId(), values);
+		for (int i = 0; i < values.length; i++) {
+			Aggregator<?> aggregator = aggregators.get(i);
+			if (aggregator.isHit()) {
+				continue;
+			}
+			values[i] = aggregator.getAggregationResult();
+		}
 	}
 
 	@Override
@@ -157,11 +176,24 @@ public class ConceptQueryPlan implements QueryPlan {
 				}
 			}
 		}
-
-		if (isContained() || setDefaultForUnhitted) {
-			return result();
+		
+		boolean contained = isContained(); 
+		
+		if(!contained && !defaultValueForUnhit) {			
+			return EntityResult.notContained();
 		}
-		return EntityResult.notContained();
+
+		Object[] values = new Object[aggregators.size()];
+		
+		if (!contained && defaultValueForUnhit) {
+			// Set solely the default values for aggregators that where not hit when the result is not contained
+			fillDefaultValuesForUnhit(values);
+		}
+		
+		if (contained) {			
+			fillAllAggregations(values);
+		}
+		return EntityResult.of(entity.getId(), values);
 	}
 
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
