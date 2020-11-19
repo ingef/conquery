@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -61,9 +62,8 @@ public class Preprocessed {
 		TableInputDescriptor input = descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
 
-
 		primaryColumn = new PPColumn(input.getPrimary().getColumnDescription().getName());
-		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser(input.getPrimary().getColumnDescription(), parserConfig));
+		primaryColumn.setParser(MajorTypeId.STRING.createParser(parserConfig));
 
 		if (!(primaryColumn.getParser() instanceof StringParser)) {
 			throw new IllegalStateException("The primary column must be an ENTITY_ID or STRING column");
