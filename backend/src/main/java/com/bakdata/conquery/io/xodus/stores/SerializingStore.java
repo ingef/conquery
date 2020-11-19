@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 import javax.validation.Validator;
 
@@ -22,6 +21,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -45,8 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public static final String DUMP_FILE_EXTENTION = "json";
-	public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9\\.\\-]");
-
+	
 	/**
 	 * Used for serializing keys.
 	 */
@@ -368,7 +367,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * However, it does not ensure that there is no file with such a name.
 	 */
 	private static String makeDumpfileName(String keyOfDump, String storeName) {
-		return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(
+		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(
 			String.format("%s-%s-%s.%s",
 				DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
 				storeName,
