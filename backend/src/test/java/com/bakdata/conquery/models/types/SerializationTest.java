@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -12,7 +12,6 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.types.specific.BooleanTypeBoolean;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
@@ -36,9 +35,6 @@ import com.bakdata.conquery.models.types.specific.StringTypeSuffix;
 import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -87,10 +83,12 @@ public class SerializationTest {
 	}
 
 	@ParameterizedTest @MethodSource("createCTypes")
-	public void testSerialization(CType<?,?> type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
-		SerializationTestUtil
-			.forType(CType.class)
-			.ignoreClasses(Arrays.asList(Dictionary.class))
-			.test(type);
+	public void testSerialization(CType<?,?> type) {
+		assertThatCode(
+			() -> SerializationTestUtil
+					.forType(CType.class)
+					.ignoreClasses(Arrays.asList(Dictionary.class))
+					.test(type)
+		).as("Serialization of " + type).doesNotThrowAnyException();			
 	}
 }

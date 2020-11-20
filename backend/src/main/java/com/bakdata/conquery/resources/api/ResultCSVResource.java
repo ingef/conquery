@@ -58,7 +58,7 @@ public class ResultCSVResource {
 		@QueryParam("pretty") Optional<Boolean> pretty) 
 	{
 		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, user.getId(), user.getName());
-		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE)).build();
+		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE), "csv").build();
 	}
 
 	public static StreamingOutput resultAsStreamingOutput(ManagedExecutionId id, PrintSettings settings, List<ManagedQuery> queries, Function<ContainedEntityResult,ExternalEntityId> idMapper, Charset charset, String lineSeparator) {

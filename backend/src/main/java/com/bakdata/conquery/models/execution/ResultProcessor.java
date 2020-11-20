@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.execution;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,6 +33,8 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.FileUtil;
+import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -50,7 +54,8 @@ public class ResultProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 	
-	public ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty) {
+	public ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, String fileExtension) {
+
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, datasetId, Ability.READ);
@@ -73,8 +78,9 @@ public class ResultProcessor {
 				settings,
 				charset,
 				config.getCsv().getLineSeparator());
-
-			return Response.ok(out);
+			
+			ResponseBuilder response = makeResponseWithFileName(fileExtension, exec, out);
+			return response;
 		}
 		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
@@ -82,6 +88,19 @@ public class ResultProcessor {
 		finally {
 			ConqueryMDC.clearLocation();
 		}
+	}
+
+	private static ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
+		ResponseBuilder response = Response.ok(out);
+		String label = exec.getLabel();
+		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
+			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
+			response.header("Content-Disposition", String.format(
+				"attachment; filename=\"%s.%s\"",
+				FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
+				fileExtension));
+		}
+		return response;
 	}
 	
 	public Response getArrowStreamResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
@@ -91,7 +110,8 @@ public class ResultProcessor {
 			queryId,
 			datasetId,
 			datasetRegistry,
-			pretty);
+			pretty,
+			FILE_EXTENTION_ARROW_STREAM);
 	}
 	
 	public Response getArrowFileResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
@@ -101,7 +121,8 @@ public class ResultProcessor {
 			queryId,
 			datasetId,
 			datasetRegistry,
-			pretty);
+			pretty,
+			FILE_EXTENTION_ARROW_FILE);
 	}
 	
 	
@@ -111,7 +132,8 @@ public class ResultProcessor {
 		ManagedExecutionId queryId,
 		DatasetId datasetId,
 		DatasetRegistry datasetRegistry,
-		boolean pretty) {
+		boolean pretty,
+		String fileExtension) {
 		
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
@@ -147,7 +169,8 @@ public class ResultProcessor {
 				
 			}
 		};
-		return Response.ok(out).build();
+		
+		return makeResponseWithFileName(fileExtension, exec, out).build();
 	}
 
 	/**

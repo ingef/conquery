@@ -11,11 +11,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -79,6 +82,11 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	public void resolve(QueryResolveContext context) {
 		timeMode.resolve(context);
 		prerequisite = Form.resolvePrerequisite(context, queryGroup);
+	}
+
+	@Override
+	public String getLocalizedTypeLabel() {
+		return C10N.get(ExportFormC10n.class, I18n.LOCALE.get()).getType();
 	}
 
 }

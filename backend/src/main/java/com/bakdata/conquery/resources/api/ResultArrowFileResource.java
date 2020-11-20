@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.util.Optional;
@@ -28,7 +29,7 @@ public class ResultArrowFileResource {
 	private ResultProcessor processor;
 	
 	@GET
-	@Path("{" + QUERY + "}.arrf")
+	@Path("{" + QUERY + "}.{" + FILE_EXTENTION_ARROW_FILE +"}")
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response get(
 		@Auth User user,

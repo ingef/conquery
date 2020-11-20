@@ -23,6 +23,7 @@ public interface IId<TYPE> {
 	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 	
 	List<String> collectComponents();
+	
 	static <ID extends IId<?>> ID intern(ID id) {
 		@SuppressWarnings("unchecked")
 		ID old = IIdInterner.<ID>forParser((Parser<ID>)createParser(id.getClass())).putIfAbsent(id.collectComponents(), id);
