@@ -142,7 +142,8 @@ public class ResultProcessor {
 					settings, 
 					mquery, 
 					cer -> ResultUtil.createId(datasetRegistry.get(datasetId), cer, config.getIdMapping(), mappingState).getExternalId(),
-					idMappingConf.getPrintIdFields());
+					idMappingConf.getPrintIdFields(),
+					config.getArrow().getBatchSize());
 				
 			}
 		};

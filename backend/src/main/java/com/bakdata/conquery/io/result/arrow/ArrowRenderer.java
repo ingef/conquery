@@ -36,10 +36,13 @@ import org.apache.arrow.vector.util.Text;
 @Slf4j
 public class ArrowRenderer {
 	
-
-	private static final int BATCH_SIZE = 10;
-	
-	public static void renderToStream(Function<VectorSchemaRoot, ArrowWriter> writerProducer, PrintSettings cfg, ManagedQuery query, Function<ContainedEntityResult,String[]> idMapper, String[] idHeaders) throws IOException {
+	public static void renderToStream(
+		Function<VectorSchemaRoot, ArrowWriter> writerProducer, 
+		PrintSettings cfg, ManagedQuery query, 
+		Function<ContainedEntityResult,String[]> idMapper, 
+		String[] idHeaders,	
+		int batchsize) throws IOException
+	{
 
 		// Combine id and value Fields to one vector to build a schema
 		List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
@@ -56,16 +59,25 @@ public class ArrowRenderer {
 
 		// Write the data
 		try(ArrowWriter writer = writerProducer.apply(root)) {			
-			write(writer, root, idPipeline, valuePipeline, idMapper, results);
+			write(writer, root, idPipeline, valuePipeline, idMapper, results, batchsize);
 		}
 		
 	}
 
-	public static void write(ArrowWriter writer, VectorSchemaRoot root, RowConsumer idPipeline, RowConsumer valuePipeline, Function<ContainedEntityResult,String[]> idMapper, List<ContainedEntityResult> results) throws IOException {
+	public static void write(
+		ArrowWriter writer, 
+		VectorSchemaRoot root, 
+		RowConsumer idPipeline, 
+		RowConsumer valuePipeline, 
+		Function<ContainedEntityResult,String[]> idMapper, 
+		List<ContainedEntityResult> results,
+		int batchSize) throws IOException 
+	{
+		Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
 		log.info("Starting result write");
 		writer.start();
 		int batchLineCount = 0;
-		root.setRowCount(BATCH_SIZE);
+		root.setRowCount(batchSize);
 		for (int resultCount = 0; resultCount < results.size(); resultCount++) {
 			ContainedEntityResult result = results.get(resultCount);
 			for (Object[] line : result.listResultLines()) {
@@ -75,7 +87,7 @@ public class ArrowRenderer {
 				valuePipeline.accept(batchLineCount, line);
 				batchLineCount++;
 			}
-			if(batchLineCount >= BATCH_SIZE) {				
+			if(batchLineCount >= batchSize) {				
 				writer.writeBatch();
 				batchLineCount = 0;
 			}

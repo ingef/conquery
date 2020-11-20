@@ -138,7 +138,8 @@ public class ArrowResultGenerationTest {
 			printSettings, 
 			mquery, 
 			(cer) -> new String[]{Integer.toString(cer.getEntityId()),Integer.toString(cer.getEntityId())},
-			idMapping.getPrintIdFields());
+			idMapping.getPrintIdFields(),
+			BATCH_SIZE);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 		
