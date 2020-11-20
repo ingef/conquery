@@ -228,39 +228,35 @@ public class ArrowRenderer {
 		ImmutableList.Builder<Field> fields = ImmutableList.builder();
 		
 		for(ResultInfo info : infos) {
-			switch(info.getType()) {
-				case BOOLEAN:
-					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null));
-					break;
-				case CATEGORICAL:
-					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null));
-					break;
-				case DATE:
-					fields.add(NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings)));
-					break;
-				case INTEGER:
-					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null));
-					break;
-				case MONEY:
-					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null));
-					break;
-				case NUMERIC:
-					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null));
-					break;
-				case RESOLUTION:
-					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null));
-					break;
-				case STRING:
-					fields.add(new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null));
-					break;
-				default:
-					throw new IllegalStateException("Unknown column type " + info.getType());
-				
-			}
-			
+			fields.add(getFieldForResultInfo(info, settings));
 		}
 		
 		return fields.build();
 		
+	}
+	
+	// TODO replace with switch expression in java 12
+	private static Field getFieldForResultInfo(ResultInfo info, PrintSettings settings){
+		switch(info.getType()) {
+			case BOOLEAN:
+				return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null);
+			case CATEGORICAL:
+				return  new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
+			case DATE:
+				return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
+			case INTEGER:
+				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
+			case MONEY:
+				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
+			case NUMERIC:
+				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
+			case RESOLUTION:
+				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
+			case STRING:
+				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
+			default:
+				throw new IllegalStateException("Unknown column type " + info.getType());
+			
+		}
 	}
 }
