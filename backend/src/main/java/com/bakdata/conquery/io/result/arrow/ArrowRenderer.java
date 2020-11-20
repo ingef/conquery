@@ -74,8 +74,11 @@ public class ArrowRenderer {
 		int batchSize) throws IOException 
 	{
 		Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
-		log.info("Starting result write");
+		// TODO add time metric for writing
+		
+		log.trace("Starting result write");
 		writer.start();
+		int batchCount = 0;
 		int batchLineCount = 0;
 		root.setRowCount(batchSize);
 		for (int resultCount = 0; resultCount < results.size(); resultCount++) {
@@ -90,14 +93,15 @@ public class ArrowRenderer {
 			if(batchLineCount >= batchSize) {				
 				writer.writeBatch();
 				batchLineCount = 0;
+				batchCount++;
 			}
 		}
-		log.info("Writing final batch");
 		if(batchLineCount > 0) {
 			root.setRowCount(batchLineCount);
 			writer.writeBatch();
+			batchCount++;
 		}
-		log.info("Finishing result write");
+		log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
 		writer.end();
 	}
 	
