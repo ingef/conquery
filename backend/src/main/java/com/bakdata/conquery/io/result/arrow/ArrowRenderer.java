@@ -175,6 +175,7 @@ public class ArrowRenderer {
 			final int pos = resultPos;
 			final FieldVector vector = root.getVector(vecI);
 			
+                        //TODO When Pattern-matching lands, clean this up. (Think Java 12?)
 			if(vector instanceof IntVector) {
 				start = start.andThen(intVectorFiller((IntVector) vector, pos));
 				continue;
