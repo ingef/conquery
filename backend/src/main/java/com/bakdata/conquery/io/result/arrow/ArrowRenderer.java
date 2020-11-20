@@ -51,15 +51,15 @@ public class ArrowRenderer {
 		VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 		
 		// Build separate pipelines for id and value, as they have different sources but the same target
-		RowConsumer idPipeline = generateWriterPipeline(root, 0, idHeaders.length);
-		RowConsumer valuePipeline = generateWriterPipeline(root, idHeaders.length, resultInfos.size());
+		RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.length);
+		RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.length, resultInfos.size());
 
 		
 		List<ContainedEntityResult> results = query.getResults().stream().filter(ContainedEntityResult.class::isInstance).map(ContainedEntityResult.class::cast).collect(Collectors.toList());
 
 		// Write the data
 		try(ArrowWriter writer = writerProducer.apply(root)) {			
-			write(writer, root, idPipeline, valuePipeline, idMapper, results, batchsize);
+			write(writer, root, idWriters, valueWriter, idMapper, results, batchsize);
 		}
 		
 	}
@@ -67,8 +67,8 @@ public class ArrowRenderer {
 	public static void write(
 		ArrowWriter writer, 
 		VectorSchemaRoot root, 
-		RowConsumer idPipeline, 
-		RowConsumer valuePipeline, 
+		RowConsumer[] idWriter, 
+		RowConsumer[] valueWriter, 
 		Function<ContainedEntityResult,String[]> idMapper, 
 		List<ContainedEntityResult> results,
 		int batchSize) throws IOException 
@@ -84,10 +84,14 @@ public class ArrowRenderer {
 		for (int resultCount = 0; resultCount < results.size(); resultCount++) {
 			ContainedEntityResult result = results.get(resultCount);
 			for (Object[] line : result.listResultLines()) {
-				// Write id information
-				idPipeline.accept(batchLineCount, idMapper.apply(result));
-				// Write values
-				valuePipeline.accept(batchLineCount, line);
+				for(int cellIndex = 0; cellIndex < idWriter.length; cellIndex++) {
+					// Write id information
+					idWriter[cellIndex].accept(batchLineCount, idMapper.apply(result));
+				}
+				for(int cellIndex = 0; cellIndex < valueWriter.length; cellIndex++) {
+					// Write values
+					valueWriter[cellIndex].accept(batchLineCount, line);					
+				}
 				batchLineCount++;
 				
 				if(batchLineCount >= batchSize) {				
@@ -166,49 +170,50 @@ public class ArrowRenderer {
 	}
 
 	
-	public static RowConsumer generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors){
+	public static RowConsumer[] generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors){
 		Preconditions.checkArgument(vectorOffset >= 0, "Offset was negativ: %s", vectorOffset);
 		Preconditions.checkArgument(numVectors >= 0, "Number of vectors was negativ: %s", numVectors);
 		
-		RowConsumer start = (n, r) -> {};
+		RowConsumer[] builder = new RowConsumer[numVectors];
+		
 		for (int vecI = vectorOffset, resultPos = 0; vecI < root.getFieldVectors().size() && vecI < vectorOffset + numVectors; vecI++, resultPos++) {
 			final int pos = resultPos;
 			final FieldVector vector = root.getVector(vecI);
 			
                         //TODO When Pattern-matching lands, clean this up. (Think Java 12?)
 			if(vector instanceof IntVector) {
-				start = start.andThen(intVectorFiller((IntVector) vector, pos));
+				builder[resultPos]  = intVectorFiller((IntVector) vector, pos);
 				continue;
 			}
 
 			if(vector instanceof VarCharVector) {
-				start = start.andThen(varCharVectorFiller((VarCharVector) vector, pos));
+				builder[resultPos]  = varCharVectorFiller((VarCharVector) vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof BitVector) {
-				start = start.andThen(bitVectorFiller((BitVector) vector, pos));
+				builder[resultPos]  = bitVectorFiller((BitVector) vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof Float4Vector) {
-				start = start.andThen(float4VectorFiller((Float4Vector)vector, pos));
+				builder[resultPos]  = float4VectorFiller((Float4Vector)vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof Float8Vector) {
-				start = start.andThen(float8VectorFiller((Float8Vector)vector, pos));
+				builder[resultPos]  = float8VectorFiller((Float8Vector)vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof DateDayVector) {
-				start = start.andThen(dateDayVectorFiller((DateDayVector) vector, pos));
+				builder[resultPos]  = dateDayVectorFiller((DateDayVector) vector, pos);
 				continue;
 			}
 			
 			throw new UnsupportedOperationException("Vector type for writing result: "+ vector.getClass());
 		}
-		return start;
+		return builder;
 		
 	}
 	
