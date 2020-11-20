@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,7 @@ public class ArrowRenderer {
 		RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.length, resultInfos.size());
 
 		
-		List<ContainedEntityResult> results = query.getResults().stream().filter(ContainedEntityResult.class::isInstance).map(ContainedEntityResult.class::cast).collect(Collectors.toList());
+		List<EntityResult> results = query.getResults();
 
 		// Write the data
 		try(ArrowWriter writer = writerProducer.apply(root)) {			
@@ -70,7 +71,7 @@ public class ArrowRenderer {
 		RowConsumer[] idWriter, 
 		RowConsumer[] valueWriter, 
 		Function<ContainedEntityResult,String[]> idMapper, 
-		List<ContainedEntityResult> results,
+		List<EntityResult> results,
 		int batchSize) throws IOException 
 	{
 		Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
@@ -81,12 +82,15 @@ public class ArrowRenderer {
 		int batchCount = 0;
 		int batchLineCount = 0;
 		root.setRowCount(batchSize);
-		for (int resultCount = 0; resultCount < results.size(); resultCount++) {
-			ContainedEntityResult result = results.get(resultCount);
-			for (Object[] line : result.listResultLines()) {
+		for (EntityResult result : results) {
+			if (!result.isContained()) {
+				continue;
+			}
+			ContainedEntityResult cer = result.asContained();
+			for (Object[] line : cer.listResultLines()) {
 				for(int cellIndex = 0; cellIndex < idWriter.length; cellIndex++) {
 					// Write id information
-					idWriter[cellIndex].accept(batchLineCount, idMapper.apply(result));
+					idWriter[cellIndex].accept(batchLineCount, idMapper.apply(cer));
 				}
 				for(int cellIndex = 0; cellIndex < valueWriter.length; cellIndex++) {
 					// Write values
@@ -230,14 +234,9 @@ public class ArrowRenderer {
 	}
 	
 	public static List<Field> generateFieldsFromResultType(@NonNull List<ResultInfo> infos, PrintSettings settings) {
-		
-		ImmutableList.Builder<Field> fields = ImmutableList.builder();
-		
-		for(ResultInfo info : infos) {
-			fields.add(getFieldForResultInfo(info, settings));
-		}
-		
-		return fields.build();
+		return  infos.stream()
+			 .map(info -> getFieldForResultInfo(info, settings))
+			 .collect(Collectors.toUnmodifiableList());
 		
 	}
 	

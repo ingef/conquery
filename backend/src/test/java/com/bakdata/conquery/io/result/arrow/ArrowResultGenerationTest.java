@@ -108,13 +108,14 @@ public class ArrowResultGenerationTest {
 	void writeAndRead() throws IOException {
 		// Prepare every input data
 		PrintSettings printSettings  = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
-		List<ContainedEntityResult> results = List.of(
+		List<EntityResult> results = List.of(
 			new SinglelineContainedEntityResult(1,new Object[] { Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContextMode.DAYS.toString(), 5646, "test_string", 4521 }),
 			new SinglelineContainedEntityResult(2, new Object[] { Boolean.FALSE, null, null, null, null, null, null, null }),
 			new MultilineContainedEntityResult(3, List.of(
 				new Object[] { Boolean.TRUE, null, null, null, null, null, null, null },
 				new Object[] { Boolean.TRUE, null, null, null, null, null, null, 4 }
-				)));
+				)),
+			EntityResult.notContained());
 		
 		ManagedQuery mquery = new ManagedQuery(null, null, null) {
 			public ResultInfoCollector collectResultInfos() {
@@ -171,8 +172,11 @@ public class ArrowResultGenerationTest {
 		return sb.toString();
 	}
 
-	private String generateExpectedTSV(List<ContainedEntityResult> results) {
-		String expected = results.stream().map(
+	private String generateExpectedTSV(List<EntityResult> results) {
+		String expected = results.stream()
+			.filter(EntityResult::isContained)
+			.map(ContainedEntityResult.class::cast)
+			.map(
 			(res) -> res.listResultLines().stream().map(
 				line -> res.getEntityId() + "\t" + res.getEntityId() + "\t" + Arrays.stream(line).map(o -> o == null ? "null" : o)
 					.map(Object::toString)
