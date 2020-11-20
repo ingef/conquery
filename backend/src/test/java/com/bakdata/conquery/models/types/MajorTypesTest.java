@@ -15,7 +15,7 @@ public class MajorTypesTest {
 	@ParameterizedTest
 	@MethodSource
 	public void reflection(MajorTypeId typeId) {
-		CType<?, ?> type = typeId.createParser(new ParserConfig()).findBestType().getType();
+		CType<?> type = typeId.createParser(new ParserConfig()).findBestType();
 		assertThat(type.getTypeId())
 				.isNotNull()
 				.isEqualTo(typeId);

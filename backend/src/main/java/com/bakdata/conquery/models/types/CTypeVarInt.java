@@ -1,16 +1,15 @@
 package com.bakdata.conquery.models.types;
 
-import com.bakdata.conquery.models.types.specific.VarIntType;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class CTypeVarInt<T extends Number> extends CType<Long, T> {
+public abstract class CTypeVarInt<T extends Number> extends CType<T> {
 
-	protected VarIntType numberType;
+	protected CType<Long> numberType;
 
-	public CTypeVarInt(MajorTypeId typeId, VarIntType numberType) {
+	public CTypeVarInt(MajorTypeId typeId, CType<Long> numberType) {
 		super(typeId);
 		this.numberType = numberType;
 	}

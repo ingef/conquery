@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.types.parser.specific.string;
 
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.types.specific.VarIntType;
-import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
+import com.bakdata.conquery.models.types.specific.integer.VarIntType;
+import com.bakdata.conquery.models.types.specific.integer.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.types.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
@@ -27,10 +27,10 @@ public class TrieTypeGuesser implements TypeGuesser {
 		}
 
 
-		p.setLineCounts(type);
+		p.copyLineCounts(type);
 		StringTypeEncoded result = new StringTypeEncoded(type, p.getEncoding());
-		p.setLineCounts(result);
-		p.setLineCounts(indexType);
+		p.copyLineCounts(result);
+		p.copyLineCounts(indexType);
 
 		return new Guess(
 				this,

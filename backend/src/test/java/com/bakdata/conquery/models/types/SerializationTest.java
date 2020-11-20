@@ -33,9 +33,9 @@
 //import com.bakdata.conquery.models.types.specific.string.StringTypePrefix;
 //import com.bakdata.conquery.models.types.specific.string.StringTypeSingleton;
 //import com.bakdata.conquery.models.types.specific.string.StringTypeSuffix;
-//import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
-//import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
-//import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
+//import com.bakdata.conquery.models.types.specific.integer.VarIntTypeByte;
+//import com.bakdata.conquery.models.types.specific.integer.VarIntTypeInt;
+//import com.bakdata.conquery.models.types.specific.integer.VarIntTypeShort;
 //import com.fasterxml.jackson.core.JsonParseException;
 //import com.fasterxml.jackson.core.JsonProcessingException;
 //import com.fasterxml.jackson.databind.JsonMappingException;

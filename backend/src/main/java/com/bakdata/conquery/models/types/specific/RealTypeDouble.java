@@ -10,7 +10,7 @@ import lombok.Getter;
 
 @CPSType(base=ColumnStore.class, id="REAL_DOUBLE")
 @Getter
-public class RealTypeDouble extends CType<Double, Double> {
+public class RealTypeDouble extends CType<Double> {
 
 	private final DoubleStore store;
 

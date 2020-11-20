@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.string.TypeGuesser.Guess;
 import com.bakdata.conquery.models.types.specific.string.StringType;
@@ -63,7 +62,7 @@ public class StringParser extends Parser<Integer> {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	protected Decision<? extends CType<Integer, ?>> decideType() {
+	protected CType<Integer> decideType() {
 
 		//check if a singleton type is enough
 		if (strings.size() <= 1) {
@@ -75,8 +74,8 @@ public class StringParser extends Parser<Integer> {
 			else {
 				type = new StringTypeSingleton(strings.keySet().iterator().next(), BooleanStore.create(getLines()));
 			}
-			setLineCounts(type);
-			return new Decision<StringTypeSingleton>(type);
+			copyLineCounts(type);
+			return type;
 		}
 
 		//remove prefix and suffix
@@ -118,13 +117,13 @@ public class StringParser extends Parser<Integer> {
 		//wrap in prefix suffix
 		if (!StringUtils.isEmpty(prefix)) {
 			result = new StringTypePrefix(result, prefix);
-			setLineCounts(result);
+			copyLineCounts(result);
 		}
 		if (!StringUtils.isEmpty(suffix)) {
 			result = new StringTypeSuffix(result, suffix);
-			setLineCounts(result);
+			copyLineCounts(result);
 		}
-		return new Decision(result);
+		return result;
 	}
 
 	private void decode() {

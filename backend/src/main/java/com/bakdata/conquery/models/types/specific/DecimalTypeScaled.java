@@ -12,10 +12,10 @@ import lombok.Getter;
 
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
-public class DecimalTypeScaled extends CType<BigDecimal, BigDecimal> {
+public class DecimalTypeScaled extends CType<BigDecimal> {
 
 	private final int scale;
-	private final CType<?, Long> subType;
+	private final CType<Long> subType;
 
 	@JsonCreator
 	public DecimalTypeScaled(int scale, CType subType) {

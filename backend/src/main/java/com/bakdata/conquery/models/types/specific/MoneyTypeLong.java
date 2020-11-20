@@ -14,7 +14,7 @@ import lombok.Getter;
 
 @CPSType(base = ColumnStore.class, id = "MONEY_LONG")
 @Getter
-public class MoneyTypeLong extends CType<Long, Long> {
+public class MoneyTypeLong extends CType<Long> {
 
 	@JsonIgnore
 	@Getter(lazy = true)

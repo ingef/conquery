@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**every implementation must guarantee IDs between 0 and size**/
 // TODO remove Iterable implementationm and change to explicit accessor instead
-public abstract class StringType extends CType<Integer, Integer> implements Iterable<String> {
+public abstract class StringType extends CType<Integer> implements Iterable<String> {
 
 	public StringType() {
 		super(MajorTypeId.STRING);

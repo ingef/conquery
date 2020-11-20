@@ -22,11 +22,11 @@ class RealParserTest {
 
 		// ULP is symmetric on the 0 axis and monotonic, so larger values have a larger ULP
 
-		assertThat(realParser.decideType().getType()).isInstanceOf(RealTypeFloat.class);
+		assertThat(realParser.decideType()).isInstanceOf(RealTypeFloat.class);
 
 		realParser.registerValue(3000d);
 
-		assertThat(realParser.decideType().getType()).isInstanceOf(RealTypeDouble.class);
+		assertThat(realParser.decideType()).isInstanceOf(RealTypeDouble.class);
 	}
 
 }

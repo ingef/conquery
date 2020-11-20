@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(base=ColumnStore.class, id="INTEGER") @Getter @Setter
-public class IntegerTypeLong extends CType<Long, Long> {
+public class IntegerTypeLong extends CType<Long> {
 
 	private final long minValue;
 	private final long maxValue;

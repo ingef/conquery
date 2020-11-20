@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -23,7 +23,7 @@ import lombok.Setter;
 public class StringTypeNumber extends StringType {
 
 	@Nonnull
-	protected VarIntType delegate;
+	protected CType<Long> delegate;
 	//used as a compact intset
 	private Range<Integer> range;
 
@@ -32,13 +32,13 @@ public class StringTypeNumber extends StringType {
 	private transient Map<Integer, String> dictionary;
 
 	@JsonCreator
-	public StringTypeNumber(Range<Integer> range, VarIntType numberType) {
+	public StringTypeNumber(Range<Integer> range, CType<Long> numberType) {
 		super();
 		this.range = range;
 		this.delegate = numberType;
 	}
 
-	public StringTypeNumber(Range<Integer> range, VarIntType numberType, Map<Integer, String> dictionary) {
+	public StringTypeNumber(Range<Integer> range, CType<Long> numberType, Map<Integer, String> dictionary) {
 		this(range, numberType);
 		this.dictionary = dictionary;
 	}

@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.events.stores.date.PackedDateRangeStore;
 import com.bakdata.conquery.models.events.stores.date.QuarterDateStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypePacked;
@@ -65,33 +64,26 @@ public class DateRangeParser extends Parser<CDateRange> {
 	}
 
 	@Override
-	protected Decision<? extends CType<CDateRange, ?>> decideType() {
+	protected CType<CDateRange> decideType() {
 		// We cannot yet do meaningful compression for open dateranges.
 		// TODO: 27.04.2020 consider packed compression with extra value as null value.
 		if (anyOpen) {
-			return new Decision<>(
-					new DateRangeTypeDateRange(DateRangeStore.create(getLines()))
-			);
+			return new DateRangeTypeDateRange(DateRangeStore.create(getLines()))
+			;
 		}
 
 		if (onlyQuarters) {
-			DateRangeTypeQuarter type = new DateRangeTypeQuarter(QuarterDateStore.create(getLines()));
-			return new Decision<>(
-					type
-			);
+			return new DateRangeTypeQuarter(QuarterDateStore.create(getLines()))
+			;
 		}
 		// min or max can be Integer.MIN/MAX_VALUE when this happens, the left expression overflows causing it to be true when it is not.
 		// We allow this exception to happen as it would imply erroneous data.
 		if (Math.subtractExact(maxValue, minValue) < PackedUnsigned1616.MAX_VALUE) {
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
 
-			return new Decision(
-					new DateRangeTypePacked(minValue, maxValue, PackedDateRangeStore.create(getLines()))
-			);
+			return new DateRangeTypePacked(minValue, maxValue, PackedDateRangeStore.create(getLines()));
 		}
 
-		return new Decision<>(
-				new DateRangeTypeDateRange(DateRangeStore.create(getLines()))
-		);
+		return new DateRangeTypeDateRange(DateRangeStore.create(getLines()));
 	}
 }

@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.events.stores.base.FloatStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.RealTypeDouble;
 import com.bakdata.conquery.models.types.specific.RealTypeFloat;
@@ -33,6 +32,7 @@ public class RealParser extends Parser<Double> {
 
 	/**
 	 * Collect ULP of all values
+	 *
 	 * @see Math#ulp(float) for an explanation.
 	 */
 	@Override
@@ -44,15 +44,14 @@ public class RealParser extends Parser<Double> {
 	 * If values are within a margin of precision, we store them as floats.
 	 */
 	@Override
-	protected Decision<? extends CType<Double, ?>> decideType() {
+	protected CType<Double> decideType() {
 		log.debug("Max ULP = {}", floatULP);
 
-		if(floatULP < requiredPrecision){
-			return new Decision<>(
-					new RealTypeFloat(FloatStore.create(getLines()))
-			);
+		if (floatULP < requiredPrecision) {
+			return new RealTypeFloat(FloatStore.create(getLines()))
+					;
 		}
 
-		return new Decision<>(new RealTypeDouble(DoubleStore.create(getLines())));
+		return new RealTypeDouble(DoubleStore.create(getLines()));
 	}
 }

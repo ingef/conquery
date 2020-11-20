@@ -12,9 +12,9 @@ import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Iterators;
@@ -37,14 +37,14 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	@InternalOnly
 	private DatasetId dataset;
 
-	public StringTypeDictionary(VarIntType numberType, Dictionary dictionary, String name) {
+	public StringTypeDictionary(CType<Long> numberType, Dictionary dictionary, String name) {
 		super(MajorTypeId.STRING, numberType);
 		this.dictionary = dictionary;
 		this.name = name;
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(VarIntType numberType, DatasetId dataset, String name) {
+	public StringTypeDictionary(CType<Long> numberType, DatasetId dataset, String name) {
 		super(MajorTypeId.STRING, numberType);
 		this.name = name;
 		this.dataset = dataset;

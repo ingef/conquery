@@ -12,7 +12,7 @@ import lombok.Getter;
 
 @CPSType(base=ColumnStore.class, id="DECIMAL_BIG_DECIMAL")
 @Getter
-public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
+public class DecimalTypeBigDecimal extends CType<BigDecimal> {
 
 	private final DecimalStore store;
 

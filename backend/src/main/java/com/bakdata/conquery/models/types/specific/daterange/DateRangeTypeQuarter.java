@@ -14,7 +14,7 @@ import lombok.Getter;
  **/
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
 @Getter
-public class DateRangeTypeQuarter extends CType<CDateRange, CDateRange> {
+public class DateRangeTypeQuarter extends CType<CDateRange> {
 
 	private final QuarterDateStore store;
 

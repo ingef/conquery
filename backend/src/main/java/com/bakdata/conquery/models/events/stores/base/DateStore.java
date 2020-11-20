@@ -26,7 +26,7 @@ public class DateStore extends ColumnStoreAdapter<Integer> {
 	}
 
 	public DateStore select(int[] starts, int[] ends) {
-		return new DateStore(store.select(starts,ends));
+		return new DateStore(store.select(starts, ends));
 	}
 
 	@Override

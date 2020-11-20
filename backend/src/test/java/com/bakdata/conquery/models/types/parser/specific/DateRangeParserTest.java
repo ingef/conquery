@@ -21,7 +21,7 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10))
 			.forEach(parser::registerValue);
 
-		assertThat(parser.decideType().getType()).isInstanceOf(DateRangeTypePacked.class);
+		assertThat(parser.decideType()).isInstanceOf(DateRangeTypePacked.class);
 
 	}
 
@@ -33,7 +33,7 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10), CDateRange.atMost(10))
 			.forEach(parser::registerValue);
 
-		assertThat(parser.decideType().getType()).isInstanceOf(DateRangeTypeDateRange.class);
+		assertThat(parser.decideType()).isInstanceOf(DateRangeTypeDateRange.class);
 	}
 
 	@Test
@@ -43,7 +43,7 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(2011,1), QuarterUtils.getLastDayOfQuarter(2011,1)))
 			.forEach(parser::registerValue);
 
-		assertThat(parser.decideType().getType()).isInstanceOf(DateRangeTypeQuarter.class);
+		assertThat(parser.decideType()).isInstanceOf(DateRangeTypeQuarter.class);
 	}
 
 	@Test
@@ -53,7 +53,7 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(10, PackedUnsigned1616.MAX_VALUE + 12))
 			.forEach(parser::registerValue);
 
-		assertThat(parser.decideType().getType()).isInstanceOf(DateRangeTypeDateRange.class);
+		assertThat(parser.decideType()).isInstanceOf(DateRangeTypeDateRange.class);
 	}
 
 

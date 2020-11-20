@@ -13,7 +13,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
-public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
+public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	private final DateRangeStore store;
 

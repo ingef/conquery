@@ -46,7 +46,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@Min(0)
 	private final int numberOfEvents;
 
-	private final CType<?,?>[] stores;
+	private final CType<?>[] stores;
 
 
 	/**
@@ -61,7 +61,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 
 	private final int bucketSize;
 
-	public Bucket(@Min(0) int bucket, ImportId importId, @Min(0) int numberOfEvents, CType<?, ?>[] stores, Map<Integer, Integer> start, Map<Integer, Integer> length, int bucketSize) {
+	public Bucket(@Min(0) int bucket, ImportId importId, @Min(0) int numberOfEvents, CType<?>[] stores, Map<Integer, Integer> start, Map<Integer, Integer> length, int bucketSize) {
 		this.bucket = bucket;
 		this.importId = importId;
 		this.numberOfEvents = numberOfEvents;

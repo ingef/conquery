@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @CPSType(base= ColumnStore.class, id="REAL_FLOAT")
-public class RealTypeFloat extends CType<Double, Double> {
+public class RealTypeFloat extends CType<Double> {
 
 	@Getter
 	private final FloatStore delegate;

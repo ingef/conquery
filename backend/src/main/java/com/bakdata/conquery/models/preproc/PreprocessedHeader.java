@@ -34,13 +34,6 @@ public class PreprocessedHeader {
 	private long rows;
 
 	/**
-	 * Name of the primary column.
-	 *
-	 * @implNote this is just used as a placeholder for dictionaries etc. about the Entities' primary columns.
-	 */
-	private PPColumn primaryColumn;
-
-	/**
 	 * The specific columns and their associated transformations+data.
 	 */
 	private PPColumn[] columns;
@@ -56,10 +49,6 @@ public class PreprocessedHeader {
 	 */
 	public void assertMatch(Table table) {
 		StringJoiner errors = new StringJoiner("\n");
-
-		if (!table.getPrimaryColumn().matches(getPrimaryColumn())) {
-			errors.add(String.format("PrimaryColumn[%s] does not match table PrimaryColumn[%s]", getPrimaryColumn(), table.getPrimaryColumn()));
-		}
 
 		if (table.getColumns().length != getColumns().length) {
 			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));

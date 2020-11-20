@@ -13,7 +13,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_2UINT16")
 @Getter
 @Setter
-public class DateRangeTypePacked extends CType<Integer, CDateRange> {
+public class DateRangeTypePacked extends CType<CDateRange> {
 
 	private final int minValue;
 	private final int maxValue;

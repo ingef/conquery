@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
@@ -46,30 +45,26 @@ public class DecimalParser extends Parser<BigDecimal> {
 	}
 
 	@Override
-	protected Decision<? extends CType<BigDecimal, ?>> decideType() {
+	protected CType<BigDecimal> decideType() {
 		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
-			return new Decision<DecimalTypeBigDecimal>(
-					new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
-			);
+			return new DecimalTypeBigDecimal(DecimalStore.create(getLines()));
 		}
 
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
-			return new Decision<DecimalTypeBigDecimal>(
-					new DecimalTypeBigDecimal(DecimalStore.create(getLines()))
-			);
+			return new DecimalTypeBigDecimal(DecimalStore.create(getLines()));
 		}
 
-		IntegerParser sub = new IntegerParser(config);
+		IntegerParser sub = new IntegerParser();
 		sub.registerValue(unscaled.longValueExact());
 		sub.registerValue(-unscaled.longValueExact());
 		sub.setLines(getLines());
 		sub.setNullLines(getNullLines());
-		Decision<? extends CType<Long, ? extends Number>> subDecision = sub.findBestType();
+		CType<Long> subDecision = sub.findBestType();
 
-		return new Decision<DecimalTypeScaled>(
-				new DecimalTypeScaled(maxScale, subDecision.getType())
-		);
+		return
+				new DecimalTypeScaled(maxScale, subDecision)
+		;
 	}
 
 }

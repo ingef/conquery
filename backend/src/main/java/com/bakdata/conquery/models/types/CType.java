@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @RequiredArgsConstructor
-public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> implements MajorTypeIdHolder {
+public abstract class CType<JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> implements MajorTypeIdHolder {
 
 	@JsonIgnore
 	private transient final MajorTypeId typeId;
@@ -52,6 +52,6 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> extends ColumnStoreAdapt
 		return 0;
 	}
 
-	public abstract CType<MAJOR_JAVA_TYPE, JAVA_TYPE> select(int[] starts, int[] lengths);
+	public abstract CType<JAVA_TYPE> select(int[] starts, int[] lengths);
 
 }

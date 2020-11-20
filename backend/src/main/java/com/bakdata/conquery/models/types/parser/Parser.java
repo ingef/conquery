@@ -35,11 +35,11 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 
 	protected void registerValue(MAJOR_JAVA_TYPE v) {};
 	
-	protected abstract Decision<? extends CType<MAJOR_JAVA_TYPE, ?>> decideType();
+	protected abstract CType<MAJOR_JAVA_TYPE> decideType();
 	
-	public Decision<? extends CType<MAJOR_JAVA_TYPE, ?>> findBestType() {
-		Decision<? extends CType<MAJOR_JAVA_TYPE, ?>> dec = decideType();
-		setLineCounts(dec.getType());
+	public CType<MAJOR_JAVA_TYPE> findBestType() {
+		CType<MAJOR_JAVA_TYPE> dec = decideType();
+		copyLineCounts(dec);
 		return dec;
 	}
 	
@@ -56,7 +56,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 		return v;
 	}
 	
-	public void setLineCounts(CType<?, ?> type) {
+	public void copyLineCounts(CType<?> type) {
 		type.setLines(lines);
 		type.setNullLines(nullLines);
 	}

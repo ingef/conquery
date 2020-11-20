@@ -19,7 +19,7 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	private EmptyBucket() {
-		super(0, null, 0, new CType<?,?>[0], Map.of(), Map.of(), 0);
+		super(0, null, 0, new CType<?>[0], Map.of(), Map.of(), 0);
 	}
 
 

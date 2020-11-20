@@ -22,9 +22,6 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
-import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
@@ -185,7 +182,7 @@ public class Preprocessor {
 						}
 
 						try {
-							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn().getParser(), lineId), "primaryId may not be null");
+							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
 							final int primary = result.addPrimary(primaryId);
 							final PPColumn[] columns = result.getColumns();
@@ -245,22 +242,7 @@ public class Preprocessor {
 				exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 			}
 
-			//find the optimal subtypes
-			{
-				log.info("finding optimal column types");
 
-				StringParser parser = (StringParser) result.getPrimaryColumn().getParser();
-				parser.setEncoding(Encoding.UTF8);
-				result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
-
-				log.info(
-						"\t{}.{}: {} -> {}",
-						result.getName(),
-						result.getPrimaryColumn().getName(),
-						result.getPrimaryColumn().getParser(),
-						result.getPrimaryColumn().getType()
-				);
-			}
 
 			result.write(outFile);
 		}

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,7 +15,7 @@ import lombok.Setter;
 public class MoneyTypeVarInt extends CTypeVarInt<Long> {
 
 	@JsonCreator
-	public MoneyTypeVarInt(VarIntType numberType) {
+	public MoneyTypeVarInt(CType<Long> numberType) {
 		super(MajorTypeId.MONEY, numberType);
 	}
 

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific;
+package com.bakdata.conquery.models.types.specific.integer;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;

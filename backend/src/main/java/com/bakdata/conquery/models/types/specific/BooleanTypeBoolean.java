@@ -10,7 +10,7 @@ import lombok.Getter;
 
 @CPSType(base=ColumnStore.class, id="BOOLEAN_BOOLEAN")
 @Getter
-public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
+public class BooleanTypeBoolean extends CType<Boolean> {
 
 	private final BooleanStore store;
 

@@ -97,11 +97,11 @@ public class ImportJob extends Job {
 		}
 
 		final Table table = namespace.getStorage().getDataset().getTables().get(this.tableId);
-		final CType<?, ?>[] stores = container.getValues();
+		final CType<?>[] stores = container.getValues();
 
 		// todo use a constant
 		// Update primary dictionary: load new data, and create mapping.
-		DictionaryMapping primaryMapping = importPrimaryDictionary(container.getDictionaries().get("primary_dictionary"));
+		DictionaryMapping primaryMapping = importPrimaryDictionary(container.getPrimaryDictionary());
 
 		// Distribute the new IDs among workers
 		distributeWorkerResponsibilities(primaryMapping);
@@ -148,10 +148,10 @@ public class ImportJob extends Job {
 			}
 
 			// copy only the parts of the bucket we need
-			final CType<?, ?>[] bucketStores =
+			final CType<?>[] bucketStores =
 					Arrays.stream(stores)
 						  .map(store -> store.select(selectionStart, entityLengths))
-						  .toArray(CType<?, ?>[]::new);
+						  .toArray(CType<?>[]::new);
 
 
 			sendBucket(new Bucket(
@@ -238,7 +238,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, CType<?, ?>[] stores)
+	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, CType<?>[] stores)
 			throws JSONException {
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
@@ -294,7 +294,7 @@ public class ImportJob extends Job {
 		return out;
 	}
 
-	public void setDictionaryIds(CType<?, ?>[] values, Column[] columns, String importName) {
+	public void setDictionaryIds(CType<?>[] values, Column[] columns, String importName) {
 		for (int i = 0; i < columns.length; i++) {
 			Column column = columns[i];
 
@@ -314,7 +314,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, CType<?, ?>[] values, Column[] columns) {
+	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, CType<?>[] values, Column[] columns) {
 		for (int i = 0; i < values.length; i++) {
 			Column column = columns[i];
 
@@ -332,7 +332,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, CType<?, ?>[] stores, Column[] columns) {
+	private Import createImport(PreprocessedHeader header, CType<?>[] stores, Column[] columns) {
 		Import imp = new Import(tableId);
 
 		imp.setName(header.getName());

@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.BooleanTypeBoolean;
 import lombok.ToString;
@@ -30,14 +29,12 @@ public class BooleanParser extends Parser<Boolean> {
 			case "0":
 				return false;
 			default:
-				throw new ParsingException("The value "+value+" does not seem to be of type boolean.");
+				throw new ParsingException("The value " + value + " does not seem to be of type boolean.");
 		}
 	}
 
 	@Override
-	protected Decision<? extends CType<Boolean, ?>> decideType() {
-		return new Decision<>(
-			new BooleanTypeBoolean(BooleanStore.create(getLines()))
-		);
+	protected CType<Boolean> decideType() {
+		return new BooleanTypeBoolean(BooleanStore.create(getLines()));
 	}
 }

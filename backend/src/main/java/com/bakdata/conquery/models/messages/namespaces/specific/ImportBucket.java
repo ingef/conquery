@@ -24,7 +24,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 		// todo get import via idRef instead.
 
 		// todo encapsulate this better.
-		for (CType<?, ?> store : bucket.getStores()) {
+		for (CType<?> store : bucket.getStores()) {
 			store.loadDictionaries(context.getStorage());
 		}
 

@@ -14,7 +14,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "DATE_COMPRESSED")
 @Getter
 @Setter
-public class DateTypeVarInt extends CType<Integer, Integer> {
+public class DateTypeVarInt extends CType<Integer> {
 
 	private final DateStore store;
 

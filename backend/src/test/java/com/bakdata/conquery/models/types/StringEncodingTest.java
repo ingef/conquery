@@ -66,7 +66,7 @@ public class StringEncodingTest {
 				.forEach(parser::addLine);
 
 
-		StringTypeEncoded subType = (StringTypeEncoded) parser.findBestType().getType();
+		StringTypeEncoded subType = (StringTypeEncoded) parser.findBestType();
 
 		assertThat(subType)
 				.isInstanceOf(StringTypeEncoded.class);

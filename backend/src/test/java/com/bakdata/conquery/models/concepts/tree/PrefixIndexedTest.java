@@ -20,7 +20,7 @@
 //import com.bakdata.conquery.models.types.specific.string.StringTypeDictionary;
 //import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 //import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
-//import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
+//import com.bakdata.conquery.models.types.specific.integer.VarIntTypeInt;
 //import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 //import com.bakdata.conquery.util.CalculatedValue;
 //import com.bakdata.conquery.util.dict.SuccinctTrie;
