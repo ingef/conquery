@@ -19,6 +19,7 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -74,7 +75,7 @@ public class FormTest extends ConqueryTestSpec {
 	private Form form;
 
 	@JsonIgnore
-	private IdMappingConfig idMapping;
+	private IdMappingConfig idMappingConfig;
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
@@ -97,7 +98,7 @@ public class FormTest extends ConqueryTestSpec {
 		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
 
-		idMapping = support.getConfig().getIdMapping();
+		idMappingConfig = support.getConfig().getIdMapping();
 	}
 
 	@Override
@@ -128,15 +129,15 @@ public class FormTest extends ConqueryTestSpec {
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
 		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
-		IdMappingState mappingState = idMapping
-			.initToExternal(user, managedForm);
+		IdMappingState mappingState = idMappingConfig.initToExternal(user, managedForm);
+		
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 			List<String> actual = QueryToCSVRenderer
 				.toCSV(
 					new PrintSettings(true,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces()),
 					managed.getValue(),
-					mappingState)
+					cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, idMappingConfig, mappingState))
 				.collect(Collectors.toList());
 			
 			assertThat(actual)

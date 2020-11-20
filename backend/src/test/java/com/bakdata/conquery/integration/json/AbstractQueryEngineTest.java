@@ -10,11 +10,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -72,12 +74,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		);
 
 		PrintSettings PRINT_SETTINGS = new PrintSettings(false,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo, dr) -> columnInfo.getSelect().getId().toStringWithoutDataset());
+		IdMappingState mappingState = standaloneSupport.getConfig().getIdMapping().initToExternal(standaloneSupport.getTestUser(), managed);
+		
 		List<String> actual = QueryToCSVRenderer
 			.toCSV(
 				PRINT_SETTINGS,
 				managed,
-				standaloneSupport.getConfig().getIdMapping()
-					.initToExternal(standaloneSupport.getTestUser(), managed))
+				cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, standaloneSupport.getConfig().getIdMapping(), mappingState))
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

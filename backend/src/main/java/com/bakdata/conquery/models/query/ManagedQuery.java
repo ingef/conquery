@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -29,7 +30,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -205,8 +206,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), mappingState, charset, lineSeparator);
+	public StreamingOutput getResult(Function<ContainedEntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator);
 	}
 	
 	@Override

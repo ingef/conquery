@@ -18,17 +18,15 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -70,7 +68,11 @@ public class ResultProcessor {
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 		try {
-			StreamingOutput out = exec.getResult(mappingState, settings, charset, config.getCsv().getLineSeparator());
+			StreamingOutput out = exec.getResult(
+				cer -> ResultUtil.createId(datasetRegistry.get(datasetId), cer, config.getIdMapping(), mappingState),
+				settings,
+				charset,
+				config.getCsv().getLineSeparator());
 
 			return Response.ok(out);
 		}
@@ -130,18 +132,16 @@ public class ResultProcessor {
 		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
 		
 		IdMappingConfig idMappingConf = config.getIdMapping();
-		DirectDictionary primaryDict = datasetRegistry.get(datasetId).getStorage().getPrimaryDictionary();
-		PersistentIdMap idMapping = datasetRegistry.get(datasetId).getStorage().getIdMapping();
+		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 		
 		StreamingOutput out = new StreamingOutput() {
 			
 			@Override
 			public void write(OutputStream output) throws IOException, WebApplicationException {
-				// TODO Auto-generated method stub
 				renderToStream(writerProducer.apply(output),
 					settings, 
 					mquery, 
-					(cer) -> idMapping.toExternal(new CsvEntityId(primaryDict.getElement(cer.getEntityId()))).getExternalId(),
+					cer -> ResultUtil.createId(datasetRegistry.get(datasetId), cer, config.getIdMapping(), mappingState).getExternalId(),
 					idMappingConf.getPrintIdFields());
 				
 			}

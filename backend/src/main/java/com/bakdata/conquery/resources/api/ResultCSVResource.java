@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -29,9 +30,10 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ResultProcessor;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
@@ -59,8 +61,8 @@ public class ResultCSVResource {
 		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE)).build();
 	}
 
-	public static StreamingOutput resultAsStreamingOutput(ManagedExecutionId id, PrintSettings settings, List<ManagedQuery> queries, IdMappingState state, Charset charset, String lineSeparator) {
-		Stream<String> csv = QueryToCSVRenderer.toCSV(settings, queries, state);
+	public static StreamingOutput resultAsStreamingOutput(ManagedExecutionId id, PrintSettings settings, List<ManagedQuery> queries, Function<ContainedEntityResult,ExternalEntityId> idMapper, Charset charset, String lineSeparator) {
+		Stream<String> csv = QueryToCSVRenderer.toCSV(settings, queries, idMapper);
 
 		StreamingOutput out = new StreamingOutput() {
 
