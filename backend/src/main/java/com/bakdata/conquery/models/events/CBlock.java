@@ -28,7 +28,8 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 @JsonDeserialize(using = CBlockDeserializer.class)
 public class CBlock extends IdentifiableImpl<CBlockId> {
-	
+
+	// TODO move to Bucket
 	@Valid
 	private BucketId bucket;
 	@NotNull @Valid
