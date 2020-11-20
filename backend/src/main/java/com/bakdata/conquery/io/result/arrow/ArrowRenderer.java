@@ -89,11 +89,11 @@ public class ArrowRenderer {
 				// Write values
 				valuePipeline.accept(batchLineCount, line);
 				batchLineCount++;
-			}
-			if(batchLineCount >= batchSize) {				
-				writer.writeBatch();
-				batchLineCount = 0;
-				batchCount++;
+				
+				if(batchLineCount >= batchSize) {				
+					writer.writeBatch();
+					batchLineCount = 0;
+				}
 			}
 		}
 		if(batchLineCount > 0) {
