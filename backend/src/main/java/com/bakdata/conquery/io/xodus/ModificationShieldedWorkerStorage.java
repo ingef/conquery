@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -77,7 +77,7 @@ public class ModificationShieldedWorkerStorage implements WorkerStorage {
 		throw new NotImplementedException();
 	}
 
-	public DirectDictionary getPrimaryDictionary() {
+	public EncodedDictionary getPrimaryDictionary() {
 		return delegate.getPrimaryDictionary();
 	}
 

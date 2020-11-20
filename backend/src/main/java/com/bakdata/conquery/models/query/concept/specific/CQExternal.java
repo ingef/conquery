@@ -15,7 +15,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
@@ -66,7 +66,7 @@ public class CQExternal implements CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		DirectDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
+		EncodedDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream()
 												.map(FormatColumn::getDateFormat)
 												.filter(Objects::nonNull)

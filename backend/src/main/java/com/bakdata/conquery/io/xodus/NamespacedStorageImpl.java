@@ -21,13 +21,14 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -178,8 +179,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public DirectDictionary getPrimaryDictionary() {
-		return new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())));
+	public EncodedDictionary getPrimaryDictionary() {
+		return new EncodedDictionary(
+				dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()))
+				, StringTypeEncoded.Encoding.UTF8
+		);
 	}
 
 	@Override

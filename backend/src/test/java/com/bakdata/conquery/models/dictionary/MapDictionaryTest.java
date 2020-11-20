@@ -16,19 +16,19 @@ class MapDictionaryTest {
 	@Test
 	void testSerializationAsList() throws IOException, JSONException {
 
-		MapDictionary map =  new MapDictionary(new DatasetId("dataset"), "dictionary");
-		DirectDictionary direct = new DirectDictionary(map);
-		direct.add("a");
-		direct.add("b");
-		direct.add("c");
-		
+		MapDictionary map = new MapDictionary(new DatasetId("dataset"), "dictionary");
+
+		map.add("a".getBytes());
+		map.add("b".getBytes());
+		map.add("c".getBytes());
+
 		String json = Jackson.MAPPER.writeValueAsString(map);
 		assertThat(json)
-			.startsWith("{\"type\":\"MAP_DICTIONARY\",\"name\":\"dictionary\",\"id2Value\":[")
-			.endsWith("],\"dataset\":\"dataset\"}");
+				.startsWith("{\"type\":\"MAP_DICTIONARY\",\"name\":\"dictionary\",\"id2Value\":[")
+				.endsWith("],\"dataset\":\"dataset\"}");
 		SerializationTestUtil
-			.forType(MapDictionary.class)
-			.test(map);
+				.forType(MapDictionary.class)
+				.test(map);
 	}
 
 }

@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
@@ -76,7 +76,7 @@ public class QueryToCSVRenderer {
 	}
 
 	private static ExternalEntityId createId(Namespace namespace, ContainedEntityResult cer, IdMappingState mappingState) {
-		DirectDictionary dict = namespace.getStorage().getPrimaryDictionary();
+		EncodedDictionary dict = namespace.getStorage().getPrimaryDictionary();
 		return ID_MAPPING
 			.toExternal(
 				new CsvEntityId(dict.getElement(cer.getEntityId())),

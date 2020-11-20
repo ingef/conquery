@@ -11,11 +11,12 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import com.google.common.collect.Iterators;
 import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
@@ -52,17 +53,16 @@ public class BigStoreTest {
 		store.setChunkSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
 		Dictionary nDict = new MapDictionary(new DatasetId("test"), "dict");
-		DirectDictionary direct = new DirectDictionary(nDict);
 
 		for (int v = 0; v < 1000000; v++) {
-			direct.add(Integer.toHexString(v));
+			nDict.add(Integer.toHexString(v).getBytes());
 		}
 
 		// check if manual serialization deserialization works
 		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
 		Dictionary simpleCopy = Jackson.BINARY_MAPPER.readValue(bytes, Dictionary.class);
 		for (int v = 0; v < 1000000; v++) {
-			assertThat(direct.getId(Integer.toHexString(v))).isEqualTo(v);
+			assertThat(simpleCopy.getId(Integer.toHexString(v).getBytes())).isEqualTo(v);
 		}
 
 		// check if store works
@@ -74,7 +74,7 @@ public class BigStoreTest {
 				store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore()).map(ByteArrayInputStream::new).iterator())))
 					.hasSameContentAs(new ByteArrayInputStream(bytes));
 
-		DirectDictionary copy = new DirectDictionary(store.get(nDict.getId()));
+		EncodedDictionary copy = new EncodedDictionary(store.get(nDict.getId()), StringTypeEncoded.Encoding.UTF8);
 		for (int v = 0; v < 1000000; v++) {
 			assertThat(copy.getId(Integer.toHexString(v))).isEqualTo(v);
 		}
