@@ -54,15 +54,12 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	@Override
 	public Map<String, Integer> getAggregationResult() {
 		Map<String, Integer> out = new HashMap<>();
-
-		for (int i = 0; i < hits.length; i++) {
-			int hit = hits[i];
-			if (hit > 0) {
-				out.merge(selection[i], hit, (a,b)->a+b);
-			}
+		
+		for (int i = 0; i < selection.length; i++) {
+			out.put(selection[i], hits[i]);
 		}
 
-		return out.isEmpty() ? null : out;
+		return out;
 	}
 
 	@Override

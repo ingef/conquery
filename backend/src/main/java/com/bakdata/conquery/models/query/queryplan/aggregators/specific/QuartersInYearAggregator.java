@@ -49,7 +49,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public Long getAggregationResult() {
 		if(quartersInYear.isEmpty()) {
-			return null;
+			return 0L;
 		}
 
 		long max = 0;
