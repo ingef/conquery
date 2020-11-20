@@ -29,7 +29,7 @@ public class ResultArrowFileResource {
 	private ResultProcessor processor;
 	
 	@GET
-	@Path("{" + QUERY + "}.{" + FILE_EXTENTION_ARROW_FILE +"}")
+	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response get(
 		@Auth User user,

@@ -29,7 +29,7 @@ public class ResultArrowStreamResource {
 	private ResultProcessor processor;
 	
 	@GET
-	@Path("{" + QUERY + "}.{" + FILE_EXTENTION_ARROW_STREAM +"}")
+	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_STREAM)
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response get(
 		@Auth User user,
