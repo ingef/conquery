@@ -17,9 +17,8 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.CType;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
@@ -33,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)
@@ -62,6 +60,16 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	private final Map<Integer, Integer> length;
 
 	private final int bucketSize;
+
+	public Bucket(@Min(0) int bucket, ImportId importId, @Min(0) int numberOfEvents, CType<?, ?>[] stores, Map<Integer, Integer> start, Map<Integer, Integer> length, int bucketSize) {
+		this.bucket = bucket;
+		this.importId = importId;
+		this.numberOfEvents = numberOfEvents;
+		this.stores = stores;
+		this.start = new Int2IntArrayMap(start); // copy constructor with efficient representation
+		this.length = new Int2IntArrayMap(length);
+		this.bucketSize = bucketSize;
+	}
 
 
 	@Override
