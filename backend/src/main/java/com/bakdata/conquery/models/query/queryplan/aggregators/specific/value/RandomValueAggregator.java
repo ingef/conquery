@@ -42,12 +42,11 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 		}
 
 		// Count how many values we have seen, so a draw is always evenly distributed
-		nValues++;
-
-		if (nValues == 1 || random.nextInt(nValues) == 0) {
+		if (nValues == 0 || random.nextInt(nValues) == 0) {
 			value = bucket.getRaw(event, getColumn());
 			this.bucket = bucket;
 		}
+		nValues++;
 	}
 
 	@Override
