@@ -14,7 +14,7 @@ import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor
 public class ImportColumn extends NamedImpl<ImportColumnId> {
-
+	// TODO reduce usage of this class, it does nothing except hold a description
 	@JsonBackReference @NotNull
 	private Import parent;
 	@NotNull @Valid

@@ -13,8 +13,6 @@ import java.util.Map;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -90,7 +88,7 @@ public class Preprocessed {
 		}
 
 		// Write content to file
-		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
+
 
 		final IntSummaryStatistics statistics = entries.row(0).values().stream().mapToInt(List::size).summaryStatistics();
 
@@ -101,11 +99,9 @@ public class Preprocessed {
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
-		CType[] columns = new CType[this.columns.length];
+		CType[] cTypes = new CType[columns.length];
 
-		ImportColumn[] impColumns = imp.getColumns();
-
-		for (int colIdx = 0; colIdx < impColumns.length; colIdx++) {
+		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
 
 			final CType store = ppColumn.findBestType();
@@ -130,23 +126,23 @@ public class Preprocessed {
 				start += length;
 			}
 
-			columns[colIdx] = store;
+			cTypes[colIdx] = store;
 		}
 
 		Map<String, Dictionary> dicts = new HashMap<>();
 
 
 		// todo fix name
-		((CType<?, ?>)primaryColumn.getType()).storeExternalInfos(dict -> dicts.put("primary_dictionary", dict));
+		((CType<?, ?>) primaryColumn.getType()).storeExternalInfos(dict -> dicts.put("primary_dictionary", dict));
 
-		for (int i = 0; i < columns.length; i++) {
-			CType column = columns[i];
-			final String colName = impColumns[i].getName();
+		for (int i = 0; i < cTypes.length; i++) {
+			CType column = cTypes[i];
+			final String colName = columns[i].getName();
 			((CType<?, ?>) column).storeExternalInfos(dict -> dicts.put(colName, dict));
 		}
 
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {
-			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, columns, dicts));
+			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, cTypes, dicts));
 		}
 
 		// Then write headers.
@@ -191,13 +187,12 @@ public class Preprocessed {
 	}
 
 
-
 	@Data
 	@AllArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class DataContainer {
 		private final Map<Integer, Integer> starts;
 		private final Map<Integer, Integer> lengths;
-		private final CType<?,?>[] values;
+		private final CType<?, ?>[] values;
 
 		private final Map<String, Dictionary> dictionaries;
 

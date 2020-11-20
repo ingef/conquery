@@ -162,7 +162,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 			if (!store.has(event)) {
 				continue;
 			}
-
+			// todo rework this to use table directly
 			out.put(imp.getColumns()[i].getName(), ((CType) stores[i]).createScriptValue(store.get(event)));
 		}
 

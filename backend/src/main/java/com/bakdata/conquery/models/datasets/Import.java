@@ -7,11 +7,9 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.preproc.PPColumn;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
@@ -31,7 +29,7 @@ public class Import extends NamedImpl<ImportId> {
 
 	@Valid
 	@NotNull
-	private final TableId table;
+	private final TableId table; // todo migrate to NsIdRef
 
 	private long numberOfEntries;
 
@@ -41,25 +39,6 @@ public class Import extends NamedImpl<ImportId> {
 
 	@NotNull
 	private Set<DictionaryId> dictionaries;
-
-	public static Import createForPreprocessing(String table, String tag, PPColumn[] columns) {
-		Import imp = new Import(
-				new TableId(new DatasetId("preprocessing"), table)
-		); // is not yet used here.
-		imp.setName(tag);
-		ImportColumn[] impCols = new ImportColumn[columns.length];
-		for (int c = 0; c < impCols.length; c++) {
-			ImportColumn col = new ImportColumn();
-			col.setName(columns[c].getName());
-			col.setParent(imp);
-			col.setPosition(c);
-			col.setType(columns[c].getType());
-			impCols[c] = col;
-		}
-		imp.setColumns(impCols);
-
-		return imp;
-	}
 
 	@Override
 	public ImportId createId() {
