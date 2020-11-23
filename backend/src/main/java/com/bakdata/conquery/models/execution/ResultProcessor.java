@@ -24,6 +24,7 @@ import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -42,6 +43,7 @@ import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
+import org.apache.http.HttpStatus;
 
 /**
  * Holder for utility methods to obtain an result from an execution.
@@ -144,9 +146,9 @@ public class ResultProcessor {
 		
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
-		
-		if(!(exec instanceof ManagedQuery)) {
-			return Response.notAcceptable(null).build();
+
+		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
+			return Response.status(HttpStatus.SC_UNPROCESSABLE_ENTITY, "Execution result is not a single Table").build();
 		}
 		ManagedQuery mquery = (ManagedQuery) exec;
 
