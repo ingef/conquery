@@ -54,16 +54,7 @@ public class ResultProcessor {
 		try {
 			StreamingOutput out = exec.getResult(mappingState, settings, charset, config.getCsv().getLineSeparator());
 			
-			ResponseBuilder response = Response.ok(out);
-			String label = exec.getLabel();
-			if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
-				// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
-				response.header("Content-Disposition", String.format(
-					"attachment; filename=\"%s.%s\"",
-					FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
-					fileExtension));
-			}
-			return response;
+			return makeResponseWithFileName(fileExtension, exec, out);
 		}
 		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
@@ -73,6 +64,19 @@ public class ResultProcessor {
 		}
 	}
 
+	private static ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
+		ResponseBuilder response = Response.ok(out);
+		String label = exec.getLabelWithoutAutoLabelSuffix();
+		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
+			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
+			response.header("Content-Disposition", String.format(
+				"attachment; filename=\"%s.%s\"",
+				FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
+				fileExtension));
+		}
+		return response;
+	}
+	
 	/**
 	 * Tries to determine the charset for the result encoding from different request properties.
 	 * Defaults to StandardCharsets.UTF_8.
