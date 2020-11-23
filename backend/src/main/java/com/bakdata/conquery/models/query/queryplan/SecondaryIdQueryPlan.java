@@ -61,7 +61,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		//first execute only tables with secondaryIds
 		for (Map.Entry<TableId, ColumnId> entry : tablesWithSecondaryId.entrySet()) {
 			executeQueriesWithSecondaryId(ctx, entity, entry.getValue());
-
 		}
 		//afterwards the remaining tables, since we now spawned all children
 		for (TableId currentTable : tablesWithoutSecondaryId) {
