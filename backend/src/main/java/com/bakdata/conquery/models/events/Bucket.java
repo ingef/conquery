@@ -139,47 +139,47 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	}
 
 
-	public boolean has(int event, Column column) {
+	public boolean has(int event, @NotNull Column column) {
 		return has(event, column.getPosition());
 	}
 
 	public abstract boolean has(int event, int columnPosition);
 
-	public abstract int getString(int event, Column column);
+	public abstract int getString(int event, @NotNull Column column);
 
-	public abstract long getInteger(int event, Column column);
+	public abstract long getInteger(int event, @NotNull Column column);
 
-	public abstract boolean getBoolean(int event, Column column);
+	public abstract boolean getBoolean(int event, @NotNull Column column);
 
-	public abstract double getReal(int event, Column column);
+	public abstract double getReal(int event,@NotNull Column column);
 
-	public abstract BigDecimal getDecimal(int event, Column column);
+	public abstract BigDecimal getDecimal(int event, @NotNull Column column);
 
-	public abstract long getMoney(int event, Column column);
+	public abstract long getMoney(int event, @NotNull Column column);
 
-	public abstract int getDate(int event, Column column);
+	public abstract int getDate(int event,@NotNull Column column);
 
-	public abstract CDateRange getDateRange(int event, Column column);
+	public abstract CDateRange getDateRange(int event, @NotNull Column column);
 
-	public Object getRaw(int event, Column column) {
+	public Object getRaw(int event, @NotNull Column column) {
 		return getRaw(event, column.getPosition());
 	}
 
 	public abstract Object getRaw(int event, int columnPosition);
 
-	public Object getAsObject(int event, Column column) {
+	public Object getAsObject(int event, @NotNull Column column) {
 		return getAsObject(event, column.getPosition());
 	}
 
 	public abstract Object getAsObject(int event, int columnPosition);
 
-	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
+	public abstract boolean eventIsContainedIn(int event, @NotNull Column column, CDateRange dateRange);
 
-	public boolean eventIsContainedIn(int event, Column column, BitMapCDateSet dateRanges) {
+	public boolean eventIsContainedIn(int event, @NotNull Column column, BitMapCDateSet dateRanges) {
 		return dateRanges.intersects(getAsDateRange(event, column));
 	}
 
-	public abstract CDateRange getAsDateRange(int event, Column currentColumn);
+	public abstract CDateRange getAsDateRange(int event, @NotNull Column currentColumn);
 
 	@Override
 	public void serializeWithType(JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {

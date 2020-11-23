@@ -75,8 +75,10 @@ public class TableExportQuery extends IQuery {
 				if (table.getDateColumn() != null) {
 					validityDateColumn = connector.getValidityDateColumn(table.getDateColumn().getValue());
 				}
-				else {
+				else if(!connector.getValidityDates().isEmpty()){
 					validityDateColumn = connector.getValidityDates().get(0).getColumn();
+				}else {
+					validityDateColumn = null;
 				}
 
 				final TableExportDescription exportDescription = new TableExportDescription(
