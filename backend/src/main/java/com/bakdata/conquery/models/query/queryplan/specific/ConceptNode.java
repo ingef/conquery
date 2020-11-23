@@ -1,13 +1,18 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -24,25 +29,41 @@ public class ConceptNode extends QPChainNode {
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
+	private boolean excludeFromSecondaryIdQuery;
+
+	private Set<SecondaryId> usedSecondaryIds = Collections.emptySet();
 
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child) {
+	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, boolean excludeFromSecondaryIdQuery) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;
 		this.table = table;
+		this.excludeFromSecondaryIdQuery = excludeFromSecondaryIdQuery;
 	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
+		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(), table.getId());
+
+		usedSecondaryIds = Arrays.stream(table.getResolvedConnector().getTable().getColumns())
+			  .map(Column::getSecondaryId)
+			  .filter(Objects::nonNull)
+			  .collect(Collectors.toSet());
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable);
-		if(tableActive) {
+
+		// deactivate us, if we are in a SecondaryIdQuery, and want to be excluded.
+		if (tableActive && excludeFromSecondaryIdQuery && usedSecondaryIds.contains(ctx.getActiveSecondaryId())) {
+			tableActive = false;
+		}
+
+
+		if (tableActive) {
 			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
 		}
 	}
@@ -72,7 +93,7 @@ public class ConceptNode extends QPChainNode {
 		int localEntity = bucket.toLocal(entity.getId());
 		long bits = row.getIncludedConcepts()[localEntity];
 
-		if((bits & requiredBits) != 0L || requiredBits == 0L) {
+		if ((bits & requiredBits) != 0L || requiredBits == 0L) {
 			return super.isOfInterest(bucket);
 		}
 		return false;
@@ -111,7 +132,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()));
+		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()), excludeFromSecondaryIdQuery);
 	}
 
 	@Override

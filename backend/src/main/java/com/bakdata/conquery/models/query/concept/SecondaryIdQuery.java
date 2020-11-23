@@ -36,6 +36,12 @@ import lombok.Getter;
 @CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
 public class SecondaryIdQuery extends IQuery {
 
+	public static enum QueryPlanPhase {
+		None,
+		WithId,
+		WithoutId
+	}
+
 	@Valid
 	@NotNull
 	private final CQElement root;

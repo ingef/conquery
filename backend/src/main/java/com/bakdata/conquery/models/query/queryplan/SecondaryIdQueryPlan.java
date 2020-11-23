@@ -88,10 +88,13 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 
 	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, ColumnId secondaryIdColumnId) {
+
+		QueryExecutionContext myCtx = ctx.withActiveSecondaryId(secondaryId);
+
 		TableId currentTable = secondaryIdColumnId.getTable();
 		final Column secondaryIdColumn = ctx.getStorage().getCentralRegistry().getOptional(secondaryIdColumnId).orElseThrow();
 
-		nextTable(ctx, currentTable);
+		nextTable(myCtx, currentTable);
 
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
@@ -115,7 +118,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 				}
 
 				String key = ((String) bucket.createScriptValue(event, secondaryIdColumn));
-				childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumn, ctx, bucket))
+				childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumn, myCtx, bucket))
 						   .nextEvent(bucket, event);
 			}
 		}

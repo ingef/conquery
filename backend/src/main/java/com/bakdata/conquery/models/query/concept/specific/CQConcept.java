@@ -69,6 +69,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
+	private boolean excludeFromSecondaryIdQuery = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -126,16 +127,17 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
 
 			tableNodes.add(
-				new ConceptNode(
-					concepts,
-					calculateBitMask(concepts),
-					table,
-					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-					new ValidityDateNode(
-						selectValidityDateColumn(table),
-						filtersNode
+					new ConceptNode(
+							concepts,
+							calculateBitMask(concepts),
+							table,
+							// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
+							new ValidityDateNode(
+									selectValidityDateColumn(table),
+									filtersNode
+							),
+							excludeFromSecondaryIdQuery
 					)
-				)
 			);
 		}
 
