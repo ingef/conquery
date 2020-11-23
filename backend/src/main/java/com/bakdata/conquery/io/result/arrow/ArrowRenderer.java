@@ -159,7 +159,7 @@ public class ArrowRenderer {
 				vector.setNull(rowNumber);
 				return;
 			}
-			vector.setSafe(rowNumber, new Text((String) line[pos]));
+			vector.setSafe(rowNumber, new Text(Objects.toString(line[pos])));
 		};
 	}
 	
