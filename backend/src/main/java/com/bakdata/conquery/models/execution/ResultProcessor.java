@@ -150,7 +150,6 @@ public class ResultProcessor {
 		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
 			return Response.status(HttpStatus.SC_UNPROCESSABLE_ENTITY, "Execution result is not a single Table").build();
 		}
-		ManagedQuery mquery = (ManagedQuery) exec;
 
 		// Get the locale extracted by the LocaleFilter
 		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
@@ -164,7 +163,7 @@ public class ResultProcessor {
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				renderToStream(writerProducer.apply(output),
 					settings, 
-					mquery, 
+					exec, 
 					cer -> ResultUtil.createId(datasetRegistry.get(datasetId), cer, config.getIdMapping(), mappingState).getExternalId(),
 					idMappingConf.getPrintIdFields(),
 					config.getArrow().getBatchSize());

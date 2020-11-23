@@ -5,10 +5,15 @@ import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -39,24 +44,35 @@ public class ArrowRenderer {
 	
 	public static void renderToStream(
 		Function<VectorSchemaRoot, ArrowWriter> writerProducer, 
-		PrintSettings cfg, ManagedQuery query, 
+		PrintSettings cfg,
+		ManagedExecution<?> exec, 
 		Function<ContainedEntityResult,String[]> idMapper, 
 		String[] idHeaders,	
 		int batchsize) throws IOException
 	{
-
+		// Test the execution if the result is renderable into one table
+		Stream<EntityResult> results;
+		List<ResultInfo> resultInfos;
+		if(exec instanceof ManagedQuery) {
+			results = ((ManagedQuery)exec).getResults().stream();
+			resultInfos = ((ManagedQuery)exec).collectResultInfos().getInfos();
+		}
+		else if(exec instanceof ManagedForm && ((ManagedForm)exec).getSubQueries().size() == 1) {
+			resultInfos = ((ManagedForm)exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
+			results = ((ManagedForm)exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
+		}
+		else {
+			throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
+		}
+		
 		// Combine id and value Fields to one vector to build a schema
 		List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
-		List<ResultInfo> resultInfos = query.collectResultInfos().getInfos();
 		fields.addAll(generateFieldsFromResultType(resultInfos, cfg));
 		VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 		
 		// Build separate pipelines for id and value, as they have different sources but the same target
 		RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.length);
 		RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.length, resultInfos.size());
-
-		
-		List<EntityResult> results = query.getResults();
 
 		// Write the data
 		try(ArrowWriter writer = writerProducer.apply(root)) {			
@@ -71,7 +87,7 @@ public class ArrowRenderer {
 		RowConsumer[] idWriter, 
 		RowConsumer[] valueWriter, 
 		Function<ContainedEntityResult,String[]> idMapper, 
-		List<EntityResult> results,
+		Stream<EntityResult> results,
 		int batchSize) throws IOException 
 	{
 		Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
@@ -82,7 +98,9 @@ public class ArrowRenderer {
 		int batchCount = 0;
 		int batchLineCount = 0;
 		root.setRowCount(batchSize);
-		for (EntityResult result : results) {
+		Iterator<EntityResult> resultIter = results.iterator();
+		while(resultIter.hasNext()) {
+			EntityResult result = resultIter.next();
 			if (!result.isContained()) {
 				continue;
 			}
