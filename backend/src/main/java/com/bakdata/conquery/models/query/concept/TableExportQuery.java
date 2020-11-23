@@ -72,12 +72,14 @@ public class TableExportQuery extends IQuery {
 				final Column validityDateColumn;
 
 				// if no dateColumn is provided, we use the default instead which is always the first one.
+				// Set to null if none-available in the connector.
 				if (table.getDateColumn() != null) {
 					validityDateColumn = connector.getValidityDateColumn(table.getDateColumn().getValue());
 				}
-				else if(!connector.getValidityDates().isEmpty()){
+				else if (!connector.getValidityDates().isEmpty()) {
 					validityDateColumn = connector.getValidityDates().get(0).getColumn();
-				}else {
+				}
+				else {
 					validityDateColumn = null;
 				}
 
