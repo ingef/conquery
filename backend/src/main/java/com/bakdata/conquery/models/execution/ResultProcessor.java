@@ -23,6 +23,8 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.FileUtil;
+import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -32,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultProcessor {
 	
-	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public static ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config, String fileExtension) {
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, datasetId, Ability.READ);
@@ -51,8 +53,8 @@ public class ResultProcessor {
 
 		try {
 			StreamingOutput out = exec.getResult(mappingState, settings, charset, config.getCsv().getLineSeparator());
-
-			return Response.ok(out);
+			
+			return makeResponseWithFileName(fileExtension, exec, out);
 		}
 		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
@@ -62,6 +64,19 @@ public class ResultProcessor {
 		}
 	}
 
+	private static ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
+		ResponseBuilder response = Response.ok(out);
+		String label = exec.getLabelWithoutAutoLabelSuffix();
+		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
+			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
+			response.header("Content-Disposition", String.format(
+				"attachment; filename=\"%s.%s\"",
+				FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
+				fileExtension));
+		}
+		return response;
+	}
+	
 	/**
 	 * Tries to determine the charset for the result encoding from different request properties.
 	 * Defaults to StandardCharsets.UTF_8.

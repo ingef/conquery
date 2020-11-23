@@ -60,4 +60,15 @@ public interface Form extends QueryDescription {
 		query.resolve(context);
 		return query;
 	}
+
+
+	/** 
+	 * Is called in context of a request to generate a default label.
+	 * If localization is needed use:<br/>
+	 * <code>
+	 * Locale preferredLocale = I18n.LOCALE.get();
+	 * </code>
+	 */
+	@JsonIgnore
+	abstract public String getLocalizedTypeLabel();
 }

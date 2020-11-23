@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.forms.managed;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -89,13 +92,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public void initExecutable(@NonNull DatasetRegistry datasetRegistry) {
+	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry) {
 		// init all subqueries
-		synchronized (getExecution()) {
-			submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
-			subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
-			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry));
-		}
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
+		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
+		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry));
 	}
 	
 	@Override
@@ -227,7 +228,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
 			// If subqueries was not set the Execution was not initialized
-			this.initExecutable(storage.getDatasetRegistry());
+			this.doInitExecutable(storage.getDatasetRegistry());
 		}
 		if(subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
@@ -257,4 +258,16 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			.build()
 			.toURL();
 	}
+
+
+
+	@Override
+	protected void makeDefaultLabel(StringBuilder sb) {
+		sb
+			.append(getSubmittedForm().getLocalizedTypeLabel())
+			.append(" ")
+			.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm", I18n.LOCALE.get())));
+		
+	}
+	
 }
