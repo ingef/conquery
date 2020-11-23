@@ -14,7 +14,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "DATE_COMPRESSED")
 @Getter
 @Setter
-public class DateTypeVarInt extends CType<Integer> {
+public class DateTypeVarInt extends CType<Long> {
 
 	private final DateStore store;
 
@@ -25,13 +25,8 @@ public class DateTypeVarInt extends CType<Integer> {
 	}
 
 	@Override
-	public Object createScriptValue(Integer value) {
-		return CDate.toLocalDate(value);
-	}
-
-	@Override
-	public Object createPrintValue(Integer value) {
-		return CDate.toLocalDate(value);
+	public Object createScriptValue(Long value) {
+		return CDate.toLocalDate(value.intValue());
 	}
 
 	@Override
