@@ -1,14 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -26,14 +23,14 @@ public class ConceptNode extends QPChainNode {
 
 	private final ConceptElement<?>[] concepts;
 	private final long requiredBits;
-	private final Set<SecondaryId> usedSecondaryIds;
 	private final Connector resolvedConnector;
+	private final SecondaryId selectedSecondaryId;
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 	private boolean excludeFromSecondaryIdQuery;
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, QPNode child, boolean excludeFromSecondaryIdQuery, Connector resolvedConnector) {
+	public ConceptNode(ConceptElement[] concepts, long requiredBits, QPNode child, boolean excludeFromSecondaryIdQuery, Connector resolvedConnector, SecondaryId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;
@@ -41,10 +38,7 @@ public class ConceptNode extends QPChainNode {
 
 		this.resolvedConnector = resolvedConnector;
 
-		usedSecondaryIds = Arrays.stream(getResolvedConnector().getTable().getColumns())
-								 .map(Column::getSecondaryId)
-								 .filter(Objects::nonNull)
-								 .collect(Collectors.toSet());
+		this.selectedSecondaryId = selectedSecondaryId;
 	}
 
 	@Override
@@ -58,13 +52,17 @@ public class ConceptNode extends QPChainNode {
 		tableActive = getResolvedConnector().getTable().getId().equals(currentTable);
 
 		// deactivate us, if we are in a SecondaryIdQuery, and want to be excluded.
-		if (excludeFromSecondaryIdQuery && ctx.getSecondaryIdQueryPlanPhase() == QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId) {
+		if (excludeFromSecondaryIdQuery
+			&& selectedSecondaryId == ctx.getActiveSecondaryId()
+			&& ctx.getSecondaryIdQueryPlanPhase() == QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId
+		) {
 			tableActive = false;
 		}
-		// Deactivate us for table if we are in SecondaryId-Query, but not in phase for SecondaryIds.
+		// Deactivate us for table if we are in SecondaryId-Query, and interested in , but not in phase for SecondaryIds.
 		if (!excludeFromSecondaryIdQuery
+			&& selectedSecondaryId == ctx.getActiveSecondaryId()
 			&& ctx.getSecondaryIdQueryPlanPhase() == QueryExecutionContext.SecondaryIdQueryPlanPhase.WithoutId
-			&& usedSecondaryIds.contains(ctx.getActiveSecondaryId())) {
+		) {
 			tableActive = false;
 		}
 
@@ -137,7 +135,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, ctx.clone(getChild()), excludeFromSecondaryIdQuery, getResolvedConnector());
+		return new ConceptNode(concepts, requiredBits, ctx.clone(getChild()), excludeFromSecondaryIdQuery, getResolvedConnector(), selectedSecondaryId);
 	}
 
 	@Override

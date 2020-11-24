@@ -57,6 +57,9 @@ public class SecondaryIdQuery extends IQuery {
 
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
+
+		context = context.withSelectedSecondaryId(getSecondaryId());
+
 		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
 
 		Map<TableId, ColumnId> withSecondaryId = new HashMap<>();
