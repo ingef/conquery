@@ -81,8 +81,7 @@ public class ResultProcessor {
 				charset,
 				config.getCsv().getLineSeparator());
 			
-			ResponseBuilder response = makeResponseWithFileName(fileExtension, exec, out);
-			return response;
+			return makeResponseWithFileName(fileExtension, exec, out);
 		}
 		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
@@ -94,7 +93,7 @@ public class ResultProcessor {
 
 	private static ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
 		ResponseBuilder response = Response.ok(out);
-		String label = exec.getLabel();
+		String label = exec.getLabelWithoutAutoLabelSuffix();
 		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
