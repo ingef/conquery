@@ -51,19 +51,8 @@ public class ArrowRenderer {
 		int batchsize) throws IOException
 	{
 		// Test the execution if the result is renderable into one table
-		Stream<EntityResult> results;
-		List<ResultInfo> resultInfos;
-		if(exec instanceof ManagedQuery) {
-			results = ((ManagedQuery)exec).getResults().stream();
-			resultInfos = ((ManagedQuery)exec).collectResultInfos().getInfos();
-		}
-		else if(exec instanceof ManagedForm && ((ManagedForm)exec).getSubQueries().size() == 1) {
-			resultInfos = ((ManagedForm)exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
-			results = ((ManagedForm)exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
-		}
-		else {
-			throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
-		}
+		Stream<EntityResult> results = getResults(exec);
+		List<ResultInfo> resultInfos = getResultInfos(exec);
 		
 		// Combine id and value Fields to one vector to build a schema
 		List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
@@ -80,6 +69,35 @@ public class ArrowRenderer {
 		}
 		
 	}
+	
+	private static Stream<EntityResult> getResults(ManagedExecution<?> exec) {
+		Stream<EntityResult> results;
+		if(exec instanceof ManagedQuery) {
+			results = ((ManagedQuery)exec).getResults().stream();
+		}
+		else if(exec instanceof ManagedForm && ((ManagedForm)exec).getSubQueries().size() == 1) {
+			results = ((ManagedForm)exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
+		}
+		else {
+			throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
+		}
+		return results;
+	}
+	
+	private static List<ResultInfo> getResultInfos(ManagedExecution<?> exec) {
+		List<ResultInfo> resultInfos;
+		if(exec instanceof ManagedQuery) {
+			resultInfos = ((ManagedQuery)exec).collectResultInfos().getInfos();
+		}
+		else if(exec instanceof ManagedForm && ((ManagedForm)exec).getSubQueries().size() == 1) {
+			resultInfos = ((ManagedForm)exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
+		}
+		else {
+			throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
+		}
+		return resultInfos;
+	}
+	
 
 	public static void write(
 		ArrowWriter writer, 
@@ -198,11 +216,15 @@ public class ArrowRenderer {
 		
 		RowConsumer[] builder = new RowConsumer[numVectors];
 		
-		for (int vecI = vectorOffset, resultPos = 0; vecI < root.getFieldVectors().size() && vecI < vectorOffset + numVectors; vecI++, resultPos++) {
+		for (
+			int vecI = vectorOffset, resultPos = 0; 
+			( vecI < root.getFieldVectors().size() ) && ( vecI < vectorOffset + numVectors );
+			vecI++, resultPos++
+			) {
 			final int pos = resultPos;
 			final FieldVector vector = root.getVector(vecI);
-			
-                        //TODO When Pattern-matching lands, clean this up. (Think Java 12?)
+
+			//TODO When Pattern-matching lands, clean this up. (Think Java 12?)
 			if(vector instanceof IntVector) {
 				builder[resultPos]  = intVectorFiller((IntVector) vector, pos);
 				continue;
@@ -233,7 +255,7 @@ public class ArrowRenderer {
 				continue;
 			}
 			
-			throw new UnsupportedOperationException("Vector type for writing result: "+ vector.getClass());
+			throw new UnsupportedOperationException("Unsupported vector type for writing result: "+ vector.getClass());
 		}
 		return builder;
 		
