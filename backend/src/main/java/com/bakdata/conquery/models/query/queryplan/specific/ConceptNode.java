@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -20,19 +19,19 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Getter;
 
+@Getter
 public class ConceptNode extends QPChainNode {
 
 	private final ConceptElement<?>[] concepts;
 	private final long requiredBits;
 	private final CQTable table;
+	private final Set<SecondaryId> usedSecondaryIds;
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 	private boolean excludeFromSecondaryIdQuery;
-
-	private Set<SecondaryId> usedSecondaryIds = Collections.emptySet();
-
 
 	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, boolean excludeFromSecondaryIdQuery) {
 		super(child);
@@ -40,17 +39,17 @@ public class ConceptNode extends QPChainNode {
 		this.requiredBits = requiredBits;
 		this.table = table;
 		this.excludeFromSecondaryIdQuery = excludeFromSecondaryIdQuery;
+
+		usedSecondaryIds = Arrays.stream(getTable().getResolvedConnector().getTable().getColumns())
+								 .map(Column::getSecondaryId)
+								 .filter(Objects::nonNull)
+								 .collect(Collectors.toSet());
 	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(), table.getId());
-
-		usedSecondaryIds = Arrays.stream(table.getResolvedConnector().getTable().getColumns())
-			  .map(Column::getSecondaryId)
-			  .filter(Objects::nonNull)
-			  .collect(Collectors.toSet());
 	}
 
 	@Override
@@ -58,10 +57,15 @@ public class ConceptNode extends QPChainNode {
 		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable);
 
 		// deactivate us, if we are in a SecondaryIdQuery, and want to be excluded.
-		if (tableActive && excludeFromSecondaryIdQuery && usedSecondaryIds.contains(ctx.getActiveSecondaryId())) {
+		if (excludeFromSecondaryIdQuery && ctx.getSecondaryIdQueryPlanPhase() == QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId) {
 			tableActive = false;
 		}
-
+		// Deactivate us for table if we are in SecondaryId-Query, but not in phase for SecondaryIds.
+		if (!excludeFromSecondaryIdQuery
+			&& ctx.getSecondaryIdQueryPlanPhase() == QueryExecutionContext.SecondaryIdQueryPlanPhase.WithoutId
+			&& usedSecondaryIds.contains(ctx.getActiveSecondaryId())) {
+			tableActive = false;
+		}
 
 		if (tableActive) {
 			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);

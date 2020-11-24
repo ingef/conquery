@@ -31,11 +31,25 @@ public class QueryExecutionContext {
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
 
+
+	private SecondaryId activeSecondaryId = null;
 	/**
 	 * only set in the SecondaryIdQueryPlan, when we are also interested in SecondaryIds
  	 */
 	@Nullable
-	private SecondaryId activeSecondaryId;
+	private SecondaryIdQueryPlanPhase secondaryIdQueryPlanPhase = SecondaryIdQueryPlanPhase.None;
+
+	public static enum SecondaryIdQueryPlanPhase {
+		None,
+		/**
+		 * Query (or part of Query) is currently aggregating for SecondaryId.
+		 */
+		WithId,
+		/**
+		 * Query (or part of Query) is in a {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, but not aggregating for SecondaryIds.
+		 */
+		WithoutId
+	}
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId id) {
 		return bucketManager.getEntityBucketsForTable(entity, id);

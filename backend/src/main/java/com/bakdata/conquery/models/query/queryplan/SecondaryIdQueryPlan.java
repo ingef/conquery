@@ -45,6 +45,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 
+		ctx = ctx.withActiveSecondaryId(getSecondaryId());
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
@@ -56,7 +57,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		if (!query.isOfInterest(entity)) {
 			return EntityResult.notContained();
 		}
-
 
 		//first execute only tables with secondaryIds
 		for (Map.Entry<TableId, ColumnId> entry : tablesWithSecondaryId.entrySet()) {
@@ -89,7 +89,8 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, ColumnId secondaryIdColumnId) {
 
-		QueryExecutionContext myCtx = ctx.withActiveSecondaryId(secondaryId);
+		QueryExecutionContext myCtx = ctx.withSecondaryIdQueryPlanPhase(QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId)
+				;
 
 		TableId currentTable = secondaryIdColumnId.getTable();
 		final Column secondaryIdColumn = ctx.getStorage().getCentralRegistry().getOptional(secondaryIdColumnId).orElseThrow();
@@ -100,7 +101,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 		for (Bucket bucket : tableBuckets) {
 			int localEntity = bucket.toLocal(entity.getId());
-
 
 			nextBlock(bucket);
 
@@ -125,6 +125,8 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, TableId currentTable) {
+		ctx = ctx.withSecondaryIdQueryPlanPhase(QueryExecutionContext.SecondaryIdQueryPlanPhase.WithoutId);
+
 		nextTable(ctx, currentTable);
 
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
