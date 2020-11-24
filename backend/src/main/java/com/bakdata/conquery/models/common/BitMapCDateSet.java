@@ -588,7 +588,12 @@ public class BitMapCDateSet {
 	 * @param retained
 	 */
 	public void retainAll(BitMapCDateSet retained) {
-		if (isEmpty()) {
+		if (isEmpty() || retained.isAll()) {
+			return;
+		}
+
+		if(retained.isEmpty()){
+			clear();
 			return;
 		}
 
