@@ -10,6 +10,7 @@ import lombok.Getter;
 @CPSType(base = ColumnStore.class, id = "EMPTY")
 public class EmptyStore implements ColumnStore {
 
+	//TODO FK: Implement usage of this
 	@Getter(onMethod_ = JsonCreator.class)
 	private static EmptyStore Instance = new EmptyStore();
 
