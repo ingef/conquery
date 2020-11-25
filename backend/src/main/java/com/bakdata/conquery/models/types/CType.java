@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.types;
 import java.math.RoundingMode;
 import java.util.function.Consumer;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
@@ -16,6 +18,7 @@ import lombok.Setter;
 public abstract class CType<JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> implements MajorTypeIdHolder {
 
 	@JsonIgnore
+	@NotNull
 	private transient final MajorTypeId typeId;
 
 	private int lines = 0;

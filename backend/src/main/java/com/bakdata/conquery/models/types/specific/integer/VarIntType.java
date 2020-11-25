@@ -2,13 +2,14 @@ package com.bakdata.conquery.models.types.specific.integer;
 
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 
 @Getter
 public abstract class VarIntType extends CType<Long> {
 
 	public VarIntType() {
-		super(null);
+		super(MajorTypeId.INTEGER);
 	}
 
 	public abstract VarIntType select(int[] starts, int[] ends);
