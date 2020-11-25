@@ -35,7 +35,7 @@ public class DateRestrictingNode extends QPChainNode {
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		//if there was no date restriction we can just use the restriction BitMapCDateSet
 		final BitMapCDateSet restricted = CDateSetCache.createPreAllocatedDateSet();
-		restricted.addAll(restriction);
+		restricted.addAll(ctx.getDateRestriction());
 		restricted.retainAll(restriction);
 
 		ctx = ctx.withDateRestriction(restricted);
