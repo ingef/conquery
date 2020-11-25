@@ -46,7 +46,7 @@ public class DateRangeTypePacked extends CType<CDateRange> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
+	public long estimateMemoryFieldSize() {
 		return Integer.SIZE;
 	}
 

@@ -21,7 +21,7 @@ public class RealTypeDouble extends CType<Double> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
+	public long estimateMemoryFieldSize() {
 		return Double.SIZE;
 	}
 

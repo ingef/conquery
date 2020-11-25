@@ -26,7 +26,7 @@ public class IntegerTypeLong extends CType<Long> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
+	public long estimateMemoryFieldSize() {
 		return Long.SIZE;
 	}
 

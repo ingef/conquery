@@ -4,21 +4,34 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.Setter;
 
-@CPSType(id = "DATES", base = ColumnStore.class)
+
+@CPSType(base = ColumnStore.class, id = "DATES")
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
-public class DateStore extends ColumnStoreAdapter<Long> {
+@Setter
+public class DateStore extends CType<Integer> {
 
 	private final ColumnStore<Long> store;
 
 	@JsonCreator
 	public DateStore(ColumnStore<Long> store) {
+		super(MajorTypeId.DATE);
 		this.store = store;
+	}
+
+	@Override
+	public Object createScriptValue(Integer value) {
+		return CDate.toLocalDate(value);
+	}
+
+	@Override
+	public long estimateMemoryFieldSize() {
+		return Integer.BYTES;
 	}
 
 	public static DateStore create(int size) {
@@ -30,13 +43,13 @@ public class DateStore extends ColumnStoreAdapter<Long> {
 	}
 
 	@Override
-	public void set(int event, Long value) {
+	public void set(int event, Integer value) {
 		if (value == null) {
 			store.set(event, null);
 			return;
 		}
 
-		store.set(event, (long) value);
+		store.set(event, value.longValue());
 	}
 
 	@Override
@@ -46,12 +59,12 @@ public class DateStore extends ColumnStoreAdapter<Long> {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		return CDateRange.exactly(get(event).intValue());
+		return CDateRange.exactly(get(event));
 	}
 
 	@Override
-	public Long get(int event) {
-		return store.getInteger(event);
+	public Integer get(int event) {
+		return store.get(event).intValue();
 	}
 
 	@Override

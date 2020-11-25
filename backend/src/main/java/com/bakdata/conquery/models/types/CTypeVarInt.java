@@ -26,8 +26,8 @@ public abstract class CTypeVarInt<T extends Number> extends CType<T> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
-		return numberType.estimateMemoryBitWidth();
+	public long estimateMemoryFieldSize() {
+		return numberType.estimateMemoryFieldSize();
 	}
 
 	@Override

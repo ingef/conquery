@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.events.stores.base;
 
-import javax.validation.constraints.NotNull;
+import java.util.BitSet;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
@@ -15,29 +15,30 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class BooleanStore extends ColumnStoreAdapter<Boolean> {
 
-
-
-	@Getter
-	private final boolean[] values;
+	private final BitSet values;
 
 	@JsonCreator
-	public BooleanStore(@NotNull boolean[] values) {
+	public BooleanStore(BitSet values) {
 		super();
 		this.values = values;
 	}
 
 	public static BooleanStore create(int size) {
-		return new BooleanStore(new boolean[size]);
+		return new BooleanStore(new BitSet(size));
 	}
 
 	public BooleanStore select(int[] starts, int[] ends) {
-		// todo use bitset
-		return new BooleanStore(ColumnStore.selectArray(starts, ends, values, boolean[]::new));
+		return new BooleanStore(ColumnStore.selectArray(starts, ends, values, BitSet::new));
 	}
 
 	@Override
 	public void set(int event, Boolean value) {
-		values[event] = value;
+		if (value == null) {
+			set(event, false);
+			return;
+		}
+
+		values.set(event, value);
 	}
 
 	@Override
@@ -47,6 +48,6 @@ public class BooleanStore extends ColumnStoreAdapter<Boolean> {
 
 	@Override
 	public Boolean get(int event) {
-		return values[event];
+		return values.get(event);
 	}
 }

@@ -30,7 +30,7 @@ public class DateRangeTypeQuarter extends CType<CDateRange> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
+	public long estimateMemoryFieldSize() {
 		return Integer.SIZE;
 	}
 

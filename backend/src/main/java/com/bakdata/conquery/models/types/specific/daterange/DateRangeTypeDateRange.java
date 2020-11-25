@@ -33,7 +33,7 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
+	public long estimateMemoryFieldSize() {
 		return 128 + Long.SIZE;
 	}
 

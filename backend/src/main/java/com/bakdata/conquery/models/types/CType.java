@@ -41,7 +41,7 @@ public abstract class CType<JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> imp
 
 
 	public long estimateMemoryConsumption() {
-		long width = estimateMemoryBitWidth();
+		long width = estimateMemoryFieldSize();
 
 		return LongMath.divide(
 			(lines-nullLines) * width + nullLines * Math.min(Long.SIZE, width),
@@ -49,7 +49,7 @@ public abstract class CType<JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> imp
 		); 
 	}
 
-	public abstract long estimateMemoryBitWidth();
+	public abstract long estimateMemoryFieldSize();
 	
 	public long estimateTypeSize() {
 		return 0;

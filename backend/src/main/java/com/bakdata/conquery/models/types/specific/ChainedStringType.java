@@ -40,8 +40,8 @@ public abstract class ChainedStringType extends StringType {
 	}
 	
 	@Override
-	public long estimateMemoryBitWidth() {
-		return subType.estimateMemoryBitWidth();
+	public long estimateMemoryFieldSize() {
+		return subType.estimateMemoryFieldSize();
 	}
 	
 	@Override

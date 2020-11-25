@@ -35,8 +35,8 @@ public class DecimalTypeScaled extends CType<BigDecimal> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
-		return subType.estimateMemoryBitWidth();
+	public long estimateMemoryFieldSize() {
+		return subType.estimateMemoryFieldSize();
 	}
 
 	@Override

@@ -44,8 +44,8 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
-		return delegate.estimateMemoryBitWidth();
+	public long estimateMemoryFieldSize() {
+		return delegate.estimateMemoryFieldSize();
 	}
 
 	@Override

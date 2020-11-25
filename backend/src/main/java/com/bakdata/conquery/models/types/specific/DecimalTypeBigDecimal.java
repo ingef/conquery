@@ -22,7 +22,7 @@ public class DecimalTypeBigDecimal extends CType<BigDecimal> {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
+	public long estimateMemoryFieldSize() {
 		return 500;
 	}
 

@@ -27,7 +27,7 @@ public class VarIntTypeShort extends VarIntType {
 	}
 
 	@Override
-	public long estimateMemoryBitWidth() {
+	public long estimateMemoryFieldSize() {
 		return Short.SIZE;
 	}
 }

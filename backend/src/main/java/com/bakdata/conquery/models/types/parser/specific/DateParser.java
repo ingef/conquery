@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.stores.base.DateStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.specific.date.DateTypeVarInt;
 import com.bakdata.conquery.util.DateFormats;
 import lombok.ToString;
 
@@ -39,8 +38,8 @@ public class DateParser extends Parser<Integer> {
 	}
 
 	@Override
-	protected DateTypeVarInt decideType() {
+	protected DateStore decideType() {
 		CType<Long> subDecision = subType.findBestType();
-		return new DateTypeVarInt(new DateStore(subDecision));
+		return new DateStore(subDecision);
 	}
 }
