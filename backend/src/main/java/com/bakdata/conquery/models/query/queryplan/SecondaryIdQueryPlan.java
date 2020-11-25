@@ -22,7 +22,11 @@ import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * This class is able to execute a typical ConceptQueryPlan, but will create
- * one result per distinct value in a secondaryId Column.
+ * one result per distinct value in a {@link SecondaryId} Column.
+ *
+ * @implNote This class will first execute the Query on all Tables carrying the selected {@link SecondaryId}. Which will then be joined with all Tables that don't have a {@link SecondaryId}, or are explicitly excluded (via {@link com.bakdata.conquery.models.query.concept.specific.CQConcept#excludeFromSecondaryIdQuery}.
+ *
+ * This Query likely uses a lot of memory!
  */
 @RequiredArgsConstructor
 @Getter
@@ -32,7 +36,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	private final ConceptQueryPlan query;
 	private final SecondaryId secondaryId;
 
-	private final Map<TableId, ColumnId> tablesWithSecondaryId;
+	private final Set<ColumnId> tablesWithSecondaryId;
 	private final Set<TableId> tablesWithoutSecondaryId;
 
 	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
@@ -58,9 +62,9 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 			return EntityResult.notContained();
 		}
 
-		//first execute only tables with secondaryIds
-		for (Map.Entry<TableId, ColumnId> entry : tablesWithSecondaryId.entrySet()) {
-			executeQueriesWithSecondaryId(ctx, entity, entry.getValue());
+		//first execute only tables with secondaryIds, creating all sub-queries
+		for (ColumnId entry : tablesWithSecondaryId) {
+			executeQueriesWithSecondaryId(ctx, entity, entry);
 		}
 		//afterwards the remaining tables, since we now spawned all children
 		for (TableId currentTable : tablesWithoutSecondaryId) {
@@ -70,6 +74,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 		List<Object[]> result = new ArrayList<>(childPerKey.values().size());
 
+		// Prepend the key (ie the actual SecondaryId) to the result.
 		for (Map.Entry<String, ConceptQueryPlan> child : childPerKey.entrySet()) {
 			if (!child.getValue().isContained()) {
 				continue;
@@ -89,13 +94,13 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, ColumnId secondaryIdColumnId) {
 
-		QueryExecutionContext myCtx = ctx.withSecondaryIdQueryPlanPhase(QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId)
+		QueryExecutionContext ctxWithPhase = ctx.withSecondaryIdQueryPlanPhase(QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId)
 				;
 
 		TableId currentTable = secondaryIdColumnId.getTable();
 		final Column secondaryIdColumn = ctx.getStorage().getCentralRegistry().getOptional(secondaryIdColumnId).orElseThrow();
 
-		nextTable(myCtx, currentTable);
+		nextTable(ctxWithPhase, currentTable);
 
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
@@ -118,7 +123,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 				}
 
 				String key = ((String) bucket.createScriptValue(event, secondaryIdColumn));
-				childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumn, myCtx, bucket))
+				childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumn, ctxWithPhase, bucket))
 						   .nextEvent(bucket, event);
 			}
 		}

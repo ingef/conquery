@@ -32,6 +32,9 @@ public class QueryExecutionContext {
 	private final BucketManager bucketManager;
 
 
+	/**
+	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryId}.
+	 */
 	private SecondaryId activeSecondaryId = null;
 	/**
 	 * only set in the SecondaryIdQueryPlan, when we are also interested in SecondaryIds

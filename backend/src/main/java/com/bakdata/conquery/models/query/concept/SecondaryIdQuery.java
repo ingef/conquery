@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.query.concept;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -62,7 +60,7 @@ public class SecondaryIdQuery extends IQuery {
 
 		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
 
-		Map<TableId, ColumnId> withSecondaryId = new HashMap<>();
+		Set<ColumnId> withSecondaryId = new HashSet<>();
 		Set<TableId> withoutSecondaryId = new HashSet<>();
 
 		// partition tables by their holding of the requested SecondaryId.
@@ -79,7 +77,7 @@ public class SecondaryIdQuery extends IQuery {
 				final Column secondaryIdColumn = findSecondaryIdColumn(table);
 
 				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryIdQuery()) {
-					withSecondaryId.put(table.getId(), secondaryIdColumn.getId());
+					withSecondaryId.add(secondaryIdColumn.getId());
 				}
 				else {
 					withoutSecondaryId.add(table.getId());
