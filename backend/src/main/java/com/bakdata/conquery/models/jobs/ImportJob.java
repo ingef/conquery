@@ -209,10 +209,6 @@ public class ImportJob extends Job {
 			log.debug("{} new ids", primaryMapping.getNumberOfNewIds());
 
 			namespace.getStorage().updateDictionary(primaryDict);
-
-			log.debug("sending");
-
-			namespace.sendToAll(new UpdateDictionary(primaryDict));
 		}
 		return primaryMapping;
 	}
