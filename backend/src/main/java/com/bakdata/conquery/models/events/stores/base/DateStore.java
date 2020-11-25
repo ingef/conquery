@@ -12,7 +12,7 @@ import lombok.ToString;
 @CPSType(id = "DATES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DateStore extends ColumnStoreAdapter<Integer> {
+public class DateStore extends ColumnStoreAdapter<Long> {
 
 	private final ColumnStore<Long> store;
 
@@ -30,7 +30,7 @@ public class DateStore extends ColumnStoreAdapter<Integer> {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void set(int event, Long value) {
 		if (value == null) {
 			store.set(event, null);
 			return;
@@ -46,12 +46,12 @@ public class DateStore extends ColumnStoreAdapter<Integer> {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		return CDateRange.exactly(get(event));
+		return CDateRange.exactly(get(event).intValue());
 	}
 
 	@Override
-	public Integer get(int event) {
-		return (int) store.getInteger(event);
+	public Long get(int event) {
+		return store.getInteger(event);
 	}
 
 	@Override

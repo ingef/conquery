@@ -14,6 +14,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "DATE_COMPRESSED")
 @Getter
 @Setter
+// todo unify with DateStore
 public class DateTypeVarInt extends CType<Long> {
 
 	private final DateStore store;
@@ -41,13 +42,8 @@ public class DateTypeVarInt extends CType<Long> {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void set(int event, Long value) {
 		store.set(event, value);
-	}
-
-	@Override
-	public Integer get(int event) {
-		return store.get(event);
 	}
 
 	@Override
@@ -57,6 +53,11 @@ public class DateTypeVarInt extends CType<Long> {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		return CDateRange.exactly(get(event));
+		return store.getDateRange(event);
+	}
+
+	@Override
+	public Long get(int event) {
+		return store.get(event);
 	}
 }
