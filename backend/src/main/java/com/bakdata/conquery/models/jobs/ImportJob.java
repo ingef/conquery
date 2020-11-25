@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
@@ -126,46 +127,51 @@ public class ImportJob extends Job {
 
 
 		// per incoming bucket:
-		// 	- remap Entity-Ids to global
-		// 	- calculate per-Entity regions (start/end)
-		// 	- split stores
-		// 	- send store to responsible workers
+
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
-			int currentBucket = bucket2entities.getKey();
-			final List<Integer> entities = bucket2entities.getValue();
-
-			int[] globalIds = entities.stream().mapToInt(primaryMapping::source2Target).toArray();
-
-			int[] selectionStart = entities.stream().mapToInt(starts::get).toArray();
-			final Map<Integer, Integer> lengths = container.getLengths();
-			int[] entityLengths = entities.stream().mapToInt(lengths::get).toArray();
-
-			// First entity of Bucket starts at 0, the following are appended.
-			int[] entityStarts = Arrays.copyOf(entityLengths, entityLengths.length);
-			entityStarts[0] = 0;
-			for (int index = 1; index < entityLengths.length; index++) {
-				entityStarts[index] = entityStarts[index - 1] + entityLengths[index - 1];
-			}
-
-			// copy only the parts of the bucket we need
-			final CType<?>[] bucketStores =
-					Arrays.stream(stores)
-						  .map(store -> store.select(selectionStart, entityLengths))
-						  .toArray(CType<?>[]::new);
-
-
-			sendBucket(new Bucket(
-					currentBucket,
-					outImport.getId(),
-					Arrays.stream(entityLengths).sum(),
-					bucketStores,
-					new Int2IntArrayMap(globalIds, entityStarts),
-					new Int2IntArrayMap(globalIds, entityLengths),
-					globalIds.length
-			));
-
+			final Bucket bucket =
+					selectBucket(starts, container.getLengths(), stores, primaryMapping, outImport.getId(), bucket2entities.getKey(), bucket2entities.getValue());
+			sendBucket(bucket);
 		}
 
+	}
+
+	/**
+	 * - remap Entity-Ids to global
+	 * - calculate per-Entity regions (start/end)
+	 * - split stores
+	 * - send store to responsible workers
+	 */
+	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, CType<?>[] stores, DictionaryMapping primaryMapping, ImportId importId, int bucketId, List<Integer> bucketEntities) {
+
+		int[] globalIds = bucketEntities.stream().mapToInt(primaryMapping::source2Target).toArray();
+
+		int[] selectionStart = bucketEntities.stream().mapToInt(starts::get).toArray();
+		int[] entityLengths = bucketEntities.stream().mapToInt(lengths::get).toArray();
+
+		// First entity of Bucket starts at 0, the following are appended.
+		int[] entityStarts = Arrays.copyOf(entityLengths, entityLengths.length);
+		entityStarts[0] = 0;
+		for (int index = 1; index < entityLengths.length; index++) {
+			entityStarts[index] = entityStarts[index - 1] + entityLengths[index - 1];
+		}
+
+		// copy only the parts of the bucket we need
+		final CType<?>[] bucketStores =
+				Arrays.stream(stores)
+					  .map(store -> store.select(selectionStart, entityLengths))
+					  .toArray(CType<?>[]::new);
+
+
+		return new Bucket(
+				bucketId,
+				importId,
+				Arrays.stream(entityLengths).sum(),
+				bucketStores,
+				new Int2IntArrayMap(globalIds, entityStarts),
+				new Int2IntArrayMap(globalIds, entityLengths),
+				globalIds.length
+		);
 	}
 
 	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
