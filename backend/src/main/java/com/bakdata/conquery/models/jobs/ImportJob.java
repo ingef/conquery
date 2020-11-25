@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -100,7 +101,7 @@ public class ImportJob extends Job {
 		final Table table = namespace.getStorage().getDataset().getTables().get(this.tableId);
 		final CType<?>[] stores = container.getValues();
 
-		// todo use a constant
+
 		// Update primary dictionary: load new data, and create mapping.
 		DictionaryMapping primaryMapping = importPrimaryDictionary(container.getPrimaryDictionary());
 
@@ -242,6 +243,12 @@ public class ImportJob extends Job {
 
 	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, CType<?>[] stores)
 			throws JSONException {
+
+		// Empty Maps are Coalesced to null by Jackson
+		if(dicts == null){
+			return Collections.emptyMap();
+		}
+
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
 		log.debug("Import contains Dictionaries = {}", dicts);
@@ -256,7 +263,7 @@ public class ImportJob extends Job {
 
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
-			if (!dicts.containsKey(column.getName())) {
+			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
 				log.trace("No Dictionary for Column[{}]", column);
 				continue;
 			}

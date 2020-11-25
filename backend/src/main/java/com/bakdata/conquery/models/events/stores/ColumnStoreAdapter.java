@@ -3,11 +3,14 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.math.BigDecimal;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
 
 public abstract class ColumnStoreAdapter<T> implements ColumnStore<T> {
 
+	@NotNull
 	public abstract T get(int event);
 
 	@Override

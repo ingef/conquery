@@ -13,7 +13,7 @@ import com.bakdata.conquery.util.DateFormats;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class DateParser extends Parser<Long> {
+public class DateParser extends Parser<Integer> {
 
 	private IntegerParser subType = new IntegerParser();
 
@@ -22,14 +22,18 @@ public class DateParser extends Parser<Long> {
 	}
 
 	@Override
-	protected Long parseValue(@Nonnull String value) throws ParsingException {
-		return (long) CDate.ofLocalDate(DateFormats.parseToLocalDate(value));
+	protected Integer parseValue(@Nonnull String value) throws ParsingException {
+		return CDate.ofLocalDate(DateFormats.parseToLocalDate(value));
 	}
 
 	@Override
-	public Long addLine(Long v) {
+	public Integer addLine(Integer v) {
 		super.addLine(v);
-		return subType.addLine(v);
+		if (v != null) {
+			return subType.addLine(v.longValue()).intValue();
+		}
+
+		return null;
 	}
 
 	@Override

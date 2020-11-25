@@ -10,6 +10,7 @@ import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.HCFile;
@@ -130,19 +131,21 @@ public class Preprocessed {
 
 		log.info("finding optimal column types");
 
-
 		primaryColumn.setEncoding(StringTypeEncoded.Encoding.UTF8);
 
+		// todo this doesn't actually do anything useful
 		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
 		log.info("\tPrimaryColumn -> {}", primaryDictionary);
-
-		// todo fix name
-
 
 		for (int i = 0; i < cTypes.length; i++) {
 			CType column = cTypes[i];
 			final String colName = columns[i].getName();
-			((CType<?>) column).storeExternalInfos(dict -> dicts.put(colName, dict));
+
+			if (!(column instanceof StringType)) {
+				continue;
+			}
+
+			dicts.put(colName, ((StringType) column).getUnderlyingDictionary());
 		}
 
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {
@@ -199,6 +202,7 @@ public class Preprocessed {
 
 		@NotNull
 		private final Dictionary primaryDictionary;
+		@CheckForNull
 		private final Map<String, Dictionary> dictionaries;
 
 		@JsonIgnore

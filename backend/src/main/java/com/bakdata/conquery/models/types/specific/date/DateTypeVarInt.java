@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 // todo unify with DateStore
-public class DateTypeVarInt extends CType<Long> {
+public class DateTypeVarInt extends CType<Integer> {
 
 	private final DateStore store;
 
@@ -26,8 +26,8 @@ public class DateTypeVarInt extends CType<Long> {
 	}
 
 	@Override
-	public Object createScriptValue(Long value) {
-		return CDate.toLocalDate(value.intValue());
+	public Object createScriptValue(Integer value) {
+		return CDate.toLocalDate(value);
 	}
 
 	@Override
@@ -42,8 +42,13 @@ public class DateTypeVarInt extends CType<Long> {
 	}
 
 	@Override
-	public void set(int event, Long value) {
-		store.set(event, value);
+	public void set(int event, Integer value) {
+		if(value == null){
+			store.set(event,null);
+			return;
+		}
+
+		store.set(event, value.longValue());
 	}
 
 	@Override
@@ -57,7 +62,7 @@ public class DateTypeVarInt extends CType<Long> {
 	}
 
 	@Override
-	public Long get(int event) {
-		return store.get(event);
+	public Integer get(int event) {
+		return store.get(event).intValue();
 	}
 }

@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.function.Function;
 
+import javax.annotation.CheckForNull;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -32,11 +35,12 @@ public interface ColumnStore<T> {
 	/**
 	 * Set the event. If null, the store will store a null value.
 	 */
-	void set(int event, T value);
+	void set(int event, @CheckForNull T value);
 
 	/**
 	 * Try and retrieve a value if there is one present. Is only valid, if {@linkplain ColumnStore#has(int)} is true.
 	 */
+	@NotNull
 	T get(int event);
 
 	boolean has(int event);

@@ -11,7 +11,7 @@ import lombok.Getter;
 public class EmptyStore implements ColumnStore {
 
 	//TODO FK: Implement usage of this
-	@Getter(onMethod_ = JsonCreator.class)
+	@Getter(onMethod_ = {@JsonCreator})
 	private static EmptyStore Instance = new EmptyStore();
 
 	private EmptyStore(){
