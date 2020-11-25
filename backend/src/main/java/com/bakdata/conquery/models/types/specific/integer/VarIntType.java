@@ -31,8 +31,6 @@ public abstract class VarIntType extends CType<Long> {
 		return getDelegate().has(event);
 	}
 
-	public abstract int toInt(Long value);
-
 	@Override
 	public Integer createScriptValue(Long value) {
 		return value.intValue();

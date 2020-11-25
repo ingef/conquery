@@ -28,11 +28,6 @@ public class VarIntTypeByte extends VarIntType {
 	}
 
 	@Override
-	public int toInt(Long value) {
-		return value.byteValue();
-	}
-
-	@Override
 	public long estimateMemoryBitWidth() {
 		return Byte.SIZE;
 	}
