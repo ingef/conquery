@@ -96,38 +96,9 @@ public class Preprocessed {
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
-		CType[] cTypes = new CType[columns.length];
+		calculateEntitySpans(entityStart, entityLength);
 
-		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
-			final PPColumn ppColumn = this.columns[colIdx];
-
-			final CType store = ppColumn.findBestType();
-
-			Map<Integer, List> values = entries.row(colIdx);
-			int start = 0;
-
-			// TODO compute start length first once, instead of doing it on-line, it makes the code hard to read
-
-			for (Integer entity : entries.columnKeySet()) {
-				List entityValues = values.get(entity);
-				int length = values.get(entity).size();
-
-				entityStart.put(entity.intValue(), start);
-
-				for (int event = 0; event < length; event++) {
-					store.set(start + event, entityValues.get(event));
-				}
-
-				entityLength.put(entity.intValue(), length);
-
-				start += length;
-			}
-
-			cTypes[colIdx] = store;
-		}
-
-		Map<String, Dictionary> dicts = new HashMap<>();
-
+		CType[] cTypes = combineStores();
 
 		log.info("finding optimal column types");
 
@@ -137,16 +108,7 @@ public class Preprocessed {
 		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
 		log.info("\tPrimaryColumn -> {}", primaryDictionary);
 
-		for (int i = 0; i < cTypes.length; i++) {
-			CType column = cTypes[i];
-			final String colName = columns[i].getName();
-
-			if (!(column instanceof StringType)) {
-				continue;
-			}
-
-			dicts.put(colName, ((StringType) column).getUnderlyingDictionary());
-		}
+		Map<String, Dictionary> dicts = collectDictionaries(cTypes, columns);
 
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {
 			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, cTypes, primaryDictionary, dicts));
@@ -172,6 +134,70 @@ public class Preprocessed {
 				throw new RuntimeException("Failed to serialize header " + header, e);
 			}
 		}
+	}
+
+	/**
+	 * Combine by-Entity data into column stores, appropriately formatted.
+	 */
+	@SuppressWarnings("rawtypes")
+	public CType[] combineStores() {
+		CType<?>[] cTypes = new CType[columns.length];
+
+		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
+			final PPColumn ppColumn = this.columns[colIdx];
+
+			final CType store = ppColumn.findBestType();
+
+			Map<Integer, List> values = entries.row(colIdx);
+			int start = 0;
+
+			for (int entity : entries.columnKeySet()) {
+				List entityValues = values.get(entity);
+				int length = values.get(entity).size();
+
+				for (int event = 0; event < length; event++) {
+					store.set(start + event, entityValues.get(event));
+				}
+
+				start += length;
+			}
+
+			cTypes[colIdx] = store;
+		}
+		return cTypes;
+	}
+
+	public void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
+		Map<Integer, List> values = entries.row(0);
+		int start = 0;
+
+		// TODO compute start length first once, instead of doing it on-line, it makes the code hard to read
+
+		for (Integer entity : entries.columnKeySet()) {
+			int length = values.get(entity).size();
+
+			entityStart.put(entity.intValue(), start);
+			entityLength.put(entity.intValue(), length);
+
+			start += length;
+		}
+	}
+
+	public static Map<String, Dictionary> collectDictionaries(CType<?>[] cTypes, PPColumn[] columns) {
+		Map<String, Dictionary> dicts = new HashMap<>();
+
+
+		for (int i = 0; i < cTypes.length; i++) {
+			CType<?> column = cTypes[i];
+			final String colName = columns[i].getName();
+
+			if (!(column instanceof StringType)) {
+				continue;
+			}
+
+			dicts.put(colName, ((StringType) column).getUnderlyingDictionary());
+		}
+		return dicts;
 	}
 
 	public synchronized int addPrimary(int primary) {

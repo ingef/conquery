@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
@@ -47,7 +48,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 	@Override
 	protected CType<BigDecimal> decideType() {
 		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
-			return new DecimalTypeBigDecimal(DecimalStore.create(getLines()));
+			return new DecimalTypeBigDecimal(EmptyStore.getInstance());
 		}
 
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);

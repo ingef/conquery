@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,10 +13,10 @@ import lombok.Getter;
 @Getter
 public class DecimalTypeBigDecimal extends CType<BigDecimal> {
 
-	private final DecimalStore store;
+	private final ColumnStore<BigDecimal> store;
 
 	@JsonCreator
-	public DecimalTypeBigDecimal(DecimalStore store) {
+	public DecimalTypeBigDecimal(ColumnStore<BigDecimal> store) {
 		super(MajorTypeId.DECIMAL);
 		this.store = store;
 	}

@@ -4,15 +4,16 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Getter;
 
 @CPSType(base = ColumnStore.class, id = "EMPTY")
-public class EmptyStore implements ColumnStore {
+public class EmptyStore<T> implements ColumnStore<T> {
 
 	//TODO FK: Implement usage of this
-	@Getter(onMethod_ = {@JsonCreator})
-	private static EmptyStore Instance = new EmptyStore();
+	private static final EmptyStore INSTANCE = new EmptyStore();
+
+	public static <T> EmptyStore<T> getInstance() {
+		return (EmptyStore<T>) INSTANCE;
+	}
 
 	private EmptyStore(){
 
@@ -24,12 +25,12 @@ public class EmptyStore implements ColumnStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
+	public void set(int event, T value) {
 
 	}
 
 	@Override
-	public Object get(int event) {
+	public T get(int event) {
 		return null;
 	}
 

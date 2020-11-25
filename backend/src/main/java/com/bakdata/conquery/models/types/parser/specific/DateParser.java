@@ -28,12 +28,14 @@ public class DateParser extends Parser<Integer> {
 
 	@Override
 	public Integer addLine(Integer v) {
-		super.addLine(v);
-		if (v != null) {
-			return subType.addLine(v.longValue()).intValue();
+		if(v == null){
+			subType.addLine(null);
+			return super.addLine(null);
 		}
 
-		return null;
+		super.addLine(v);
+
+		return subType.addLine(v.longValue()).intValue();
 	}
 
 	@Override
