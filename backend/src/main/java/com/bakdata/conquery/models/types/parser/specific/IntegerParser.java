@@ -12,9 +12,12 @@ import com.bakdata.conquery.models.types.specific.integer.VarIntTypeByte;
 import com.bakdata.conquery.models.types.specific.integer.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.integer.VarIntTypeShort;
 import com.bakdata.conquery.util.NumberParsing;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @ToString(callSuper = true)
+@Getter @Setter
 public class IntegerParser extends Parser<Long> {
 
 	private long maxValue = Long.MIN_VALUE;

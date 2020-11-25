@@ -4,7 +4,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
-import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.util.PackedUnsigned1616;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -15,15 +14,15 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class PackedDateRangeStore extends ColumnStoreAdapter<CDateRange> {
 
-	private final IntegerStore store;
+	private final ColumnStore<Long> store;
 
 	@JsonCreator
-	public PackedDateRangeStore(IntegerStore store) {
+	public PackedDateRangeStore(ColumnStore<Long> store) {
 		this.store = store;
 	}
 
-	public static PackedDateRangeStore create(int size) {
-		return new PackedDateRangeStore(IntegerStore.create(size));
+	public static PackedDateRangeStore create(ColumnStore<Long> store) {
+		return new PackedDateRangeStore(store);
 	}
 
 	public PackedDateRangeStore select(int[] starts, int[] ends) {

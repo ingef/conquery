@@ -11,6 +11,9 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+/**
+ * @param <T> the Uppermost format of this type. NOT the storage type.
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @CPSBase
 public interface ColumnStore<T> {
