@@ -2,20 +2,23 @@ package com.bakdata.conquery.models.exceptions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 
-import io.dropwizard.logback.shaded.guava.base.Optional;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 
 @UtilityClass
+@Slf4j
 public final class ValidatorHelper {
 	
-	private static final String VERTICAL_DIVIDER = "------------------------------------\n";
+	private static final String VERTICAL_DIVIDER = "\n------------------------------------";
 
 	public static void failOnError(Logger log, Set<? extends ConstraintViolation<?>> violations) {
 		failOnError(log, violations, null);
@@ -23,12 +26,27 @@ public final class ValidatorHelper {
 	
 	public static <V extends ConstraintViolation<?>> void failOnError(Logger log, Set<V> violations, String context) {
 		
-		// Wrap grouper in Optional to also catch null values.
-		Map<Optional<Object>, List<V>> mapByLeaf = violations.stream().collect(Collectors.groupingBy(v -> Optional.of(v.getLeafBean())));
+		Map<Optional<Object>, List<V>> mapByRoot = violations.stream().collect(Collectors.groupingBy(v -> Optional.of(v.getRootBean())));
 		
+		// Wrap grouper in Optional to also catch null values.
 		// Combine all leaf fail reports into a single exception.
-		if(!mapByLeaf.isEmpty()) {
-			throw new ValidationException(mapByLeaf.entrySet().stream().map(ValidatorHelper::createViolationString).collect(Collectors.joining(VERTICAL_DIVIDER)));			
+		if(!mapByRoot.isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			for(Entry<Optional<Object>, List<V>> entry : mapByRoot.entrySet()) {
+				Object root = entry.getKey().orElse(null);
+				if(root != null) {					
+					sb.append("\nValidation failed on: ").append(root.getClass());
+					if(log.isTraceEnabled() &&  root != null) {
+						sb.append("(").append(root.toString()).append(")");
+					}
+				}
+				Map<Optional<Object>, List<V>> mapByLeaf = entry.getValue().stream().collect(Collectors.groupingBy(v -> Optional.of(v.getLeafBean())));
+					sb.append(
+						mapByLeaf.entrySet().stream().map(ValidatorHelper::createViolationString).collect(Collectors.joining("")
+					));
+				
+			}
+			throw new ValidationException(sb.toString());
 		}
 	}
 	
@@ -36,28 +54,23 @@ public final class ValidatorHelper {
 	 * Combines all violations for a given leaf object and gives the path to the root object if possible.
 	 */
 	private static <V extends ConstraintViolation<?>> String createViolationString(Map.Entry<Optional<Object>, List<V>> objectToViolation) {
-		Object leaf = objectToViolation.getKey().orNull();
+		Object leaf = objectToViolation.getKey().orElse(null);
 		List<V> violations = objectToViolation.getValue();
-		V firstViolation = violations.get(0);
+		StringBuilder sb = new StringBuilder();
 		
 		if(leaf == null) {
 			// If validations are not directly mappable to an object, directly return the violation messages.
-			return violations.stream().map(ConstraintViolation::getMessage).collect(Collectors.joining("\n"));
+			return violations.stream().map(ConstraintViolation::getMessage).collect(Collectors.joining("\n\t"));
 		}
 		
 		// Build report for a specific failing leaf.
-		StringBuilder sb = new StringBuilder();
-		sb.append("\nThe object of type ").append(leaf.getClass()).append(" caused the following problem(s):\n");
+		if(log.isTraceEnabled()) {
+			sb.append("\n\tFor the leaf type '").append(leaf.getClass()).append("':");
+		}
 		for(V violation : violations) {
 			// List all the violations for the specific leaf. 
-			sb.append("\t- ").append(violation.getMessage()).append("\n");
+			sb.append("\n\t\t- ").append(violation.getPropertyPath()).append(": ").append(violation.getMessage()).append("");
 		}
-		if(firstViolation.getRootBean() != null && !firstViolation.getRootBean().equals(firstViolation.getLeafBean())) {
-			// Extract the path to the failing leaf from the root object.
-			sb.append("The object was nested in an object of type ").append(firstViolation.getRootBean().getClass()).append(" through the path ").append(firstViolation.getPropertyPath()).append("\n");
-		}
-		// Its maybe helpful to see what the failing leaf looks like.
-		sb.append("String representation of the failing object:\n").append(leaf);
 		return sb.toString();
 	}
 }
