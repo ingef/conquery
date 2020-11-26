@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
