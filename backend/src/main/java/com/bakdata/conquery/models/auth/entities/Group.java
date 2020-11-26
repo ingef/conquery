@@ -4,9 +4,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -18,10 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
-	@MetaIdRefCollection
-	private Set<User> members = Collections.synchronizedSet(new HashSet<>());
-	@MetaIdRefCollection
-	private Set<Role> roles = Collections.synchronizedSet(new HashSet<>());
+	@JsonProperty
+	private Set<UserId> members = Collections.synchronizedSet(new HashSet<>());
+	@JsonProperty
+	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
 	public Group(String name, String label) {
 		super(name, label);
@@ -38,42 +40,42 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public void addMember(MetaStorage storage, User user) {
-		if(members.add(user)) {
+		if(members.add(user.getId())) {
 			log.trace("Added user {} to group {}", user.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
 	public void removeMember(MetaStorage storage, User user) {
-		if(members.remove(user)) {
+		if(members.remove(user.getId())) {
 			log.trace("Removed user {} from group {}", user.getId(), getId());				
 			updateStorage(storage);
 		}
 	}
 
 	public boolean containsMember(User user) {
-		return members.contains(user);
+		return members.contains(user.getId());
 	}
 
-	public Set<User> getMembers() {
+	public Set<UserId> getMembers() {
 		return Collections.unmodifiableSet(members);
 	}
 
 	public void addRole(MetaStorage storage, Role role) {
-		if (roles.add(role)) {
+		if (roles.add(role.getId())) {
 			log.trace("Added role {} to group {}", role.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
 	public void removeRole(MetaStorage storage, Role role) {
-		if (roles.remove(role)) {
+		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from group {}", role.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public Set<Role> getRoles() {
+	public Set<RoleId> getRoles() {
 		return Collections.unmodifiableSet(roles);
 	}
 }
