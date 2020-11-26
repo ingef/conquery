@@ -52,15 +52,15 @@ public class IntegerParser extends Parser<Long> {
 
 		// max value is reserved for NULL
 		if (span + 1 < Byte.MAX_VALUE - Byte.MIN_VALUE) {
-			return new IntegerType(new RebasingStore(minValue - Byte.MIN_VALUE, ByteStore.create(getLines())));
+			return new IntegerType(new RebasingStore(minValue - (long) Byte.MIN_VALUE, ByteStore.create(getLines())));
 		}
 
 		if (span + 1 < Short.MAX_VALUE - Short.MIN_VALUE) {
-			return new IntegerType(new RebasingStore(minValue - Short.MIN_VALUE, ShortStore.create(getLines())));
+			return new IntegerType(new RebasingStore(minValue - (long) Short.MIN_VALUE, ShortStore.create(getLines())));
 		}
 
 		if (span + 1 < (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE) {
-			return new IntegerType(new RebasingStore(minValue - Integer.MIN_VALUE, IntegerStore.create(getLines())));
+			return new IntegerType(new RebasingStore(minValue - (long) Integer.MIN_VALUE, IntegerStore.create(getLines())));
 		}
 
 		return new IntegerType(LongStore.create(getLines()));

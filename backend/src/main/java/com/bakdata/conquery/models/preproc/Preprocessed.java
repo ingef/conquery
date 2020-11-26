@@ -100,13 +100,7 @@ public class Preprocessed {
 
 		CType[] cTypes = combineStores();
 
-		log.info("finding optimal column types");
-
-		primaryColumn.setEncoding(StringTypeEncoded.Encoding.UTF8);
-
-		// todo this doesn't actually do anything useful
-		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
-		log.info("\tPrimaryColumn -> {}", primaryDictionary);
+		Dictionary primaryDictionary = encodePrimaryDictionary();
 
 		Map<String, Dictionary> dicts = collectDictionaries(cTypes, columns);
 
@@ -134,6 +128,17 @@ public class Preprocessed {
 				throw new RuntimeException("Failed to serialize header " + header, e);
 			}
 		}
+	}
+
+	public Dictionary encodePrimaryDictionary() {
+		log.info("finding optimal column types");
+
+		primaryColumn.setEncoding(StringTypeEncoded.Encoding.UTF8);
+
+		// todo this doesn't actually do anything useful
+		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
+		log.info("\tPrimaryColumn -> {}", primaryDictionary);
+		return primaryDictionary;
 	}
 
 	/**

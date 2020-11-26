@@ -167,7 +167,7 @@ public class StringParser extends Parser<Integer> {
 																 .summaryStatistics();
 
 		indexParser.setMaxValue(indexStatistics.getMax());
-		indexParser.setMaxValue(indexStatistics.getMin());
+		indexParser.setMinValue(indexStatistics.getMin());
 
 		indexParser.setLines(getLines());
 		indexParser.setNullLines(getNullLines());
