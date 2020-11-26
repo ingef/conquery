@@ -94,6 +94,7 @@ public abstract class OutputDescription implements Serializable {
 		}
 	}
 
+	@JsonIgnore
 	public abstract List<String> getRequiredHeaders();
 
 	/**
