@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.base.ShortStore;
+import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.events.stores.date.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.date.PackedDateRangeStore;
 import com.bakdata.conquery.models.events.stores.date.QuarterDateStore;
@@ -84,7 +84,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 		// We allow this exception to happen as it would imply erroneous data.
 		if (Math.subtractExact(maxValue, minValue) < PackedUnsigned1616.MAX_VALUE) {
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
-			return new DateRangeTypePacked(new PackedDateRangeStore(ShortStore.create(getLines())));
+			return new DateRangeTypePacked(new PackedDateRangeStore(IntegerStore.create(getLines())));
 		}
 
 		return new DateRangeTypeDateRange(DateRangeStore.create(getLines()));
