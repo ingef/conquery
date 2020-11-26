@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.types.parser.specific.string;
 
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,7 +15,9 @@ import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.models.types.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.types.parser.specific.string.TypeGuesser.Guess;
+import com.bakdata.conquery.models.types.specific.integer.IntegerType;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.string.StringTypePrefix;
@@ -154,5 +157,22 @@ public class StringParser extends Parser<Integer> {
 						  .stream()
 						  .map(e -> encoding.decode(e.getKey()))
 						  .collect(Collectors.toList());
+	}
+
+	public IntegerType decideIndexType() {
+		final IntegerParser indexParser = new IntegerParser();
+
+		final IntSummaryStatistics indexStatistics = getStrings().values().stream()
+																 .mapToInt(Integer::intValue)
+																 .summaryStatistics();
+
+		indexParser.setMaxValue(indexStatistics.getMax());
+		indexParser.setMaxValue(indexStatistics.getMin());
+
+		indexParser.setLines(getLines());
+		indexParser.setNullLines(getNullLines());
+
+
+		return ((IntegerType) indexParser.findBestType());
 	}
 }

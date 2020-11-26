@@ -47,7 +47,7 @@ public class IntegerParser extends Parser<Long> {
 	}
 
 	@Override
-	protected CType<Long> decideType() {
+	protected IntegerType decideType() {
 		long span = maxValue - minValue;
 
 		// max value is reserved for NULL
