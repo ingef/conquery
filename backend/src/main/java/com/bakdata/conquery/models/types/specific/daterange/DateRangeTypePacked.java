@@ -15,34 +15,18 @@ import lombok.Setter;
 @Setter
 public class DateRangeTypePacked extends CType<CDateRange> {
 
-	private final int minValue;
-	private final int maxValue;
 
 	private final PackedDateRangeStore store;
 
 	@JsonCreator
-	public DateRangeTypePacked(int minValue, int maxValue, PackedDateRangeStore store) {
+	public DateRangeTypePacked(PackedDateRangeStore store) {
 		super(MajorTypeId.DATE_RANGE);
-		this.minValue = minValue;
-		this.maxValue = maxValue;
 		this.store = store;
 	}
 
 	@Override
-	public Object createPrintValue(CDateRange value) {
-		if (value == null) {
-			return "";
-		}
-
-		return createScriptValue(value).toString();
-	}
-
-	@Override
-	public CDateRange createScriptValue(CDateRange value) {
-		if (value == null) {
-			return null;
-		}
-		return value;
+	public Object createScriptValue(CDateRange value) {
+		return value.toString();
 	}
 
 	@Override
@@ -52,7 +36,7 @@ public class DateRangeTypePacked extends CType<CDateRange> {
 
 	@Override
 	public DateRangeTypePacked select(int[] starts, int[] length) {
-		return new DateRangeTypePacked(minValue, maxValue, store.select(starts, length));
+		return new DateRangeTypePacked(store.select(starts, length));
 	}
 
 	@Override

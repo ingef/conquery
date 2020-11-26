@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.events.stores.date.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.date.PackedDateRangeStore;
 import com.bakdata.conquery.models.events.stores.date.QuarterDateStore;
@@ -37,17 +38,6 @@ public class DateRangeParser extends Parser<CDateRange> {
 		return DateRangeParser.parseISORange(value);
 	}
 
-	@Override
-	protected void registerValue(CDateRange v) {
-		onlyQuarters = onlyQuarters && v.isSingleQuarter();
-		anyOpen = anyOpen || v.isOpen();
-
-		if (!anyOpen) {
-			maxValue = Math.max(maxValue, v.getMaxValue());
-			minValue = Math.min(minValue, v.getMinValue());
-		}
-	}
-
 	public static CDateRange parseISORange(String value) throws ParsingException {
 		if (value == null) {
 			return null;
@@ -64,12 +54,22 @@ public class DateRangeParser extends Parser<CDateRange> {
 	}
 
 	@Override
+	protected void registerValue(CDateRange v) {
+		onlyQuarters = onlyQuarters && v.isSingleQuarter();
+		anyOpen = anyOpen || v.isOpen();
+
+		if (!anyOpen) {
+			maxValue = Math.max(maxValue, v.getMaxValue());
+			minValue = Math.min(minValue, v.getMinValue());
+		}
+	}
+
+	@Override
 	protected CType<CDateRange> decideType() {
 		// We cannot yet do meaningful compression for open dateranges.
 		// TODO: 27.04.2020 consider packed compression with extra value as null value.
 		if (anyOpen) {
-			return new DateRangeTypeDateRange(DateRangeStore.create(getLines()))
-			;
+			return new DateRangeTypeDateRange(DateRangeStore.create(getLines()));
 		}
 
 		if (onlyQuarters) {
@@ -84,13 +84,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 		// We allow this exception to happen as it would imply erroneous data.
 		if (Math.subtractExact(maxValue, minValue) < PackedUnsigned1616.MAX_VALUE) {
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
-
-			final IntegerParser quarterParser = new IntegerParser();
-			quarterParser.setLines(getLines());
-			quarterParser.setMaxValue(PackedUnsigned1616.pack(maxValue, maxValue));
-			quarterParser.setMinValue(PackedUnsigned1616.pack(minValue, minValue));
-
-			return new DateRangeTypePacked(minValue, maxValue, new PackedDateRangeStore(quarterParser.decideType()));
+			return new DateRangeTypePacked(new PackedDateRangeStore(ShortStore.create(getLines())));
 		}
 
 		return new DateRangeTypeDateRange(DateRangeStore.create(getLines()));
