@@ -29,6 +29,7 @@ import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.experimental.UtilityClass;
@@ -150,7 +151,16 @@ public class Preprocessor {
 
 					CSVConfig csvSettings = config.getCsv();
 					// Create CSV parser according to config, but overriding some behaviour.
-					parser = new CsvParser(csvSettings.withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
+					final CsvParserSettings parserSettings =
+							csvSettings.withParseHeaders(true)
+									   .withSkipHeader(false)
+									   .createCsvParserSettings();
+
+					parserSettings.selectFields(input.getRequiredHeaders().toArray(new String[0]));
+
+					parser = new CsvParser(parserSettings);
+
+
 
 					parser.beginParsing(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
 

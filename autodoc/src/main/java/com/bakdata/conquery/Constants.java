@@ -64,7 +64,6 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRe
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
-import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -107,7 +106,6 @@ public class Constants {
 			.base(new Base(OutputDescription.class, ""))
 			.otherClass(TableImportDescriptor.class)
 			.otherClass(TableInputDescriptor.class)
-			.hide(AutoOutput.class)
 			.build(),
 		Group.builder().name("Table JSONs")
 			.description("Each `*.table.json` has to contain exactly one [Tabel](#Type-Tabel).")

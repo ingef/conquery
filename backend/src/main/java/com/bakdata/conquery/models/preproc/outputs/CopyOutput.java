@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import java.util.Collections;
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -37,6 +40,11 @@ public class CopyOutput extends OutputDescription {
 
 	@NotNull
 	private MajorTypeId inputType;
+
+	@Override
+	public List<String> getRequiredHeaders() {
+		return Collections.singletonList(inputColumn);
+	}
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {

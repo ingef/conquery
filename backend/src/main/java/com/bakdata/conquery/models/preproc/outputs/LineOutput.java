@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -21,6 +24,11 @@ public class LineOutput extends OutputDescription {
 	@Override
 	public boolean isRequired() {
 		return true;
+	}
+
+	@Override
+	public List<String> getRequiredHeaders() {
+		return Collections.emptyList();
 	}
 
 	@Override

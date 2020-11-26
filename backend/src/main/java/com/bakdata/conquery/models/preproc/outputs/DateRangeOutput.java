@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,6 +29,11 @@ public class DateRangeOutput extends OutputDescription {
 
 	@NotNull
 	private String startColumn, endColumn;
+
+	@Override
+	public List<String> getRequiredHeaders() {
+		return Arrays.asList(startColumn, endColumn);
+	}
 
 	/**
 	 * Parse null values as open date-range if true.

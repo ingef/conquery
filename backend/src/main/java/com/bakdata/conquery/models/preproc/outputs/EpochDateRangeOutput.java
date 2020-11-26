@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -29,6 +32,11 @@ public class EpochDateRangeOutput extends OutputDescription {
 	 * Parse null values as open date-range if true.
 	 */
 	private boolean allowOpen = false;
+
+	@Override
+	public List<String> getRequiredHeaders() {
+		return Arrays.asList(startColumn, endColumn);
+	}
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {

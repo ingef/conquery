@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import java.io.Serializable;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.StringJoiner;
 
 import javax.validation.constraints.NotEmpty;
@@ -92,6 +93,8 @@ public abstract class OutputDescription implements Serializable {
 			throw new InputMismatchException(String.format("Did not find headers `%s` in `%s`", missing.toString(), actualHeaders.keySet()));
 		}
 	}
+
+	public abstract List<String> getRequiredHeaders();
 
 	/**
 	 * Instantiate the corresponding {@link Output} for the rows.

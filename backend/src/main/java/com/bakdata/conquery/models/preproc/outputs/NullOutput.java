@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import java.util.Collections;
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -24,6 +27,11 @@ public class NullOutput extends OutputDescription {
 	@Override
 	public boolean isRequired() {
 		return false;
+	}
+
+	@Override
+	public List<String> getRequiredHeaders() {
+		return Collections.emptyList();
 	}
 
 	@Override
