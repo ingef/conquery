@@ -257,7 +257,7 @@ public class Preprocessor {
 
 		@Override
 		public void processStarted(ParsingContext context) {
-			final String[] headers = context.headers();
+			final String[] headers = context.selectedHeaders();
 
 			final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
 
