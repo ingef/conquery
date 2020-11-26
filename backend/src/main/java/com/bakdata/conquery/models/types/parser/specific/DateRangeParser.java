@@ -80,9 +80,8 @@ public class DateRangeParser extends Parser<CDateRange> {
 
 			return new DateRangeTypeQuarter(new QuarterDateStore(quarterParser.decideType()));
 		}
-		// min or max can be Integer.MIN/MAX_VALUE when this happens, the left expression overflows causing it to be true when it is not.
-		// We allow this exception to happen as it would imply erroneous data.
-		if (Math.subtractExact(maxValue, minValue) < PackedUnsigned1616.MAX_VALUE) {
+
+		if (maxValue < PackedUnsigned1616.MAX_VALUE) {
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
 			return new DateRangeTypePacked(new PackedDateRangeStore(IntegerStore.create(getLines())));
 		}
