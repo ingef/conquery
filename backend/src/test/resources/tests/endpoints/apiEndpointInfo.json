@@ -31,6 +31,16 @@
     },
     {
         "method": "GET",
+        "path": "/datasets/{dataset}/result/{query}.arrs",
+        "clazz": "ResultArrowStreamResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/result/{query}.arrf",
+        "clazz": "ResultArrowFileResource"
+    },
+    {
+        "method": "GET",
         "path": "/datasets/{dataset}/stored-queries",
         "clazz": "StoredQueriesResource"
     },

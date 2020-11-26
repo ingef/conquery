@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.ObjectAssert;
+import org.assertj.core.api.RecursiveComparisonAssert;
 
 @RequiredArgsConstructor
 @Accessors(chain = true, fluent = true)
@@ -86,11 +86,13 @@ public class SerializationTestUtil<T> {
 			assertThat(copy.hashCode()).isEqualTo(value.hashCode());
 		}
 
-		ObjectAssert<T> ass = assertThat(copy)
-			.as("Unequal after copy.");
-		for(Class<?> ig:ignoreClasses)
-			ass.usingComparatorForType((a,b)->0, ig);
+		RecursiveComparisonAssert<?> ass = assertThat(copy)
+			.as("Unequal after copy.")
+			.usingRecursiveComparison();
+		for(Class<?> ig:ignoreClasses) {
+			ass.withComparatorForType((a,b)->0, ig);			
+		}
 		
-		ass.isEqualToComparingFieldByFieldRecursively(expected);
+		ass.isEqualTo(expected);
 	}
 }

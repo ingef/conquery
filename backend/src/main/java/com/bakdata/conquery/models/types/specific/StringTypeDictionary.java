@@ -34,18 +34,23 @@ import lombok.extern.slf4j.Slf4j;
 public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@NotNull @Nonnull
-	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
+	private String dictionaryName = UUID.randomUUID().toString();
 	@JsonIgnore
-	private transient Dictionary dictionary = new MapDictionary(dictionaryId);
+	private transient Dictionary dictionary = new MapDictionary();
 	
-	@JsonCreator
 	public StringTypeDictionary(VarIntType numberType) {
 		super(MajorTypeId.STRING, numberType);
+	}
+
+	@JsonCreator
+	public StringTypeDictionary(VarIntType numberType, String dictionaryId) {
+		super(MajorTypeId.STRING, numberType);
+		this.dictionaryName = dictionaryId;
 	}
 	
 	@Override
 	public void init(DatasetId dataset) {
-		dictionaryId = new DictionaryId(dataset, dictionaryId.getDictionary());
+		dictionary.setName(dictionaryName.toString());
 		dictionary.setDataset(dataset);
 	}
 
@@ -74,14 +79,12 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	
 	@Override
 	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
-		dictionary.setName(dictionaryId.getDictionary());
-		dictionary.setDataset(dictionaryId.getDataset());
 		dictionaryConsumer.accept(dictionary);
 	}
 
 	@Override
 	public void loadExternalInfos(NamespacedStorage storage) {
-		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
+		dictionary = Objects.requireNonNull(storage.getDictionary(new DictionaryId(storage.getDataset().getId(),dictionaryName)));
 	}
 	
 	public int size() {
@@ -107,7 +110,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
-		dictionaryId = newDict.getId();
+		dictionaryName = newDict.getId().getDictionary();
 		dictionary = newDict;
 		if(newNumberType.estimateMemoryBitWidth() > numberType.estimateMemoryBitWidth()) {
 			log.warn(
