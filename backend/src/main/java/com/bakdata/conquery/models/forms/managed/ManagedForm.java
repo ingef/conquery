@@ -3,11 +3,14 @@ package com.bakdata.conquery.models.forms.managed;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -24,16 +27,19 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -88,12 +94,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public void initExecutable(@NonNull DatasetRegistry datasets) {
+	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry) {
 		// init all subqueries
-		synchronized (getExecution()) {
-			subQueries = submittedForm.createSubQueries(datasets, super.getOwner(), super.getDataset());
-			subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasets));
-		}
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
+		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
+		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry));
 	}
 	
 	@Override
@@ -211,12 +216,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
+	public StreamingOutput getResult(Function<ContainedEntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
 		if(subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 		}
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), mappingState, charset, lineSeparator);
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), idMapper, charset, lineSeparator);
 	}
 	
 	@Override
@@ -225,7 +230,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
 			// If subqueries was not set the Execution was not initialized
-			this.initExecutable(storage.getDatasetRegistry());
+			this.doInitExecutable(storage.getDatasetRegistry());
 		}
 		if(subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
@@ -255,4 +260,16 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			.build()
 			.toURL();
 	}
+
+
+
+	@Override
+	protected void makeDefaultLabel(StringBuilder sb) {
+		sb
+			.append(getSubmittedForm().getLocalizedTypeLabel())
+			.append(" ")
+			.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm", I18n.LOCALE.get())));
+		
+	}
+	
 }

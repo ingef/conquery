@@ -69,8 +69,6 @@ public class DictionaryMapping {
 		if (newIds == null) {
 			return 0;
 		}
-		else {
-			return newIds.getMax() - newIds.getMin() + 1;
-		}
+		return newIds.getMax() - newIds.getMin() + 1;
 	}
 }

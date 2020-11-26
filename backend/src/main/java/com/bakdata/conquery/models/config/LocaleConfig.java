@@ -13,7 +13,5 @@ public class LocaleConfig {
 	@NotNull
 	private Currency currency = Currency.getInstance("EUR");
 	@NotNull
-	private Locale numberParsingLocale = Locale.ROOT;
-	@NotNull
 	private Locale frontend = Locale.ROOT;
 }

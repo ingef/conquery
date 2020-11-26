@@ -49,9 +49,10 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	}
 	
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
+	public void resolve(QueryResolveContext context) {
 		resolvedQuery = ((ManagedQuery)Objects.requireNonNull(context.getDatasetRegistry().getMetaStorage().getExecution(query), "Unable to resolve stored query")).getQuery();
-		return this;
+		// Yey recursion, because the query might consists of another CQReusedQuery or CQExternal
+		resolvedQuery.resolve(context);
 	}
 	
 	@Override

@@ -37,6 +37,9 @@ public class ImmutableProgressReporter implements ProgressReporter{
 	
 	@JsonIgnore
 	public long getWaitedSeconds() {
+		if(started) {
+			return TimeUnit.MILLISECONDS.toSeconds(startTimeMillis - creationTimeMillis);
+		}
 		return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - creationTimeMillis);
 	}
 	

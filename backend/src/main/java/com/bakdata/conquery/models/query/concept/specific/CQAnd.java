@@ -63,9 +63,8 @@ public class CQAnd extends CQElement {
 	}
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
-		children.replaceAll(c -> c.resolve(context));
-		return this;
+	public void resolve(QueryResolveContext context) {
+		children.forEach(c->c.resolve(context));
 	}
 
 	@Override

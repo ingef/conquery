@@ -174,7 +174,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 	private int nextIndex(int currentIdx, ConceptQueryPlan child) {
 		/**
-		 * If we have as specialDateUnion, we also have those in the children. We don't
+		 * If we have a specialDateUnion, we also have those in the children. We don't
 		 * want to add the result directly to the end result (its merged in a single
 		 * DateSet). Hence the index for the result insertion is reduces by one.
 		 */

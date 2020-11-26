@@ -55,7 +55,7 @@ public class RelativeMode extends Mode {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		// Resolve all
-		features.replaceAll(e -> e.resolve(context));
-		outcomes.replaceAll(e -> e.resolve(context));
+		features.forEach(e -> e.resolve(context));
+		outcomes.forEach(e -> e.resolve(context));
 	}
 }

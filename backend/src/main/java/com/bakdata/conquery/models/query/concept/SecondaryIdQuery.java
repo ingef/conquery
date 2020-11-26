@@ -47,9 +47,8 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public SecondaryIdQuery resolve(QueryResolveContext context) {
-		this.query = query.resolve(context);
-		return this;
+	public void resolve(QueryResolveContext context) {
+		query.resolve(context);
 	}
 
 	@Override

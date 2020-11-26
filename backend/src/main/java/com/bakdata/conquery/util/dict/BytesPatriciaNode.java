@@ -1,8 +1,6 @@
 package com.bakdata.conquery.util.dict;
 
-import static com.bakdata.conquery.util.dict.TTDirection.LEFT;
-import static com.bakdata.conquery.util.dict.TTDirection.MIDDLE;
-import static com.bakdata.conquery.util.dict.TTDirection.RIGHT;
+import static com.bakdata.conquery.util.dict.TTDirection.*;
 
 import java.util.Arrays;
 
@@ -24,17 +22,13 @@ public class BytesPatriciaNode extends ABytesNode {
 			if(getLeft()==null) {
 				return -1;
 			}
-			else {
-				return getLeft().get(k, i);
-			}
+			return getLeft().get(k, i);
 		}
 		else if(c>first) {
 			if(getRight()==null) {
 				return -1;
 			}
-			else {
-				return getRight().get(k, i);
-			}
+			return getRight().get(k, i);
 		}
 		else {
 			int matchingComponents = 1;
@@ -56,18 +50,12 @@ public class BytesPatriciaNode extends ABytesNode {
 				if(i+matchingComponents==k.length) {
 					return getValue();
 				}
-				else {
-					if(getMiddle()==null) {
-						return -1;
-					}
-					else {
-						return getMiddle().get(k, i+matchingComponents);
-					}
+				if(getMiddle()==null) {
+					return -1;
 				}
+				return getMiddle().get(k, i+matchingComponents);
 			}
-			else {
-				return -1;
-			}
+			return -1;
 		}
 	}
 	
@@ -80,17 +68,13 @@ public class BytesPatriciaNode extends ABytesNode {
 			if(getLeft()==null) {
 				return null;
 			}
-			else {
-				return getLeft().getNode(k, i);
-			}
+			return getLeft().getNode(k, i);
 		}
 		else if(c>first) {
 			if(getRight()==null) {
 				return null;
 			}
-			else {
-				return getRight().getNode(k, i);
-			}
+			return getRight().getNode(k, i);
 		}
 		else {
 			int matchingComponents = 1;
@@ -109,18 +93,12 @@ public class BytesPatriciaNode extends ABytesNode {
 				if(i+matchingComponents==k.length) {
 					return getThisAsValueNode();
 				}
-				else {
-					if(getMiddle()==null) {
-						return null;
-					}
-					else {
-						return getMiddle().getNode(k, i+matchingComponents);
-					}
+				if(getMiddle()==null) {
+					return null;
 				}
+				return getMiddle().getNode(k, i+matchingComponents);
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 	}
 
@@ -133,17 +111,13 @@ public class BytesPatriciaNode extends ABytesNode {
 			if(getLeft()==null) {
 				return bestCandidate;
 			}
-			else {
-				return getLeft().getNearestNode(k, i, bestCandidate);
-			}
+			return getLeft().getNearestNode(k, i, bestCandidate);
 		}
 		else if(c>first) {
 			if(getRight()==null) {
 				return bestCandidate;
 			}
-			else {
-				return getRight().getNearestNode(k, i, bestCandidate);
-			}
+			return getRight().getNearestNode(k, i, bestCandidate);
 		}
 		else {
 			int matchingComponents = 1;
@@ -165,18 +139,12 @@ public class BytesPatriciaNode extends ABytesNode {
 				if(i+matchingComponents==k.length) {
 					return getThisAsValueNode();
 				}
-				else {
-					if(getMiddle()==null) {
-						return getThisAsValueNode();
-					}
-					else {
-						return getMiddle().getNearestNode(k, i+matchingComponents, getThisAsValueNode());
-					}
+				if(getMiddle()==null) {
+					return getThisAsValueNode();
 				}
+				return getMiddle().getNearestNode(k, i+matchingComponents, getThisAsValueNode());
 			}
-			else {
-				return bestCandidate;
-			}
+			return bestCandidate;
 		}
 	}
 

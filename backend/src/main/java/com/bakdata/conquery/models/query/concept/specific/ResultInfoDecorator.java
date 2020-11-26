@@ -66,7 +66,7 @@ public class ResultInfoDecorator extends CQElement {
 	}
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
-		return new ResultInfoDecorator(values, child);
+	public void resolve(QueryResolveContext context) {
+		child.resolve(context);
 	}
 }

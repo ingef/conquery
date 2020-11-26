@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -75,9 +74,7 @@ public class StringTypeNumber extends AStringType<Number> {
 			if(range.contains(result)) {
 				return result;
 			}
-			else {
-				return -1;
-			}
+			return -1;
 		}
 		catch(NumberFormatException e) {
 			return -1;

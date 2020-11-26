@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -35,7 +36,7 @@ public interface QueryDescription extends Visitable {
 	 * Transforms the submitted query to an {@link ManagedExecution}.
 	 * In this step some external dependencies are resolve (such as {@link CQExternal}).
 	 * However steps that require add or manipulates queries programmatically based on the submitted query
-	 * should be done in an extra init procedure (see {@link ManagedForm#initExecutable(DatasetRegistry)}.
+	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 * 
 	 * @param storage Needed by {@link ManagedExecution} for the self update upon completion.
@@ -51,10 +52,10 @@ public interface QueryDescription extends Visitable {
 	
 	/**
 	 * Initializes a submitted description using the provided context.
-	 * All parameters that are set in this phase should be internal or cleanly serializable/deserializable.
+	 * All parameters that are set in this phase must be annotated with {@link InternalOnly}.
 	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
 	 */
-	QueryDescription resolve(QueryResolveContext context);
+	void resolve(QueryResolveContext context);
 	
 	/**
 	 * Allows the implementation to add visitors that traverse the QueryTree.

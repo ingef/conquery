@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
 import com.bakdata.conquery.util.NumberParsing;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DecimalParser extends Parser<BigDecimal> {
 
+	@Getter
 	private transient int maxScale = Integer.MIN_VALUE;
 	private transient BigDecimal maxAbs;
 	private transient ParserConfig config;

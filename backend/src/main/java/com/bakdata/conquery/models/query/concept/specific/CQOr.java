@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -69,10 +68,8 @@ public class CQOr extends CQElement {
 	}
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
-		var copy = new ArrayList<>(children);
-		copy.replaceAll(c -> c.resolve(context));
-		return new CQOr(copy, isCreateExists());
+	public void resolve(QueryResolveContext context) {
+		children.forEach(c->c.resolve(context));
 	}
 
 	@Override

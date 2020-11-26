@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.exceptions.validators;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE_USE;
+import static java.lang.annotation.ElementType.*;
 
 import java.io.File;
 import java.lang.annotation.Documented;
@@ -20,7 +16,6 @@ import javax.validation.Payload;
 
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileList;
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileValidator;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Target({FIELD, METHOD, PARAMETER, ANNOTATION_TYPE, TYPE_USE})
@@ -63,28 +58,27 @@ public @interface ExistingFile {
 						.buildConstraintViolationWithTemplate("The File/Directory is null")
 						.addConstraintViolation();
 				return false;
-			} else {
-				try {
-					if (directory && !value.isDirectory()) {
-						context
-								.buildConstraintViolationWithTemplate("The Directory " + value.getAbsoluteFile() + " does not exist or is not a directory")
-								.addConstraintViolation();
-						return false;
-					} else if (!directory && !value.isFile()) {
-						context
-								.buildConstraintViolationWithTemplate("The File " + value.getAbsoluteFile() + " does not exist or is not a file")
-								.addConstraintViolation();
-						return false;
-					} else {
-						return true;
-					}
-				} catch (Exception e) {
-					log.error("Failed to construct the canonical path of " + value.getAbsolutePath(), e);
+			}
+			try {
+				if (directory && !value.isDirectory()) {
 					context
-							.buildConstraintViolationWithTemplate("Failed to construct the canonical path of " + value.getAbsolutePath())
+							.buildConstraintViolationWithTemplate("The Directory " + value.getAbsoluteFile() + " does not exist or is not a directory")
 							.addConstraintViolation();
 					return false;
+				} else if (!directory && !value.isFile()) {
+					context
+							.buildConstraintViolationWithTemplate("The File " + value.getAbsoluteFile() + " does not exist or is not a file")
+							.addConstraintViolation();
+					return false;
+				} else {
+					return true;
 				}
+			} catch (Exception e) {
+				log.error("Failed to construct the canonical path of " + value.getAbsolutePath(), e);
+				context
+						.buildConstraintViolationWithTemplate("Failed to construct the canonical path of " + value.getAbsolutePath())
+						.addConstraintViolation();
+				return false;
 			}
 		}
 	}

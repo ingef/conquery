@@ -228,21 +228,20 @@ public class QSGraph<T extends Comparable<T>> {
 
         if (root == null) {
             return Collections.emptyMap();
-        } else {
-            int estResults = root.getEstimatedResultsCount() > -1 ? root.getEstimatedResultsCount() : 1024;
-            HashMap<T, Double> results = new HashMap<>(estResults);
-
-            int estNodes = root.getEstimatedNodesCount() > -1 ? root.getEstimatedNodesCount() : 1024;
-            HashSet<String> visited = new HashSet<>(estNodes);
-
-            /* Perform the actual scan */
-            walkAndScore(root.getIdentity(), root, results, visited, scorerFunction);
-
-            root.setEstimatedNodesCount(visited.size() * 2);
-            root.setEstimatedResultsCount(results.size() * 2);
-
-            return results;
         }
+		int estResults = root.getEstimatedResultsCount() > -1 ? root.getEstimatedResultsCount() : 1024;
+		HashMap<T, Double> results = new HashMap<>(estResults);
+
+		int estNodes = root.getEstimatedNodesCount() > -1 ? root.getEstimatedNodesCount() : 1024;
+		HashSet<String> visited = new HashSet<>(estNodes);
+
+		/* Perform the actual scan */
+		walkAndScore(root.getIdentity(), root, results, visited, scorerFunction);
+
+		root.setEstimatedNodesCount(visited.size() * 2);
+		root.setEstimatedResultsCount(results.size() * 2);
+
+		return results;
     }
 
     private void walkAndScore(final String originalFragment,
