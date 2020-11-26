@@ -73,7 +73,8 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		if (selectedBucket == null && selectedEvent.isEmpty()) {
 			return null;
 		}
-		return (VALUE) getColumn().getTypeFor(selectedBucket).createPrintValue(selectedBucket.getAsObject(selectedEvent.getAsInt(), getColumn()));
+
+		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
 	@Override

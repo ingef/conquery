@@ -153,17 +153,21 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
 	}
 
+	public Object createScriptValue(int event, Column column){
+		final CType<?> store = stores[column.getPosition()];
+		return ((CType) store).createScriptValue(store.get(event));
+	}
 
 	public Map<String, Object> calculateMap(int event) {
 		Map<String, Object> out = new HashMap<>(stores.length);
 
 		for (int i = 0; i < stores.length; i++) {
-			ColumnStore<?> store = stores[i];
+			CType store = stores[i];
 			if (!store.has(event)) {
 				continue;
 			}
 			// todo rework this to use table directly
-			out.put(imp.getColumns()[i].getName(), ((CType) stores[i]).createScriptValue(store.get(event)));
+			out.put(imp.getColumns()[i].getName(), store.createScriptValue(store.get(event)));
 		}
 
 		return out;

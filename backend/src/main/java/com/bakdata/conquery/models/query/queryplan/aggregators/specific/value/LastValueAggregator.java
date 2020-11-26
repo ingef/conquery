@@ -75,7 +75,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			return null;
 		}
 
-		return (VALUE) getColumn().getTypeFor(selectedBucket).createPrintValue(selectedBucket.getAsObject(selectedEvent.getAsInt(), getColumn()));
+		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
 	@Override
