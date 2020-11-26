@@ -90,7 +90,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 			quarterParser.setMaxValue(PackedUnsigned1616.pack(maxValue, maxValue));
 			quarterParser.setMinValue(PackedUnsigned1616.pack(minValue, minValue));
 
-			return new DateRangeTypePacked(minValue, maxValue, PackedDateRangeStore.create(quarterParser.decideType()));
+			return new DateRangeTypePacked(minValue, maxValue, new PackedDateRangeStore(quarterParser.decideType()));
 		}
 
 		return new DateRangeTypeDateRange(DateRangeStore.create(getLines()));

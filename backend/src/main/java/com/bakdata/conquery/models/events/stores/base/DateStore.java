@@ -9,11 +9,13 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 
 @CPSType(base = ColumnStore.class, id = "DATES")
 @Getter
 @Setter
+@ToString(of = "store")
 public class DateStore extends CType<Integer> {
 
 	private final ColumnStore<Long> store;

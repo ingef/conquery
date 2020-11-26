@@ -8,14 +8,13 @@ import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
-import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
 @CPSType(id = "QUARTER_DATES", base = ColumnStore.class)
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
+@ToString(of = "store")
 public class QuarterDateStore extends ColumnStoreAdapter<CDateRange> {
 
 	private final ColumnStore<Long> store;
@@ -25,9 +24,6 @@ public class QuarterDateStore extends ColumnStoreAdapter<CDateRange> {
 		this.store = store;
 	}
 
-	public static QuarterDateStore create(int size) {
-		return new QuarterDateStore(IntegerStore.create(size));
-	}
 
 	public QuarterDateStore select(int[] starts, int[] ends) {
 		return new QuarterDateStore(store.select(starts, ends));

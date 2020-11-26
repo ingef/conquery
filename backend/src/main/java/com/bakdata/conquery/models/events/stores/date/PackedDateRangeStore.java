@@ -11,7 +11,7 @@ import lombok.ToString;
 
 @CPSType(id = "PACKED_DATE_RANGES", base = ColumnStore.class)
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
+@ToString(of = "store")
 public class PackedDateRangeStore extends ColumnStoreAdapter<CDateRange> {
 
 	private final ColumnStore<Long> store;
@@ -19,10 +19,6 @@ public class PackedDateRangeStore extends ColumnStoreAdapter<CDateRange> {
 	@JsonCreator
 	public PackedDateRangeStore(ColumnStore<Long> store) {
 		this.store = store;
-	}
-
-	public static PackedDateRangeStore create(ColumnStore<Long> store) {
-		return new PackedDateRangeStore(store);
 	}
 
 	public PackedDateRangeStore select(int[] starts, int[] ends) {

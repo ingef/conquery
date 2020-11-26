@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @Getter
 @Setter
-@ToString
+@ToString(of = {"bucket", "numberOfEvents", "stores"})
 public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)

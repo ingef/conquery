@@ -32,9 +32,13 @@ public class ByteStore extends ColumnStoreAdapter<Long> {
 
 	@Override
 	public void set(int event, Long value) {
-		if(value == null){
+		if (value == null) {
 			values[event] = nullValue;
 			return;
+		}
+
+		if (!(value >= Byte.MIN_VALUE && value < Byte.MAX_VALUE)) {
+			throw new IllegalArgumentException(String.format("%d not in ByteRange", value));
 		}
 
 		values[event] = value.byteValue();
