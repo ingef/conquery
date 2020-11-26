@@ -20,7 +20,7 @@ import lombok.Setter;
 @CPSType(id="NEGATION", base=CQElement.class)
 @Setter
 @Getter
-public class CQNegation implements CQElement {
+public class CQNegation extends CQElement {
 
 	@Valid @NotNull @Getter @Setter
 	private CQElement child;
@@ -42,7 +42,7 @@ public class CQNegation implements CQElement {
 	
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		CQElement.super.visit(visitor);
+		super.visit(visitor);
 		child.visit(visitor);
 	}
 }

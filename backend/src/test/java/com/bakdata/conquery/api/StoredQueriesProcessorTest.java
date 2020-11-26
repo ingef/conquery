@@ -1,13 +1,9 @@
 package com.bakdata.conquery.api;
 
-import static com.bakdata.conquery.models.execution.ExecutionState.DONE;
-import static com.bakdata.conquery.models.execution.ExecutionState.FAILED;
-import static com.bakdata.conquery.models.execution.ExecutionState.NEW;
+import static com.bakdata.conquery.models.execution.ExecutionState.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
