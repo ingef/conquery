@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.events.stores.base;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -15,6 +18,8 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class BooleanStore extends ColumnStoreAdapter<Boolean> {
 
+	@JsonSerialize(using = BitSetSerializer.class)
+	@JsonDeserialize(using = BitSetDeserializer.class)
 	private final BitSet values;
 
 	@JsonCreator
@@ -27,8 +32,21 @@ public class BooleanStore extends ColumnStoreAdapter<Boolean> {
 		return new BooleanStore(new BitSet(size));
 	}
 
-	public BooleanStore select(int[] starts, int[] ends) {
-		return new BooleanStore(ColumnStore.selectArray(starts, ends, values, BitSet::new));
+	public BooleanStore select(int[] starts, int[] lengths) {
+		int length = Arrays.stream(lengths).sum();
+
+		final BitSet out = new BitSet(length);
+
+		int pos = 0;
+
+		for (int index = 0; index < starts.length; index++) {
+			for (int bit = 0; bit < lengths[index]; bit++) {
+				out.set(pos + bit, getValues().get(starts[index] + bit));
+			}
+			pos += lengths[index];
+		}
+
+		return new BooleanStore(out);
 	}
 
 	@Override
