@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -259,7 +260,9 @@ public class Preprocessor {
 		public void processStarted(ParsingContext context) {
 			final String[] headers = context.selectedHeaders();
 
-			final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
+			final Object2IntArrayMap<String> headerMap = new Object2IntArrayMap<>(headers.length);
+
+			Arrays.stream(headers).forEach(header -> headerMap.computeIfAbsent(header, context::indexOf));
 
 			// Compile filter.
 			filter = input.createFilter(headers);
