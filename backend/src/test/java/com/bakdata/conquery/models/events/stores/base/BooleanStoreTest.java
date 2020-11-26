@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.BitSet;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 
 class BooleanStoreTest {
@@ -36,6 +38,24 @@ class BooleanStoreTest {
 			assertThat(booleanStore.select(new int[]{0}, new int[]{1}).getValues())
 					.isEqualTo(expected);
 		}
+
+	}
+
+	@Test
+	public void testSerialization() throws JsonProcessingException {
+		final BitSet bitSet = new BitSet();
+
+		bitSet.set(1, 3);
+		bitSet.set(100);
+		bitSet.set(128, false);
+
+		final BooleanStore booleanStore = new BooleanStore(bitSet);
+
+		final BooleanStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BooleanStore.class);
+
+		assertThat(booleanStore1.getValues().get(128)).isEqualTo(false);
+
+		assertThat(booleanStore.getValues()).isEqualTo(booleanStore1.getValues());
 
 	}
 
