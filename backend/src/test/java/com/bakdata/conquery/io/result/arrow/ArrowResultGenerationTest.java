@@ -1,8 +1,6 @@
 package com.bakdata.conquery.io.result.arrow;
 
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.generateFieldsFromIdMapping;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.generateFieldsFromResultType;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.*;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
