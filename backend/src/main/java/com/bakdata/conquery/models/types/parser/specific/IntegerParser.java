@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.specific.integer.IntegerTypeLong;
+import com.bakdata.conquery.models.types.specific.integer.IntegerType;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,18 +52,18 @@ public class IntegerParser extends Parser<Long> {
 
 		// max value is reserved for NULL
 		if (span + 1 < Byte.MAX_VALUE - Byte.MIN_VALUE) {
-			return new IntegerTypeLong(new RebasingStore(minValue - Byte.MIN_VALUE, ByteStore.create(getLines())));
+			return new IntegerType(new RebasingStore(minValue - Byte.MIN_VALUE, ByteStore.create(getLines())));
 		}
 
 		if (span + 1 < Short.MAX_VALUE - Short.MIN_VALUE) {
-			return new IntegerTypeLong(new RebasingStore(minValue - Short.MIN_VALUE, ShortStore.create(getLines())));
+			return new IntegerType(new RebasingStore(minValue - Short.MIN_VALUE, ShortStore.create(getLines())));
 		}
 
 		if (span + 1 < (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE) {
-			return new IntegerTypeLong(new RebasingStore(minValue - Integer.MIN_VALUE, IntegerStore.create(getLines())));
+			return new IntegerType(new RebasingStore(minValue - Integer.MIN_VALUE, IntegerStore.create(getLines())));
 		}
 
-		return new IntegerTypeLong(LongStore.create(getLines()));
+		return new IntegerType(LongStore.create(getLines()));
 	}
 
 }

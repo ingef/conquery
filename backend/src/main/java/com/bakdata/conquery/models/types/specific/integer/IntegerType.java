@@ -11,13 +11,13 @@ import lombok.ToString;
 
 @CPSType(base=ColumnStore.class, id="INTEGER") @Getter @Setter
 @ToString(of = "store")
-public class IntegerTypeLong extends CType<Long> {
+public class IntegerType extends CType<Long> {
 
 
 	private final ColumnStore<Long> store;
 	
 	@JsonCreator
-	public IntegerTypeLong(ColumnStore<Long> store) {
+	public IntegerType(ColumnStore<Long> store) {
 		super(MajorTypeId.INTEGER);
 		this.store = store;
 	}
@@ -28,8 +28,8 @@ public class IntegerTypeLong extends CType<Long> {
 	}
 
 	@Override
-	public IntegerTypeLong select(int[] starts, int[] length) {
-		return new IntegerTypeLong(store.select(starts, length));
+	public IntegerType select(int[] starts, int[] length) {
+		return new IntegerType(store.select(starts, length));
 	}
 
 	@Override
