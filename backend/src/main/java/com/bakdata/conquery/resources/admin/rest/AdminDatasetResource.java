@@ -59,14 +59,19 @@ public class AdminDatasetResource extends HAdmin {
 	protected DatasetId datasetId;
 	protected Namespace namespace;
 
+	protected ObjectMapper namespacedMapper;
+
 	@PostConstruct
 	@Override
 	public void init() {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(datasetId);
+
 		if (namespace == null) {
 			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
 		}
+
+		namespacedMapper = namespace.getDataset().injectInto(namespace.getNamespaces().injectInto(Jackson.MAPPER));
 	}
 
 	@POST
@@ -88,10 +93,10 @@ public class AdminDatasetResource extends HAdmin {
 	@Path("tables")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public void addTable(@FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
-		ObjectMapper mapper = processor.getDatasetRegistry().injectInto(Jackson.MAPPER);
+
 		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
-				Table t = mapper.readValue(is, Table.class);
+				Table t = namespacedMapper.readValue(is, Table.class);
 				processor.addTable(namespace.getDataset(), t);
 			}
 		}
@@ -143,18 +148,18 @@ public class AdminDatasetResource extends HAdmin {
 
 	@GET
 	@Path("tables")
-	public List<TableId> listTables(){
+	public List<TableId> listTables() {
 		return new ArrayList<>(namespace.getDataset().getTables().keySet());
 	}
 
 	@GET
 	@Path("concepts")
-	public List<ConceptId> listConcepts(){
+	public List<ConceptId> listConcepts() {
 		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
 	@DELETE
-	public void delete(){
+	public void delete() {
 		processor.deleteDataset(datasetId);
 	}
 
