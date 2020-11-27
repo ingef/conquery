@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.io.BaseEncoding;
 import lombok.Getter;
@@ -113,8 +114,8 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void setValueMapping(int[] mapping) {
-		subType.setValueMapping(mapping);
+	public void setIndexStore(CType<Long> newType) {
+		subType.setIndexStore(newType);
 	}
 
 	@Override

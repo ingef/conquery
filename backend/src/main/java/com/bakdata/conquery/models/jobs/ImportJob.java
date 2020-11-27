@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +40,7 @@ import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -338,7 +340,24 @@ public class ImportJob extends Job {
 			log.debug("Remapping Column[{}] = {} with {}", column.getId(), values[i], mapping);
 
 			final StringType stringType = (StringType) values[i];
-			stringType.setValueMapping(mapping.getSource2TargetMap());
+
+			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
+			final IntegerParser indexParser = new IntegerParser();
+
+			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
+
+			indexParser.setLines(stringType.getLines());
+			indexParser.setNullLines(stringType.getNullLines());
+			indexParser.setMinValue(statistics.getMin());
+			indexParser.setMaxValue(statistics.getMax());
+
+			final CType<Long> newType = indexParser.findBestType();
+
+			log.debug("Decided for {}", newType);
+
+			mapping.applyToStore(stringType, newType, stringType.getLines());
+
+			stringType.setIndexStore(newType);
 		}
 	}
 

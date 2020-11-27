@@ -109,7 +109,7 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void setValueMapping(int[] mapping) {
+	public void setIndexStore(CType<Long> indexStore) {
 
 	}
 

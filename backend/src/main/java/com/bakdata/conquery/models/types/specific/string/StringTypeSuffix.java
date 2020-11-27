@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.specific.ChainedStringType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -48,8 +49,8 @@ public class StringTypeSuffix extends ChainedStringType {
 	}
 
 	@Override
-	public void setValueMapping(int[] mapping) {
-		subType.setValueMapping(mapping);
+	public void setIndexStore(CType<Long> indexStore) {
+		subType.setIndexStore(indexStore);
 	}
 
 	@Override

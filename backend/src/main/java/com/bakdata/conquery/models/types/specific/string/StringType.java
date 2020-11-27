@@ -28,5 +28,5 @@ public abstract class StringType extends CType<Integer> implements Iterable<Stri
 
 	public abstract void setUnderlyingDictionary(DictionaryId newDict);
 
-	public abstract void setValueMapping(int[] mapping);
+	public abstract void setIndexStore(CType<Long> newType);
 }

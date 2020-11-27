@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
@@ -28,6 +29,10 @@ public class StringTypeSingleton extends StringType {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public void setIndexStore(CType<Long> indexStore) {
+
+	}
 
 	@Override
 	public int size() {
@@ -78,10 +83,6 @@ public class StringTypeSingleton extends StringType {
 	@Override
 	public void setUnderlyingDictionary(DictionaryId newDict) {
 
-	}
-
-	@Override
-	public void setValueMapping(int[] mapping) {
 	}
 
 	@Override

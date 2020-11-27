@@ -38,10 +38,6 @@ public class StringTypeDictionary extends CType<Integer> {
 	@InternalOnly
 	private DatasetId dataset;
 
-	@Setter
-	@InternalOnly
-	private int[] valueMapping = null;
-
 	public StringTypeDictionary(CType<Long> numberType, Dictionary dictionary, String name) {
 		super(MajorTypeId.STRING);
 		this.numberType = numberType;
@@ -50,12 +46,11 @@ public class StringTypeDictionary extends CType<Integer> {
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(CType<Long> numberType, DatasetId dataset, String name, int[] mapping) {
+	public StringTypeDictionary(CType<Long> numberType, DatasetId dataset, String name) {
 		super(MajorTypeId.STRING);
 		this.numberType = numberType;
 		this.name = name;
 		this.dataset = dataset;
-		this.valueMapping = mapping;
 	}
 
 	@Override
@@ -64,10 +59,6 @@ public class StringTypeDictionary extends CType<Integer> {
 	}
 
 	public byte[] getElement(int value) {
-		if(valueMapping != null){
-			value = valueMapping[value];
-		}
-
 		return dictionary.getElement(value);
 	}
 
@@ -119,7 +110,7 @@ public class StringTypeDictionary extends CType<Integer> {
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName(), getValueMapping());
+		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
 	}
 
 	@Override
@@ -145,5 +136,9 @@ public class StringTypeDictionary extends CType<Integer> {
 	@Override
 	public final boolean has(int event) {
 		return numberType.has(event);
+	}
+
+	public void setIndexStore(CType<Long> newType) {
+		numberType = newType;
 	}
 }
