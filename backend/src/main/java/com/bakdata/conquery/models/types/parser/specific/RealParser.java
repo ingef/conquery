@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.types.parser.specific;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.events.stores.base.FloatStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.specific.RealTypeDouble;
-import com.bakdata.conquery.models.types.specific.RealTypeFloat;
+import com.bakdata.conquery.models.types.specific.RealType;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -47,11 +47,15 @@ public class RealParser extends Parser<Double> {
 	protected CType<Double> decideType() {
 		log.debug("Max ULP = {}", floatULP);
 
+		ColumnStore<Double> store;
+
 		if (floatULP < requiredPrecision) {
-			return new RealTypeFloat(FloatStore.create(getLines()))
-					;
+			store = FloatStore.create(getLines());
+		}
+		else {
+			store = DoubleStore.create(getLines());
 		}
 
-		return new RealTypeDouble(DoubleStore.create(getLines()));
+		return new RealType(store);
 	}
 }

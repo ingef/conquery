@@ -4,12 +4,10 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.specific.MoneyTypeLong;
-import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
+import com.bakdata.conquery.models.types.specific.MoneyType;
 import com.bakdata.conquery.util.NumberParsing;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -49,16 +47,14 @@ public class MoneyParser extends Parser<Long> {
 
 	@Override
 	protected CType<Long> decideType() {
-		if (maxValue + 1 <= Integer.MAX_VALUE && minValue >= Integer.MIN_VALUE) {
-			IntegerParser subParser = new IntegerParser();
-			subParser.registerValue(maxValue);
-			subParser.registerValue(minValue);
-			subParser.setLines(getLines());
-			subParser.setNullLines(getNullLines());
-			CType<Long> subDecision = subParser.findBestType();
-			return new MoneyTypeVarInt(subDecision);
-		}
-		return new MoneyTypeLong(LongStore.create(getLines()));
+		IntegerParser subParser = new IntegerParser();
+		subParser.registerValue(maxValue);
+		subParser.registerValue(minValue);
+		subParser.setLines(getLines());
+		subParser.setNullLines(getNullLines());
+		CType<Long> subDecision = subParser.findBestType();
+
+		return new MoneyType(subDecision);
 	}
 
 }

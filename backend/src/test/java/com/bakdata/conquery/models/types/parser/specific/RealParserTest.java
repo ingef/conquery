@@ -3,8 +3,9 @@ package com.bakdata.conquery.models.types.parser.specific;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.types.specific.RealTypeDouble;
-import com.bakdata.conquery.models.types.specific.RealTypeFloat;
+import com.bakdata.conquery.models.events.stores.base.DoubleStore;
+import com.bakdata.conquery.models.events.stores.base.FloatStore;
+import com.bakdata.conquery.models.types.specific.RealType;
 import org.junit.jupiter.api.Test;
 
 class RealParserTest {
@@ -22,11 +23,11 @@ class RealParserTest {
 
 		// ULP is symmetric on the 0 axis and monotonic, so larger values have a larger ULP
 
-		assertThat(realParser.decideType()).isInstanceOf(RealTypeFloat.class);
+		assertThat(((RealType) realParser.decideType()).getDelegate()).isInstanceOf(FloatStore.class);
 
 		realParser.registerValue(3000d);
 
-		assertThat(realParser.decideType()).isInstanceOf(RealTypeDouble.class);
+		assertThat(((RealType) realParser.decideType()).getDelegate()).isInstanceOf(DoubleStore.class);
 	}
 
 }
