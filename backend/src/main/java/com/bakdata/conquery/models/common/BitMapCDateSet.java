@@ -731,6 +731,10 @@ public class BitMapCDateSet {
 			return;
 		}
 
+		if(!mask.intersects(toAdd)){
+			return;
+		}
+
 		// trivial but common case
 		if (toAdd.isExactly() && mask.contains(toAdd.getMinValue())) {
 			add(toAdd);
@@ -748,11 +752,11 @@ public class BitMapCDateSet {
 								   mask.higherSetBit(toAdd.getMinValue());
 
 			if (minFromMin != Integer.MIN_VALUE) {
-				final int maxFromMin = mask.higherClearBit(minFromMin) - 1;
+				final int maxFromMin = mask.higherClearBit(minFromMin);
 
 				if (maxFromMin != Integer.MIN_VALUE) {
-					if (maxFromMin < toAdd.getMaxValue()) {
-						add(CDateRange.of(minFromMin, maxFromMin));
+					if (maxFromMin <= toAdd.getMaxValue()) {
+						add(CDateRange.of(minFromMin, maxFromMin - 1));
 					}
 					// it's fully contained
 					else {
@@ -773,8 +777,8 @@ public class BitMapCDateSet {
 				final int minFromMax = mask.lowerClearBit(maxFromMax);
 
 				if (minFromMax != Integer.MIN_VALUE) {
-					if (minFromMax > toAdd.getMinValue()) {
-						add(CDateRange.of(minFromMax, maxFromMax));
+					if (minFromMax >= toAdd.getMinValue()) {
+						add(CDateRange.of(minFromMax - 1, maxFromMax));
 					}
 					// it's fully contained
 					else {
