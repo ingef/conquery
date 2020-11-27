@@ -770,7 +770,7 @@ public class BitMapCDateSet {
 								   mask.lowerSetBit(toAdd.getMinValue());
 
 			if (maxFromMax != Integer.MIN_VALUE) {
-				final int minFromMax = mask.lowerClearBit(maxFromMax) - 1;
+				final int minFromMax = mask.lowerClearBit(maxFromMax);
 
 				if (minFromMax != Integer.MIN_VALUE) {
 					if (minFromMax > toAdd.getMinValue()) {
