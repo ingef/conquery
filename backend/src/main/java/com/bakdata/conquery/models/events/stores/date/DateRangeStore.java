@@ -15,7 +15,7 @@ public class DateRangeStore extends ColumnStoreAdapter<CDateRange> {
 
 	private final CDateRange[] values;
 
-	@JsonCreator
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeStore(CDateRange[] ranges) {
 		this.values = ranges;
 	}
