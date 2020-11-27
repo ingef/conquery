@@ -48,6 +48,11 @@ public class StringTypeSuffix extends ChainedStringType {
 	}
 
 	@Override
+	public void setValueMapping(int[] mapping) {
+		subType.setValueMapping(mapping);
+	}
+
+	@Override
 	public Iterator<String> iterator() {
 		Iterator<String> subIt = subType.iterator();
 		return new Iterator<String>() {

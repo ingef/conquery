@@ -40,7 +40,12 @@ public class StringTypePrefix extends ChainedStringType {
 		}
 		return -1;
 	}
-	
+
+	@Override
+	public void setValueMapping(int[] mapping) {
+		subType.setValueMapping(mapping);
+	}
+
 	@Override
 	public Iterator<String> iterator() {
 		Iterator<String> subIt = subType.iterator();

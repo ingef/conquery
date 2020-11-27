@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.CTypeVarInt;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -26,7 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends CTypeVarInt<Integer> {
+public class StringTypeDictionary extends CType<Integer> {
+
+	protected CType<Long> numberType;
 
 	@JsonIgnore
 	private transient Dictionary dictionary;
@@ -37,17 +38,24 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	@InternalOnly
 	private DatasetId dataset;
 
+	@Setter
+	@InternalOnly
+	private int[] valueMapping = null;
+
 	public StringTypeDictionary(CType<Long> numberType, Dictionary dictionary, String name) {
-		super(MajorTypeId.STRING, numberType);
+		super(MajorTypeId.STRING);
+		this.numberType = numberType;
 		this.dictionary = dictionary;
 		this.name = name;
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(CType<Long> numberType, DatasetId dataset, String name) {
-		super(MajorTypeId.STRING, numberType);
+	public StringTypeDictionary(CType<Long> numberType, DatasetId dataset, String name, int[] mapping) {
+		super(MajorTypeId.STRING);
+		this.numberType = numberType;
 		this.name = name;
 		this.dataset = dataset;
+		this.valueMapping = mapping;
 	}
 
 	@Override
@@ -56,6 +64,10 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	}
 
 	public byte[] getElement(int value) {
+		if(valueMapping != null){
+			value = valueMapping[value];
+		}
+
 		return dictionary.getElement(value);
 	}
 
@@ -107,11 +119,31 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
+		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName(), getValueMapping());
 	}
 
 	@Override
 	public Integer get(int event) {
 		return getNumberType().get(event).intValue();
+	}
+
+	@Override
+	public long estimateMemoryFieldSize() {
+		return numberType.estimateMemoryFieldSize();
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+		if (value == null) {
+			numberType.set(event, null);
+		}
+		else {
+			numberType.set(event, value.longValue());
+		}
+	}
+
+	@Override
+	public final boolean has(int event) {
+		return numberType.has(event);
 	}
 }

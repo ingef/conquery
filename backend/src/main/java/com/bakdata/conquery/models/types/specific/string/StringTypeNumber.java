@@ -109,6 +109,11 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
+	public void setValueMapping(int[] mapping) {
+
+	}
+
+	@Override
 	public StringTypeNumber select(int[] starts, int[] length) {
 		return new StringTypeNumber(range, delegate.select(starts, length));
 	}

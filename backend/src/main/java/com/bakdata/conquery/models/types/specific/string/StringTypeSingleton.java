@@ -13,7 +13,8 @@ import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
 public class StringTypeSingleton extends StringType {
 
@@ -30,19 +31,19 @@ public class StringTypeSingleton extends StringType {
 
 	@Override
 	public int size() {
-		return singleValue == null ?0:1;
+		return singleValue == null ? 0 : 1;
 	}
 
 	@Override
 	public StringTypeSingleton select(int[] starts, int[] length) {
-		return new StringTypeSingleton(singleValue,delegate.select(starts, length));
+		return new StringTypeSingleton(singleValue, delegate.select(starts, length));
 	}
 
 	@Override
 	public String getElement(int id) {
 		return singleValue;
 	}
-	
+
 	@Override
 	public String createScriptValue(Integer value) {
 		return singleValue;
@@ -50,42 +51,46 @@ public class StringTypeSingleton extends StringType {
 
 	@Override
 	public int getId(String value) {
-		if(value != null && value.equals(singleValue)) {
+		if (value != null && value.equals(singleValue)) {
 			return 0;
 		}
 		return -1;
 	}
-	
+
 	@Override
 	public Iterator<String> iterator() {
-		if(singleValue == null) {
+		if (singleValue == null) {
 			return Collections.emptyIterator();
 		}
 		return Iterators.singletonIterator(singleValue);
 	}
-	
+
 	@Override
 	public long estimateMemoryFieldSize() {
 		return Byte.SIZE;
 	}
-	
+
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return null;
 	}
-	
+
 	@Override
 	public void setUnderlyingDictionary(DictionaryId newDict) {
 
 	}
 
 	@Override
-	public void set(int event, Integer value){
+	public void setValueMapping(int[] mapping) {
+	}
+
+	@Override
+	public void set(int event, Integer value) {
 		getDelegate().set(event, value != null && value == 0);
 	}
 
 	@Override
-	public boolean has(int event){
+	public boolean has(int event) {
 		return getDelegate().get(event);
 	}
 

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.dictionary;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -57,18 +56,4 @@ public class DictionaryMapping {
 		return source2TargetMap[sourceId];
 	}
 
-
-
-	/**
-	 * Mutably applies mapping to store.
-	 */
-	public void applyToStore(ColumnStore<Integer> store, long rows) {
-		for (int row = 0; row < rows; row++) {
-			if (!store.has(row)) {
-				continue;
-			}
-
-			store.set(row, source2Target(store.getString(row)));
-		}
-	}
 }

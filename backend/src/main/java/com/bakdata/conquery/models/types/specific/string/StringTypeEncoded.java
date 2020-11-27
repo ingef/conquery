@@ -113,6 +113,11 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
+	public void setValueMapping(int[] mapping) {
+		subType.setValueMapping(mapping);
+	}
+
+	@Override
 	public StringTypeEncoded select(int[] starts, int[] length) {
 		return new StringTypeEncoded(subType.select(starts, length), getEncoding());
 	}

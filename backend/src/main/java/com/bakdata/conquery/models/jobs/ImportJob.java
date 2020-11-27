@@ -337,7 +337,8 @@ public class ImportJob extends Job {
 
 			log.debug("Remapping Column[{}] = {} with {}", column.getId(), values[i], mapping);
 
-			mapping.applyToStore((StringType) values[i], values[i].getLines());
+			final StringType stringType = (StringType) values[i];
+			stringType.setValueMapping(mapping.getSource2TargetMap());
 		}
 	}
 
