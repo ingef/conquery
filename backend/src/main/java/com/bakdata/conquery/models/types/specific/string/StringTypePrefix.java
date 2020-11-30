@@ -15,36 +15,44 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
-@Getter @Setter
+@Getter
+@Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
+@ToString(of = {"prefix", "suffix", "subType"})
 public class StringTypePrefix extends StringType {
 
 	@Nonnull
 	protected StringType subType;
+
 	@NonNull
 	private String prefix;
-	
+
+	@NonNull
+	private String suffix;
+
 	@JsonCreator
-	public StringTypePrefix(StringType subType, String prefix) {
+	public StringTypePrefix(StringType subType, String prefix, String suffix) {
 		super();
-		this.subType = ((StringType) subType);
+		this.subType = subType;
 		this.prefix = prefix;
+		this.suffix = suffix;
 	}
 
 	@Override
 	public String getElement(int value) {
-		return prefix+subType.getElement(value);
+		return prefix + subType.getElement(value) + suffix;
 	}
-	
+
 	@Override
 	public String createScriptValue(Integer value) {
-		return prefix+subType.createScriptValue(value);
+		return prefix + subType.createScriptValue(value);
 	}
-	
+
 	@Override
 	public int getId(String value) {
-		if(value.startsWith(prefix)) {
+		if (value.startsWith(prefix)) {
 			return subType.getId(value.substring(prefix.length()));
 		}
 		return -1;
@@ -66,19 +74,15 @@ public class StringTypePrefix extends StringType {
 
 			@Override
 			public String next() {
-				return prefix+subIt.next();
+				return prefix + subIt.next();
 			}
 		};
 	}
-	
-	@Override
-	public String toString() {
-		return "StringTypePrefix[prefix=" + prefix + ", subType=" + subType + "]";
-	}
+
 
 	@Override
 	public StringTypePrefix select(int[] starts, int[] length) {
-		return new StringTypePrefix(subType.select(starts, length),getPrefix());
+		return new StringTypePrefix(subType.select(starts, length), getPrefix(), getSuffix());
 	}
 
 	@Override

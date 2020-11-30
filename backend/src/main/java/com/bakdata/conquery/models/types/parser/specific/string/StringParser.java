@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.string.StringTypePrefix;
 import com.bakdata.conquery.models.types.specific.string.StringTypeSingleton;
-import com.bakdata.conquery.models.types.specific.string.StringTypeSuffix;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -118,12 +117,8 @@ public class StringParser extends Parser<Integer> {
 
 		StringType result = guess.getType();
 		//wrap in prefix suffix
-		if (!StringUtils.isEmpty(prefix)) {
-			result = new StringTypePrefix(result, prefix);
-			copyLineCounts(result);
-		}
-		if (!StringUtils.isEmpty(suffix)) {
-			result = new StringTypeSuffix(result, suffix);
+		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
+			result = new StringTypePrefix(result, prefix, suffix);
 			copyLineCounts(result);
 		}
 		return result;

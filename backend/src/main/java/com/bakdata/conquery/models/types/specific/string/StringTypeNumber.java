@@ -16,10 +16,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
+@ToString(of = "delegate")
 public class StringTypeNumber extends StringType {
 
 	@Nonnull
@@ -46,11 +48,6 @@ public class StringTypeNumber extends StringType {
 	@Override
 	public long estimateMemoryFieldSize() {
 		return delegate.estimateMemoryFieldSize();
-	}
-
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName() + "[numberType=" + delegate + "]";
 	}
 
 	@Override
@@ -87,11 +84,7 @@ public class StringTypeNumber extends StringType {
 	@Override
 	public int getId(String value) {
 		try {
-			int result = Integer.parseInt(value);
-			if (range.contains(result)) {
-				return result;
-			}
-			return -1;
+			return Integer.parseInt(value);
 		}
 		catch (NumberFormatException e) {
 			return -1;

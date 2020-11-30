@@ -6,8 +6,11 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-/**every implementation must guarantee IDs between 0 and size**/
-// TODO remove Iterable implementationm and change to explicit accessor instead
+/**
+ * Every implementation must guarantee IDs between 0 and size.
+ *
+ * Abstract
+ */
 public abstract class StringType extends CType<Integer> implements Iterable<String> {
 
 	public StringType() {
