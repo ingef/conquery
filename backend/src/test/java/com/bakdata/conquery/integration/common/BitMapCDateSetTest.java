@@ -760,8 +760,28 @@ public class BitMapCDateSetTest {
 		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(6, 7));
 	}
 
+	@Test
+	public void testSetBitExactlyOne() {
+		assertThat(BitMapCDateSet.create(CDateRange.exactly(10)))
+				.returns(10, set -> set.higherSetBit(-10))
+				.returns(10, set -> set.higherSetBit(10))
+
+				.returns(Integer.MIN_VALUE, set -> set.higherSetBit(11))
+
+				.returns(11, set -> set.higherClearBit(10))
+		;
+
+		assertThat(BitMapCDateSet.create(CDateRange.exactly(-10)))
+				.returns(-10, set -> set.higherSetBit(-20))
+				.returns(-10, set -> set.higherSetBit(-10))
+
+				.returns(Integer.MIN_VALUE, set -> set.higherSetBit(-9))
+
+				.returns(-9, set -> set.higherClearBit(-10))
+		;
 
 
 
+	}
 
 }

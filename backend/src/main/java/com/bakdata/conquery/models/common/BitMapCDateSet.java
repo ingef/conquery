@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.common;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -223,11 +222,12 @@ public class BitMapCDateSet {
 	/**
 	 * Search for the next highest clear bit, or return {@code Integer.MIN_VALUE} if none exists.
 	 */
-	protected int higherClearBit(int value) {
+	public int higherClearBit(int value) {
 		if (value < 0) {
 			int out = negativeBits.previousClearBit(-value);
 
-			if (out != -1) {
+			// zero is part of positive store, -1 => not contained
+			if (out != 0 && out != -1) {
 				return -out;
 			}
 
@@ -631,11 +631,11 @@ public class BitMapCDateSet {
 	/**
 	 * Search for the next highest set bit, or return {@code Integer.MIN_VALUE} if none exists.
 	 */
-	protected int higherSetBit(int value) {
+	public int higherSetBit(int value) {
 		if (value < 0) {
 			int out = negativeBits.previousSetBit(-value);
 
-			if (out != -1) {
+			if (out != -1 && out != 0) {
 				return -out;
 			}
 
@@ -657,63 +657,6 @@ public class BitMapCDateSet {
 		return out;
 	}
 
-	/**
-	 * Search for the next lower set bit, or return {@code Integer.MIN_VALUE} if none exists.
-	 */
-	protected int lowerSetBit(int value) {
-		if (value >= 0) {
-			int out = positiveBits.previousSetBit(value);
-
-			if (out != -1) {
-				return out;
-			}
-
-			out = negativeBits.nextSetBit(1);
-
-			if (out != -1) {
-				return -out;
-			}
-
-			return Integer.MIN_VALUE;
-		}
-
-		int out = negativeBits.nextSetBit(1);
-
-		if (out != -1) {
-			return -out;
-		}
-
-		return Integer.MIN_VALUE;
-	}
-
-	/**
-	 * Search for the next lower clean bit, or return {@code Integer.MIN_VALUE} if none exists.
-	 */
-	protected int lowerClearBit(int value) {
-		if (value >= 0) {
-			int out = positiveBits.previousClearBit(value);
-
-			if (out != -1) {
-				return out;
-			}
-
-			out = negativeBits.nextClearBit(1);
-
-			if (out != -1) {
-				return -out;
-			}
-
-			return Integer.MIN_VALUE;
-		}
-
-		int out = negativeBits.nextClearBit(1);
-
-		if (out != -1) {
-			return -out;
-		}
-
-		return Integer.MIN_VALUE;
-	}
 
 	/**
 	 * Add {@code toAdd} into this Set, but only the parts that are also in {@code mask}.
@@ -789,12 +732,12 @@ public class BitMapCDateSet {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append('{');
-		Joiner.on(", ").appendTo(sb, this.asRanges());
+		Joiner.on(", ").appendTo(sb, asRanges());
 		sb.append('}');
 		return sb.toString();
 	}
 
-	public Collection<CDateRange> asRanges() {
+	public List<CDateRange> asRanges() {
 
 		if (isAll()) {
 			return Collections.singletonList(CDateRange.all());
@@ -808,47 +751,19 @@ public class BitMapCDateSet {
 
 		//TODO implement this using higherSetBit etc.? Which might actually be slower since it traverses memory in reverse
 
-		// Iterate negative ranges first
-		if (!negativeBits.isEmpty()) {
-			int start = negativeBits.nextSetBit(0);
+		int start = getMinRealValue();
 
-			while (start != -1) {
-				int end = negativeBits.nextClearBit(start);
+		while(start != Integer.MIN_VALUE){
+			int end = higherClearBit(start);
 
-				out.add(CDateRange.of(-(end - 1), -start));
-
-				start = negativeBits.nextSetBit(end);
+			// single entry.
+			if(end == Integer.MIN_VALUE){
+				end = start + 1;
 			}
-		}
 
-		// Then reverse their order as they are starting at zero
-		Collections.reverse(out);
+			out.add(CDateRange.of(start, end - 1));
 
-		// this is the Range in the middle, we might need this if negative and positive bits are connected.
-		int center = out.size() - 1;
-
-		// Then iterate positive ranges
-		if (!positiveBits.isEmpty()) {
-			int start = positiveBits.nextSetBit(0);
-
-			while (start != -1) {
-				int end = positiveBits.nextClearBit(start);
-				out.add(CDateRange.of(start, end - 1));
-
-				start = positiveBits.nextSetBit(end);
-			}
-		}
-
-		// Now handle special cases related to infinities and connected bitsets
-
-		// they are indeed connected
-		if (positiveBits.get(0) && negativeBits.get(1)) {
-			final CDateRange centerFromLeft = out.get(center);
-			final CDateRange centerFromRight = out.get(center + 1);
-
-			// remove centerFromLeft, then replaceCenterFromRight which is now at centerFromLeft
-			out.remove(center);
-			out.set(center, CDateRange.of(centerFromLeft.getMinValue(), centerFromRight.getMaxValue()));
+			start = higherSetBit(end);
 		}
 
 
