@@ -8,6 +8,11 @@ import lombok.Getter;
 import lombok.ToString;
 
 
+/**
+ * Store values as ints, can only store 2^32-1 values, as MAX is used as NULL signifier.
+ *
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
+ */
 @CPSType(id = "INTEGERS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)

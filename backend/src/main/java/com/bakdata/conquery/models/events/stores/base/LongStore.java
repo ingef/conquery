@@ -7,6 +7,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Stores values as longs, can only Store 2^64-1 as MAX is used as NULL marker.
+
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
+ */
 @CPSType(id = "LONGS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)

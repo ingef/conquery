@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.types.parser.specific;
 import com.bakdata.conquery.models.events.stores.RebasingStore;
 import com.bakdata.conquery.models.events.stores.base.ByteStore;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
@@ -25,7 +24,6 @@ public class IntegerParser extends Parser<Long> {
 
 	private long maxValue = Long.MIN_VALUE;
 	private long minValue = Long.MAX_VALUE;
-
 
 
 	@Override
@@ -65,7 +63,7 @@ public class IntegerParser extends Parser<Long> {
 			return new IntegerType(new RebasingStore(minValue - (long) Integer.MIN_VALUE, IntegerStore.create(getLines())));
 		}
 
-		return new IntegerType(LongStore.create(getLines()));
+		return new IntegerType(new RebasingStore(minValue - Long.MIN_VALUE, IntegerStore.create(getLines())));
 	}
 
 }

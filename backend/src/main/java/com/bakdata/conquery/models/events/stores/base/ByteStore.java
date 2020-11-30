@@ -11,7 +11,7 @@ import lombok.ToString;
 /**
  * Can store only 255 different values, the last one is reserved as NULL-flag.
  *
- * Don't construct this directly, instead use IntegerParser for that.
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
  */
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
