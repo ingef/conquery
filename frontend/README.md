@@ -27,23 +27,25 @@ Commands analogoues to `start_production.sh` script.
 
 ### Using node / express
 
-
 ```
 yarn
 yarn run build
 PORT=8000 yarn run start-production
 ```
 
-## Available Environment Variables
+## Using Environment Variables
 
-````js
-NODE_ENV: "development" | "production"; // Create a production build and disable debuggers when set to production   
+Copy the .env.example file locally to .env to use these environment variables.
+
+### Available .env variables
+
+```js
+NODE_ENV: "development" | "production"; // Create a production build and disable debuggers when set to production
 REACT_APP_API_URL?: string; // Set the backend URL
 REACT_APP_DISABLE_LOGIN?: boolean; // Disable forced login page
 REACT_APP_LANG?: "de" | "en"; // Select language for Frontend
 PORT?: string; // Port on which to start the frontend
-````
-
+```
 
 ## Install & start (development)
 
@@ -106,4 +108,3 @@ Migration to TypeScript is in progress.
 
 - We're using MultiBackend to support Drag and Drop for touch and html5.
 - To render a Drag and Drop preview on mobile, we'll have to calculate `width` and `height` of the drag source.
-

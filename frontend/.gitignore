@@ -6,6 +6,9 @@
 # Libraries
 node_modules
 
+# Config / secrets
+.env
+
 # Artifacts
 .nyc_output
 coverage
