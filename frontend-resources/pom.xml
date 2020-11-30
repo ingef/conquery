@@ -81,6 +81,16 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>copy .env</id>
+						<goals>
+							<goal>cp</goal>
+						</goals>
+						<phase>generate-sources</phase>
+						<configuration>
+							<arguments>.env.example .env</arguments>
+						</configuration>
+					</execution>
+					<execution>
 						<id>yarn build</id>
 						<goals>
 							<goal>yarn</goal>
