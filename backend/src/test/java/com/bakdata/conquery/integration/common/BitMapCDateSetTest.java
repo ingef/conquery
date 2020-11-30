@@ -8,11 +8,13 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@Slf4j
 public class BitMapCDateSetTest {
 
 	public static Stream<Arguments> arguments() {
@@ -634,6 +636,132 @@ public class BitMapCDateSetTest {
 				.matches(Predicate.not(BitMapCDateSet::isEmpty))
 				.hasToString("{-∞/+∞}")
 		;
-
 	}
+
+	@Test
+	public void testMaskedAddNoIntersection() {
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(10, 20));
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(5, 25));
+
+		set.maskedAdd(CDateRange.of(1, 2), mask);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(10, 20));
+	}
+
+	@Test
+	public void testMaskedAddAll() {
+		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(10, 20));
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.all());
+
+		set.maskedAdd(CDateRange.exactly(1), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(10, 20), CDateRange.exactly(1));
+	}
+
+	@Test
+	public void testMaskedAddEmpty() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create();
+
+		set.maskedAdd(CDateRange.exactly(1), mask);
+
+		assertThat(set.asRanges()).isEmpty();
+	}
+
+	@Test
+	public void testMaskedAddMaskAtLeast() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atLeast(10));
+
+		set.maskedAdd(CDateRange.of(5, 15), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(10, 15));
+	}
+
+	@Test
+	public void testMaskedAddMaskAtMost() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atMost(10));
+
+		set.maskedAdd(CDateRange.of(5, 15), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(5, 10));
+	}
+
+	@Test
+	public void testMaskedAddMaskAtMostWithGaps() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atMost(10), CDateRange.of(12, 13));
+
+		set.maskedAdd(CDateRange.of(5, 15), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(5, 10), CDateRange.of(12, 13));
+	}
+
+	@Test
+	public void testMaskedAddMaskAtLeastWithGaps() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atLeast(10), CDateRange.of(7, 8));
+
+		set.maskedAdd(CDateRange.of(5, 15), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(10, 15), CDateRange.of(7, 8));
+	}
+
+
+	@Test
+	public void testMaskedAddMaskOpenBothEndsWithGaps() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atMost(10), CDateRange.atLeast(20));
+
+		set.maskedAdd(CDateRange.of(5, 25), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(5, 10), CDateRange.of(20, 25));
+	}
+
+	@Test
+	public void testMaskedAddMaskOpenBothEndsWithMultipleGaps() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atMost(10), CDateRange.exactly(15), CDateRange.atLeast(20));
+
+		set.maskedAdd(CDateRange.of(5, 25), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(5, 10), CDateRange.exactly(15), CDateRange.of(20, 25));
+	}
+
+	@Test
+	public void testMaskedAddMaskPartialIntersectionFromLower() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(5, 7));
+
+		set.maskedAdd(CDateRange.of(0, 7), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(5, 7));
+	}
+
+	@Test
+	public void testMaskedAddMaskPartialIntersectionFromHigher() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(5, 7));
+
+		set.maskedAdd(CDateRange.of(6, 15), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(6, 7));
+	}
+
+
+
+
+
 }

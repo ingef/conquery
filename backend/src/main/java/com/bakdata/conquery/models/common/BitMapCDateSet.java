@@ -25,15 +25,16 @@ import com.google.common.base.Throwables;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of a Set for CDates (ie days since start of the UNIX-Epoch).
- *
+ * <p>
  * This implementation stores days in a bitset. Making for extremely fast lookup and convenient operation, but at a tradeoff for memory usage. The instances should therefore be short-lived if possible. For example a span of 100years takes up approximately 4.5Kbyte. This class is much faster than the previous implementation, it would however be possible to try using RoaringBitmaps as a backend, which can handle sparse cases (however it is possible their definition of large is a few orders above ours).
- *
  */
 @JsonDeserialize(using = CDateSetDeserializer.class)
 @JsonSerialize(using = CDateSetSerializer.class)
+@Slf4j
 public class BitMapCDateSet {
 
 	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
@@ -135,11 +136,11 @@ public class BitMapCDateSet {
 	 * Test if the single CDate is inside the Set.
 	 */
 	public boolean contains(int value) {
-		if(isEmpty()){
+		if (isEmpty()) {
 			return false;
 		}
 
-		if(isAll()){
+		if (isAll()) {
 			return true;
 		}
 
@@ -160,6 +161,24 @@ public class BitMapCDateSet {
 		}
 
 		return value < 0 && negativeBits.get(-value);
+	}
+
+	public boolean isEmpty() {
+		return positiveBits.isEmpty() && negativeBits.isEmpty() && !openMin && !openMax;
+	}
+
+	public boolean isAll() {
+		// trivial exclusion case
+		if (!openMax || !openMin) {
+			return false;
+		}
+
+		if (positiveBits.isEmpty() && negativeBits.isEmpty()) {
+			return true;
+		}
+
+		// if min and max are open and we have a single contiguous range in the center, then we're also open!
+		return higherClearBit(getMinRealValue()) - 1 == getMaxRealValue();
 	}
 
 	/**
@@ -199,6 +218,34 @@ public class BitMapCDateSet {
 		}
 
 		throw new IllegalStateException("Open sets have no real min value");
+	}
+
+	/**
+	 * Search for the next highest clear bit, or return {@code Integer.MIN_VALUE} if none exists.
+	 */
+	protected int higherClearBit(int value) {
+		if (value < 0) {
+			int out = negativeBits.previousClearBit(-value);
+
+			if (out != -1) {
+				return -out;
+			}
+
+			out = positiveBits.nextClearBit(0);
+
+			if (out == -1) {
+				return Integer.MIN_VALUE;
+			}
+
+			return out;
+		}
+
+		int out = positiveBits.nextClearBit(value);
+
+		if (out == -1) {
+			return Integer.MIN_VALUE;
+		}
+		return out;
 	}
 
 	/**
@@ -281,24 +328,6 @@ public class BitMapCDateSet {
 		return CDateRange.of(getMinValue(), getMaxValue());
 	}
 
-	public boolean isEmpty() {
-		return positiveBits.isEmpty() && negativeBits.isEmpty() && !openMin && !openMax;
-	}
-
-	public boolean isAll() {
-		// trivial exclusion case
-		if (!openMax || !openMin) {
-			return false;
-		}
-
-		if (positiveBits.isEmpty() && negativeBits.isEmpty()) {
-			return true;
-		}
-
-		// if min and max are open and we have a single contiguous range in the center, then we're also open!
-		return higherClearBit(getMinRealValue()) - 1 == getMaxRealValue();
-	}
-
 	/**
 	 * @return The highest CDate in this Set.
 	 * @throws IllegalArgumentException if it is empty.
@@ -337,34 +366,6 @@ public class BitMapCDateSet {
 		}
 
 		return positiveBits.nextSetBit(0);
-	}
-
-	/**
-	 * Search for the next highest clear bit, or return {@code Integer.MIN_VALUE} if none exists.
-	 */
-	protected int higherClearBit(int value) {
-		if (value < 0) {
-			int out = negativeBits.previousClearBit(-value);
-
-			if (out != -1) {
-				return -out;
-			}
-
-			out = positiveBits.nextClearBit(0);
-
-			if (out == -1) {
-				return Integer.MIN_VALUE;
-			}
-
-			return out;
-		}
-
-		int out = positiveBits.nextClearBit(value);
-
-		if (out == -1) {
-			return Integer.MIN_VALUE;
-		}
-		return out;
 	}
 
 	private void setRange(int from, int to) {
@@ -592,7 +593,7 @@ public class BitMapCDateSet {
 			return;
 		}
 
-		if(retained.isEmpty()){
+		if (retained.isEmpty()) {
 			clear();
 		}
 
@@ -731,7 +732,7 @@ public class BitMapCDateSet {
 			return;
 		}
 
-		if(!mask.intersects(toAdd)){
+		if (!mask.intersects(toAdd)) {
 			return;
 		}
 
@@ -741,52 +742,37 @@ public class BitMapCDateSet {
 			return;
 		}
 
+		int begin = toAdd.getMinValue();
 
-		// from min
-		{
-			// is min partially contained?
-			// if yes, we can insert the intersecting range
-			// if not, we need to find the range that's between that and max
-			final int minFromMin = mask.contains(toAdd.getMinValue()) ?
-								   toAdd.getMinValue() :
-								   mask.higherSetBit(toAdd.getMinValue());
-
-			if (minFromMin != Integer.MIN_VALUE) {
-				final int maxFromMin = mask.higherClearBit(minFromMin);
-
-				if (maxFromMin != Integer.MIN_VALUE) {
-					if (maxFromMin <= toAdd.getMaxValue()) {
-						add(CDateRange.of(minFromMin, maxFromMin - 1));
-					}
-					// it's fully contained
-					else {
-						add(CDateRange.of(minFromMin, toAdd.getMaxValue()));
-						return;
-					}
-				}
-			}
+		if (mask.openMin && toAdd.getMinValue() < mask.getMinRealValue()) {
+			add(CDateRange.of(toAdd.getMinValue(), mask.getMinRealValue()));
+			begin = mask.getMinRealValue();
 		}
 
-		// from max
-		{
-			final int maxFromMax = mask.contains(toAdd.getMaxValue()) ?
-								   toAdd.getMaxValue() :
-								   mask.lowerSetBit(toAdd.getMinValue());
+		if (mask.openMax && toAdd.getMaxValue() > mask.getMaxRealValue()) {
+			add(CDateRange.of(mask.getMaxRealValue(), toAdd.getMaxValue()));
+		}
 
-			if (maxFromMax != Integer.MIN_VALUE) {
-				final int minFromMax = mask.lowerClearBit(maxFromMax);
+		while (begin != Integer.MIN_VALUE) {
+			int start = mask.higherSetBit(begin);
 
-				if (minFromMax != Integer.MIN_VALUE) {
-					if (minFromMax >= toAdd.getMinValue()) {
-						add(CDateRange.of(minFromMax - 1, maxFromMax));
-					}
-					// it's fully contained
-					else {
-						add(CDateRange.of(toAdd.getMinValue(), maxFromMax));
-						return;
-					}
-				}
+			if (start == Integer.MIN_VALUE) {
+				break;
 			}
+
+			int end = mask.higherClearBit(start);
+
+			if (end == Integer.MIN_VALUE) {
+				break;
+			}
+
+			if(end > toAdd.getMaxValue()){
+				end = toAdd.getMaxValue() + 1;
+			}
+
+			add(CDateRange.of(start, end - 1));
+
+			begin = mask.higherClearBit(end);
 		}
 	}
 
