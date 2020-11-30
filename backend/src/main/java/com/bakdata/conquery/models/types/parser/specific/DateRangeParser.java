@@ -4,15 +4,12 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeDateRange;
-import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeQuarter;
 import com.bakdata.conquery.util.DateFormats;
-import com.bakdata.conquery.util.PackedUnsigned1616;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -63,21 +60,14 @@ public class DateRangeParser extends Parser<CDateRange> {
 	@Override
 	protected CType<CDateRange> decideType() {
 
-		// Quarters and Packed cannot encode open ranges.
-		if (!anyOpen) {
-			if (onlyQuarters) {
-				final IntegerParser quarterParser = new IntegerParser();
-				quarterParser.setLines(getLines());
-				quarterParser.setMaxValue(maxValue);
-				quarterParser.setMinValue(minValue);
+		// Quarters cannot encode open ranges.
+		if (!anyOpen && onlyQuarters) {
+			final IntegerParser quarterParser = new IntegerParser();
+			quarterParser.setLines(getLines());
+			quarterParser.setMaxValue(maxValue);
+			quarterParser.setMinValue(minValue);
 
-				return new DateRangeTypeQuarter(quarterParser.decideType());
-			}
-
-			if (minValue > 0 && maxValue < PackedUnsigned1616.MAX_VALUE) {
-				log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
-				return new DateRangeTypePacked(IntegerStore.create(getLines()));
-			}
+			return new DateRangeTypeQuarter(quarterParser.decideType());
 		}
 
 		final IntegerParser parser = new IntegerParser(minValue, maxValue);

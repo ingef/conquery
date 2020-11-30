@@ -33,7 +33,7 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	@Override
 	public long estimateMemoryFieldSize() {
-		return store.estimateMemoryFieldSize();
+		return store.estimateMemoryFieldSize() * 2;
 	}
 
 	@Override
@@ -43,7 +43,6 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	@Override
 	public void set(int event, CDateRange value) {
-		event = event * 2;
 		if (value == null) {
 			store.set(left(event), null);
 			store.set(right(event), null);
@@ -56,7 +55,6 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 		else {
 			store.set(left(event), null);
 		}
-
 
 		if (value.hasUpperBound()) {
 			store.set(right(event), (long) value.getMaxValue());
@@ -76,8 +74,6 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	@Override
 	public CDateRange get(int event) {
-
-
 		int min = Integer.MIN_VALUE;
 		int max = Integer.MAX_VALUE;
 

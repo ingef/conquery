@@ -7,9 +7,10 @@ import java.util.List;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeDateRange;
-import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeQuarter;
+import com.bakdata.conquery.models.types.specific.integer.IntegerType;
 import com.bakdata.conquery.util.PackedUnsigned1616;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,10 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10))
 			.forEach(parser::registerValue);
 
-		assertThat(parser.decideType()).isInstanceOf(DateRangeTypePacked.class);
+		final CType<CDateRange> actual = parser.decideType();
+
+		assertThat(actual).isInstanceOf(DateRangeTypeDateRange.class);
+		assertThat(((DateRangeTypeDateRange) actual).getStore()).isInstanceOf(IntegerType.class);
 
 	}
 
