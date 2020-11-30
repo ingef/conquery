@@ -1,3 +1,5 @@
+import { getExternalSupportedErrorCodes } from "../environment";
+
 export type SupportedErrorCodesT =
   | "EXAMPLE_ERROR"
   | "EXAMPLE_ERROR_INTERPOLATED";
@@ -10,5 +12,7 @@ const SUPPORTED_ERROR_CODES = new Map<SupportedErrorCodesT, string>([
 export function getErrorCodeMessageKey(
   code: SupportedErrorCodesT
 ): string | null {
-  return SUPPORTED_ERROR_CODES.get(code) || null;
+  const externalErrorCodes = getExternalSupportedErrorCodes();
+
+  return externalErrorCodes[code] || SUPPORTED_ERROR_CODES.get(code) || null;
 }
