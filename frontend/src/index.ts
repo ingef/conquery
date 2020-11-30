@@ -15,6 +15,7 @@ import { theme } from "./app-theme";
 
 import "./app-styles.sass";
 import { TabT } from "./js/pane/types";
+import { Environment } from "./js/environment";
 
 const isProduction = process.env.NODE_ENV === "production";
 const disableLogin = !!process.env.REACT_APP_DISABLE_LOGIN;
@@ -28,7 +29,7 @@ if (!LANG || LANG === "de") {
 
 const MOCK_API_URL = "http://localhost:8001";
 
-const environment = {
+const environment: Environment = {
   isProduction: isProduction,
   basename: isProduction
     ? "/" // Possibly: Run under a subpath in production
