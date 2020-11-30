@@ -24,6 +24,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 	private boolean onlyQuarters = true;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
+	private boolean anyOpen;
 
 	public DateRangeParser(ParserConfig config) {
 
@@ -53,6 +54,8 @@ public class DateRangeParser extends Parser<CDateRange> {
 	protected void registerValue(CDateRange v) {
 		onlyQuarters = onlyQuarters && v.isSingleQuarter();
 
+		anyOpen = anyOpen || v.isOpen();
+
 		maxValue = Math.max(maxValue, v.getMaxValue());
 		minValue = Math.min(minValue, v.getMinValue());
 	}
@@ -60,18 +63,21 @@ public class DateRangeParser extends Parser<CDateRange> {
 	@Override
 	protected CType<CDateRange> decideType() {
 
-		if (onlyQuarters) {
-			final IntegerParser quarterParser = new IntegerParser();
-			quarterParser.setLines(getLines());
-			quarterParser.setMaxValue(maxValue);
-			quarterParser.setMinValue(minValue);
+		// Quarters and Packed cannot encode open ranges.
+		if (!anyOpen) {
+			if (onlyQuarters) {
+				final IntegerParser quarterParser = new IntegerParser();
+				quarterParser.setLines(getLines());
+				quarterParser.setMaxValue(maxValue);
+				quarterParser.setMinValue(minValue);
 
-			return new DateRangeTypeQuarter(quarterParser.decideType());
-		}
+				return new DateRangeTypeQuarter(quarterParser.decideType());
+			}
 
-		if (minValue > 0 && maxValue < PackedUnsigned1616.MAX_VALUE) {
-			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
-			return new DateRangeTypePacked(IntegerStore.create(getLines()));
+			if (minValue > 0 && maxValue < PackedUnsigned1616.MAX_VALUE) {
+				log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
+				return new DateRangeTypePacked(IntegerStore.create(getLines()));
+			}
 		}
 
 		final IntegerParser parser = new IntegerParser(minValue, maxValue);
