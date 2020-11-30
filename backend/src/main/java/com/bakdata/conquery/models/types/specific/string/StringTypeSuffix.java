@@ -1,12 +1,18 @@
 package com.bakdata.conquery.models.types.specific.string;
 
 import java.util.Iterator;
+import java.util.function.Consumer;
+
+import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.ChainedStringType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -14,14 +20,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SUFFIX")
-public class StringTypeSuffix extends ChainedStringType {
+public class StringTypeSuffix extends StringType {
 
+	@Nonnull
+	protected StringType subType;
 	@NonNull
 	private String suffix;
 
 	@JsonCreator
 	public StringTypeSuffix(StringType subType, String suffix) {
-		super(subType);
+		super();
+		this.subType = ((StringType) subType);
 		this.suffix = suffix;
 	}
 
@@ -72,5 +81,61 @@ public class StringTypeSuffix extends ChainedStringType {
 	@Override
 	public String toString() {
 		return "StringTypeSuffix[suffix=" + suffix + ", subType=" + subType + "]";
+	}
+
+	@Override
+	public void loadDictionaries(NamespacedStorage storage) {
+		subType.loadDictionaries(storage);
+	}
+
+	@Override
+	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
+		subType.storeExternalInfos(dictionaryConsumer);
+	}
+
+	@Override
+	public int size() {
+		return subType.size();
+	}
+
+	@Override
+	public long estimateMemoryFieldSize() {
+		return subType.estimateMemoryFieldSize();
+	}
+
+	@Override
+	public long estimateMemoryConsumption() {
+		return subType.estimateMemoryConsumption();
+	}
+
+	@Override
+	public long estimateTypeSize() {
+		return subType.estimateTypeSize();
+	}
+
+	@Override
+	@JsonIgnore
+	public Dictionary getUnderlyingDictionary() {
+		return subType.getUnderlyingDictionary();
+	}
+
+	@Override
+	public void setUnderlyingDictionary(DictionaryId newDict) {
+		subType.setUnderlyingDictionary(newDict);
+	}
+
+	@Override
+	public Integer get(int event) {
+		return subType.get(event);
+	}
+
+	@Override
+	public void set(int event, Integer value) {
+		subType.set(event, value);
+	}
+
+	@Override
+	public boolean has(int event) {
+		return subType.has(event);
 	}
 }
