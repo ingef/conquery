@@ -1,9 +1,12 @@
 package com.bakdata.conquery.models.types.specific.daterange;
 
+import java.time.LocalDate;
+
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.date.QuarterDateStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,12 +19,17 @@ import lombok.Getter;
 @Getter
 public class DateRangeTypeQuarter extends CType<CDateRange> {
 
-	private final QuarterDateStore store;
+	private final CType<Long> store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeQuarter(QuarterDateStore store) {
+	public DateRangeTypeQuarter(CType<Long> store) {
 		super(MajorTypeId.DATE_RANGE);
 		this.store = store;
+	}
+
+	@Override
+	public long estimateMemoryFieldSize() {
+		return store.estimateMemoryFieldSize();
 	}
 
 	@Override
@@ -29,33 +37,33 @@ public class DateRangeTypeQuarter extends CType<CDateRange> {
 		return value;
 	}
 
-	@Override
-	public long estimateMemoryFieldSize() {
-		return Integer.SIZE;
-	}
-
-	@Override
-	public Object createPrintValue(CDateRange value) {
-		return createScriptValue(value).toString();
-	}
-
-	@Override
-	public DateRangeTypeQuarter select(int[] starts, int[] length) {
-		return new DateRangeTypeQuarter(store.select(starts, length));
+	public DateRangeTypeQuarter select(int[] starts, int[] ends) {
+		return new DateRangeTypeQuarter(store.select(starts, ends));
 	}
 
 	@Override
 	public void set(int event, CDateRange value) {
-		store.set(event, value);
-	}
-
-	@Override
-	public CDateRange get(int event) {
-		return store.get(event);
+		if (value == null) {
+			store.set(event, null);
+		}
+		else if (value.hasLowerBound()) {
+			store.set(event, (long) value.getMinValue());
+		}
+		else {
+			throw new IllegalArgumentException("Cannot store open dates in QuarterStore");
+		}
 	}
 
 	@Override
 	public boolean has(int event) {
 		return store.has(event);
+	}
+
+	@Override
+	public CDateRange get(int event) {
+		final int begin = (int) store.getInteger(event);
+		final LocalDate end = QuarterUtils.getLastDayOfQuarter(begin);
+
+		return CDateRange.of(begin, CDate.ofLocalDate(end));
 	}
 }

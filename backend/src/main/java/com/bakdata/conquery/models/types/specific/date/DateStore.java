@@ -1,26 +1,25 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.types.specific.date;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 
 @CPSType(base = ColumnStore.class, id = "DATES")
-@Getter
-@Setter
 @ToString(of = "store")
 public class DateStore extends CType<Integer> {
 
+	@Getter
 	private final ColumnStore<Long> store;
 
-	@JsonCreator
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateStore(ColumnStore<Long> store) {
 		super(MajorTypeId.DATE);
 		this.store = store;

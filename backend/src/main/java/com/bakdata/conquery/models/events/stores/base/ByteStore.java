@@ -8,9 +8,14 @@ import lombok.Getter;
 import lombok.ToString;
 
 
+/**
+ * Can store only 255 different values, the last one is reserved as NULL-flag.
+ *
+ * Don't construct this directly, instead use IntegerParser for that.
+ */
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
+@ToString
 public class ByteStore extends ColumnStoreAdapter<Long> {
 
 	private final byte nullValue;

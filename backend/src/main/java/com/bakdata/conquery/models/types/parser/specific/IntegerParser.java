@@ -10,21 +10,23 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.integer.IntegerType;
 import com.bakdata.conquery.util.NumberParsing;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @ToString(callSuper = true)
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class IntegerParser extends Parser<Long> {
 
 	private long maxValue = Long.MIN_VALUE;
 	private long minValue = Long.MAX_VALUE;
 
-	public IntegerParser() {
 
-	}
 
 	@Override
 	protected Long parseValue(String value) throws ParsingException {

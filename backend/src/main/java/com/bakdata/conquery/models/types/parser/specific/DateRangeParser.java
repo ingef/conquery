@@ -5,9 +5,6 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.events.stores.date.DateRangeStore;
-import com.bakdata.conquery.models.events.stores.date.PackedDateRangeStore;
-import com.bakdata.conquery.models.events.stores.date.QuarterDateStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -25,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 public class DateRangeParser extends Parser<CDateRange> {
 
 	private boolean onlyQuarters = true;
-	private boolean anyOpen = false;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
 
@@ -56,21 +52,13 @@ public class DateRangeParser extends Parser<CDateRange> {
 	@Override
 	protected void registerValue(CDateRange v) {
 		onlyQuarters = onlyQuarters && v.isSingleQuarter();
-		anyOpen = anyOpen || v.isOpen();
 
-		if (!anyOpen) {
-			maxValue = Math.max(maxValue, v.getMaxValue());
-			minValue = Math.min(minValue, v.getMinValue());
-		}
+		maxValue = Math.max(maxValue, v.getMaxValue());
+		minValue = Math.min(minValue, v.getMinValue());
 	}
 
 	@Override
 	protected CType<CDateRange> decideType() {
-		// We cannot yet do meaningful compression for open dateranges.
-		// TODO: 27.04.2020 consider packed compression with extra value as null value.
-		if (anyOpen) {
-			return new DateRangeTypeDateRange(DateRangeStore.create(getLines()));
-		}
 
 		if (onlyQuarters) {
 			final IntegerParser quarterParser = new IntegerParser();
@@ -78,14 +66,18 @@ public class DateRangeParser extends Parser<CDateRange> {
 			quarterParser.setMaxValue(maxValue);
 			quarterParser.setMinValue(minValue);
 
-			return new DateRangeTypeQuarter(new QuarterDateStore(quarterParser.decideType()));
+			return new DateRangeTypeQuarter(quarterParser.decideType());
 		}
 
 		if (minValue > 0 && maxValue < PackedUnsigned1616.MAX_VALUE) {
 			log.debug("Decided for Packed: min={}, max={}", minValue, maxValue);
-			return new DateRangeTypePacked(new PackedDateRangeStore(IntegerStore.create(getLines())));
+			return new DateRangeTypePacked(IntegerStore.create(getLines()));
 		}
 
-		return new DateRangeTypeDateRange(DateRangeStore.create(getLines()));
+		final IntegerParser parser = new IntegerParser(minValue, maxValue);
+		parser.setNullLines(getNullLines() * 2);
+		parser.setLines(getLines() * 2); // 2 entries per line
+
+		return new DateRangeTypeDateRange(parser.decideType());
 	}
 }

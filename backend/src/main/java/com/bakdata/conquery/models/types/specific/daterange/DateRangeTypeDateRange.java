@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.types.specific.daterange;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.date.DateRangeStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,10 +14,10 @@ import lombok.Setter;
 @Setter
 public class DateRangeTypeDateRange extends CType<CDateRange> {
 
-	private final DateRangeStore store;
+	private final CType<Long> store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(DateRangeStore store) {
+	public DateRangeTypeDateRange(CType<Long> store) {
 		super(MajorTypeId.DATE_RANGE);
 		this.store = store;
 	}
@@ -34,7 +33,7 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	@Override
 	public long estimateMemoryFieldSize() {
-		return 128 + Long.SIZE;
+		return store.estimateMemoryFieldSize();
 	}
 
 	@Override
@@ -44,16 +43,57 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	@Override
 	public void set(int event, CDateRange value) {
+		event = event * 2;
+		if (value == null) {
+			store.set(left(event), null);
+			store.set(right(event), null);
+			return;
+		}
 
+		if (value.hasLowerBound()) {
+			store.set(left(event), (long) value.getMinValue());
+		}
+		else {
+			store.set(left(event), null);
+		}
+
+
+		if (value.hasUpperBound()) {
+			store.set(right(event), (long) value.getMaxValue());
+		}
+		else {
+			store.set(right(event), null);
+		}
+	}
+
+	private static int left(int event) {
+		return event * 2;
+	}
+
+	private static int right(int event) {
+		return left(event) + 1;
 	}
 
 	@Override
 	public CDateRange get(int event) {
-		return null;
+
+
+		int min = Integer.MIN_VALUE;
+		int max = Integer.MAX_VALUE;
+
+		if (store.has(event)) {
+			min = store.get(left(event)).intValue();
+		}
+
+		if (store.has(right(event))) {
+			max = store.get(right(event)).intValue();
+		}
+
+		return CDateRange.of(min, max);
 	}
 
 	@Override
 	public boolean has(int event) {
-		return false;
+		return store.has(left(event)) && store.has(right(event));
 	}
 }
