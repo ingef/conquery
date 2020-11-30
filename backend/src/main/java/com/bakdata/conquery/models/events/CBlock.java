@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
@@ -25,14 +24,13 @@ import lombok.Setter;
  *
  * Pre-computed assignment of {@link TreeConcept}.
  */
+// TODO move to Bucket
 @Getter @Setter @NoArgsConstructor
 @JsonDeserialize(using = CBlockDeserializer.class)
 public class CBlock extends IdentifiableImpl<CBlockId> {
 
-	// TODO move to Bucket
-	@Valid
 	private BucketId bucket;
-	@NotNull @Valid
+	@NotNull
 	private ConnectorId connector;
 	
 	/**
@@ -51,7 +49,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
 	 */
-	@Valid
+	// todo, can this be implemented using a store or at least with bytes only?
 	private int[][] mostSpecificChildren;
 	
 	public CBlock(BucketId bucket, ConnectorId connector) {
