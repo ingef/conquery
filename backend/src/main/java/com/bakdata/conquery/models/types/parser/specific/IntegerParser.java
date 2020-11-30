@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.specific.integer.IntegerType;
+import com.bakdata.conquery.models.types.specific.IntegerType;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

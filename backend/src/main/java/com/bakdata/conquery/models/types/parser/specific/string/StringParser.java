@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.types.parser.specific.string.TypeGuesser.Guess;
-import com.bakdata.conquery.models.types.specific.integer.IntegerType;
+import com.bakdata.conquery.models.types.specific.IntegerType;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.string.StringTypePrefix;

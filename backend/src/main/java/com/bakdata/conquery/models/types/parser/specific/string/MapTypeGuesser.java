@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.types.parser.specific.string;
 
 import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.types.specific.integer.IntegerType;
+import com.bakdata.conquery.models.types.specific.IntegerType;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.types.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;

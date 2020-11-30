@@ -8,9 +8,9 @@ import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeDateRange;
-import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeQuarter;
-import com.bakdata.conquery.models.types.specific.integer.IntegerType;
+import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
+import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
+import com.bakdata.conquery.models.types.specific.IntegerType;
 import com.bakdata.conquery.util.PackedUnsigned1616;
 import org.junit.jupiter.api.Test;
 

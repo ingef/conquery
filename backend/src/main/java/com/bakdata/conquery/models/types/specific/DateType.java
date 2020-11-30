@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific.date;
+package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
@@ -14,13 +14,13 @@ import lombok.ToString;
 
 @CPSType(base = ColumnStore.class, id = "DATES")
 @ToString(of = "store")
-public class DateStore extends CType<Integer> {
+public class DateType extends CType<Integer> {
 
 	@Getter
 	private final ColumnStore<Long> store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateStore(ColumnStore<Long> store) {
+	public DateType(ColumnStore<Long> store) {
 		super(MajorTypeId.DATE);
 		this.store = store;
 	}
@@ -35,12 +35,12 @@ public class DateStore extends CType<Integer> {
 		return Integer.BYTES;
 	}
 
-	public static DateStore create(int size) {
-		return new DateStore(IntegerStore.create(size));
+	public static DateType create(int size) {
+		return new DateType(IntegerStore.create(size));
 	}
 
-	public DateStore select(int[] starts, int[] ends) {
-		return new DateStore(store.select(starts, ends));
+	public DateType select(int[] starts, int[] ends) {
+		return new DateType(store.select(starts, ends));
 	}
 
 	@Override

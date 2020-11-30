@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific.daterange;
+package com.bakdata.conquery.models.types.specific;
 
 import java.time.LocalDate;
 

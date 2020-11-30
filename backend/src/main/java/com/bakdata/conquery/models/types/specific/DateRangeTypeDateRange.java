@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.types.specific.daterange;
+package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;

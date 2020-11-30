@@ -14,9 +14,9 @@
 //import com.bakdata.conquery.models.dictionary.Dictionary;
 //import com.bakdata.conquery.models.exceptions.JSONException;
 //import com.bakdata.conquery.models.types.specific.BooleanTypeBoolean;
-//import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeDateRange;
+//import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 //import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypePacked;
-//import com.bakdata.conquery.models.types.specific.daterange.DateRangeTypeQuarter;
+//import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
 //import com.bakdata.conquery.models.types.specific.date.DateTypeVarInt;
 //import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
 //import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
