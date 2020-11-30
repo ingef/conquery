@@ -760,6 +760,31 @@ public class BitMapCDateSetTest {
 		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(6, 7));
 	}
 
+
+	@Test
+	public void testMaskedAddMaskAtLeastLongerBorder() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		// This is equivalent to atMost(10), but has the bits 5-10 set.
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atMost(5), CDateRange.of(5, 10));
+
+		set.maskedAdd(CDateRange.of(6, 15), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(6, 10));
+	}
+
+	@Test
+	public void testMaskedAddMaskAtMostLongerBorder() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		// This is equivalent to atLeast(-5), but has the bits -5-5 set.
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atLeast(5), CDateRange.of(-5, 5));
+
+		set.maskedAdd(CDateRange.of(-10, 10), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(-5, 10));
+	}
+
 	@Test
 	public void testSetBitExactlyOne() {
 		assertThat(BitMapCDateSet.create(CDateRange.exactly(10)))
@@ -779,7 +804,6 @@ public class BitMapCDateSetTest {
 
 				.returns(-9, set -> set.higherClearBit(-10))
 		;
-
 
 
 	}

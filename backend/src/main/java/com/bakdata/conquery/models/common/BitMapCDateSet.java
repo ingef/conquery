@@ -655,9 +655,10 @@ public class BitMapCDateSet {
 			return;
 		}
 
+		// Iterate over all ranges in mask that intersect with toAdd, adding their overlap with toAdd to this
 		int begin = toAdd.getMinValue();
 
-
+		// toAdds min is in the gap between infinity and masks border
 		if (mask.openMin && toAdd.getMinValue() < mask.getMinRealValue()) {
 			add(CDateRange.of(toAdd.getMinValue(), mask.getMinRealValue()));
 			begin = mask.getMinRealValue();
