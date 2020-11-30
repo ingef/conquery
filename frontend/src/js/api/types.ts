@@ -296,7 +296,7 @@ export interface GetStoredQueryResponseT {
   tags?: string[];
   query: QueryT;
   owner: string; // TODO: Remove. Not used. And it's actually an ID
-  status: "DONE"; // TODO: Remove. Not used here, we always assume it's DONE
+  status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
 }
 
