@@ -629,36 +629,6 @@ public class BitMapCDateSet {
 	}
 
 	/**
-	 * Search for the next highest set bit, or return {@code Integer.MIN_VALUE} if none exists.
-	 */
-	public int higherSetBit(int value) {
-		if (value < 0) {
-			int out = negativeBits.previousSetBit(-value);
-
-			if (out != -1 && out != 0) {
-				return -out;
-			}
-
-			out = positiveBits.nextSetBit(0);
-
-			if (out == -1) {
-				return Integer.MIN_VALUE;
-			}
-
-			return out;
-		}
-
-		final int out = positiveBits.nextSetBit(value);
-
-		if (out == -1) {
-			return Integer.MIN_VALUE;
-		}
-
-		return out;
-	}
-
-
-	/**
 	 * Add {@code toAdd} into this Set, but only the parts that are also in {@code mask}.
 	 */
 	public void maskedAdd(@NonNull CDateRange toAdd, BitMapCDateSet mask) {
@@ -687,13 +657,10 @@ public class BitMapCDateSet {
 
 		int begin = toAdd.getMinValue();
 
+
 		if (mask.openMin && toAdd.getMinValue() < mask.getMinRealValue()) {
 			add(CDateRange.of(toAdd.getMinValue(), mask.getMinRealValue()));
 			begin = mask.getMinRealValue();
-		}
-
-		if (mask.openMax && toAdd.getMaxValue() > mask.getMaxRealValue()) {
-			add(CDateRange.of(mask.getMaxRealValue(), toAdd.getMaxValue()));
 		}
 
 		while (begin != Integer.MIN_VALUE) {
@@ -709,13 +676,17 @@ public class BitMapCDateSet {
 				break;
 			}
 
-			if(end > toAdd.getMaxValue()){
+			if (end > toAdd.getMaxValue()) {
 				end = toAdd.getMaxValue() + 1;
 			}
 
 			add(CDateRange.of(start, end - 1));
 
 			begin = mask.higherClearBit(end);
+		}
+
+		if (mask.openMax && toAdd.getMaxValue() > mask.getMaxRealValue()) {
+			add(CDateRange.of(mask.getMaxRealValue(), toAdd.getMaxValue()));
 		}
 	}
 
@@ -753,11 +724,11 @@ public class BitMapCDateSet {
 
 		int start = getMinRealValue();
 
-		while(start != Integer.MIN_VALUE){
+		while (start != Integer.MIN_VALUE) {
 			int end = higherClearBit(start);
 
 			// single entry.
-			if(end == Integer.MIN_VALUE){
+			if (end == Integer.MIN_VALUE) {
 				end = start + 1;
 			}
 
@@ -776,6 +747,35 @@ public class BitMapCDateSet {
 			out.set(last, CDateRange.atLeast(out.get(last).getMinValue()));
 		}
 
+
+		return out;
+	}
+
+	/**
+	 * Search for the next highest set bit, or return {@code Integer.MIN_VALUE} if none exists.
+	 */
+	public int higherSetBit(int value) {
+		if (value < 0) {
+			int out = negativeBits.previousSetBit(-value);
+
+			if (out != -1 && out != 0) {
+				return -out;
+			}
+
+			out = positiveBits.nextSetBit(0);
+
+			if (out == -1) {
+				return Integer.MIN_VALUE;
+			}
+
+			return out;
+		}
+
+		final int out = positiveBits.nextSetBit(value);
+
+		if (out == -1) {
+			return Integer.MIN_VALUE;
+		}
 
 		return out;
 	}
