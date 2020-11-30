@@ -773,6 +773,32 @@ public class BitMapCDateSetTest {
 		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(6, 10));
 	}
 
+
+	@Test
+	public void testMaskedAddMaskExactlyAndRange() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(10, 15), CDateRange.exactly(20));
+
+		set.maskedAdd(CDateRange.of(0, 20), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(10, 15), CDateRange.exactly(20));
+	}
+
+
+	@Test
+	public void testMaskedAddMaskRangeAndExactly() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(10, 15), CDateRange.exactly(5));
+
+		set.maskedAdd(CDateRange.of(0, 20), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.exactly(5), CDateRange.of(10, 15));
+	}
+
 	@Test
 	public void testMaskedAddMaskAtMostLongerBorder() {
 		final BitMapCDateSet set = BitMapCDateSet.create();
