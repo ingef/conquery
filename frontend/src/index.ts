@@ -14,6 +14,7 @@ import FormsTab from "./js/external-forms";
 import { theme } from "./app-theme";
 
 import "./app-styles.sass";
+import { TabT } from "./js/pane/types";
 
 const isProduction = process.env.NODE_ENV === "production";
 const disableLogin = !!process.env.REACT_APP_DISABLE_LOGIN;
@@ -40,6 +41,10 @@ const environment = {
   disableLogin,
 };
 
-const tabs = [StandardQueryEditorTab, TimebasedQueryEditorTab, FormsTab];
+const tabs: TabT[] = [
+  StandardQueryEditorTab,
+  TimebasedQueryEditorTab,
+  FormsTab,
+];
 
-conquery(environment, tabs, theme);
+conquery({ environment, tabs, theme });
