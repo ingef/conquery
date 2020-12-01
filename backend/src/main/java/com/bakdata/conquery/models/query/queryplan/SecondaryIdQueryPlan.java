@@ -107,18 +107,18 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
-			int localEntity = entity.getId();
+			int entityId = entity.getId();
 
 			StringType secondaryIdType = (StringType) secondaryIdColumn.getTypeFor(bucket);
 
 			nextBlock(bucket);
 
-			if (!bucket.containsEntity(localEntity) || !isOfInterest(bucket)) {
+			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
 				continue;
 			}
 
-			int start = bucket.getEntityStart(localEntity);
-			int end = bucket.getEntityEnd(localEntity);
+			int start = bucket.getEntityStart(entityId);
+			int end = bucket.getEntityEnd(entityId);
 
 			for (int event = start; event < end; event++) {
 				//we ignore events with no value in the secondaryIdColumn
@@ -139,14 +139,14 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
-			int localEntity = entity.getId();
+			int entityId = entity.getId();
 			nextBlock(bucket);
-			if (!bucket.containsEntity(localEntity) || !isOfInterest(bucket)) {
+			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
 				continue;
 			}
 
-			int start = bucket.getEntityStart(localEntity);
-			int end = bucket.getEntityEnd(localEntity);
+			int start = bucket.getEntityStart(entityId);
+			int end = bucket.getEntityEnd(entityId);
 
 			for (int event = start; event < end; event++) {
 				for (ConceptQueryPlan child : childPerKey.values()) {

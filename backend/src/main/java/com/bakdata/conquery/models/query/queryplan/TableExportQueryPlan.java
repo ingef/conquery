@@ -57,14 +57,14 @@ public class TableExportQueryPlan implements QueryPlan {
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable().getId())) {
 
-				int localEntity = entity.getId();
+				int entityId = entity.getId();
 
-				if (!bucket.containsEntity(localEntity)) {
+				if (!bucket.containsEntity(entityId)) {
 					continue;
 				}
 
-				int start = bucket.getEntityStart(localEntity);
-				int end = bucket.getEntityEnd(localEntity);
+				int start = bucket.getEntityStart(entityId);
+				int end = bucket.getEntityEnd(entityId);
 
 				for (int event = start; event < end; event++) {
 

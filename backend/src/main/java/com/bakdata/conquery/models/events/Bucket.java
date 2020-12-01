@@ -84,8 +84,8 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return start.keySet();
 	}
 
-	public boolean containsEntity(int localEntity) {
-		return start.containsKey(localEntity);
+	public boolean containsEntity(int entity) {
+		return start.containsKey(entity);
 	}
 
 	public Iterable<BucketEntry> entries() {

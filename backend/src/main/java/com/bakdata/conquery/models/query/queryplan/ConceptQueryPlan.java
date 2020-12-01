@@ -137,9 +137,7 @@ public class ConceptQueryPlan implements QueryPlan {
 				if(bucket == null){
 					continue;
 				}
-
-				int localEntity = entity.getId();
-
+				
 				if (!bucket.containsEntity(entity.getId())) {
 					continue;
 				}

@@ -29,7 +29,7 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public boolean containsEntity(int localEntity) {
+	public boolean containsEntity(int entity) {
 		return false;
 	}
 
