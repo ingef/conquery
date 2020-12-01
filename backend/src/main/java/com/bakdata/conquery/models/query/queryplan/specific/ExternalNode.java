@@ -48,8 +48,10 @@ public class ExternalNode extends QPNode {
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		if(contained != null) {
 			BitMapCDateSet newSet = CDateSetCache.createPreAllocatedDateSet();
-			newSet.addAll(ctx.getDateRestriction());
-			newSet.retainAll(contained);
+			ctx.getDateRestriction()
+			   .asRanges()
+			   .forEach(range -> newSet.maskedAdd(range,contained));
+
 			ctx = ctx.withDateRestriction(newSet);
 		}
 

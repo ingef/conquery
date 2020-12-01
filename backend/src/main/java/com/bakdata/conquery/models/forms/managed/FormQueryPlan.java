@@ -59,9 +59,13 @@ public class FormQueryPlan implements QueryPlan {
 			ArrayConceptQueryPlan subPlan = features.clone(clCtx);
 	
 			BitMapCDateSet dateRestriction = CDateSetCache.createPreAllocatedDateSet();
-			dateRestriction.addAll(ctx.getDateRestriction());
 
-			dateRestriction.retainAll(dateContext.getDateRange());
+			final BitMapCDateSet mask = BitMapCDateSet.create(dateContext.getDateRange());
+
+			ctx.getDateRestriction()
+			   .asRanges()
+			   .forEach(range -> dateRestriction.maskedAdd(range, mask));
+
 			EntityResult subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
 			
 			resultValues.addAll(
