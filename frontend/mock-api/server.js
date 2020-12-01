@@ -18,13 +18,10 @@ app.use(bodyParser.json());
 
 mountApi(app, port);
 
-if (!isDeveloping) {
-  app.use("/app/static", express.static(__dirname + "/build"));
-  app.get("/app/static/*", function response(req, res) {
-    const lang = req.acceptsLanguages("de", "en") || "en";
+console.log(`MODE: ${isDeveloping ? "dev" : "production"}`);
 
-    res.sendFile(path.join(__dirname, `build/index.${lang}.html`));
-  });
+if (!isDeveloping) {
+  app.use("/app/static", express.static(path.join(__dirname, "../build")));
 }
 
 app.listen(port, "0.0.0.0", function onStart(err) {

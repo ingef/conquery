@@ -1,5 +1,6 @@
 import { TabT } from "../pane/types";
 import FormsTab from "./FormsTab";
+import buildExternalFormsReducer from "./reducer";
 import { FormsStateT } from "./reducer";
 
 export const tabDescription = {
@@ -11,7 +12,7 @@ export type ExternalFormsStateT = FormsStateT | null;
 
 const tab: TabT = {
   ...tabDescription,
-  reducer: () => null, // Will be set when forms are loaded
+  reducer: buildExternalFormsReducer({}), // Will be set when forms are loaded
   component: FormsTab,
 };
 
