@@ -14,12 +14,14 @@ import lombok.Setter;
 @Setter
 public class DateRangeTypeDateRange extends CType<CDateRange> {
 
-	private final CType<Long> store;
+	private final CType<Long> minStore;
+	private final CType<Long> maxStore;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(CType<Long> store) {
+	public DateRangeTypeDateRange(CType<Long> minStore, CType<Long> maxStore) {
 		super(MajorTypeId.DATE_RANGE);
-		this.store = store;
+		this.minStore = minStore;
+		this.maxStore = maxStore;
 	}
 
 	@Override
@@ -33,43 +35,35 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	@Override
 	public long estimateMemoryFieldSize() {
-		return store.estimateMemoryFieldSize() * 2;
+		return minStore.estimateMemoryFieldSize() * 2;
 	}
 
 	@Override
 	public DateRangeTypeDateRange select(int[] starts, int[] length) {
-		return new DateRangeTypeDateRange(store.select(starts, length));
+		return new DateRangeTypeDateRange(minStore.select(starts, length), maxStore.select(starts, length));
 	}
 
 	@Override
 	public void set(int event, CDateRange value) {
 		if (value == null) {
-			store.set(left(event), null);
-			store.set(right(event), null);
+			minStore.set(event, null);
+			maxStore.set(event, null);
 			return;
 		}
 
 		if (value.hasLowerBound()) {
-			store.set(left(event), (long) value.getMinValue());
+			minStore.set(event, (long) value.getMinValue());
 		}
 		else {
-			store.set(left(event), null);
+			minStore.set(event, null);
 		}
 
 		if (value.hasUpperBound()) {
-			store.set(right(event), (long) value.getMaxValue());
+			maxStore.set(event, (long) value.getMaxValue());
 		}
 		else {
-			store.set(right(event), null);
+			maxStore.set(event, null);
 		}
-	}
-
-	private static int left(int event) {
-		return event * 2;
-	}
-
-	private static int right(int event) {
-		return left(event) + 1;
 	}
 
 	@Override
@@ -77,12 +71,12 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 		int min = Integer.MIN_VALUE;
 		int max = Integer.MAX_VALUE;
 
-		if (store.has(event)) {
-			min = store.get(left(event)).intValue();
+		if (minStore.has(event)) {
+			min = minStore.get(event).intValue();
 		}
 
-		if (store.has(right(event))) {
-			max = store.get(right(event)).intValue();
+		if (maxStore.has(event)) {
+			max = maxStore.get(event).intValue();
 		}
 
 		return CDateRange.of(min, max);
@@ -90,6 +84,6 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 
 	@Override
 	public boolean has(int event) {
-		return store.has(left(event)) && store.has(right(event));
+		return minStore.has(event) && maxStore.has(event);
 	}
 }

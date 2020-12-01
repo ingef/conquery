@@ -15,7 +15,7 @@ import lombok.ToString;
  */
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 public class ByteStore extends ColumnStoreAdapter<Long> {
 
 	private final byte nullValue;

@@ -53,8 +53,12 @@ public class DateRangeParser extends Parser<CDateRange> {
 
 		anyOpen = anyOpen || v.isOpen();
 
-		maxValue = Math.max(maxValue, v.getMaxValue());
-		minValue = Math.min(minValue, v.getMinValue());
+		if (v.hasUpperBound()) {
+			maxValue = Math.max(maxValue, v.getMaxValue());
+		}
+		if (v.hasLowerBound()) {
+			minValue = Math.min(minValue, v.getMinValue());
+		}
 	}
 
 	@Override
@@ -71,9 +75,9 @@ public class DateRangeParser extends Parser<CDateRange> {
 		}
 
 		final IntegerParser parser = new IntegerParser(minValue, maxValue);
-		parser.setNullLines(getNullLines() * 2);
-		parser.setLines(getLines() * 2); // 2 entries per line
+		parser.setNullLines(getNullLines());
+		parser.setLines(getLines());
 
-		return new DateRangeTypeDateRange(parser.decideType());
+		return new DateRangeTypeDateRange(parser.decideType(), parser.decideType());
 	}
 }

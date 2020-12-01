@@ -18,11 +18,14 @@ import org.jetbrains.annotations.Nullable;
 public class RebasingStore extends ColumnStoreAdapter<Long> {
 
 	private final long min;
+
+	private final long root;
+
 	private final ColumnStore<Long> store;
 
 	@Override
 	public RebasingStore select(int[] starts, int[] length) {
-		return new RebasingStore(min, store.select(starts, length));
+		return new RebasingStore(min, root, store.select(starts, length));
 	}
 
 	@Override
@@ -32,12 +35,12 @@ public class RebasingStore extends ColumnStoreAdapter<Long> {
 			return;
 		}
 
-		store.set(event, value - min);
+		store.set(event, value - min + root);
 	}
 
 	@Override
 	public @NotNull Long get(int event) {
-		return min + store.get(event);
+		return - root + min + store.get(event);
 	}
 
 	@Override

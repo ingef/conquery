@@ -25,7 +25,7 @@ class DateRangeParserTest {
 		final CType<CDateRange> actual = parser.decideType();
 
 		assertThat(actual).isInstanceOf(DateRangeTypeDateRange.class);
-		assertThat(((DateRangeTypeDateRange) actual).getStore()).isInstanceOf(IntegerType.class);
+		assertThat(((DateRangeTypeDateRange) actual).getMinStore()).isInstanceOf(IntegerType.class);
 
 	}
 
