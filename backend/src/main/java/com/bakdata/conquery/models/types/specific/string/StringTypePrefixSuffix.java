@@ -21,7 +21,7 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
 @ToString(of = {"prefix", "suffix", "subType"})
-public class StringTypePrefix extends StringType {
+public class StringTypePrefixSuffix extends StringType {
 
 	@Nonnull
 	protected StringType subType;
@@ -33,7 +33,7 @@ public class StringTypePrefix extends StringType {
 	private String suffix;
 
 	@JsonCreator
-	public StringTypePrefix(StringType subType, String prefix, String suffix) {
+	public StringTypePrefixSuffix(StringType subType, String prefix, String suffix) {
 		super();
 		this.subType = subType;
 		this.prefix = prefix;
@@ -81,8 +81,8 @@ public class StringTypePrefix extends StringType {
 
 
 	@Override
-	public StringTypePrefix select(int[] starts, int[] length) {
-		return new StringTypePrefix(subType.select(starts, length), getPrefix(), getSuffix());
+	public StringTypePrefixSuffix select(int[] starts, int[] length) {
+		return new StringTypePrefixSuffix(subType.select(starts, length), getPrefix(), getSuffix());
 	}
 
 	@Override

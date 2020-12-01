@@ -18,8 +18,7 @@ public class MoneyParser extends Parser<Long> {
 
 	@JsonIgnore
 	@Getter(lazy = true)
-	private final BigDecimal moneyFactor = BigDecimal.valueOf(10)
-													 .pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits());
+	private final BigDecimal moneyFactor = BigDecimal.valueOf(10).pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits());
 	private long maxValue = Long.MIN_VALUE;
 	private long minValue = Long.MAX_VALUE;
 

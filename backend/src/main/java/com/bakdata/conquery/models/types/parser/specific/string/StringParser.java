@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.types.parser.specific.string.TypeGuesser.Gues
 import com.bakdata.conquery.models.types.specific.IntegerType;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded.Encoding;
-import com.bakdata.conquery.models.types.specific.string.StringTypePrefix;
+import com.bakdata.conquery.models.types.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.types.specific.string.StringTypeSingleton;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
@@ -118,7 +118,7 @@ public class StringParser extends Parser<Integer> {
 		StringType result = guess.getType();
 		//wrap in prefix suffix
 		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
-			result = new StringTypePrefix(result, prefix, suffix);
+			result = new StringTypePrefixSuffix(result, prefix, suffix);
 			copyLineCounts(result);
 		}
 		return result;
