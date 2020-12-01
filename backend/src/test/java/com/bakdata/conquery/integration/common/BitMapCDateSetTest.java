@@ -38,8 +38,8 @@ public class BitMapCDateSetTest {
 									   "{2000-01-01/2000-01-01}",
 									   new CDateRange[]{
 											   CDateRange.of(
-													   LocalDate.of(2000, 01, 01),
-													   LocalDate.of(2000, 01, 01)
+													   LocalDate.of(2000, 1, 1),
+													   LocalDate.of(2000, 1, 1)
 											   )
 									   }
 							   ),
@@ -47,11 +47,11 @@ public class BitMapCDateSetTest {
 									   "{2000-01-01/2004-01-01}",
 									   new CDateRange[]{
 											   CDateRange.of(
-													   LocalDate.of(2000, 01, 01),
-													   LocalDate.of(2004, 01, 01)
+													   LocalDate.of(2000, 1, 1),
+													   LocalDate.of(2004, 1, 1)
 											   ), CDateRange.of(
-											   LocalDate.of(2002, 01, 01),
-											   LocalDate.of(2002, 01, 02)
+											   LocalDate.of(2002, 1, 1),
+											   LocalDate.of(2002, 1, 2)
 									   )
 									   }
 							   ),
@@ -59,11 +59,11 @@ public class BitMapCDateSetTest {
 									   "{2000-01-01/2000-01-07}",
 									   new CDateRange[]{
 											   CDateRange.of(
-													   LocalDate.of(2000, 01, 01),
-													   LocalDate.of(2000, 01, 04)
+													   LocalDate.of(2000, 1, 1),
+													   LocalDate.of(2000, 1, 4)
 											   ), CDateRange.of(
-											   LocalDate.of(2000, 01, 04),
-											   LocalDate.of(2000, 01, 07)
+											   LocalDate.of(2000, 1, 4),
+											   LocalDate.of(2000, 1, 7)
 									   )
 									   }
 							   ),
@@ -71,11 +71,11 @@ public class BitMapCDateSetTest {
 									   "{2000-01-01/2000-01-07}",
 									   new CDateRange[]{
 											   CDateRange.of(
-													   LocalDate.of(2000, 01, 01),
-													   LocalDate.of(2000, 01, 03)
+													   LocalDate.of(2000, 1, 1),
+													   LocalDate.of(2000, 1, 3)
 											   ), CDateRange.of(
-											   LocalDate.of(2000, 01, 04),
-											   LocalDate.of(2000, 01, 07)
+											   LocalDate.of(2000, 1, 4),
+											   LocalDate.of(2000, 1, 7)
 									   )
 									   }
 							   ),
@@ -83,11 +83,11 @@ public class BitMapCDateSetTest {
 									   "{2000-01-01/2000-01-02, 2000-01-04/2000-01-07}",
 									   new CDateRange[]{
 											   CDateRange.of(
-													   LocalDate.of(2000, 01, 01),
-													   LocalDate.of(2000, 01, 02)
+													   LocalDate.of(2000, 1, 1),
+													   LocalDate.of(2000, 1, 2)
 											   ), CDateRange.of(
-											   LocalDate.of(2000, 01, 04),
-											   LocalDate.of(2000, 01, 07)
+											   LocalDate.of(2000, 1, 4),
+											   LocalDate.of(2000, 1, 7)
 									   )
 									   }
 							   ),
@@ -95,11 +95,11 @@ public class BitMapCDateSetTest {
 									   "{2012-01-01/2012-01-02}",
 									   new CDateRange[]{
 											   CDateRange.of(
-													   LocalDate.of(2012, 01, 02),
-													   LocalDate.of(2012, 01, 02)
+													   LocalDate.of(2012, 1, 2),
+													   LocalDate.of(2012, 1, 2)
 											   ), CDateRange.of(
-											   LocalDate.of(2012, 01, 01),
-											   LocalDate.of(2012, 01, 01)
+											   LocalDate.of(2012, 1, 1),
+											   LocalDate.of(2012, 1, 1)
 									   )
 									   }
 							   ),
@@ -107,7 +107,7 @@ public class BitMapCDateSetTest {
 									   "{2012-01-02/+∞}",
 									   new CDateRange[]{
 											   CDateRange.of(
-													   LocalDate.of(2012, 01, 02),
+													   LocalDate.of(2012, 1, 2),
 													   null
 											   )
 									   }
@@ -115,14 +115,14 @@ public class BitMapCDateSetTest {
 							   , Arguments.of(
 									   "{-∞/2012-01-02}",
 									   new CDateRange[]{
-											   CDateRange.of(null, LocalDate.of(2012, 01, 02))
+											   CDateRange.of(null, LocalDate.of(2012, 1, 2))
 									   }
 							   ),
 							   Arguments.of(
 									   "{-∞/2012-01-02, 2012-01-04/2012-01-04}",
 									   new CDateRange[]{
-											   CDateRange.of(null, LocalDate.of(2012, 01, 02)),
-											   CDateRange.of(LocalDate.of(2012, 01, 04), LocalDate.of(2012, 01, 04))
+											   CDateRange.of(null, LocalDate.of(2012, 1, 2)),
+											   CDateRange.of(LocalDate.of(2012, 1, 4), LocalDate.of(2012, 1, 4))
 
 									   }
 							   ),
@@ -130,8 +130,8 @@ public class BitMapCDateSetTest {
 							   Arguments.of(
 									   "{2011-01-04/2011-01-04, 2012-01-02/+∞}",
 									   new CDateRange[]{
-											   CDateRange.atLeast(LocalDate.of(2012, 01, 02)),
-											   CDateRange.of(LocalDate.of(2011, 01, 04), LocalDate.of(2011, 01, 04))
+											   CDateRange.atLeast(LocalDate.of(2012, 1, 2)),
+											   CDateRange.of(LocalDate.of(2011, 1, 4), LocalDate.of(2011, 1, 4))
 
 									   }
 							   ),
@@ -176,7 +176,7 @@ public class BitMapCDateSetTest {
 									   }
 							   )
 							   , Arguments.of(
-									   "{-∞/1970-01-11}",
+									   "{-∞/1970-01-06, 1970-01-10/1970-01-11}",
 									   new CDateRange[]{
 											   CDateRange.of(9, 10),
 											   CDateRange.atMost(5),
@@ -207,12 +207,12 @@ public class BitMapCDateSetTest {
 	public void testRemove() {
 		BitMapCDateSet set = BitMapCDateSet.create();
 		set.add(CDateRange.of(
-				LocalDate.of(2000, 01, 01),
+				LocalDate.of(2000, 1, 1),
 				LocalDate.of(2000, 12, 31)
 		));
 		set.remove(CDateRange.of(
-				LocalDate.of(2000, 06, 01),
-				LocalDate.of(2000, 06, 20)
+				LocalDate.of(2000, 6, 1),
+				LocalDate.of(2000, 6, 20)
 		));
 		assertThat(set).hasToString("{2000-01-01/2000-05-31, 2000-06-21/2000-12-31}");
 	}
@@ -231,31 +231,33 @@ public class BitMapCDateSetTest {
 
 	@Test
 	public void testRetain() {
-		BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(
-				LocalDate.of(2000, 01, 01),
-				LocalDate.of(2000, 12, 31)
-		));
+		BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
 
 		BitMapCDateSet retain = BitMapCDateSet.create(
-				CDateRange.of(
-						LocalDate.of(2000, 06, 01),
-						LocalDate.of(2000, 06, 20)
-				),
-				CDateRange.atLeast(LocalDate.of(2000, 12, 01))
+				CDateRange.of(-2, 2),
+				CDateRange.atLeast(5)
 		);
 
 		set.retainAll(retain);
 
-		assertThat(set.asRanges()).containsExactly(
-				CDateRange.of(
-						LocalDate.of(2000, 06, 01),
-						LocalDate.of(2000, 06, 20)
-				),
-				CDateRange.of(
-						LocalDate.of(2000, 12, 01),
-						LocalDate.of(2000, 12, 31)
-				)
+		assertThat(set.asRanges())
+				.containsExactly(
+						CDateRange.of(-2, 2),
+						CDateRange.of(5, 10)
+				);
+	}
+
+	@Test
+	public void testRetainOpenBelowMyMax() {
+		BitMapCDateSet set = BitMapCDateSet.create(CDateRange.of(-10, 10));
+
+		BitMapCDateSet retain = BitMapCDateSet.create(
+				CDateRange.atLeast(5)
 		);
+
+		set.retainAll(retain);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(5, 10));
 	}
 
 	@Test
@@ -318,7 +320,10 @@ public class BitMapCDateSetTest {
 	@Test
 	public void testRetainRemoveNegativeAtMostFromAll() {
 		final BitMapCDateSet set = BitMapCDateSet.create(CDateRange.all());
-		set.retainAll(CDateRange.atMost(-10));
+
+		final BitMapCDateSet retained = BitMapCDateSet.create(CDateRange.atMost(-10));
+
+		set.retainAll(retained);
 		assertThat(set.asRanges()).containsExactly(CDateRange.atMost(-10));
 
 		assertThat(set)
@@ -812,6 +817,63 @@ public class BitMapCDateSetTest {
 	}
 
 	@Test
+	public void testMaskedAddOpenAddAtMost() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(-5, 5));
+
+		set.maskedAdd(CDateRange.atMost(0), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(-5, 0));
+	}
+
+	@Test
+	public void testMaskedAddOpenAddAtLeast() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(-5, 5));
+
+		set.maskedAdd(CDateRange.atLeast(0), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(0, 5));
+	}
+
+	@Test
+	public void testMaskedAddOpenAddAtMostMaskAtMost() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atMost(-10), CDateRange.of(-5, 5));
+
+		set.maskedAdd(CDateRange.atMost(0), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.atMost(-10), CDateRange.of(-5, 0));
+	}
+
+	@Test
+	public void testMaskedAddOpenAddAtLeastMaskAtLeast() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.atLeast(10), CDateRange.of(-5, 5));
+
+		set.maskedAdd(CDateRange.atLeast(0), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.atLeast(10), CDateRange.of(0, 5));
+	}
+
+	@Test
+	public void testMaskedAddOpenAddAtMostMaskAtLeast() {
+		final BitMapCDateSet set = BitMapCDateSet.create();
+
+		final BitMapCDateSet mask = BitMapCDateSet.create(CDateRange.of(-5, 5), CDateRange.atLeast(10));
+
+		log.info("mask = {}", mask);
+
+		set.maskedAdd(CDateRange.atMost(0), mask);
+
+		assertThat(set.asRanges()).containsExactlyInAnyOrder(CDateRange.of(-5, 0));
+	}
+
+	@Test
 	public void testSetBitExactlyOne() {
 		assertThat(BitMapCDateSet.create(CDateRange.exactly(10)))
 				.returns(10, set -> set.higherSetBit(-10))
@@ -830,8 +892,29 @@ public class BitMapCDateSetTest {
 
 				.returns(-9, set -> set.higherClearBit(-10))
 		;
+	}
 
 
+	@Test
+	public void teststst() {
+		BitMapCDateSet set = BitMapCDateSet.create(
+				CDateRange.of(-5, -2),
+				CDateRange.of(2, 5),
+
+				CDateRange.atLeast(1)
+		);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-5, -2), CDateRange.atLeast(1));
+	}
+
+	@Test
+	public void teststst2() {
+		BitMapCDateSet set = BitMapCDateSet.create(
+				CDateRange.of(-5, -2)
+		);
+
+		assertThat(set.asRanges())
+				.containsExactly(CDateRange.of(-5, -2));
 	}
 
 }

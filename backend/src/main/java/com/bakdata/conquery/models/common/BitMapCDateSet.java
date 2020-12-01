@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -401,7 +402,17 @@ public class BitMapCDateSet {
 	}
 
 	private void add(CDateRangeClosed range) {
-		setRange(range.getMinValue(), range.getMaxValue() + 1);
+		int from = range.getMinValue();
+		int to = range.getMaxValue();
+
+		if (from < 0) {
+			final int max = -Math.min(0, to);
+			negativeBits.set(max, -from + 1);
+		}
+
+		if(to >= 0){
+			positiveBits.set(Math.max(from,0), to + 1);
+		}
 	}
 
 	private void add(CDateRangeExactly range) {
@@ -436,25 +447,25 @@ public class BitMapCDateSet {
 			return;
 		}
 
+		if(isEmpty()){
+			setBit(value);
+			openMin = true;
+			return;
+		}
+
+		if(value >= 0){
+			negativeBits.clear();
+		}
+
+		final int minValue = getMinRealValue();
+
+		// clear useless dangling bits
+		if(minValue < value){
+			clearRange(minValue, value + 1);
+		}
+
 		openMin = true;
-
-		final int maxValue = getMaxValue();
-		final int minValue = getMinValue();
-
-
-		if (value >= 0) {
-			positiveBits.set(value);
-		}
-		else {
-			negativeBits.set(-value);
-		}
-
-		if (value >= 0 && value < maxValue) {
-			positiveBits.set(value, maxValue);
-		}
-		else if (value < 0 && value > minValue) {
-			negativeBits.set(-value, Math.max(-value + 1, Math.min(-minValue, negativeBits.size())));
-		}
+		setBit(value);
 	}
 
 	private void add(CDateRangeStarting range) {
@@ -471,24 +482,32 @@ public class BitMapCDateSet {
 			return;
 		}
 
+		if(isEmpty()){
+			setBit(range.getMinValue());
+			openMax = true;
+			return;
+		}
+
+		final int maxValue = getMaxRealValue();
+
+		if(value < 0){
+			positiveBits.clear();
+		}
+
+		if(maxValue > value){
+			clearRange(value, maxValue + 1);
+		}
+
 		openMax = true;
+		setBit(value);
+	}
 
-		final int maxValue = getMaxValue();
-		final int minValue = getMinValue();
-
-
-		if (value >= 0) {
+	private void setBit(int value) {
+		if(value >= 0){
 			positiveBits.set(value);
 		}
 		else {
 			negativeBits.set(-value);
-		}
-
-		if (value >= 0 && value < maxValue) {
-			positiveBits.set(value, maxValue);
-		}
-		else if (value < 0 && value > minValue) {
-			negativeBits.set(-value, -minValue);
 		}
 	}
 
@@ -571,7 +590,9 @@ public class BitMapCDateSet {
 		}
 
 		if (isAll()) {
-			setRange(range.getMaxValue() + 1, range.getMaxValue() + 2);
+			positiveBits.clear();
+			negativeBits.clear();
+			setBit(range.getMaxValue() + 1);
 			openMin = false;
 			return;
 		}
@@ -598,11 +619,13 @@ public class BitMapCDateSet {
 		}
 
 		if (isAll()) {
+			clear();
+
 			negativeBits.or(retained.negativeBits);
 			positiveBits.or(retained.positiveBits);
 
-			openMin = openMin && retained.openMin;
-			openMax = openMax && retained.openMax;
+			openMin = retained.openMin;
+			openMax = retained.openMax;
 
 			return;
 		}
@@ -610,6 +633,15 @@ public class BitMapCDateSet {
 		// expand both ways to make and-ing even possible
 		if (retained.getMaxRealValue() > getMaxRealValue() && openMax) {
 			setRange(getMaxRealValue(), retained.getMaxRealValue());
+		}
+
+		// we have gaps of virtual bits
+		if(retained.openMax && retained.getMaxRealValue() < getMaxRealValue()){
+			log.info("hello world");
+		}
+
+		if(retained.openMin && retained.getMinRealValue() > getMinRealValue()){
+			log.info("hello world");
 		}
 
 		if (retained.getMinRealValue() < getMinValue() && openMin) {
@@ -632,8 +664,10 @@ public class BitMapCDateSet {
 	 * Add {@code toAdd} into this Set, but only the parts that are also in {@code mask}.
 	 */
 	public void maskedAdd(@NonNull CDateRange toAdd, BitMapCDateSet mask) {
-		if (toAdd.isOpen()) {
-			throw new IllegalArgumentException("We don't handle open ranges here. (Yet?)");
+
+		if(toAdd.isAll()){
+			addAll(mask);
+			return;
 		}
 
 		if (mask.isAll()) {
@@ -656,7 +690,14 @@ public class BitMapCDateSet {
 		}
 
 		// Iterate over all ranges in mask that intersect with toAdd, adding their overlap with toAdd to this
-		int begin = toAdd.getMinValue();
+		int begin;
+
+		if (toAdd.hasLowerBound()) {
+			begin = toAdd.getMinValue();
+		}
+		else {
+			begin = mask.getMinRealValue();
+		}
 
 		// toAdds min is in the gap between infinity and masks border
 		if (mask.openMin && toAdd.getMinValue() < mask.getMinRealValue()) {
@@ -664,7 +705,7 @@ public class BitMapCDateSet {
 			begin = mask.getMinRealValue();
 		}
 
-		while (begin != Integer.MIN_VALUE) {
+		while (begin != Integer.MIN_VALUE && begin <= toAdd.getMaxValue()) {
 			int start = mask.higherSetBit(begin);
 
 			if (start == Integer.MIN_VALUE) {
@@ -677,7 +718,7 @@ public class BitMapCDateSet {
 				break;
 			}
 
-			if (end > toAdd.getMaxValue()) {
+			if (toAdd.hasUpperBound() && end > toAdd.getMaxValue()) {
 				end = toAdd.getMaxValue() + 1;
 			}
 
@@ -721,8 +762,6 @@ public class BitMapCDateSet {
 
 		final List<CDateRange> out = new ArrayList<>();
 
-		//TODO implement this using higherSetBit etc.? Which might actually be slower since it traverses memory in reverse
-
 		int start = getMinRealValue();
 
 		while (start != Integer.MIN_VALUE) {
@@ -748,8 +787,7 @@ public class BitMapCDateSet {
 			out.set(last, CDateRange.atLeast(out.get(last).getMinValue()));
 		}
 
-
-		return out;
+		return ImmutableList.copyOf(out);
 	}
 
 	/**
