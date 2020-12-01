@@ -1,26 +1,25 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
-@CPSType(base= ColumnStore.class, id="REAL_FLOAT")
+@CPSType(base= CType.class, id="REAL_FLOAT")
 public class RealType extends CType<Double> {
 
 	@Getter
-	private final ColumnStore<Double> delegate;
+	private final CType<Double> delegate;
 
 	@JsonCreator
-	public RealType(ColumnStore<Double> delegate) {
+	public RealType(CType<Double> delegate) {
 		super(MajorTypeId.REAL);
 		this.delegate = delegate;
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
+	public long estimateEventBytes() {
 		return Float.SIZE;
 	}
 

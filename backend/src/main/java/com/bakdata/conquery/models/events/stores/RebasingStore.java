@@ -3,25 +3,34 @@ package com.bakdata.conquery.models.events.stores;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.jetbrains.annotations.Nullable;
 
 
-@CPSType(base = ColumnStore.class, id = "REBASE")
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@CPSType(base = CType.class, id = "REBASE")
 @Getter
 @ToString(of = {"min", "store"})
-public class RebasingStore extends ColumnStore<Long> {
+public class RebasingStore extends CType<Long> {
 
 	private final long min;
 
 	private final long root;
 
-	private final ColumnStore<Long> store;
+	private final CType<Long> store;
+
+	public RebasingStore(long min, long root, CType<Long> store) {
+		super(store.getTypeId());
+		this.min = min;
+		this.root = root;
+		this.store = store;
+	}
+
+	@Override
+	public long estimateEventBytes() {
+		return store.estimateEventBytes();
+	}
 
 	@Override
 	public RebasingStore select(int[] starts, int[] length) {

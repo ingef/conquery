@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,21 +8,21 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@CPSType(base=ColumnStore.class, id="INTEGER") @Getter @Setter
+@CPSType(base= CType.class, id="INTEGER") @Getter @Setter
 @ToString(of = "store")
 public class IntegerType extends CType<Long> {
 
 
-	private final ColumnStore<Long> store;
+	private final CType<Long> store;
 	
 	@JsonCreator
-	public IntegerType(ColumnStore<Long> store) {
+	public IntegerType(CType<Long> store) {
 		super(MajorTypeId.INTEGER);
 		this.store = store;
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
+	public long estimateEventBytes() {
 		return Long.SIZE;
 	}
 

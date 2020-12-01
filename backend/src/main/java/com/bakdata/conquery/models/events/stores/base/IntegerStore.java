@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -12,16 +13,17 @@ import lombok.ToString;
  *
  * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
  */
-@CPSType(id = "INTEGERS", base = ColumnStore.class)
+@CPSType(id = "INTEGERS", base = CType.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class IntegerStore extends ColumnStore<Long> {
+public class IntegerStore extends CType<Long> {
 
 	private final int nullValue;
 	private final int[] values;
 
 	@JsonCreator
 	public IntegerStore(int[] values, int nullValue) {
+		super(MajorTypeId.INTEGER);
 		this.nullValue = nullValue;
 		this.values = values;
 	}
@@ -30,8 +32,13 @@ public class IntegerStore extends ColumnStore<Long> {
 		return new IntegerStore(new int[size], Integer.MAX_VALUE);
 	}
 
+	@Override
+	public long estimateEventBytes() {
+		return Integer.BYTES;
+	}
+
 	public IntegerStore select(int[] starts, int[] ends) {
-		return new IntegerStore(ColumnStore.selectArray(starts, ends, values, int[]::new), nullValue);
+		return new IntegerStore(CType.selectArray(starts, ends, values, int[]::new), nullValue);
 	}
 
 	@Override

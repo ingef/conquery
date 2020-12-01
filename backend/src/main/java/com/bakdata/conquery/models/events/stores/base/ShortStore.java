@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -10,22 +11,28 @@ import lombok.ToString;
  * Stores values as Shorts. Can only store 2^16-1 values as MAX is used as NULL value.
  * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
  */
-@CPSType(id = "SHORTS", base = ColumnStore.class)
+@CPSType(id = "SHORTS", base = CType.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class ShortStore extends ColumnStore<Long> {
+public class ShortStore extends CType<Long> {
 
 	private final short nullValue;
 	private final short[] values;
 
 	@JsonCreator
 	public ShortStore(short[] values, short nullValue) {
+		super(MajorTypeId.INTEGER);
 		this.nullValue = nullValue;
 		this.values = values;
 	}
 
+	@Override
+	public long estimateEventBytes() {
+		return Short.BYTES;
+	}
+
 	public ShortStore select(int[] starts, int[] ends) {
-		return new ShortStore(ColumnStore.selectArray(starts, ends, values, short[]::new), nullValue);
+		return new ShortStore(CType.selectArray(starts, ends, values, short[]::new), nullValue);
 	}
 
 	public static ShortStore create(int size) {

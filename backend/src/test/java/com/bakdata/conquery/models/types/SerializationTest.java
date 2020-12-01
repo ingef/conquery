@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.RebasingStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
@@ -60,11 +59,11 @@ public class SerializationTest {
 						.collect(Collectors.toSet())
 		)
 				.containsAll(
-						(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class)
+						(Set) CPSTypeIdResolver.listImplementations(CType.class)
 				);
 	}
 
-	public static List<ColumnStore<?>> createCTypes() {
+	public static List<CType<?>> createCTypes() {
 		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
 		return Arrays.asList(
 				new DecimalTypeScaled(13, new IntegerType(IntegerStore.create(10))),
@@ -94,17 +93,17 @@ public class SerializationTest {
 				FloatStore.create(10),
 				DoubleStore.create(10),
 				BooleanStore.create(10),
-				EmptyStore.getInstance(),
+				new EmptyStore<>(MajorTypeId.DECIMAL),
 				new RebasingStore(10,10,IntegerStore.create(10))
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("createCTypes")
-	public void testSerialization(ColumnStore<?> type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
+	public void testSerialization(CType type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 		SerializationTestUtil
-				.forType(ColumnStore.class)
-				.ignoreClasses(Arrays.asList(Dictionary.class))
+				.forType(CType.class)
+				.ignoreClasses(List.of(Dictionary.class))
 				.test(type);
 	}
 }

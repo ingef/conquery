@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -20,7 +19,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
+@CPSType(base = CType.class, id = "STRING_ENCODED")
 public class StringTypeEncoded extends StringType {
 
 	@Nonnull
@@ -83,8 +82,8 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
-		return subType.estimateMemoryFieldSize();
+	public long estimateEventBytes() {
+		return subType.estimateEventBytes();
 	}
 
 	@Override

@@ -6,7 +6,8 @@ import java.util.BitSet;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.BitSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.BitSetSerializer;
-import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -14,10 +15,10 @@ import lombok.Getter;
 import lombok.ToString;
 
 
-@CPSType(id = "BOOLEANS", base = ColumnStore.class)
+@CPSType(id = "BOOLEANS", base = CType.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class BooleanStore extends ColumnStore<Boolean> {
+public class BooleanStore extends CType<Boolean> {
 
 	@JsonSerialize(using = BitSetSerializer.class)
 	@JsonDeserialize(using = BitSetDeserializer.class)
@@ -25,12 +26,17 @@ public class BooleanStore extends ColumnStore<Boolean> {
 
 	@JsonCreator
 	public BooleanStore(BitSet values) {
-		super();
+		super(MajorTypeId.BOOLEAN);
 		this.values = values;
 	}
 
 	public static BooleanStore create(int size) {
 		return new BooleanStore(new BitSet(size));
+	}
+
+	@Override
+	public long estimateEventBytes() {
+		return 1; // over estimates factor 4
 	}
 
 	public BooleanStore select(int[] starts, int[] lengths) {

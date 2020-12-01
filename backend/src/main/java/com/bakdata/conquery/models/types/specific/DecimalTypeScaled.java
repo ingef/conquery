@@ -4,13 +4,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
-@CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
+@CPSType(base = CType.class, id = "DECIMAL_SCALED")
 @Getter
 public class DecimalTypeScaled extends CType<BigDecimal> {
 
@@ -35,8 +34,8 @@ public class DecimalTypeScaled extends CType<BigDecimal> {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
-		return subType.estimateMemoryFieldSize();
+	public long estimateEventBytes() {
+		return subType.estimateEventBytes();
 	}
 
 	@Override

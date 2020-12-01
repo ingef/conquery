@@ -88,9 +88,10 @@ public class SerializationTestUtil<T> {
 
 		ObjectAssert<T> ass = assertThat(copy)
 			.as("Unequal after copy.");
-		for(Class<?> ig:ignoreClasses)
-			ass.usingComparatorForType((a,b)->0, ig);
+		for (Class<?> ig : ignoreClasses) {
+			ass = ass.usingComparatorForType((a, b) -> 0, ig);
+		}
 		
-		ass.isEqualToComparingFieldByFieldRecursively(expected);
+		ass.usingRecursiveComparison().isEqualTo(expected);
 	}
 }

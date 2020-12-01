@@ -3,20 +3,22 @@ package com.bakdata.conquery.models.events.stores.base;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
-@CPSType(id = "DECIMALS", base = ColumnStore.class)
+@CPSType(id = "DECIMALS", base = CType.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DecimalStore extends ColumnStore<BigDecimal> {
+public class DecimalStore extends CType<BigDecimal> {
 
 	private final BigDecimal[] values;
 
 	@JsonCreator
 	public DecimalStore(BigDecimal[] values) {
+		super(MajorTypeId.DECIMAL);
 		this.values = values;
 	}
 
@@ -24,8 +26,13 @@ public class DecimalStore extends ColumnStore<BigDecimal> {
 		return new DecimalStore(new BigDecimal[size]);
 	}
 
+	@Override
+	public long estimateEventBytes() {
+		return 64; // TODO no clue!
+	}
+
 	public DecimalStore select(int[] starts, int[] ends) {
-		return new DecimalStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
+		return new DecimalStore(CType.selectArray(starts, ends, values, BigDecimal[]::new));
 	}
 
 	@Override

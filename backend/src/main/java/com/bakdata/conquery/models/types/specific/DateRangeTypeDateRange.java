@@ -2,14 +2,13 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
+@CPSType(base = CType.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
 public class DateRangeTypeDateRange extends CType<CDateRange> {
@@ -34,8 +33,8 @@ public class DateRangeTypeDateRange extends CType<CDateRange> {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
-		return minStore.estimateMemoryFieldSize() * 2;
+	public long estimateEventBytes() {
+		return minStore.estimateEventBytes() * 2;
 	}
 
 	@Override

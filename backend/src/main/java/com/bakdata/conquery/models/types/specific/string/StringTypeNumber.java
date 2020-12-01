@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -20,7 +19,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
+@CPSType(base = CType.class, id = "STRING_NUMBER")
 @ToString(of = "delegate")
 public class StringTypeNumber extends StringType {
 
@@ -46,8 +45,8 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
-		return delegate.estimateMemoryFieldSize();
+	public long estimateEventBytes() {
+		return delegate.estimateEventBytes();
 	}
 
 	@Override

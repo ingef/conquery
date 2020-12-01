@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.types.specific.string;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -8,7 +9,6 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-@CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
+@CPSType(base = CType.class, id = "STRING_DICTIONARY")
 public class StringTypeDictionary extends CType<Integer> {
 
 	protected CType<Long> numberType;
@@ -83,6 +83,10 @@ public class StringTypeDictionary extends CType<Integer> {
 	}
 
 	public Iterator<byte[]> iterator() {
+		if(dictionary == null){
+			return Collections.emptyIterator();
+		}
+
 		return Iterators.transform(dictionary.iterator(), DictionaryEntry::getValue);
 	}
 
@@ -113,8 +117,8 @@ public class StringTypeDictionary extends CType<Integer> {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
-		return numberType.estimateMemoryFieldSize();
+	public long estimateEventBytes() {
+		return numberType.estimateEventBytes();
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.parser.specific;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.events.stores.base.FloatStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -47,7 +46,7 @@ public class RealParser extends Parser<Double> {
 	protected CType<Double> decideType() {
 		log.debug("Max ULP = {}", floatULP);
 
-		ColumnStore<Double> store;
+		CType<Double> store;
 
 		if (floatULP < requiredPrecision) {
 			store = FloatStore.create(getLines());

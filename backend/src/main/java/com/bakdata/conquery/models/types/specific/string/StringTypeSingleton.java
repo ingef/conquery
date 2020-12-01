@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
@@ -16,7 +15,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
+@CPSType(base = CType.class, id = "STRING_SINGLETON")
 public class StringTypeSingleton extends StringType {
 
 	private final String singleValue;
@@ -71,7 +70,7 @@ public class StringTypeSingleton extends StringType {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
+	public long estimateEventBytes() {
 		return Byte.SIZE;
 	}
 

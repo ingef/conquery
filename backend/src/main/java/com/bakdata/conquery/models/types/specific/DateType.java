@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.types.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -12,15 +11,15 @@ import lombok.Getter;
 import lombok.ToString;
 
 
-@CPSType(base = ColumnStore.class, id = "DATES")
+@CPSType(base = CType.class, id = "DATES")
 @ToString(of = "store")
 public class DateType extends CType<Integer> {
 
 	@Getter
-	private final ColumnStore<Long> store;
+	private final CType<Long> store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateType(ColumnStore<Long> store) {
+	public DateType(CType<Long> store) {
 		super(MajorTypeId.DATE);
 		this.store = store;
 	}
@@ -31,7 +30,7 @@ public class DateType extends CType<Integer> {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
+	public long estimateEventBytes() {
 		return Integer.BYTES;
 	}
 

@@ -7,7 +7,6 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -18,7 +17,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
+@CPSType(base = CType.class, id = "STRING_PREFIX")
 @ToString(of = {"prefix", "suffix", "subType"})
 public class StringTypePrefixSuffix extends StringType {
 
@@ -95,8 +94,8 @@ public class StringTypePrefixSuffix extends StringType {
 	}
 
 	@Override
-	public long estimateMemoryFieldSize() {
-		return subType.estimateMemoryFieldSize();
+	public long estimateEventBytes() {
+		return subType.estimateEventBytes();
 	}
 
 	@Override

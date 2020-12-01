@@ -1,20 +1,22 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
-@CPSType(id = "FLOATS", base = ColumnStore.class)
+@CPSType(id = "FLOATS", base = CType.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class FloatStore extends ColumnStore<Double> {
+public class FloatStore extends CType<Double> {
 
 	private final float[] values;
 
 	@JsonCreator
 	public FloatStore(float[] values) {
+		super(MajorTypeId.REAL);
 		this.values = values;
 	}
 
@@ -22,8 +24,13 @@ public class FloatStore extends ColumnStore<Double> {
 		return new FloatStore(new float[size]);
 	}
 
+	@Override
+	public long estimateEventBytes() {
+		return Float.BYTES;
+	}
+
 	public FloatStore select(int[] starts, int[] ends) {
-		return new FloatStore(ColumnStore.selectArray(starts, ends, values, float[]::new));
+		return new FloatStore(CType.selectArray(starts, ends, values, float[]::new));
 	}
 
 	@Override
