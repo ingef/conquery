@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.events.stores.base.FloatStore;
-import com.bakdata.conquery.models.events.stores.specific.RealType;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
@@ -46,15 +45,11 @@ public class RealParser extends Parser<Double> {
 	protected ColumnStore<Double> decideType() {
 		log.debug("Max ULP = {}", floatULP);
 
-		ColumnStore<Double> store;
-
 		if (floatULP < requiredPrecision) {
-			store = FloatStore.create(getLines());
+			return FloatStore.create(getLines());
 		}
 		else {
-			store = DoubleStore.create(getLines());
+			return DoubleStore.create(getLines());
 		}
-
-		return new RealType(store);
 	}
 }
