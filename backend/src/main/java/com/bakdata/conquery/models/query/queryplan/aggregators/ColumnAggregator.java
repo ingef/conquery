@@ -4,9 +4,9 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.ColumnStore;
 
 /**
  * Base class for aggregators acting on columns.

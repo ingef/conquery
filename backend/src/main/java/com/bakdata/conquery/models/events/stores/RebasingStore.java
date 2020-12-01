@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.events.stores;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
 import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.Nullable;

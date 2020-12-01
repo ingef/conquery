@@ -4,13 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
+import org.junit.jupiter.api.Test;
 
 public class ClassToInstanceMapDeserializerTest {
 

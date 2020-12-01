@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.types.specific.string.StringType;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.types.ColumnStore;
-import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;

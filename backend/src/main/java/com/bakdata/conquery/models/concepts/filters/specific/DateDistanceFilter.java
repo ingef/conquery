@@ -11,11 +11,10 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.models.types.MajorTypeId;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

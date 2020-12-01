@@ -15,12 +15,11 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.validators.RequiresColumnType.RequiresColumnTypeList;
 import com.bakdata.conquery.models.exceptions.validators.RequiresColumnType.RequiresMacroTypeValidator;
-import com.bakdata.conquery.models.types.MajorTypeId;
+import org.apache.commons.lang3.ArrayUtils;
 
 
 @Target({ FIELD, TYPE_USE })

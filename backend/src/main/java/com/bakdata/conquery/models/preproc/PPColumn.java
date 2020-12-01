@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.preproc;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.types.ColumnStore;
-import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.types.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;

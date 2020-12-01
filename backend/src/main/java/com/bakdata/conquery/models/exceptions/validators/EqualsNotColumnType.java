@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.exceptions.validators;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.*;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
@@ -18,10 +15,10 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
 
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeIdHolder;
 import com.bakdata.conquery.models.exceptions.validators.EqualsNotColumnType.EqualsNotColumnTypeList;
 import com.bakdata.conquery.models.exceptions.validators.EqualsNotColumnType.EqualsNotColumnTypeValidator;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.MajorTypeIdHolder;
 
 
 @Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })

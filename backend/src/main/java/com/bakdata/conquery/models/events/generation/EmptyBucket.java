@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
 import lombok.Getter;
 
 /**

@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRangeClosed;
 import com.bakdata.conquery.models.common.daterange.CDateRangeEnding;
 import com.bakdata.conquery.models.common.daterange.CDateRangeExactly;
 import com.bakdata.conquery.models.common.daterange.CDateRangeStarting;
-import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.events.stores.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;

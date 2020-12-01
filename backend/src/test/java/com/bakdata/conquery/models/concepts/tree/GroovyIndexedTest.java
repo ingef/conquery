@@ -9,29 +9,27 @@ import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
+import com.bakdata.conquery.models.exceptions.ConfigurationException;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.util.CalculatedValue;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.powerlibraries.io.In;
+import io.dropwizard.jersey.validation.Validators;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
-import com.bakdata.conquery.util.CalculatedValue;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.powerlibraries.io.In;
-
-import io.dropwizard.jersey.validation.Validators;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j @Execution(ExecutionMode.SAME_THREAD)
 public class GroovyIndexedTest {

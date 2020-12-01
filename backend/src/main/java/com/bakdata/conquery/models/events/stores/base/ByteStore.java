@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.ColumnStore;
-import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -11,7 +11,7 @@ import lombok.ToString;
 /**
  * Can store only 255 different values, the last one is reserved as NULL-flag.
  *
- * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.events.stores.types.parser.specific.IntegerParser}
  */
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter

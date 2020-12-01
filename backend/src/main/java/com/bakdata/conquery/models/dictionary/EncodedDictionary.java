@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.dictionary;
 
-import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.types.specific.string.StringTypeEncoded;
 
 public class EncodedDictionary {
 

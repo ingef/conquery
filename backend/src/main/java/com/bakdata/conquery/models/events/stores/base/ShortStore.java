@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.ColumnStore;
-import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
 /**
  * Stores values as Shorts. Can only store 2^16-1 values as MAX is used as NULL value.
- * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.events.stores.types.parser.specific.IntegerParser}
  */
 @CPSType(id = "SHORTS", base = ColumnStore.class)
 @Getter

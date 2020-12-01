@@ -3,12 +3,12 @@ package com.bakdata.conquery.models.datasets;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.preproc.PPColumn;
-import com.bakdata.conquery.models.types.ColumnStore;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
