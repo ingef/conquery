@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -14,7 +13,7 @@ import lombok.ToString;
 @CPSType(id = "SHORTS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class ShortStore extends ColumnStoreAdapter<Long> {
+public class ShortStore extends ColumnStore<Long> {
 
 	private final short nullValue;
 	private final short[] values;

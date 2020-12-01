@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -12,7 +11,7 @@ import lombok.ToString;
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DecimalStore extends ColumnStoreAdapter<BigDecimal> {
+public class DecimalStore extends ColumnStore<BigDecimal> {
 
 	private final BigDecimal[] values;
 

@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.math.LongMath;
 import lombok.Getter;
@@ -15,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @RequiredArgsConstructor
-public abstract class CType<JAVA_TYPE> extends ColumnStoreAdapter<JAVA_TYPE> implements MajorTypeIdHolder {
+public abstract class CType<JAVA_TYPE> extends com.bakdata.conquery.models.events.ColumnStore<JAVA_TYPE> implements MajorTypeIdHolder {
 
 	@JsonIgnore
 	@NotNull

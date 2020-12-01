@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @CPSBase
-public interface ColumnStore<T> {
+public abstract class ColumnStore<T> {
 
 	public static <T> T selectArray(int[] starts, int[] lengths, T values, Function<Integer, T> provider) {
 		int length = Arrays.stream(lengths).sum();
@@ -33,36 +33,51 @@ public interface ColumnStore<T> {
 		return out;
 	}
 
-	ColumnStore<T> select(int[] starts, int[] length);
+	public abstract ColumnStore<T> select(int[] starts, int[] length);
 
 	/**
 	 * Set the event. If null, the store will store a null value.
 	 */
-	void set(int event, @CheckForNull T value);
+	public abstract void set(int event, @CheckForNull T value);
 
-	/**
-	 * Try and retrieve a value if there is one present. Is only valid, if {@linkplain ColumnStore#has(int)} is true.
-	 */
 	@NotNull
-	T get(int event);
+	public abstract T get(int event);
 
-	boolean has(int event);
+	public abstract boolean has(int event);
 
-	int getString(int event);
+	public int getString(int event) {
+		return (int) get(event);
+	}
 
-	long getInteger(int event);
+	public long getInteger(int event) {
+		return (long) get(event);
+	}
 
-	boolean getBoolean(int event);
+	public boolean getBoolean(int event) {
+		return (boolean) get(event);
+	}
 
-	double getReal(int event);
+	public double getReal(int event) {
+		return (double) get(event);
+	}
 
-	BigDecimal getDecimal(int event);
+	public BigDecimal getDecimal(int event) {
+		return (BigDecimal) get(event);
+	}
 
-	long getMoney(int event);
+	public long getMoney(int event) {
+		return (long) get(event);
+	}
 
-	int getDate(int event);
+	public int getDate(int event) {
+		return (int) get(event);
+	}
 
-	CDateRange getDateRange(int event);
+	public CDateRange getDateRange(int event) {
+		return (CDateRange) get(event);
+	}
 
-	Object getAsObject(int event);
+	public Object getAsObject(int event) {
+		return get(event);
+	}
 }

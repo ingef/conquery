@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @Getter
 @ToString(of = {"min", "store"})
-public class RebasingStore extends ColumnStoreAdapter<Long> {
+public class RebasingStore extends ColumnStore<Long> {
 
 	private final long min;
 
