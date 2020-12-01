@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.events.parser.specific.string;
 
-import com.bakdata.conquery.models.events.stores.specific.IntegerType;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
@@ -14,9 +14,7 @@ public class TrieTypeGuesser implements TypeGuesser {
 
 	@Override
 	public Guess createGuess() {
-		// todo this is confusing and unnecessary
-
-		IntegerType indexType = p.decideIndexType();
+		ColumnStore<Long> indexType = p.decideIndexType();
 
 		SuccinctTrie trie = new SuccinctTrie(null, "");
 		StringTypeDictionary type = new StringTypeDictionary(indexType, trie, trie.getName());

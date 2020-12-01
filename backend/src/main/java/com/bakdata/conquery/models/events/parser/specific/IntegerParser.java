@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.events.stores.base.RebasingStore;
 import com.bakdata.conquery.models.events.stores.base.ShortStore;
-import com.bakdata.conquery.models.events.stores.specific.IntegerType;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.AllArgsConstructor;
@@ -43,28 +42,23 @@ public class IntegerParser extends Parser<Long> {
 	}
 
 	@Override
-	public ColumnStore<Long> findBestType() {
-		return super.findBestType();
-	}
-
-	@Override
-	protected IntegerType decideType() {
+	protected ColumnStore<Long> decideType() {
 		long span = maxValue - minValue;
 
 		// max value is reserved for NULL
 		if (span + 1 < (long) Byte.MAX_VALUE - (long)  Byte.MIN_VALUE) {
-			return new IntegerType(new RebasingStore(minValue, (long) Byte.MIN_VALUE, ByteStore.create(getLines())));
+			return new RebasingStore(minValue, (long) Byte.MIN_VALUE, ByteStore.create(getLines()));
 		}
 
 		if (span + 1 < (long) Short.MAX_VALUE - (long)  Short.MIN_VALUE) {
-			return new IntegerType(new RebasingStore(minValue, Short.MIN_VALUE, ShortStore.create(getLines())));
+			return new RebasingStore(minValue, Short.MIN_VALUE, ShortStore.create(getLines()));
 		}
 
 		if (span + 1 < (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE) {
-			return new IntegerType(new RebasingStore(minValue, Integer.MIN_VALUE, IntegerStore.create(getLines())));
+			return new RebasingStore(minValue, Integer.MIN_VALUE, IntegerStore.create(getLines()));
 		}
 
-		return new IntegerType(new RebasingStore(minValue, Long.MIN_VALUE, LongStore.create(getLines())));
+		return new RebasingStore(minValue, Long.MIN_VALUE, LongStore.create(getLines()));
 	}
 
 }

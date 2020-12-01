@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.events.parser.specific.string.TypeGuesser.Guess;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
-import com.bakdata.conquery.models.events.stores.specific.IntegerType;
 import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
@@ -154,7 +153,7 @@ public class StringParser extends Parser<Integer> {
 						  .collect(Collectors.toList());
 	}
 
-	public IntegerType decideIndexType() {
+	public ColumnStore<Long> decideIndexType() {
 		final IntegerParser indexParser = new IntegerParser();
 
 		final IntSummaryStatistics indexStatistics = getStrings().values().stream()
@@ -168,6 +167,6 @@ public class StringParser extends Parser<Integer> {
 		indexParser.setNullLines(getNullLines());
 
 
-		return ((IntegerType) indexParser.findBestType());
+		return indexParser.findBestType();
 	}
 }

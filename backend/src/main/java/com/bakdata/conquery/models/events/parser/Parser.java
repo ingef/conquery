@@ -37,7 +37,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 	
 	protected abstract ColumnStore<MAJOR_JAVA_TYPE> decideType();
 	
-	public ColumnStore<MAJOR_JAVA_TYPE> findBestType() {
+	public final ColumnStore<MAJOR_JAVA_TYPE> findBestType() {
 		ColumnStore<MAJOR_JAVA_TYPE> dec = decideType();
 		copyLineCounts(dec);
 		return dec;

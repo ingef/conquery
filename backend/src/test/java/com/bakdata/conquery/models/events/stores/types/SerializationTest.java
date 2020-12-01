@@ -31,7 +31,6 @@ import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.events.stores.specific.DateType;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
-import com.bakdata.conquery.models.events.stores.specific.IntegerType;
 import com.bakdata.conquery.models.events.stores.specific.MoneyType;
 import com.bakdata.conquery.models.events.stores.specific.RealType;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
@@ -68,23 +67,21 @@ public class SerializationTest {
 	public static List<ColumnStore<?>> createCTypes() {
 		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
 		return Arrays.asList(
-				new DecimalTypeScaled(13, new IntegerType(IntegerStore.create(10))),
-				new IntegerType(IntegerStore.create(10)),
-				new MoneyType(new IntegerType(IntegerStore.create(10))),
+				new DecimalTypeScaled(13, IntegerStore.create(10)),
+				new MoneyType(IntegerStore.create(10)),
 				new DecimalTypeBigDecimal(DecimalStore.create(10)),
 				new BooleanTypeBoolean(BooleanStore.create(10)),
 				new RealType(DoubleStore.create(10)),
 				new DateType(IntegerStore.create(10)),
-				new StringTypeDictionary(new IntegerType(IntegerStore.create(10)), dictionary, "hi"),
-				new StringTypeEncoded(new StringTypeDictionary(new IntegerType(IntegerStore.create(10)), dictionary, "hi"), Encoding.Base16LowerCase),
-				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(new IntegerType(IntegerStore.create(10)), dictionary, "hi"), Encoding.Base16LowerCase), "a", "b"),
+				new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"),
+				new StringTypeEncoded(new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase),
+				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase), "a", "b"),
 
-				new StringTypeNumber(new IntegerRange(0, 7), new IntegerType(ByteStore.create(10))),
+				new StringTypeNumber(new IntegerRange(0, 7), ByteStore.create(10)),
 				new StringTypeSingleton("a", BooleanStore.create(10)),
-				new IntegerType(LongStore.create(10)),
-				new DateRangeTypeDateRange(new IntegerType(LongStore.create(10)), new IntegerType(LongStore.create(10))),
-				new DateRangeTypeQuarter(new IntegerType(LongStore.create(10))),
-				new DateType(new IntegerType(LongStore.create(10))),
+				new DateRangeTypeDateRange(LongStore.create(10), LongStore.create(10)),
+				new DateRangeTypeQuarter(LongStore.create(10)),
+				new DateType(LongStore.create(10)),
 				new RealType(FloatStore.create(10)),
 
 				DecimalStore.create(10),

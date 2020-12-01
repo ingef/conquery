@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific.string;
 
 import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.stores.specific.IntegerType;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
@@ -14,7 +14,7 @@ public class MapTypeGuesser implements TypeGuesser {
 
 	@Override
 	public Guess createGuess() {
-		IntegerType indexType = p.decideIndexType();
+		ColumnStore<Long> indexType = p.decideIndexType();
 
 		final MapDictionary dictionaryEntries = new MapDictionary(null, "");
 
