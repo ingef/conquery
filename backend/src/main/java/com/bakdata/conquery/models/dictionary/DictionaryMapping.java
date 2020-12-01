@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.dictionary;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.models.events.stores.types.ColumnStore;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.AccessLevel;
 import lombok.Getter;

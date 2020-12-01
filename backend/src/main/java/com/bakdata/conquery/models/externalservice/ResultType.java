@@ -7,7 +7,7 @@ import java.text.NumberFormat;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
-import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.NonNull;
 

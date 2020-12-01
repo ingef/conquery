@@ -7,7 +7,7 @@ import java.util.Set;
 import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.generation.EmptyBucket;
+import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -137,7 +137,7 @@ public class ConceptQueryPlan implements QueryPlan {
 				if(bucket == null){
 					continue;
 				}
-				
+
 				if (!bucket.containsEntity(entity.getId())) {
 					continue;
 				}

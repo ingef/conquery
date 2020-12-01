@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.stores.types.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;

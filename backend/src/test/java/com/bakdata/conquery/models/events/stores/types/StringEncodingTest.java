@@ -8,8 +8,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.types.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.events.stores.types.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.parser.specific.string.StringParser;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DynamicTest;

@@ -7,8 +7,8 @@ import java.util.StringJoiner;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.types.parser.Parser;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;

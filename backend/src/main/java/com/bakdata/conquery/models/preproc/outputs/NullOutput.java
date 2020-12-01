@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.types.parser.Parser;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;

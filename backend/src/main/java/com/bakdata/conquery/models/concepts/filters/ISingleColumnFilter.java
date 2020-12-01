@@ -5,7 +5,7 @@ import java.util.EnumSet;
 import javax.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid.ValidationMethod2;
 import com.fasterxml.jackson.annotation.JsonIgnore;

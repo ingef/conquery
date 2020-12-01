@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import lombok.Getter;
 import lombok.Setter;

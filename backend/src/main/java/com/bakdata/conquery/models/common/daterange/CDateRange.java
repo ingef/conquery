@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.events.stores.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.events.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;

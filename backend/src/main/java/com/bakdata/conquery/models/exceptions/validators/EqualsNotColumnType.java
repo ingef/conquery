@@ -15,8 +15,8 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
 
-import com.bakdata.conquery.models.events.stores.types.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.types.MajorTypeIdHolder;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.MajorTypeIdHolder;
 import com.bakdata.conquery.models.exceptions.validators.EqualsNotColumnType.EqualsNotColumnTypeList;
 import com.bakdata.conquery.models.exceptions.validators.EqualsNotColumnType.EqualsNotColumnTypeValidator;
 

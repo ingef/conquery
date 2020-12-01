@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.events.stores.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.events.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
