@@ -343,7 +343,7 @@ public class AdminProcessor {
 		return FEUserContent
 			.builder()
 			.owner(user)
-			.roles(user.getRoles())
+			.roles(user.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(user.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
@@ -383,15 +383,15 @@ public class AdminProcessor {
 
 	public FEGroupContent getGroupContent(GroupId groupId) {
 		Group group = Objects.requireNonNull(storage.getGroup(groupId));
-		Set<User> members = group.getMembers();
+		Set<UserId> membersIds = group.getMembers();
 		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
-		availableMembers.removeAll(members);
+		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
 		return FEGroupContent
 			.builder()
 			.owner(group)
-			.members(members)
+			.members(membersIds.stream().map(storage::getUser).collect(Collectors.toList()))
 			.availableMembers(availableMembers)
-			.roles(group.getRoles())
+			.roles(group.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(group.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
@@ -462,9 +462,9 @@ public class AdminProcessor {
 		Collection<OverviewRow> overview = new TreeSet<>();
 		for (User user : storage.getAllUsers()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
-			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
+			List<Role> effectiveRoles = user.getRoles().stream().map(storage::getRole).collect(Collectors.toList());
 			userGroups.forEach(g -> {
-				effectiveRoles.addAll(g.getRoles());
+				effectiveRoles.addAll(g.getRoles().stream().map(storage::getRole).collect(Collectors.toList()));
 			});
 			overview.add(OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
 		}
@@ -485,7 +485,7 @@ public class AdminProcessor {
 	 */
 	public String getPermissionOverviewAsCSV(GroupId groupId) {
 		Group group = Objects.requireNonNull(storage.getGroup(groupId), "The group was not found");
-		return getPermissionOverviewAsCSV(group.getMembers());
+		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
 	}
 
 	/**

@@ -2,14 +2,12 @@ package com.bakdata.conquery.apiv1;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -20,6 +18,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -71,18 +70,13 @@ public class StoredQueriesProcessor {
 	public void deleteQuery(Namespace namespace, ManagedExecutionId queryId) {
 		storage.removeExecution(queryId);
 	}
-
-	public StoredQuerySingleInfo getQueryWithSource(ManagedExecutionId queryId, User user, UriBuilder url) {
+	
+	public ExecutionStatus getQueryWithSource(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
-			throw new WebApplicationException(Response.Status.NOT_FOUND);
+			return null;
 		}
-
-		if(!(query instanceof ManagedQuery)) {
-			throw new WebApplicationException(Status.NOT_IMPLEMENTED);
-		}
-		
-		return StoredQuerySingleInfo.from((ManagedQuery) query, user, storage, url);
+		return query.buildStatus(storage, url, user, datasetRegistry, EnumSet.of(CreationFlag.WITH_COLUMN_DESCIPTION, CreationFlag.WITH_SOURCE, CreationFlag.WITH_GROUPS));
 	}
 
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {

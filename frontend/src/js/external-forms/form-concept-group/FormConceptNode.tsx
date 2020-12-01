@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import { useDrag } from "react-dnd";
 import styled from "@emotion/styled";
 
@@ -9,7 +9,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import * as dndTypes from "../../common/constants/dndTypes";
 
-const Root = styled("div")`
+const Root = styled("div")<{ active?: boolean }>`
   padding: 5px 10px;
   cursor: pointer;
   background-color: white;
@@ -30,6 +30,12 @@ const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
+const Label = styled("p")`
+  margin: 0;
+  word-break: break-word;
+  line-height: 1.2;
+  font-size: ${({ theme }) => theme.font.md};
+`;
 const Description = styled("div")`
   margin: 3px 0 0;
   word-break: break-word;
@@ -38,7 +44,10 @@ const Description = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
-const Left = styled("div")``;
+const Left = styled("div")`
+  flex-grow: 1;
+  flex-basis: 0;
+`;
 
 const Right = styled("div")`
   flex-shrink: 0;
@@ -52,9 +61,10 @@ const RootNode = styled("p")`
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.blueGrayDark};
+  word-break: break-word;
 `;
 
-type PropsT = {
+interface PropsT {
   valueIdx: number;
   conceptIdx: number;
   conceptNode: Object;
@@ -66,51 +76,48 @@ type PropsT = {
     expandable: boolean;
     active: boolean;
   };
-};
+}
 
 // TODO: Refactor, add a TooltipButton in conquery and use that.
 
 // generalized node to handle concepts queried in forms
-const FormConceptNode = (props: PropsT) => {
-  const rootNodeLabel = getRootNodeLabel(props.conceptNode);
+const FormConceptNode: FC<PropsT> = ({
+  conceptNode,
+  onFilterClick,
+  hasActiveFilters,
+  expand,
+}) => {
+  const rootNodeLabel = getRootNodeLabel(conceptNode);
 
   const [, drag] = useDrag({
     item: {
-      type: dndTypes.FORM_CONCEPT_NODE
+      type: dndTypes.FORM_CONCEPT_NODE,
     },
-    begin: monitor => ({
-      conceptNode: props.conceptNode
-    })
+    begin: () => ({
+      conceptNode,
+    }),
   });
 
   return (
-    <Root
-      ref={drag}
-      active={props.hasActiveFilters}
-      onClick={props.onFilterClick}
-    >
+    <Root ref={drag} active={hasActiveFilters} onClick={onFilterClick}>
       <Left>
         {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-        {props.conceptNode && props.conceptNode.label}
-        {props.conceptNode && !!props.conceptNode.description && (
-          <Description>{props.conceptNode.description}</Description>
+        <Label>{conceptNode && conceptNode.label}</Label>
+        {conceptNode && !!conceptNode.description && (
+          <Description>{conceptNode.description}</Description>
         )}
       </Left>
       <Right>
-        {props.expand && props.expand.expandable && (
+        {expand && expand.expandable && (
           <WithTooltip
             text={T.translate("externalForms.common.concept.expand")}
           >
             <IconButton
-              icon={
-                props.expand.active
-                  ? "compress-arrows-alt"
-                  : "expand-arrows-alt"
-              }
+              icon={expand.active ? "compress-arrows-alt" : "expand-arrows-alt"}
               tiny
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
-                props.expand.onClick();
+                expand.onClick();
               }}
             />
           </WithTooltip>

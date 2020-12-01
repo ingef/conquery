@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.List;
+import java.util.OptionalInt;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
@@ -41,7 +43,7 @@ public class FilterResource extends HFilters {
 	
 	@POST
 	@Path("autocomplete")
-	public List<FEValue> autocompleteTextFilter(@NotNull StringContainer text, @Context HttpServletRequest req) {
+	public List<FEValue> autocompleteTextFilter(@NotNull StringContainer text, @Context HttpServletRequest req, @QueryParam("page") OptionalInt pageNumberOpt, @QueryParam("pageSize")OptionalInt itemsPerPageOpt) {
 		if(StringUtils.isEmpty(text.getText())) {
 			throw new WebApplicationException("Too short text. Requires at least 1 characters.", Status.BAD_REQUEST);
 		}
@@ -50,7 +52,7 @@ public class FilterResource extends HFilters {
 		}
 		
 
-		return processor.autocompleteTextFilter((AbstractSelectFilter<?>) filter, text.getText());
+		return processor.autocompleteTextFilter((AbstractSelectFilter<?>) filter, text.getText(), pageNumberOpt, itemsPerPageOpt);
 	}
 	
 	@Data

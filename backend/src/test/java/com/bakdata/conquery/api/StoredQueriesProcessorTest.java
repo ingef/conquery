@@ -127,7 +127,7 @@ public class StoredQueriesProcessorTest {
 	}
 	
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state) {
-		return new ExecutionStatus(new String[0], id.getExecution().toString(), true, LocalDateTime.MIN.atZone(ZoneId.systemDefault()), null, owner.getId(), null, false, owner.equals(callingUser), false, id, state, null, null, null, null, false, null, null);
+		return new ExecutionStatus(new String[0], id.getExecution().toString(), true, LocalDateTime.MIN.atZone(ZoneId.systemDefault()), null, owner.getId(), null, false, owner.equals(callingUser), false, id, state, null, null, null, null, false, null, null, null);
 	}
 
 }

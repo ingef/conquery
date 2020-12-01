@@ -4,6 +4,8 @@ import java.util.Collections;
 
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.RESTServer;
+import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
+import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.MetricRegistry;
@@ -88,6 +90,9 @@ public class AuthServlet {
 
 		servletEnvironment.addServlet("auth", servletContainerHolder.getContainer()).addMapping("/auth/*");
 
+		jerseyConfig.register(CORSPreflightRequestFilter.class);
+		jerseyConfig.register(CORSResponseFilter.class);
+		
 		jerseyConfig.register(new JacksonMessageBodyProvider(objectMapper));
 		// freemarker support
 		jerseyConfig.register(new ViewMessageBodyWriter(metrics, Collections.singleton(Freemarker.HTML_RENDERER)));

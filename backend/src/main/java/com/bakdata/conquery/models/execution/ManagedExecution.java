@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -25,12 +26,15 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
+import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
@@ -38,13 +42,15 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -71,6 +77,11 @@ import org.apache.shiro.authz.Permission;
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
+	
+	/**
+	 * Some unusual suffix. Its not too bad if someone actually uses this. 
+	 */
+	public final static String AUTO_LABEL_SUFFIX = "\t@§$";
 
 	protected DatasetId dataset;
 	protected UUID queryId;
@@ -108,7 +119,16 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Executed right before execution submission.
 	 * @param namespaces
 	 */
-	public abstract void initExecutable(DatasetRegistry namespaces);
+	public void initExecutable(DatasetRegistry namespaces) {
+		synchronized (getExecution()) {
+			if(label == null) {
+				label = makeAutoLabel();
+			}
+			doInitExecutable(namespaces);
+		}
+	}
+
+	protected abstract void doInitExecutable(DatasetRegistry namespaces);
 
 	/**
 	 * Returns the set of namespaces, this execution needs to be executed on.
@@ -196,8 +216,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
-		status.setLabel(label == null ? queryId.toString() : label);
-		status.setPristineLabel(label == null || queryId.toString().equals(label));
+		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
+		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
@@ -231,13 +251,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
 	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class), datasetRegistry);
+		return buildStatus(storage, url, user, datasetRegistry, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
 	}
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, EnumSet.of(creationFlag), datasetRegistry);
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull ExecutionStatus.CreationFlag creationFlag) {
+		return buildStatus(storage, url, user, datasetRegistry, EnumSet.of(creationFlag));
 	}
 	
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags, DatasetRegistry datasetRegistry) {
+	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
 		ExecutionStatus status = new ExecutionStatus();
 		setStatusBase(storage, url, user, status);
 		for(CreationFlag flag : creationFlags) {
@@ -248,12 +268,32 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				case WITH_SOURCE:
 					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
 					break;
+				case WITH_GROUPS:
+					setAdditionalFieldsForStatusWithGroups(storage, user, status);
+					break;
 				default:
 					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
 			}
 		}
 		return status;
 		
+	}
+
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus status) {
+		/* Calculate which groups can see this query.
+		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 */
+		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
+		for(Group group : storage.getAllGroups()) {
+			for(Permission perm : group.getPermissions()) {
+				if(perm.implies(QueryPermission.onInstance(Ability.READ, this.getId()))) {
+					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+					continue;
+				}
+			}
+		}
+		
+		status.setGroups(permittedGroups);
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
@@ -293,7 +333,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
 	 */
 	@JsonIgnore
-	public abstract StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator);
+	public abstract StreamingOutput getResult(Function<ContainedEntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator);
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
@@ -323,4 +363,28 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	@JsonIgnore
 	public abstract QueryDescription getSubmitted();
+
+	@JsonIgnore
+	public String getLabelWithoutAutoLabelSuffix() {
+		int idx;
+		if(label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1){
+		
+			return label.substring(0, idx);
+		}
+		return label;
+	}
+	
+	@JsonIgnore
+	public boolean isAutoLabeled() {
+		return label != null ? label.endsWith(AUTO_LABEL_SUFFIX) : false;
+	}
+	
+	@JsonIgnore
+	abstract protected void makeDefaultLabel(StringBuilder sb);
+	
+	protected String makeAutoLabel() {
+		StringBuilder sb = new StringBuilder();
+		makeDefaultLabel(sb);
+		return sb.append(AUTO_LABEL_SUFFIX).toString();
+	}
 }

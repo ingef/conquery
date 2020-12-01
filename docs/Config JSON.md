@@ -47,7 +47,7 @@ An `AuthenticationConfig` is used to define how specific realms for authenticati
 Different types of AuthenticationConfig can be used by setting `type` to one of the following values:
 
 
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java#L8-L11)</sup></sub></sup>
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java#L9-L12)</sup></sub></sup>
 Default configuration for the auth system. Sets up all other default components. This configuration causes that every request is handled as invoked by the super user.
 
 <details><summary>Details</summary><p>
@@ -58,7 +58,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L14)</sup></sub></sup>
+### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L16)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -69,12 +69,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L25) | jwtDuration | `int` | `12` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L19-L21) | passwordStoreConfig | [XodusConfig](#Type-XodusConfig) |  |  | Configuration for the password store. An encryption for the store it self might be set here. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L28-L30) | storeName | `String` | `"authenticationStore"` |  | The name of the folder the store lives in. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L27) | jwtDuration | `int` | `12` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L21-L23) | passwordStoreConfig | [XodusConfig](#Type-XodusConfig) |  |  | Configuration for the password store. An encryption for the store it self might be set here. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L30-L32) | storeName | `String` | `"authenticationStore"` |  | The name of the folder the store lives in. | 
 </p></details>
 
-### OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/passwordflow/OIDCResourceOwnerPasswordCredentialRealmFactory.java#L9)</sup></sub></sup>
+### OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/passwordflow/OIDCResourceOwnerPasswordCredentialRealmFactory.java#L25)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -242,22 +242,23 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L46) | additionalFormats | list of `String` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L44) | api | [APIConfig](#Type-APIConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L55) | authentication | list of [AuthenticationConfig](#Base-AuthenticationConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L58) | authorization | [AuthorizationConfig](#Base-AuthorizationConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L48) | additionalFormats | list of `String` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L46) | api | [APIConfig](#Type-APIConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L36) | arrow | `ArrowConfig` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L57) | authentication | list of [AuthenticationConfig](#Base-AuthenticationConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L60) | authorization | [AuthorizationConfig](#Base-AuthorizationConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L30) | cluster | [ClusterConfig](#Type-ClusterConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L34) | csv | [CSVConfig](#Type-CSVConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L62-L64) | debugMode | `boolean` or `null` | `null` |  | null means here that we try to deduce from an attached agent | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L48) | frontend | [FrontendConfig](#Type-FrontendConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L53) | idMapping | [IdMappingConfig](#Base-IdMappingConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L36) | locale | [LocaleConfig](#Type-LocaleConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L51) | metricsConfig | `ConqueryMetricsConfig` |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L60) | plugins | list of `PluginConfig` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L64-L66) | debugMode | `boolean` or `null` | `null` |  | null means here that we try to deduce from an attached agent | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L50) | frontend | [FrontendConfig](#Type-FrontendConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L55) | idMapping | [IdMappingConfig](#Base-IdMappingConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L38) | locale | [LocaleConfig](#Type-LocaleConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L53) | metricsConfig | `ConqueryMetricsConfig` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L62) | plugins | list of `PluginConfig` | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L32) | preprocessor | [PreprocessingConfig](#Type-PreprocessingConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L42) | queries | [QueryConfig](#Type-QueryConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L38) | standalone | [StandaloneConfig](#Type-StandaloneConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L40) | storage | [StorageConfig](#Type-StorageConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L44) | queries | [QueryConfig](#Type-QueryConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L40) | standalone | [StandaloneConfig](#Type-StandaloneConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L42) | storage | [StorageConfig](#Type-StorageConfig) |  |  |  | 
 </p></details>
 
 ### Type CurrencyConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L20)</sup></sub></sup>
@@ -304,8 +305,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L13) | currency | `Currency` | `"EUR"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L17) | frontend | `Locale` | `""` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L15) | numberParsingLocale | `Locale` | `""` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L15) | frontend | `Locale` | `""` |  |  | 
 </p></details>
 
 ### Type MinaConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/MinaConfig.java#L13)</sup></sub></sup>

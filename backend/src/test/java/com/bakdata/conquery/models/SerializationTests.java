@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models;
 
-import static org.mockito.Mockito.mock;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.util.NonPersistentMetaStorage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -64,7 +63,7 @@ public class SerializationTests {
 	}
 	
 	@Test
-	public void mandator() throws IOException, JSONException{
+	public void role() throws IOException, JSONException{
 		Role mandator = new Role("company", "company");
 		
 		SerializationTestUtil
@@ -77,7 +76,7 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException{
-		MetaStorage storage = mock(MetaStorage.class);
+		MetaStorage storage = new NonPersistentMetaStorage();
 		User user = new User("user", "user");
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
@@ -98,7 +97,7 @@ public class SerializationTests {
 	
 	@Test
 	public void group() throws IOException, JSONException {
-		MetaStorage storage = mock(MetaStorage.class);
+		MetaStorage storage = new NonPersistentMetaStorage();
 		Group group = new Group("group", "group");
 		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group

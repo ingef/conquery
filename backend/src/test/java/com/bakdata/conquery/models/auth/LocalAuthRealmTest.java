@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.List;
 
 import com.auth0.jwt.JWT;
@@ -18,7 +19,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.MoreCollectors;
-import com.google.common.io.Files;
+import io.dropwizard.setup.Environment;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -48,12 +49,12 @@ public class LocalAuthRealmTest {
 		LocalAuthenticationConfig config = new LocalAuthenticationConfig();
 
 		storage = mock(MetaStorage.class);
-		File tmpDir = Files.createTempDir();
+		File tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
 
 		tmpDir.mkdir();
 
 		ConqueryConfig.getInstance().getStorage().setDirectory(tmpDir);
-		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(),List.of(config), storage);
+		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(),List.of(config), storage);
 		controller.init();
 		controller.start();
 		realm = (LocalAuthenticationRealm) controller.getAuthenticationRealms().stream().filter(r -> r instanceof LocalAuthenticationRealm).collect(MoreCollectors.onlyElement());

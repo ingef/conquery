@@ -34,6 +34,8 @@ public class ConqueryConfig extends Configuration {
 	@Valid @NotNull
 	private CSVConfig csv = new CSVConfig();
 	@Valid @NotNull
+	private ArrowConfig arrow = new ArrowConfig();
+	@Valid @NotNull
 	private LocaleConfig locale = new LocaleConfig();
 	@Valid @NotNull
 	private StandaloneConfig standalone = new StandaloneConfig();

@@ -10,17 +10,21 @@ import { makeStore } from "./store";
 import AppRoot from "./AppRoot";
 
 import { initializeEnvironment, Environment, basename } from "./environment";
+import { Store } from "redux";
+import { StateT } from "app-types";
+import { TabT } from "./pane/types";
 
 // TODO: OG image required?
 // require('../../images/og.png');
 // Required for isomophic-fetch
 
-let store;
-let browserHistory;
+let store: Store<StateT>;
+let browserHistory: any;
+
 const initialState = {};
 
 // Render the App including Hot Module Replacement
-const renderRoot = (tabs: Object, theme: Theme) => {
+const renderRoot = (tabs: TabT[], theme: Theme) => {
   browserHistory =
     browserHistory ||
     createBrowserHistory({
@@ -36,11 +40,15 @@ const renderRoot = (tabs: Object, theme: Theme) => {
   );
 };
 
-export default function conquery(
-  environment: Environment,
-  tabs: Object,
-  theme: Theme // React-Emotion theme, will at some point completely replace sass
-) {
+export default function conquery({
+  environment,
+  tabs,
+  theme,
+}: {
+  environment: Environment;
+  tabs: TabT[];
+  theme: Theme; // React-Emotion theme, will at some point completely replace sass
+}) {
   initializeEnvironment(environment);
   renderRoot(tabs, theme);
 }

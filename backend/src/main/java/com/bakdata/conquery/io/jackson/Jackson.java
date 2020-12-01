@@ -63,7 +63,7 @@ public class Jackson {
 
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
 
-		return (T)objectMapper;
+		return objectMapper;
 	}
 
 	public static <T> T findInjectable(DeserializationContext ctxt, Class<T> clazz) throws JsonMappingException {
