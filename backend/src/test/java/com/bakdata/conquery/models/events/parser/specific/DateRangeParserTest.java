@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.events.stores.base.ByteStore;
 import com.bakdata.conquery.models.events.stores.base.RebasingStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
-import com.bakdata.conquery.util.PackedUnsigned1616;
 import org.junit.jupiter.api.Test;
 
 class DateRangeParserTest {
@@ -55,16 +54,4 @@ class DateRangeParserTest {
 
 		assertThat(parser.decideType()).isInstanceOf(DateRangeTypeQuarter.class);
 	}
-
-	@Test
-	public void notPacked() {
-		final DateRangeParser parser = new DateRangeParser(new ParserConfig());
-
-		List.of(CDateRange.of(10, PackedUnsigned1616.MAX_VALUE + 12))
-			.forEach(parser::registerValue);
-
-		assertThat(parser.decideType()).isInstanceOf(DateRangeTypeDateRange.class);
-	}
-
-
 }
