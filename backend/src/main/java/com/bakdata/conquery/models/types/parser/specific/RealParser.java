@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.events.stores.base.FloatStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.RealType;
 import com.bakdata.conquery.util.NumberParsing;
@@ -43,10 +43,10 @@ public class RealParser extends Parser<Double> {
 	 * If values are within a margin of precision, we store them as floats.
 	 */
 	@Override
-	protected CType<Double> decideType() {
+	protected ColumnStore<Double> decideType() {
 		log.debug("Max ULP = {}", floatULP);
 
-		CType<Double> store;
+		ColumnStore<Double> store;
 
 		if (floatULP < requiredPrecision) {
 			store = FloatStore.create(getLines());

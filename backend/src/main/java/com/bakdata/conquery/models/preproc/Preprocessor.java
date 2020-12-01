@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -93,7 +93,7 @@ public class Preprocessor {
 	/**
 	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
 	 *
-	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link CType}.
+	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
 	 */
 	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
 

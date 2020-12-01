@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.types.parser;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -35,10 +35,10 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 
 	protected void registerValue(MAJOR_JAVA_TYPE v) {};
 	
-	protected abstract CType<MAJOR_JAVA_TYPE> decideType();
+	protected abstract ColumnStore<MAJOR_JAVA_TYPE> decideType();
 	
-	public CType<MAJOR_JAVA_TYPE> findBestType() {
-		CType<MAJOR_JAVA_TYPE> dec = decideType();
+	public ColumnStore<MAJOR_JAVA_TYPE> findBestType() {
+		ColumnStore<MAJOR_JAVA_TYPE> dec = decideType();
 		copyLineCounts(dec);
 		return dec;
 	}
@@ -56,7 +56,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 		return v;
 	}
 	
-	public void copyLineCounts(CType<?> type) {
+	public void copyLineCounts(ColumnStore<?> type) {
 		type.setLines(lines);
 		type.setNullLines(nullLines);
 	}

@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportColumnId;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 	@JsonBackReference @NotNull
 	private Import parent;
 	@NotNull @Valid
-	private CType<?> type;
+	private ColumnStore<?> type;
 	@Min(0)
 	private int position = -1;
 	

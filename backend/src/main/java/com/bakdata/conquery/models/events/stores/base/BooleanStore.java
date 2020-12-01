@@ -6,7 +6,7 @@ import java.util.BitSet;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.BitSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.BitSetSerializer;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -15,10 +15,10 @@ import lombok.Getter;
 import lombok.ToString;
 
 
-@CPSType(id = "BOOLEANS", base = CType.class)
+@CPSType(id = "BOOLEANS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class BooleanStore extends CType<Boolean> {
+public class BooleanStore extends ColumnStore<Boolean> {
 
 	@JsonSerialize(using = BitSetSerializer.class)
 	@JsonDeserialize(using = BitSetDeserializer.class)

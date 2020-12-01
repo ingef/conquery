@@ -38,7 +38,7 @@ import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.types.specific.string.StringType;
@@ -101,7 +101,7 @@ public class ImportJob extends Job {
 		}
 
 		final Table table = namespace.getStorage().getDataset().getTables().get(this.tableId);
-		final CType<?>[] stores = container.getValues();
+		final ColumnStore<?>[] stores = container.getValues();
 
 
 		// Update primary dictionary: load new data, and create mapping.
@@ -145,7 +145,7 @@ public class ImportJob extends Job {
 	 * - split stores
 	 * - send store to responsible workers
 	 */
-	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, CType<?>[] stores, DictionaryMapping primaryMapping, ImportId importId, int bucketId, List<Integer> bucketEntities) {
+	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, ColumnStore<?>[] stores, DictionaryMapping primaryMapping, ImportId importId, int bucketId, List<Integer> bucketEntities) {
 
 		int[] globalIds = bucketEntities.stream().mapToInt(primaryMapping::source2Target).toArray();
 
@@ -160,10 +160,10 @@ public class ImportJob extends Job {
 		}
 
 		// copy only the parts of the bucket we need
-		final CType<?>[] bucketStores =
+		final ColumnStore<?>[] bucketStores =
 				Arrays.stream(stores)
 					  .map(store -> store.select(selectionStart, entityLengths))
-					  .toArray(CType<?>[]::new);
+					  .toArray(ColumnStore<?>[]::new);
 
 
 		return new Bucket(
@@ -243,7 +243,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, CType<?>[] stores)
+	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, ColumnStore<?>[] stores)
 			throws JSONException {
 
 		// Empty Maps are Coalesced to null by Jackson
@@ -305,7 +305,7 @@ public class ImportJob extends Job {
 		return out;
 	}
 
-	public void setDictionaryIds(CType<?>[] values, Column[] columns, String importName) {
+	public void setDictionaryIds(ColumnStore<?>[] values, Column[] columns, String importName) {
 		for (int i = 0; i < columns.length; i++) {
 			Column column = columns[i];
 
@@ -325,7 +325,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, CType<?>[] values, Column[] columns) {
+	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, ColumnStore<?>[] values, Column[] columns) {
 		for (int i = 0; i < values.length; i++) {
 			Column column = columns[i];
 
@@ -351,7 +351,7 @@ public class ImportJob extends Job {
 			indexParser.setMinValue(statistics.getMin());
 			indexParser.setMaxValue(statistics.getMax());
 
-			final CType<Long> newType = indexParser.findBestType();
+			final ColumnStore<Long> newType = indexParser.findBestType();
 
 			log.debug("Decided for {}", newType);
 
@@ -361,7 +361,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, CType<?>[] stores, Column[] columns) {
+	private Import createImport(PreprocessedHeader header, ColumnStore<?>[] stores, Column[] columns) {
 		Import imp = new Import(tableId);
 
 		imp.setName(header.getName());

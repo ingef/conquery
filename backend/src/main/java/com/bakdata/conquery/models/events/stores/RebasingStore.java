@@ -3,24 +3,24 @@ package com.bakdata.conquery.models.events.stores;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.Nullable;
 
 
-@CPSType(base = CType.class, id = "REBASE")
+@CPSType(base = ColumnStore.class, id = "REBASE")
 @Getter
 @ToString(of = {"min", "store"})
-public class RebasingStore extends CType<Long> {
+public class RebasingStore extends ColumnStore<Long> {
 
 	private final long min;
 
 	private final long root;
 
-	private final CType<Long> store;
+	private final ColumnStore<Long> store;
 
-	public RebasingStore(long min, long root, CType<Long> store) {
+	public RebasingStore(long min, long root, ColumnStore<Long> store) {
 		super(store.getTypeId());
 		this.min = min;
 		this.root = root;

@@ -59,11 +59,11 @@ public class SerializationTest {
 						.collect(Collectors.toSet())
 		)
 				.containsAll(
-						(Set) CPSTypeIdResolver.listImplementations(CType.class)
+						(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class)
 				);
 	}
 
-	public static List<CType<?>> createCTypes() {
+	public static List<ColumnStore<?>> createCTypes() {
 		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
 		return Arrays.asList(
 				new DecimalTypeScaled(13, new IntegerType(IntegerStore.create(10))),
@@ -100,9 +100,9 @@ public class SerializationTest {
 
 	@ParameterizedTest
 	@MethodSource("createCTypes")
-	public void testSerialization(CType type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
+	public void testSerialization(ColumnStore type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 		SerializationTestUtil
-				.forType(CType.class)
+				.forType(ColumnStore.class)
 				.ignoreClasses(List.of(Dictionary.class))
 				.test(type);
 	}

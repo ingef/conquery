@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.events;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-@CPSType(base = CType.class, id = "EMPTY")
-public class EmptyStore<T> extends CType<T> {
+@CPSType(base = ColumnStore.class, id = "EMPTY")
+public class EmptyStore<T> extends ColumnStore<T> {
 
 	/**
 	 * Necessary for deSerialization

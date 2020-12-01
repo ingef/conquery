@@ -4,7 +4,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,7 +25,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 		// todo get import via idRef instead.
 
 		// todo encapsulate this better.
-		for (CType<?> store : bucket.getStores()) {
+		for (ColumnStore<?> store : bucket.getStores()) {
 			if (store instanceof StringType) {
 				((StringType) store).loadDictionaries(context.getStorage());
 			}

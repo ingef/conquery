@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.DateType;
 import com.bakdata.conquery.util.DateFormats;
@@ -39,7 +39,7 @@ public class DateParser extends Parser<Integer> {
 
 	@Override
 	protected DateType decideType() {
-		CType<Long> subDecision = subType.findBestType();
+		ColumnStore<Long> subDecision = subType.findBestType();
 		return new DateType(subDecision);
 	}
 }

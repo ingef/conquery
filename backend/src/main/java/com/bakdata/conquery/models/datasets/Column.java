@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.preproc.PPColumn;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -54,11 +54,11 @@ public class Column extends Labeled<ColumnId> {
 		return this.getType().equals(column.getType().getTypeId());
 	}
 
-	public CType getTypeFor(Bucket bucket) {
+	public ColumnStore getTypeFor(Bucket bucket) {
 		return getTypeFor(bucket.getImp());
 	}
 
-	public CType getTypeFor(Import imp) {
+	public ColumnStore getTypeFor(Import imp) {
 		if (!imp.getTable().equals(getTable().getId())) {
 			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable(), getTable().getId()));
 		}

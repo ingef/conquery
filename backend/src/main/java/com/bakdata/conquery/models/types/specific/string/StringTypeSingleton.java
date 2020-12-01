@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(base = CType.class, id = "STRING_SINGLETON")
+@CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
 public class StringTypeSingleton extends StringType {
 
 	private final String singleValue;
@@ -29,7 +29,7 @@ public class StringTypeSingleton extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(CType<Long> indexStore) {
+	public void setIndexStore(ColumnStore<Long> indexStore) {
 
 	}
 

@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -86,9 +86,9 @@ public class ConceptTreeConnector extends Connector {
 		// If we have a column and it is of string-type, we create indices and caches.
 		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof StringType) {
 
-			CType<?> cType = imp.getColumns()[column.getPosition()].getType();
+			ColumnStore<?> columnStore = imp.getColumns()[column.getPosition()].getType();
 
-			stringType = (StringType) cType;
+			stringType = (StringType) columnStore;
 
 			// Create index and insert into Tree.
 			TreeChildPrefixIndex.putIndexInto(treeConcept);

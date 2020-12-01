@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.MoneyType;
 import com.bakdata.conquery.util.NumberParsing;
@@ -45,13 +45,13 @@ public class MoneyParser extends Parser<Long> {
 	}
 
 	@Override
-	protected CType<Long> decideType() {
+	protected ColumnStore<Long> decideType() {
 		IntegerParser subParser = new IntegerParser();
 		subParser.registerValue(maxValue);
 		subParser.registerValue(minValue);
 		subParser.setLines(getLines());
 		subParser.setNullLines(getNullLines());
-		CType<Long> subDecision = subParser.findBestType();
+		ColumnStore<Long> subDecision = subParser.findBestType();
 
 		return new MoneyType(subDecision);
 	}

@@ -1,19 +1,19 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
-@CPSType(base= CType.class, id="REAL_FLOAT")
-public class RealType extends CType<Double> {
+@CPSType(base= ColumnStore.class, id="REAL_FLOAT")
+public class RealType extends ColumnStore<Double> {
 
 	@Getter
-	private final CType<Double> delegate;
+	private final ColumnStore<Double> delegate;
 
 	@JsonCreator
-	public RealType(CType<Double> delegate) {
+	public RealType(ColumnStore<Double> delegate) {
 		super(MajorTypeId.REAL);
 		this.delegate = delegate;
 	}

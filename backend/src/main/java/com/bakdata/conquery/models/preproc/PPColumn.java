@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.preproc;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -21,14 +21,14 @@ public class PPColumn {
 
 	@SuppressWarnings("rawtypes")
 	@NotNull
-	private CType type;
+	private ColumnStore type;
 	@SuppressWarnings("rawtypes")
 	@JsonIgnore
 	private transient Parser parser = null;
 
-	public CType findBestType() {
+	public ColumnStore findBestType() {
 		log.info("Compute best Subtype for  Column[{}] with {}", getName(), getParser());
-		CType decision = parser.findBestType();
+		ColumnStore decision = parser.findBestType();
 		// this only creates the headers
 		// todo wrap in method
 		type = decision.select(new int[0], new int[0]);

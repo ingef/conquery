@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.io.BaseEncoding;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(base = CType.class, id = "STRING_ENCODED")
+@CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
 public class StringTypeEncoded extends StringType {
 
 	@Nonnull
@@ -107,7 +107,7 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(CType<Long> newType) {
+	public void setIndexStore(ColumnStore<Long> newType) {
 		subType.setIndexStore(newType);
 	}
 

@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.dictionary;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -60,7 +60,7 @@ public class DictionaryMapping {
 	/**
 	 * Mutably applies mapping to store.
 	 */
-	public void applyToStore(CType<Integer> from, CType<Long> to, long rows) {
+	public void applyToStore(ColumnStore<Integer> from, ColumnStore<Long> to, long rows) {
 		for (int row = 0; row < rows; row++) {
 			if (!from.has(row)) {
 				to.set(row, null);

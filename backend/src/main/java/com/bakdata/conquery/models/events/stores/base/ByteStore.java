@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -13,10 +13,10 @@ import lombok.ToString;
  *
  * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.types.parser.specific.IntegerParser}
  */
-@CPSType(id = "BYTES", base = CType.class)
+@CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class ByteStore extends CType<Long> {
+public class ByteStore extends ColumnStore<Long> {
 
 	private final byte nullValue;
 	private final byte[] values;
@@ -38,7 +38,7 @@ public class ByteStore extends CType<Long> {
 	}
 
 	public ByteStore select(int[] starts, int[] ends) {
-		return new ByteStore(CType.selectArray(starts, ends, values, byte[]::new), getNullValue());
+		return new ByteStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
 	}
 
 	@Override

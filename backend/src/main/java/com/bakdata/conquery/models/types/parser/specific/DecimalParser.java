@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
@@ -47,7 +47,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 	}
 
 	@Override
-	protected CType<BigDecimal> decideType() {
+	protected ColumnStore<BigDecimal> decideType() {
 		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
 			return new DecimalTypeBigDecimal(new EmptyStore<>(MajorTypeId.DECIMAL));
 		}
@@ -62,7 +62,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 		sub.registerValue(-unscaled.longValueExact());
 		sub.setLines(getLines());
 		sub.setNullLines(getNullLines());
-		CType<Long> subDecision = sub.findBestType();
+		ColumnStore<Long> subDecision = sub.findBestType();
 
 		return
 				new DecimalTypeScaled(maxScale, subDecision)

@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,10 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-@CPSType(base = CType.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends CType<Integer> {
+@CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
+public class StringTypeDictionary extends ColumnStore<Integer> {
 
-	protected CType<Long> numberType;
+	protected ColumnStore<Long> numberType;
 
 	@JsonIgnore
 	private transient Dictionary dictionary;
@@ -37,7 +37,7 @@ public class StringTypeDictionary extends CType<Integer> {
 	@InternalOnly
 	private DatasetId dataset;
 
-	public StringTypeDictionary(CType<Long> numberType, Dictionary dictionary, String name) {
+	public StringTypeDictionary(ColumnStore<Long> numberType, Dictionary dictionary, String name) {
 		super(MajorTypeId.STRING);
 		this.numberType = numberType;
 		this.dictionary = dictionary;
@@ -45,7 +45,7 @@ public class StringTypeDictionary extends CType<Integer> {
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(CType<Long> numberType, DatasetId dataset, String name) {
+	public StringTypeDictionary(ColumnStore<Long> numberType, DatasetId dataset, String name) {
 		super(MajorTypeId.STRING);
 		this.numberType = numberType;
 		this.name = name;
@@ -136,7 +136,7 @@ public class StringTypeDictionary extends CType<Integer> {
 		return numberType.has(event);
 	}
 
-	public void setIndexStore(CType<Long> newType) {
+	public void setIndexStore(ColumnStore<Long> newType) {
 		numberType = newType;
 	}
 }

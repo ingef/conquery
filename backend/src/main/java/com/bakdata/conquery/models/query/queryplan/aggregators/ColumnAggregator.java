@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 
 /**
  * Base class for aggregators acting on columns.
@@ -42,7 +42,7 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (Column column : getRequiredColumns()) {
-			CType type = bucket.getImp().getColumns()[column.getPosition()].getType();
+			ColumnStore type = bucket.getImp().getColumns()[column.getPosition()].getType();
 			if (type.getNullLines() != type.getLines())
 				return true;
 		}

@@ -4,22 +4,22 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
 
-@CPSType(base = CType.class, id = "DATES")
+@CPSType(base = ColumnStore.class, id = "DATES")
 @ToString(of = "store")
-public class DateType extends CType<Integer> {
+public class DateType extends ColumnStore<Integer> {
 
 	@Getter
-	private final CType<Long> store;
+	private final ColumnStore<Long> store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateType(CType<Long> store) {
+	public DateType(ColumnStore<Long> store) {
 		super(MajorTypeId.DATE);
 		this.store = store;
 	}
@@ -67,7 +67,6 @@ public class DateType extends CType<Integer> {
 		return store.get(event).intValue();
 	}
 
-	@Override
 	public Object getAsObject(int event) {
 		return CDate.toLocalDate(getDate(event));
 	}

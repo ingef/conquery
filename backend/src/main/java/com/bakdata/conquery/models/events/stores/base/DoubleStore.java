@@ -1,16 +1,16 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
-@CPSType(id = "DOUBLES", base = CType.class)
+@CPSType(id = "DOUBLES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DoubleStore extends CType<Double> {
+public class DoubleStore extends ColumnStore<Double> {
 
 	private final double[] values;
 
@@ -30,7 +30,7 @@ public class DoubleStore extends CType<Double> {
 	}
 
 	public DoubleStore select(int[] starts, int[] ends) {
-		return new DoubleStore(CType.selectArray(starts, ends, values, double[]::new));
+		return new DoubleStore(ColumnStore.selectArray(starts, ends, values, double[]::new));
 	}
 
 	@Override

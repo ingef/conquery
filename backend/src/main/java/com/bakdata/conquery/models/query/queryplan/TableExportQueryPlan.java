@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -80,7 +80,7 @@ public class TableExportQueryPlan implements QueryPlan {
 							continue;
 						}
 
-						CType type = column.getTypeFor(bucket);
+						ColumnStore type = column.getTypeFor(bucket);
 
 						// depending on context use pretty printing or script value
 						entry[exportDescription.getColumnOffset() + col] = ctx.isPrettyPrint()

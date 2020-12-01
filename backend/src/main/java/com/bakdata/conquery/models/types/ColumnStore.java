@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -12,7 +11,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.math.LongMath;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -22,7 +20,7 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-public abstract class CType<JAVA_TYPE> implements MajorTypeIdHolder {
+public abstract class ColumnStore<JAVA_TYPE> implements MajorTypeIdHolder {
 
 	@JsonIgnore
 	@NotNull
@@ -61,12 +59,9 @@ public abstract class CType<JAVA_TYPE> implements MajorTypeIdHolder {
 
 
 	public long estimateMemoryConsumption() {
-		long width = estimateEventBytes();
+		long bytes = estimateEventBytes();
 
-		return LongMath.divide(
-				(lines - nullLines) * width + nullLines * Math.min(Long.SIZE, width),
-				8, RoundingMode.CEILING
-		);
+		return getLines() * bytes;
 	}
 
 	public abstract long estimateEventBytes();
@@ -75,20 +70,31 @@ public abstract class CType<JAVA_TYPE> implements MajorTypeIdHolder {
 		return 0;
 	}
 
-	public abstract CType<JAVA_TYPE> select(int[] starts, int[] lengths);
+	/**
+	 * Select the partition of this store.
+	 * The returning store has to accept queries up to {@code sum(lenghts)}, values may not be reordered.
+	 */
+	public abstract ColumnStore<JAVA_TYPE> select(int[] starts, int[] lengths);
 
 	/**
-	 * Set the event. If null, the store will store a null value.
+	 * Set the event. If null, the store will store a null value, making {@link #has(int)} return false.
 	 */
 	public abstract void set(int event, @CheckForNull JAVA_TYPE value);
 
+	/**
+	 * Generic getter for storage. May not be called when {@link #has(int)} is false.
+	 */
+	public abstract JAVA_TYPE get(int event);
+
+	/**
+	 * Test if the store has the event.
+	 */
 	public abstract boolean has(int event);
+
 
 	public int getString(int event) {
 		return (int) get(event);
 	}
-
-	public abstract JAVA_TYPE get(int event);
 
 	public long getInteger(int event) {
 		return (long) get(event);
@@ -118,7 +124,4 @@ public abstract class CType<JAVA_TYPE> implements MajorTypeIdHolder {
 		return (CDateRange) get(event);
 	}
 
-	public Object getAsObject(int event) {
-		return get(event);
-	}
 }

@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.types.specific.string.StringTypeNumber;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class NumberTypeGuesser implements TypeGuesser {
 				return null;
 			}
 
-			CType<Long> decision = numberParser.findBestType();
+			ColumnStore<Long> decision = numberParser.findBestType();
 			p.copyLineCounts(decision);
 
 			final StringTypeNumber type = new StringTypeNumber(range, decision, p.getStrings().inverse());

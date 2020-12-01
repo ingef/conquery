@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import lombok.Getter;
 
 /**
@@ -19,7 +19,7 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	private EmptyBucket() {
-		super(0, null, 0, new CType<?>[0], Map.of(), Map.of(), 0);
+		super(0, null, 0, new ColumnStore<?>[0], Map.of(), Map.of(), 0);
 	}
 
 

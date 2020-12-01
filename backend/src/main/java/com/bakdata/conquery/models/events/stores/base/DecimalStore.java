@@ -3,16 +3,16 @@ package com.bakdata.conquery.models.events.stores.base;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
-@CPSType(id = "DECIMALS", base = CType.class)
+@CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DecimalStore extends CType<BigDecimal> {
+public class DecimalStore extends ColumnStore<BigDecimal> {
 
 	private final BigDecimal[] values;
 
@@ -32,7 +32,7 @@ public class DecimalStore extends CType<BigDecimal> {
 	}
 
 	public DecimalStore select(int[] starts, int[] ends) {
-		return new DecimalStore(CType.selectArray(starts, ends, values, BigDecimal[]::new));
+		return new DecimalStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
 	}
 
 	@Override

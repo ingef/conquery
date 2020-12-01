@@ -7,7 +7,7 @@ import java.util.List;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.types.specific.IntegerType;
@@ -22,7 +22,7 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10))
 			.forEach(parser::registerValue);
 
-		final CType<CDateRange> actual = parser.decideType();
+		final ColumnStore<CDateRange> actual = parser.decideType();
 
 		assertThat(actual).isInstanceOf(DateRangeTypeDateRange.class);
 		assertThat(((DateRangeTypeDateRange) actual).getMinStore()).isInstanceOf(IntegerType.class);

@@ -4,20 +4,20 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
-@CPSType(base = CType.class, id = "DECIMAL_SCALED")
+@CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
-public class DecimalTypeScaled extends CType<BigDecimal> {
+public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 
 	private final int scale;
-	private final CType<Long> subType;
+	private final ColumnStore<Long> subType;
 
 	@JsonCreator
-	public DecimalTypeScaled(int scale, CType subType) {
+	public DecimalTypeScaled(int scale, ColumnStore subType) {
 		super(MajorTypeId.DECIMAL);
 		this.scale = scale;
 		this.subType = subType;

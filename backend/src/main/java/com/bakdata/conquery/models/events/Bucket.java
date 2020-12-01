@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,7 +46,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@Min(0)
 	private final int numberOfEvents;
 
-	private final CType<?>[] stores;
+	private final ColumnStore<?>[] stores;
 
 
 	/**
@@ -61,7 +61,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 
 	private final int bucketSize;
 
-	public Bucket(@Min(0) int bucket, ImportId importId, @Min(0) int numberOfEvents, CType<?>[] stores, Map<Integer, Integer> start, Map<Integer, Integer> length, int bucketSize) {
+	public Bucket(@Min(0) int bucket, ImportId importId, @Min(0) int numberOfEvents, ColumnStore<?>[] stores, Map<Integer, Integer> start, Map<Integer, Integer> length, int bucketSize) {
 		this.bucket = bucket;
 		this.importId = importId;
 		this.numberOfEvents = numberOfEvents;
@@ -146,7 +146,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public Object getAsObject(int event, Column column) {
-		return stores[column.getPosition()].getAsObject(event);
+		return stores[column.getPosition()].get(event);
 	}
 
 	public boolean eventIsContainedIn(int event, Column column, BitMapCDateSet dateRanges) {
@@ -154,15 +154,15 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public Object createScriptValue(int event, Column column){
-		final CType<?> store = stores[column.getPosition()];
-		return ((CType) store).createScriptValue(store.get(event));
+		final ColumnStore<?> store = stores[column.getPosition()];
+		return ((ColumnStore) store).createScriptValue(store.get(event));
 	}
 
 	public Map<String, Object> calculateMap(int event) {
 		Map<String, Object> out = new HashMap<>(stores.length);
 
 		for (int i = 0; i < stores.length; i++) {
-			CType store = stores[i];
+			ColumnStore store = stores[i];
 			if (!store.has(event)) {
 				continue;
 			}

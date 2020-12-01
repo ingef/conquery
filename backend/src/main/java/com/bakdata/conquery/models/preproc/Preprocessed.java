@@ -17,7 +17,7 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
@@ -98,14 +98,14 @@ public class Preprocessed {
 
 		calculateEntitySpans(entityStart, entityLength);
 
-		CType[] cTypes = combineStores();
+		ColumnStore[] columnStores = combineStores();
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
-		Map<String, Dictionary> dicts = collectDictionaries(cTypes, columns);
+		Map<String, Dictionary> dicts = collectDictionaries(columnStores, columns);
 
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {
-			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, cTypes, primaryDictionary, dicts));
+			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, columnStores, primaryDictionary, dicts));
 		}
 
 		// Then write headers.
@@ -145,13 +145,13 @@ public class Preprocessed {
 	 * Combine by-Entity data into column stores, appropriately formatted.
 	 */
 	@SuppressWarnings("rawtypes")
-	public CType[] combineStores() {
-		CType<?>[] cTypes = new CType[columns.length];
+	public ColumnStore[] combineStores() {
+		ColumnStore<?>[] columnStores = new ColumnStore[columns.length];
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
 
-			final CType store = ppColumn.findBestType();
+			final ColumnStore store = ppColumn.findBestType();
 
 			Map<Integer, List> values = entries.row(colIdx);
 			int start = 0;
@@ -167,9 +167,9 @@ public class Preprocessed {
 				start += length;
 			}
 
-			cTypes[colIdx] = store;
+			columnStores[colIdx] = store;
 		}
-		return cTypes;
+		return columnStores;
 	}
 
 	public void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
@@ -188,12 +188,12 @@ public class Preprocessed {
 		}
 	}
 
-	public static Map<String, Dictionary> collectDictionaries(CType<?>[] cTypes, PPColumn[] columns) {
+	public static Map<String, Dictionary> collectDictionaries(ColumnStore<?>[] columnStores, PPColumn[] columns) {
 		Map<String, Dictionary> dicts = new HashMap<>();
 
 
-		for (int i = 0; i < cTypes.length; i++) {
-			CType<?> column = cTypes[i];
+		for (int i = 0; i < columnStores.length; i++) {
+			ColumnStore<?> column = columnStores[i];
 			final String colName = columns[i].getName();
 
 			if (!(column instanceof StringType)) {
@@ -229,7 +229,7 @@ public class Preprocessed {
 	public static class DataContainer {
 		private final Map<Integer, Integer> starts;
 		private final Map<Integer, Integer> lengths;
-		private final CType<?>[] values;
+		private final ColumnStore<?>[] values;
 
 		@NotNull
 		private final Dictionary primaryDictionary;

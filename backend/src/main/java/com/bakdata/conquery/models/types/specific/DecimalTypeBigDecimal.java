@@ -3,19 +3,19 @@ package com.bakdata.conquery.models.types.specific;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
-@CPSType(base= CType.class, id="DECIMAL_BIG_DECIMAL")
+@CPSType(base= ColumnStore.class, id="DECIMAL_BIG_DECIMAL")
 @Getter
-public class DecimalTypeBigDecimal extends CType<BigDecimal> {
+public class DecimalTypeBigDecimal extends ColumnStore<BigDecimal> {
 
-	private final CType<BigDecimal> store;
+	private final ColumnStore<BigDecimal> store;
 
 	@JsonCreator
-	public DecimalTypeBigDecimal(CType<BigDecimal> store) {
+	public DecimalTypeBigDecimal(ColumnStore<BigDecimal> store) {
 		super(MajorTypeId.DECIMAL);
 		this.store = store;
 	}

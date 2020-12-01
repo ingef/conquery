@@ -2,22 +2,22 @@ package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(base = CType.class, id = "DATE_RANGE_DATE_RANGE")
+@CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
-public class DateRangeTypeDateRange extends CType<CDateRange> {
+public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
-	private final CType<Long> minStore;
-	private final CType<Long> maxStore;
+	private final ColumnStore<Long> minStore;
+	private final ColumnStore<Long> maxStore;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(CType<Long> minStore, CType<Long> maxStore) {
+	public DateRangeTypeDateRange(ColumnStore<Long> minStore, ColumnStore<Long> maxStore) {
 		super(MajorTypeId.DATE_RANGE);
 		this.minStore = minStore;
 		this.maxStore = maxStore;

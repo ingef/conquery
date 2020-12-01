@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
@@ -62,7 +62,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 	}
 
 	@Override
-	protected CType<CDateRange> decideType() {
+	protected ColumnStore<CDateRange> decideType() {
 
 		// Quarters cannot encode open ranges.
 		if (!anyOpen && onlyQuarters) {

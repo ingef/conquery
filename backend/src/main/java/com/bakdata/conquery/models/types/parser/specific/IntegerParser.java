@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.specific.IntegerType;
 import com.bakdata.conquery.util.NumberParsing;
@@ -43,7 +43,7 @@ public class IntegerParser extends Parser<Long> {
 	}
 
 	@Override
-	public CType<Long> findBestType() {
+	public ColumnStore<Long> findBestType() {
 		return super.findBestType();
 	}
 

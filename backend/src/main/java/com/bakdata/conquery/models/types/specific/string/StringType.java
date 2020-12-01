@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.types.specific.string;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * Abstract
  */
-public abstract class StringType extends CType<Integer> implements Iterable<String> {
+public abstract class StringType extends ColumnStore<Integer> implements Iterable<String> {
 
 	public StringType() {
 		super(MajorTypeId.STRING);
@@ -32,7 +32,7 @@ public abstract class StringType extends CType<Integer> implements Iterable<Stri
 
 	public abstract void setUnderlyingDictionary(DictionaryId newDict);
 
-	public abstract void setIndexStore(CType<Long> newType);
+	public abstract void setIndexStore(ColumnStore<Long> newType);
 
 	public void loadDictionaries(NamespacedStorage storage) {}
 }

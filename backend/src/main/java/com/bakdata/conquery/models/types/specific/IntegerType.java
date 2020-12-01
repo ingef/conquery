@@ -1,22 +1,22 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@CPSType(base= CType.class, id="INTEGER") @Getter @Setter
+@CPSType(base= ColumnStore.class, id="INTEGER") @Getter @Setter
 @ToString(of = "store")
-public class IntegerType extends CType<Long> {
+public class IntegerType extends ColumnStore<Long> {
 
 
-	private final CType<Long> store;
+	private final ColumnStore<Long> store;
 	
 	@JsonCreator
-	public IntegerType(CType<Long> store) {
+	public IntegerType(ColumnStore<Long> store) {
 		super(MajorTypeId.INTEGER);
 		this.store = store;
 	}

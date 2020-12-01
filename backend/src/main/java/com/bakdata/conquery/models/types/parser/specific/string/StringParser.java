@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.ColumnStore;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.types.parser.specific.string.TypeGuesser.Guess;
@@ -64,7 +64,7 @@ public class StringParser extends Parser<Integer> {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	protected CType<Integer> decideType() {
+	protected ColumnStore<Integer> decideType() {
 
 		//check if a singleton type is enough
 		if (strings.size() <= 1) {
