@@ -58,7 +58,19 @@ public class ExecuteQuery extends WorkerMessage {
 			try {
 				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage(), context.getBucketManager()), entry);
 				// Send result back
-				result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
+				result.getFuture().addListener(
+						() -> {
+							log.debug("Worker[{}] Finished Query[{}] of Execution[{}] with {} results",
+									  context.getInfo().getId(),
+									  result.getQueryId(),
+									  execution.getId(),
+									  result.getResults().size()
+							);
+
+							result.send(context);
+						},
+						MoreExecutors.directExecutor()
+				);
 			} catch(Exception e) {
 				ConqueryError err = asConqueryError(e);
 				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), err );
@@ -68,7 +80,7 @@ public class ExecuteQuery extends WorkerMessage {
 		}
 	}
 
-	private static void sendFailureToManagerNode(ShardResult result,Worker context, ConqueryError error) {
+	private static void sendFailureToManagerNode(ShardResult result, Worker context, ConqueryError error) {
 		result.setError(Optional.of(error));
 		result.finish();
 		context.send(new CollectQueryResult(result));
