@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.specific;
 
 import javax.validation.constraints.NotNull;
 

@@ -1,11 +1,10 @@
-package com.bakdata.conquery.models.events.stores.specific;
+package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -13,13 +12,13 @@ import lombok.ToString;
 
 @CPSType(base = ColumnStore.class, id = "DATES")
 @ToString(of = "store")
-public class DateType extends ColumnStore<Integer> {
+public class DateStore extends ColumnStore<Integer> {
 
 	@Getter
 	private final ColumnStore<Long> store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateType(ColumnStore<Long> store) {
+	public DateStore(ColumnStore<Long> store) {
 		super(MajorTypeId.DATE);
 		this.store = store;
 	}
@@ -34,12 +33,12 @@ public class DateType extends ColumnStore<Integer> {
 		return Integer.BYTES;
 	}
 
-	public static DateType create(int size) {
-		return new DateType(IntegerStore.create(size));
+	public static DateStore create(int size) {
+		return new DateStore(IntegerStore.create(size));
 	}
 
-	public DateType select(int[] starts, int[] ends) {
-		return new DateType(store.select(starts, ends));
+	public DateStore select(int[] starts, int[] ends) {
+		return new DateStore(store.select(starts, ends));
 	}
 
 	@Override

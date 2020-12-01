@@ -18,20 +18,20 @@ import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.events.stores.base.ByteStore;
+import com.bakdata.conquery.models.events.stores.base.DateStore;
 import com.bakdata.conquery.models.events.stores.base.DecimalStore;
 import com.bakdata.conquery.models.events.stores.base.DoubleStore;
 import com.bakdata.conquery.models.events.stores.base.FloatStore;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.events.stores.base.LongStore;
-import com.bakdata.conquery.models.events.stores.base.RebasingStore;
 import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.events.stores.specific.BooleanTypeBoolean;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
-import com.bakdata.conquery.models.events.stores.specific.DateType;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
 import com.bakdata.conquery.models.events.stores.specific.MoneyType;
+import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
@@ -78,7 +78,7 @@ public class SerializationTest {
 				new StringTypeSingleton("a", BooleanStore.create(10)),
 				new DateRangeTypeDateRange(LongStore.create(10), LongStore.create(10)),
 				new DateRangeTypeQuarter(LongStore.create(10)),
-				new DateType(LongStore.create(10)),
+				new DateStore(LongStore.create(10)),
 
 				DecimalStore.create(10),
 				LongStore.create(10),

@@ -9,9 +9,9 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.ByteStore;
-import com.bakdata.conquery.models.events.stores.base.RebasingStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
+import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import org.junit.jupiter.api.Test;
 
 class DateRangeParserTest {
