@@ -198,7 +198,7 @@ public class BitMapCDateSet {
 			return -negativeMax;
 		}
 
-		throw new IllegalStateException("Open sets have no real max value");
+		throw new IllegalStateException("Empty sets have no real max value");
 	}
 
 	/**
@@ -217,7 +217,7 @@ public class BitMapCDateSet {
 			return positiveMax;
 		}
 
-		throw new IllegalStateException("Open sets have no real min value");
+		throw new IllegalStateException("Empty sets have no real min value");
 	}
 
 	/**
@@ -401,42 +401,31 @@ public class BitMapCDateSet {
 		}
 	}
 
-	private void add(CDateRangeClosed range) {
-		int from = range.getMinValue();
-		int to = range.getMaxValue();
-
+	private void addClosed(int from, int to) {
 		if (from < 0) {
 			final int max = -Math.min(0, to);
 			negativeBits.set(max, -from + 1);
 		}
 
-		if(to >= 0){
-			positiveBits.set(Math.max(from,0), to + 1);
+		if (to >= 0) {
+			positiveBits.set(Math.max(from, 0), to + 1);
 		}
 	}
 
-	private void add(CDateRangeExactly range) {
-		final int value = range.getMinValue();
-
-		if (value >= 0) {
-			positiveBits.set(value, value + 1);
-		}
-		else {
-			negativeBits.set(-value, -value + 1);
-		}
+	private void addExactly(int value) {
+		setBit(value);
 	}
 
-	private void add(CDateRangeAll range) {
+	private void addAll() {
 		positiveBits.clear();
 		negativeBits.clear();
 		openMin = true;
 		openMax = true;
 	}
 
-	private void add(CDateRangeEnding range) {
-		final int value = range.getMaxValue();
+	private void addAtMost(int atMost) {
 
-		if (contains(value)) {
+		if (contains(atMost)) {
 			openMin = true;
 
 			// ensures that isAll always has the fastest default case, the internal state is also irrelevant at this point.
@@ -447,31 +436,30 @@ public class BitMapCDateSet {
 			return;
 		}
 
-		if(isEmpty()){
-			setBit(value);
+		if (isEmpty()) {
+			setBit(atMost);
 			openMin = true;
 			return;
 		}
 
-		if(value >= 0){
+		if (atMost >= 0) {
 			negativeBits.clear();
 		}
 
 		final int minValue = getMinRealValue();
 
 		// clear useless dangling bits
-		if(minValue < value){
-			clearRange(minValue, value + 1);
+		if (minValue < atMost) {
+			clearRange(minValue, atMost + 1);
 		}
 
 		openMin = true;
-		setBit(value);
+		setBit(atMost);
 	}
 
-	private void add(CDateRangeStarting range) {
-		final int value = range.getMinValue();
+	private void addAtLeast(int atLeast) {
 
-		if (contains(value)) {
+		if (contains(atLeast)) {
 			openMax = true;
 
 			// ensures that isAll always has the fastest default case, the internal state is also irrelevant at this point.
@@ -482,28 +470,28 @@ public class BitMapCDateSet {
 			return;
 		}
 
-		if(isEmpty()){
-			setBit(range.getMinValue());
+		if (isEmpty()) {
+			setBit(atLeast);
 			openMax = true;
 			return;
 		}
 
 		final int maxValue = getMaxRealValue();
 
-		if(value < 0){
+		if (atLeast < 0) {
 			positiveBits.clear();
 		}
 
-		if(maxValue > value){
-			clearRange(value, maxValue + 1);
+		if (maxValue > atLeast) {
+			clearRange(atLeast, maxValue + 1);
 		}
 
 		openMax = true;
-		setBit(value);
+		setBit(atLeast);
 	}
 
 	private void setBit(int value) {
-		if(value >= 0){
+		if (value >= 0) {
 			positiveBits.set(value);
 		}
 		else {
@@ -517,19 +505,19 @@ public class BitMapCDateSet {
 		}
 
 		if (rangeToAdd instanceof CDateRangeClosed) {
-			add(((CDateRangeClosed) rangeToAdd));
+			addClosed(rangeToAdd.getMinValue(), rangeToAdd.getMaxValue());
 		}
 		else if (rangeToAdd instanceof CDateRangeExactly) {
-			add(((CDateRangeExactly) rangeToAdd));
+			addExactly(rangeToAdd.getMinValue());
 		}
 		else if (rangeToAdd instanceof CDateRangeStarting) {
-			add(((CDateRangeStarting) rangeToAdd));
+			addAtLeast(rangeToAdd.getMinValue());
 		}
 		else if (rangeToAdd instanceof CDateRangeEnding) {
-			add(((CDateRangeEnding) rangeToAdd));
+			addAtMost(rangeToAdd.getMaxValue());
 		}
 		else if (rangeToAdd instanceof CDateRangeAll) {
-			add(((CDateRangeAll) rangeToAdd));
+			addAll();
 		}
 	}
 
@@ -604,68 +592,13 @@ public class BitMapCDateSet {
 		openMin = false;
 	}
 
-	/**
-	 * Keep only the days present in {@code retained}, remove everything else. (Basically an AND of the sets)
-	 *
-	 * @param retained
-	 */
-	public void retainAll(BitMapCDateSet retained) {
-		if (isEmpty() || retained.isAll()) {
-			return;
-		}
-
-		if (retained.isEmpty()) {
-			clear();
-		}
-
-		if (isAll()) {
-			clear();
-
-			negativeBits.or(retained.negativeBits);
-			positiveBits.or(retained.positiveBits);
-
-			openMin = retained.openMin;
-			openMax = retained.openMax;
-
-			return;
-		}
-
-		// expand both ways to make and-ing even possible
-		if (retained.getMaxRealValue() > getMaxRealValue() && openMax) {
-			setRange(getMaxRealValue(), retained.getMaxRealValue());
-		}
-
-		// we have gaps of virtual bits
-		if(retained.openMax && retained.getMaxRealValue() < getMaxRealValue()){
-			log.info("hello world");
-		}
-
-		if(retained.openMin && retained.getMinRealValue() > getMinRealValue()){
-			log.info("hello world");
-		}
-
-		if (retained.getMinRealValue() < getMinValue() && openMin) {
-			setRange(retained.getMinRealValue(), getMinRealValue());
-		}
-
-		negativeBits.and(retained.negativeBits);
-		positiveBits.and(retained.positiveBits);
-
-		openMin = openMin && retained.openMin;
-		openMax = openMax && retained.openMax;
-	}
-
-	public void retainAll(CDateRange retained) {
-		// TODO: 21.09.2020 if the need comes up, we can unroll this into a specialized method, but as it stands it would be a complicated method that has far too little usage.
-		retainAll(BitMapCDateSet.create(retained));
-	}
 
 	/**
 	 * Add {@code toAdd} into this Set, but only the parts that are also in {@code mask}.
 	 */
 	public void maskedAdd(@NonNull CDateRange toAdd, BitMapCDateSet mask) {
 
-		if(toAdd.isAll()){
+		if (toAdd.isAll()) {
 			addAll(mask);
 			return;
 		}
