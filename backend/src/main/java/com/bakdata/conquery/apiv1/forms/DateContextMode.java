@@ -28,7 +28,7 @@ public enum DateContextMode {
 	COMPLETE(null){
 		@Override
 		public List<CDateRange> subdivideRange(CDateRange range) {
-			return range == null ? ImmutableList.of() : List.of(range);
+			return range == null ? Collections.emptyList() : List.of(range);
 		}
 
 		@Override
