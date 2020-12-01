@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.types.specific.string;
 
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.types.CType;
@@ -32,4 +33,6 @@ public abstract class StringType extends CType<Integer> implements Iterable<Stri
 	public abstract void setUnderlyingDictionary(DictionaryId newDict);
 
 	public abstract void setIndexStore(CType<Long> newType);
+
+	public void loadDictionaries(NamespacedStorage storage) {}
 }

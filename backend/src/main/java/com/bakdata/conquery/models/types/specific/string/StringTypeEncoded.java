@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.types.specific.string;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -51,11 +50,6 @@ public class StringTypeEncoded extends StringType {
 		subType.loadDictionaries(storage);
 	}
 
-
-	@Override
-	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
-		subType.storeExternalInfos(dictionaryConsumer);
-	}
 
 	@Override
 	public int size() {

@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.types;
 
 import java.math.RoundingMode;
-import java.util.function.Consumer;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.math.LongMath;
 import lombok.Getter;
@@ -14,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @RequiredArgsConstructor
-public abstract class CType<JAVA_TYPE> extends com.bakdata.conquery.models.events.ColumnStore<JAVA_TYPE> implements MajorTypeIdHolder {
+public abstract class CType<JAVA_TYPE> extends ColumnStore<JAVA_TYPE> implements MajorTypeIdHolder {
 
 	@JsonIgnore
 	@NotNull
@@ -29,9 +27,7 @@ public abstract class CType<JAVA_TYPE> extends com.bakdata.conquery.models.event
 
 	public Object createPrintValue(JAVA_TYPE value) { return value != null ? createScriptValue(value) : ""; }
 
-	// todo these can be moved to StringType and simplified to be much more specific.
-	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {}
-	public void loadDictionaries(NamespacedStorage storage) {}
+
 
 	@Override
 	public String toString() {

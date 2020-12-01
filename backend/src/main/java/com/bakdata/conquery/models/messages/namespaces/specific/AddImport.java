@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +24,10 @@ public class AddImport extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		log.info("Received Import[{}], containing {} entries.", imp.getId(), imp.getNumberOfEntries());
 		for (ImportColumn column : imp.getColumns()) {
-			column.getType().loadDictionaries(context.getStorage());
+			if (column.getType() instanceof StringType) {
+				((StringType) column.getType()).loadDictionaries(context.getStorage());
+			}
+
 		}
 		context.addImport(imp);
 	}

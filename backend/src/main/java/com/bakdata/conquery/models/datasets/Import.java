@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
@@ -47,7 +48,10 @@ public class Import extends NamedImpl<ImportId> {
 
 	public void loadExternalInfos(NamespacedStorage storage) {
 		for (ImportColumn col : columns) {
-			col.getType().loadDictionaries(storage);
+
+			if(col.getType() instanceof StringType) {
+				((StringType) col.getType()).loadDictionaries(storage);
+			}
 		}
 	}
 

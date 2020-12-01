@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.specific.string;
 
 import java.util.Iterator;
-import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -88,11 +87,6 @@ public class StringTypePrefixSuffix extends StringType {
 	@Override
 	public void loadDictionaries(NamespacedStorage storage) {
 		subType.loadDictionaries(storage);
-	}
-
-	@Override
-	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
-		subType.storeExternalInfos(dictionaryConsumer);
 	}
 
 	@Override

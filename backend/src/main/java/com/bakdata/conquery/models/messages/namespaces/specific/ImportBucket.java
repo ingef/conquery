@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -25,7 +26,9 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 		// todo encapsulate this better.
 		for (CType<?> store : bucket.getStores()) {
-			store.loadDictionaries(context.getStorage());
+			if (store instanceof StringType) {
+				((StringType) store).loadDictionaries(context.getStorage());
+			}
 		}
 
 		bucket.setImp(context.getStorage().getImport(bucket.getImportId()));

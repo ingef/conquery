@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.types.specific.string;
 
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -67,12 +66,7 @@ public class StringTypeDictionary extends CType<Integer> {
 		return getElement(value);
 	}
 
-	@Override
-	public void storeExternalInfos(Consumer<Dictionary> dictionaryConsumer) {
-		dictionaryConsumer.accept(dictionary);
-	}
 
-	@Override
 	public void loadDictionaries(NamespacedStorage storage) {
 		// todo consider implementing this with Id-Injection instead of hand-wiring.
 		final DictionaryId dictionaryId = new DictionaryId(getDataset(), getName());
