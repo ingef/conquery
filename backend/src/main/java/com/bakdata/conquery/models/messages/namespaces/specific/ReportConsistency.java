@@ -16,6 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Compares the the ids of imports and buckets of a {@link com.bakdata.conquery.models.worker.Worker} with the those
+ * the {@link com.bakdata.conquery.commands.ManagerNode} assumed the Worker to have and reports an error if there are
+ * inconsistencies.
+ */
 @CPSType(id="REPORT_CONSISTENCY", base= NamespacedMessage.class)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,6 +30,7 @@ import java.util.stream.Collectors;
 public class ReportConsistency extends NamespaceMessage {
 
     private WorkerId workerId;
+    // Set default here because an empty set send by the worker is not set (it is null) after deserialization
     private Set<ImportId> workerImports = Set.of();
     private Set<BucketId> workerBuckets = Set.of();
 
