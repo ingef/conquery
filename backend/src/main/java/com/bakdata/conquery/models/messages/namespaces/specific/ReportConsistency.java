@@ -38,10 +38,14 @@ public class ReportConsistency extends NamespaceMessage {
         boolean importsOkay = isImportsConsistent("Imports", managerImports, workerImports, workerId);
         boolean bucketsOkay = isImportsConsistent("Buckets", assignedWorkerBuckets, workerBuckets, workerId);
 
-        if (!importsOkay) {
-            throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
+        log.trace("Imports on worker[{}}: {}", workerId, workerImports);
+        log.trace("Buckets on worker[{}}: {}", workerId, workerBuckets);
+
+        if (importsOkay && bucketsOkay) {
+            log.info("Consistency check was successful");
+            return;
         }
-        log.info("Consistency check was successful");
+        throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
     }
 
     private static <ID extends IId<?>> boolean isImportsConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
