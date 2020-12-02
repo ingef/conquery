@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
-
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
@@ -283,7 +282,81 @@ public class CDateSet {
 	private void putRange(CDateRange range) {
 		rangesByLowerBound.put(range.getMinValue(), range);
 	}
-	
+
+
+	public void maskedAdd(CDateRange add, CDateSet mask){
+		if(mask.isEmpty()){
+			return;
+		}
+
+		if(mask.isAll()){
+			add(add);
+			return;
+		}
+
+		if(add.isAll()){
+			addAll(mask);
+			return;
+		}
+
+		if(add.isExactly() && mask.contains(add.getMinValue())){
+			add(add);
+			return;
+		}
+
+		int search = Integer.MIN_VALUE;
+
+		if (add.hasLowerBound()) {
+			final Integer key = mask.rangesByLowerBound.floorKey(add.getMinValue());
+			if (key != null) {
+				search = key;
+			}
+		}
+
+		if(search == Integer.MIN_VALUE) {
+			search = mask.rangesByLowerBound.firstKey();
+		}
+
+		int searchEnd = Integer.MAX_VALUE;
+
+		if(add.hasUpperBound()){
+			final Integer key = mask.rangesByLowerBound.floorKey(add.getMaxValue());
+			if (key != null) {
+				searchEnd = key;
+			}
+		}
+
+		if(searchEnd == Integer.MAX_VALUE){
+			searchEnd = mask.rangesByLowerBound.lastKey();
+		}
+
+		Integer current = search;
+
+		while(current != null && current <= searchEnd) {
+			final CDateRange range = mask.rangesByLowerBound.get(current);
+
+			current = mask.rangesByLowerBound.higherKey(current);
+
+			int min = range.getMinValue();
+			int max = range.getMaxValue();
+
+			if(max < add.getMinValue()){
+				continue;
+			}
+
+			if(min < add.getMinValue()){
+				min = add.getMinValue();
+			}
+
+			if(max > add.getMaxValue()){
+				max = add.getMaxValue();
+			}
+
+			add(CDateRange.of(min, max));
+
+		}
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

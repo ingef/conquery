@@ -58,9 +58,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}
-		CDateSet validtyDate = CDateSet.create(bucket.getAsDateRange(event, validityDateColumn));
-		validtyDate.retainAll(dateRestriction);
-		set.addAll(validtyDate);
+		set.maskedAdd(bucket.getAsDateRange(event, validityDateColumn), dateRestriction);
 	}
 
 	@Override

@@ -3,15 +3,15 @@ package com.bakdata.conquery.integration.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 public class CDateSetTest {
 
@@ -120,4 +120,65 @@ public class CDateSetTest {
 		set.retainAll(retain);
 		assertThat(set).hasToString("{2000-06-01/2000-06-20, 2000-12-01/2000-12-31}");
 	}
+
+	@Test
+	public void testMaskedAddClosedMaskClosed() {
+		CDateSet set = CDateSet.create();
+		CDateSet mask = CDateSet.create(CDateRange.of(-10, 10));
+
+		set.maskedAdd(CDateRange.of(-5, 5), mask);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-5, 5));
+	}
+
+	@Test
+	public void testMaskedAddClosedMaskAtMost() {
+		CDateSet set = CDateSet.create();
+		CDateSet mask = CDateSet.create(CDateRange.atMost(4));
+
+		set.maskedAdd(CDateRange.of(-5, 5), mask);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-5, 4));
+	}
+
+	@Test
+	public void testMaskedAddClosedMaskAtLeast() {
+		CDateSet set = CDateSet.create();
+		CDateSet mask = CDateSet.create(CDateRange.atLeast(4));
+
+		set.maskedAdd(CDateRange.of(-5, 5), mask);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(4, 5));
+	}
+
+	@Test
+	public void testMaskedAddAtMostMaskClosed() {
+		CDateSet set = CDateSet.create();
+		CDateSet mask = CDateSet.create(CDateRange.of(-10,10));
+
+		set.maskedAdd(CDateRange.atMost(5), mask);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-10, 5));
+	}
+
+	@Test
+	public void testMaskedAddAtLeastMaskClosed() {
+		CDateSet set = CDateSet.create();
+		CDateSet mask = CDateSet.create(CDateRange.of(-10,10));
+
+		set.maskedAdd(CDateRange.atLeast(5), mask);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(5, 10));
+	}
+
+	@Test
+	public void testMaskedAddAtLeastMaskMultiple() {
+		CDateSet set = CDateSet.create();
+		CDateSet mask = CDateSet.create(List.of(CDateRange.of(-10, -5), CDateRange.of(1, 10), CDateRange.atLeast(30)));
+
+		set.maskedAdd(CDateRange.atLeast(5), mask);
+
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(5, 10), CDateRange.atLeast(30));
+	}
+
 }

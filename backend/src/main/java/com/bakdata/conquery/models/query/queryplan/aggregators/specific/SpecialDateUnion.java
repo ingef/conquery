@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -32,11 +31,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
 		if (currentColumn != null && bucket.has(event, currentColumn)) {
-			CDateRange range = bucket.getAsDateRange(event, currentColumn);
-
-			CDateSet add = CDateSet.create(dateRestriction);
-			add.retainAll(CDateSet.create(range));
-			set.addAll(add);
+			set.maskedAdd(bucket.getAsDateRange(event, currentColumn), dateRestriction);
 			return;
 		}
 

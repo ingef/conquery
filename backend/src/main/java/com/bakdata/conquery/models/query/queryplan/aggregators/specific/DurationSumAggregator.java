@@ -37,12 +37,7 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 			return;
 		}
 
-		CDateSet range = CDateSet.create();
-		range.add(bucket.getAsDateRange(event, getColumn()));
-
-		range.retainAll(dateRestriction);
-
-		set.addAll(range);
+		set.maskedAdd(bucket.getAsDateRange(event, getColumn()), dateRestriction);
 	}
 
 	@Override
