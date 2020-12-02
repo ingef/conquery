@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import java.util.OptionalInt;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 /**
@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 public class SameTemporalMatcher implements PrecedenceMatcher {
 
 	@Override
-	public void removePreceding(BitMapCDateSet preceding, int sample) {
+	public void removePreceding(CDateSet preceding, int sample) {
 		preceding.remove(CDateRange.atLeast(sample + 1));
 	}
 
