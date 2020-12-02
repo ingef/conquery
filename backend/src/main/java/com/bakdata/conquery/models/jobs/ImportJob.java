@@ -5,9 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -24,6 +22,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
@@ -205,6 +204,7 @@ public class ImportJob extends Job {
 	}
 
 	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
+		Map<WorkerId, Set<BucketId>> freshWorkerToBuckets = new HashMap<>();
 		for (int bucketNumber : primaryMapping.getUsedBuckets()) {
 			ImportBucket bucket = buckets.get(bucketNumber);
 			//a bucket could be empty since the used buckets coming from the
@@ -226,7 +226,12 @@ public class ImportJob extends Job {
 			catch (InterruptedException e) {
 				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
 			}
+			freshWorkerToBuckets.computeIfAbsent(responsibleWorker.getId(), k -> new HashSet<>()).add(bucket.getBucket());
 			responsibleWorker.send(bucket);
+		}
+
+		for (Map.Entry<WorkerId, Set<BucketId>> entry :freshWorkerToBuckets.entrySet()){
+			namespace.addBucketForWorker(entry.getKey(), entry.getValue());
 		}
 	}
 

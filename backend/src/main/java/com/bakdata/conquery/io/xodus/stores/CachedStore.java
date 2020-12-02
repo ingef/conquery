@@ -32,8 +32,24 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public VALUE get(KEY key) {
-		// TODO: 08.01.2020 fk: This assumes that all values have been read at some point!
-		return cache.get(key);
+		VALUE val =  cache.get(key);
+		if (val != null) {
+			return val;
+		}
+		return getSync(key);
+	}
+
+	private synchronized VALUE getSync(KEY key) {
+		// Recheck synchronized
+		VALUE val =  cache.get(key);
+		if (val != null) {
+			return val;
+		}
+		val = store.get(key);
+		if(val != null){
+			cache.put(key, val);
+		}
+		return val;
 	}
 
 	@Override

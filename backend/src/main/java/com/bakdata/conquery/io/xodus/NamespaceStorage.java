@@ -1,12 +1,18 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Set;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -36,4 +42,7 @@ public interface NamespaceStorage extends NamespacedStorage {
 	
 	PersistentIdMap getIdMapping();
 	void updateIdMapping(PersistentIdMap idMap) throws JSONException;
+
+	void setWorkerBuckets(WorkerId workerId, Set<BucketId> bucketIdSet);
+	Set<BucketId> getWorkerBuckets(WorkerId workerId);
 }

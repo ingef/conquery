@@ -2,16 +2,13 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -21,6 +18,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -153,5 +151,19 @@ public class Namespace implements Closeable {
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + '[' + storage.getStorageOrigin() + ']';
+	}
+
+	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
+		Set<BucketId> buckets = storage.getWorkerBuckets(workerId);
+		if (buckets != null) {
+			return buckets;
+		}
+		return Collections.emptySet();
+	}
+
+	public synchronized void addBucketForWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
+		Set<BucketId> combined = new HashSet<>(storage.getWorkerBuckets(id));
+		combined.addAll(bucketIds);
+		storage.setWorkerBuckets(id, bucketIds);
 	}
 }
