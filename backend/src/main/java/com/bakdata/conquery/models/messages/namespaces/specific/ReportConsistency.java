@@ -1,27 +1,33 @@
-package com.bakdata.conquery.models.messages.network.specific;
+package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
+import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.collect.Sets;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@CPSType(id="REPORT_CONSISTENCY", base= NamespacedMessage.class)
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
 @Slf4j
-@RequiredArgsConstructor
 public class ReportConsistency extends NamespaceMessage {
 
-    private final WorkerId workerId;
-    private final Set<ImportId> workerImports;
-    private final Set<BucketId> workerBuckets;
+    private WorkerId workerId;
+    private Set<ImportId> workerImports;
+    private Set<BucketId> workerBuckets;
 
 
     @Override
@@ -30,6 +36,10 @@ public class ReportConsistency extends NamespaceMessage {
         Set<ImportId> managerImports = namespace.getStorage().getAllImports().stream().map(Import::getId).collect(Collectors.toSet());
 
         boolean importsOkay = isImportsConsistent(managerImports, workerImports, workerId);
+
+        if (!importsOkay) {
+            throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
+        }
     }
 
     private static boolean isImportsConsistent(Set<ImportId> managerImports, Set<ImportId> workerImports, WorkerId workerId) {
