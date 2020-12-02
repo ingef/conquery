@@ -162,8 +162,14 @@ public class Namespace implements Closeable {
 	}
 
 	public synchronized void addBucketForWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
-		Set<BucketId> combined = new HashSet<>(storage.getWorkerBuckets(id));
+		Set<BucketId> old = storage.getWorkerBuckets(id);
+
+		Set<BucketId> combined = new HashSet<>();
+		if (old != null) {
+			combined.addAll(old);
+		}
 		combined.addAll(bucketIds);
-		storage.setWorkerBuckets(id, bucketIds);
+
+		storage.setWorkerBuckets(id, combined);
 	}
 }
