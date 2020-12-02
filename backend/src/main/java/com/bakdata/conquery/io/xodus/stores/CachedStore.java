@@ -32,24 +32,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public VALUE get(KEY key) {
-		VALUE val =  cache.get(key);
-		if (val != null) {
-			return val;
-		}
-		return getSync(key);
-	}
-
-	private synchronized VALUE getSync(KEY key) {
-		// Recheck synchronized
-		VALUE val =  cache.get(key);
-		if (val != null) {
-			return val;
-		}
-		val = store.get(key);
-		if(val != null){
-			cache.put(key, val);
-		}
-		return val;
+		return cache.get(key);
 	}
 
 	@Override

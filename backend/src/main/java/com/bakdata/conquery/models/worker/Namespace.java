@@ -154,22 +154,24 @@ public class Namespace implements Closeable {
 	}
 
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
-		Set<BucketId> buckets = storage.getWorkerBuckets(workerId);
-		if (buckets != null) {
-			return buckets;
+		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+		if (workerBuckets == null){
+			workerBuckets = createWorkerBucketsMap();
 		}
-		return Collections.emptySet();
+		return workerBuckets.getBucketsForWorker(workerId);
+	}
+
+	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
+		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+		if (workerBuckets == null){
+			storage.setWorkerToBucketsMap(new WorkerToBucketsMap());
+		}
+		return storage.getWorkerBuckets();
 	}
 
 	public synchronized void addBucketForWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
-		Set<BucketId> old = storage.getWorkerBuckets(id);
-
-		Set<BucketId> combined = new HashSet<>();
-		if (old != null) {
-			combined.addAll(old);
-		}
-		combined.addAll(bucketIds);
-
-		storage.setWorkerBuckets(id, combined);
+		WorkerToBucketsMap map = storage.getWorkerBuckets();
+		map.addBucketForWorker(id, bucketIds);
+		storage.setWorkerToBucketsMap(map);
 	}
 }
