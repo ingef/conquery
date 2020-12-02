@@ -67,9 +67,8 @@ public class CQDateRestriction implements CQElement {
 	}
 
 	@Override
-	public CQElement resolve(QueryResolveContext context) {
-		child = child.resolve(context);
-		return this;
+	public void resolve(QueryResolveContext context) {
+		child.resolve(context);
 	}
 	
 	@Override

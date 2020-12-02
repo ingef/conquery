@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,7 +13,6 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -54,7 +54,7 @@ public class CQExternal implements CQElement {
 	private final String[][] values;
 
 	@Getter @InternalOnly
-	private Map<Integer, BitMapCDateSet> valuesResolved;
+	private Map<Integer, CDateSet> valuesResolved;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -156,7 +156,7 @@ public class CQExternal implements CQElement {
 					return null;
 				}
 
-				return CDateSet.create(Collections.singleton(range));
+				return CDateSet.create(Collections.singleton(CDateRange.of(start, end)));
 			}
 		},
 		DATE_RANGE {
