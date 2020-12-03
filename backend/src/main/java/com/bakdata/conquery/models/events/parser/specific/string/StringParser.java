@@ -26,11 +26,13 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @Getter
+@ToString(callSuper = true)
 public class StringParser extends Parser<Integer> {
 
 	private final String name = "";
