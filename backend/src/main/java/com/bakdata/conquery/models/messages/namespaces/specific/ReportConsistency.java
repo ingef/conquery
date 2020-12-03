@@ -59,7 +59,7 @@ public class ReportConsistency extends NamespaceMessage {
         Sets.SetView<ID> notInManager = Sets.difference(workerIds, managerIds);
 
         if (notInWorker.isEmpty() && notInManager.isEmpty()) {
-            log.info("{} of worker {} are consistent with the imports of the manager.", typeName, workerId);
+            log.info("{} of worker {} are consistent with the manager: {} {}", typeName, workerId, managerIds.size(), typeName);
             return true;
         }
 

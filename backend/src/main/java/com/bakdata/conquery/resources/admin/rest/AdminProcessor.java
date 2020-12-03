@@ -550,6 +550,8 @@ public class AdminProcessor {
 					namespace.sendToAll(new RemoveImportJob(importId));
 				}
 		));
+		// Remove bucket assignments for consistency report
+		namespace.removeBucketAssignmentsForImportFormWorkers(importId);
 	}
 
 	public void deleteTable(TableId tableId)  {

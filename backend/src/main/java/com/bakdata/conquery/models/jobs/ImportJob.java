@@ -204,7 +204,9 @@ public class ImportJob extends Job {
 	}
 
 	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
+		// Track which buckets go to which worker
 		Map<WorkerId, Set<BucketId>> freshWorkerToBuckets = new HashMap<>();
+
 		for (int bucketNumber : primaryMapping.getUsedBuckets()) {
 			ImportBucket bucket = buckets.get(bucketNumber);
 			//a bucket could be empty since the used buckets coming from the
@@ -230,8 +232,9 @@ public class ImportJob extends Job {
 			responsibleWorker.send(bucket);
 		}
 
+		// Add bucket assignments for consistency report
 		for (Map.Entry<WorkerId, Set<BucketId>> entry :freshWorkerToBuckets.entrySet()){
-			namespace.addBucketForWorker(entry.getKey(), entry.getValue());
+			namespace.addBucketsToWorker(entry.getKey(), entry.getValue());
 		}
 	}
 
