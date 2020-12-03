@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
-
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
@@ -154,7 +153,7 @@ public class CDateSet {
 	public boolean isEmpty() {
 		return asRanges().isEmpty();
 	}
-	
+
 	public void clear() {
 		rangesByLowerBound.clear();
 	}
@@ -292,13 +291,26 @@ public class CDateSet {
 		sb.append('}');
 		return sb.toString();
 	}
-	
+
 	@JsonIgnore
 	public boolean isAll() {
 		if(this.rangesByLowerBound.isEmpty()) {
 			return false;
 		}
-		return this.rangesByLowerBound.values().iterator().next().isAll();
+		return this.rangesByLowerBound.firstEntry().getValue().isAll();
+	}
+
+	/**
+	 * test if any of the boundaries are open.
+	 */
+	@JsonIgnore
+	public boolean isOpen() {
+		if(this.rangesByLowerBound.isEmpty()) {
+			return false;
+		}
+
+		// Since we might be all, just check if any of the boundaries are open.
+		return rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen();
 	}
 
 	public void retainAll(CDateSet retained) {

@@ -32,11 +32,6 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 			return;
 		}
 
-		//otherwise the result would be something weird
-		if(bucket.getAsDateRange(event, getColumn()).isOpen()) {
-			return;
-		}
-
 		CDateSet range = CDateSet.create();
 		range.add(bucket.getAsDateRange(event, getColumn()));
 

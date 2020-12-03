@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -32,15 +33,17 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 			return;
 		}
 
-		//otherwise the result would be something weird
-		if(bucket.getAsDateRange(event, getColumn()).isOpen()) {
-			return;
-		}
+		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
 		CDateSet range = CDateSet.create();
-		range.add(bucket.getAsDateRange(event, getColumn()));
+		range.add(value);
 
 		range.retainAll(dateRestriction);
+
+		//otherwise the result would be something weird
+		if(range.isOpen()){
+			return;
+		}
 
 		set.addAll(range);
 	}
