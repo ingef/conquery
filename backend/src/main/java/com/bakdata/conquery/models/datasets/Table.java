@@ -23,8 +23,6 @@ public class Table extends Labeled<TableId> {
 	@JsonBackReference
 	private Dataset dataset;
 	@NotNull @Valid @JsonManagedReference
-	private Column primaryColumn;
-	@NotNull @Valid @JsonManagedReference
 	private Column[] columns = new Column[0];
 
 	@Override

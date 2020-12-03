@@ -139,8 +139,7 @@ public class SerializationTests {
 		table.setDataset(dataset);
 		table.setLabel("tableLabel");
 		table.setName("tableName");
-		table.setPrimaryColumn(column);
-		
+
 		column.setTable(table);
 		
 		ConceptTreeConnector connector = new ConceptTreeConnector();

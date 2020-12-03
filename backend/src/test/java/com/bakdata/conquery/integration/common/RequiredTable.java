@@ -37,7 +37,6 @@ public class RequiredTable {
 	public Table toTable() {
 		Table table = new Table();
 		table.setName(name);
-		table.setPrimaryColumn(primaryColumn.toColumn(table));
 		table.setColumns(Arrays.stream(columns).map(col -> col.toColumn(table)).toArray(Column[]::new));
 		return table;
 	}
