@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDateSetCache;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -15,8 +14,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
  */
 public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
-	private BitMapCDateSet set = CDateSetCache.createPreAllocatedDateSet();
-	private BitMapCDateSet dateRestriction;
+	private CDateSet set = CDateSet.create();
+	private CDateSet dateRestriction;
 
 	public DurationSumAggregator(Column column) {
 		super(column);
@@ -38,7 +37,12 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 			return;
 		}
 
-		set.maskedAdd(bucket.getAsDateRange(event,getColumn()), dateRestriction);
+		CDateSet range = CDateSet.create();
+		range.add(bucket.getAsDateRange(event, getColumn()));
+
+		range.retainAll(dateRestriction);
+
+		set.addAll(range);
 	}
 
 	@Override

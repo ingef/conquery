@@ -4,64 +4,60 @@ import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 /**
- * A class implementing several sampling schemes for {@link BitMapCDateSet}.
+ * A class implementing several sampling schemes for {@link CDateSet}.
  */
 public enum TemporalSampler {
 	/**
-	 * Sampler that returns the earliest date of the {@link BitMapCDateSet}, if present, or empty if the Set has no lowerbound.
+	 * Sampler that returns the earliest date of the {@link CDateSet}, if present, or empty if the Set has no lowerbound.
 	 */
 	EARLIEST {
 		/**
-		 * Retrieves the earliest date contained in {@link BitMapCDateSet}.
+		 * Retrieves the earliest date contained in {@link CDateSet}.
 		 * @param data the set to be sampled from.
-		 * @return the earliest date contained in {@link BitMapCDateSet}.
+		 * @return the earliest date contained in {@link CDateSet}.
 		 */
 		@Override
-		public OptionalInt sample(BitMapCDateSet data) {
+		public OptionalInt sample(CDateSet data) {
 			if (data.isEmpty()) {
 				return OptionalInt.empty();
 			}
 
-			final CDateRange span = data.span();
-
-			if (!span.hasLowerBound()) {
+			if (!data.span().hasLowerBound()) {
 				return OptionalInt.empty();
 			}
 
-			return OptionalInt.of(span.getMinValue());
+			return OptionalInt.of(data.span().getMinValue());
 		}
 	},
 	/**
-	 * Sampler that returns the latest date of the {@link BitMapCDateSet}, if present, or empty if the Set has no upperbound.
+	 * Sampler that returns the latest date of the {@link CDateSet}, if present, or empty if the Set has no upperbound.
 	 */
 	LATEST {
 		/**
-		 * Retrieves the latest date contained in {@link BitMapCDateSet}.
+		 * Retrieves the latest date contained in {@link CDateSet}.
 		 * @param data the set to be sampled from.
-		 * @return the latest date contained in {@link BitMapCDateSet}.
+		 * @return the latest date contained in {@link CDateSet}.
 		 */
 		@Override
-		public OptionalInt sample(BitMapCDateSet data) {
+		public OptionalInt sample(CDateSet data) {
 			if (data.isEmpty()) {
 				return OptionalInt.empty();
 			}
 
-			final CDateRange span = data.span();
-
-			if (!span.hasUpperBound()) {
+			if (!data.span().hasUpperBound()) {
 				return OptionalInt.empty();
 			}
 
-			return OptionalInt.of(span.getMaxValue());
+			return OptionalInt.of(data.span().getMaxValue());
 		}
 	},
 	/**
-	 * Sampler that returns a random date that is inside {@link BitMapCDateSet}.
+	 * Sampler that returns a random date that is inside {@link CDateSet}.
 	 */
 	RANDOM {
 		/**
@@ -75,7 +71,7 @@ public enum TemporalSampler {
 		 * @return a random date contained in {@code data}.
 		 */
 		@Override
-		public OptionalInt sample(BitMapCDateSet data) {
+		public OptionalInt sample(CDateSet data) {
 			if (data.isEmpty()) {
 				return OptionalInt.empty();
 			}
@@ -122,10 +118,10 @@ public enum TemporalSampler {
 	};
 
 	/**
-	 * Get a date from within the {@link BitMapCDateSet} that is produced according to a sampling scheme.
+	 * Get a date from within the {@link CDateSet} that is produced according to a sampling scheme.
 	 * @param data the set to be sampled from.
 	 * @return the date fitting the sampling criteria. Or {@link OptionalInt#empty()} if none is found.
 	 */
-	public abstract OptionalInt sample(BitMapCDateSet data);
+	public abstract OptionalInt sample(CDateSet data);
 
 }
