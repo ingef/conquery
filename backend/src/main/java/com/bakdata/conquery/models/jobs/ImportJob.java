@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -39,6 +38,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.preproc.Preprocessed;
+import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -65,7 +65,7 @@ public class ImportJob extends Job {
 
 	@Override
 	public void execute() throws JSONException, InterruptedException {
-		final Preprocessed.DataContainer container;
+		final PreprocessedData container;
 		final PreprocessedHeader header;
 
 		try (HCFile file = new HCFile(importFile, false)) {
@@ -82,7 +82,7 @@ public class ImportJob extends Job {
 			//import the actual data
 			log.info("Begin reading data.");
 
-			try (InputStream in = new GZIPInputStream(file.readContent())) {
+			try (InputStream in = file.readContent()) {
 				container = Preprocessed.readContainer(in);
 			}
 
