@@ -9,11 +9,13 @@ import java.util.stream.IntStream;
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.common.BitMapCDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -171,5 +173,13 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		}
 
 		return out;
+	}
+
+	public void loadDictionaries(NamespacedStorage storage) {
+		for (ColumnStore<?> store : getStores()) {
+			if (store instanceof StringType) {
+				((StringType) store).loadDictionaries(storage);
+			}
+		}
 	}
 }
