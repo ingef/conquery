@@ -270,7 +270,7 @@ public class ImportJob extends Job {
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
 			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
-				log.trace("No Dictionary for Column[{}]", column);
+				log.trace("No Dictionary for {}", column);
 				continue;
 			}
 
@@ -279,7 +279,7 @@ public class ImportJob extends Job {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
 				final Dictionary dictionary = dicts.get(column.getName());
 
-				log.info("Column[{}.{}] = `{}` part of shared Dictionary[{}]", importName, column, stores.get(column.getName()), sharedDictionaryId);
+				log.info("Column[{}.{}] = `{}` part of shared Dictionary[{}]", importName, column.getName(), stores.get(column.getName()), sharedDictionaryId);
 
 				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
 
