@@ -38,7 +38,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
-import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -101,7 +100,7 @@ public class ImportJob extends Job {
 		}
 
 		final Table table = namespace.getStorage().getDataset().getTables().get(this.tableId);
-		final ColumnStore<?>[] stores = container.getValues();
+		final Map<String,ColumnStore<?>> stores = container.getValues();
 
 
 		// Update primary dictionary: load new data, and create mapping.
@@ -130,10 +129,15 @@ public class ImportJob extends Job {
 
 
 		// per incoming bucket:
+		final ColumnStore<?>[] storesSorted = Arrays.stream(table.getColumns())
+												 .map(Column::getName)
+												 .map(stores::get)
+												 .peek(Objects::requireNonNull)
+												 .toArray(ColumnStore[]::new);
 
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 			final Bucket bucket =
-					selectBucket(starts, container.getLengths(), stores, primaryMapping, outImport.getId(), bucket2entities.getKey(), bucket2entities.getValue());
+					selectBucket(starts, container.getLengths(), storesSorted, primaryMapping, outImport.getId(), bucket2entities.getKey(), bucket2entities.getValue());
 			sendBucket(bucket);
 		}
 
@@ -243,7 +247,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, ColumnStore<?>[] stores)
+	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, Map<String, ColumnStore<?>> stores)
 			throws JSONException {
 
 		// Empty Maps are Coalesced to null by Jackson
@@ -275,7 +279,7 @@ public class ImportJob extends Job {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
 				final Dictionary dictionary = dicts.get(column.getName());
 
-				log.info("Column[{}.{}] = `{}` part of shared Dictionary[{}]", importName, column, stores[i], sharedDictionaryId);
+				log.info("Column[{}.{}] = `{}` part of shared Dictionary[{}]", importName, column, stores.get(column.getName()), sharedDictionaryId);
 
 				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
 
@@ -305,7 +309,7 @@ public class ImportJob extends Job {
 		return out;
 	}
 
-	public void setDictionaryIds(ColumnStore<?>[] values, Column[] columns, String importName) {
+	public void setDictionaryIds(Map<String, ColumnStore<?>> values, Column[] columns, String importName) {
 		for (int i = 0; i < columns.length; i++) {
 			Column column = columns[i];
 
@@ -313,7 +317,7 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			final StringType stringType = (StringType) values[i];
+			final StringType stringType = (StringType) values.get(column.getName());
 
 			// if not shared use default naming
 			if (column.getSharedDictionary() != null) {
@@ -325,21 +329,19 @@ public class ImportJob extends Job {
 		}
 	}
 
-	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, ColumnStore<?>[] values, Column[] columns) {
-		for (int i = 0; i < values.length; i++) {
-			Column column = columns[i];
-
+	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore<?>> values, Column[] columns) {
+		for (Column column : columns) {
 			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
 				continue;
 			}
 
-
 			// apply mapping
 			final DictionaryMapping mapping = Objects.requireNonNull(mappings.get(column.getName()), "Missing Dictionary Mapping for " + column.getName());
 
-			log.debug("Remapping Column[{}] = {} with {}", column.getId(), values[i], mapping);
+			final StringType stringType = (StringType) values.get(column.getName());
 
-			final StringType stringType = (StringType) values[i];
+			log.debug("Remapping Column[{}] = {} with {}", column.getId(), stringType, mapping);
+
 
 			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
 			final IntegerParser indexParser = new IntegerParser();
@@ -361,25 +363,25 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, ColumnStore<?>[] stores, Column[] columns) {
+	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore<?>> stores, Column[] columns) {
 		Import imp = new Import(tableId);
 
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
-		imp.setColumns(new ImportColumn[header.getColumns().length]);
 
-		for (int i = 0; i < header.getColumns().length; i++) {
-			PPColumn src = header.getColumns()[i];
-			ImportColumn col = new ImportColumn();
-			col.setName(src.getName());
-			//TODO this loses the size estimations?
-			col.setType(stores[i].select(new int[0], new int[0])); // ie just the representation
-			col.getType().setLines(stores[i].getLines());
+		final ImportColumn[] importColumns = new ImportColumn[columns.length];
 
-			col.setParent(imp);
-			col.setPosition(i);
-			imp.getColumns()[i] = col;
+		for (int i = 0; i < columns.length; i++) {
+			final ColumnStore<?> store = stores.get(columns[i].getName());
+
+			ImportColumn col = new ImportColumn(imp, store.createDescription());
+
+			col.setName(columns[i].getName());
+
+			importColumns[i]  = col;
 		}
+
+		imp.setColumns(importColumns);
 
 		Set<DictionaryId> dictionaries = new HashSet<>();
 
@@ -396,6 +398,8 @@ public class ImportJob extends Job {
 		imp.setDictionaries(dictionaries);
 		return imp;
 	}
+
+
 
 	/**
 	 * Group entities by their global bucket id.

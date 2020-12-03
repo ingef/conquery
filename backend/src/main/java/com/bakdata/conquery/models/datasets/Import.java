@@ -49,8 +49,8 @@ public class Import extends NamedImpl<ImportId> {
 	public void loadExternalInfos(NamespacedStorage storage) {
 		for (ImportColumn col : columns) {
 
-			if(col.getType() instanceof StringType) {
-				((StringType) col.getType()).loadDictionaries(storage);
+			if(col.getTypeDescription() instanceof StringType) {
+				((StringType) col.getTypeDescription()).loadDictionaries(storage);
 			}
 		}
 	}
@@ -58,7 +58,7 @@ public class Import extends NamedImpl<ImportId> {
 	public long estimateMemoryConsumption() {
 		long mem = 0;
 		for (ImportColumn col : columns) {
-			mem += col.getType().estimateMemoryConsumption();
+			mem += col.getTypeDescription().estimateMemoryConsumption();
 		}
 		return mem;
 	}

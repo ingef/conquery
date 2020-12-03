@@ -84,9 +84,9 @@ public class ConceptTreeConnector extends Connector {
 		final StringType stringType;
 
 		// If we have a column and it is of string-type, we create indices and caches.
-		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof StringType) {
+		if (column != null && imp.getColumns()[column.getPosition()].getTypeDescription() instanceof StringType) {
 
-			ColumnStore<?> columnStore = imp.getColumns()[column.getPosition()].getType();
+			ColumnStore<?> columnStore = imp.getColumns()[column.getPosition()].getTypeDescription();
 
 			stringType = (StringType) columnStore;
 

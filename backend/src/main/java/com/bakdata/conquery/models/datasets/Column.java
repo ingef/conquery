@@ -51,19 +51,20 @@ public class Column extends Labeled<ColumnId> {
 		if (!this.getName().equals(column.getName())) {
 			return false;
 		}
-		return this.getType().equals(column.getType().getTypeId());
+		return this.getType().equals(column.getType());
 	}
 
 	public ColumnStore getTypeFor(Bucket bucket) {
-		return getTypeFor(bucket.getImp());
+		return bucket.getStores()[getPosition()];
 	}
 
+	//TODO try to remove this method methods, they are quite leaky
 	public ColumnStore getTypeFor(Import imp) {
 		if (!imp.getTable().equals(getTable().getId())) {
 			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable(), getTable().getId()));
 		}
 
-		return imp.getColumns()[getPosition()].getType();
+		return imp.getColumns()[getPosition()].getTypeDescription();
 	}
 
 	public int getPosition() {

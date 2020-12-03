@@ -79,6 +79,16 @@ public abstract class ColumnStore<JAVA_TYPE> implements MajorTypeIdHolder {
 	public abstract ColumnStore<JAVA_TYPE> select(int[] starts, int[] lengths);
 
 	/**
+	 * Create an empty store that's only a description of the transformation.
+	 */
+	public ColumnStore<JAVA_TYPE> createDescription() {
+		final ColumnStore<JAVA_TYPE> select = select(new int[0], new int[0]);
+		select.setLines(getLines());
+		select.setNullLines(getNullLines());
+		return select;
+	}
+
+	/**
 	 * Set the event. If null, the store will store a null value, making {@link #has(int)} return false.
 	 */
 	public abstract void set(int event, @CheckForNull JAVA_TYPE value);

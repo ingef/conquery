@@ -42,7 +42,7 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (Column column : getRequiredColumns()) {
-			ColumnStore type = bucket.getImp().getColumns()[column.getPosition()].getType();
+			ColumnStore type = bucket.getImp().getColumns()[column.getPosition()].getTypeDescription();
 			if (type.getNullLines() != type.getLines())
 				return true;
 		}

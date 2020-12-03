@@ -79,8 +79,8 @@ public class TablesUIResource extends HAdmin {
 						imports
 								.stream()
 								.flatMap(i -> Arrays.stream(i.getColumns()))
-								.filter(c -> c.getType() instanceof StringType)
-								.map(c -> (StringType) c.getType())
+								.filter(c -> c.getTypeDescription() instanceof StringType)
+								.map(c -> (StringType) c.getTypeDescription())
 								.filter(c -> c.getUnderlyingDictionary() != null)
 								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
 								.values()

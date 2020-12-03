@@ -73,7 +73,7 @@ public class Preprocessed {
 
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
-			columns[index] = new PPColumn(columnDescription.getName());
+			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 		}
 	}
@@ -98,11 +98,11 @@ public class Preprocessed {
 
 		calculateEntitySpans(entityStart, entityLength);
 
-		ColumnStore[] columnStores = combineStores();
+		Map<String, ColumnStore<?>> columnStores = combineStores();
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
-		Map<String, Dictionary> dicts = collectDictionaries(columnStores, columns);
+		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
 
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {
 			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, columnStores, primaryDictionary, dicts));
@@ -143,10 +143,11 @@ public class Preprocessed {
 
 	/**
 	 * Combine by-Entity data into column stores, appropriately formatted.
+	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public ColumnStore[] combineStores() {
-		ColumnStore<?>[] columnStores = new ColumnStore[columns.length];
+	public Map<String, ColumnStore<?>> combineStores() {
+		Map<String, ColumnStore<?>> columnStores = new HashMap<>(this.columns.length);
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
@@ -167,7 +168,7 @@ public class Preprocessed {
 				start += length;
 			}
 
-			columnStores[colIdx] = store;
+			columnStores.put(ppColumn.getName(),store);
 		}
 		return columnStores;
 	}
@@ -188,21 +189,23 @@ public class Preprocessed {
 		}
 	}
 
-	public static Map<String, Dictionary> collectDictionaries(ColumnStore<?>[] columnStores, PPColumn[] columns) {
-		Map<String, Dictionary> dicts = new HashMap<>();
-
-
-		for (int i = 0; i < columnStores.length; i++) {
-			ColumnStore<?> column = columnStores[i];
-			final String colName = columns[i].getName();
-
-			if (!(column instanceof StringType)) {
+	public static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore<?>> columnStores) {
+		final Map<String, Dictionary> collect = new HashMap<>();
+		for (Map.Entry<String, ColumnStore<?>> entry : columnStores.entrySet()) {
+			if (!(entry.getValue() instanceof StringType)) {
 				continue;
 			}
 
-			dicts.put(colName, ((StringType) column).getUnderlyingDictionary());
+			final Dictionary dictionary = ((StringType) entry.getValue()).getUnderlyingDictionary();
+
+			if(dictionary == null){
+				continue;
+			}
+
+			collect.put(entry.getKey(), dictionary);
 		}
-		return dicts;
+
+		return collect;
 	}
 
 	public synchronized int addPrimary(int primary) {
@@ -229,7 +232,8 @@ public class Preprocessed {
 	public static class DataContainer {
 		private final Map<Integer, Integer> starts;
 		private final Map<Integer, Integer> lengths;
-		private final ColumnStore<?>[] values;
+
+		private final Map<String,ColumnStore<?>> values;
 
 		@NotNull
 		private final Dictionary primaryDictionary;

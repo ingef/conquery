@@ -78,7 +78,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : selection) {
-			if(((StringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) == -1) {
+			if(((StringType) bucket.getImp().getColumns()[column.getPosition()].getTypeDescription()).getId(selected) == -1) {
 				return false;
 			}
 		}
