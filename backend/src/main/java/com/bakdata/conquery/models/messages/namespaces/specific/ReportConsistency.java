@@ -41,8 +41,8 @@ public class ReportConsistency extends NamespaceMessage {
 
         Set<BucketId> assignedWorkerBuckets = context.getBucketsForWorker(workerId);
 
-        boolean importsOkay = isImportsConsistent("Imports", managerImports, workerImports, workerId);
-        boolean bucketsOkay = isImportsConsistent("Buckets", assignedWorkerBuckets, workerBuckets, workerId);
+        boolean importsOkay = isConsistent("Imports", managerImports, workerImports, workerId);
+        boolean bucketsOkay = isConsistent("Buckets", assignedWorkerBuckets, workerBuckets, workerId);
 
         log.trace("Imports on worker[{}}: {}", workerId, workerImports);
         log.trace("Buckets on worker[{}}: {}", workerId, workerBuckets);
@@ -54,7 +54,7 @@ public class ReportConsistency extends NamespaceMessage {
         throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
     }
 
-    private static <ID extends IId<?>> boolean isImportsConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
+    private static <ID extends IId<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
         Sets.SetView<ID> notInWorker = Sets.difference(managerIds, workerIds);
         Sets.SetView<ID> notInManager = Sets.difference(workerIds, managerIds);
 
@@ -64,7 +64,7 @@ public class ReportConsistency extends NamespaceMessage {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Found inconsistencies for").append(typeName).append(":\n");
+        sb.append("Found inconsistencies for ").append(typeName).append(":\n");
         for( ID difference : notInWorker) {
             sb.append("\t[").append(difference).append("] is not present on the worker but on the manager [").append(workerId).append("].\n");
         }

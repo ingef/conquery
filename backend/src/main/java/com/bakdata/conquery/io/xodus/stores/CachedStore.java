@@ -32,6 +32,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public VALUE get(KEY key) {
+		// TODO: 08.01.2020 fk: This assumes that all values have been read at some point!
 		return cache.get(key);
 	}
 
