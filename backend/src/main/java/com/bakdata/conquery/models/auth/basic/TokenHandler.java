@@ -14,6 +14,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.util.Duration;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -133,8 +134,10 @@ public class TokenHandler {
 
 	@SuppressWarnings("serial")
 	@AllArgsConstructor
+	@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 	public static class JwtToken implements AuthenticationToken {
 
+		@EqualsAndHashCode.Include
 		private String token;
 
 		@Override

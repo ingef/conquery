@@ -42,7 +42,7 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 			
 			//// Add role to group
 			group1.addRole(storage, role);
-			assertThat(group1.getRoles()).containsExactlyInAnyOrder(role);
+			assertThat(group1.getRoles()).containsExactlyInAnyOrder(role.getId());
 			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isTrue();
 
 			

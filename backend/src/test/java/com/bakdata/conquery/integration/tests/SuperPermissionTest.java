@@ -14,7 +14,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 
 public class SuperPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final Role mandator1 = new Role("company", "company");
+	private final Role role1 = new Role("company", "company");
 	private final User user1 = new User("user", "user");
 	
 
@@ -23,9 +23,10 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
 		MetaStorage storage = conquery.getMetaStorage();
+		storage.addRole(role1);
 		
 		try {
-			user1.addRole(storage, mandator1);
+			user1.addRole(storage, role1);
 			// Add SuperPermission to User
 			user1.addPermission(storage,  SuperPermission.onDomain());
 		
@@ -34,20 +35,20 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 		
 			// Add SuperPermission to mandator and remove from user
 			user1.removePermission(storage, SuperPermission.onDomain());
-			mandator1.addPermission(storage, SuperPermission.onDomain());
+			role1.addPermission(storage, SuperPermission.onDomain());
 		
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
 		
 			// Add SuperPermission to mandator and remove from user
-			mandator1.removePermission(storage, SuperPermission.onDomain());
+			role1.removePermission(storage, SuperPermission.onDomain());
 		
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isFalse();
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
 		}
 		finally {
 			storage.removeUser(user1.getId());
-			storage.removeRole(mandator1.getId());
+			storage.removeRole(role1.getId());
 		}
 
 	}

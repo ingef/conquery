@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -88,12 +89,21 @@ public class RelativeFormQuery extends IQuery {
 		collector.add(ConqueryConstants.CONTEXT_INDEX_INFO);
 		// event date
 		collector.add(ConqueryConstants.EVENT_DATE_INFO);
+
+		final List<ResultInfo> featureInfos = featureHeader.getInfos();
+		final List<ResultInfo> outcomeInfos = outcomeHeader.getInfos();
+
 		//date ranges
-		collector.add(ConqueryConstants.FEATURE_DATE_RANGE_INFO);
-		collector.add(ConqueryConstants.OUTCOME_DATE_RANGE_INFO);
+		if (!featureInfos.isEmpty()){
+			collector.add(ConqueryConstants.FEATURE_DATE_RANGE_INFO);
+		}
+
+		if (!outcomeInfos.isEmpty()) {
+			collector.add(ConqueryConstants.OUTCOME_DATE_RANGE_INFO);
+		}
 		//features
-		collector.addAll(featureHeader.getInfos());
-		collector.addAll(outcomeHeader.getInfos());
+		collector.addAll(featureInfos);
+		collector.addAll(outcomeInfos);
 	}
 	
 	@Override

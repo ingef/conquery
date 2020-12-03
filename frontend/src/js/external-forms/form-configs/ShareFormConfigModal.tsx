@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
+import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "app-types";
 
 import Modal from "../../modal/Modal";
 import { patchFormConfig } from "../../api/api";
-import { useDispatch, useSelector } from "react-redux";
-import { StateT } from "app-types";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 import TransparentButton from "../../button/TransparentButton";

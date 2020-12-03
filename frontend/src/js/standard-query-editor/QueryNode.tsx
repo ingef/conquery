@@ -80,6 +80,7 @@ const RootNode = styled("p")`
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.blueGrayDark};
+  word-break: break-word;
 `;
 
 type PropsType = {
@@ -105,7 +106,7 @@ class QueryNode extends React.Component {
       onExpandClick,
       onEditClick,
       onDeleteNode,
-      onToggleTimestamps
+      onToggleTimestamps,
     } = this.props;
 
     const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
@@ -114,7 +115,7 @@ class QueryNode extends React.Component {
 
     return (
       <Root
-        ref={instance => connectDragSource(instance)}
+        ref={(instance) => connectDragSource(instance)}
         hasActiveFilters={hasActiveFilters}
         onClick={!!node.error ? () => null : onEditClick}
       >
@@ -184,7 +185,7 @@ const nodeSource = {
       dateRange: node.dateRange,
 
       loading: node.loading,
-      error: node.error
+      error: node.error,
     };
 
     if (node.isPreviousQuery)
@@ -192,7 +193,7 @@ const nodeSource = {
         ...draggedNode,
         id: node.id,
         query: node.query,
-        isPreviousQuery: true
+        isPreviousQuery: true,
       };
     else
       return {
@@ -201,9 +202,9 @@ const nodeSource = {
         description: node.description,
         tree: node.tree,
         tables: node.tables,
-        selects: node.selects
+        selects: node.selects,
       };
-  }
+  },
 };
 
 /**
@@ -211,7 +212,7 @@ const nodeSource = {
  */
 const collect = (connect, monitor) => ({
   connectDragSource: connect.dragSource(),
-  isDragging: monitor.isDragging()
+  isDragging: monitor.isDragging(),
 });
 
 export default AdditionalInfoHoverable(

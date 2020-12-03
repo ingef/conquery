@@ -14,7 +14,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public abstract class CQAbstractTemporalQuery implements CQElement {
+public abstract class CQAbstractTemporalQuery extends CQElement {
 
 	/**
 	 * The query being executed as reference for preceding.
@@ -28,7 +28,7 @@ public abstract class CQAbstractTemporalQuery implements CQElement {
 	
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		CQElement.super.visit(visitor);
+		super.visit(visitor);
 		index.getChild().visit(visitor);
 		preceding.getChild().visit(visitor);
 	}

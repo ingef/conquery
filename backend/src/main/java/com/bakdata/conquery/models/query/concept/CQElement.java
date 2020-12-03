@@ -16,10 +16,18 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Getter;
+import lombok.Setter;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface CQElement extends Visitable {
+public abstract class CQElement implements Visitable {
+
+	/**
+	 * Allows the user to define labels.
+	 */
+	@Getter @Setter
+	private String label = null;
 
 	/**
 	 * Allows a query element to initialize data structures from resources, that are only available on the {@link ManagerNode}.
@@ -29,28 +37,28 @@ public interface CQElement extends Visitable {
 	 * @param context
 	 * @return
 	 */
-	void resolve(QueryResolveContext context);
+	public abstract void resolve(QueryResolveContext context);
 
-	QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
+	public abstract QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
-	default void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
 	
 	
-	default Set<ManagedExecutionId> collectRequiredQueries() {
+	public Set<ManagedExecutionId> collectRequiredQueries() {
 		HashSet<ManagedExecutionId> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}
 
-	default ResultInfoCollector collectResultInfos() {
+	public ResultInfoCollector collectResultInfos() {
 		ResultInfoCollector collector = new ResultInfoCollector();
 		collectResultInfos(collector);
 		return collector;
 	}
 	
-	void collectResultInfos(ResultInfoCollector collector);
+	public abstract void collectResultInfos(ResultInfoCollector collector);
 
-	default void visit(Consumer<Visitable> visitor) {
+	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 	}
 }
