@@ -336,9 +336,13 @@ public class ImportJob extends Job {
 			}
 
 			// apply mapping
-			final DictionaryMapping mapping = Objects.requireNonNull(mappings.get(column.getName()), "Missing Dictionary Mapping for " + column.getName());
+			final DictionaryMapping mapping = mappings.get(column.getName());
 
 			final StringType stringType = (StringType) values.get(column.getName());
+
+			if(mapping == null && stringType.getUnderlyingDictionary() != null){
+				throw new IllegalStateException(String.format("Missing mapping for %s", column));
+			}
 
 			log.debug("Remapping Column[{}] = {} with {}", column.getId(), stringType, mapping);
 
