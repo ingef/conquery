@@ -4,6 +4,7 @@ import buildAppReducer from "./app/reducers";
 import { isProduction } from "./environment";
 import devMiddleware from "./middleware/devMiddleware";
 import prodMiddleware from "./middleware/prodMiddleware";
+import { TabT } from "./pane/types";
 
 export function makeStore(
   initialState: Object,
@@ -20,7 +21,7 @@ export function makeStore(
     enhancer = compose(
       middleware,
       // Use the Redux devtools extention, but only in development
-      window.devToolsExtension ? window.devToolsExtension() : f => f
+      window.devToolsExtension ? window.devToolsExtension() : (f) => f
     );
   } else {
     enhancer = compose(middleware);

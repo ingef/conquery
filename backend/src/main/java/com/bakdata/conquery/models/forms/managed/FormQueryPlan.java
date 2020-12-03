@@ -30,7 +30,9 @@ public class FormQueryPlan implements QueryPlan {
 		this.features = features;
 		
 		if (dateContexts.size() <= 0) {
-			throw new IllegalStateException("No date contexts provided.");
+			// There is nothing to do for this FormQueryPlan but we will return an empty result when its executed
+			constantCount = 3;
+			return;
 		}
 		
 		// Either all date contexts have an relative event date or none has one

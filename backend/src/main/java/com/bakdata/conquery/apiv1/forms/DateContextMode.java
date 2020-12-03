@@ -10,6 +10,7 @@ import com.bakdata.conquery.internationalization.DateContextModeC10n;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -27,11 +28,12 @@ public enum DateContextMode {
 	COMPLETE(null){
 		@Override
 		public List<CDateRange> subdivideRange(CDateRange range) {
-			return List.of(range);
+			return range == null ? Collections.emptyList() : List.of(range);
 		}
 
 		@Override
 		public String toString(Locale locale) {
+
 			return C10N.get(DateContextModeC10n.class, locale).complete();
 		}
 	},
@@ -43,11 +45,13 @@ public enum DateContextMode {
 	YEARS(COMPLETE){
 		@Override
 		public List<CDateRange> subdivideRange(CDateRange range) {
-			return range.getCoveredYears();
+
+			return range == null ? ImmutableList.of() : range.getCoveredYears();
 		}
 
 		@Override
 		public String toString(Locale locale) {
+
 			return C10N.get(DateContextModeC10n.class, locale).year();
 		}
 	},
@@ -59,12 +63,14 @@ public enum DateContextMode {
 	QUARTERS(YEARS){
 		@Override
 		public List<CDateRange> subdivideRange(CDateRange range) {
-			return range.getCoveredQuarters();
+
+			return range == null ? ImmutableList.of() : range.getCoveredQuarters();
 		}
 		
 
 		@Override
 		public String toString(Locale locale) {
+
 			return C10N.get(DateContextModeC10n.class, locale).quarter();
 		}
 	},
@@ -76,11 +82,13 @@ public enum DateContextMode {
 	DAYS(QUARTERS){
 		@Override
 		public List<CDateRange> subdivideRange(CDateRange range) {
-			return range.getCoveredDays();
+
+			return range == null ? ImmutableList.of() : range.getCoveredDays();
 		}
 
 		@Override
 		public String toString(Locale locale) {
+
 			return C10N.get(DateContextModeC10n.class, locale).day();
 		}
 	};

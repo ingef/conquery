@@ -77,7 +77,7 @@ public class DateContext {
 	 * If a smaller subdivision mode is chosen, 
 	 *
 	 * @param dateRangeMask The mask that is applied onto the dates.
-	 * @param subdivisionMode    The subdivision mode that defines the granularity of the
+	 * @param subdivisionModes    The subdivision modes that define the granularity of the
 	 *                      result.
 	 * @return All date ranges as wrapped into {@link DateContext} that were in the
 	 *         mask.
@@ -102,19 +102,18 @@ public class DateContext {
 	/**
 	 * Returns the date ranges that are in the specified range around the event.
 	 * 
-	 * @param event       The date (as days from {@link EPOCH_DAY} from which the
+	 * @param event       The date (as days from epoch day) from which the
 	 *                    relative range is calculated.
 	 * @param indexPlacement  Indicates to which {@link FeatureGroup} the range of the
 	 *                    event belongs.
 	 * @param featureTime The number of feature timeunit ranges.
 	 * @param outcomeTime The number of outcome timeunit ranges.
-	 * @param resultMode
 	 * @param timeUnit
 	 * @return
 	 */
 	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<DateContextMode> subdivisionModes) {
-		if (featureTime < 1 || outcomeTime < 1) {
-			throw new IllegalArgumentException("Relative times were smaller than 1 (featureTime: " + featureTime
+		if (featureTime < 1 && outcomeTime < 1) {
+			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
 		}
 		List<DateContext> dcList = new ArrayList<>();
@@ -176,6 +175,9 @@ public class DateContext {
 	 */
 	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime,
 		DateContextMode timeUnit) {
+		if(featureTime <= 0){
+			return null;
+		}
 		if (indexPlacement.equals(IndexPlacement.BEFORE)) {
 			switch (timeUnit) {
 				case DAYS:
@@ -216,6 +218,9 @@ public class DateContext {
 	 */
 	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime,
 		DateContextMode resolution) {
+		if (outcomeTime <= 0) {
+			return null;
+		}
 		switch(indexPlacement) {
 			case AFTER:
 				switch (resolution) {
