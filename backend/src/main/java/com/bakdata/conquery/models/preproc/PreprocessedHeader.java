@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.util.Map;
 import java.util.StringJoiner;
 
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,9 +37,9 @@ public class PreprocessedHeader {
 	private long rows;
 
 	/**
-	 * The specific columns and their associated transformations+data.
+	 * The specific columns and their associated MajorType for validation.
 	 */
-	private PPColumn[] columns;
+	private Map<String, MajorTypeId> columns;
 
 	/**
 	 * A hash to check if any of the underlying files for generating this CQPP has changed.
@@ -50,13 +53,19 @@ public class PreprocessedHeader {
 	public void assertMatch(Table table) {
 		StringJoiner errors = new StringJoiner("\n");
 
-		if (table.getColumns().length != getColumns().length) {
-			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));
+		if (table.getColumns().length != getColumns().size()) {
+			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().size(), table.getColumns().length));
 		}
 
-		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
-			if (!table.getColumns()[i].matches(getColumns()[i])) {
-				errors.add(String.format("Column[%s] does not match table Column[%s]`", getColumns()[i], table.getColumns()[i]));
+		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().size()); i++) {
+			final Column column = table.getColumns()[i];
+
+			if(!getColumns().containsKey(column.getName())){
+				errors.add(String.format("Column[%s] is missing in Import.", column.getName()));
+			}
+
+			if (!getColumns().get(column.getName()).equals(column.getType())) {
+				errors.add(String.format("ImportColumn[%s]#%s does not match Column[%s]#%s", getColumns().get(column.getName()), table.getColumns()[i]));
 			}
 		}
 
