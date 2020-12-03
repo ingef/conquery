@@ -340,8 +340,12 @@ public class ImportJob extends Job {
 
 			final StringType stringType = (StringType) values.get(column.getName());
 
-			if(mapping == null && stringType.getUnderlyingDictionary() != null){
-				throw new IllegalStateException(String.format("Missing mapping for %s", column));
+			if(mapping == null){
+				if(stringType.getUnderlyingDictionary() != null) {
+					throw new IllegalStateException(String.format("Missing mapping for %s", column));
+				}
+
+				continue;
 			}
 
 			log.debug("Remapping Column[{}] = {} with {}", column.getId(), stringType, mapping);
