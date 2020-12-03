@@ -21,7 +21,6 @@ import lombok.ToString;
 public class Column extends Labeled<ColumnId> {
 
 	public static final int UNKNOWN_POSITION = -1;
-	public static final int PRIMARY_POSITION = -2;
 
 	@JsonBackReference
 	@NotNull
