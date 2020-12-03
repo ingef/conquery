@@ -1,17 +1,24 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-@AllArgsConstructor(onConstructor = @__({@JsonCreator}))
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 public class WorkerToBucketsMap {
     private Map<WorkerId, Set<BucketId>> map = new ConcurrentHashMap<>();
 
