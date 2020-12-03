@@ -5,7 +5,6 @@ import java.math.BigInteger;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.DecimalStore;
@@ -49,7 +48,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 	@Override
 	protected ColumnStore<BigDecimal> decideType() {
 		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
-			return new DecimalTypeBigDecimal(new EmptyStore<>(MajorTypeId.DECIMAL));
+			return new DecimalTypeBigDecimal(new EmptyStore<>());
 		}
 
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);

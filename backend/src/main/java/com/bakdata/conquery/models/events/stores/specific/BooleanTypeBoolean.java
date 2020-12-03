@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,7 +14,6 @@ public class BooleanTypeBoolean extends ColumnStore<Boolean> {
 
 	@JsonCreator
 	public BooleanTypeBoolean(BooleanStore store) {
-		super(MajorTypeId.BOOLEAN);
 		this.store = store;
 	}
 

@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -22,7 +21,6 @@ public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeTypeQuarter(ColumnStore<Long> store) {
-		super(MajorTypeId.DATE_RANGE);
 		this.store = store;
 	}
 

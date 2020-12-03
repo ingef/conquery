@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -18,7 +17,6 @@ public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 
 	@JsonCreator
 	public DecimalTypeScaled(int scale, ColumnStore subType) {
-		super(MajorTypeId.DECIMAL);
 		this.scale = scale;
 		this.subType = subType;
 	}

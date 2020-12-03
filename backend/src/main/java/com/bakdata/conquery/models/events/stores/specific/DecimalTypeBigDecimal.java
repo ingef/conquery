@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.events.stores.specific;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -16,7 +15,6 @@ public class DecimalTypeBigDecimal extends ColumnStore<BigDecimal> {
 
 	@JsonCreator
 	public DecimalTypeBigDecimal(ColumnStore<BigDecimal> store) {
-		super(MajorTypeId.DECIMAL);
 		this.store = store;
 	}
 

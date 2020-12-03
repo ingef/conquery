@@ -6,7 +6,6 @@ import java.util.BitSet;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.BitSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.BitSetSerializer;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -26,7 +25,6 @@ public class BooleanStore extends ColumnStore<Boolean> {
 
 	@JsonCreator
 	public BooleanStore(BitSet values) {
-		super(MajorTypeId.BOOLEAN);
 		this.values = values;
 	}
 

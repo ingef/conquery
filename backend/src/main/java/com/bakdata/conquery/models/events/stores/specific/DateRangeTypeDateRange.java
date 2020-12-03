@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -18,7 +17,6 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeTypeDateRange(ColumnStore<Long> minStore, ColumnStore<Long> maxStore) {
-		super(MajorTypeId.DATE_RANGE);
 		this.minStore = minStore;
 		this.maxStore = maxStore;
 	}

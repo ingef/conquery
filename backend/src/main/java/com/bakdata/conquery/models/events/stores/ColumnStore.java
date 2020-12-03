@@ -5,28 +5,22 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 import javax.annotation.CheckForNull;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.parser.MajorTypeIdHolder;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-public abstract class ColumnStore<JAVA_TYPE> implements MajorTypeIdHolder {
-
-	@JsonIgnore
-	@NotNull
-	private transient final MajorTypeId typeId;
+@ToString
+public abstract class ColumnStore<JAVA_TYPE> {
 
 	private int lines = 0;
 	private int nullLines = 0;
@@ -53,12 +47,6 @@ public abstract class ColumnStore<JAVA_TYPE> implements MajorTypeIdHolder {
 	public Object createScriptValue(JAVA_TYPE value) {
 		return value;
 	}
-
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName();
-	}
-
 
 	public long estimateMemoryConsumption() {
 		long bytes = estimateEventBytes();

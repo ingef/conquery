@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum MajorTypeId implements MajorTypeIdHolder {
+public enum MajorTypeId {
 
 	STRING(false, StringParser::new),
 	INTEGER(false, t -> new IntegerParser()),
@@ -34,8 +34,4 @@ public enum MajorTypeId implements MajorTypeIdHolder {
 		return supplier.apply(config);
 	}
 
-	@Override
-	public MajorTypeId getTypeId() {
-		return this;
-	}
 }

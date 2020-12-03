@@ -21,7 +21,6 @@ public class RebasingStore extends ColumnStore<Long> {
 	private final ColumnStore<Long> store;
 
 	public RebasingStore(long min, long root, ColumnStore<Long> store) {
-		super(store.getTypeId());
 		this.min = min;
 		this.root = root;
 		this.store = store;

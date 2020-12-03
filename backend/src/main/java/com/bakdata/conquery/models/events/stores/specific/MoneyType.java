@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -16,7 +15,6 @@ public class MoneyType extends ColumnStore<Long> {
 
 	@JsonCreator
 	public MoneyType(ColumnStore<Long> numberType) {
-		super(MajorTypeId.MONEY);
 		this.numberType = numberType;
 	}
 

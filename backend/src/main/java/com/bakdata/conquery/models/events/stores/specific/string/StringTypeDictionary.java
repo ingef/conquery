@@ -9,7 +9,6 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -38,7 +37,6 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	private DatasetId dataset;
 
 	public StringTypeDictionary(ColumnStore<Long> numberType, Dictionary dictionary, String name) {
-		super(MajorTypeId.STRING);
 		this.numberType = numberType;
 		this.dictionary = dictionary;
 		this.name = name;
@@ -46,7 +44,6 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 
 	@JsonCreator
 	public StringTypeDictionary(ColumnStore<Long> numberType, DatasetId dataset, String name) {
-		super(MajorTypeId.STRING);
 		this.numberType = numberType;
 		this.name = name;
 		this.dataset = dataset;

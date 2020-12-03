@@ -1,23 +1,17 @@
 package com.bakdata.conquery.models.events;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(base = ColumnStore.class, id = "EMPTY")
 public class EmptyStore<T> extends ColumnStore<T> {
 
-	/**
-	 * Necessary for deSerialization
-	 */
-	public MajorTypeId getType(){
-		return super.getTypeId();
-	}
+
 
 	@JsonCreator
-	public EmptyStore(MajorTypeId type){
-		super(type);
+	public EmptyStore(){
+		super();
 	}
 
 	@Override

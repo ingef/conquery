@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -23,7 +22,6 @@ public class ByteStore extends ColumnStore<Long> {
 
 	@JsonCreator
 	public ByteStore(byte[] values, byte nullValue) {
-		super(MajorTypeId.INTEGER);
 		this.nullValue = nullValue;
 		this.values = values;
 	}

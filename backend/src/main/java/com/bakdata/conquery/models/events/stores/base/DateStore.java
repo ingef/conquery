@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.events.stores.base;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -19,7 +18,6 @@ public class DateStore extends ColumnStore<Integer> {
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateStore(ColumnStore<Long> store) {
-		super(MajorTypeId.DATE);
 		this.store = store;
 	}
 
