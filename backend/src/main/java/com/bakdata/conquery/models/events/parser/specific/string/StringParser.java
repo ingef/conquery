@@ -32,10 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @Getter
-@ToString(callSuper = true)
+@ToString(callSuper = true, of = {"encoding", "prefix","suffix"})
 public class StringParser extends Parser<Integer> {
-
-	private final String name = "";
 
 	private BiMap<String, Integer> strings = HashBiMap.create();
 
