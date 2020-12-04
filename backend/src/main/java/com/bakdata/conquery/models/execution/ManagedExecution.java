@@ -68,6 +68,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
+import org.jetbrains.annotations.TestOnly;
 
 @Getter
 @Setter
@@ -209,8 +210,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
+	@TestOnly
 	public void awaitDone(int time, TimeUnit unit) {
-		if (state == ExecutionState.RUNNING) {
+		if (state == ExecutionState.RUNNING || state == ExecutionState.NEW) {
 			Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 		}
 	}
