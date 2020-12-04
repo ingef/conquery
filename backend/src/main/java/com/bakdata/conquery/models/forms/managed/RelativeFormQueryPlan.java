@@ -27,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter @RequiredArgsConstructor
-intendet compile error to stop ci from running
 public class RelativeFormQueryPlan implements QueryPlan {
 
 	// Position of fixed columns in the result. (This is without identifier column[s], they are added upon result rendering)
