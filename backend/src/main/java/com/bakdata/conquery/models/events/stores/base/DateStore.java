@@ -27,8 +27,8 @@ public class DateStore extends ColumnStore<Integer> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return Integer.BYTES;
+	public long estimateEventBits() {
+		return store.estimateEventBits();
 	}
 
 	public static DateStore create(int size) {

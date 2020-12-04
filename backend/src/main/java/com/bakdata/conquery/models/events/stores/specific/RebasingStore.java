@@ -27,8 +27,8 @@ public class RebasingStore extends ColumnStore<Long> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return store.estimateEventBytes();
+	public long estimateEventBits() {
+		return store.estimateEventBits();
 	}
 
 	@Override

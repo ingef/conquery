@@ -23,8 +23,8 @@ public class DoubleStore extends ColumnStore<Double> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return Double.BYTES;
+	public long estimateEventBits() {
+		return Double.SIZE;
 	}
 
 	public DoubleStore select(int[] starts, int[] ends) {

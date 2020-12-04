@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.DecimalStore;
-import com.bakdata.conquery.models.events.stores.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
@@ -48,12 +47,12 @@ public class DecimalParser extends Parser<BigDecimal> {
 	@Override
 	protected ColumnStore<BigDecimal> decideType() {
 		if (getLines() == 0 || getLines() == getNullLines() || maxAbs == null) {
-			return new DecimalTypeBigDecimal(new EmptyStore<>());
+			return new EmptyStore<>();
 		}
 
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
-			return new DecimalTypeBigDecimal(DecimalStore.create(getLines()));
+			return DecimalStore.create(getLines());
 		}
 
 		IntegerParser sub = new IntegerParser();

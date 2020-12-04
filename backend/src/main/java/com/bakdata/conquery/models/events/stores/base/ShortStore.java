@@ -25,8 +25,8 @@ public class ShortStore extends ColumnStore<Long> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return Short.BYTES;
+	public long estimateEventBits() {
+		return Short.SIZE;
 	}
 
 	public ShortStore select(int[] starts, int[] ends) {

@@ -23,8 +23,8 @@ public class FloatStore extends ColumnStore<Double> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return Float.BYTES;
+	public long estimateEventBits() {
+		return Float.SIZE;
 	}
 
 	public FloatStore select(int[] starts, int[] ends) {

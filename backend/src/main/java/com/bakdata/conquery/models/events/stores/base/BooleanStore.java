@@ -33,8 +33,8 @@ public class BooleanStore extends ColumnStore<Boolean> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return 1; // over estimates factor 4
+	public long estimateEventBits() {
+		return 1;
 	}
 
 	public BooleanStore select(int[] starts, int[] lengths) {

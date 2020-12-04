@@ -70,7 +70,7 @@ public class StringTypeSingleton extends StringType {
 	}
 
 	@Override
-	public long estimateEventBytes() {
+	public long estimateEventBits() {
 		return Byte.SIZE;
 	}
 

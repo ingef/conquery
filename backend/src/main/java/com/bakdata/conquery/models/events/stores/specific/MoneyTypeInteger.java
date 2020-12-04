@@ -9,12 +9,12 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
-public class MoneyType extends ColumnStore<Long> {
+public class MoneyTypeInteger extends ColumnStore<Long> {
 
 	protected ColumnStore<Long> numberType;
 
 	@JsonCreator
-	public MoneyType(ColumnStore<Long> numberType) {
+	public MoneyTypeInteger(ColumnStore<Long> numberType) {
 		this.numberType = numberType;
 	}
 
@@ -29,8 +29,8 @@ public class MoneyType extends ColumnStore<Long> {
 	}
 
 	@Override
-	public MoneyType select(int[] starts, int[] length) {
-		return new MoneyType(numberType.select(starts, length));
+	public MoneyTypeInteger select(int[] starts, int[] length) {
+		return new MoneyTypeInteger(numberType.select(starts, length));
 	}
 
 	@Override
@@ -44,8 +44,8 @@ public class MoneyType extends ColumnStore<Long> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return numberType.estimateEventBytes();
+	public long estimateEventBits() {
+		return numberType.estimateEventBits();
 	}
 
 	@Override

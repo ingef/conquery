@@ -32,8 +32,8 @@ public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return subType.estimateEventBytes();
+	public long estimateEventBits() {
+		return subType.estimateEventBits();
 	}
 
 	@Override

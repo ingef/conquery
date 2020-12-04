@@ -25,8 +25,8 @@ public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return store.estimateEventBytes();
+	public long estimateEventBits() {
+		return store.estimateEventBits();
 	}
 
 	@Override

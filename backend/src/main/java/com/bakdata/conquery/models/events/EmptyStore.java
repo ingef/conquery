@@ -15,7 +15,7 @@ public class EmptyStore<T> extends ColumnStore<T> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
+	public long estimateEventBits() {
 		return 0;
 	}
 

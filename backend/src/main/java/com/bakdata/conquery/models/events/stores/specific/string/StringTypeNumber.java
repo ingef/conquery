@@ -45,8 +45,8 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return delegate.estimateEventBytes();
+	public long estimateEventBits() {
+		return delegate.estimateEventBits();
 	}
 
 	@Override

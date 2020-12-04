@@ -31,8 +31,8 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return minStore.estimateEventBytes() * 2;
+	public long estimateEventBits() {
+		return minStore.estimateEventBits() * 2;
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.MoneyType;
+import com.bakdata.conquery.models.events.stores.specific.MoneyTypeInteger;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -53,7 +53,7 @@ public class MoneyParser extends Parser<Long> {
 		subParser.setNullLines(getNullLines());
 		ColumnStore<Long> subDecision = subParser.findBestType();
 
-		return new MoneyType(subDecision);
+		return new MoneyTypeInteger(subDecision);
 	}
 
 }

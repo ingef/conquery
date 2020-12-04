@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
-import com.bakdata.conquery.models.events.stores.specific.BooleanTypeBoolean;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import lombok.ToString;
 
@@ -35,6 +34,6 @@ public class BooleanParser extends Parser<Boolean> {
 
 	@Override
 	protected ColumnStore<Boolean> decideType() {
-		return new BooleanTypeBoolean(BooleanStore.create(getLines()));
+		return BooleanStore.create(getLines());
 	}
 }

@@ -114,8 +114,8 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	@Override
-	public long estimateEventBytes() {
-		return numberType.estimateEventBytes();
+	public long estimateEventBits() {
+		return numberType.estimateEventBits();
 	}
 
 	@Override

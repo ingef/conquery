@@ -24,12 +24,10 @@ import com.bakdata.conquery.models.events.stores.base.FloatStore;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.events.stores.base.LongStore;
 import com.bakdata.conquery.models.events.stores.base.ShortStore;
-import com.bakdata.conquery.models.events.stores.specific.BooleanTypeBoolean;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
-import com.bakdata.conquery.models.events.stores.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
-import com.bakdata.conquery.models.events.stores.specific.MoneyType;
+import com.bakdata.conquery.models.events.stores.specific.MoneyTypeInteger;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
@@ -66,9 +64,7 @@ public class SerializationTest {
 		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
 		return Arrays.asList(
 				new DecimalTypeScaled(13, IntegerStore.create(10)),
-				new MoneyType(IntegerStore.create(10)),
-				new DecimalTypeBigDecimal(DecimalStore.create(10)),
-				new BooleanTypeBoolean(BooleanStore.create(10)),
+				new MoneyTypeInteger(IntegerStore.create(10)),
 				new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"),
 				new StringTypeEncoded(new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase),
 				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase), "a", "b"),
