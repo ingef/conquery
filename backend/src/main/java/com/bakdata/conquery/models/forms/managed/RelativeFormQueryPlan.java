@@ -8,7 +8,7 @@ import java.util.OptionalInt;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -59,9 +59,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		int size = calculateCompleteLength();
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
-		
-		// generate date contexts 
-		BitMapCDateSet dateSet = BitMapCDateSet.parse(Objects.toString(contained.getValues()[0]));
+		CDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 		
 		// dateset is empty or sampling failed.

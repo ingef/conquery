@@ -19,43 +19,57 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.ArrayUtils;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ConqueryConfig extends Configuration {
-	
+
 	@Getter
 	private static ConqueryConfig instance = new ConqueryConfig();
-	
-	@Valid @NotNull
+
+	@Valid
+	@NotNull
 	private ClusterConfig cluster = new ClusterConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private PreprocessingConfig preprocessor = new PreprocessingConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private CSVConfig csv = new CSVConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private LocaleConfig locale = new LocaleConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private StandaloneConfig standalone = new StandaloneConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private StorageConfig storage = new StorageConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private QueryConfig queries = new QueryConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private APIConfig api = new APIConfig();
 	@NotNull
-	private String[] additionalFormats = ArrayUtils.EMPTY_STRING_ARRAY;
-	@Valid @NotNull
+	private List<String> dateFormats = List.of(
+			"yyyy-MM-dd", "yyyyMMdd", "dd.MM.yyyy"
+	);
+	@Valid
+	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
 
 	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
-	
-	@NotNull @Valid
+
+	@NotNull
+	@Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
 
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	@Valid
 	private List<PluginConfig> plugins = new ArrayList<>();
@@ -66,21 +80,21 @@ public class ConqueryConfig extends Configuration {
 
 	//this is needed to force start the REST backend on /api/
 	public ConqueryConfig() {
-		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
+		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
 		ConqueryConfig.instance = this;
 	}
-	
+
 	@Override
 	public void setServerFactory(ServerFactory factory) {
 		super.setServerFactory(factory);
-		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
+		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
 	}
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
 		return plugins.stream()
-			.filter(c -> type.isAssignableFrom(c.getClass()))
-			.map(type::cast)
-			.collect(MoreCollectors.toOptional());
+					  .filter(c -> type.isAssignableFrom(c.getClass()))
+					  .map(type::cast)
+					  .collect(MoreCollectors.toOptional());
 	}
 
 }
