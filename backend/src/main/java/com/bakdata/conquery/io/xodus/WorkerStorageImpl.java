@@ -21,7 +21,9 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
@@ -55,6 +57,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void addCBlock(CBlock cBlock) {
+		log.debug("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
 	}
 
@@ -63,6 +66,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		return cBlocks.get(id);
 	}
 
+	// TODO method is unused, delete it.
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void updateCBlock(CBlock cBlock) {
@@ -71,6 +75,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 
 	@Override
 	public void removeCBlock(CBlockId id) {
+		log.debug("Removing CBlock[{}]", id);
 		cBlocks.remove(id);
 	}
 	
@@ -82,6 +87,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void addBucket(Bucket bucket) {
+		log.debug("Adding Bucket[{}]", bucket.getId());
 		blocks.add(bucket);
 	}
 
@@ -92,6 +98,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	
 	@Override
 	public void removeBucket(BucketId id) {
+		log.debug("Removing Bucket[{}]", id);
 		blocks.remove(id);
 	}
 	
@@ -105,6 +112,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		return worker.get();
 	}
 
+	//TODO remove duplication
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void setWorker(WorkerInformation worker) {
@@ -121,11 +129,13 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void updateConcept(Concept<?> concept) {
+		log.debug("Updating Concept[{}]", concept.getId());
 		concepts.update(concept);
 	}
 
 	@Override
 	public void removeConcept(ConceptId id) {
+		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
 	}
 

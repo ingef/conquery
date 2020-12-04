@@ -30,9 +30,11 @@ import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
@@ -135,12 +137,46 @@ public class ImportJob extends Job {
 												 .peek(Objects::requireNonNull)
 												 .toArray(ColumnStore[]::new);
 
+
+		// we use this to track ass
+		final Map<WorkerId, Set<BucketId>> workerAssignments =
+				sendBuckets(starts, container.getLengths(), primaryMapping, outImport, buckets2LocalEntities, storesSorted);
+
+		workerAssignments.forEach(namespace::addBucketsToWorker);
+	}
+
+	/**
+	 * select, then send buckets.
+	 */
+	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import outImport, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore<?>[] storesSorted) {
+
+		Map<WorkerId, Set<BucketId>> workerAssignments = new HashMap<>();
+
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 			final Bucket bucket =
-					selectBucket(starts, container.getLengths(), storesSorted, primaryMapping, outImport.getId(), bucket2entities.getKey(), bucket2entities.getValue());
-			sendBucket(bucket);
+					selectBucket(starts, lengths, storesSorted, primaryMapping, outImport.getId(), bucket2entities.getKey(), bucket2entities.getValue());
+
+			int bucketNumber = bucket.getBucket();
+
+			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
+
+			if (responsibleWorker == null) {
+				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
+			}
+
+			try {
+				responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
+			}
+			catch (InterruptedException e) {
+				log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
+			}
+			workerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
+							 .add(bucket.getId());
+
+			responsibleWorker.send(new ImportBucket(bucket));
 		}
 
+		return workerAssignments;
 	}
 
 	/**
@@ -416,25 +452,6 @@ public class ImportJob extends Job {
 		return entities.stream()
 					   .collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
 
-	}
-
-	private void sendBucket(Bucket bucket) {
-		int bucketNumber = bucket.getBucket();
-
-		WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
-		if (responsibleWorker == null) {
-			throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
-		}
-		// todo send this async
-
-		try {
-			responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
-		}
-		catch (InterruptedException e) {
-			log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
-		}
-
-		responsibleWorker.send(new ImportBucket(bucket));
 	}
 
 	private DictionaryId computeSharedDictionaryId(Column column) {

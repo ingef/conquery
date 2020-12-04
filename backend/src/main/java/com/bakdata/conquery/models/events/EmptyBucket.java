@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.events;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
@@ -23,7 +23,7 @@ public class EmptyBucket extends Bucket {
 
 
 	@Override
-	public boolean eventIsContainedIn(int event, Column column, BitMapCDateSet dateRanges) {
+	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
 		return false;
 	}
 

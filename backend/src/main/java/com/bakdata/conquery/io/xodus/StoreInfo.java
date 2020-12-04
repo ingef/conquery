@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -70,10 +71,11 @@ public enum StoreInfo implements IStoreInfo {
 	AUTH_USER(User.class, UserId.class),
 	AUTH_GROUP(Group.class, GroupId.class),
 	STRUCTURE(StructureNode[].class, Boolean.class),
-	FORM_CONFIG(FormConfig.class, FormConfigId.class)
+	FORM_CONFIG(FormConfig.class, FormConfigId.class),
+	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class)
 	;
 
-	private final Class<?> valueType;
+    private final Class<?> valueType;
 	private final Class<?> keyType;
 
 	/**

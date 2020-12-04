@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @Getter
 @Setter
-@ToString(of = {"bucket", "numberOfEvents", "stores"})
+@ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
 public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)
@@ -41,7 +41,6 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 
 	private final ImportId importId;
 
-	// todo try to reduce reliance on import and use internal components instead
 	@NsIdRef
 	private Import imp;
 
