@@ -25,6 +25,9 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	private int lines = 0;
 	private int nullLines = 0;
 
+	/**
+	 * Helper method to select partitions of an array. Resulting array is of length sum(lengths). Incoming type T has to be of ArrayType or this will fail.
+	 */
 	public static <T> T selectArray(int[] starts, int[] lengths, T values, Function<Integer, T> provider) {
 		int length = Arrays.stream(lengths).sum();
 

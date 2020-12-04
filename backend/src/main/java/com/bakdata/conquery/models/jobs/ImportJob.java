@@ -181,9 +181,8 @@ public class ImportJob extends Job {
 
 	/**
 	 * - remap Entity-Ids to global
-	 * - calculate per-Entity regions (start/end)
+	 * - calculate per-Entity regions of Bucklet (start/end)
 	 * - split stores
-	 * - send store to responsible workers
 	 */
 	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, ColumnStore<?>[] stores, DictionaryMapping primaryMapping, ImportId importId, int bucketId, List<Integer> bucketEntities) {
 
