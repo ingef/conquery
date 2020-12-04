@@ -21,9 +21,12 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 @CPSType(id="IMPORT_BIT", base=NamespacedMessage.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator) @Getter @Setter
+@Slf4j
 public class ImportBucket extends WorkerMessage.Slow {
 	
 	@Nonnull @NotNull
@@ -36,9 +39,12 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 	@Override
 	public void react(Worker context) throws Exception {
+		log.debug("Received Bucket[{}] containing {} Entities / {} Events ({})",
+				  bucket, includedEntities.size(), bytes.length, FileUtils.byteCountToDisplaySize(Arrays.stream(bytes).mapToInt(a -> a.length).sum()));
+
 		getProgressReporter().setMax(includedEntities.size());
 		Import imp = context.getStorage().getImport(bucket.getImp());
-		
+
 		BlockFactory factory = imp.getBlockFactory();
 		Bucket[] buckets = new Bucket[includedEntities.size()];
 		

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.time.LocalDate;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Queue;
 import java.util.function.Consumer;
 
@@ -9,8 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDateSetCache;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -50,15 +50,12 @@ public class CQDateRestriction extends CQElement {
 			if (current instanceof ValidityDateNode) {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
 
-				final BitMapCDateSet dateSet = CDateSetCache.createPreAllocatedDateSet();
-				dateSet.add(CDateRange.of(dateRange));
-
 				validityDateNode.setChild(new DateRestrictingNode(
-						dateSet,
-						validityDateNode.getChild()
+					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+					validityDateNode.getChild()
 				));
 			}
-			else if (current instanceof NegatingNode) {
+			else if(current instanceof NegatingNode) {
 				//we can't push date restrictions past negations
 			}
 			else {
@@ -73,12 +70,12 @@ public class CQDateRestriction extends CQElement {
 	public void resolve(QueryResolveContext context) {
 		child.resolve(context);
 	}
-
+	
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		child.collectResultInfos(collector);
 	}
-
+	
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);

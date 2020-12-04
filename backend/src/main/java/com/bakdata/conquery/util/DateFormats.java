@@ -6,11 +6,13 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -107,15 +109,16 @@ public class DateFormats {
 	 * Lazy-initialize all formatters. Load additional formatters via ConqueryConfig.
 	 */
 	private static void initializeFormatters() {
-		final HashSet<DateTimeFormatter> formatters = new HashSet<>();
+		final Set<DateTimeFormatter> formatters = new HashSet<>();
 
-		formatters.add(createFormatter("yyyy-MM-dd"));
-		formatters.add(createFormatter("ddMMyyyy"));
-		formatters.add(createFormatter("yyyyMMdd"));
-		for (String p : ConqueryConfig.getInstance().getAdditionalFormats()) {
+		final List<String> formats = ConqueryConfig.getInstance().getDateFormats();
+
+		Preconditions.checkArgument(!formats.isEmpty(), "No Dateformats were provided.");
+
+		for (String p : formats) {
 			formatters.add(createFormatter(p));
 		}
 
-		formats = Collections.unmodifiableSet(formatters);
+		DateFormats.formats = Collections.unmodifiableSet(formatters);
 	}
 }

@@ -192,8 +192,12 @@ public class BucketManager {
 							job.addCBlock(imp, bucket, cBlockId);
 						}
 					}
+
 					if (!job.isEmpty()) {
 						jobManager.addSlowJob(job);
+					}
+					else {
+						log.debug("CBlocksJob[{}] was empty", job.getLabel());
 					}
 				}
 			}
@@ -228,6 +232,9 @@ public class BucketManager {
 				}
 				if (!job.isEmpty()) {
 					jobManager.addSlowJob(job);
+				}
+				else {
+					log.debug("CBlocksJob[{}] was empty", job.getLabel());
 				}
 			}
 		}
