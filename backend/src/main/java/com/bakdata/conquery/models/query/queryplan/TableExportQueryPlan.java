@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -68,7 +68,7 @@ public class TableExportQueryPlan implements QueryPlan {
 
 				for (int event = start; event < end; event++) {
 
-					if (!bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), BitMapCDateSet.create(dateRange))) {
+					if (!bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
 						continue;
 					}
 

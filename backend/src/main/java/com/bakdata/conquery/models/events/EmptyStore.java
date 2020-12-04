@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 @CPSType(base = ColumnStore.class, id = "EMPTY")
 public class EmptyStore<T> extends ColumnStore<T> {
 
-
-
 	@JsonCreator
 	public EmptyStore(){
 		super();

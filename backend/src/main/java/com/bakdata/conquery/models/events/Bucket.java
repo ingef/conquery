@@ -10,7 +10,7 @@ import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
@@ -150,7 +150,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return stores[column.getPosition()].get(event);
 	}
 
-	public boolean eventIsContainedIn(int event, Column column, BitMapCDateSet dateRanges) {
+	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
 		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
 	}
 
