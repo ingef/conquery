@@ -39,7 +39,7 @@ public class Table extends Labeled<TableId> {
 	private Column[] columns = new Column[0];
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
-	public boolean distinctSecondaryIds() {
+	public boolean isDistinctSecondaryIds() {
 		Set<SecondaryId> secondaryIds = new HashSet<>();
 		for (Column column : columns) {
 			SecondaryId secondaryId = column.getSecondaryId();
