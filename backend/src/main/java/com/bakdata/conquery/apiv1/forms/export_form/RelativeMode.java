@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
@@ -20,6 +19,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,10 +36,16 @@ public class RelativeMode extends Mode {
 	private IndexPlacement indexPlacement;
 	@NotNull
 	private TemporalSampler indexSelector;
-	@NotEmpty
+
 	private List<CQElement> features = Collections.emptyList();
-	@NotEmpty
+
 	private List<CQElement> outcomes = Collections.emptyList();
+
+	@ValidationMethod
+	boolean isWithFeatureOrOutcomes(){
+		// Its allowed to have one of them emtpy
+		return !(features.isEmpty() && outcomes.isEmpty());
+	}
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {

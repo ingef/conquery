@@ -33,8 +33,8 @@ public class ArrayConceptQuery extends IQuery {
 	private List<ConceptQuery> childQueries = new ArrayList<>();
 	
 	public ArrayConceptQuery( List<ConceptQuery> queries) {
-		if(queries == null || queries.isEmpty()) {
-			throw new IllegalArgumentException("No sub queries provided.");
+		if(queries == null) {
+			throw new IllegalArgumentException("No sub query list provided.");
 		}
 		this.childQueries = queries;
 	}

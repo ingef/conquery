@@ -1,8 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
-import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Optional;
 

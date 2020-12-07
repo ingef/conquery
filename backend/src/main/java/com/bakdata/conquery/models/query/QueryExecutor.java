@@ -31,6 +31,7 @@ public class QueryExecutor implements Closeable {
 		this.pool = MoreExecutors.listeningDecorator(executor);
 	}
 
+	// TODO inline Entry key/value as id and QueryPlan
 	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
 		return execute(result, context, entry, pool);
 	}

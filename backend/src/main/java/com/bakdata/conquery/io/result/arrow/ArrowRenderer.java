@@ -71,31 +71,23 @@ public class ArrowRenderer {
 	}
 	
 	private static Stream<EntityResult> getResults(ManagedExecution<?> exec) {
-		Stream<EntityResult> results;
 		if(exec instanceof ManagedQuery) {
-			results = ((ManagedQuery)exec).getResults().stream();
+			return ((ManagedQuery)exec).getResults().stream();
 		}
 		else if(exec instanceof ManagedForm && ((ManagedForm)exec).getSubQueries().size() == 1) {
-			results = ((ManagedForm)exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
+			return ((ManagedForm)exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
 		}
-		else {
-			throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
-		}
-		return results;
+		throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
 	}
 	
 	private static List<ResultInfo> getResultInfos(ManagedExecution<?> exec) {
-		List<ResultInfo> resultInfos;
 		if(exec instanceof ManagedQuery) {
-			resultInfos = ((ManagedQuery)exec).collectResultInfos().getInfos();
+			return ((ManagedQuery)exec).collectResultInfos().getInfos();
 		}
 		else if(exec instanceof ManagedForm && ((ManagedForm)exec).getSubQueries().size() == 1) {
-			resultInfos = ((ManagedForm)exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
+			return((ManagedForm)exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
 		}
-		else {
-			throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
-		}
-		return resultInfos;
+		throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
 	}
 	
 
@@ -217,41 +209,41 @@ public class ArrowRenderer {
 		RowConsumer[] builder = new RowConsumer[numVectors];
 		
 		for (
-			int vecI = vectorOffset, resultPos = 0; 
+			int vecI = vectorOffset; 
 			( vecI < root.getFieldVectors().size() ) && ( vecI < vectorOffset + numVectors );
-			vecI++, resultPos++
+			vecI++
 			) {
-			final int pos = resultPos;
+			final int pos = vecI - vectorOffset;
 			final FieldVector vector = root.getVector(vecI);
 
 			//TODO When Pattern-matching lands, clean this up. (Think Java 12?)
 			if(vector instanceof IntVector) {
-				builder[resultPos]  = intVectorFiller((IntVector) vector, pos);
+				builder[pos]  = intVectorFiller((IntVector) vector, pos);
 				continue;
 			}
 
 			if(vector instanceof VarCharVector) {
-				builder[resultPos]  = varCharVectorFiller((VarCharVector) vector, pos);
+				builder[pos]  = varCharVectorFiller((VarCharVector) vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof BitVector) {
-				builder[resultPos]  = bitVectorFiller((BitVector) vector, pos);
+				builder[pos]  = bitVectorFiller((BitVector) vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof Float4Vector) {
-				builder[resultPos]  = float4VectorFiller((Float4Vector)vector, pos);
+				builder[pos]  = float4VectorFiller((Float4Vector)vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof Float8Vector) {
-				builder[resultPos]  = float8VectorFiller((Float8Vector)vector, pos);
+				builder[pos]  = float8VectorFiller((Float8Vector)vector, pos);
 				continue;
 			}
 			
 			if(vector instanceof DateDayVector) {
-				builder[resultPos]  = dateDayVectorFiller((DateDayVector) vector, pos);
+				builder[pos]  = dateDayVectorFiller((DateDayVector) vector, pos);
 				continue;
 			}
 			

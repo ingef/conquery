@@ -60,10 +60,8 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
-public class CQConcept implements CQElement, NamespacedIdHolding {
+public class CQConcept extends CQElement implements NamespacedIdHolding {
 
-	@ToString.Include
-	private String label;
 	@Valid @NotEmpty
 	private List<ConceptElementId<?>> ids = Collections.emptyList();
 	@Valid @NotEmpty @JsonManagedReference
@@ -158,7 +156,7 @@ public class CQConcept implements CQElement, NamespacedIdHolding {
 		}
 
 		if(tableNodes.isEmpty()){
-			throw new IllegalStateException(String.format("Unable to resolve any connector for query `%s`", label));
+			throw new IllegalStateException(String.format("Unable to resolve any connector for query `%s`", getLabel()));
 		}
 
 		final QPNode outNode = OrNode.of(tableNodes);

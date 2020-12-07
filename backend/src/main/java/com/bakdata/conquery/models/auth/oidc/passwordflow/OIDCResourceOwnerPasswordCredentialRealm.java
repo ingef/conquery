@@ -2,7 +2,12 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriBuilder;
@@ -13,8 +18,10 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler;
 import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
 import com.bakdata.conquery.models.auth.basic.UsernamePasswordChecker;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthAdminUnprotectedResourceProvider;
 import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotectedResourceProvider;
@@ -23,6 +30,7 @@ import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Sets;
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
 import com.nimbusds.oauth2.sdk.ParseException;
@@ -35,6 +43,7 @@ import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.TypelessAccessToken;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -44,6 +53,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
@@ -57,7 +67,9 @@ import org.apache.shiro.authc.ExpiredCredentialsException;
 @RequiredArgsConstructor
 public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticationConfig> extends ConqueryAuthenticationRealm implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
 
+	public static final String CONFIDENTIAL_CREDENTIAL = "secret";
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
+	private static final String GROUPS_CLAIM = "groups";
 	
 	private final MetaStorage storage;
 	private final OIDCAuthenticationConfig authProviderConf;
@@ -84,26 +96,43 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		
 		TokenIntrospectionSuccessResponse successResponse = tokenCache.get((JwtToken) token);
+		
+		UserId userId = extractId(successResponse);
 
+		User user = storage.getUser(userId);
+		
+		if(user == null) {
+			throw new IllegalStateException("Unable to retrieve user with id: " + userId);
+		}
+
+		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
+	}
+
+	private static UserId extractId(TokenIntrospectionSuccessResponse successResponse) {
+		String identifier = successResponse.getUsername();
+		if(StringUtils.isBlank(identifier)) {
+			identifier = successResponse.getStringParameter("preferred_username");
+		}
+		if(StringUtils.isBlank(identifier)) {
+			identifier = successResponse.getStringParameter("email");
+		}
+		if(StringUtils.isBlank(identifier)) {
+			throw new IllegalStateException("Unable to retrieve a user identifier from validated token. Dismissing the token.");
+		}
+		
+		return new UserId(identifier);
+	}
+	
+	private static String extractDisplayName(TokenIntrospectionSuccessResponse successResponse) {
 		String username = successResponse.getUsername();
 		if(StringUtils.isBlank(username)) {
-			username = successResponse.getStringParameter("preferred_username");
+			username = successResponse.getStringParameter("name");
 		}
 		if(StringUtils.isBlank(username)) {
 			throw new IllegalStateException("Unable to retrieve a user identifier from validated token. Dismissing the token.");
 		}
 		
-		UserId userId = new UserId(username);
-		User user = storage.getUser(userId);
-		// try to construct a new User if none could be found in the storage
-		if (user == null) {
-			String userLabel = successResponse.getStringParameter("name");
-			user = new User(username, userLabel != null ?  userLabel : username);
-			storage.addUser(user);
-			log.info("Created new user: {}", user);
-		}
-
-		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
+		return username;
 	}
 
 	/**
@@ -115,7 +144,8 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
 		
 		if (!response.indicatesSuccess()) {
-			log.error(response.toErrorResponse().getErrorObject().toString());
+			HTTPResponse httpResponse = response.toHTTPResponse();
+			log.error("Received the following error from the auth server while validating a token: {} {} {}",  httpResponse.getStatusCode(), httpResponse.getStatusMessage(), httpResponse.getContent());
 			throw new AuthenticationException("Unable to retrieve access token from auth server.");
 		}
 		else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
@@ -162,7 +192,8 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
 		if (!response.indicatesSuccess()) {
-			log.error( response.toErrorResponse().getErrorObject().toString());
+			HTTPResponse httpResponse = response.toHTTPResponse();
+			log.error("Received the following error from the auth server while validating username and password:\n\tPath: {}\n\tStatus code: {}\n\tStatus message: {}\n\tContent: {}", tokenEndpoint, httpResponse.getStatusCode(), httpResponse.getStatusMessage(), httpResponse.getContent());
 			throw new IllegalStateException("Unable to retrieve access token from auth server.");
 		}
 		else if (!(response instanceof AccessTokenResponse)) {
@@ -182,7 +213,66 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 
 		@Override
 		public TokenIntrospectionSuccessResponse load(JwtToken key) throws Exception {
-			return validateToken(key);
+			TokenIntrospectionSuccessResponse response = validateToken(key);
+			
+			User user = getOrCreateUser(response, extractDisplayName(response), extractId(response));
+			Set<Group> mappedGroupsToDo = getMappedGroups(response);
+
+			synchGroupMappings(user, mappedGroupsToDo);
+			
+			return response;
+		}
+
+
+		private void synchGroupMappings(User user, Set<Group> mappedGroupsToDo) {
+			for(Group group : storage.getAllGroups()) {
+				if(group.containsMember(user)) {
+					if(mappedGroupsToDo.contains(group)) {
+						// Mapping is still valid, remove from ToDo-List
+						mappedGroupsToDo.remove(group);
+					}
+					else {
+						// Mapping is not valid any more remove user from group
+						group.removeMember(storage, user);
+					}
+				}
+			}
+			
+			for(Group group : mappedGroupsToDo) {
+				group.addMember(storage, user);
+			}
+		}
+
+
+		private synchronized User getOrCreateUser(TokenIntrospectionSuccessResponse successResponse, String username, UserId userId) {
+			User user = storage.getUser(userId);
+			if (user != null) {
+				return user;
+			}
+			// try to construct a new User if none could be found in the storage
+			String userLabel = successResponse.getStringParameter("name");
+			user = new User(username, userLabel != null ?  userLabel : username);
+			storage.addUser(user);
+			log.info("Created new user: {}", user);
+			return user;
+		}
+		
+		private Set<Group> getMappedGroups(TokenIntrospectionSuccessResponse successResponse) {
+			List<String> groupNames = Objects.requireNonNullElse(successResponse.getStringListParameter(GROUPS_CLAIM), List.of());
+			Stream<Pair<String,GroupId>> derivedGroupIds = groupNames.stream().map(name -> Pair.of(name,new GroupId(name)));
+			Set<Group> groups =  derivedGroupIds.map(this::getOrCreateGroup).collect(Collectors.toCollection(Sets::newHashSet));
+			return groups;
+		}
+		
+		private synchronized Group getOrCreateGroup(Pair<String,GroupId> groupNameId) {
+			Group group = storage.getGroup(groupNameId.getValue());
+			if (group != null) {
+				return group;
+			}
+			group = new Group(groupNameId.getValue().getGroup(), groupNameId.getKey());
+			storage.addGroup(group);
+			log.info("Created new group: {}", group);
+			return group;
 		}
 		
 	}

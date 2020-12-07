@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
+import static com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealm.CONFIDENTIAL_CREDENTIAL;
+
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
@@ -55,12 +58,12 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 
 	@JsonIgnore
 	private String getClientId() {
-		return getAuthClient(true).getConfiguration().getResource();
+		return getResource();
 	}
 
 	@JsonIgnore
 	private String getClientSecret() {
-		return getAuthClient(true).getConfiguration().getClientKeyPassword();
+		return (String) credentials.get(CONFIDENTIAL_CREDENTIAL);
 	}
 	
 
@@ -82,5 +85,36 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 			});
 		}
 		return new OIDCResourceOwnerPasswordCredentialRealm<>(controller.getStorage(), this);
+	}
+	
+	@JsonIgnore
+	@ValidationMethod(message = "Realm was emtpy")
+	public boolean isRealmFilled() {
+		return realm != null && !realm.isBlank();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Resource was emtpy")
+	public boolean isResourceFilled() {
+		return resource != null && !resource.isBlank();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Secret not found")
+	public boolean isSecretFilled() {		
+		if(credentials == null) {
+			return false;
+		}
+		
+		Object secret = credentials.get(CONFIDENTIAL_CREDENTIAL);
+		if(secret == null) {
+			return false;
+		}
+		
+		if(!(secret instanceof String)) {
+			return false;
+		}
+		
+		return !((String)secret).isBlank();
 	}
 }

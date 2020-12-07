@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.messages.network.specific;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.messages.namespaces.specific.RequestConsistency;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ManagerNodeNetworkContext;
@@ -37,6 +38,9 @@ public class RegisterWorker extends MessageToManagerNode {
 
 		info.setConnectedShardNode(node);
 		context.getNamespaces().register(node, info);
+
+		// Request consistency report
+		context.getNamespaces().getWorkers().get(info.getId()).send(new RequestConsistency());
 	}
 
 	/**

@@ -1,9 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.FILTER;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.List;
 import java.util.OptionalInt;

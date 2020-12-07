@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
@@ -39,7 +38,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 import org.jetbrains.annotations.TestOnly;
@@ -117,7 +115,6 @@ public class FormConfigProcessor {
 	/**
 	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
-	@SneakyThrows(JSONException.class)
 	private FormConfigId addConfigToDataset(User user, FormConfig internalConfig) {
 		
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));

@@ -8,7 +8,8 @@ import java.util.OptionalInt;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.models.common.BitMapCDateSet;
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -34,9 +35,6 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private static final int RESOLUTION_POS = 0;
 	private static final int INDEX_POS = 1;
 	private static final int EVENTDATE_POS = 2;
-	private static final int FEATURE_DATE_RANGE_POS = 3;
-	private static final int OUTCOME_DATE_RANGE_POS = 4;
-	private static final int FIRST_AGGREGATOR_POS = 5;
 	// Position of fixed columns in the sub result.
 	private static final int SUB_RESULT_DATE_RANGE_POS = 3;
 
@@ -59,9 +57,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		int size = calculateCompleteLength();
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
-		
-		// generate date contexts 
-		BitMapCDateSet dateSet = BitMapCDateSet.parse(Objects.toString(contained.getValues()[0]));
+		CDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 		
 		// dateset is empty or sampling failed.
@@ -69,7 +65,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
 			List<Object[]> results = new ArrayList<>();
 			results.add(new Object[size]);
-			return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(FIRST_AGGREGATOR_POS)));
+			return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(getFirstAggregatorPosition())));
 		}
 		
 		int sample = sampled.getAsInt();
@@ -113,13 +109,17 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			// to indexes of the list.
 			Object[] mergedFull = new Object[size];
 
-			setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
+			if (featurePlan.getAggregatorSize() > 0) {
+				setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
+			}
 
-			setOutcomeValues(
-					mergedFull,
-					outcomeResult.getValues().get(resultStartIndex),
-					featureLength
-			);
+			if (outcomePlan.getAggregatorSize() > 0) {
+				setOutcomeValues(
+						mergedFull,
+						outcomeResult.getValues().get(resultStartIndex),
+						featureLength
+				);
+			}
 
 			values.add(mergedFull);
 			resultStartIndex++;
@@ -141,6 +141,29 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return EntityResult.multilineOf(entity.getId(), values);
 	}
 
+
+	private int getFeatureDateRangePosition(){
+		return featurePlan.getAggregatorSize() > 0? 3 : -1;
+	}
+
+	private int getOutcomeDateRangePosition(){
+		if (outcomePlan.getAggregatorSize() > 0){
+			return featurePlan.getAggregatorSize() > 0? 4 : 3;
+		}
+		return -1;
+	}
+
+	private int getFirstAggregatorPosition(){
+		if (outcomePlan.getAggregatorSize() <= 0 && featurePlan.getAggregatorSize() <= 0) {
+			throw new ConqueryError.ExecutionProcessingError();
+		}
+		if (outcomePlan.getAggregatorSize() > 0 && featurePlan.getAggregatorSize() <= 0
+				|| featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() <= 0){
+			return 4;
+		}
+		return 5;
+	}
+
 	private int calculateCompleteLength() {
 		/*
 		 * Whole result is the concatenation of the subresults. The final output format
@@ -149,7 +172,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		 * The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
 		 */
 		
-		return FIRST_AGGREGATOR_POS + featurePlan.getAggregatorSize() + outcomePlan.getAggregatorSize();
+		return getFirstAggregatorPosition() + featurePlan.getAggregatorSize() + outcomePlan.getAggregatorSize();
 		//return featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 	}
 
@@ -165,10 +188,16 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 
 	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
-		return contexts.size()>=2
-			&& contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE)
-			&& contexts.get(1).getSubdivisionMode().equals(DateContextMode.COMPLETE)
-			&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
+		if (featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() > 0) {
+			// We have features and outcomes check if both have complete date ranges (they should be at the beginning of the list)
+			return contexts.size()>=2
+				&& contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+				&& contexts.get(1).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+				&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
+		}
+		// Otherwise, if only features or outcomes are given check the first date context. The empty feature/outcome query
+		// will still return an empty result which will be merged with to a complete result.
+		return contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE);
 	}
 
 	private FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {
@@ -184,17 +213,21 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[FEATURE_DATE_RANGE_POS] = value[SUB_RESULT_DATE_RANGE_POS];
-		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, OUTCOME_DATE_RANGE_POS + 1, value.length - (SUB_RESULT_DATE_RANGE_POS+1));
+		result[getFeatureDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
+		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition(), value.length - (SUB_RESULT_DATE_RANGE_POS+1));
 	}
 
 	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
 		// copy everything up to including index
 		for (int i = 0; i <= EVENTDATE_POS; i++) {
+			if(result[i] != null){
+				// Skip cells that where already filled from the feature result (in complete merge)
+				continue;
+			}
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[OUTCOME_DATE_RANGE_POS] = value[SUB_RESULT_DATE_RANGE_POS];
+		result[getOutcomeDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
 		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, 1 + featureLength, value.length - (SUB_RESULT_DATE_RANGE_POS+1));
 	}
 	
