@@ -1,20 +1,27 @@
 package com.bakdata.conquery.models.concepts.temporal;
 
 import static com.bakdata.conquery.models.common.CDate.ofLocalDate;
-import static com.bakdata.conquery.models.common.daterange.CDateRange.*;
-import static com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler.*;
+import static com.bakdata.conquery.models.common.daterange.CDateRange.atLeast;
+import static com.bakdata.conquery.models.common.daterange.CDateRange.atMost;
+import static com.bakdata.conquery.models.common.daterange.CDateRange.exactly;
+import static com.bakdata.conquery.models.common.daterange.CDateRange.of;
+import static com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler.EARLIEST;
+import static com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler.LATEST;
+import static com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler.RANDOM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import org.junit.jupiter.api.Test;
+
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 class TemporalSamplerTest {
 
-	private static BitMapCDateSet generateSet(CDateRange... ranges) {
-		return BitMapCDateSet.create(ranges);
+	private static CDateSet generateSet(CDateRange... ranges) {
+		return CDateSet.create(Arrays.asList(ranges));
 	}
 
 
@@ -57,14 +64,14 @@ class TemporalSamplerTest {
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
 		{
-			BitMapCDateSet set = generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)));
+			CDateSet set = generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)));
 
 			assertThat(RANDOM.sample(set).getAsInt())
 					.matches(set::contains);
 		}
 
 		{
-			BitMapCDateSet set =
+			CDateSet set =
 					generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)), of(LocalDate.of(2011, 1, 15), LocalDate.of(2011, 1, 17)));
 
 			assertThat(RANDOM.sample(set).getAsInt())

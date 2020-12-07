@@ -84,6 +84,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
 import io.dropwizard.util.Size;
 
@@ -139,7 +140,7 @@ public class Constants {
 			.hide(InetAddress.class)
 			.hide(Locale.class)
 			.hide(Duration.class)
-			.hide(Size.class)
+			.hide(DataSize.class)
 			.build(),
 		Group.builder().name("REST API JSONs")
 			.resource(ConfigResource.class)

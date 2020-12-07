@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDateSetCache;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -18,12 +17,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SpecialDateUnion implements Aggregator<String> {
 
-
-	private final BitMapCDateSet set = CDateSetCache.createPreAllocatedDateSet();
+	private CDateSet set = CDateSet.create();
 
 	private Column currentColumn;
+	private CDateSet dateRestriction;
 
-	private BitMapCDateSet dateRestriction;
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId table) {
@@ -33,27 +31,25 @@ public class SpecialDateUnion implements Aggregator<String> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (currentColumn == null) {
-			if(!dateRestriction.isEmpty()) {
-				getResultSet().addAll(dateRestriction);
-			}
+		if (currentColumn != null && bucket.has(event, currentColumn)) {
+			CDateRange range = bucket.getAsDateRange(event, currentColumn);
+
+			CDateSet add = CDateSet.create(dateRestriction);
+			add.retainAll(CDateSet.create(range));
+			set.addAll(add);
 			return;
 		}
 
-		CDateRange range = bucket.getAsDateRange(event, currentColumn);
-
-		if (range == null) {
-			return;
+		if(!dateRestriction.isEmpty()) {
+			set.addAll(dateRestriction);
 		}
-
-		set.maskedAdd(range, dateRestriction);
 	}
 
 	/**
 	 * Helper method to insert dates from outside.
-	 * @param other BitMapCDateSet to be included.
+	 * @param other CDateSet to be included.
 	 */
-	public void merge(BitMapCDateSet other){
+	public void merge(CDateSet other){
 		set.addAll(other);
 	}
 
@@ -67,7 +63,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 		return set.toString();
 	}
 	
-	public BitMapCDateSet getResultSet() {
+	public CDateSet getResultSet() {
 		return set;
 	}
 	

@@ -43,6 +43,7 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.ClearFilterSourceSearch;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
+import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Throwables;
 import io.dropwizard.lifecycle.Managed;
@@ -189,6 +190,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
 		environment.admin().addTask(new ClearFilterSourceSearch());
+		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
