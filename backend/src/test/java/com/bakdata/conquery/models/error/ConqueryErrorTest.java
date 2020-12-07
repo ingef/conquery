@@ -15,7 +15,7 @@ public class ConqueryErrorTest {
 	@Test
 	public void errorConvertion() {
 		ExternalResolveFormatError error = new ExternalResolveFormatError(5, 6);
-		assertThat(error.asPlain()).isEqualTo(new PlainError(error.getId(), "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL", error.getMessage(), error.getContext()));
+		assertThat(error.asPlain()).isEqualTo(new PlainError(error.getId(), "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT", error.getMessage(), error.getContext()));
 	}
 	
 	@Test
