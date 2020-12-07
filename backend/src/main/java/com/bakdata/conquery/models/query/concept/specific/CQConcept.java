@@ -148,9 +148,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 									selectValidityDateColumn(table),
 									filtersNode
 							),
-							excludeFromSecondaryIdQuery,
 							connector,
-							selectedSecondaryId
+							excludeFromSecondaryIdQuery ? null : selectedSecondaryId
 					)
 			);
 		}

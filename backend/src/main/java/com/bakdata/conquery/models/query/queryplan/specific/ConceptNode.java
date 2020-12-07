@@ -28,13 +28,11 @@ public class ConceptNode extends QPChainNode {
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
-	private boolean excludeFromSecondaryIdQuery;
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, QPNode child, boolean excludeFromSecondaryIdQuery, Connector resolvedConnector, SecondaryId selectedSecondaryId) {
+	public ConceptNode(ConceptElement[] concepts, long requiredBits, QPNode child, Connector resolvedConnector, SecondaryId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;
-		this.excludeFromSecondaryIdQuery = excludeFromSecondaryIdQuery;
 
 		this.resolvedConnector = resolvedConnector;
 
@@ -49,22 +47,8 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		tableActive = getResolvedConnector().getTable().getId().equals(currentTable);
-
-		// deactivate us, if we are in a SecondaryIdQuery, and want to be excluded.
-		if (excludeFromSecondaryIdQuery
-			&& selectedSecondaryId == ctx.getActiveSecondaryId()
-			&& ctx.getSecondaryIdQueryPlanPhase() == QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId
-		) {
-			tableActive = false;
-		}
-		// Deactivate us for table if we are in SecondaryId-Query, and interested in , but not in phase for SecondaryIds.
-		if (!excludeFromSecondaryIdQuery
-			&& selectedSecondaryId == ctx.getActiveSecondaryId()
-			&& ctx.getSecondaryIdQueryPlanPhase() == QueryExecutionContext.SecondaryIdQueryPlanPhase.WithoutId
-		) {
-			tableActive = false;
-		}
+		tableActive = getResolvedConnector().getTable().getId().equals(currentTable)
+					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
 
 		if (tableActive) {
 			super.nextTable(ctx.withConnector(getResolvedConnector()), currentTable);
@@ -135,7 +119,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, ctx.clone(getChild()), excludeFromSecondaryIdQuery, getResolvedConnector(), selectedSecondaryId);
+		return new ConceptNode(concepts, requiredBits, ctx.clone(getChild()), getResolvedConnector(), selectedSecondaryId);
 	}
 
 	@Override

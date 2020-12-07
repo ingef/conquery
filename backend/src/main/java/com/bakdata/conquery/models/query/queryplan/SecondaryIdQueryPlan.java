@@ -49,7 +49,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 
-		ctx = ctx.withActiveSecondaryId(getSecondaryId());
+
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
@@ -94,7 +94,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, ColumnId secondaryIdColumnId) {
 
-		QueryExecutionContext ctxWithPhase = ctx.withSecondaryIdQueryPlanPhase(QueryExecutionContext.SecondaryIdQueryPlanPhase.WithId)
+		QueryExecutionContext ctxWithPhase = ctx.withActiveSecondaryId(getSecondaryId());
 				;
 
 		TableId currentTable = secondaryIdColumnId.getTable();
@@ -130,7 +130,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, TableId currentTable) {
-		ctx = ctx.withSecondaryIdQueryPlanPhase(QueryExecutionContext.SecondaryIdQueryPlanPhase.WithoutId);
 
 		nextTable(ctx, currentTable);
 

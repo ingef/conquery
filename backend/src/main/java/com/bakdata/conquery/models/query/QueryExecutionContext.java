@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.query;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -36,23 +34,6 @@ public class QueryExecutionContext {
 	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryId}.
 	 */
 	private SecondaryId activeSecondaryId = null;
-	/**
-	 * only set in the SecondaryIdQueryPlan, when we are also interested in SecondaryIds
- 	 */
-	@Nullable
-	private SecondaryIdQueryPlanPhase secondaryIdQueryPlanPhase = SecondaryIdQueryPlanPhase.None;
-
-	public static enum SecondaryIdQueryPlanPhase {
-		None,
-		/**
-		 * Query (or part of Query) is currently aggregating for SecondaryId.
-		 */
-		WithId,
-		/**
-		 * Query (or part of Query) is in a {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, but not aggregating for SecondaryIds.
-		 */
-		WithoutId
-	}
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId id) {
 		return bucketManager.getEntityBucketsForTable(entity, id);
