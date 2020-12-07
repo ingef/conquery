@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.xodus;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.validation.Validator;
 
@@ -58,17 +57,6 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	public WorkerToBucketsMap getWorkerBuckets() {
 		return workerToBuckets.get();
 	}
-
-	@Override
-	public Set<SecondaryIdDescription> getSecondaryIds() {
-		return null;
-	}
-
-	@Override
-	public void setSecondaryIds(Set<SecondaryIdDescription> secondaryIds) {
-
-	}
-
 
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
