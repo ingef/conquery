@@ -121,10 +121,10 @@ public class ImportJob extends Job {
 
 		//create data import and store/send it
 
-		Import outImport = createImport(header, stores, table.getColumns());
+		Import imp = createImport(header, stores, table.getColumns());
 
-		namespace.getStorage().updateImport(outImport);
-		namespace.sendToAll(new AddImport(outImport));
+		namespace.getStorage().updateImport(imp);
+		namespace.sendToAll(new AddImport(imp));
 
 
 		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(starts.keySet(), primaryMapping, bucketSize);
@@ -140,7 +140,7 @@ public class ImportJob extends Job {
 
 		// we use this to track ass
 		final Map<WorkerId, Set<BucketId>> workerAssignments =
-				sendBuckets(starts, container.getLengths(), primaryMapping, outImport, buckets2LocalEntities, storesSorted);
+				sendBuckets(starts, container.getLengths(), primaryMapping, imp, buckets2LocalEntities, storesSorted);
 
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 	}
