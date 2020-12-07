@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -133,12 +133,12 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			final Connector connector = table.getResolvedConnector();
 
-			final SecondaryIdId selectedSecondaryId = Arrays.stream(connector.getTable().getColumns())
-															.map(Column::getSecondaryId)
-															.filter(Objects::nonNull)
-															.filter(o -> Objects.equals(context.getSelectedSecondaryId(), o))
-															.collect(MoreCollectors.toOptional())
-															.orElse(null);
+			final SecondaryId selectedSecondaryId = Arrays.stream(connector.getTable().getColumns())
+														  .map(Column::getSecondaryId)
+														  .filter(Objects::nonNull)
+														  .filter(o -> Objects.equals(context.getSelectedSecondaryId(), o))
+														  .collect(MoreCollectors.toOptional())
+														  .orElse(null);
 			tableNodes.add(
 					new ConceptNode(
 							concepts,

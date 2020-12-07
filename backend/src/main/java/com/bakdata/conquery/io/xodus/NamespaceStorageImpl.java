@@ -3,13 +3,16 @@ package com.bakdata.conquery.io.xodus;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
@@ -28,6 +31,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
+	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory, true);
@@ -53,6 +57,16 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 
 	public WorkerToBucketsMap getWorkerBuckets() {
 		return workerToBuckets.get();
+	}
+
+	@Override
+	public Set<SecondaryIdDescription> getSecondaryIds() {
+		return null;
+	}
+
+	@Override
+	public void setSecondaryIds(Set<SecondaryIdDescription> secondaryIds) {
+
 	}
 
 

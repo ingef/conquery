@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class SecondaryIdId extends AId<SecondaryIdDescription> implements NamespacedId {
+public class SecondaryId extends AId<SecondaryIdDescription> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final String name;
@@ -23,14 +23,14 @@ public class SecondaryIdId extends AId<SecondaryIdDescription> implements Namesp
 		components.add(name);
 	}
 	
-	public static enum Parser implements IId.Parser<SecondaryIdId> {
+	public static enum Parser implements IId.Parser<SecondaryId> {
 		INSTANCE;
 		
 		@Override
-		public SecondaryIdId parseInternally(IdIterator parts) {
+		public SecondaryId parseInternally(IdIterator parts) {
 			String name = parts.next();
 			DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);
-			return new SecondaryIdId(dataset, name);
+			return new SecondaryId(dataset, name);
 		}
 	}
 }

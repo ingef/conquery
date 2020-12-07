@@ -31,6 +31,7 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -133,6 +134,13 @@ public class AdminDatasetResource extends HAdmin {
 	public void addConcept(Concept<?> concept) throws IOException, JSONException, ConfigurationException {
 		processor.addConcept(namespace.getDataset(), concept);
 	}
+
+	@POST
+	@Path("secondaryId")
+	public void addConcept(SecondaryIdDescription secondaryId) throws IOException, JSONException, ConfigurationException {
+		processor.addSecondaryId(namespace, secondaryId);
+	}
+
 
 	@POST
 	@Path("structure")

@@ -45,6 +45,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -621,4 +622,10 @@ public class AdminProcessor {
 
 		FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager());
 	}
+
+	public void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
+		namespace.getDataset().getSecondaryIds().add(secondaryId);
+		namespace.getStorage().updateDataset(namespace.getDataset());
+	}
+
 }

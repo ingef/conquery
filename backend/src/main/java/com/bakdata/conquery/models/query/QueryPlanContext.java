@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,10 +25,10 @@ public class QueryPlanContext {
 	private CDateRange dateRestriction = CDateRange.all();
 
 	/**
-	 * Set if in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the query-active {@link SecondaryIdId}.
+	 * Set if in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the query-active {@link SecondaryId}.
 	 */
 	@Nullable
-	private SecondaryIdId selectedSecondaryId;
+	private SecondaryId selectedSecondaryId;
 
 	public DatasetId getDataset() {
 		return worker.getStorage().getDataset().getId();

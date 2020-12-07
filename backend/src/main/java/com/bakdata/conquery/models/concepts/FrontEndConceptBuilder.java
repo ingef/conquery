@@ -86,7 +86,7 @@ public class FrontEndConceptBuilder {
 			roots.put(sn.getId(), node);
 		}
 		//add all secondary IDs
-		root.getSecondaryIds().addAll(storage.getSecondaryIds());
+		root.getSecondaryIds().addAll(storage.getDataset().getSecondaryIds().values());
 
 		return root;
 	}
