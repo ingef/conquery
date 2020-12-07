@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -67,7 +69,8 @@ public class TableExportQueryPlan implements QueryPlan {
 
 				for(int event = start; event < end ; event++) {
 
-					if (!bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), dateRange)) {
+					// Export Full-table if it has no validity date.
+					if (exportDescription.getValidityDateColumn() != null && !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), dateRange)) {
 						continue;
 					}
 
@@ -102,6 +105,7 @@ public class TableExportQueryPlan implements QueryPlan {
 	@Getter
 	public static class TableExportDescription {
 		private final Table table;
+		@Nullable
 		private final Column validityDateColumn;
 		private final int columnOffset;
 	}
