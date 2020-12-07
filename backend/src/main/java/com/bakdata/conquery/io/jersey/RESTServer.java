@@ -1,11 +1,7 @@
 package com.bakdata.conquery.io.jersey;
 
 import com.bakdata.conquery.io.jackson.PathParamInjector;
-import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
-import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.io.jetty.CachingFilter;
-import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
-import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
+import com.bakdata.conquery.io.jetty.*;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
@@ -31,8 +27,9 @@ public class RESTServer {
 		jersey.register(new AuthorizationExceptionMapper());
 		jersey.register(JsonValidationExceptionMapper.class);
 		// default Dropwizard's exception mappers
-		jersey.register(new LoggingExceptionMapper<Throwable>() {});
+		jersey.register(new ConqueryErrorExecptionMapper());
 		jersey.register(ConqueryJsonExceptionMapper.class);
+		jersey.register(new LoggingExceptionMapper<Throwable>() {});
 		jersey.register(new EarlyEofExceptionMapper());
 		//allow cross origin
 		if(config.getApi().isAllowCORSRequests()) {

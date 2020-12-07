@@ -119,7 +119,7 @@ public class CQExternal implements CQElement {
 				}
 			}
 			catch (Exception e) {
-				log.warn("failed to parse id from " + Arrays.toString(row), e);
+				log.warn("Failed to parse id from " + Arrays.toString(row), e);
 			}
 		}
 		if (!nonResolved.isEmpty()) {
