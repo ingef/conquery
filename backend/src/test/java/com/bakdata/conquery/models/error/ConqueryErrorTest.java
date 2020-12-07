@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.error.ConqueryError.ExternalResolveError;
+import com.bakdata.conquery.models.error.ConqueryError.ExternalResolveFormatError;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 public class ConqueryErrorTest {
 	@Test
 	public void errorConvertion() {
-		ExternalResolveError error = new ConqueryError.ExternalResolveError(5, 6);
+		ExternalResolveFormatError error = new ExternalResolveFormatError(5, 6);
 		assertThat(error.asPlain()).isEqualTo(new PlainError(error.getId(), "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL", error.getMessage(), error.getContext()));
 	}
 	
