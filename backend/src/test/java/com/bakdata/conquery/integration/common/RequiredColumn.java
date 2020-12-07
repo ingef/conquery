@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +18,7 @@ public class RequiredColumn {
 	@NotNull
 	private MajorTypeId type;
 	private String sharedDictionary;
-	private SecondaryId secondaryId;
+	private SecondaryIdId secondaryId;
 
 	public Column toColumn(Table t) {
 		Column col = new Column();

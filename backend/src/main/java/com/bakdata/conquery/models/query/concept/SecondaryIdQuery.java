@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -44,10 +44,10 @@ public class SecondaryIdQuery extends IQuery {
 	@JsonIgnore
 	private final ConceptQuery query;
 	@NotNull
-	private final SecondaryId secondaryId;
+	private final SecondaryIdId secondaryId;
 
 	@JsonCreator
-	public SecondaryIdQuery(@Valid @NotNull CQElement root, @NotNull SecondaryId secondaryId) {
+	public SecondaryIdQuery(@Valid @NotNull CQElement root, @NotNull SecondaryIdId secondaryId) {
 		this.root = root;
 		this.secondaryId = secondaryId;
 		this.query = new ConceptQuery(root);

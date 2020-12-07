@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -87,13 +86,8 @@ public class FrontEndConceptBuilder {
 			roots.put(sn.getId(), node);
 		}
 		//add all secondary IDs
-		for(Table table : storage.getDataset().getTables().values()) {
-			for(Column column : table.getColumns()) {
-				if(column.getSecondaryId() != null) {
-					root.getSecondaryIds().add(column.getSecondaryId().toString());
-				}
-			}
-		}
+		root.getSecondaryIds().addAll(storage.getSecondaryIds());
+
 		return root;
 	}
 

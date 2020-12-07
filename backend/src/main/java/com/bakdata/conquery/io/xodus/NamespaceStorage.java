@@ -1,11 +1,13 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
+import java.util.Set;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -40,4 +42,8 @@ public interface NamespaceStorage extends NamespacedStorage {
 
 	void setWorkerToBucketsMap(WorkerToBucketsMap map);
 	WorkerToBucketsMap getWorkerBuckets();
+
+	Set<SecondaryIdDescription> getSecondaryIds();
+	void setSecondaryIds();
+
 }
