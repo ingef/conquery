@@ -137,7 +137,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("secondaryId")
-	public void addConcept(SecondaryIdDescription secondaryId) throws IOException, JSONException, ConfigurationException {
+	public void addSecondaryId(SecondaryIdDescription secondaryId) throws IOException, JSONException, ConfigurationException {
 		processor.addSecondaryId(namespace, secondaryId);
 	}
 

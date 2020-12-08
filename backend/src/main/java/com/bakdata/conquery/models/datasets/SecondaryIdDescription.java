@@ -5,8 +5,10 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@ToString(callSuper = true)
 public class SecondaryIdDescription extends Labeled<SecondaryId> {
 
 	@NsIdRef

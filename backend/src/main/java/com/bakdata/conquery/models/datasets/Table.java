@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.common.base.Preconditions;
 import io.dropwizard.validation.ValidationMethod;
@@ -39,6 +40,7 @@ public class Table extends Labeled<TableId> {
 	private Column[] columns = new Column[0];
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
+	@JsonIgnore
 	public boolean isDistinctSecondaryIds() {
 		Set<SecondaryId> secondaryIds = new HashSet<>();
 		for (Column column : columns) {

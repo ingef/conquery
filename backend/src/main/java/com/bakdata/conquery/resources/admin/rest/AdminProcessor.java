@@ -624,6 +624,10 @@ public class AdminProcessor {
 	}
 
 	public void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
+
+		log.trace("Received new SecondaryId {}", secondaryId);
+		log.info("Received new SecondaryId[{}]", secondaryId.getId());
+
 		namespace.getDataset().getSecondaryIds().add(secondaryId);
 		namespace.getStorage().updateDataset(namespace.getDataset());
 	}
