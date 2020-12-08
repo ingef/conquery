@@ -15,7 +15,6 @@ import DateCell from "./DateCell";
 import { Cell } from "./Cell";
 import PreviewInfo from "./PreviewInfo";
 import { StatsHeadline } from "./StatsHeadline";
-import { getRightCellPadding, getStatsByColumn } from "./alignNumbersOnComma";
 import StatsSubline from "./StatsSubline";
 
 const Root = styled("div")`
@@ -167,8 +166,6 @@ const Preview: React.FC = () => {
     preview.resultColumns
   );
 
-  const columnStats = getStatsByColumn(columns, previewData);
-
   const { min, max, diff } = getMinMaxDates(previewData.slice(1), columns);
 
   const Row = ({ index }: { index: number }) => (
@@ -181,20 +178,19 @@ const Preview: React.FC = () => {
         }
 
         if (columns[j] === "MONEY") {
+          const cellAsCents = parseInt(cell);
+
           return (
             <Cell
               title={cell}
               key={j}
               style={{
                 textAlign: "right",
-                paddingRight: getRightCellPadding(
-                  cell,
-                  columns[j],
-                  columnStats[j]
-                ),
               }}
             >
-              {cell}
+              {isNaN(cellAsCents)
+                ? cell
+                : (cellAsCents / 100).toFixed(2).replace(".", ",")}
             </Cell>
           );
         }
