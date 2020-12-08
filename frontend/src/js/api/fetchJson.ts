@@ -34,10 +34,9 @@ export async function fetchJsonUnauthorized(
     if (
       response.status >= 200 &&
       response.status < 300 &&
-      !!response.data &&
-      !response.data.error
-    ) {
       // Also handle empty responses
+      (!response.data || (!!response.data && !response.data.error))
+    ) {
       return response.data;
     } else {
       // Reject other status
