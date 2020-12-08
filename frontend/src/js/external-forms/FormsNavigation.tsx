@@ -32,6 +32,7 @@ const FormsNavigation: FC = () => {
       [formName: string]: Form;
     }
   >((state) => selectAvailableForms(state));
+
   const activeForm = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state)
   );

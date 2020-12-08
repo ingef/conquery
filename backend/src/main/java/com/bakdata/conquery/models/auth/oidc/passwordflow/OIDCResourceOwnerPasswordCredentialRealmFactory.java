@@ -87,17 +87,19 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 		return new OIDCResourceOwnerPasswordCredentialRealm<>(controller.getStorage(), this);
 	}
 	
-	
+	@JsonIgnore
 	@ValidationMethod(message = "Realm was emtpy")
 	public boolean isRealmFilled() {
 		return realm != null && !realm.isBlank();
 	}
-	
+
+	@JsonIgnore
 	@ValidationMethod(message = "Resource was emtpy")
 	public boolean isResourceFilled() {
 		return resource != null && !resource.isBlank();
 	}
-	
+
+	@JsonIgnore
 	@ValidationMethod(message = "Secret not found")
 	public boolean isSecretFilled() {		
 		if(credentials == null) {
