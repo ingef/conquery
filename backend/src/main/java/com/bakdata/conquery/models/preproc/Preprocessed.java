@@ -72,8 +72,10 @@ public class Preprocessed {
 		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 
 		try (Output out = new Output(outFile.writeContent())) {
-			for(int entityId = 0; entityId < entries.size(); entityId++) {
-				List<Object[]> events = entries.getOrDefault(entityId, Collections.emptyList());
+			for (Int2ObjectMap.Entry<List<Object[]>> entry : entries.int2ObjectEntrySet()) {
+
+				int entityId = entry.getIntKey();
+				List<Object[]> events = entry.getValue();
 
 				if(!events.isEmpty()) {
 					writeRowsToFile(out, imp, entityId, events);
