@@ -4,8 +4,6 @@ import { reset } from "redux-form";
 import api from "../api";
 import type { DatasetIdT } from "../api/types";
 
-import { isEmpty } from "../common/helpers";
-
 import { defaultError, defaultSuccess } from "../common/actions";
 import { loadTrees } from "../concept-trees/actions";
 import { loadPreviousQueries } from "../previous-queries/list/actions";
@@ -21,10 +19,11 @@ import {
   LOAD_DATASETS_SUCCESS,
   LOAD_DATASETS_ERROR,
   SELECT_DATASET,
-  SAVE_QUERY
+  SAVE_QUERY,
 } from "./actionTypes";
 
 import type { DatasetT } from "./reducer";
+import { exists } from "../common/helpers/exists";
 
 export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
 export const loadDatasetsError = (err: any) =>
@@ -61,7 +60,7 @@ export const loadDatasets = () => {
 export const selectDatasetInput = (id: DatasetIdT | null) => {
   return {
     type: SELECT_DATASET,
-    payload: { id }
+    payload: { id },
   };
 };
 
@@ -74,7 +73,7 @@ export const saveQuery = (
 
 export const selectDataset = (
   datasets: DatasetT[],
-  datasetId: DatasetIdT,
+  datasetId: DatasetIdT | null,
   previouslySelectedDatasetId: DatasetIdT,
   query: StandardQueryType
 ) => {
@@ -87,10 +86,10 @@ export const selectDataset = (
     setDatasetId(datasetId);
 
     // Load query if available, else clear
-    if (isEmpty(datasetId)) {
+    if (!exists(datasetId)) {
       return dispatch(clearQuery());
     } else {
-      const nextDataset = datasets.find(db => db.id === datasetId);
+      const nextDataset = datasets.find((db) => db.id === datasetId);
 
       if (!nextDataset || !nextDataset.query) dispatch(clearQuery());
       else dispatch(loadQuery(nextDataset.query));
@@ -105,7 +104,7 @@ export const selectDataset = (
   };
 };
 
-const selectActiveForm = getStateFn => {
+const selectActiveForm = (getStateFn) => {
   const state = getStateFn();
 
   return state.externalForms && state.externalForms.activeForm;

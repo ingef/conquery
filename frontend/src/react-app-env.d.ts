@@ -50,3 +50,9 @@ declare module "@emotion/react" {
     transitionTime: string;
   }
 }
+
+declare global {
+  interface Window {
+    datasetId: string | null;
+  }
+}
