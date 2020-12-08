@@ -37,14 +37,14 @@ const ClearZone = styled(IconButton)`
   }
 `;
 
-type InputPropsType = {
+interface InputPropsType {
   pattern?: string;
   step?: number;
   min?: number;
   max?: number;
-};
+}
 
-type PropsType = {
+interface PropsT {
   className?: string;
   inputType: string;
   valueType?: string;
@@ -54,13 +54,13 @@ type PropsType = {
   inputProps?: InputPropsType;
   currencyConfig?: CurrencyConfigT;
   onChange: (val: null | number | string) => void;
-};
+}
 
-const BaseInput = (props: PropsType) => {
+const BaseInput = (props: PropsT) => {
   const inputProps = props.inputProps || {};
   const { pattern } = props.inputProps || {};
 
-  const handleKeyPress = (event) => {
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (!pattern) return;
 
     const regex = new RegExp(pattern);
@@ -84,7 +84,9 @@ const BaseInput = (props: PropsType) => {
 
   return (
     <Root className={props.className}>
-      {props.valueType === MONEY_RANGE && !!props.currencyConfig ? (
+      {props.valueType === MONEY_RANGE &&
+      typeof props.value !== "string" &&
+      !!props.currencyConfig ? (
         <CurrencyInput
           currencyConfig={props.currencyConfig}
           placeholder={props.placeholder}
@@ -95,7 +97,15 @@ const BaseInput = (props: PropsType) => {
         <Input
           placeholder={props.placeholder}
           type={props.inputType}
-          onChange={(e) => safeOnChange(e.target.value)}
+          onChange={(e) => {
+            let value: string | number | null = e.target.value;
+
+            if (props.inputType === "number") {
+              value = parseFloat(value);
+            }
+
+            safeOnChange(value);
+          }}
           onKeyPress={(e) => handleKeyPress(e)}
           value={props.value || ""}
           large={props.large}
