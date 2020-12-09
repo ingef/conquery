@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -11,12 +12,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.models.api.description.FERoot;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -26,8 +30,9 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	public void execute(StandaloneSupport conquery) throws Exception {
 
 
-		final SecondaryIdDescription description = new SecondaryIdDescription(null, "description-description");
-		description.setName("description-name");
+		final SecondaryIdDescription description = new SecondaryIdDescription();
+		description.setDescription("description-DESCRIPTION");
+		description.setName("description-NAME");
 		description.setLabel("description-LABEL");
 
 		final Response post = uploadDescription(conquery, description);
@@ -39,7 +44,18 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 				.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
 
 
-		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath(""), DatasetResource.class, "getRoot")
+		final Set<SecondaryIdDescription> secondaryIds = fetchSecondaryIdDescriptions(conquery);
+
+		log.info("{}", secondaryIds);
+
+		assertThat(secondaryIds)
+				.usingElementComparatorIgnoringFields("dataset") // our dataset is null as it's set on upload.
+				.containsExactly(description);
+
+	}
+
+	private Set<SecondaryIdDescription> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
+		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("api"), DatasetResource.class, "getRoot")
 									   .scheme("http")
 									   .host("localhost")
 									   .port(conquery.getLocalPort())
@@ -47,14 +63,20 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 											   "dataset", conquery.getDataset().getName()
 									   ));
 
-		assertThat(conquery.getClient()
-				.target(uri)
-				.request()
-				.get(FERoot.class)
-				.getSecondaryIds())
-				.contains(description);
 
+		// We cannot effectively parse a full FERoot so we resort to only parsing the field.
+		final ObjectNode objectNode = conquery.getClient()
+											  .target(uri)
+											  .request()
+											  .get(ObjectNode.class);
 
+		// The injection is necessary to deserialize the dataset.
+		ObjectMapper mapper = conquery.getNamespace().getNamespaces().injectInto(Jackson.MAPPER);
+		mapper = conquery.getDataset().injectInto(mapper);
+
+		return objectNode.get("secondaryIds")
+						 .traverse(mapper.getFactory().getCodec())
+						 .readValueAs(new TypeReference<Set<SecondaryIdDescription>>() {});
 	}
 
 	private Response uploadDescription(StandaloneSupport conquery, SecondaryIdDescription description) {

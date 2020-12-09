@@ -624,6 +624,7 @@ public class AdminProcessor {
 	}
 
 	public void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
+		secondaryId.setDataset(namespace.getDataset());
 
 		log.trace("Received new SecondaryId {}", secondaryId);
 		log.info("Received new SecondaryId[{}]", secondaryId.getId());

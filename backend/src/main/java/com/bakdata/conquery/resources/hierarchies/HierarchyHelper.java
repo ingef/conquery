@@ -37,17 +37,13 @@ public final class HierarchyHelper {
 				String.format("Method %s not found or is not annotated as HttpMethod in class %s", methodName, clazz));
 		}
 
-		Class<?> currentClass = clazz;
-		do {
-			// Walk up the class hierarchy and collect @Path annotations
-			try {
-				uri.path(currentClass);
-			}
-			catch (IllegalArgumentException e) {
-				// ignore this class, a @Path might be more up in the hierarchy
-			}
-			currentClass = currentClass.getSuperclass();
-		} while (!currentClass.equals(Object.class));
+		try {
+			uri.path(clazz);
+		}
+		catch (IllegalArgumentException e) {
+			// ignore this class, a @Path might be more up in the hierarchy
+		}
+
 		if (foundMethod.isAnnotationPresent(Path.class)) {
 			uri.path(clazz, methodName);
 		}

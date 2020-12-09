@@ -4,17 +4,17 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-@ToString(callSuper = true)
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
+@Data
 public class SecondaryIdDescription extends Labeled<SecondaryId> {
 
 	@NsIdRef
-	private final Dataset dataset;
+	private Dataset dataset;
 
-	private final String description;
+	private String description;
 
 	@Override
 	public SecondaryId createId() {
