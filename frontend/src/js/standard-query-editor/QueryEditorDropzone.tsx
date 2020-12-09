@@ -14,13 +14,11 @@ import {
 import type { QueryIdT } from "../api/types";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 
-type DraggedFileType = Object;
-
 interface PropsT {
   isInitial?: boolean;
   isAnd?: boolean;
   onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
-  onDropFile: (file: DraggedFileType) => void;
+  onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
 }
 

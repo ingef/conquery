@@ -74,11 +74,13 @@ export const saveQuery = (
 export const selectDataset = (
   datasets: DatasetT[],
   datasetId: DatasetIdT | null,
-  previouslySelectedDatasetId: DatasetIdT,
+  previouslySelectedDatasetId: DatasetIdT | null,
   query: StandardQueryType
 ) => {
   return (dispatch: Dispatch, state: getState) => {
-    dispatch(saveQuery(query, previouslySelectedDatasetId));
+    if (previouslySelectedDatasetId) {
+      dispatch(saveQuery(query, previouslySelectedDatasetId));
+    }
 
     dispatch(selectDatasetInput(datasetId));
 

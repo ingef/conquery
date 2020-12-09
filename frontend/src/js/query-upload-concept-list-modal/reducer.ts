@@ -1,16 +1,20 @@
+import { ActionT } from "../common/actions";
 import { MODAL_OPEN, MODAL_CLOSE } from "./actionTypes";
 
-type StateT = {
+interface QueryUploadConceptListModalStateT {
   isOpen: boolean;
-  andIdx: number;
-};
+  andIdx: number | null;
+}
 
-const initialState: StateT = {
+const initialState: QueryUploadConceptListModalStateT = {
   isOpen: false,
-  andIdx: null
+  andIdx: null,
 };
 
-export default (state = initialState, action) => {
+export default (
+  state = initialState,
+  action: ActionT
+): QueryUploadConceptListModalStateT => {
   switch (action.type) {
     case MODAL_OPEN:
       const { andIdx } = action.payload;

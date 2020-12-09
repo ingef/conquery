@@ -113,6 +113,7 @@ export interface TableT {
   exclude?: boolean;
   filters?: FilterT[]; // Empty array: key not defined
   selects?: SelectorT[]; // Empty array: key not defined
+  supportedSecondaryIds?: string[];
 }
 
 export type SelectorIdT = string;

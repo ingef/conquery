@@ -1,6 +1,7 @@
 /// <reference types="react-scripts" />
 
 import "@emotion/react";
+import { ConceptIdT, ConceptT } from "./js/api/types";
 
 declare namespace NodeJS {
   interface ProcessEnv {
@@ -54,5 +55,6 @@ declare module "@emotion/react" {
 declare global {
   interface Window {
     datasetId: string | null;
+    conceptTrees: Record<ConceptIdT, Record<ConceptIdT, ConceptT>>;
   }
 }

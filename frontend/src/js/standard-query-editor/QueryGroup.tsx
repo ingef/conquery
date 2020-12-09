@@ -7,7 +7,7 @@ import QueryNode from "./QueryNode";
 import QueryGroupActions from "./QueryGroupActions";
 import type { QueryGroupType } from "./types";
 
-type PropsType = {
+interface PropsT {
   group: QueryGroupType;
   andIdx: number;
   onDropNode: (node: Object) => void;
@@ -20,7 +20,7 @@ type PropsType = {
   onDeleteGroup: Function;
   onLoadPreviousQuery: Function;
   onToggleTimestamps: Function;
-};
+}
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -46,11 +46,11 @@ const QueryOrConnector = styled("p")`
   text-align: center;
 `;
 
-const isDateActive = dateRange => {
+const isDateActive = (dateRange) => {
   return !!dateRange && (!!dateRange.min || !!dateRange.max);
 };
 
-const QueryGroup = (props: PropsType) => {
+const QueryGroup = (props: PropsT) => {
   return (
     <Root>
       <QueryEditorDropzone

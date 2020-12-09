@@ -1,18 +1,18 @@
 import {
   initUploadConceptListModal,
-  resetUploadConceptListModal
+  resetUploadConceptListModal,
 } from "../upload-concept-list-modal/actions";
 import { MODAL_OPEN, MODAL_CLOSE, MODAL_ACCEPT } from "./actionTypes";
 
-const openModal = (andIdx = null) => ({
+const openModal = (andIdx: number | null = null) => ({
   type: MODAL_OPEN,
-  payload: { andIdx }
+  payload: { andIdx },
 });
 
 export const openQueryUploadConceptListModal = (
-  andIdx,
-  file
-) => async dispatch => {
+  andIdx: number | null,
+  file: File
+) => async (dispatch) => {
   // Need to wait until file is processed.
   // Because if file is empty, modal would close automatically
   await dispatch(initUploadConceptListModal(file));
@@ -21,10 +21,10 @@ export const openQueryUploadConceptListModal = (
 };
 
 const closeModal = () => ({
-  type: MODAL_CLOSE
+  type: MODAL_CLOSE,
 });
 
-export const closeQueryUploadConceptListModal = () => dispatch => {
+export const closeQueryUploadConceptListModal = () => (dispatch) => {
   return dispatch([closeModal(), resetUploadConceptListModal()]);
 };
 
@@ -36,6 +36,6 @@ export const acceptQueryUploadConceptListModal = (
 ) => {
   return {
     type: MODAL_ACCEPT,
-    payload: { andIdx, label, rootConcepts, resolvedConcepts }
+    payload: { andIdx, label, rootConcepts, resolvedConcepts },
   };
 };
