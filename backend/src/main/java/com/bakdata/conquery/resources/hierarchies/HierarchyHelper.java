@@ -16,7 +16,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class HierarchyHelper {
 
-	public static UriBuilder fromHierachicalPathResourceMethod(String base, Class<?> clazz, String methodName) {
+	public static UriBuilder fromHierachicalPathResourceMethod(UriBuilder uri, Class<?> clazz, String methodName) {
 		assert (clazz != null);
 		assert (methodName != null);
 
@@ -37,7 +37,6 @@ public final class HierarchyHelper {
 				String.format("Method %s not found or is not annotated as HttpMethod in class %s", methodName, clazz));
 		}
 
-		UriBuilder uri = UriBuilder.fromPath(base);
 		Class<?> currentClass = clazz;
 		do {
 			// Walk up the class hierarchy and collect @Path annotations
