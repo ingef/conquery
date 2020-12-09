@@ -4590,10 +4590,10 @@ dnd-core@^9.4.0:
     invariant "^2.2.4"
     redux "^4.0.4"
 
-dnd-multi-backend@^4.0.0-0:
-  version "4.0.0-0"
-  resolved "https://registry.yarnpkg.com/dnd-multi-backend/-/dnd-multi-backend-4.0.0-0.tgz#c46ce4f3c85d5ad63402f224d746e24ac7edca3f"
-  integrity sha512-1FWWITfBsVlp8FliUVoeD7y06ynOa2Z2vClI1ng9PpHFiW2qYH31L8cD1zJ2sXozAQs8bsVgTA6DEW8v5HBg8g==
+dnd-multi-backend@^5.0.0:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/dnd-multi-backend/-/dnd-multi-backend-5.1.1.tgz#0032761795c3df6a479989f002d8a7d92ad58094"
+  integrity sha512-+bdMsGAC1wlne4+AwTvr6eQ6Bp3St6hn0wp0BcpUMOMVTNM0S+n0Ha8S/qbpYK7XY+i0j439v+yaKO9g9aFvQg==
 
 dns-equal@^1.0.0:
   version "1.0.0"
@@ -10285,21 +10285,21 @@ react-dnd-html5-backend@^9.4.0:
   dependencies:
     dnd-core "^9.4.0"
 
-react-dnd-multi-backend@^4.0.0-0:
-  version "4.0.0-0"
-  resolved "https://registry.yarnpkg.com/react-dnd-multi-backend/-/react-dnd-multi-backend-4.0.0-0.tgz#35025c2876510f593d84121f8dd2b6f5b3aca553"
-  integrity sha512-Ly1gpHaINe5EA/CpfO9f6fpKNjbCeE5XiNz++4RenNB+kqVqCcb7p0fM0fhFevRmPbFcw7QN2u/3bYlQ5q+TdA==
+react-dnd-multi-backend@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/react-dnd-multi-backend/-/react-dnd-multi-backend-5.0.0.tgz#eeb186ac32f46dd2f0ed720b653978d9e1fdfb5c"
+  integrity sha512-Ql8JKAmFnzzKLxOYUTIQVQZeQd1shbZKJiEbkDY5Vte3hY/YFdv+qs2IDxeH2LX2itBYrnEIgWYcRBacPtPeag==
   dependencies:
-    dnd-multi-backend "^4.0.0-0"
-    prop-types "^15.6.2"
-    react-dnd-preview "^4.0.0-0"
+    dnd-multi-backend "^5.0.0"
+    prop-types "^15.7.2"
+    react-dnd-preview "^5.0.0"
 
-react-dnd-preview@^4.0.0-0:
-  version "4.0.0-0"
-  resolved "https://registry.yarnpkg.com/react-dnd-preview/-/react-dnd-preview-4.0.0-0.tgz#b39b8df64f1b612366d5ee0d549ae24a2c7aa6c9"
-  integrity sha512-7k/nP8+Ypwz2KpGGMQebI7NekqMWaI5JHdSOFYswcC0c+VzTJHY+GM4S8DAYOlDxWY6gTFTy7W2Ix/sxurxhdg==
+react-dnd-preview@^5.0.0:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/react-dnd-preview/-/react-dnd-preview-5.1.1.tgz#90c4ad49e90d9abe39728b762d72132b8589b784"
+  integrity sha512-RryrwRRfF22kL8CQcYqDHt4WLbytRbVNXYnjPkyZKfGsXfQnY0j8OtxokTee4Ba3OkcSiSYQbLhDRFw9wiJj5g==
   dependencies:
-    prop-types "^15.6.2"
+    prop-types "^15.7.2"
 
 react-dnd-touch-backend-cjs@^9.4.0:
   version "9.4.0"
