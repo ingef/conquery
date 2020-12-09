@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -45,6 +46,8 @@ public class SecondaryIdQuery extends IQuery {
 	private final ConceptQuery query;
 	@NotNull
 	private final SecondaryId secondaryId;
+	private Set<ColumnId> withSecondaryId;
+	private Set<TableId> withoutSecondaryId;
 
 	@JsonCreator
 	public SecondaryIdQuery(@Valid @NotNull CQElement root, @NotNull SecondaryId secondaryId) {
@@ -59,36 +62,6 @@ public class SecondaryIdQuery extends IQuery {
 		context = context.withSelectedSecondaryId(getSecondaryId());
 
 		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
-
-		Set<ColumnId> withSecondaryId = new HashSet<>();
-		Set<TableId> withoutSecondaryId = new HashSet<>();
-
-		// partition tables by their holding of the requested SecondaryId.
-		// This assumes that from the root, only ConceptNodes hold TableIds we are interested in.
-		query.visit(queryElement -> {
-			if (!(queryElement instanceof CQConcept)) {
-				return;
-			}
-
-			final CQConcept concept = (CQConcept) queryElement;
-
-			for (CQTable connector : concept.getTables()) {
-				final Table table = connector.getResolvedConnector().getTable();
-				final Column secondaryIdColumn = findSecondaryIdColumn(table);
-
-				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryIdQuery()) {
-					withSecondaryId.add(secondaryIdColumn.getId());
-				}
-				else {
-					withoutSecondaryId.add(table.getId());
-				}
-			}
-		});
-
-		// If there are no tables with the secondaryId, we fail as that is user error.
-		if (withSecondaryId.isEmpty()) {
-			throw new IllegalArgumentException("No SecondaryIds found.");
-		}
 
 		return new SecondaryIdQueryPlan(queryPlan, secondaryId, withSecondaryId, withoutSecondaryId);
 	}
@@ -118,6 +91,36 @@ public class SecondaryIdQuery extends IQuery {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);
+
+		withSecondaryId = new HashSet<>();
+		withoutSecondaryId = new HashSet<>();
+
+		// partition tables by their holding of the requested SecondaryId.
+		// This assumes that from the root, only ConceptNodes hold TableIds we are interested in.
+		query.visit(queryElement -> {
+			if (!(queryElement instanceof CQConcept)) {
+				return;
+			}
+
+			final CQConcept concept = (CQConcept) queryElement;
+
+			for (CQTable connector : concept.getTables()) {
+				final Table table = connector.getResolvedConnector().getTable();
+				final Column secondaryIdColumn = findSecondaryIdColumn(table);
+
+				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryIdQuery()) {
+					withSecondaryId.add(secondaryIdColumn.getId());
+				}
+				else {
+					withoutSecondaryId.add(table.getId());
+				}
+			}
+		});
+
+		// If there are no tables with the secondaryId, we fail as that is user error.
+		if (withSecondaryId.isEmpty()) {
+			throw new ConqueryError.ExecutionCreationResolveError(secondaryId);
+		}
 	}
 
 	@Override
@@ -130,11 +133,5 @@ public class SecondaryIdQuery extends IQuery {
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		root.visit(visitor);
-	}
-
-	public static enum QueryPlanPhase {
-		None,
-		WithId,
-		WithoutId
 	}
 }
