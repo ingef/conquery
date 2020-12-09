@@ -45,7 +45,7 @@
     "react-dnd-html5-backend-cjs": "^9.4.0",
     "react-dnd-multi-backend": "^4.0.0-0",
     "react-dnd-touch-backend": "^9.4.0",
-    "react-dnd-touch-backend-cjs": "^9.4.0",
+    "react-dnd-touch-backend-cjs": "^9.5.1",
     "react-dom": "^16.13.1",
     "react-highlight-words": "^0.16.0",
     "react-hot-keys": "^2.0.0-beta.2",

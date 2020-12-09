@@ -4568,10 +4568,10 @@ dir-glob@2.0.0:
     arrify "^1.0.1"
     path-type "^3.0.0"
 
-dnd-core-cjs@^9.4.0:
-  version "9.4.0"
-  resolved "https://registry.yarnpkg.com/dnd-core-cjs/-/dnd-core-cjs-9.4.0.tgz#e69841c28f297ef3ca7f2c4a1d6bb1e72d9a1eab"
-  integrity sha512-9r2OUdVvyPYBu2pZDbaapQWsX/yq4UG8R8IsXkCtiF33xKKEtL9ShdlHXgwKSWSiDmGC14I1P+BHt9bEiA/Czw==
+dnd-core-cjs@^9.4.0, dnd-core-cjs@^9.5.1:
+  version "9.5.1"
+  resolved "https://registry.yarnpkg.com/dnd-core-cjs/-/dnd-core-cjs-9.5.1.tgz#5e6ead86454a764e3d0a53fa58212b8434829bf6"
+  integrity sha512-DNYqlY3jnGjDWZdE2O3XyDyoWGnum2hKZrc+Cwf5cY6Tu7ECxKT9DB/NTR6k6Bq8dElvnSVHTR+ra9FRhQJMhg==
   dependencies:
     "@types/asap" "^2.0.0"
     "@types/invariant" "^2.2.30"
@@ -10301,13 +10301,13 @@ react-dnd-preview@^4.0.0-0:
   dependencies:
     prop-types "^15.6.2"
 
-react-dnd-touch-backend-cjs@^9.4.0:
-  version "9.4.0"
-  resolved "https://registry.yarnpkg.com/react-dnd-touch-backend-cjs/-/react-dnd-touch-backend-cjs-9.4.0.tgz#7bcbac231196ed88f927e259d28caf6d4d0d9543"
-  integrity sha512-ry4Xozl1HdcEkxAWz8mB3SHmTM6QQClIsYktHqxP/W6HJQLCFQCW3rLA1k+IiPMYu6sJKW127MCdh1cJ184ZVg==
+react-dnd-touch-backend-cjs@^9.5.1:
+  version "9.5.1"
+  resolved "https://registry.yarnpkg.com/react-dnd-touch-backend-cjs/-/react-dnd-touch-backend-cjs-9.5.1.tgz#e8d279637c1b5c6275e9cb7b958f8219f099b127"
+  integrity sha512-LnIXumoqbtHjkYRnPKRZyAZ6dg1Eyuzgm8yb0MlA3vj+6cVP1EM2hmnuRaM+awud8sGyPPLxa1l+XTSPjHRbQg==
   dependencies:
     "@types/invariant" "^2.2.30"
-    dnd-core-cjs "^9.4.0"
+    dnd-core-cjs "^9.5.1"
     invariant "^2.2.4"
 
 react-dnd-touch-backend@^9.4.0:
