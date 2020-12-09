@@ -69,10 +69,8 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
   );
   const dispatch = useDispatch();
 
-  const onDropAndNode = (
-    item: DraggedNodeType | DraggedQueryType,
-    dateRange?: DateRangeT | null
-  ) => dispatch(dropAndNode(item, dateRange));
+  const onDropAndNode = (item: DraggedNodeType | DraggedQueryType) =>
+    dispatch(dropAndNode(item));
   const onDropConceptListFile = (file: File, andIdx: number | null) =>
     dispatch(openQueryUploadConceptListModal(andIdx, file));
   const onDropOrNode = (
@@ -137,7 +135,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
               <QueryEditorDropzone
                 key={query.length + 1}
                 isAnd
-                onDropNode={(item) => onDropAndNode(item, null)}
+                onDropNode={onDropAndNode}
                 onDropFile={(file) => onDropConceptListFile(file, null)}
                 onLoadPreviousQuery={onLoadPreviousQuery}
               />

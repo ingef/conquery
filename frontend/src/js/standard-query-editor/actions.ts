@@ -39,12 +39,9 @@ import {
 } from "./actionTypes";
 import { TreesT } from "../concept-trees/reducer";
 
-export const dropAndNode = (
-  item: DraggedNodeType | DraggedQueryType,
-  dateRange: DateRangeT | null = null
-) => ({
+export const dropAndNode = (item: DraggedNodeType | DraggedQueryType) => ({
   type: DROP_AND_NODE,
-  payload: { item, dateRange },
+  payload: { item },
 });
 
 export const dropOrNode = (
