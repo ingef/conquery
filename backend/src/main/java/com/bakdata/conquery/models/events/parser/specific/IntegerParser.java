@@ -45,6 +45,8 @@ public class IntegerParser extends Parser<Long> {
 	protected ColumnStore<Long> decideType() {
 		long span = maxValue - minValue;
 
+		//TODO if values are in value range without rebasing, skip rebasing
+
 		// max value is reserved for NULL
 		if (span + 1 < (long) Byte.MAX_VALUE - (long)  Byte.MIN_VALUE) {
 			return new RebasingStore(minValue, (long) Byte.MIN_VALUE, ByteStore.create(getLines()));
