@@ -1,20 +1,19 @@
-import React from "react";
-import { findDOMNode } from "react-dom";
+import React, { useRef, FC } from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
-import { DragSource } from "react-dnd";
+import { useDrag } from "react-dnd";
 
 import VerticalToggleButton, {
-  Option
+  Option,
 } from "../form-components/VerticalToggleButton";
 import {
   EARLIEST,
   LATEST,
-  RANDOM
+  RANDOM,
 } from "../common/constants/timebasedQueryTimestampTypes";
 import { TIMEBASED_NODE } from "../common/constants/dndTypes";
-
 import IconButton from "../button/IconButton";
+import { getWidthAndHeight } from "../app/DndProvider";
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
@@ -40,7 +39,7 @@ const StyledVerticalToggleButton = styled(VerticalToggleButton)`
   }
 `;
 
-type PropsType = {
+interface PropsT {
   node: Object;
   position: "left" | "right";
   isIndexResult: boolean;
@@ -51,70 +50,81 @@ type PropsType = {
   resultIdx: number;
   connectDragSource: Function;
   isIndexResultDisabled: boolean;
-};
+}
 
-// Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
-class TimebasedNode extends React.Component {
-  props: PropsType;
+const TimebasedNode: FC<PropsT> = ({
+  node,
+  // isIndexResult,
+  // isIndexResultDisabled,
+  onRemove,
+  // onSetTimebasedIndexResult,
+  onSetTimebasedNodeTimestamp,
+  conditionIdx,
+  resultIdx,
+}) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const item = {
+    conditionIdx,
+    resultIdx,
+    node,
+    moved: true,
+    type: TIMEBASED_NODE,
+  };
+  const [, drag] = useDrag({
+    item,
+    begin: () => ({
+      ...item,
+      ...getWidthAndHeight(ref),
+    }),
+  });
 
-  render() {
-    const {
-      node,
-      connectDragSource,
-      // isIndexResult,
-      // isIndexResultDisabled,
-      onRemove,
-      // onSetTimebasedIndexResult,
-      onSetTimebasedNodeTimestamp
-    } = this.props;
+  const toggleButton = (
+    <StyledVerticalToggleButton
+      onToggle={onSetTimebasedNodeTimestamp}
+      activeValue={node.timestamp}
+      options={[
+        {
+          label: T.translate("timebasedQueryEditor.timestampFirst"),
+          value: EARLIEST,
+        },
+        {
+          label: T.translate("timebasedQueryEditor.timestampRandom"),
+          value: RANDOM,
+        },
+        {
+          label: T.translate("timebasedQueryEditor.timestampLast"),
+          value: LATEST,
+        },
+      ]}
+    />
+  );
 
-    const toggleButton = (
-      <StyledVerticalToggleButton
-        onToggle={onSetTimebasedNodeTimestamp}
-        activeValue={node.timestamp}
-        options={[
-          {
-            label: T.translate("timebasedQueryEditor.timestampFirst"),
-            value: EARLIEST
-          },
-          {
-            label: T.translate("timebasedQueryEditor.timestampRandom"),
-            value: RANDOM
-          },
-          {
-            label: T.translate("timebasedQueryEditor.timestampLast"),
-            value: LATEST
-          }
-        ]}
-      />
-    );
-
-    return (
-      <Root
-        ref={instance => {
-          connectDragSource(instance);
-        }}
-      >
-        <div className="timebased-node__container">
-          <div className="timebased-node__content">
-            <div className="timebased-node__timestamp">
-              <p className="timebased-node__timestamp__title">
-                {T.translate("timebasedQueryEditor.timestamp")}
-              </p>
-              {toggleButton}
-            </div>
-            <div className="timebased-node__description">
-              <StyledIconButton icon="times" onClick={onRemove} />
-              <p className="timebased-node__description__text">
-                {node.label || node.id}
-              </p>
-            </div>
+  return (
+    <Root
+      ref={(instance) => {
+        ref.current = instance;
+        drag(instance);
+      }}
+    >
+      <div className="timebased-node__container">
+        <div className="timebased-node__content">
+          <div className="timebased-node__timestamp">
+            <p className="timebased-node__timestamp__title">
+              {T.translate("timebasedQueryEditor.timestamp")}
+            </p>
+            {toggleButton}
+          </div>
+          <div className="timebased-node__description">
+            <StyledIconButton icon="times" onClick={onRemove} />
+            <p className="timebased-node__description__text">
+              {node.label || node.id}
+            </p>
           </div>
         </div>
-      </Root>
-    );
-  }
-}
+      </div>
+    </Root>
+  );
+};
 
 // Button indexResult (to re-enable this soon)
 // <button
@@ -128,40 +138,4 @@ class TimebasedNode extends React.Component {
 //   {T.translate("timebasedQueryEditor.timestampResultsFrom")}
 // </button>
 
-/**
- * Implements the drag source contract.
- */
-const nodeSource = {
-  beginDrag(props, monitor, component) {
-    // Return the data describing the dragged item
-    const { node, conditionIdx, resultIdx } = props;
-    const { width, height } = findDOMNode(component).getBoundingClientRect();
-
-    return {
-      width,
-      height,
-      conditionIdx,
-      resultIdx,
-      node,
-      moved: true
-    };
-  }
-};
-
-/**
- * Specifies the dnd-related props to inject into the component.
- */
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
-  };
-}
-
-const DraggableTimebasedNode = DragSource(
-  TIMEBASED_NODE,
-  nodeSource,
-  collect
-)(TimebasedNode);
-
-export default DraggableTimebasedNode;
+export default TimebasedNode;

@@ -53,7 +53,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		super(validator,config);
 		this.registerImports = registerImports;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
-		
+
 	}
 
 	@Override
@@ -141,16 +141,23 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				for (ImportColumn column : imp.getColumns()) {
 					centralRegistry.register(column);
 				}
+			})
+			.onRemove(imp -> {
+				centralRegistry.remove(imp);
+
+				for (ImportColumn column : imp.getColumns()) {
+					centralRegistry.remove(column);
+				}
 			});
 
 		// Order is important here
 		environmentToStores.putAll(environment, List.of(
-			dataset, 
-			dictionaries, 
-			concepts, 
+			dataset,
+			dictionaries,
+			concepts,
 			imports));
 	}
-	
+
 	@Override
 	public String getStorageOrigin() {
 		return environment.getLocation();

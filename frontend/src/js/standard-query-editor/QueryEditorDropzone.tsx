@@ -6,7 +6,11 @@ import T from "i18n-react";
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
 
-import * as dndTypes from "../common/constants/dndTypes";
+import {
+  CONCEPT_TREE_NODE,
+  QUERY_NODE,
+  PREVIOUS_QUERY,
+} from "../common/constants/dndTypes";
 import type { QueryIdT } from "../api/types";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 
@@ -20,11 +24,7 @@ interface PropsT {
   onLoadPreviousQuery: (id: QueryIdT) => void;
 }
 
-const DROP_TYPES = [
-  dndTypes.CONCEPT_TREE_NODE,
-  dndTypes.QUERY_NODE,
-  dndTypes.PREVIOUS_QUERY,
-];
+const DROP_TYPES = [CONCEPT_TREE_NODE, QUERY_NODE, PREVIOUS_QUERY];
 
 const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
   isInitial?: boolean;

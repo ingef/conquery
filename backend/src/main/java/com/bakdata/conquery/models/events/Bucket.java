@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
@@ -110,31 +111,31 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return stores[column.getPosition()].has(event);
 	}
 
-	public int getString(int event, Column column) {
+	public int getString(int event, @NotNull Column column) {
 		return stores[column.getPosition()].getString(event);
 	}
 
-	public long getInteger(int event, Column column) {
+	public long getInteger(int event, @NotNull Column column) {
 		return stores[column.getPosition()].getInteger(event);
 	}
 
-	public boolean getBoolean(int event, Column column) {
+	public boolean getBoolean(int event, @NotNull Column column) {
 		return stores[column.getPosition()].getBoolean(event);
 	}
 
-	public double getReal(int event, Column column) {
+	public double getReal(int event,@NotNull Column column) {
 		return stores[column.getPosition()].getReal(event);
 	}
 
-	public BigDecimal getDecimal(int event, Column column) {
+	public BigDecimal getDecimal(int event, @NotNull Column column) {
 		return stores[column.getPosition()].getDecimal(event);
 	}
 
-	public long getMoney(int event, Column column) {
+	public long getMoney(int event, @NotNull Column column) {
 		return stores[column.getPosition()].getMoney(event);
 	}
 
-	public int getDate(int event, Column column) {
+	public int getDate(int event,@NotNull Column column) {
 		return stores[column.getPosition()].getDate(event);
 	}
 
@@ -146,7 +147,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return stores[column.getPosition()].getDateRange(event);
 	}
 
-	public Object getAsObject(int event, Column column) {
+	public Object getAsObject(int event, @NotNull Column column) {
 		return stores[column.getPosition()].get(event);
 	}
 
@@ -154,7 +155,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
 	}
 
-	public Object createScriptValue(int event, Column column){
+	public Object createScriptValue(int event, @NotNull Column column){
 		final ColumnStore<?> store = stores[column.getPosition()];
 		return ((ColumnStore) store).createScriptValue(store.get(event));
 	}
