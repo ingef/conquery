@@ -89,7 +89,7 @@ public class CQExternal implements CQElement {
 		List<List<String>> nonResolved = new ArrayList<>();
 
 		if (values[0].length != format.size()) {
-			throw new ConqueryError.ExternalResolveError(format.size(), values[0].length);
+			throw new ConqueryError.ExternalResolveFormatError(format.size(), values[0].length);
 		}
 
 
@@ -119,7 +119,7 @@ public class CQExternal implements CQElement {
 				}
 			}
 			catch (Exception e) {
-				log.warn("failed to parse id from " + Arrays.toString(row), e);
+				log.warn("Failed to parse id from " + Arrays.toString(row), e);
 			}
 		}
 		if (!nonResolved.isEmpty()) {
@@ -129,6 +129,10 @@ public class CQExternal implements CQElement {
 					values.length - 1,
 					nonResolved.subList(0, Math.min(nonResolved.size(), 10))
 			);
+		}
+
+		if (valuesResolved.isEmpty()) {
+			throw new ConqueryError.ExternalResolveEmptyError();
 		}
 	}
 

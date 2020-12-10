@@ -39,10 +39,10 @@ public class FilterSearch {
 			@Override
 			public double score(String candidate, String keyword) {
 				/* Sort ascending by length of match */
-				if (keyword.startsWith(candidate))
-					return 1d / (double) candidate.length();
-				else
-					return -1d;
+				if (keyword.startsWith(candidate)) {					
+					return 1d / candidate.length();
+				}
+				return -1d;
 			}
 		},
 		/**

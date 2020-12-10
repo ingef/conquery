@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,8 +37,6 @@ public class CountSelect extends Select {
 		if (distinct) {
 			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
 		}
-		else {
-			return new CountAggregator(getColumn());
-		}
+		return new CountAggregator(getColumn());
 	}
 }

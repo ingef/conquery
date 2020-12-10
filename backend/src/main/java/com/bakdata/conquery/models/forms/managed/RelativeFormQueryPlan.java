@@ -10,15 +10,19 @@ import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +30,15 @@ import lombok.extern.slf4j.Slf4j;
 @Getter @RequiredArgsConstructor
 public class RelativeFormQueryPlan implements QueryPlan {
 
-	private static final int DATE_RANGE_SUB_RESULT = 3;
-	private static final int EVENTDATE = 2;
-	private static final int FEATURE_DATE_RANGE = 3;
-	private static final int OUTCOME_DATE_RANGE = 4;
+	// Position of fixed columns in the result. (This is without identifier column[s], they are added upon result rendering)
+	private static final int RESOLUTION_POS = 0;
+	private static final int INDEX_POS = 1;
+	private static final int EVENTDATE_POS = 2;
+	private static final int FEATURE_DATE_RANGE_POS = 3;
+	private static final int OUTCOME_DATE_RANGE_POS = 4;
+	private static final int FIRST_AGGREGATOR_POS = 5;
+	// Position of fixed columns in the sub result.
+	private static final int SUB_RESULT_DATE_RANGE_POS = 3;
 
 	private final QueryPlan query;
 	private final ArrayConceptQueryPlan featurePlan;
@@ -48,23 +57,32 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		if (preResult.isFailed() || !preResult.isContained()) {
 			return preResult;
 		}
-
+		int size = calculateCompleteLength();
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
 		CDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
 		final OptionalInt sampled = indexSelector.sample(dateSet);
-
+		
 		// dateset is empty or sampling failed.
 		if (sampled.isEmpty()) {
 			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
-			return preResult;
+			List<Object[]> results = new ArrayList<>();
+			results.add(new Object[size]);
+			return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(FIRST_AGGREGATOR_POS)));
 		}
-
+		
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
 			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
-
+		
+		// create feature and outcome plans
 		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
 		FormQueryPlan outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
+
+		// determine result length and check against aggregators in query
+		int featureLength = featureSubquery.columnCount();
+		int outcomeLength = outcomeSubquery.columnCount();
+
+
 
 		MultilineContainedEntityResult featureResult = featureSubquery.execute(ctx, entity);
 		MultilineContainedEntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
@@ -78,18 +96,9 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// determine result length and check against aggregators in query
-		int featureLength = determineResultWidth(featureSubquery, featureResult);
-		int outcomeLength = determineResultWidth(outcomeSubquery, outcomeResult);
+		checkResultWidth(featureResult, featureLength);
+		checkResultWidth(outcomeResult, outcomeLength);
 
-		/*
-		 * Whole result is the concatenation of the subresults. The final output format
-		 * combines resolution info, index and eventdate of both sub queries. The
-		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX],
-		 * [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]... The wanted
-		 * format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR],
-		 * [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
-		 */
-		int size = featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 
 		int resultStartIndex = 0;
 		List<Object[]> values = new ArrayList<>();
@@ -130,11 +139,19 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return EntityResult.multilineOf(entity.getId(), values);
 	}
 
-	private int determineResultWidth(FormQueryPlan subquery, MultilineContainedEntityResult subResult) {
-		// This is sufficient for NOT_CONTAINTED subresults
-		int resultWidth = subquery.columnCount();
-		// When it's a contained result also check whether the result really has the awaited width
+	private int calculateCompleteLength() {
+		/*
+		 * Whole result is the concatenation of the subresults. The final output format
+		 * combines resolution info, index and eventdate of both sub queries. The
+		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]...
+		 * The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+		 */
+		
+		return FIRST_AGGREGATOR_POS + featurePlan.getAggregatorSize() + outcomePlan.getAggregatorSize();
+		//return featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
+	}
 
+	private int checkResultWidth(EntityResult subResult, int resultWidth) {
 		int resultColumnCount = subResult.asContained().columnCount();
 
 		if(resultColumnCount != resultWidth) {
@@ -161,22 +178,26 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 	private void setFeatureValues(Object[] result, Object[] value) {
 		// copy everything up to including index
-		for (int i = 0; i <= EVENTDATE; i++) {
+		for (int i = 0; i <= EVENTDATE_POS; i++) {
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[FEATURE_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
-		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, OUTCOME_DATE_RANGE + 1, value.length - (DATE_RANGE_SUB_RESULT+1));
+		result[FEATURE_DATE_RANGE_POS] = value[SUB_RESULT_DATE_RANGE_POS];
+		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, OUTCOME_DATE_RANGE_POS + 1, value.length - (SUB_RESULT_DATE_RANGE_POS+1));
 	}
 
 	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
 		// copy everything up to including index
-		for (int i = 0; i <= EVENTDATE; i++) {
+		for (int i = 0; i <= EVENTDATE_POS; i++) {
 			result[i] = value[i];
 		}
 		// copy daterange
-		result[OUTCOME_DATE_RANGE] = value[DATE_RANGE_SUB_RESULT];
-		System.arraycopy(value, DATE_RANGE_SUB_RESULT+1, result, 1 + featureLength, value.length - (DATE_RANGE_SUB_RESULT+1));
+		result[OUTCOME_DATE_RANGE_POS] = value[SUB_RESULT_DATE_RANGE_POS];
+		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, 1 + featureLength, value.length - (SUB_RESULT_DATE_RANGE_POS+1));
+	}
+	
+	public List<Aggregator<?>> getAggregators() {
+		return ImmutableList.copyOf(Iterables.concat(featurePlan.getAggregators(),outcomePlan.getAggregators()));
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package com.bakdata.conquery.util;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import com.google.common.base.Supplier;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -17,9 +16,7 @@ public class SimplePool<T> {
 		if(result == null) {
 			return supplier.get();
 		}
-		else {
-			return result;
-		}
+		return result;
 	}
 	
 	public void returnValue(T v) {

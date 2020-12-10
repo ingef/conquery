@@ -74,12 +74,6 @@ function toLocalizedNumberString(num: number) {
   return num.toString().replace(".", ",");
 }
 
-const parseMoney = (str: string) => {
-  const numeric = str.replace(/\./g, "").replace(/,/g, ".");
-
-  return parseFloat(numeric);
-};
-
 const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
   switch (columnType) {
     case "NUMERIC":
@@ -94,9 +88,8 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
             case "INTEGER":
               return parseInt(x);
             case "NUMERIC":
-              return parseFloat(x);
             case "MONEY":
-              return parseMoney(x);
+              return parseFloat(x);
           }
         })
         .sort((a, b) => a - b);
@@ -110,6 +103,9 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
       const decimals = 2;
       // Might come in handy at some point
       // const variance = getVarianceFromAvg(cleanSortedData, avg);
+      const toMoneyMaybe = (num: number) => {
+        return columnType === "MONEY" ? num / 100 : num;
+      };
 
       return (
         <Stats>
@@ -117,23 +113,27 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
           <Values>
             <Stat>
               <Label>{T.translate("common.average")}:</Label>
-              <Value>{toRoundedDecimalsString(avg, decimals)}</Value>
+              <Value>
+                {toRoundedDecimalsString(toMoneyMaybe(avg), decimals)}
+              </Value>
             </Stat>
             <Stat>
               <Label>{T.translate("common.median")}:</Label>
-              <Value>{toLocalizedNumberString(median)}</Value>
+              <Value>{toLocalizedNumberString(toMoneyMaybe(median))}</Value>
             </Stat>
             <Stat>
               <Label>{T.translate("common.min")}:</Label>
-              <Value>{toLocalizedNumberString(min)}</Value>
+              <Value>{toLocalizedNumberString(toMoneyMaybe(min))}</Value>
             </Stat>
             <Stat>
               <Label>{T.translate("common.max")}:</Label>
-              <Value>{toLocalizedNumberString(max)}</Value>
+              <Value>{toLocalizedNumberString(toMoneyMaybe(max))}</Value>
             </Stat>
             <Stat>
               <Label>{T.translate("common.std")}:</Label>
-              <Value>{toRoundedDecimalsString(std, decimals)}</Value>
+              <Value>
+                {toRoundedDecimalsString(toMoneyMaybe(std), decimals)}
+              </Value>
             </Stat>
           </Values>
         </Stats>
