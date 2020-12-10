@@ -10,12 +10,13 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -43,11 +44,13 @@ public class SecondaryIdQuery extends IQuery {
 	 */
 	@JsonIgnore
 	private final ConceptQuery query;
+
 	@NotNull
-	private final SecondaryId secondaryId;
+	@NsIdRef
+	private final SecondaryIdDescription secondaryId;
 
 	@JsonCreator
-	public SecondaryIdQuery(@Valid @NotNull CQElement root, @NotNull SecondaryId secondaryId) {
+	public SecondaryIdQuery(@Valid @NotNull CQElement root, @NotNull SecondaryIdDescription secondaryId) {
 		this.root = root;
 		this.secondaryId = secondaryId;
 		this.query = new ConceptQuery(root);
@@ -56,7 +59,7 @@ public class SecondaryIdQuery extends IQuery {
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
 
-		context = context.withSelectedSecondaryId(getSecondaryId());
+		context = context.withSelectedSecondaryId(getSecondaryId().getId());
 
 		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
 
@@ -90,7 +93,7 @@ public class SecondaryIdQuery extends IQuery {
 			throw new IllegalArgumentException("No SecondaryIds found.");
 		}
 
-		return new SecondaryIdQueryPlan(queryPlan, secondaryId, withSecondaryId, withoutSecondaryId);
+		return new SecondaryIdQueryPlan(queryPlan, secondaryId.getId(), withSecondaryId, withoutSecondaryId);
 	}
 
 	/**
@@ -100,7 +103,7 @@ public class SecondaryIdQuery extends IQuery {
 	private Column findSecondaryIdColumn(Table table) {
 
 		for (Column col : table.getColumns()) {
-			if (!secondaryId.equals(col.getSecondaryId())) {
+			if (!secondaryId.equals(col.getSecondaryId().getId())) {
 				continue;
 			}
 

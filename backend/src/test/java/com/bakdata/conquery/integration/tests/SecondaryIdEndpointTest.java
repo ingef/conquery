@@ -14,7 +14,9 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -30,10 +32,13 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	public void execute(StandaloneSupport conquery) throws Exception {
 
 
+
 		final SecondaryIdDescription description = new SecondaryIdDescription();
 		description.setDescription("description-DESCRIPTION");
 		description.setName("description-NAME");
 		description.setLabel("description-LABEL");
+
+		final SecondaryIdDescriptionId id = new SecondaryIdDescriptionId(conquery.getDataset().getId(), description.getName());
 
 		final Response post = uploadDescription(conquery, description);
 
@@ -43,14 +48,43 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 				.describedAs("Response = `%s`", post)
 				.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
 
+		{
+			final Set<SecondaryIdDescription> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
-		final Set<SecondaryIdDescription> secondaryIds = fetchSecondaryIdDescriptions(conquery);
+			log.info("{}", secondaryIds);
 
-		log.info("{}", secondaryIds);
+			assertThat(secondaryIds)
+					.usingElementComparatorIgnoringFields("dataset") // our dataset is null as it's set on upload.
+					.containsExactly(description);
+		}
+		{
+			final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("admin"), DatasetsUIResource.class, "getDataset")
+										   .scheme("http").host("localhost").port(conquery.getAdminPort())
+										   .buildFromMap(Map.of("dataset", conquery.getDataset().getName()));
 
-		assertThat(secondaryIds)
-				.usingElementComparatorIgnoringFields("dataset") // our dataset is null as it's set on upload.
-				.containsExactly(description);
+			final Response actual = conquery.getClient().target(uri).request().get();
+			assertThat(actual)
+					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
+
+
+		}
+		final Response delete = deleteDescription(conquery, id);
+
+		assertThat(delete)
+				.describedAs("Response = `%s`", delete)
+				.returns(Response.Status.Family.SUCCESSFUL,response -> response.getStatusInfo().getFamily());
+
+		{
+			final Set<SecondaryIdDescription> secondaryIds = fetchSecondaryIdDescriptions(conquery);
+
+			log.info("{}", secondaryIds);
+
+			assertThat(secondaryIds)
+					.isEmpty();
+		}
+
+
+
 
 	}
 
@@ -86,15 +120,30 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 											   "dataset", conquery.getDataset().getName()
 									   ));
 
-
-
-
 		return conquery.getClient()
 					   .target(uri)
 					   .request(MediaType.APPLICATION_JSON_TYPE)
 					   .post(Entity.entity(
 							   description, MediaType.APPLICATION_JSON_TYPE
-									  ));
+					   ));
+	}
+
+
+	private Response deleteDescription(StandaloneSupport conquery, SecondaryIdDescriptionId id) {
+		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("admin"), AdminDatasetResource.class, "deleteSecondaryId")
+									   .host("localhost")
+									   .scheme("http")
+									   .port(conquery.getAdminPort())
+									   .buildFromMap(Map.of(
+											   "dataset", conquery.getDataset().getName(),
+											   "secondaryId", id
+									   ));
+
+
+		return conquery.getClient()
+					   .target(uri)
+					   .request()
+					   .delete();
 	}
 
 }

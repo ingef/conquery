@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,10 +34,10 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
@@ -131,16 +132,21 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("concepts")
-	public void addConcept(Concept<?> concept) throws IOException, JSONException, ConfigurationException {
+	public void addConcept(Concept<?> concept) throws JSONException {
 		processor.addConcept(namespace.getDataset(), concept);
 	}
 
 	@POST
 	@Path("secondaryId")
-	public void addSecondaryId(SecondaryIdDescription secondaryId) throws IOException, JSONException, ConfigurationException {
+	public void addSecondaryId(SecondaryIdDescription secondaryId) {
 		processor.addSecondaryId(namespace, secondaryId);
 	}
 
+	@DELETE
+	@Path("secondaryId/{" + SECONDARY_ID + "}")
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescriptionId secondaryId) {
+		processor.deleteSecondaryId(secondaryId);
+	}
 
 	@POST
 	@Path("structure")

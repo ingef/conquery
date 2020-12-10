@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -24,12 +24,12 @@ public class ConceptNode extends QPChainNode {
 	private final ConceptElement<?>[] concepts;
 	private final long requiredBits;
 	private final Connector resolvedConnector;
-	private final SecondaryId selectedSecondaryId;
+	private final SecondaryIdDescriptionId selectedSecondaryId;
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, QPNode child, Connector resolvedConnector, SecondaryId selectedSecondaryId) {
+	public ConceptNode(ConceptElement[] concepts, long requiredBits, QPNode child, Connector resolvedConnector, SecondaryIdDescriptionId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;

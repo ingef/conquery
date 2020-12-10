@@ -8,7 +8,7 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -21,7 +21,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable {
 	@JsonManagedReference @Valid
 	private IdMap<TableId, Table> tables = new IdMap<>();
 
-	private IdMap<SecondaryId, SecondaryIdDescription> secondaryIds = new IdMap<>();
+	private IdMap<SecondaryIdDescriptionId, SecondaryIdDescription> secondaryIds = new IdMap<>();
 
 	// TODO: 09.01.2020 fk: Maintain concepts in dataset as well, or get rid of tables, but don't do both.
 

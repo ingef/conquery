@@ -18,6 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
@@ -55,6 +56,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -624,13 +626,26 @@ public class AdminProcessor {
 	}
 
 	public void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
-		secondaryId.setDataset(namespace.getDataset());
+		final Dataset dataset = namespace.getDataset();
+		secondaryId.setDataset(dataset);
 
 		log.trace("Received new SecondaryId {}", secondaryId);
 		log.info("Received new SecondaryId[{}]", secondaryId.getId());
 
-		namespace.getDataset().getSecondaryIds().add(secondaryId);
-		namespace.getStorage().updateDataset(namespace.getDataset());
+		dataset.getSecondaryIds().add(secondaryId);
+		namespace.getStorage().updateDataset(dataset);
 	}
 
+	public void deleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
+		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset());
+		final Dataset dataset = namespace.getDataset();
+
+		if(dataset.getSecondaryIds().remove(secondaryId) == null){
+			throw new NotFoundException();
+		}
+
+		log.info("Deleting SecondaryId[{}]", secondaryId);
+
+		namespace.getStorage().updateDataset(dataset);
+	}
 }

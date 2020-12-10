@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,11 +41,11 @@ public class Table extends Labeled<TableId> {
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
 	public boolean isDistinctSecondaryIds() {
-		Set<SecondaryId> secondaryIds = new HashSet<>();
+		Set<SecondaryIdDescription> secondaryIds = new HashSet<>();
 		for (Column column : columns) {
-			SecondaryId secondaryId = column.getSecondaryId();
+			SecondaryIdDescription secondaryId = column.getSecondaryId();
 			if (secondaryId != null && !secondaryIds.add(secondaryId)) {
-				log.error("SecondaryId[{}] has duplicates", secondaryId);
+				log.error("{} is duplicated", secondaryId);
 				return false;
 			}
 		}

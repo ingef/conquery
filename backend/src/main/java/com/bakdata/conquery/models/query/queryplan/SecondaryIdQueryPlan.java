@@ -9,7 +9,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -22,9 +22,9 @@ import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * This class is able to execute a typical ConceptQueryPlan, but will create
- * one result per distinct value in a {@link SecondaryId} Column.
+ * one result per distinct value in a {@link SecondaryIdDescriptionId} Column.
  *
- * @implNote This class will first execute the Query on all Tables carrying the selected {@link SecondaryId}. Which will then be joined with all Tables that don't have a {@link SecondaryId}, or are explicitly excluded (via {@link com.bakdata.conquery.models.query.concept.specific.CQConcept#excludeFromSecondaryIdQuery}.
+ * @implNote This class will first execute the Query on all Tables carrying the selected {@link SecondaryIdDescriptionId}. Which will then be joined with all Tables that don't have a {@link SecondaryIdDescriptionId}, or are explicitly excluded (via {@link com.bakdata.conquery.models.query.concept.specific.CQConcept#excludeFromSecondaryIdQuery}.
  *
  * This Query likely uses a lot of memory!
  */
@@ -34,7 +34,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class SecondaryIdQueryPlan implements QueryPlan {
 
 	private final ConceptQueryPlan query;
-	private final SecondaryId secondaryId;
+	private final SecondaryIdDescriptionId secondaryId;
 
 	private final Set<ColumnId> tablesWithSecondaryId;
 	private final Set<TableId> tablesWithoutSecondaryId;
