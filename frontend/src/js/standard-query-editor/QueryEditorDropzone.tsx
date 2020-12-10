@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import T from "i18n-react";
@@ -13,14 +13,7 @@ import {
 } from "../common/constants/dndTypes";
 import type { QueryIdT } from "../api/types";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
-
-interface PropsT {
-  isInitial?: boolean;
-  isAnd?: boolean;
-  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
-  onDropFile: (file: File) => void;
-  onLoadPreviousQuery: (id: QueryIdT) => void;
-}
+import { DropTargetMonitor } from "react-dnd";
 
 const DROP_TYPES = [CONCEPT_TREE_NODE, QUERY_NODE, PREVIOUS_QUERY];
 
@@ -79,14 +72,22 @@ const Row = styled("div")`
   align-items: center;
 `;
 
-const QueryEditorDropzone: React.FC<PropsT> = ({
+interface PropsT {
+  isInitial?: boolean;
+  isAnd?: boolean;
+  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropFile: (file: File) => void;
+  onLoadPreviousQuery: (id: QueryIdT) => void;
+}
+
+const QueryEditorDropzone: FC<PropsT> = ({
   isAnd,
   isInitial,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode,
 }) => {
-  const onDrop = (props, monitor) => {
+  const onDrop = (_: any, monitor: DropTargetMonitor) => {
     const item = monitor.getItem();
 
     if (item.files) {

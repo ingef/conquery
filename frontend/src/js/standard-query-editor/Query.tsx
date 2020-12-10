@@ -4,7 +4,7 @@ import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
 import T from "i18n-react";
 
-import type { DatasetIdT, DateRangeT } from "../api/types";
+import type { DatasetIdT } from "../api/types";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
@@ -31,6 +31,7 @@ import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroup from "./QueryGroup";
 import { StateT } from "app-types";
 import { TreesT } from "../concept-trees/reducer";
+import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 
 const Container = styled("div")`
   height: 100%;
@@ -92,8 +93,8 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
 
   const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) =>
     dispatch(expandPreviousQuery(selectedDatasetId, rootConcepts, q));
-  const onLoadPreviousQuery = (q: PreviousQueryQueryNodeType) =>
-    dispatch(loadPreviousQuery(selectedDatasetId, q));
+  const onLoadPreviousQuery = (queryId: PreviousQueryIdT) =>
+    dispatch(loadPreviousQuery(selectedDatasetId, queryId));
 
   return (
     <Container>
@@ -106,40 +107,36 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
         />
       ) : (
         <Groups>
-          {query
-            .map((group, andIdx) => [
-              <QueryGroup
-                key={andIdx}
-                group={group}
-                andIdx={andIdx}
-                onDropNode={(item) => onDropOrNode(item, andIdx)}
-                onDropFile={(file: File) => onDropConceptListFile(file, andIdx)}
-                onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
-                onDeleteGroup={(orIdx: number) => onDeleteGroup(andIdx, orIdx)}
-                onEditClick={(orIdx: number) =>
-                  onSelectNodeForEditing(andIdx, orIdx)
-                }
-                onExpandClick={onExpandPreviousQuery}
-                onExcludeClick={() => onToggleExcludeGroup(andIdx)}
-                onDateClick={() => onQueryGroupModalSetNode(andIdx)}
-                onLoadPreviousQuery={onLoadPreviousQuery}
-                onToggleTimestamps={(orIdx: number) =>
-                  onToggleTimestamps(andIdx, orIdx)
-                }
-              />,
-              <QueryGroupConnector key={`${andIdx}.and`}>
-                {T.translate("common.and")}
-              </QueryGroupConnector>,
-            ])
-            .concat(
-              <QueryEditorDropzone
-                key={query.length + 1}
-                isAnd
-                onDropNode={onDropAndNode}
-                onDropFile={(file) => onDropConceptListFile(file, null)}
-                onLoadPreviousQuery={onLoadPreviousQuery}
-              />
-            )}
+          {query.map((group, andIdx) => [
+            <QueryGroup
+              key={andIdx}
+              group={group}
+              andIdx={andIdx}
+              onDropNode={(item) => onDropOrNode(item, andIdx)}
+              onDropFile={(file: File) => onDropConceptListFile(file, andIdx)}
+              onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
+              onDeleteGroup={(orIdx: number) => onDeleteGroup(andIdx, orIdx)}
+              onEditClick={(orIdx: number) =>
+                onSelectNodeForEditing(andIdx, orIdx)
+              }
+              onExpandClick={onExpandPreviousQuery}
+              onExcludeClick={() => onToggleExcludeGroup(andIdx)}
+              onDateClick={() => onQueryGroupModalSetNode(andIdx)}
+              onLoadPreviousQuery={onLoadPreviousQuery}
+              onToggleTimestamps={(orIdx: number) =>
+                onToggleTimestamps(andIdx, orIdx)
+              }
+            />,
+            <QueryGroupConnector key={`${andIdx}.and`}>
+              {T.translate("common.and")}
+            </QueryGroupConnector>,
+          ])}
+          <QueryEditorDropzone
+            isAnd
+            onDropNode={onDropAndNode}
+            onDropFile={(file) => onDropConceptListFile(file, null)}
+            onLoadPreviousQuery={onLoadPreviousQuery}
+          />
         </Groups>
       )}
     </Container>
