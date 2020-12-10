@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.models.common.CDateSet;

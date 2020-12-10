@@ -9,7 +9,7 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;

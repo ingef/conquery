@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1.forms;
+package com.bakdata.conquery.models.forms.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.Locale;
 
 import c10n.C10N;
+import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.internationalization.DateContextModeC10n;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public enum DateContextMode {
+public enum DateContextMode implements DateRangeSubSampler {
 	/**
 	 * For returning contexts with a single {@link CDateRange} for the entire
 	 * {@link FeatureGroup}.
@@ -91,6 +92,73 @@ public enum DateContextMode {
 
 			return C10N.get(DateContextModeC10n.class, locale).day();
 		}
+	},
+
+	YEARS_RELATIVE_TO_START_QUARTER_ALIGNED(COMPLETE) {
+		@Override
+		public List<CDateRange> subdivideRange(CDateRange range) {
+			List<CDateRange> result = new ArrayList<>();
+			List<CDateRange> quarters = range.getCoveredQuarters();
+
+			int quarterCount = 1;
+			int yearStart = 0;
+			for (CDateRange quarter : quarters) {
+				if (quarterCount%4 == 1){
+					// Start a new year
+					yearStart = quarter.getMinValue();
+				}
+				if (quarterCount%4 == 0){
+					// Finish a year
+					result.add(CDateRange.of(yearStart, quarter.getMaxValue()));
+				}
+				quarterCount++;
+			}
+
+			if(quarterCount%4 != 1) {
+				// The loop did not fullfill the last year it begun
+				result.add(CDateRange.of(yearStart, quarters.get(quarters.size()-1).getMaxValue()));
+			}
+
+			return result;
+		}
+
+		@Override
+		public String toString(Locale locale) {
+			return null;
+		}
+	},
+	YEARS_RELATIVE_TO_END_QUARTER_ALIGNED(COMPLETE) {
+		@Override
+		public List<CDateRange> subdivideRange(CDateRange range) {
+			List<CDateRange> result = new ArrayList<>();
+			List<CDateRange> quarters = Lists.reverse(range.getCoveredQuarters());
+
+			int quarterCount = 1;
+			int yearEnd = 0;
+			for (CDateRange quarter : quarters) {
+				if (quarterCount%4 == 1){
+					// Start a new year
+					yearEnd = quarter.getMaxValue();
+				}
+				if (quarterCount%4 == 0){
+					// Finish a year
+					result.add(CDateRange.of(quarter.getMinValue(), yearEnd));
+				}
+				quarterCount++;
+			}
+
+			if(quarterCount%4 != 1) {
+				// The loop did not fullfill the last year it begun
+				result.add(CDateRange.of(quarters.get(quarters.size()-1).getMinValue(), yearEnd));
+			}
+
+			return Lists.reverse(result);
+		}
+
+		@Override
+		public String toString(Locale locale) {
+			return null;
+		}
 	};
 	
 	@JsonIgnore
@@ -113,8 +181,4 @@ public enum DateContextMode {
 		return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
 		
 	}
-
-	public abstract List<CDateRange> subdivideRange(CDateRange range);
-
-	public abstract String toString(Locale locale);
 }

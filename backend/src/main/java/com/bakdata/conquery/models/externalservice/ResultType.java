@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.externalservice;
 
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.MajorTypeId;

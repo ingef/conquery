@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.models.common.CDate;
@@ -108,10 +107,10 @@ public class DateContext {
 	 *                    event belongs.
 	 * @param featureTime The number of feature timeunit ranges.
 	 * @param outcomeTime The number of outcome timeunit ranges.
-	 * @param timeUnit
+	 * @param calendarAlignmentMode
 	 * @return
 	 */
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<DateContextMode> subdivisionModes) {
+	public static List<DateContext> generateRelativeContexts2(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode calendarAlignmentMode, List<DateContextMode> subdivisionModes) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -120,8 +119,8 @@ public class DateContext {
 		
 		LocalDate eventdate = CDate.toLocalDate(event);
 
-		CDateRange featureRange = generateFeatureRange(event, indexPlacement, featureTime, timeUnit);
-		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
+		CDateRange featureRange = generateFeatureRange(event, indexPlacement, featureTime, calendarAlignmentMode);
+		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, calendarAlignmentMode);
 
 
 		for(DateContextMode mode : subdivisionModes) {
@@ -129,7 +128,7 @@ public class DateContext {
 			/*
 			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
 			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
-			 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
+			 *  If the index placement is NEUTRAL, the event date is not included in any date range and no range index is marked with 0.
 			 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
 			 */
 			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
@@ -163,6 +162,58 @@ public class DateContext {
 		return dcList;
 	}
 
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<DateContextMode> subdivisionModes) {
+		if (featureTime < 1 && outcomeTime < 1) {
+			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
+					+ "; outcomeTime: " + outcomeTime + ")");
+		}
+		List<DateContext> dcList = new ArrayList<>();
+
+		LocalDate eventdate = CDate.toLocalDate(event);
+
+		CDateRange featureRange = generateFeatureRange(event, indexPlacement, featureTime, timeUnit);
+		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
+
+
+		for(DateContextMode mode : subdivisionModes) {
+			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
+			/*
+			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
+			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
+			 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
+			 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
+			 */
+			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
+			for (CDateRange subRange : featureRanges) {
+				DateContext dc = new DateContext(
+						subRange,
+						FeatureGroup.FEATURE,
+						// For now there is no index for complete
+						mode.equals(DateContextMode.COMPLETE) ? null : -index,
+						eventdate,
+						mode
+				);
+				index--;
+				dcList.add(dc);
+			}
+
+			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
+			for (CDateRange subRange : mode.subdivideRange(outcomeRange)) {
+				DateContext dc = new DateContext(
+						subRange,
+						FeatureGroup.OUTCOME,
+						// For now there is no index for complete
+						mode.equals(DateContextMode.COMPLETE)? null : index,
+						eventdate,
+						mode
+				);
+				index++;
+				dcList.add(dc);
+			}
+		}
+		return dcList;
+	}
+
 	/**
 	 * Calculates the feature range.
 	 * 
@@ -173,8 +224,7 @@ public class DateContext {
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
 	 */
-	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime,
-		DateContextMode timeUnit) {
+	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, DateContextMode timeUnit) {
 		if(featureTime <= 0){
 			return null;
 		}
