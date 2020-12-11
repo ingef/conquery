@@ -185,9 +185,9 @@ public class BucketManager {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
 					Import imp = bucket.getImp();
-					if (con.getTable().getId().equals(bucket.getImp().getTable())) {
-						CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
+					CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
 
+					if (con.getTable().getId().equals(bucket.getImp().getTable())) {
 						if (storage.getCBlock(cBlockId) == null) {
 							job.addCBlock(imp, bucket, cBlockId);
 						}
@@ -197,7 +197,7 @@ public class BucketManager {
 						jobManager.addSlowJob(job);
 					}
 					else {
-						log.debug("CBlocksJob[{}] was empty", job.getLabel());
+						log.trace("CBlocksJob[{}] is empty", cBlockId);
 					}
 				}
 			}
