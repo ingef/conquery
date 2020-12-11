@@ -4,7 +4,7 @@
   "expectedCsv": "tests/query/SECONDARY_ID/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
-    "secondaryId": "secondary",
+    "secondaryId": "${dataset}.secondary",
     "root": {
       "type": "AND",
       "children": [
