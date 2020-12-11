@@ -164,6 +164,42 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		}
 	}
 
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT")
+	public static class ExternalResolveFormatError extends ContextError {
+
+		private final static String FORMAT_ROW_LENGTH = "formatRowLength";
+		private final static String DATA_ROW_LENGTH = "dataRowLength";
+		private final static String TEMPLATE = "There are ${" + FORMAT_ROW_LENGTH + "} columns in the format but ${" + DATA_ROW_LENGTH + "} in at least one row";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExternalResolveFormatError() {
+			super(TEMPLATE);
+		}
+
+		public ExternalResolveFormatError(int formatRowLength, int dataRowLength) {
+			this();
+			getContext().put(FORMAT_ROW_LENGTH, Integer.toString(formatRowLength));
+			getContext().put(DATA_ROW_LENGTH, Integer.toString(dataRowLength));
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_EMPTY")
+	public static class ExternalResolveEmptyError extends ContextError {
+
+		private final static String TEMPLATE = "None of the provided values could be resolved.";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		public ExternalResolveEmptyError() {
+			super(TEMPLATE);
+		}
+	}
+
 	/**
 	 * Unspecified error during {@link QueryPlan}-creation.
 	 */
