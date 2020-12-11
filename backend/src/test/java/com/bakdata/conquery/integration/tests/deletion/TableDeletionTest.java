@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -161,8 +160,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			// only import the deleted import/table
 			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), test.getContent().getTables().stream()
-																				   .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-																				   .map(RequiredTable::toTable).findFirst().get());
+																				 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+																				 .map(requiredTable -> requiredTable.toTable(conquery.getDataset())).findFirst().get());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables().stream()

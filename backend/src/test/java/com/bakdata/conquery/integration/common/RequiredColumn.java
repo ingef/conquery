@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +19,7 @@ public class RequiredColumn {
 	@NotNull
 	private MajorTypeId type;
 	private String sharedDictionary;
-	private SecondaryIdDescription secondaryId;
+	private String secondaryId;
 
 	public Column toColumn(Table t) {
 		Column col = new Column();
@@ -26,7 +27,15 @@ public class RequiredColumn {
 		col.setType(type);
 		col.setSharedDictionary(sharedDictionary);
 		col.setTable(t);
-		col.setSecondaryId(secondaryId);
+
+		if(!Strings.isNullOrEmpty(secondaryId)) {
+			final SecondaryIdDescription description = new SecondaryIdDescription();
+			description.setDataset(t.getDataset());
+			description.setName(secondaryId);
+
+			col.setSecondaryId(description);
+		}
+
 		return col;
 	}
 }

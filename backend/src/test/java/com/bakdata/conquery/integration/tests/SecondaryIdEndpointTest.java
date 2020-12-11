@@ -63,8 +63,6 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			final Response actual = conquery.getClient().target(uri).request().get();
 			assertThat(actual)
 					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
-
-
 		}
 
 		final Response delete = deleteDescription(conquery, id);

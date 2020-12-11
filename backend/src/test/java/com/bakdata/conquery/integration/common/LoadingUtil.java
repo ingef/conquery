@@ -73,8 +73,12 @@ public class LoadingUtil {
 	public static void importTables(StandaloneSupport support, RequiredData content) throws JSONException {
 		Dataset dataset = support.getDataset();
 
+		for (RequiredSecondaryIds secondaryId : content.getSecondaryIds()) {
+			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(),secondaryId.toSecondaryId());
+		}
+
 		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(dataset, rTable.toTable());
+			support.getDatasetsProcessor().addTable(dataset, rTable.toTable(support.getDataset()));
 		}
 	}
 	

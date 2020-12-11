@@ -15,6 +15,9 @@ public class RequiredData {
 	@NotEmpty
 	@Valid
 	private List<RequiredTable> tables;
+
+	private List<RequiredSecondaryIds> secondaryIds = Collections.emptyList();
+
 	@Valid @NotNull
 	private List<ResourceFile> previousQueryResults = Collections.emptyList();
 	private ResourceFile idMapping;
