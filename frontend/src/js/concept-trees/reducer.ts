@@ -12,30 +12,32 @@ import {
   SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  TOGGLE_SHOW_MISMATCHES
+  TOGGLE_SHOW_MISMATCHES,
 } from "./actionTypes";
 
 import { setTree } from "./globalTreeStoreHelper";
 
-export type TreesT = { [treeId: string]: ConceptT };
+export interface TreesT {
+  [treeId: string]: ConceptT;
+}
 
-export type SearchT = {
+export interface SearchT {
   allOpen: boolean;
   showMismatches: boolean;
   loading: boolean;
   query: string;
   words: string[] | null;
-  result: null | { [key: ConceptIdT]: number };
+  result: null | Record<ConceptIdT, number>;
   resultCount: number;
   duration: number;
-};
+}
 
-export type ConceptTreesStateT = {
+export interface ConceptTreesStateT {
   loading: boolean;
   version: any;
   trees: TreesT;
   search: SearchT;
-};
+}
 
 const initialSearch = {
   allOpen: false,
@@ -45,14 +47,14 @@ const initialSearch = {
   words: null,
   result: null,
   resultCount: 0,
-  duration: 0
+  duration: 0,
 };
 
 const initialState: ConceptTreesStateT = {
   loading: false,
   version: null,
   trees: {},
-  search: initialSearch
+  search: initialSearch,
 };
 
 const setSearchTreesSuccess = (
@@ -77,8 +79,8 @@ const setSearchTreesSuccess = (
       showMismatches: resultCount >= AUTO_UNFOLD_AT,
       loading: false,
       words: query.split(" "),
-      duration: Date.now() - state.search.duration
-    }
+      duration: Date.now() - state.search.duration,
+    },
   };
 };
 
@@ -97,8 +99,8 @@ const setSearchTreesStart = (
       words: query ? query.split(" ") : [],
       result: {},
       resultCount: 0,
-      duration: Date.now()
-    }
+      duration: Date.now(),
+    },
   };
 };
 
@@ -113,9 +115,9 @@ const updateTree = (
       ...state.trees,
       [action.payload.treeId]: {
         ...state.trees[action.payload.treeId],
-        ...attributes
-      }
-    }
+        ...attributes,
+      },
+    },
   };
 };
 
@@ -149,7 +151,7 @@ const setTreeError = (
 ): ConceptTreesStateT => {
   return updateTree(state, action, {
     loading: false,
-    error: action.payload.message
+    error: action.payload.message,
   });
 };
 
@@ -169,7 +171,7 @@ const setLoadTreesSuccess = (
     ...state,
     loading: false,
     version: version,
-    trees: concepts
+    trees: concepts,
   };
 };
 
@@ -205,12 +207,12 @@ const conceptTrees = (
       return {
         ...state,
         search: { ...state.search, loading: false, duration: 0 },
-        error: action.payload.message
+        error: action.payload.message,
       };
     case CLEAR_SEARCH_QUERY:
       return {
         ...state,
-        search: initialSearch
+        search: initialSearch,
       };
     case TOGGLE_SHOW_MISMATCHES:
       return {
@@ -218,8 +220,8 @@ const conceptTrees = (
         search: {
           ...state.search,
           allOpen: !state.search.showMismatches ? false : state.search.allOpen,
-          showMismatches: !state.search.showMismatches
-        }
+          showMismatches: !state.search.showMismatches,
+        },
       };
     default:
       return state;

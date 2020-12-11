@@ -14,6 +14,7 @@ bin
 app/dist
 conquery-*.tgz
 package-lock.json
+build
 
 # JetBrains WebStorm
 .idea
