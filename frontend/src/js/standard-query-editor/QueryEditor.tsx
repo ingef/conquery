@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
@@ -8,9 +8,9 @@ import type { DatasetIdT } from "../api/types";
 import Query from "./Query";
 import StandardQueryNodeEditor from "./StandardQueryNodeEditor";
 
-type PropsType = {
+interface PropsT {
   selectedDatasetId: DatasetIdT;
-};
+}
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -19,11 +19,11 @@ const Root = styled("div")`
   padding: 0 10px 10px 10px;
 `;
 
-export const QueryEditor = (props: PropsType) => (
+export const QueryEditor: FC<PropsT> = ({ selectedDatasetId }) => (
   <Root>
-    <Query selectedDatasetId={props.selectedDatasetId} />
-    <StandardQueryNodeEditor datasetId={props.selectedDatasetId} />
-    <QueryUploadConceptListModal selectedDatasetId={props.selectedDatasetId} />
+    <Query selectedDatasetId={selectedDatasetId} />
+    <StandardQueryNodeEditor datasetId={selectedDatasetId} />
+    <QueryUploadConceptListModal selectedDatasetId={selectedDatasetId} />
     <QueryGroupModal />
   </Root>
 );

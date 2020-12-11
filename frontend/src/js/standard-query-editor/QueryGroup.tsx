@@ -10,13 +10,14 @@ import type {
   DraggedQueryType,
   QueryGroupType,
 } from "./types";
+import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
   max-width: 250px;
 `;
 
-const Group = styled("div")`
+const Group = styled("div")<{ excluded?: boolean }>`
   position: relative;
   padding: 6px 8px 8px;
   background-color: ${({ theme }) => theme.col.graySuperLight};
@@ -43,14 +44,14 @@ interface PropsT {
   group: QueryGroupType;
   andIdx: number;
   onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
-  onDropFile: Function;
-  onDeleteNode: Function;
+  onDropFile: (file: File) => void;
+  onDeleteNode: (idx: number) => void;
   onEditClick: Function;
   onExcludeClick: Function;
   onExpandClick: Function;
   onDateClick: Function;
   onDeleteGroup: Function;
-  onLoadPreviousQuery: Function;
+  onLoadPreviousQuery: (id: PreviousQueryIdT) => void;
   onToggleTimestamps: Function;
 }
 

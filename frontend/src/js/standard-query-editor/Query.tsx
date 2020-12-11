@@ -32,6 +32,7 @@ import QueryGroup from "./QueryGroup";
 import { StateT } from "app-types";
 import { TreesT } from "../concept-trees/reducer";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import QueryHeader from "./QueryHeader";
 
 const Container = styled("div")`
   height: 100%;
@@ -106,38 +107,41 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
           onLoadPreviousQuery={onLoadPreviousQuery}
         />
       ) : (
-        <Groups>
-          {query.map((group, andIdx) => [
-            <QueryGroup
-              key={andIdx}
-              group={group}
-              andIdx={andIdx}
-              onDropNode={(item) => onDropOrNode(item, andIdx)}
-              onDropFile={(file: File) => onDropConceptListFile(file, andIdx)}
-              onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
-              onDeleteGroup={(orIdx: number) => onDeleteGroup(andIdx, orIdx)}
-              onEditClick={(orIdx: number) =>
-                onSelectNodeForEditing(andIdx, orIdx)
-              }
-              onExpandClick={onExpandPreviousQuery}
-              onExcludeClick={() => onToggleExcludeGroup(andIdx)}
-              onDateClick={() => onQueryGroupModalSetNode(andIdx)}
+        <>
+          <QueryHeader />
+          <Groups>
+            {query.map((group, andIdx) => [
+              <QueryGroup
+                key={andIdx}
+                group={group}
+                andIdx={andIdx}
+                onDropNode={(item) => onDropOrNode(item, andIdx)}
+                onDropFile={(file: File) => onDropConceptListFile(file, andIdx)}
+                onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
+                onDeleteGroup={(orIdx: number) => onDeleteGroup(andIdx, orIdx)}
+                onEditClick={(orIdx: number) =>
+                  onSelectNodeForEditing(andIdx, orIdx)
+                }
+                onExpandClick={onExpandPreviousQuery}
+                onExcludeClick={() => onToggleExcludeGroup(andIdx)}
+                onDateClick={() => onQueryGroupModalSetNode(andIdx)}
+                onLoadPreviousQuery={onLoadPreviousQuery}
+                onToggleTimestamps={(orIdx: number) =>
+                  onToggleTimestamps(andIdx, orIdx)
+                }
+              />,
+              <QueryGroupConnector key={`${andIdx}.and`}>
+                {T.translate("common.and")}
+              </QueryGroupConnector>,
+            ])}
+            <QueryEditorDropzone
+              isAnd
+              onDropNode={onDropAndNode}
+              onDropFile={(file) => onDropConceptListFile(file, null)}
               onLoadPreviousQuery={onLoadPreviousQuery}
-              onToggleTimestamps={(orIdx: number) =>
-                onToggleTimestamps(andIdx, orIdx)
-              }
-            />,
-            <QueryGroupConnector key={`${andIdx}.and`}>
-              {T.translate("common.and")}
-            </QueryGroupConnector>,
-          ])}
-          <QueryEditorDropzone
-            isAnd
-            onDropNode={onDropAndNode}
-            onDropFile={(file) => onDropConceptListFile(file, null)}
-            onLoadPreviousQuery={onLoadPreviousQuery}
-          />
-        </Groups>
+            />
+          </Groups>
+        </>
       )}
     </Container>
   );

@@ -1,6 +1,5 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import type { FieldPropsType } from "redux-form";
 
 const Root = styled("p")`
   margin: 0;
@@ -37,24 +36,28 @@ const Option = styled("span")<{ active?: boolean }>`
   }
 `;
 
-type OptionsType = {
+interface OptionsT {
   label: string;
   value: string;
-};
+}
 
-type PropsType = FieldPropsType & {
-  options: OptionsType[];
-};
+interface PropsT {
+  options: OptionsT[];
+  input: {
+    value: any;
+    onChange: (value: any) => void;
+  };
+}
 
-const ToggleButton = (props: PropsType) => {
+const ToggleButton: FC<PropsT> = ({ options, input }) => {
   return (
     <Root>
-      {props.options.map(({ value, label }, i) => (
+      {options.map(({ value, label }, i) => (
         <Option
           key={i}
-          active={props.input.value === value}
+          active={input.value === value}
           onClick={() => {
-            if (value !== props.input.value) props.input.onChange(value);
+            if (value !== input.value) input.onChange(value);
           }}
         >
           {label}
