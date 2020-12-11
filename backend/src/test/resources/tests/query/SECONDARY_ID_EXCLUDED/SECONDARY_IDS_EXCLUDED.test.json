@@ -72,6 +72,11 @@
     }
   ],
   "content": {
+    "secondaryIds": [
+      {
+        "name" : "secondary"
+      }
+    ],
     "tables": [
       {
         "csv": "tests/query/SECONDARY_ID_EXCLUDED/content.csv",

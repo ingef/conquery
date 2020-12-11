@@ -83,6 +83,11 @@
     }
   ],
   "content": {
+    "secondaryIds": [
+      {
+        "name" : "secondary"
+      }
+    ],
     "tables": [
       {
         "csv": "tests/query/SECONDARY_ID/content.csv",
