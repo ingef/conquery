@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
@@ -59,6 +60,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), environment, getValidator())
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
+
+				for (SecondaryIdDescription secondaryIdDescription : ds.getSecondaryIds().values()) {
+					centralRegistry.register(secondaryIdDescription);
+				}
+
 				for(Table t:ds.getTables().values()) {
 					centralRegistry.register(t);
 					for (Column c : t.getColumns()) {
@@ -73,6 +79,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					}
 					centralRegistry.remove(t);
 				}
+
+				for (SecondaryIdDescription secondaryIdDescription : ds.getSecondaryIds().values()) {
+					centralRegistry.remove(secondaryIdDescription);
+				}
+
 				centralRegistry.remove(ds);
 			});
 
