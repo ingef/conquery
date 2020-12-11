@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.events.parser;
 
 import javax.annotation.Nonnull;
 
+import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import lombok.Getter;
@@ -38,6 +39,10 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 	protected abstract ColumnStore<MAJOR_JAVA_TYPE> decideType();
 	
 	public final ColumnStore<MAJOR_JAVA_TYPE> findBestType() {
+		if (getLines() == 0 || getLines() == getNullLines()) {
+			return new EmptyStore<>();
+		}
+
 		ColumnStore<MAJOR_JAVA_TYPE> dec = decideType();
 		copyLineCounts(dec);
 		return dec;

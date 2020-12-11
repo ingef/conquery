@@ -114,6 +114,4 @@ class IntegerParserTest {
 
 		assertChain(root, span / 2, clazz);
 	}
-
-
 }
