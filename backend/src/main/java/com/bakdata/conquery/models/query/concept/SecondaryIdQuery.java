@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.CheckForNull;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -28,31 +27,30 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
 public class SecondaryIdQuery extends IQuery {
 
-	@Valid
 	@NotNull
-	private final CQElement root;
+	private CQElement root;
+
+	@NsIdRef
+	private SecondaryIdDescription secondaryId;
+
 	/**
 	 * @apiNote not using {@link ConceptQuery} directly in the API-spec simplifies the API.
 	 */
 	@JsonIgnore
-	private final ConceptQuery query;
+	private ConceptQuery query;
 
-	@NotNull
-	@NsIdRef
-	private final SecondaryIdDescription secondaryId;
 
-	@JsonCreator
-	public SecondaryIdQuery(@Valid @NotNull CQElement root, @NotNull SecondaryIdDescription secondaryId) {
+	public void setRoot(@NotNull CQElement root){
 		this.root = root;
-		this.secondaryId = secondaryId;
 		this.query = new ConceptQuery(root);
 	}
 
@@ -103,7 +101,7 @@ public class SecondaryIdQuery extends IQuery {
 	private Column findSecondaryIdColumn(Table table) {
 
 		for (Column col : table.getColumns()) {
-			if (!secondaryId.equals(col.getSecondaryId().getId())) {
+			if (!secondaryId.equals(col.getSecondaryId())) {
 				continue;
 			}
 
@@ -135,9 +133,4 @@ public class SecondaryIdQuery extends IQuery {
 		root.visit(visitor);
 	}
 
-	public static enum QueryPlanPhase {
-		None,
-		WithId,
-		WithoutId
-	}
 }

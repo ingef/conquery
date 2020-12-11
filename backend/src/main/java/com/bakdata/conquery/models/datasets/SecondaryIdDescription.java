@@ -3,13 +3,14 @@ package com.bakdata.conquery.models.datasets;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
-@NoArgsConstructor(onConstructor_ = {@JsonCreator})
-@Data
+@NoArgsConstructor
+@Setter
+@Getter
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> {
 

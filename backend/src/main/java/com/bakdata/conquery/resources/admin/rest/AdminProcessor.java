@@ -637,6 +637,8 @@ public class AdminProcessor {
 
 		dataset.getSecondaryIds().add(secondaryId);
 		namespace.getStorage().updateDataset(dataset);
+
+		namespace.sendToAll(new UpdateDataset(dataset));
 	}
 
 	public void deleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
