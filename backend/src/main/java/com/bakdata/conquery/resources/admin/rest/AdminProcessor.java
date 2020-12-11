@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
@@ -50,6 +52,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -640,8 +643,25 @@ public class AdminProcessor {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset());
 		final Dataset dataset = namespace.getDataset();
 
+		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
+		final List<Column> dependents = dataset.getTables().values().stream()
+											   .map(Table::getColumns).flatMap(Arrays::stream)
+											   .filter(column -> column.getSecondaryId() != null)
+											   .filter(column -> column.getSecondaryId().getId().equals(secondaryId))
+											   .collect(Collectors.toList());
+
+		if(!dependents.isEmpty()){
+			log.error(
+					"SecondaryId[{}] still present on {}",
+					secondaryId,
+					dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet())
+			);
+
+			throw new ForbiddenException("SecondaryId still has dependencies.");
+		}
+
 		if(dataset.getSecondaryIds().remove(secondaryId) == null){
-			throw new NotFoundException();
+			throw new NotFoundException(String.format("Did not find SecondaryId[%s]", secondaryId));
 		}
 
 		log.info("Deleting SecondaryId[{}]", secondaryId);

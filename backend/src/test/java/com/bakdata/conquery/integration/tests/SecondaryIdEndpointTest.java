@@ -31,8 +31,6 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 
-
-
 		final SecondaryIdDescription description = new SecondaryIdDescription();
 		description.setDescription("description-DESCRIPTION");
 		description.setName("description-NAME");
@@ -68,6 +66,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 
 		}
+
 		final Response delete = deleteDescription(conquery, id);
 
 		assertThat(delete)
@@ -82,10 +81,6 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			assertThat(secondaryIds)
 					.isEmpty();
 		}
-
-
-
-
 	}
 
 	private Set<SecondaryIdDescription> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
