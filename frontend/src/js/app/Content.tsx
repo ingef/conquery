@@ -2,15 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-// Also, set up the drag and drop context
-import { DndProvider } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
-import TouchBackend from "react-dnd-touch-backend";
-import MultiBackend, {
-  Preview,
-  TouchTransition
-} from "react-dnd-multi-backend";
-// import HTML5toTouch from "react-dnd-multi-backend/lib/HTML5toTouch";
 import SplitPane from "react-split-pane";
 import { withRouter } from "react-router";
 
@@ -20,6 +11,7 @@ import ActivateTooltip from "../tooltip/ActivateTooltip";
 import type { TabT } from "../pane/types";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
+import DndProvider from "./DndProvider";
 
 // ADDING TO react-split-pane STYLES
 // Because otherwise, vertical panes don't expand properly in Safari
@@ -37,46 +29,14 @@ const Root = styled("div")`
   ${reactSplitPaneSafariFix};
 `;
 
-const PreviewItem = styled("div")`
-  background-color: ${({ theme }) => theme.col.grayVeryLight};
-  opacity: 0.9;
-  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  width: ${({ width }) => `${width}px`};
-  height: ${({ height }) => `${height}px`};
-`;
-
-// The mobile drag preview doesn't seem to be working at the moment
-// Consider upgrading react-dnd BUT somehow try to keep IE11 compatibility
-const generatePreview = (type, item, style) => {
-  console.log("PREVIEW RENDERED", item.width, item.height, style);
-  return <PreviewItem width={item.width} height={item.height} style={style} />;
-};
-
-type PropsType = {
+interface PropsT {
   displayTooltip: boolean;
   rightTabs: TabT[];
-};
+}
 
-const CustomHTML5toTouch = {
-  backends: [
-    {
-      backend: HTML5Backend
-    },
-    {
-      backend: TouchBackend,
-      transition: TouchTransition,
-      options: { enableMouseEvents: true }, // Note that you can call your backends with options
-      preview: true,
-      skipDispatchOnTransition: true
-    }
-  ]
-};
-
-const Content = ({ displayTooltip, rightTabs }: PropsType) => {
+const Content = ({ displayTooltip, rightTabs }: PropsT) => {
   return (
-    <DndProvider backend={MultiBackend} options={CustomHTML5toTouch}>
+    <DndProvider>
       <Root>
         <SplitPane
           split="vertical"
@@ -97,14 +57,13 @@ const Content = ({ displayTooltip, rightTabs }: PropsType) => {
             <RightPane tabs={rightTabs} />
           </SplitPane>
         </SplitPane>
-        <Preview generator={generatePreview} />
       </Root>
     </DndProvider>
   );
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  displayTooltip: state.tooltip.displayTooltip
+  displayTooltip: state.tooltip.displayTooltip,
 });
 
 const ConnectedContent = connect(mapStateToProps)(Content);
