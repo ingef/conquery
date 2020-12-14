@@ -154,7 +154,7 @@ public class ConceptsProcessor {
 
 	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
 		int pageNumber = pageNumberOpt.orElse(0);
-		int itemsPerPage = itemsPerPageOpt.orElse(Integer.MAX_VALUE);
+		int itemsPerPage = itemsPerPageOpt.orElse(50);
 		
 		if(pageNumber < 0) {
 			throw new IllegalArgumentException("Page number must be 0 or a positive integer");
@@ -184,7 +184,7 @@ public class ConceptsProcessor {
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.of(50), FilterSearch.FilterSearchType.CONTAINS::score);
+			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.empty(), FilterSearch.FilterSearchType.CONTAINS::score);
 		}
 		
 		String value = filter.getValueFor(text);
@@ -208,7 +208,7 @@ public class ConceptsProcessor {
 		result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
 		
 		if(numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
-			log.warn("The quick search return the maximum number of results ({}) which probably mean not all possible results are returned.", Integer.MAX_VALUE);
+			log.warn("The quick search returned the maximum number of results ({}) which probably means not all possible results are returned.", Integer.MAX_VALUE);
 		}
 		
 		return result
