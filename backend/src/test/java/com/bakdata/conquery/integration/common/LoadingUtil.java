@@ -78,7 +78,7 @@ public class LoadingUtil {
 		}
 
 		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(dataset, rTable.toTable(support.getDataset()));
+			support.getDatasetsProcessor().addTable(dataset, rTable.toTable(support.getDataset()), support.getNamespace());
 		}
 	}
 	

@@ -95,7 +95,7 @@ public class AdminDatasetResource extends HAdmin {
 		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
 				Table t = mapper.readValue(is, Table.class);
-				processor.addTable(namespace.getDataset(), t);
+				processor.addTable(namespace.getDataset(), t, namespace);
 			}
 		}
 	}

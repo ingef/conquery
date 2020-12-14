@@ -149,7 +149,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(dataset, rTable.toTable(support.getDataset()));
+			support.getDatasetsProcessor().addTable(dataset, rTable.toTable(support.getDataset()), support.getNamespace());
 		}
 	}
 }

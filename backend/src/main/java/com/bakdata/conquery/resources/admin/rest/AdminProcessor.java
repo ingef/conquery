@@ -114,7 +114,7 @@ public class AdminProcessor {
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final int entityBucketSize;
 
-	public void addTable(Dataset dataset, Table table) throws JSONException {
+	public void addTable(Dataset dataset, Table table, Namespace namespace) throws JSONException {
 		Objects.requireNonNull(dataset);
 		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
@@ -131,8 +131,9 @@ public class AdminProcessor {
 		table.getPrimaryColumn().setPosition(Column.PRIMARY_POSITION);
 
 		dataset.getTables().add(table);
-		datasetRegistry.get(dataset.getId()).getStorage().updateDataset(dataset);
-		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
+
+		namespace.getStorage().updateDataset(dataset);
+		namespace.sendToAll(new UpdateDataset(dataset));
 		// see #143 check duplicate names
 	}
 
