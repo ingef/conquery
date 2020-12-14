@@ -44,7 +44,7 @@ public class CentralRegistry implements Injectable {
 	}
 
 	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {
-		log.trace("name = {}, class = {}", name, getClass());
+		log.trace("name = {}, class = {}, values = {}", name, getClass(), map.keySet());
 
 		Object res = map.get(name);
 		if (res != null) {

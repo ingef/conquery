@@ -62,6 +62,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				centralRegistry.register(ds);
 
 				for (SecondaryIdDescription secondaryIdDescription : ds.getSecondaryIds().values()) {
+					log.debug("Registering {}", secondaryIdDescription);
 					centralRegistry.register(secondaryIdDescription);
 				}
 
