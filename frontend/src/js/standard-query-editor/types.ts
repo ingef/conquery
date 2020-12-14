@@ -10,7 +10,7 @@ import type {
   SelectorT,
   TableT,
   DateRangeT,
-  DateColumnT
+  DateColumnT,
 } from "../api/types";
 
 // A concept that is part of a query node in the editor
@@ -59,13 +59,19 @@ export type SelectedDateColumnT = DateColumnT & {
 };
 
 export type TableWithFilterValueType = TableT & {
-  filters: ?FilterWithValueType[];
+  filters: FilterWithValueType[] | null;
   selects?: SelectedSelectorType[];
   dateColumn?: SelectedDateColumnT;
 };
 
 export type DraggedQueryType = {
   id: QueryIdT;
+
+  // drag info;
+  type: string;
+  width: number;
+  height: number;
+
   // eslint-disable-next-line no-use-before-define
   query?: PreviousQueryType;
   label: string;
@@ -79,12 +85,12 @@ export type DraggedQueryType = {
   error?: string;
 
   files?: void;
-  isPreviousQuery: true;
+  isPreviousQuery: boolean; // true
 };
 
 // A Query Node that is being dragged from the tree or within the standard editor.
 // Corresponds to CONCEPT_TREE_NODE and QUERY_NODE drag-and-drop types.
-export type DraggedNodeType = {
+export interface DraggedNodeType {
   ids: ConceptIdT[];
   tables: TableWithFilterValueType[];
   selects: SelectedSelectorType[];
@@ -105,7 +111,7 @@ export type DraggedNodeType = {
 
   files?: void;
   isPreviousQuery?: void;
-};
+}
 
 export type ConceptQueryNodeType = {
   ids: ConceptIdT[];

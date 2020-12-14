@@ -98,7 +98,7 @@ interface PropsT {
   onClick?: () => void;
 }
 
-export default React.forwardRef(
+export default React.forwardRef<HTMLDivElement, PropsT>(
   (
     {
       label,
@@ -114,8 +114,8 @@ export default React.forwardRef(
       disabled,
       hasChildren,
 
-      onClick
-    }: PropsT,
+      onClick,
+    },
     ref
   ) => (
     <Root ref={ref} className={className} depth={depth}>

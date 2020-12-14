@@ -3,22 +3,27 @@ package com.bakdata.conquery.models.forms.configs;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
+import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,6 +38,7 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.shiro.authz.Permission;
 
 @Slf4j
 @Data
@@ -140,6 +146,20 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 */
 	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, User requestingUser){
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
+
+		/* Calculate which groups can see this query.
+		 * This is usually not done very often and should be reasonable fast, so don't cache this.
+		 */
+		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
+		for(Group group : storage.getAllGroups()) {
+			for(Permission perm : group.getPermissions()) {
+				if(perm.implies(FormConfigPermission.onInstance(Ability.READ, this.getId()))) {
+					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+					continue;
+				}
+			}
+		}
+
 		return FormConfigFullRepresentation.builder()
 			.id(getId()).formType(formType)
 			.label(label)
@@ -148,6 +168,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.own(requestingUser != null? requestingUser.getId().equals(owner) : false)
 			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
+			.groups(permittedGroups)
 			// system? TODO discuss how system is determined (may check if owning user is in a special system group or so)
 			.values(values).build();
 	}
@@ -186,6 +207,11 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@EqualsAndHashCode(callSuper = true)
 	@FieldNameConstants
 	public static class FormConfigFullRepresentation extends FormConfigOverviewRepresentation {
+
+		/**
+		 * The groups this config is shared with.
+		 */
+		private Collection<IdLabel<GroupId>> groups;
 
 		private JsonNode values;
 	}

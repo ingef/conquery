@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
@@ -28,6 +28,7 @@ import { patchFormConfigSuccess } from "./actions";
 import { setMessage } from "../../snack-message/actions";
 import { useIsLabelHighlighted } from "./selectors";
 import { useFormLabelByType } from "../stateSelectors";
+import { getWidthAndHeight } from "../../app/DndProvider";
 
 const Root = styled("div")<{ own: boolean; system: boolean; shared: boolean }>`
   margin: 0;
@@ -122,6 +123,7 @@ const FormConfig: React.FC<PropsT> = ({
   onIndicateDeletion,
   onIndicateShare,
 }) => {
+  const ref = useRef<HTMLDivElement | null>(null);
   const formLabel = useFormLabelByType(config.formType);
   const availableTags = useSelector<StateT, string[]>(
     (state) => state.formConfigs.tags
@@ -174,24 +176,29 @@ const FormConfig: React.FC<PropsT> = ({
     setIsEditingTags(false);
   };
 
-  const dragItem: FormConfigDragItem = {
-    // TODO: Try to actually measure this using ref + getBoundingClientRect
-    width: 200,
-    height: 100,
+  const item: FormConfigDragItem = {
+    height: 0,
+    width: 0,
     type: FORM_CONFIG,
     id: config.id,
     label: config.label,
   };
-
-  const [collectedProps, drag] = useDrag({
-    item: dragItem,
-    isDragging: (monitor) => monitor.isDragging(),
+  const [, drag] = useDrag({
+    item,
+    begin: (): FormConfigDragItem => ({
+      ...item,
+      ...getWidthAndHeight(ref),
+    }),
   });
 
   return (
     <Root
       ref={(instance) => {
-        if (isNotEditing) drag(instance);
+        ref.current = instance;
+
+        if (isNotEditing) {
+          drag(instance);
+        }
       }}
       own={!!config.own}
       shared={!!config.shared}

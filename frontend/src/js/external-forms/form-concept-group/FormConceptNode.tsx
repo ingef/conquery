@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import styled from "@emotion/styled";
 
@@ -7,7 +7,8 @@ import IconButton from "../../button/IconButton";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
-import * as dndTypes from "../../common/constants/dndTypes";
+import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
+import { getWidthAndHeight } from "../../app/DndProvider";
 
 const Root = styled("div")<{ active?: boolean }>`
   padding: 5px 10px;
@@ -88,18 +89,31 @@ const FormConceptNode: FC<PropsT> = ({
   expand,
 }) => {
   const rootNodeLabel = getRootNodeLabel(conceptNode);
+  const ref = useRef<HTMLDivElement | null>(null);
 
+  const item = {
+    type: FORM_CONCEPT_NODE,
+    conceptNode,
+  };
   const [, drag] = useDrag({
-    item: {
-      type: dndTypes.FORM_CONCEPT_NODE,
+    item,
+    begin: () => {
+      return {
+        ...item,
+        ...getWidthAndHeight(ref),
+      };
     },
-    begin: () => ({
-      conceptNode,
-    }),
   });
 
   return (
-    <Root ref={drag} active={hasActiveFilters} onClick={onFilterClick}>
+    <Root
+      ref={(instance) => {
+        ref.current = instance;
+        drag(instance);
+      }}
+      active={hasActiveFilters}
+      onClick={onFilterClick}
+    >
       <Left>
         {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
         <Label>{conceptNode && conceptNode.label}</Label>

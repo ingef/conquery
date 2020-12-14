@@ -612,7 +612,7 @@ const FormConceptGroup = (props: PropsType) => {
                   <DropzoneWithFileInput
                     acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
                     onSelectFile={(file) => onDropFile(file, i, j)}
-                    onDrop={(dropzoneProps, monitor) => {
+                    onDrop={(_, monitor) => {
                       const item = monitor.getItem();
 
                       if (item.files) {
