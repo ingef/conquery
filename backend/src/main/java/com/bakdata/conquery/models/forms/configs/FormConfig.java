@@ -148,7 +148,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
 
 		/* Calculate which groups can see this query.
-		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
 		for(Group group : storage.getAllGroups()) {
