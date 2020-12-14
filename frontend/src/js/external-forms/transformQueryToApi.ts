@@ -1,12 +1,11 @@
 import { transformElementsToApi } from "../api/apiHelper";
-
-import type { Form as FormType } from "./config-types";
+import { Form } from "./config-types";
 
 function transformElementGroupsToApi(elementGroups) {
   return elementGroups.map(({ concepts, ...rest }) => ({
     type: "OR",
     children: transformElementsToApi(concepts),
-    ...rest
+    ...rest,
   }));
 }
 
@@ -17,21 +16,23 @@ function transformFieldToApi(fieldConfig, form) {
     case "RESULT_GROUP":
       return formValue.id;
     case "MULTI_RESULT_GROUP":
-      return formValue.map(group => group.id);
+      return formValue.map((group) => group.id);
     case "DATE_RANGE":
       return {
         min: formValue.min,
-        max: formValue.max
+        max: formValue.max,
       };
     case "CONCEPT_LIST":
       return transformElementGroupsToApi(formValue);
     case "TABS":
-      const selectedTab = fieldConfig.tabs.find(tab => tab.name === formValue);
+      const selectedTab = fieldConfig.tabs.find(
+        (tab) => tab.name === formValue
+      );
 
       return {
         value: formValue,
         // Only include field values from the selected tab
-        ...transformFieldsToApi(selectedTab.fields, form)
+        ...transformFieldsToApi(selectedTab.fields, form),
       };
     default:
       return formValue;
@@ -46,10 +47,10 @@ function transformFieldsToApi(fields, form) {
   }, {});
 }
 
-const transformQueryToApi = (formConfig: FormType) => (form: Object) => {
+const transformQueryToApi = (formConfig: Form) => (form: Object) => {
   return {
     type: formConfig.type,
-    ...transformFieldsToApi(formConfig.fields, form)
+    ...transformFieldsToApi(formConfig.fields, form),
   };
 };
 

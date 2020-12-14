@@ -34,7 +34,7 @@ export interface SearchT {
 
 export interface ConceptTreesStateT {
   loading: boolean;
-  version: any;
+  version: string | null;
   trees: TreesT;
   search: SearchT;
 }

@@ -63,7 +63,7 @@ export const getConcept = (
 export function postQueries(
   datasetId: DatasetIdT,
   query: Object,
-  queryType: string
+  { queryType }: { queryType: string }
 ): Promise<PostQueriesResponseT> {
   // Transform into backend-compatible format
   const data = transformQueryToApi(query, queryType);
@@ -78,12 +78,10 @@ export function postQueries(
 export function postFormQueries(
   datasetId: DatasetIdT,
   query: { form: string; formName: string },
-  queryType: string,
-  version: any,
-  formQueryTransformation: Function
+  { formQueryTransformation }: { formQueryTransformation: Function }
 ): Promise<PostQueriesResponseT> {
   // Transform into backend-compatible format
-  const data = transformFormQueryToApi(query, version, formQueryTransformation);
+  const data = transformFormQueryToApi(query, formQueryTransformation);
 
   return fetchJson(getProtectedUrl(`/datasets/${datasetId}/queries`), {
     method: "POST",

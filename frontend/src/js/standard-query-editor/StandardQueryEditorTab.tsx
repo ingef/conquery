@@ -2,7 +2,7 @@ import React from "react";
 
 import type { TabPropsType } from "../pane";
 import { QueryEditor } from "./QueryEditor";
-import { StandardQueryRunner } from "./StandardQueryRunner";
+import StandardQueryRunner from "./StandardQueryRunner";
 
 const StandardQueryEditorTab = (props: TabPropsType) => (
   <>

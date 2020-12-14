@@ -1,21 +1,32 @@
 import { StateT } from "app-types";
-import { exists } from "../common/helpers/exists";
-import React, { FC, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { ConceptQueryNodeType, StandardQueryType } from "./types";
-import ToggleButton from "js/form-components/ToggleButton";
 import styled from "app-theme";
+import React, { FC, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import { exists } from "../common/helpers/exists";
+import ToggleButton from "../form-components/ToggleButton";
+import { T } from "../localization";
+
+import { ConceptQueryNodeType, StandardQueryType } from "./types";
+import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
+import { setSelectedSecondaryId } from "./actions";
 
 const Headline = styled.h3`
   font-size: ${({ theme }) => theme.font.md};
 `;
 
 const SecondaryIdSelector: FC = () => {
-  const [selected, setSelected] = useState(null);
-
   const query = useSelector<StateT, StandardQueryType>(
     (state) => state.queryEditor.query
   );
+
+  const selectedSecondaryId = useSelector<StateT, SelectedSecondaryIdStateT>(
+    (state) => state.queryEditor.selectedSecondaryId
+  );
+
+  const dispatch = useDispatch();
+  const onSetSelectedSecondaryId = (id: string) =>
+    dispatch(setSelectedSecondaryId(id));
 
   const availableSecondaryIds = Array.from(
     new Set(
@@ -35,19 +46,20 @@ const SecondaryIdSelector: FC = () => {
   useEffect(() => {
     if (
       availableSecondaryIds.length > 0 &&
-      (!selected || !availableSecondaryIds.includes(selected))
+      (!selectedSecondaryId ||
+        !availableSecondaryIds.includes(selectedSecondaryId))
     ) {
-      setSelected(availableSecondaryIds[0]);
+      onSetSelectedSecondaryId(availableSecondaryIds[0]);
     }
   }, [JSON.stringify(availableSecondaryIds)]);
 
   return (
     <div>
-      <Headline>Analyse-Ebene</Headline>
+      <Headline>{T.translate("queryEditor.secondaryId")}</Headline>
       <ToggleButton
         input={{
-          value: selected,
-          onChange: setSelected,
+          value: selectedSecondaryId,
+          onChange: onSetSelectedSecondaryId,
         }}
         options={availableSecondaryIds.map((id) => ({ label: id, value: id }))}
       />
