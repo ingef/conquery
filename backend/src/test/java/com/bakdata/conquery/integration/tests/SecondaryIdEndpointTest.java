@@ -14,6 +14,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
@@ -50,10 +51,10 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			final Set<SecondaryIdDescription> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
-
+			description.setDataset(conquery.getDataset());
 			assertThat(secondaryIds)
-					.usingElementComparatorIgnoringFields("dataset") // our dataset is null as it's set on upload.
-					.containsExactly(description);
+					.extracting(IdentifiableImpl::getId)
+					.containsExactly(description.getId());
 		}
 		{
 			final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("admin"), DatasetsUIResource.class, "getDataset")
