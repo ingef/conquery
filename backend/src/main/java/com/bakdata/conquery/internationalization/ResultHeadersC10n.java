@@ -6,27 +6,27 @@ import c10n.annotations.En;
 public interface ResultHeadersC10n {
 	
 	@En("resolution")
-	@De("beob_zeitraum")
+	@De("Zeiteinhait")
 	String resolution();
 
 	@En("date_range")
-	@De("datumsbereich")
+	@De("Zeitraum")
 	String dateRange();
 
 	@En("dates")
-	@De("datumswerte")
+	@De("Datumswerte")
 	String dates();
 	
 	@En("event_date")
-	@De("indexdatum")
+	@De("Indexdatum")
 	String eventDate();
 	
 	@En("feature_date_range")
-	@De("vorbetrachtung_datumsbereich")
+	@De("Vorbeobachtungszeitraum")
 	String featureDateRange();
 	
 	@En("outcome_date_range")
-	@De("nachbetrachtung_datumsbereich")
+	@De("Nachbeobachtungszeitraum")
 	String outcomeDateRange();
 
 
