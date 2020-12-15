@@ -19,6 +19,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NoContentException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -168,6 +169,41 @@ public class AdminUIResource extends HAdmin {
 						)
 						.build();
 		return new UIView<>("jobs.html.ftl", processor.getUIContext(), status);
+	}
+
+	@GET
+	@Path("/jobs/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Map<String, JobManagerStatus> getJobsRaw() throws NoContentException {
+		Map<String, JobManagerStatus> status =
+				ImmutableMap.<String, JobManagerStatus>builder()
+						.put("ManagerNode", processor.getJobManager().reportStatus())
+						// Namespace JobManagers on ManagerNode
+						.putAll(
+								processor.getDatasetRegistry().getDatasets().stream()
+										 .collect(Collectors.toMap(
+												 ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
+												 ns -> ns.getJobManager().reportStatus()
+										 )))
+						// Remote Worker JobManagers
+						.putAll(
+								processor
+										.getDatasetRegistry()
+										.getShardNodes()
+										.values()
+										.stream()
+										.collect(Collectors.toMap(
+												si -> Objects.toString(si.getRemoteAddress()),
+												ShardNodeInformation::getJobManagerStatus
+										))
+						)
+						.build();
+
+		if(status.isEmpty()){
+			throw new NoContentException("No jobs.");
+		}
+
+		return status;
 	}
 
 	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
