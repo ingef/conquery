@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public enum DateContextMode implements DateRangeSubSampler {
+public enum DateContextMode implements DateRangeSubDivider {
 	/**
 	 * For returning contexts with a single {@link CDateRange} for the entire
 	 * {@link FeatureGroup}.

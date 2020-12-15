@@ -2,17 +2,20 @@ package com.bakdata.conquery.models.forms.util;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
+import com.bakdata.conquery.internationalization.DateContextModeC10n;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -96,6 +99,212 @@ public class DateContext {
 			}
 		}
 		return dcList;
+	}
+
+	public static enum AlignmentReference {
+		START(){
+			@Override
+			public List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions) {
+				return alignedSubDivisions;
+			}
+
+			@Override
+			public int getInterestingBorder(CDateRange daterange) {
+				return daterange.getMinValue();
+			}
+
+			@Override
+			public CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder) {
+				return CDateRange.of(prioInteressingBorder, lastDaterange.getMaxValue());
+			}
+		},
+		END(){
+			@Override
+			public List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions) {
+				return Lists.reverse(alignedSubDivisions);
+			}
+
+			@Override
+			public int getInterestingBorder(CDateRange daterange) {
+				return daterange.getMaxValue();
+			}
+
+			@Override
+			public CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder) {
+				return CDateRange.of(lastDaterange.getMinValue(), prioInteressingBorder);
+			}
+		};
+
+		public abstract List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions);
+		public abstract int getInterestingBorder(CDateRange daterange);
+		public abstract CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder);
+	}
+
+	@RequiredArgsConstructor
+	public static enum Resolution {
+		/**
+		 * For returning contexts with a single {@link CDateRange} for the entire
+		 * {@link FeatureGroup}.
+		 */
+		COMPLETE(null){
+
+			@Override
+			public String toString(Locale locale) {
+
+				return C10N.get(DateContextModeC10n.class, locale).complete();
+			}
+		},
+
+		/**
+		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
+		 * years.
+		 */
+		YEARS(COMPLETE){
+
+			@Override
+			public String toString(Locale locale) {
+
+				return C10N.get(DateContextModeC10n.class, locale).year();
+			}
+		},
+
+		/**
+		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
+		 * quarters.
+		 */
+		QUARTERS(YEARS){
+
+
+			@Override
+			public String toString(Locale locale) {
+
+				return C10N.get(DateContextModeC10n.class, locale).quarter();
+			}
+		},
+
+		/**
+		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
+		 * days.
+		 */
+		DAYS(QUARTERS){
+
+			@Override
+			public String toString(Locale locale) {
+
+				return C10N.get(DateContextModeC10n.class, locale).day();
+			}
+		};
+
+
+		@JsonIgnore
+		private final Resolution coarser;
+
+
+		private List<Resolution> thisAndCoarserSubdivisions;
+
+		public abstract String toString(Locale locale);
+
+		@JsonIgnore
+		public List<Resolution> getThisAndCoarserSubdivisions(){
+			if (thisAndCoarserSubdivisions != null) {
+				return thisAndCoarserSubdivisions;
+			}
+			List<Resolution> thisAndCoarser = new ArrayList<>();
+			if(coarser != null) {
+				thisAndCoarser.addAll(coarser.getThisAndCoarserSubdivisions());
+			}
+			thisAndCoarser.add(this);
+			return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
+
+		}
+	}
+
+	@RequiredArgsConstructor
+	public static enum Alignment {
+		DAY(CDateRange::getCoveredDays),
+		QUARTER(CDateRange::getCoveredQuarters),
+		YEAR(CDateRange::getCoveredYears);
+
+		@Getter
+		private final Function<CDateRange,List<CDateRange>> subdivider;
+	}
+
+	public static Function<CDateRange,List<CDateRange>> getDateRangeSubdivider(AlignmentReference alignRef, Resolution resolution, Alignment alignment){
+		int alignedSubdivisionsForResolutionSubdivision = lookupNumberAlignedToResolutionSubdivisions(resolution, alignment);
+
+		return (dateRange) -> {
+			List<CDateRange> result = new ArrayList<>();
+			List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(alignment.getSubdivider().apply(dateRange));
+
+			int alignedSubdivisionCount = 1;
+			int interestingDate = 0;
+			for (CDateRange alignedSubdivision : alignedSubdivisions) {
+				if (alignedSubdivisionCount % alignedSubdivisionsForResolutionSubdivision == 1) {
+					// Start a new resolution-sized subdivision
+					interestingDate = alignRef.getInterestingBorder(alignedSubdivision);
+				}
+				if (alignedSubdivisionCount % alignedSubdivisionsForResolutionSubdivision == 0) {
+					// Finish a resolution-sized subdivision
+					result.add(alignRef.makeMergedRange(alignedSubdivision, interestingDate));
+				}
+				alignedSubdivisionCount++;
+			}
+
+			if (alignedSubdivisionCount % alignedSubdivisionsForResolutionSubdivision != 1) {
+				// The loop did not fullfill the resolution-sized subdivision it begun
+				result.add(alignRef.makeMergedRange(alignedSubdivisions.get(alignedSubdivisions.size() - 1), interestingDate));
+			}
+
+			return result;
+		}
+	}
+
+	private static int lookupNumberAlignedToResolutionSubdivisions(Resolution resolution, Alignment alignment) {
+		switch (alignment) {
+			case DAY:
+				switch (resolution) {
+					case COMPLETE:
+						break;
+					case YEARS:
+						break;
+					case QUARTERS:
+						break;
+					case DAYS:
+						break;
+				}
+				break;
+			case QUARTER:
+				break;
+			case YEAR:
+				break;
+		}
+		return 0;
+	}
+
+	public List<CDateRange> subdivideRange(CDateRange range, Function<CDateRange,List<CDateRange>> alignmentSubdivider, AlignmentReference alignRef, int alignedSubdivisionsForResolutionSubdivision) {
+		List<CDateRange> result = new ArrayList<>();
+		List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(alignmentSubdivider.apply(range));
+
+		int alignedSubdivisionCount = 1;
+		int interestingDate = 0;
+		for (CDateRange alignedSubdivision : alignedSubdivisions) {
+			if (alignedSubdivisionCount%alignedSubdivisionsForResolutionSubdivision == 1){
+				// Start a new resolution-sized subdivision
+				interestingDate = alignRef.getInterestingBorder(alignedSubdivision);
+			}
+			if (alignedSubdivisionCount%alignedSubdivisionsForResolutionSubdivision == 0){
+				// Finish a resolution-sized subdivision
+				result.add(alignRef.makeMergedRange(alignedSubdivision, interestingDate));
+			}
+			alignedSubdivisionCount++;
+		}
+
+		if(alignedSubdivisionCount%alignedSubdivisionsForResolutionSubdivision != 1) {
+			// The loop did not fullfill the resolution-sized subdivision it begun
+			result.add(alignRef.makeMergedRange(alignedSubdivisions.get(alignedSubdivisions.size()-1), interestingDate));
+		}
+
+		return result;
 	}
 
 	/**
