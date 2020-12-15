@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -38,7 +39,7 @@ public class AbsoluteFormQuery extends IQuery {
 	@NotNull @Valid
 	private final ArrayConceptQuery features;
 	@NotNull
-	private final List<Pair<DateContext.Resolution, DateContext.Alignment>> resolutionsAndAlignmentMap;
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 	
 	@Override
 	public void resolve(QueryResolveContext context) {

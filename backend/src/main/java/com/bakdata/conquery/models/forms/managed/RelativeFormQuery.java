@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -50,7 +51,7 @@ public class RelativeFormQuery extends IQuery {
 	@NotNull
 	private final DateContextMode timeUnit;
 	@NotNull
-	private final List<Pair<DateContext.Resolution, DateContext.Alignment>> resolutionsAndAlignmentMap;
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 	
 	@Override
 	public void resolve(QueryResolveContext context) {

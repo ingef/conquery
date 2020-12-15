@@ -24,7 +24,7 @@ public class DateContextTest {
 	public void rangeAbsCompleteTestWithCoarse() {
 		// Because COMPLETE_ONLY is the most coarse subdivision mode this has the same output as DateContextTest#rangeAbsCompleteTestWithoutCoarse
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(Pair.of(COMPLETE, NO_ALIGN)));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
 
 		assertThat(contexts).containsExactly(
 			new DateContext(mask, FeatureGroup.OUTCOME, null, null, COMPLETE)
@@ -91,7 +91,7 @@ public class DateContextTest {
 	@Test
 	public void rangeAbsQuarterTestWithoutCoarse() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(Pair.of(QUARTERS, QUARTER)));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ExportForm.ResolutionAndAlignment.of(QUARTERS, QUARTER)));
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactly (
 			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
@@ -117,7 +117,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.BEFORE;
 
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(Pair.of(COMPLETE, NO_ALIGN), Pair.of(DAYS, DAY)));
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN), ExportForm.ResolutionAndAlignment.of(DAYS, DAY)));
 
 		assertThat(contexts).containsExactly (
 			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
@@ -138,7 +138,7 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.BEFORE;
 
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(Pair.of(COMPLETE, NO_ALIGN)));
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
 
 		List<DateContext> expectedRanges = Arrays.asList(
 			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),

@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.forms.export;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -38,12 +37,12 @@ public class AbsExportGenerator {
 			resolutions = mode.getForm().getResolution();
 		}
 
-		List<Pair<DateContext.Resolution, DateContext.Alignment>> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(resolutions, mode.getForm().getAlignment());
+		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(resolutions, mode.getForm().getAlignmentHint());
 
 		return generate(namespaces, userId, submittedDataset, mode.getFeatures(), mode.getForm().getPrerequisite(), mode.getDateRange(), resolutionsAndAlignments);
 	}
 
-	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange, List<Pair<DateContext.Resolution,DateContext.Alignment>> resolutionAndAlignment) {
+	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		
 		// Apply defaults to user concept
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);

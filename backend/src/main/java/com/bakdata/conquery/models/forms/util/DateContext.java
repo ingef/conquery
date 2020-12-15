@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.DateContextModeC10n;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
@@ -103,18 +104,18 @@ public class DateContext {
 //		return dcList;
 //	}
 
-	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<Pair<Resolution, Alignment>> resolutionAndAlignment) {
+	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		List<DateContext> dcList = new ArrayList<>();
 
-		for (Pair<Resolution, Alignment> mode : resolutionAndAlignment) {
-			Function<CDateRange, List<CDateRange>> divider = getDateRangeSubdivider(AlignmentReference.START, mode.getKey(), mode.getValue());
+		for (ExportForm.ResolutionAndAlignment mode : resolutionAndAlignment) {
+			Function<CDateRange, List<CDateRange>> divider = getDateRangeSubdivider(AlignmentReference.START, mode.getResolution(), mode.getAlignment());
 			// Start counting index form 0 for every subdivision mode
 			int index = 0;
 			for (CDateRange quarterInMask : divider.apply(dateRangeMask)) {
 				index++;
 				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
 					// For now there is no index for complete
-					mode.getKey().equals(Resolution.COMPLETE) ? null : index, null, mode.getKey());
+					mode.getResolution().equals(Resolution.COMPLETE) ? null : index, null, mode.getResolution());
 				dcList.add(dc);
 			}
 		}
@@ -309,7 +310,7 @@ public class DateContext {
 		};
 	}
 
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<Pair<Resolution, Alignment>> resolutionAndAlignment) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -322,42 +323,49 @@ public class DateContext {
 		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
 
 
-		for(Pair<Resolution, Alignment> mode : resolutionAndAlignment) {
-			Function<CDateRange, List<CDateRange>> featureRangeDivider = getDateRangeSubdivider(AlignmentReference.END, mode.getKey(), mode.getValue());
-			Function<CDateRange, List<CDateRange>> outcomeRangeDivider = getDateRangeSubdivider(AlignmentReference.START, mode.getKey(), mode.getValue());
-			List<CDateRange> featureRanges = featureRangeDivider.apply(featureRange);
-			/*
-			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
-			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
-			 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
-			 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
-			 */
-			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
-			for (CDateRange subRange : featureRanges) {
-				DateContext dc = new DateContext(
-						subRange,
-						FeatureGroup.FEATURE,
-						// For now there is no index for complete
-						mode.getKey().equals(Resolution.COMPLETE) ? null : -index,
-						eventdate,
-						mode.getKey()
-				);
-				index--;
-				dcList.add(dc);
+		for(ExportForm.ResolutionAndAlignment mode : resolutionAndAlignment) {
+			Function<CDateRange, List<CDateRange>> featureRangeDivider = getDateRangeSubdivider(AlignmentReference.END, mode.getResolution(), mode.getAlignment());
+			Function<CDateRange, List<CDateRange>> outcomeRangeDivider = getDateRangeSubdivider(AlignmentReference.START, mode.getResolution(), mode.getAlignment());
+
+			if(featureRange != null) {
+
+				List<CDateRange> featureRanges = featureRangeDivider.apply(featureRange);
+				/*
+				 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
+				 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
+				 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
+				 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
+				 */
+				int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
+				for (CDateRange subRange : featureRanges) {
+					DateContext dc = new DateContext(
+							subRange,
+							FeatureGroup.FEATURE,
+							// For now there is no index for complete
+							mode.getResolution().equals(Resolution.COMPLETE) ? null : -index,
+							eventdate,
+							mode.getResolution()
+					);
+					index--;
+					dcList.add(dc);
+				}
 			}
 
-			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
-			for (CDateRange subRange : outcomeRangeDivider.apply(outcomeRange)) {
-				DateContext dc = new DateContext(
-						subRange,
-						FeatureGroup.OUTCOME,
-						// For now there is no index for complete
-						mode.getKey().equals(Resolution.COMPLETE)? null : index,
-						eventdate,
-						mode.getKey()
-				);
-				index++;
-				dcList.add(dc);
+			if (outcomeRange != null) {
+
+				int index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
+				for (CDateRange subRange : outcomeRangeDivider.apply(outcomeRange)) {
+					DateContext dc = new DateContext(
+							subRange,
+							FeatureGroup.OUTCOME,
+							// For now there is no index for complete
+							mode.getResolution().equals(Resolution.COMPLETE) ? null : index,
+							eventdate,
+							mode.getResolution()
+					);
+					index++;
+					dcList.add(dc);
+				}
 			}
 		}
 		return dcList;

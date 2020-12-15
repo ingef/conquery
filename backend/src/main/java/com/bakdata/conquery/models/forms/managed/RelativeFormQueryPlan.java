@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.*;
 
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -45,7 +46,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final int timeCountBefore;
 	private final int timeCountAfter;
 	private final DateContextMode timeUnit;
-	private final List<Pair<DateContext.Resolution, DateContext.Alignment>> resolutionsAndAlignmentMap;
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -190,13 +191,13 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		if (featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() > 0) {
 			// We have features and outcomes check if both have complete date ranges (they should be at the beginning of the list)
 			return contexts.size()>=2
-				&& contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE)
-				&& contexts.get(1).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+				&& contexts.get(0).getSubdivisionMode().equals(DateContext.Resolution.COMPLETE)
+				&& contexts.get(1).getSubdivisionMode().equals(DateContext.Resolution.COMPLETE)
 				&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
 		}
 		// Otherwise, if only features or outcomes are given check the first date context. The empty feature/outcome query
 		// will still return an empty result which will be merged with to a complete result.
-		return contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE);
+		return contexts.get(0).getSubdivisionMode().equals(DateContext.Resolution.COMPLETE);
 	}
 
 	private FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {

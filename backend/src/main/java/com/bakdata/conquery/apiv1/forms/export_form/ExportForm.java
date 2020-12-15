@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -31,9 +32,12 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -48,8 +52,8 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	@NotNull @NotEmpty
 	private List<DateContext.Resolution> resolution = List.of(DateContext.Resolution.COMPLETE);
 
-	@NotNull @NotEmpty
-	private DateContext.Alignment alignment = DateContext.Alignment.QUARTER;
+	@NotNull
+	private DateContext.Alignment alignmentHint = DateContext.Alignment.QUARTER;
 	
 	private boolean alsoCreateCoarserSubdivisions = true;
 
@@ -98,10 +102,29 @@ public class ExportForm implements Form, NamespacedIdHolding {
 
 
 	@org.jetbrains.annotations.NotNull
-	public static List<Pair<DateContext.Resolution, DateContext.Alignment>> getResolutionAlignmentMap(List<DateContext.Resolution> resolutions, DateContext.Alignment alignmentHint) {
+	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<DateContext.Resolution> resolutions, DateContext.Alignment alignmentHint) {
 
 		return resolutions.stream()
-				.map(r -> Pair.of(r, r.getSupportedAlignments().contains(alignmentHint)? alignmentHint : r.getSupportedAlignments().iterator().next()))
+				.map(r -> ResolutionAndAlignment.of(r, r.getSupportedAlignments().contains(alignmentHint)? alignmentHint : r.getSupportedAlignments().iterator().next()))
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Serializable helper container to combine a resolution and an alignment.
+	 */
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	@Getter
+	public static class ResolutionAndAlignment {
+		private final  DateContext.Resolution resolution;
+		private final DateContext.Alignment alignment;
+
+		@JsonCreator
+		public static ResolutionAndAlignment of(DateContext.Resolution resolution, DateContext.Alignment alignment){
+			if (!resolution.getSupportedAlignments().contains(alignment)) {
+				throw new ValidationException(String.format("The alignment %s is not supported by the resolution %s", alignment, resolution));
+			}
+
+			return new ResolutionAndAlignment(resolution, alignment);
+		}
 	}
 }
