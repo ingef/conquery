@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
@@ -68,10 +67,11 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
@@ -627,13 +627,12 @@ public class AdminProcessor {
 		final Dataset dataset = namespace.getDataset();
 		secondaryId.setDataset(dataset);
 
-		log.trace("Received new SecondaryId {}", secondaryId);
+		log.trace("Received new {}", secondaryId);
 		log.info("Received new SecondaryId[{}]", secondaryId.getId());
 
-		dataset.getSecondaryIds().add(secondaryId);
-		namespace.getStorage().updateDataset(dataset);
+		namespace.getStorage().addSecondaryId(secondaryId);
 
-		namespace.sendToAll(new UpdateDataset(dataset));
+		namespace.sendToAll(new UpdateSecondaryId(secondaryId));
 	}
 
 	public void deleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
@@ -657,12 +656,9 @@ public class AdminProcessor {
 			throw new ForbiddenException("SecondaryId still has dependencies.");
 		}
 
-		if(dataset.getSecondaryIds().remove(secondaryId) == null){
-			throw new NotFoundException(String.format("Did not find SecondaryId[%s]", secondaryId));
-		}
-
 		log.info("Deleting SecondaryId[{}]", secondaryId);
 
-		namespace.getStorage().updateDataset(dataset);
+		namespace.getStorage().removeSecondaryId(secondaryId);
+		namespace.sendToAll(new RemoveSecondaryId(secondaryId));
 	}
 }

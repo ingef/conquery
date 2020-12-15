@@ -6,12 +6,14 @@ import java.util.List;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 
 public interface NamespacedStorage extends ConqueryStorage {
@@ -36,7 +38,14 @@ public interface NamespacedStorage extends ConqueryStorage {
 	Table getTable(TableId tableId);
 	void addTable(Table table);
 	void removeTable(TableId table);
-	
+
+	List<SecondaryIdDescription> getSecondaryIds();
+	SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId);
+	void addSecondaryId(SecondaryIdDescription secondaryIdDescription);
+	void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId);
+
+
+
 	Concept<?> getConcept(ConceptId id);
 	boolean hasConcept(ConceptId id);
 	void updateConcept(Concept<?> concept);

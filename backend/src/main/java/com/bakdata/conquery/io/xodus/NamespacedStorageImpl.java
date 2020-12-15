@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
@@ -40,29 +41,26 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
 
 	protected final Environment environment;
-	protected SingletonStore<Dataset> dataset;
-	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
-	protected IdentifiableStore<Import> imports;
-
-	protected IdentifiableStore<Table> tables;
-	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
-
-	protected IdentifiableStore<Concept<?>> concepts;
-
 	/**
 	 * true if imports need to be registered with {@link Connector#addImport(Import)}.
 	 */
 	private final boolean registerImports;
+	protected SingletonStore<Dataset> dataset;
+	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
+	protected IdentifiableStore<Import> imports;
+	protected IdentifiableStore<Table> tables;
+	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
+	protected IdentifiableStore<Concept<?>> concepts;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory, boolean registerImports) {
-		super(validator,config);
+		super(validator, config);
 		this.registerImports = registerImports;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
-		
+
 	}
 
 	@Override
-	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
+	protected void createStores(Multimap<Environment, KeyIncludingStore<?, ?>> environmentToStores) {
 
 
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), environment, getValidator())
@@ -154,15 +152,20 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				imports
 		));
 	}
-	
+
 	@Override
-	public String getStorageOrigin() {
-		return environment.getLocation();
+	public Collection<Import> getAllImports() {
+		return imports.getAll();
 	}
 
 	@Override
-	public Dataset getDataset() {
-		return dataset.get();
+	public Collection<Concept<?>> getAllConcepts() {
+		return concepts.getAll();
+	}
+
+	@Override
+	public String getStorageOrigin() {
+		return environment.getLocation();
 	}
 
 	@Override
@@ -178,22 +181,13 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Dictionary getDictionary(DictionaryId id) {
-		return dictionaries.get(id);
-	}
-
-	@Override
 	public DirectDictionary getPrimaryDictionary() {
 		return new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())));
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
-	public void updateDictionary(Dictionary dict) {
-		dictionaries.update(dict);
-		for(Import imp : getAllImports()) {
-			imp.loadExternalInfos(this);
-		}
+	public Dataset getDataset() {
+		return dataset.get();
 	}
 
 	@Override
@@ -212,6 +206,20 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
+	public Dictionary getDictionary(DictionaryId id) {
+		return dictionaries.get(id);
+	}
+
+	@Override
+	@SneakyThrows(JSONException.class)
+	public void updateDictionary(Dictionary dict) {
+		dictionaries.update(dict);
+		for (Import imp : getAllImports()) {
+			imp.loadExternalInfos(this);
+		}
+	}
+
+	@Override
 	@SneakyThrows(JSONException.class)
 	public void addImport(Import imp) {
 		imports.add(imp);
@@ -220,11 +228,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public Import getImport(ImportId id) {
 		return imports.get(id);
-	}
-
-	@Override
-	public Collection<Import> getAllImports() {
-		return imports.getAll();
 	}
 
 	@Override
@@ -260,12 +263,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Collection<Concept<?>> getAllConcepts() {
-		return concepts.getAll();
-	}
-
-
-	@Override
 	public List<Table> getTables() {
 		return new ArrayList<>(tables.getAll());
 	}
@@ -286,4 +283,24 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		tables.remove(table);
 	}
 
+	@Override
+	public List<SecondaryIdDescription> getSecondaryIds() {
+		return new ArrayList<>(secondaryIds.getAll());
+	}
+
+	@Override
+	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
+		return secondaryIds.get(descriptionId);
+	}
+
+	@SneakyThrows({JSONException.class})
+	@Override
+	public void addSecondaryId(SecondaryIdDescription secondaryIdDescription) {
+		secondaryIds.add(secondaryIdDescription);
+	}
+
+	@Override
+	public void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId) {
+		secondaryIds.remove(secondaryIdDescriptionId);
+	}
 }

@@ -128,7 +128,7 @@ public class LoadingUtil {
 
 		// import preprocessedFiles
 		for (File file : preprocessedFiles) {
-			support.getDatasetsProcessor().addImport(dataset, file);
+			support.getDatasetsProcessor().addImport(support.getNamespace(), file);
 		}
 	}
 
