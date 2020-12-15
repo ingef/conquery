@@ -14,6 +14,7 @@ import com.bakdata.conquery.internationalization.DateContextModeC10n;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.tuple.Pair;
 
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -67,34 +69,52 @@ public class DateContext {
 	 */
 	@Getter
 	@Nullable
-	private DateContextMode subdivisionMode;
+	private Resolution subdivisionMode;
 
-	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode ... subdivisionMode ) {
-		return generateAbsoluteContexts(dateRangeMask, Arrays.asList(subdivisionMode));
-	}
-	
-	/**
-	 * Returns the date ranges that fit into a mask specified as date range, which
-	 * are optional subdivided in to year-wise or quarter-wise date ranges.
-	 * If a smaller subdivision mode is chosen, 
-	 *
-	 * @param dateRangeMask The mask that is applied onto the dates.
-	 * @param subdivisionModes    The subdivision modes that define the granularity of the
-	 *                      result.
-	 * @return All date ranges as wrapped into {@link DateContext} that were in the
-	 *         mask.
-	 */
-	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<DateContextMode> subdivisionModes) {
+//	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode ... subdivisionMode ) {
+//		return generateAbsoluteContexts(dateRangeMask, Arrays.asList(subdivisionMode));
+//	}
+//
+//	/**
+//	 * Returns the date ranges that fit into a mask specified as date range, which
+//	 * are optional subdivided in to year-wise or quarter-wise date ranges.
+//	 * If a smaller subdivision mode is chosen,
+//	 *
+//	 * @param dateRangeMask The mask that is applied onto the dates.
+//	 * @param subdivisionModes    The subdivision modes that define the granularity of the
+//	 *                      result.
+//	 * @return All date ranges as wrapped into {@link DateContext} that were in the
+//	 *         mask.
+//	 */
+//	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<DateContextMode> subdivisionModes) {
+//		List<DateContext> dcList = new ArrayList<>();
+//
+//		for (DateContextMode mode : subdivisionModes) {
+//			// Start counting index form 0 for every subdivision mode
+//			int index = 0;
+//			for (CDateRange quarterInMask : mode.subdivideRange(dateRangeMask)) {
+//				index++;
+//				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
+//					// For now there is no index for complete
+//					mode.equals(DateContextMode.COMPLETE) ? null : index, null, mode);
+//				dcList.add(dc);
+//			}
+//		}
+//		return dcList;
+//	}
+
+	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<Pair<Resolution, Alignment>> resolutionAndAlignment) {
 		List<DateContext> dcList = new ArrayList<>();
 
-		for (DateContextMode mode : subdivisionModes) {
+		for (Pair<Resolution, Alignment> mode : resolutionAndAlignment) {
+			Function<CDateRange, List<CDateRange>> divider = getDateRangeSubdivider(AlignmentReference.START, mode.getKey(), mode.getValue());
 			// Start counting index form 0 for every subdivision mode
 			int index = 0;
-			for (CDateRange quarterInMask : mode.subdivideRange(dateRangeMask)) {
+			for (CDateRange quarterInMask : divider.apply(dateRangeMask)) {
 				index++;
 				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
 					// For now there is no index for complete
-					mode.equals(DateContextMode.COMPLETE) ? null : index, null, mode);
+					mode.getKey().equals(Resolution.COMPLETE) ? null : index, null, mode.getKey());
 				dcList.add(dc);
 			}
 		}
@@ -146,8 +166,8 @@ public class DateContext {
 		 * For returning contexts with a single {@link CDateRange} for the entire
 		 * {@link FeatureGroup}.
 		 */
-		COMPLETE(null){
-
+		COMPLETE(null, Map.of(
+				Alignment.NO_ALIGN, 1)) {
 			@Override
 			public String toString(Locale locale) {
 
@@ -159,8 +179,10 @@ public class DateContext {
 		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 		 * years.
 		 */
-		YEARS(COMPLETE){
-
+		YEARS(COMPLETE, Map.of(
+				Alignment.YEAR, 1,
+				Alignment.QUARTER, 4,
+				Alignment.DAY, 365)) {
 			@Override
 			public String toString(Locale locale) {
 
@@ -172,9 +194,9 @@ public class DateContext {
 		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 		 * quarters.
 		 */
-		QUARTERS(YEARS){
-
-
+		QUARTERS(YEARS, Map.of(
+				Alignment.QUARTER, 1,
+				Alignment.DAY, 90)) {
 			@Override
 			public String toString(Locale locale) {
 
@@ -186,8 +208,8 @@ public class DateContext {
 		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 		 * days.
 		 */
-		DAYS(QUARTERS){
-
+		DAYS(QUARTERS, Map.of(
+				Alignment.DAY, 1)) {
 			@Override
 			public String toString(Locale locale) {
 
@@ -199,18 +221,38 @@ public class DateContext {
 		@JsonIgnore
 		private final Resolution coarser;
 
+		/**
+		 * Holds which calendar alignments are supported by this resolution and
+		 * the amount of how many of such subdividions fill in this resolusion subdivision.
+		 */
+		@JsonIgnore
+		private final Map<Alignment, Integer> compatibleAlignmentsAndAmount;
+
 
 		private List<Resolution> thisAndCoarserSubdivisions;
 
 		public abstract String toString(Locale locale);
 
 		@JsonIgnore
-		public List<Resolution> getThisAndCoarserSubdivisions(){
+		public Collection<Alignment> getSupportedAlignments(){
+			return compatibleAlignmentsAndAmount.keySet();
+		}
+
+		@JsonIgnore
+		public OptionalInt getAmountForAlignment(Alignment alignment){
+			if (!this.compatibleAlignmentsAndAmount.containsKey(alignment)) {
+				return OptionalInt.empty();
+			}
+			return OptionalInt.of(this.compatibleAlignmentsAndAmount.get(alignment));
+		}
+
+		@JsonIgnore
+		public List<Resolution> getThisAndCoarserSubdivisions() {
 			if (thisAndCoarserSubdivisions != null) {
 				return thisAndCoarserSubdivisions;
 			}
 			List<Resolution> thisAndCoarser = new ArrayList<>();
-			if(coarser != null) {
+			if (coarser != null) {
 				thisAndCoarser.addAll(coarser.getThisAndCoarserSubdivisions());
 			}
 			thisAndCoarser.add(this);
@@ -221,6 +263,7 @@ public class DateContext {
 
 	@RequiredArgsConstructor
 	public static enum Alignment {
+		NO_ALIGN(List::of), // Special case for resolution == COMPLETE
 		DAY(CDateRange::getCoveredDays),
 		QUARTER(CDateRange::getCoveredQuarters),
 		YEAR(CDateRange::getCoveredYears);
@@ -230,7 +273,14 @@ public class DateContext {
 	}
 
 	public static Function<CDateRange,List<CDateRange>> getDateRangeSubdivider(AlignmentReference alignRef, Resolution resolution, Alignment alignment){
-		int alignedSubdivisionsForResolutionSubdivision = lookupNumberAlignedToResolutionSubdivisions(resolution, alignment);
+		int alignedPerResolution = resolution.getAmountForAlignment(alignment).orElseThrow(() -> new ConqueryError.ExecutionCreationPlanDateContextError(alignment, resolution));
+
+		if (alignedPerResolution == 1) {
+			// When the alignment fits the resolution we can use the the alignment subdivision directly
+			return (dateRange) -> {
+				return alignment.getSubdivider().apply(dateRange);
+			};
+		}
 
 		return (dateRange) -> {
 			List<CDateRange> result = new ArrayList<>();
@@ -239,139 +289,27 @@ public class DateContext {
 			int alignedSubdivisionCount = 1;
 			int interestingDate = 0;
 			for (CDateRange alignedSubdivision : alignedSubdivisions) {
-				if (alignedSubdivisionCount % alignedSubdivisionsForResolutionSubdivision == 1) {
+				if (alignedSubdivisionCount % alignedPerResolution == 1) {
 					// Start a new resolution-sized subdivision
 					interestingDate = alignRef.getInterestingBorder(alignedSubdivision);
 				}
-				if (alignedSubdivisionCount % alignedSubdivisionsForResolutionSubdivision == 0) {
+				if (alignedSubdivisionCount % alignedPerResolution == 0) {
 					// Finish a resolution-sized subdivision
 					result.add(alignRef.makeMergedRange(alignedSubdivision, interestingDate));
 				}
 				alignedSubdivisionCount++;
 			}
 
-			if (alignedSubdivisionCount % alignedSubdivisionsForResolutionSubdivision != 1) {
+			if (alignedSubdivisionCount % alignedPerResolution != 1) {
 				// The loop did not fullfill the resolution-sized subdivision it begun
 				result.add(alignRef.makeMergedRange(alignedSubdivisions.get(alignedSubdivisions.size() - 1), interestingDate));
 			}
 
 			return result;
-		}
+		};
 	}
 
-	private static int lookupNumberAlignedToResolutionSubdivisions(Resolution resolution, Alignment alignment) {
-		switch (alignment) {
-			case DAY:
-				switch (resolution) {
-					case COMPLETE:
-						break;
-					case YEARS:
-						break;
-					case QUARTERS:
-						break;
-					case DAYS:
-						break;
-				}
-				break;
-			case QUARTER:
-				break;
-			case YEAR:
-				break;
-		}
-		return 0;
-	}
-
-	public List<CDateRange> subdivideRange(CDateRange range, Function<CDateRange,List<CDateRange>> alignmentSubdivider, AlignmentReference alignRef, int alignedSubdivisionsForResolutionSubdivision) {
-		List<CDateRange> result = new ArrayList<>();
-		List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(alignmentSubdivider.apply(range));
-
-		int alignedSubdivisionCount = 1;
-		int interestingDate = 0;
-		for (CDateRange alignedSubdivision : alignedSubdivisions) {
-			if (alignedSubdivisionCount%alignedSubdivisionsForResolutionSubdivision == 1){
-				// Start a new resolution-sized subdivision
-				interestingDate = alignRef.getInterestingBorder(alignedSubdivision);
-			}
-			if (alignedSubdivisionCount%alignedSubdivisionsForResolutionSubdivision == 0){
-				// Finish a resolution-sized subdivision
-				result.add(alignRef.makeMergedRange(alignedSubdivision, interestingDate));
-			}
-			alignedSubdivisionCount++;
-		}
-
-		if(alignedSubdivisionCount%alignedSubdivisionsForResolutionSubdivision != 1) {
-			// The loop did not fullfill the resolution-sized subdivision it begun
-			result.add(alignRef.makeMergedRange(alignedSubdivisions.get(alignedSubdivisions.size()-1), interestingDate));
-		}
-
-		return result;
-	}
-
-	/**
-	 * Returns the date ranges that are in the specified range around the event.
-	 * 
-	 * @param event       The date (as days from epoch day) from which the
-	 *                    relative range is calculated.
-	 * @param indexPlacement  Indicates to which {@link FeatureGroup} the range of the
-	 *                    event belongs.
-	 * @param featureTime The number of feature timeunit ranges.
-	 * @param outcomeTime The number of outcome timeunit ranges.
-	 * @param calendarAlignmentMode
-	 * @return
-	 */
-	public static List<DateContext> generateRelativeContexts2(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode calendarAlignmentMode, List<DateContextMode> subdivisionModes) {
-		if (featureTime < 1 && outcomeTime < 1) {
-			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
-					+ "; outcomeTime: " + outcomeTime + ")");
-		}
-		List<DateContext> dcList = new ArrayList<>();
-		
-		LocalDate eventdate = CDate.toLocalDate(event);
-
-		CDateRange featureRange = generateFeatureRange(event, indexPlacement, featureTime, calendarAlignmentMode);
-		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, calendarAlignmentMode);
-
-
-		for(DateContextMode mode : subdivisionModes) {
-			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
-			/*
-			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
-			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
-			 *  If the index placement is NEUTRAL, the event date is not included in any date range and no range index is marked with 0.
-			 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
-			 */
-			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
-			for (CDateRange subRange : featureRanges) {
-				DateContext dc = new DateContext(
-					subRange,
-					FeatureGroup.FEATURE,
-					// For now there is no index for complete
-					mode.equals(DateContextMode.COMPLETE) ? null : -index,
-					eventdate,
-					mode
-					);
-				index--;
-				dcList.add(dc);
-			}
-
-			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
-			for (CDateRange subRange : mode.subdivideRange(outcomeRange)) {
-				DateContext dc = new DateContext(
-					subRange,
-					FeatureGroup.OUTCOME,
-					// For now there is no index for complete
-					mode.equals(DateContextMode.COMPLETE)? null : index,
-					eventdate,
-					mode
-					);
-				index++;
-				dcList.add(dc);
-			}			
-		}
-		return dcList;
-	}
-
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<DateContextMode> subdivisionModes) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<Pair<Resolution, Alignment>> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -384,8 +322,10 @@ public class DateContext {
 		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
 
 
-		for(DateContextMode mode : subdivisionModes) {
-			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
+		for(Pair<Resolution, Alignment> mode : resolutionAndAlignment) {
+			Function<CDateRange, List<CDateRange>> featureRangeDivider = getDateRangeSubdivider(AlignmentReference.END, mode.getKey(), mode.getValue());
+			Function<CDateRange, List<CDateRange>> outcomeRangeDivider = getDateRangeSubdivider(AlignmentReference.START, mode.getKey(), mode.getValue());
+			List<CDateRange> featureRanges = featureRangeDivider.apply(featureRange);
 			/*
 			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
 			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
@@ -398,23 +338,23 @@ public class DateContext {
 						subRange,
 						FeatureGroup.FEATURE,
 						// For now there is no index for complete
-						mode.equals(DateContextMode.COMPLETE) ? null : -index,
+						mode.getKey().equals(Resolution.COMPLETE) ? null : -index,
 						eventdate,
-						mode
+						mode.getKey()
 				);
 				index--;
 				dcList.add(dc);
 			}
 
 			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
-			for (CDateRange subRange : mode.subdivideRange(outcomeRange)) {
+			for (CDateRange subRange : outcomeRangeDivider.apply(outcomeRange)) {
 				DateContext dc = new DateContext(
 						subRange,
 						FeatureGroup.OUTCOME,
 						// For now there is no index for complete
-						mode.equals(DateContextMode.COMPLETE)? null : index,
+						mode.getKey().equals(Resolution.COMPLETE)? null : index,
 						eventdate,
-						mode
+						mode.getKey()
 				);
 				index++;
 				dcList.add(dc);
@@ -422,6 +362,58 @@ public class DateContext {
 		}
 		return dcList;
 	}
+
+//	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<DateContextMode> subdivisionModes) {
+//		if (featureTime < 1 && outcomeTime < 1) {
+//			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
+//					+ "; outcomeTime: " + outcomeTime + ")");
+//		}
+//		List<DateContext> dcList = new ArrayList<>();
+//
+//		LocalDate eventdate = CDate.toLocalDate(event);
+//
+//		CDateRange featureRange = generateFeatureRange(event, indexPlacement, featureTime, timeUnit);
+//		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
+//
+//
+//		for(DateContextMode mode : subdivisionModes) {
+//			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
+//			/*
+//			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
+//			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
+//			 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
+//			 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
+//			 */
+//			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
+//			for (CDateRange subRange : featureRanges) {
+//				DateContext dc = new DateContext(
+//						subRange,
+//						FeatureGroup.FEATURE,
+//						// For now there is no index for complete
+//						mode.equals(DateContextMode.COMPLETE) ? null : -index,
+//						eventdate,
+//						null //mode
+//				);
+//				index--;
+//				dcList.add(dc);
+//			}
+//
+//			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
+//			for (CDateRange subRange : mode.subdivideRange(outcomeRange)) {
+//				DateContext dc = new DateContext(
+//						subRange,
+//						FeatureGroup.OUTCOME,
+//						// For now there is no index for complete
+//						mode.equals(DateContextMode.COMPLETE)? null : index,
+//						eventdate,
+//						null //mode
+//				);
+//				index++;
+//				dcList.add(dc);
+//			}
+//		}
+//		return dcList;
+//	}
 
 	/**
 	 * Calculates the feature range.

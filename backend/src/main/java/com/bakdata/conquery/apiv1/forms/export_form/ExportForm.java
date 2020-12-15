@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -14,7 +15,8 @@ import javax.validation.constraints.NotNull;
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.models.forms.util.DateContextMode;
+import com.bakdata.conquery.io.jackson.JacksonUtil;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -33,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
@@ -43,7 +46,10 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	private Mode timeMode;
 	
 	@NotNull @NotEmpty
-	private List<DateContextMode> resolution = List.of(DateContextMode.COMPLETE);
+	private List<DateContext.Resolution> resolution = List.of(DateContext.Resolution.COMPLETE);
+
+	@NotNull @NotEmpty
+	private DateContext.Alignment alignment = DateContext.Alignment.QUARTER;
 	
 	private boolean alsoCreateCoarserSubdivisions = true;
 
@@ -89,4 +95,13 @@ public class ExportForm implements Form, NamespacedIdHolding {
 		return C10N.get(ExportFormC10n.class, I18n.LOCALE.get()).getType();
 	}
 
+
+
+	@org.jetbrains.annotations.NotNull
+	public static List<Pair<DateContext.Resolution, DateContext.Alignment>> getResolutionAlignmentMap(List<DateContext.Resolution> resolutions, DateContext.Alignment alignmentHint) {
+
+		return resolutions.stream()
+				.map(r -> Pair.of(r, r.getSupportedAlignments().contains(alignmentHint)? alignmentHint : r.getSupportedAlignments().iterator().next()))
+				.collect(Collectors.toList());
+	}
 }

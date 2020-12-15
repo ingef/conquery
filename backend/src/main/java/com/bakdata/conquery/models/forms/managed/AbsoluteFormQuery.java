@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -25,6 +24,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @CPSType(id="ABSOLUTE_FORM_QUERY", base=QueryDescription.class)
@@ -38,7 +38,7 @@ public class AbsoluteFormQuery extends IQuery {
 	@NotNull @Valid
 	private final ArrayConceptQuery features;
 	@NotNull
-	private final List<DateContextMode> resolutions;
+	private final List<Pair<DateContext.Resolution, DateContext.Alignment>> resolutionsAndAlignmentMap;
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
@@ -49,7 +49,7 @@ public class AbsoluteFormQuery extends IQuery {
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
 			query.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutions ),
+			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false))
 		);
 	}

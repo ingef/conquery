@@ -24,6 +24,8 @@ import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+
 @Slf4j
 @Getter @RequiredArgsConstructor
 public class RelativeFormQueryPlan implements QueryPlan {
@@ -43,7 +45,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final int timeCountBefore;
 	private final int timeCountAfter;
 	private final DateContextMode timeUnit;
-	private final List<DateContextMode> resolutions;
+	private final List<Pair<DateContext.Resolution, DateContext.Alignment>> resolutionsAndAlignmentMap;
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -67,7 +69,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
-			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
+			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 		
 		// create feature and outcome plans
 		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
@@ -243,7 +245,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			timeCountBefore,
 			timeCountAfter,
 			timeUnit,
-			resolutions
+			resolutionsAndAlignmentMap
 		);
 		return copy;
 	}

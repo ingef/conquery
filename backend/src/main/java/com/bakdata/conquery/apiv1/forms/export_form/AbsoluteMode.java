@@ -38,7 +38,7 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(datasets, this, userId, submittedDataset);
+		return AbsExportGenerator.generate(datasets, this, userId, submittedDataset, getForm().getAlignment());
 	}
 
 	@Override

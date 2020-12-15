@@ -2,9 +2,11 @@ package com.bakdata.conquery.models.forms.export;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.forms.util.DateContextMode;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
@@ -17,14 +19,15 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 
 @AllArgsConstructor
 public class AbsExportGenerator {
 	
 
-	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, AbsoluteMode mode, UserId userId, DatasetId submittedDataset) {
-		
-		List<DateContextMode> resolutions = null;
+	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, AbsoluteMode mode, UserId userId, DatasetId submittedDataset, DateContext.Alignment alignmentHint) {
+
+		List<DateContext.Resolution> resolutions = null;
 		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
 			if(mode.getForm().getResolution().size() != 1) {
 				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
@@ -34,10 +37,13 @@ public class AbsExportGenerator {
 		else {
 			resolutions = mode.getForm().getResolution();
 		}
-		return generate(namespaces, resolutions, userId, submittedDataset, mode.getFeatures(), mode.getForm().getPrerequisite(), mode.getDateRange());
+
+		List<Pair<DateContext.Resolution, DateContext.Alignment>> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(resolutions, mode.getForm().getAlignment());
+
+		return generate(namespaces, userId, submittedDataset, mode.getFeatures(), mode.getForm().getPrerequisite(), mode.getDateRange(), resolutionsAndAlignments);
 	}
-	
-	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, List<DateContextMode> resolutions, UserId userId, DatasetId submittedDataset, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange) {
+
+	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange, List<Pair<DateContext.Resolution,DateContext.Alignment>> resolutionAndAlignment) {
 		
 		// Apply defaults to user concept
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
@@ -46,7 +52,7 @@ public class AbsExportGenerator {
 			queryGroup,
 			dateRange,
 			createSubQuery(features),
-			resolutions
+			resolutionAndAlignment
 		);
 		
 		return query;
