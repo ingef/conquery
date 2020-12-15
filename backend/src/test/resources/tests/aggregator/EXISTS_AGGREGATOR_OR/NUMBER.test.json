@@ -12,7 +12,6 @@
             "${dataset}.number"
           ],
           "type": "CONCEPT",
-          "label": "vs",
           "tables": [
             {
               "id": "${dataset}.number.number_connector",
