@@ -68,9 +68,11 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -130,11 +132,8 @@ public class AdminProcessor {
 
 		table.getPrimaryColumn().setPosition(Column.PRIMARY_POSITION);
 
-		dataset.getTables().add(table);
-
-		namespace.getStorage().updateDataset(dataset);
-		namespace.sendToAll(new UpdateDataset(dataset));
-		// see #143 check duplicate names
+		namespace.getStorage().addTable(table);
+		namespace.sendToAll(new UpdateTable(table));
 	}
 
 	public void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
@@ -180,23 +179,25 @@ public class AdminProcessor {
 		return dataset;
 	}
 
-	public void addImport(Dataset dataset, File selectedFile) throws IOException {
+	public void addImport(Namespace namespace, File selectedFile) throws IOException {
+		Dataset ds = namespace.getDataset();
+
 		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
 			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
 
-			TableId tableName = new TableId(dataset.getId(), header.getTable());
-			Table table = dataset.getTables().getOrFail(tableName);
+			TableId tableName = new TableId(ds.getId(), header.getTable());
+			Table table = namespace.getStorage().getTable(tableName);
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
 
-			if(datasetRegistry.get(dataset.getId()).getStorage().getImport(importId) != null){
+			if(datasetRegistry.get(ds.getId()).getStorage().getImport(importId) != null){
 				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
 			}
 
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
-			datasetRegistry.get(dataset.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(dataset.getId()), table.getId(), selectedFile, entityBucketSize));
+			datasetRegistry.get(ds.getId()).getJobManager()
+					  .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table.getId(), selectedFile, entityBucketSize));
 		}
 	}
 
@@ -574,24 +575,13 @@ public class AdminProcessor {
 		}
 
 
-		getJobManager()
-				.addSlowJob(new SimpleJob("Removing table " + tableId, () -> {
-					namespace.getStorage().getAllImports().stream()
-							 .filter(imp -> imp.getTable().equals(tableId))
-							 .map(Import::getId)
-							 .forEach(this::deleteImport);
+		namespace.getStorage().getAllImports().stream()
+				 .filter(imp -> imp.getTable().equals(tableId))
+				 .map(Import::getId)
+				 .forEach(this::deleteImport);
 
-					dataset.getTables().remove(tableId);
-					datasetRegistry.get(dataset.getId()).getStorage().updateDataset(dataset);
-				}));
-
-		getJobManager()
-				.addSlowJob(new SimpleJob(
-						"Removing table " + tableId,
-						() -> {
-							datasetRegistry.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
-						}
-				));
+		namespace.getStorage().removeTable(tableId);
+		namespace.sendToAll(new RemoveTable(tableId));
 	}
 
 	public void deleteConcept(ConceptId conceptId) {
@@ -606,16 +596,20 @@ public class AdminProcessor {
 	public void deleteDataset(DatasetId datasetId) {
 		final Namespace namespace = datasetRegistry.get(datasetId);
 
-		if(!namespace.getDataset().getTables().isEmpty()){
-			throw new IllegalArgumentException(String.format("Cannot delete dataset `%s`, because it still has tables: `%s`", datasetId, namespace.getDataset().getTables().values()));
+		if(!namespace.getStorage().getTables().isEmpty()){
+			throw new IllegalArgumentException(
+					String.format("Cannot delete dataset `%s`, because it still has tables: `%s`",
+								  datasetId,
+								  namespace.getStorage().getTables().stream()
+										   .map(Table::getId)
+										   .map(Objects::toString)
+										   .collect(Collectors.joining(","))
+					));
 		}
 
-		getJobManager()
-				.addSlowJob(new SimpleJob("Removing dataset " + datasetId, () -> datasetRegistry.removeNamespace(datasetId)));
-		getJobManager()
-				.addSlowJob(new SimpleJob("sendToAll: remove " + datasetId,
-										  () -> datasetRegistry.getShardNodes().values().forEach( shardNode -> shardNode.send(new RemoveWorker(datasetId))))
-				);
+
+		datasetRegistry.removeNamespace(datasetId);
+		datasetRegistry.getShardNodes().values().forEach( shardNode -> shardNode.send(new RemoveWorker(datasetId)));
 
 	}
 
@@ -647,7 +641,7 @@ public class AdminProcessor {
 		final Dataset dataset = namespace.getDataset();
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
-		final List<Column> dependents = dataset.getTables().values().stream()
+		final List<Column> dependents = namespace.getStorage().getTables().stream()
 											   .map(Table::getColumns).flatMap(Arrays::stream)
 											   .filter(column -> column.getSecondaryId() != null)
 											   .filter(column -> column.getSecondaryId().getId().equals(secondaryId))

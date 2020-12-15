@@ -20,6 +20,8 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -37,6 +39,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -62,6 +66,8 @@ public enum StoreInfo implements IStoreInfo {
 	SLAVE(ShardNodeInformation.class, Boolean.class),
 	DICTIONARIES(Dictionary.class, DictionaryId.class),
 	IMPORTS(Import.class, ImportId.class),
+	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
+	TABLES(Table.class, TableId.class),
 	CONCEPTS(Concept.class, ConceptId.class),
 	BUCKETS(Bucket.class, BucketId.class),
 	C_BLOCKS(CBlock.class, CBlockId.class),

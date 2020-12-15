@@ -68,7 +68,7 @@ public class DatasetsUIResource extends HAdmin {
 				processor.getUIContext(),
 				new DatasetInfos(
 						namespace.getDataset(),
-						namespace.getDataset().getTables().stream()
+						namespace.getStorage().getTables().stream()
 								 .map(table -> new TableInfos(
 								 		table.getId(),
 										table.getName(),

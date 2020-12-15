@@ -41,6 +41,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected SingletonStore<Dataset> dataset;
 	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
+
+	protected IdentifiableStore<Table> tables;
+	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
+
 	protected IdentifiableStore<Concept<?>> concepts;
 
 	/**
@@ -57,102 +61,96 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
+
+
 		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), environment, getValidator())
-			.onAdd(ds -> {
-				centralRegistry.register(ds);
+						  .onAdd(centralRegistry::register)
+						  .onRemove(centralRegistry::remove);
 
-				for (SecondaryIdDescription secondaryIdDescription : ds.getSecondaryIds().values()) {
-					log.debug("Registering {}", secondaryIdDescription);
-					centralRegistry.register(secondaryIdDescription);
-				}
+		secondaryIds = StoreInfo.SECONDARY_IDS.<SecondaryIdDescription>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+							   .onAdd(centralRegistry::register)
+							   .onRemove(centralRegistry::remove);
 
-				for(Table t:ds.getTables().values()) {
-					centralRegistry.register(t);
-					for (Column c : t.getColumns()) {
-						centralRegistry.register(c);
-					}
-				}
-			})
-			.onRemove(ds -> {
-				for(Table t:ds.getTables().values()) {
-					for (Column c : t.getColumns()) {
-						centralRegistry.remove(c);
-					}
-					centralRegistry.remove(t);
-				}
+		tables = StoreInfo.TABLES.<Table>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+						 .onAdd(table -> {
+							 centralRegistry.register(table);
+							 for (Column c : table.getColumns()) {
+								 centralRegistry.register(c);
+							 }
+						 })
+						 .onRemove(table -> {
+							 centralRegistry.remove(table);
+							 for (Column c : table.getColumns()) {
+								 centralRegistry.remove(c);
+							 }
+						 });
 
-				for (SecondaryIdDescription secondaryIdDescription : ds.getSecondaryIds().values()) {
-					centralRegistry.remove(secondaryIdDescription);
-				}
-
-				centralRegistry.remove(ds);
-			});
-
-		if(ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
-			dictionaries =	StoreInfo.DICTIONARIES.weakBig(getConfig(), environment, getValidator(), getCentralRegistry());
+		if (ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
+			dictionaries = StoreInfo.DICTIONARIES.weakBig(getConfig(), environment, getValidator(), getCentralRegistry());
 		}
 		else {
-			dictionaries =	StoreInfo.DICTIONARIES.big(getConfig(), environment, getValidator(), getCentralRegistry());
+			dictionaries = StoreInfo.DICTIONARIES.big(getConfig(), environment, getValidator(), getCentralRegistry());
 		}
 
-		concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
-			.onAdd(concept -> {
-				Dataset ds = centralRegistry.resolve(
-					concept.getDataset() == null
-						? concept.getId().getDataset()
-						: concept.getDataset()
-				);
-				concept.setDataset(ds.getId());
+		concepts = StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+						   .onAdd(concept -> {
+							   Dataset ds = centralRegistry.resolve(
+									   concept.getDataset() == null
+									   ? concept.getId().getDataset()
+									   : concept.getDataset()
+							   );
+							   concept.setDataset(ds.getId());
 
-				concept.initElements(validator);
+							   concept.initElements(validator);
 
-				concept.getSelects().forEach(centralRegistry::register);
-				for (Connector c : concept.getConnectors()) {
-					centralRegistry.register(c);
-					c.collectAllFilters().forEach(centralRegistry::register);
-					c.getSelects().forEach(centralRegistry::register);
-				}
-				//add imports of table
-				if(registerImports) {
-					for (Import imp : getAllImports()) {
-						for (Connector con : concept.getConnectors()) {
-							if (con.getTable().getId().equals(imp.getTable())) {
-								con.addImport(imp);
-							}
-						}
-					}
-				}
-			})
-			.onRemove(concept -> {
-				concept.getSelects().forEach(centralRegistry::remove);
-				//see #146  remove from Dataset.concepts
-				for(Connector c:concept.getConnectors()) {
-					c.getSelects().forEach(centralRegistry::remove);
-					c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
-					centralRegistry.remove(c.getId());
-				}
-			});
+							   concept.getSelects().forEach(centralRegistry::register);
+							   for (Connector c : concept.getConnectors()) {
+								   centralRegistry.register(c);
+								   c.collectAllFilters().forEach(centralRegistry::register);
+								   c.getSelects().forEach(centralRegistry::register);
+							   }
+							   //add imports of table
+							   if (registerImports) {
+								   for (Import imp : getAllImports()) {
+									   for (Connector con : concept.getConnectors()) {
+										   if (con.getTable().getId().equals(imp.getTable())) {
+											   con.addImport(imp);
+										   }
+									   }
+								   }
+							   }
+						   })
+						   .onRemove(concept -> {
+							   concept.getSelects().forEach(centralRegistry::remove);
+							   //see #146  remove from Dataset.concepts
+							   for (Connector c : concept.getConnectors()) {
+								   c.getSelects().forEach(centralRegistry::remove);
+								   c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
+								   centralRegistry.remove(c.getId());
+							   }
+						   });
 		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
-			.onAdd(imp-> {
-				imp.loadExternalInfos(this);
+						  .onAdd(imp -> {
+							  imp.loadExternalInfos(this);
 
-				if (registerImports) {
-					for (Concept<?> c : getAllConcepts()) {
-						for (Connector con : c.getConnectors()) {
-							if (con.getTable().getId().equals(imp.getTable())) {
-								con.addImport(imp);
-							}
-						}
-					}
-				}
-			});
+							  if (registerImports) {
+								  for (Concept<?> c : getAllConcepts()) {
+									  for (Connector con : c.getConnectors()) {
+										  if (con.getTable().getId().equals(imp.getTable())) {
+											  con.addImport(imp);
+										  }
+									  }
+								  }
+							  }
+						  });
 
 		// Order is important here
 		environmentToStores.putAll(environment, List.of(
-			dataset, 
-			dictionaries, 
-			concepts, 
-			imports));
+				dataset,
+				dictionaries,
+				concepts,
+				imports
+		));
 	}
 	
 	@Override

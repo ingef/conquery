@@ -172,9 +172,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			assertThat(namespace.getDataset().getTables().getOptional(tableId))
+			assertThat(namespace.getStorage().getTable(tableId))
 					.describedAs("Table after re-import.")
-					.isPresent();
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {

@@ -6,7 +6,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -127,7 +126,7 @@ public class AdminDatasetResource extends HAdmin {
 		}
 
 
-		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
+		processor.addImport(namespace, selectedFile);
 	}
 
 
@@ -159,7 +158,7 @@ public class AdminDatasetResource extends HAdmin {
 	@GET
 	@Path("tables")
 	public List<TableId> listTables(){
-		return new ArrayList<>(namespace.getDataset().getTables().keySet());
+		return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
 	}
 
 	@GET

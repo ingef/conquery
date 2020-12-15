@@ -79,7 +79,9 @@ public class ConceptQueryPlan implements QueryPlan {
 				continue;
 			}
 
-			storage.getDataset().getTables().getOrFail(tableId);
+			if(storage.getTable(tableId) == null){
+				throw new IllegalStateException("Table is missing");
+			}
 		}
 	}
 

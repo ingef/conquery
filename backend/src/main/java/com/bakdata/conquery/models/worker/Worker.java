@@ -17,11 +17,13 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -198,4 +200,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		close();
 	}
 
+	public void addTable(Table table) {
+		storage.addTable(table);
+	}
+
+	public void removeTable(TableId table) {
+		storage.removeTable(table);
+	}
 }

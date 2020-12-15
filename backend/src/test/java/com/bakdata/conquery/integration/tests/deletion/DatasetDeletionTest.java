@@ -110,7 +110,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			conquery.waitUntilWorkDone();
 
-			conquery.getNamespace().getDataset().getTables().stream()
+			conquery.getNamespace().getStorage().getTables().stream()
 					.map(Table::getId)
 					.forEach(conquery.getDatasetsProcessor()::deleteTable);
 
@@ -196,7 +196,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				conquery2.getDatasetsProcessor().addTable(newDataset, table.toTable(conquery.getDataset()), conquery2.getNamespace());
 			}
 
-			assertThat(newDataset.getTables().values()).isNotEmpty();
+			assertThat(conquery2.getNamespace().getStorage().getTables()).isNotEmpty();
 
 			conquery.waitUntilWorkDone();
 			LoadingUtil.importTableContents(conquery2, test.getContent().getTables(), newDataset);
