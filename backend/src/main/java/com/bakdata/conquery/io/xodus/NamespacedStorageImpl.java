@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -261,4 +263,27 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Collection<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
 	}
+
+
+	@Override
+	public List<Table> getTables() {
+		return new ArrayList<>(tables.getAll());
+	}
+
+	@Override
+	public Table getTable(TableId tableId) {
+		return tables.get(tableId);
+	}
+
+	@SneakyThrows({JSONException.class})
+	@Override
+	public void addTable(Table table) {
+		tables.add(table);
+	}
+
+	@Override
+	public void removeTable(TableId table) {
+		tables.remove(table);
+	}
+
 }
