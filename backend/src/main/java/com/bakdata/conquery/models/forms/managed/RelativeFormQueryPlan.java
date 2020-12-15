@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.forms.managed;
 import java.util.*;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -25,7 +24,6 @@ import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Slf4j
 @Getter @RequiredArgsConstructor
@@ -45,7 +43,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final IndexPlacement indexPlacement;
 	private final int timeCountBefore;
 	private final int timeCountAfter;
-	private final DateContextMode timeUnit;
+	private final DateContext.Resolution timeUnit;
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	@Override

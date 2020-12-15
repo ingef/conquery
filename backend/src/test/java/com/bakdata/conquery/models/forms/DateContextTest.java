@@ -6,8 +6,6 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.forms.util.DateContextMode;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -109,7 +107,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysBeforeTest() {
-		DateContextMode timeUnit = DateContextMode.DAYS;
+		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -130,7 +128,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysBeforeCompleteOnlyTest() {
-		DateContextMode timeUnit = DateContextMode.DAYS;
+		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -149,7 +147,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysAfterTest() {
-		DateContextMode timeUnit = DateContextMode.DAYS;
+		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -171,7 +169,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysNeutralTest() {
-		DateContextMode timeUnit = DateContextMode.DAYS;
+		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -193,7 +191,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterBeforeTest() {
-		DateContextMode timeUnit = DateContextMode.QUARTERS;
+		DateContext.Resolution timeUnit = DateContext.Resolution.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -214,7 +212,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterAfterTest() {
-		DateContextMode timeUnit = DateContextMode.QUARTERS;
+		DateContext.Resolution timeUnit = DateContext.Resolution.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -236,7 +234,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterNeutralTest() {
-		DateContextMode timeUnit = DateContextMode.QUARTERS;
+		DateContext.Resolution timeUnit = DateContext.Resolution.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -13,7 +12,6 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.forms.util.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -28,7 +26,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 
 @CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
 @Getter
@@ -49,7 +46,7 @@ public class RelativeFormQuery extends IQuery {
 	@Min(0)
 	private final int timeCountAfter;
 	@NotNull
-	private final DateContextMode timeUnit;
+	private final DateContext.Resolution timeUnit;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 	

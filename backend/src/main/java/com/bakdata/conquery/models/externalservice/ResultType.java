@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.externalservice;
 
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.models.forms.util.DateContextMode;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -42,13 +42,13 @@ public enum ResultType {
 
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof DateContextMode) {
-				return ((DateContextMode) f).toString(cfg.getLocale());
+			if (f instanceof DateContext.Resolution) {
+				return ((DateContext.Resolution) f).toString(cfg.getLocale());
 			}
 			try {
 				// If the object was parsed as a simple string, try to convert it to a
 				// DateContextMode to get Internationalization
-				return DateContextMode.valueOf(f.toString()).toString(cfg.getLocale());
+				return DateContext.Resolution.valueOf(f.toString()).toString(cfg.getLocale());
 			}
 			catch (Exception e) {
 				throw new IllegalArgumentException(f + " is not a valid resolution.", e);

@@ -11,7 +11,7 @@ import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.internationalization.DateContextModeC10n;
+import com.bakdata.conquery.internationalization.DateContextResolutionC10n;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.commons.lang3.tuple.Pair;
 
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -71,38 +70,6 @@ public class DateContext {
 	@Getter
 	@Nullable
 	private Resolution subdivisionMode;
-
-//	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode ... subdivisionMode ) {
-//		return generateAbsoluteContexts(dateRangeMask, Arrays.asList(subdivisionMode));
-//	}
-//
-//	/**
-//	 * Returns the date ranges that fit into a mask specified as date range, which
-//	 * are optional subdivided in to year-wise or quarter-wise date ranges.
-//	 * If a smaller subdivision mode is chosen,
-//	 *
-//	 * @param dateRangeMask The mask that is applied onto the dates.
-//	 * @param subdivisionModes    The subdivision modes that define the granularity of the
-//	 *                      result.
-//	 * @return All date ranges as wrapped into {@link DateContext} that were in the
-//	 *         mask.
-//	 */
-//	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<DateContextMode> subdivisionModes) {
-//		List<DateContext> dcList = new ArrayList<>();
-//
-//		for (DateContextMode mode : subdivisionModes) {
-//			// Start counting index form 0 for every subdivision mode
-//			int index = 0;
-//			for (CDateRange quarterInMask : mode.subdivideRange(dateRangeMask)) {
-//				index++;
-//				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
-//					// For now there is no index for complete
-//					mode.equals(DateContextMode.COMPLETE) ? null : index, null, mode);
-//				dcList.add(dc);
-//			}
-//		}
-//		return dcList;
-//	}
 
 	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		List<DateContext> dcList = new ArrayList<>();
@@ -172,7 +139,7 @@ public class DateContext {
 			@Override
 			public String toString(Locale locale) {
 
-				return C10N.get(DateContextModeC10n.class, locale).complete();
+				return C10N.get(DateContextResolutionC10n.class, locale).complete();
 			}
 		},
 
@@ -187,7 +154,7 @@ public class DateContext {
 			@Override
 			public String toString(Locale locale) {
 
-				return C10N.get(DateContextModeC10n.class, locale).year();
+				return C10N.get(DateContextResolutionC10n.class, locale).year();
 			}
 		},
 
@@ -201,7 +168,7 @@ public class DateContext {
 			@Override
 			public String toString(Locale locale) {
 
-				return C10N.get(DateContextModeC10n.class, locale).quarter();
+				return C10N.get(DateContextResolutionC10n.class, locale).quarter();
 			}
 		},
 
@@ -214,7 +181,7 @@ public class DateContext {
 			@Override
 			public String toString(Locale locale) {
 
-				return C10N.get(DateContextModeC10n.class, locale).day();
+				return C10N.get(DateContextResolutionC10n.class, locale).day();
 			}
 		};
 
@@ -310,7 +277,7 @@ public class DateContext {
 		};
 	}
 
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContext.Resolution timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -371,58 +338,6 @@ public class DateContext {
 		return dcList;
 	}
 
-//	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContextMode timeUnit, List<DateContextMode> subdivisionModes) {
-//		if (featureTime < 1 && outcomeTime < 1) {
-//			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
-//					+ "; outcomeTime: " + outcomeTime + ")");
-//		}
-//		List<DateContext> dcList = new ArrayList<>();
-//
-//		LocalDate eventdate = CDate.toLocalDate(event);
-//
-//		CDateRange featureRange = generateFeatureRange(event, indexPlacement, featureTime, timeUnit);
-//		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
-//
-//
-//		for(DateContextMode mode : subdivisionModes) {
-//			List<CDateRange> featureRanges = mode.subdivideRange(featureRange);
-//			/*
-//			 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
-//			 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
-//			 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
-//			 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
-//			 */
-//			int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
-//			for (CDateRange subRange : featureRanges) {
-//				DateContext dc = new DateContext(
-//						subRange,
-//						FeatureGroup.FEATURE,
-//						// For now there is no index for complete
-//						mode.equals(DateContextMode.COMPLETE) ? null : -index,
-//						eventdate,
-//						null //mode
-//				);
-//				index--;
-//				dcList.add(dc);
-//			}
-//
-//			index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
-//			for (CDateRange subRange : mode.subdivideRange(outcomeRange)) {
-//				DateContext dc = new DateContext(
-//						subRange,
-//						FeatureGroup.OUTCOME,
-//						// For now there is no index for complete
-//						mode.equals(DateContextMode.COMPLETE)? null : index,
-//						eventdate,
-//						null //mode
-//				);
-//				index++;
-//				dcList.add(dc);
-//			}
-//		}
-//		return dcList;
-//	}
-
 	/**
 	 * Calculates the feature range.
 	 * 
@@ -433,7 +348,7 @@ public class DateContext {
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
 	 */
-	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, DateContextMode timeUnit) {
+	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, DateContext.Resolution timeUnit) {
 		if(featureTime <= 0){
 			return null;
 		}
@@ -475,8 +390,7 @@ public class DateContext {
 	 * @param resolution  The time unit.
 	 * @return The outcome range.
 	 */
-	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime,
-		DateContextMode resolution) {
+	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, DateContext.Resolution resolution) {
 		if (outcomeTime <= 0) {
 			return null;
 		}
