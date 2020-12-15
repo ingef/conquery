@@ -273,7 +273,7 @@ public class DateContext {
 				result.add(alignRef.makeMergedRange(alignedSubdivisions.get(alignedSubdivisions.size() - 1), interestingDate));
 			}
 
-			return result;
+			return alignRef.getAlignedIterationDirection(result);
 		};
 	}
 
