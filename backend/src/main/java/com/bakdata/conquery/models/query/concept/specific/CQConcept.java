@@ -54,20 +54,25 @@ import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter
-@CPSType(id="CONCEPT", base=CQElement.class)
+@Getter
+@Setter
+@CPSType(id = "CONCEPT", base = CQElement.class)
 @Slf4j
 @FieldNameConstants
 @JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
 
-	@Valid @NotEmpty
+	@Valid
+	@NotEmpty
 	private List<ConceptElementId<?>> ids = Collections.emptyList();
-	@Valid @NotEmpty @JsonManagedReference
+	@Valid
+	@NotEmpty
+	@JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
 
@@ -83,12 +88,12 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		Concept<?> concept = concepts[0].getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
-		for(CQTable table : tables) {
+		for (CQTable table : tables) {
 			try {
 				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
 			}
-			catch (NoSuchElementException exc){
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), concept.getDataset(), exc);
+			catch (NoSuchElementException exc) {
+				log.warn("Unable to resolve connector `{}` in dataset `{}`.", table.getId().getConnector(), concept.getDataset(), exc);
 				continue;
 			}
 
@@ -97,9 +102,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			List<FilterNode<?>> filters = new ArrayList<>(table.getFilters().size());
 			//add filter to children
-			for(FilterValue f : table.getFilters()) {
+			for (FilterValue f : table.getFilters()) {
 				FilterNode agg = f.getFilter().createAggregator(f.getValue());
-				if(agg != null) {
+				if (agg != null) {
 					filters.add(agg);
 				}
 			}
@@ -121,14 +126,13 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
 
-			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
+			if (!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
 			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
-
 
 
 			final Connector connector = table.getResolvedConnector();
@@ -154,7 +158,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			);
 		}
 
-		if(tableNodes.isEmpty()){
+		if (tableNodes.isEmpty()) {
 			throw new IllegalStateException(String.format("Unable to resolve any connector for query `%s`", getLabel()));
 		}
 
@@ -171,27 +175,12 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return outNode;
 	}
 
-	private long calculateBitMask(ConceptElement<?>[] concepts) {
-		long mask = 0;
-		for(ConceptElement<?> concept : concepts) {
-			mask |= concept.calculateBitMask();
-		}
-		return mask;
-	}
-
 	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
 		return
 				ids
-					.stream()
-					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-					.toArray(ConceptElement[]::new);
-	}
-
-	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
-		if (filters.isEmpty() && aggregators.isEmpty()) {
-			return new Leaf();
-		}
-		return FiltersNode.create(filters, aggregators);
+						.stream()
+						.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+						.toArray(ConceptElement[]::new);
 	}
 
 	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<Select> select) {
@@ -207,7 +196,25 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return nodes;
 	}
 
-	private Column selectValidityDateColumn(CQTable table) {
+	/**
+	 * @implNote This method is used in dependents (via {@link CQConceptDeserializer}), don't change this.
+	 */
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
+		if (filters.isEmpty() && aggregators.isEmpty()) {
+			return new Leaf();
+		}
+		return FiltersNode.create(filters, aggregators);
+	}
+
+	private static long calculateBitMask(ConceptElement<?>[] concepts) {
+		long mask = 0;
+		for (ConceptElement<?> concept : concepts) {
+			mask |= concept.calculateBitMask();
+		}
+		return mask;
+	}
+
+	private static Column selectValidityDateColumn(CQTable table) {
 		if (table.getDateColumn() != null) {
 			return table.getResolvedConnector()
 						.getValidityDateColumn(table.getDateColumn().getValue());
