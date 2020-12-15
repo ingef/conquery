@@ -27,7 +27,7 @@ import lombok.Setter;
 @CPSType(id="RELATIVE", base=Mode.class)
 public class RelativeMode extends Mode {
 	@NotNull
-	private DateContext.Resolution timeUnit;
+	private DateContext.CalendarUnit timeUnit;
 	@Min(0)
 	private int timeCountBefore;
 	@Min(0)

@@ -46,7 +46,7 @@ public class RelativeFormQuery extends IQuery {
 	@Min(0)
 	private final int timeCountAfter;
 	@NotNull
-	private final DateContext.Resolution timeUnit;
+	private final DateContext.CalendarUnit timeUnit;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 	

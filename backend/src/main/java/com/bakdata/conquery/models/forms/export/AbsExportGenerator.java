@@ -37,7 +37,7 @@ public class AbsExportGenerator {
 			resolutions = mode.getForm().getResolution();
 		}
 
-		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(resolutions, mode.getForm().getAlignmentHint());
+		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(resolutions, mode.getAlignmentHint());
 
 		return generate(namespaces, userId, submittedDataset, mode.getFeatures(), mode.getForm().getPrerequisite(), mode.getDateRange(), resolutionsAndAlignments);
 	}

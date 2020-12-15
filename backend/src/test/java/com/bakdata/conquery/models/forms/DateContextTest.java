@@ -107,7 +107,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysBeforeTest() {
-		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -128,7 +128,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysBeforeCompleteOnlyTest() {
-		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -147,7 +147,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysAfterTest() {
-		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -169,7 +169,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysNeutralTest() {
-		DateContext.Resolution timeUnit = DateContext.Resolution.DAYS;
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -191,7 +191,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterBeforeTest() {
-		DateContext.Resolution timeUnit = DateContext.Resolution.QUARTERS;
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -212,7 +212,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterAfterTest() {
-		DateContext.Resolution timeUnit = DateContext.Resolution.QUARTERS;
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -234,7 +234,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterNeutralTest() {
-		DateContext.Resolution timeUnit = DateContext.Resolution.QUARTERS;
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;

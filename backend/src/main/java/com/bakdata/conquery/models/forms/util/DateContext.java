@@ -236,8 +236,18 @@ public class DateContext {
 		QUARTER(CDateRange::getCoveredQuarters),
 		YEAR(CDateRange::getCoveredYears);
 
-		@Getter
+		@Getter @JsonIgnore
 		private final Function<CDateRange,List<CDateRange>> subdivider;
+	}
+
+	@RequiredArgsConstructor
+	public static enum CalendarUnit {
+		DAYS(Alignment.DAY),
+		QUARTERS(Alignment.QUARTER),
+		YEARS(Alignment.YEAR);
+
+		@Getter
+		private final Alignment alignment;
 	}
 
 	public static Function<CDateRange,List<CDateRange>> getDateRangeSubdivider(AlignmentReference alignRef, Resolution resolution, Alignment alignment){
@@ -277,7 +287,7 @@ public class DateContext {
 		};
 	}
 
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContext.Resolution timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContext.CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -348,7 +358,7 @@ public class DateContext {
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
 	 */
-	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, DateContext.Resolution timeUnit) {
+	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, DateContext.CalendarUnit timeUnit) {
 		if(featureTime <= 0){
 			return null;
 		}
@@ -390,7 +400,7 @@ public class DateContext {
 	 * @param resolution  The time unit.
 	 * @return The outcome range.
 	 */
-	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, DateContext.Resolution resolution) {
+	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, DateContext.CalendarUnit resolution) {
 		if (outcomeTime <= 0) {
 			return null;
 		}
