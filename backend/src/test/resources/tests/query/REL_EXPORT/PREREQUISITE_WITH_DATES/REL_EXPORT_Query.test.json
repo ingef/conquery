@@ -4,9 +4,15 @@
     "expectedCsv": "tests/query/REL_EXPORT/PREREQUISITE_WITH_DATES/expected.csv",
     "query": {
         "type": "RELATIVE_FORM_QUERY",
-        "resolutions": [
-            "COMPLETE",
-            "QUARTERS"
+        "resolutionsAndAlignmentMap": [
+            {
+                "resolution": "COMPLETE",
+                "alignment": "NO_ALIGN"
+            },
+            {
+                "resolution": "QUARTERS",
+                "alignment": "QUARTER"
+            }
         ],
         "query": {
             "type": "CONCEPT_QUERY",

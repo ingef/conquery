@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -38,7 +38,7 @@ public class AbsoluteFormQuery extends IQuery {
 	@NotNull @Valid
 	private final ArrayConceptQuery features;
 	@NotNull
-	private final List<DateContextMode> resolutions;
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
@@ -49,7 +49,7 @@ public class AbsoluteFormQuery extends IQuery {
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
 			query.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutions ),
+			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false))
 		);
 	}

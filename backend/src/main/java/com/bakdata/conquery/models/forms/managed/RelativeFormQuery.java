@@ -10,7 +10,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -45,9 +46,9 @@ public class RelativeFormQuery extends IQuery {
 	@Min(0)
 	private final int timeCountAfter;
 	@NotNull
-	private final DateContextMode timeUnit;
+	private final DateContext.CalendarUnit timeUnit;
 	@NotNull
-	private final List<DateContextMode> resolutions;
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
@@ -62,7 +63,7 @@ public class RelativeFormQuery extends IQuery {
 			// At the moment we do not use the dates of feature and outcome query
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
 			outcomes.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutions);
+			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 	}
 
 	@Override
