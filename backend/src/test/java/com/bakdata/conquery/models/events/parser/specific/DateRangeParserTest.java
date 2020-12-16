@@ -29,7 +29,7 @@ class DateRangeParserTest {
 		assertThat(((DateRangeTypeDateRange) actual).getMinStore())
 				.isInstanceOf(RebasingStore.class);
 
-		assertThat(((RebasingStore) ((DateRangeTypeDateRange) actual).getMinStore()).getStore())
+		assertThat(((RebasingStore) ((DateRangeTypeDateRange) actual).getMinStore().getStore()).getStore())
 				.isInstanceOf(ByteStore.class);
 
 	}
