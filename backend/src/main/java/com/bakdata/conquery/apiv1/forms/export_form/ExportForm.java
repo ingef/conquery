@@ -94,8 +94,13 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	}
 
 
-
-	@org.jetbrains.annotations.NotNull
+	/**
+	 * Maps the given resolution to a fitting alignment. It tried to use the alignment which was given as a hint.
+	 * If the alignment and 
+	 * @param resolutions
+	 * @param alignmentHint
+	 * @return
+	 */
 	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<DateContext.Resolution> resolutions, DateContext.Alignment alignmentHint) {
 
 		return resolutions.stream()

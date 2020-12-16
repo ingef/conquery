@@ -287,6 +287,17 @@ public class DateContext {
 		};
 	}
 
+	/**
+	 * Generates a list of date contexts qround an index date which belong either to a feature date range (before the index)
+	 * or the outcome date range (after the index). The computed feature and outcome date ranges
+	 * @param event
+	 * @param indexPlacement
+	 * @param featureTime
+	 * @param outcomeTime
+	 * @param timeUnit
+	 * @param resolutionAndAlignment
+	 * @return
+	 */
 	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContext.CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
