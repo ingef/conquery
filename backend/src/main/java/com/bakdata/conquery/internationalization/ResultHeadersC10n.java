@@ -20,6 +20,10 @@ public interface ResultHeadersC10n {
 	@En("event_date")
 	@De("Indexdatum")
 	String eventDate();
+
+	@En("index")
+	@De("Index Zeiteinheit")
+	String index();
 	
 	@En("feature_date_range")
 	@De("Vorbeobachtungszeitraum")
