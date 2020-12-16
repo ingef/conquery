@@ -76,8 +76,9 @@ public class ConceptsProcessor {
 			@Override
 			public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) throws Exception {
 				String searchTerm = filterAndSearch.getValue();
-				log.trace("Calculating a new search cache for the term \"{}\"", searchTerm);
-				return autocompleteTextFilter(filterAndSearch.getKey(), searchTerm);
+				AbstractSelectFilter<?> filter = filterAndSearch.getKey();
+				log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+				return autocompleteTextFilter(filter, searchTerm);
 			}
 			
 		});
@@ -178,6 +179,7 @@ public class ConceptsProcessor {
 	}
 	/**
 	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
+	 * Is used by the serach cache to load missing items
 	 */
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		List<FEValue> result = new LinkedList<>();
