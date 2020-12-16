@@ -1,14 +1,12 @@
 package com.bakdata.conquery.models.query;
 
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.worker.Worker;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,12 +21,6 @@ public class QueryPlanContext {
 
 	private boolean generateSpecialDateUnion = true;
 	private CDateRange dateRestriction = CDateRange.all();
-
-	/**
-	 * Set if in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the query-active {@link SecondaryId}.
-	 */
-	@Nullable
-	private SecondaryId selectedSecondaryId;
 
 	public DatasetId getDataset() {
 		return worker.getStorage().getDataset().getId();
