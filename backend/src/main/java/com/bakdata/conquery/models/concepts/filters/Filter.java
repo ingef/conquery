@@ -27,6 +27,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @CPSBase
 public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 
+	protected static final Column[] EMPTY_COLUMNS = new Column[0];
 	private String unit;
 	private String description;
 	@JsonBackReference
