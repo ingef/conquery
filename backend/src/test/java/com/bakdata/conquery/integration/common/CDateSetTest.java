@@ -5,13 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 public class CDateSetTest {
 

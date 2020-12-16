@@ -86,7 +86,6 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
-import io.dropwizard.util.Size;
 
 public class Constants {
 	public static final Group[] GROUPS = {
