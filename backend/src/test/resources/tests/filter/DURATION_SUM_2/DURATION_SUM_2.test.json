@@ -25,7 +25,6 @@
       }
     ],
     "filter": {
-      "column": "table.datum",
       "type": "DURATION_SUM"
     }
   },

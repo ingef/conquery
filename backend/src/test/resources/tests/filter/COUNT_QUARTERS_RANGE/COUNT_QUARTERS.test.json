@@ -24,10 +24,9 @@
   "connector": {
     "validityDates": {
       "label": "Datum",
-      "column": "table.datum"
+      "column": "table.behandlungsdatum"
     },
     "filter": {
-      "column": "table.behandlungsdatum",
       "type": "COUNT_QUARTERS"
     }
   },
