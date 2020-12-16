@@ -189,6 +189,9 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 
 	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
+		if(contexts.isEmpty()){
+			return false;
+		}
 		if (featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() > 0) {
 			// We have features and outcomes check if both have complete date ranges (they should be at the beginning of the list)
 			return contexts.size()>=2

@@ -95,17 +95,23 @@ public class ExportForm implements Form, NamespacedIdHolding {
 
 
 	/**
-	 * Maps the given resolution to a fitting alignment. It tried to use the alignment which was given as a hint.
-	 * If the alignment and 
-	 * @param resolutions
-	 * @param alignmentHint
-	 * @return
+	 * Maps the given resolution to a fitting alignment. It tries to use the alignment which was given as a hint.
+	 * If the alignment does not fit to a resolution (resolution is finer than the alignment), the first alignment that
+	 * this resolution supports is chosen (see the alignment order in {@link DateContext.Resolution})
+	 * @param resolutions The temporal resolutions for which sub queries should be generated per entity
+	 * @param alignmentHint The preferred calendar alignment on which the sub queries of each resolution should be aligned.
+	 * 						Note that this alignment is chosen when a resolution is equal or coarser.
+	 * @return The given resolutions mapped to a fitting calendar alignment.
 	 */
 	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<DateContext.Resolution> resolutions, DateContext.Alignment alignmentHint) {
 
 		return resolutions.stream()
-				.map(r -> ResolutionAndAlignment.of(r, r.getSupportedAlignments().contains(alignmentHint)? alignmentHint : r.getSupportedAlignments().iterator().next()))
+				.map(r -> ResolutionAndAlignment.of(r, getFittingAlignment(alignmentHint, r)))
 				.collect(Collectors.toList());
+	}
+
+	private static DateContext.Alignment getFittingAlignment(DateContext.Alignment alignmentHint, DateContext.Resolution resolution) {
+		return resolution.getSupportedAlignments().contains(alignmentHint)? alignmentHint : resolution.getSupportedAlignments().iterator().next();
 	}
 
 	/**

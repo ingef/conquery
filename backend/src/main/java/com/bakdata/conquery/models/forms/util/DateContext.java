@@ -71,6 +71,17 @@ public class DateContext {
 	@Nullable
 	private Resolution subdivisionMode;
 
+	/**
+	 * Generates a date context list of sub date ranges from the given dateRangeMask.
+	 * The generation of the contexts happens for each resolution with their mapped alignment.
+	 * The returned list is primarily sorted in the order of the given resolutions and secondarily by the temporal
+	 * succession of the contexts, e.g.: with resolutions YEARS, QUARTERS given the list would first contain the
+	 * ascending year ranges and than the quarter ranges. The alignment references always the lower bound of the
+	 * dateRangeMask.
+	 * @param dateRangeMask The mask in which the contexts are generated
+	 * @param resolutionAndAlignment The resolutions to produce and their alignment
+	 * @return A sorted list of all generated contexts
+	 */
 	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		List<DateContext> dcList = new ArrayList<>();
 
@@ -89,6 +100,11 @@ public class DateContext {
 		return dcList;
 	}
 
+	/**
+	 * Specifies whether the sub date ranges (which have the maximum length specified by the {@link Resolution})
+	 * are aligned with regard to beginning or the end of a date range mask. This affects the generated sub date ranges
+	 * only if the {@link Alignment} is finer than the {@link Resolution}.
+	 */
 	public static enum AlignmentReference {
 		START(){
 			@Override
@@ -129,6 +145,14 @@ public class DateContext {
 	}
 
 	@RequiredArgsConstructor
+	/**
+	 * Defines the granularity into which a given date range mask is chunked.
+	 * The actual size in days depends on the chosen {@link Alignment}, e.g.:
+	 * If the resolution is YEARS and it should be aligned on the actual YEAR, the resulting contexts days might vary
+	 * depending on if that year was a leap year.
+	 * If the alignment is DAY, then all context will have a length of 365 day, except the dateRangeMask intersects an
+	 * edge context.
+	 */
 	public static enum Resolution {
 		/**
 		 * For returning contexts with a single {@link CDateRange} for the entire
@@ -206,6 +230,9 @@ public class DateContext {
 			return compatibleAlignmentsAndAmount.keySet();
 		}
 
+		/**
+		 * Returns the amount of calendar alignment sub date ranges that would fit in to this resolution.
+		 */
 		@JsonIgnore
 		public OptionalInt getAmountForAlignment(Alignment alignment){
 			if (!this.compatibleAlignmentsAndAmount.containsKey(alignment)) {
@@ -230,6 +257,12 @@ public class DateContext {
 	}
 
 	@RequiredArgsConstructor
+	/**
+	 * Specifier for the alignment of {@link DateContext}s of a certain resolution.
+	 * The alignment provides a method to sub divide a dateRangeMask into ranges aligned to the calendar equivalent.
+	 * These sub divisions can then be merged to form the equally grain or coarser desired resolution for the
+	 * {@link DateContext}s.
+	 */
 	public static enum Alignment {
 		NO_ALIGN(List::of), // Special case for resolution == COMPLETE
 		DAY(CDateRange::getCoveredDays),
@@ -250,6 +283,10 @@ public class DateContext {
 		private final Alignment alignment;
 	}
 
+	/**
+	 * Factory function that produces a list of {@link CDateRange}s from a given dateRangeMask according to the given
+	 * {@link AlignmentReference}, {@link Resolution} and {@link Alignment}.
+	 */
 	public static Function<CDateRange,List<CDateRange>> getDateRangeSubdivider(AlignmentReference alignRef, Resolution resolution, Alignment alignment){
 		int alignedPerResolution = resolution.getAmountForAlignment(alignment).orElseThrow(() -> new ConqueryError.ExecutionCreationPlanDateContextError(alignment, resolution));
 
@@ -261,8 +298,13 @@ public class DateContext {
 		}
 
 		return (dateRange) -> {
-			List<CDateRange> result = new ArrayList<>();
 			List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(alignment.getSubdivider().apply(dateRange));
+
+			if(alignedSubdivisions.isEmpty()){
+				return alignedSubdivisions;
+			}
+
+			List<CDateRange> result = new ArrayList<>();
 
 			int alignedSubdivisionCount = 1;
 			int interestingDate = 0;
@@ -288,15 +330,12 @@ public class DateContext {
 	}
 
 	/**
-	 * Generates a list of date contexts around an index date which belong either to a feature date range (before the index)
-	 * or the outcome date range (after the index). The computed feature and outcome date ranges
-	 * @param event
-	 * @param indexPlacement
-	 * @param featureTime
-	 * @param outcomeTime
-	 * @param timeUnit
-	 * @param resolutionAndAlignment
-	 * @return
+	 * Generates a list of date contexts around an index date which belong either to the feature group (before the index)
+	 * or the outcome group (after the index). The computed feature and outcome date ranges cover a date range
+	 * specified by featureTime*timeUnit for the the feature range (respective outcomeTime for the outcome range).
+	 * These ranges are sub divided in to the coarseness of the given resolutions.
+	 * The event (a certain day) itself is expanded to a date range according to the desired alignment and the indexPlacement
+	 * determines to which group it belongs.
 	 */
 	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContext.CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {

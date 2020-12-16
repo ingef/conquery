@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @CPSType(id="ABSOLUTE_FORM_QUERY", base=QueryDescription.class)
