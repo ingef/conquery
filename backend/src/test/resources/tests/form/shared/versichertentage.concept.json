@@ -24,6 +24,7 @@
           },
           {
             "type": "DURATION_SUM",
+            "column": "vers_tage_range.date",
             "name": "versichertentage_select",
             "label": "Ausgabe Versichertentage",
             "description": "Automatisch erzeugter Zusatzwert.",
@@ -36,7 +37,8 @@
             "name": "versichertentage",
             "label": "Versichertentage",
             "unit": "Tage",
-            "description": "Versichertentage"
+            "description": "Versichertentage",
+            "column": "vers_tage_range.date"
           }
         ],
         "table": "vers_tage_range"

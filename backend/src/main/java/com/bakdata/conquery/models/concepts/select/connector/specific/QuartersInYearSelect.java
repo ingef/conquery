@@ -6,25 +6,22 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-@CPSType(id = "DURATION_SUM", base = Select.class)
-public class DurationSumSelect extends SingleColumnSelect {
+/**
+ * Entity is included when the the number of quarters with events is within a specified range.
+ */
+@CPSType(id = "QUARTERS_IN_YEAR", base = Select.class)
+public class QuartersInYearSelect extends SingleColumnSelect {
 
 	@JsonCreator
-	public DurationSumSelect(@NsIdRef Column column) {
+	public QuartersInYearSelect(@NsIdRef Column column) {
 		super(column);
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		switch (getColumn().getType()) {
-			case DATE:
-			case DATE_RANGE:
-				return new DurationSumAggregator(getColumn());
-			default:
-				throw new IllegalStateException(String.format("Duration Sum requires either DateRange or Dates, not %s", getColumn()));
-		}
+		return new QuartersInYearAggregator(getColumn());
 	}
 }

@@ -13,34 +13,34 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import lombok.Getter;
 
 /**
  * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
  */
-public class CountQuartersAggregator implements Aggregator<Long> {
+public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<Long> {
 
 	private final TemporalAdjuster monthInQuarter = QuarterUtils.firstMonthInQuarterAdjuster();
 	private final TemporalAdjuster nextQuarter = QuarterUtils.nextQuarterAdjuster();
 
 	private final IntSet quarters = new IntOpenHashSet();
 	private CDateSet dateRestriction;
-	@Getter
-	private Column column;
+
+	public CountQuartersOfDateRangeAggregator(Column column) {
+		super(column);
+	}
 
 	@Override
-	public CountQuartersAggregator doClone(CloneContext ctx) {
-		return new CountQuartersAggregator();
+	public CountQuartersOfDateRangeAggregator doClone(CloneContext ctx) {
+		return new CountQuartersOfDateRangeAggregator(getColumn());
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
 		dateRestriction = ctx.getDateRestriction();
-		column = ctx.getValidityDateColumn();
 	}
 
 	@Override
@@ -49,15 +49,12 @@ public class CountQuartersAggregator implements Aggregator<Long> {
 			return;
 		}
 
-		final CDateRange value = bucket.getAsDateRange(event, getColumn());
-
-		CDateSet set = CDateSet.create(value);
-
+		final CDateSet set = CDateSet.create(bucket.getDateRange(event, getColumn()));
 		set.retainAll(dateRestriction);
 
 		for (CDateRange subRange : set.asRanges()) {
 			// we can sensibly only look at real quarters.
-			if (subRange.isOpen()) {
+			if(subRange.isOpen()){
 				continue;
 			}
 
@@ -87,7 +84,7 @@ public class CountQuartersAggregator implements Aggregator<Long> {
 	public Long getAggregationResult() {
 		return quarters.isEmpty() ? null : (long) quarters.size();
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

@@ -31,11 +31,12 @@
           "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "table1.behandlungsdatum"
+            "column": "table1.datum"
           },
           "selects":         {
             "name" : "count_quarters",
-            "type": "COUNT_QUARTERS"
+            "type": "COUNT_QUARTERS",
+            "column": "table1.behandlungsdatum"
           }
         }
       ]
