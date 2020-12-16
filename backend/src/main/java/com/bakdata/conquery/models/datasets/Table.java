@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.common.base.Preconditions;
@@ -27,8 +27,9 @@ public class Table extends Labeled<TableId> {
 
 	// TODO: 10.01.2020 fk: register imports here?
 
-	@JsonBackReference
+	@NsIdRef
 	private Dataset dataset;
+
 	@NotNull
 	@Valid
 	@JsonManagedReference
