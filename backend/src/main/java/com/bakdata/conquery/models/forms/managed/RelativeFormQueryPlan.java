@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;

@@ -37,8 +37,8 @@ public class DateRestrictingNode extends QPChainNode {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
 		}
 		else {
-			CDateSet dateRestriction = CDateSet.create(restriction);
-			dateRestriction.retainAll(ctx.getDateRestriction());
+			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			dateRestriction.retainAll(restriction);
 			ctx = ctx.withDateRestriction(dateRestriction);
 		}
 		super.nextTable(ctx, currentTable);

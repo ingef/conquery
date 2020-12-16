@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
