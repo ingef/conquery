@@ -71,7 +71,7 @@ public class SerializationTest {
 
 				new StringTypeNumber(new IntegerRange(0, 7), ByteStore.create(10)),
 				new StringTypeSingleton("a", BooleanStore.create(10)),
-				new DateRangeTypeDateRange(LongStore.create(10), LongStore.create(10)),
+				new DateRangeTypeDateRange(DateStore.create(10), DateStore.create(10)),
 				new DateRangeTypeQuarter(LongStore.create(10)),
 				new DateStore(LongStore.create(10)),
 

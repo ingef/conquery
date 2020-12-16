@@ -60,6 +60,12 @@ public class ByteStore extends ColumnStore<Long> {
 
 	@Override
 	public Long get(int event) {
-		return (long) values[event];
+		return getInteger(event);
 	}
+
+	@Override
+	public long getInteger(int event) {
+		return values[event];
+	}
+
 }

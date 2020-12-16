@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.events.stores.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.base.DateStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,11 +13,11 @@ import lombok.Setter;
 @Setter
 public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
-	private final ColumnStore<Long> minStore;
-	private final ColumnStore<Long> maxStore;
+	private final DateStore minStore;
+	private final DateStore maxStore;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(ColumnStore<Long> minStore, ColumnStore<Long> maxStore) {
+	public DateRangeTypeDateRange(DateStore minStore, DateStore maxStore) {
 		this.minStore = minStore;
 		this.maxStore = maxStore;
 	}
@@ -49,14 +50,14 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 		}
 
 		if (value.hasLowerBound()) {
-			minStore.set(event, (long) value.getMinValue());
+			minStore.set(event, value.getMinValue());
 		}
 		else {
 			minStore.set(event, null);
 		}
 
 		if (value.hasUpperBound()) {
-			maxStore.set(event, (long) value.getMaxValue());
+			maxStore.set(event, value.getMaxValue());
 		}
 		else {
 			maxStore.set(event, null);
@@ -65,15 +66,20 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
 	@Override
 	public CDateRange get(int event) {
+		return getDateRange(event);
+	}
+
+	@Override
+	public CDateRange getDateRange(int event) {
 		int min = Integer.MIN_VALUE;
 		int max = Integer.MAX_VALUE;
 
 		if (minStore.has(event)) {
-			min = minStore.get(event).intValue();
+			min = minStore.getDate(event);
 		}
 
 		if (maxStore.has(event)) {
-			max = maxStore.get(event).intValue();
+			max = maxStore.getDate(event);
 		}
 
 		return CDateRange.of(min, max);
@@ -81,6 +87,6 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
 	@Override
 	public boolean has(int event) {
-		return minStore.has(event) && maxStore.has(event);
+		return minStore.has(event) || maxStore.has(event);
 	}
 }

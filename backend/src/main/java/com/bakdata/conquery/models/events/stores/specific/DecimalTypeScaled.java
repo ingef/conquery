@@ -16,7 +16,7 @@ public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 	private final ColumnStore<Long> subType;
 
 	@JsonCreator
-	public DecimalTypeScaled(int scale, ColumnStore subType) {
+	public DecimalTypeScaled(int scale, ColumnStore<Long> subType) {
 		this.scale = scale;
 		this.subType = subType;
 	}
@@ -57,6 +57,11 @@ public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 
 	@Override
 	public BigDecimal get(int event) {
+		return getDecimal(event);
+	}
+
+	@Override
+	public BigDecimal getDecimal(int event) {
 		return scale(scale, subType.get(event));
 	}
 

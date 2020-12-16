@@ -109,8 +109,13 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	@Override
+	public int getString(int event) {
+		return (int) getNumberType().getInteger(event);
+	}
+
+	@Override
 	public Integer get(int event) {
-		return getNumberType().get(event).intValue();
+		return getString(event);
 	}
 
 	@Override

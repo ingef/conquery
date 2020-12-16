@@ -47,8 +47,13 @@ public class RebasingStore extends ColumnStore<Long> {
 	}
 
 	@Override
-	public @NotNull Long get(int event) {
-		return - root + min + store.get(event);
+	public Long get(int event) {
+		return getInteger(event);
+	}
+
+	@Override
+	public @NotNull long getInteger(int event) {
+		return - root + min + store.getInteger(event);
 	}
 
 	@Override

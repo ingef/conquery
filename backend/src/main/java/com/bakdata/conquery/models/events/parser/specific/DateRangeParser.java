@@ -18,13 +18,19 @@ import org.apache.commons.lang3.StringUtils;
 @ToString(callSuper = true)
 public class DateRangeParser extends Parser<CDateRange> {
 
+	private final DateParser minParser;
+	private final DateParser maxParser;
+
 	private boolean onlyQuarters = true;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
 	private boolean anyOpen;
+	private ParserConfig config;
 
 	public DateRangeParser(ParserConfig config) {
-
+		minParser = new DateParser(config);
+		maxParser = new DateParser(config);
+		this.config = config;
 	}
 
 	@Override
@@ -55,9 +61,11 @@ public class DateRangeParser extends Parser<CDateRange> {
 
 		if (v.hasUpperBound()) {
 			maxValue = Math.max(maxValue, v.getMaxValue());
+			maxParser.addLine(v.getMaxValue());
 		}
 		if (v.hasLowerBound()) {
 			minValue = Math.min(minValue, v.getMinValue());
+			minParser.addLine(v.getMinValue());
 		}
 	}
 
@@ -74,10 +82,10 @@ public class DateRangeParser extends Parser<CDateRange> {
 			return new DateRangeTypeQuarter(quarterParser.decideType());
 		}
 
-		final IntegerParser parser = new IntegerParser(minValue, maxValue);
-		parser.setNullLines(getNullLines());
-		parser.setLines(getLines());
+		// They need to be aligned.
+		minParser.setLines(getLines());
+		maxParser.setLines(getLines());
 
-		return new DateRangeTypeDateRange(parser.decideType(), parser.decideType());
+		return new DateRangeTypeDateRange(minParser.decideType(), maxParser.decideType());
 	}
 }

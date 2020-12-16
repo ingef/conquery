@@ -91,11 +91,16 @@ public class StringTypeSingleton extends StringType {
 
 	@Override
 	public boolean has(int event) {
-		return getDelegate().get(event);
+		return getDelegate().getBoolean(event);
 	}
 
 	@Override
 	public Integer get(int event) {
+		return getString(event);
+	}
+
+	@Override
+	public int getString(int event) {
 		return 0;
 	}
 }

@@ -51,8 +51,11 @@ public class DecimalStore extends ColumnStore<BigDecimal> {
 
 	@Override
 	public BigDecimal get(int event) {
-		return values[event];
+		return getDecimal(event);
 	}
 
-
+	@Override
+	public BigDecimal getDecimal(int event) {
+		return values[event];
+	}
 }

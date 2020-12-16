@@ -71,6 +71,11 @@ public class BooleanStore extends ColumnStore<Boolean> {
 
 	@Override
 	public Boolean get(int event) {
+		return getBoolean(event);
+	}
+
+	@Override
+	public boolean getBoolean(int event) {
 		return values.get(event);
 	}
 }

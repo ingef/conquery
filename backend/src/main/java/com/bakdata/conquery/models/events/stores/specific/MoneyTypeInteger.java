@@ -34,8 +34,13 @@ public class MoneyTypeInteger extends ColumnStore<Long> {
 	}
 
 	@Override
+	public long getMoney(int event) {
+		return numberType.getInteger(event);
+	}
+
+	@Override
 	public Long get(int event) {
-		return numberType.get(event);
+		return getMoney(event);
 	}
 
 	@Override

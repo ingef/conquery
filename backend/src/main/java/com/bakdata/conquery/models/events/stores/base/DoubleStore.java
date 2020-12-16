@@ -48,6 +48,11 @@ public class DoubleStore extends ColumnStore<Double> {
 
 	@Override
 	public Double get(int event) {
+		return getReal(event);
+	}
+
+	@Override
+	public double getReal(int event) {
 		return values[event];
 	}
 }

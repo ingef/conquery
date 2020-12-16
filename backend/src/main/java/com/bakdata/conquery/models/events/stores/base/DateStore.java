@@ -56,12 +56,17 @@ public class DateStore extends ColumnStore<Integer> {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		return CDateRange.exactly(get(event));
+		return CDateRange.exactly(getDate(event));
 	}
 
 	@Override
 	public Integer get(int event) {
-		return store.get(event).intValue();
+		return getDate(event);
+	}
+
+	@Override
+	public int getDate(int event) {
+		return (int) store.getInteger(event);
 	}
 
 	public Object getAsObject(int event) {

@@ -120,7 +120,12 @@ public class StringTypePrefixSuffix extends StringType {
 
 	@Override
 	public Integer get(int event) {
-		return subType.get(event);
+		return getString(event);
+	}
+
+	@Override
+	public int getString(int event) {
+		return subType.getString(event);
 	}
 
 	@Override

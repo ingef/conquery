@@ -96,35 +96,35 @@ public abstract class ColumnStore<JAVA_TYPE> {
 
 
 	public int getString(int event) {
-		return (int) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 	public long getInteger(int event) {
-		return (long) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 	public boolean getBoolean(int event) {
-		return (boolean) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 	public double getReal(int event) {
-		return (double) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 	public BigDecimal getDecimal(int event) {
-		return (BigDecimal) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 	public long getMoney(int event) {
-		return (long) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 	public int getDate(int event) {
-		return (int) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 	public CDateRange getDateRange(int event) {
-		return (CDateRange) get(event);
+		throw new IllegalStateException("%s does not implement this method");
 	}
 
 }

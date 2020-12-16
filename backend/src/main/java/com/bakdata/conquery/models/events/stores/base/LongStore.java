@@ -55,6 +55,12 @@ public class LongStore extends ColumnStore<Long> {
 
 	@Override
 	public Long get(int event) {
+		return getInteger(event);
+	}
+
+	@Override
+	public long getInteger(int event) {
 		return values[event];
 	}
+
 }

@@ -101,9 +101,7 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> indexStore) {
-
-	}
+	public void setIndexStore(ColumnStore<Long> indexStore) {	}
 
 	@Override
 	public StringTypeNumber select(int[] starts, int[] length) {
@@ -112,7 +110,12 @@ public class StringTypeNumber extends StringType {
 
 	@Override
 	public Integer get(int event) {
-		return getDelegate().get(event).intValue();
+		return getString(event);
+	}
+
+	@Override
+	public int getString(int event) {
+		return (int) getDelegate().getInteger(event);
 	}
 
 	@Override

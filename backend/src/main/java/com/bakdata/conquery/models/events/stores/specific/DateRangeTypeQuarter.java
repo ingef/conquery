@@ -58,6 +58,11 @@ public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
 
 	@Override
 	public CDateRange get(int event) {
+		return getDateRange(event);
+	}
+
+	@Override
+	public CDateRange getDateRange(int event) {
 		final int begin = (int) store.getInteger(event);
 		final LocalDate end = QuarterUtils.getLastDayOfQuarter(begin);
 
