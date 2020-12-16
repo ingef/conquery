@@ -6,7 +6,7 @@ import c10n.annotations.En;
 public interface ResultHeadersC10n {
 	
 	@En("resolution")
-	@De("Zeiteinhait")
+	@De("Zeiteinheit")
 	String resolution();
 
 	@En("date_range")
