@@ -194,10 +194,6 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 		this.serialize(gen, serializers);
 	}
 
-	public Object createScriptValue(int event, Column column){
-		return column.getTypeFor(this).createPrintValue(getRaw(event, column));
-	}
-
 	public abstract Map<String, Object> calculateMap(int event, Import imp);
 
 	public abstract void writeContent(Output output) throws IOException;
