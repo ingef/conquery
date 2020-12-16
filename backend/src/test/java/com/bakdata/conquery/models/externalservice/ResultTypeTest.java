@@ -9,7 +9,7 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -38,8 +38,8 @@ public class ResultTypeTest {
 			Arguments.of(PRETTY, ResultType.BOOLEAN, true,	"t"),
 			Arguments.of(PRETTY, ResultType.BOOLEAN, false,	"f"),
 			Arguments.of(PRETTY, ResultType.CATEGORICAL, "test", "test"),
-			Arguments.of(PRETTY, ResultType.RESOLUTION, DateContextMode.COMPLETE, "complete"),
-			Arguments.of(PRETTY_DE, ResultType.RESOLUTION, DateContextMode.COMPLETE, "Gesamt"),
+			Arguments.of(PRETTY, ResultType.RESOLUTION, DateContext.Resolution.COMPLETE, "complete"),
+			Arguments.of(PRETTY_DE, ResultType.RESOLUTION, DateContext.Resolution.COMPLETE, "Gesamt"),
 			Arguments.of(PRETTY, ResultType.DATE, LocalDate.of(2013, 07, 12), "2013-07-12"),
 			Arguments.of(PRETTY, ResultType.INTEGER, 51839274, "51,839,274"),
 			Arguments.of(PRETTY_DE, ResultType.INTEGER, 51839274, "51.839.274"),
@@ -60,7 +60,7 @@ public class ResultTypeTest {
 			Arguments.of(PLAIN, ResultType.NUMERIC, 0.2, "0.2"),
 			Arguments.of(PLAIN, ResultType.NUMERIC, new BigDecimal("716283712389817246892743124.12312"), "716283712389817246892743124.12312"),
 			Arguments.of(PLAIN, ResultType.STRING, "test", "test"),
-			Arguments.of(PLAIN, ResultType.CATEGORICAL, DateContextMode.COMPLETE, "COMPLETE"),
+			Arguments.of(PLAIN, ResultType.CATEGORICAL, DateContext.Resolution.COMPLETE, "COMPLETE"),
 			Arguments.of(PLAIN, ResultType.STRING, ImmutableMap.of("a", 2, "c", 1), "{a=2, c=1}")
 		);
 	}

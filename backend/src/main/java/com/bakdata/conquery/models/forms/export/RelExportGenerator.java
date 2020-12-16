@@ -2,7 +2,8 @@ package com.bakdata.conquery.models.forms.export;
 
 import java.util.List;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
@@ -24,8 +25,8 @@ import lombok.AllArgsConstructor;
 public class RelExportGenerator {
 	
 	public static RelativeFormQuery generate(DatasetRegistry namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
-		
-		List<DateContextMode> resolutions = null;
+
+		List<DateContext.Resolution> resolutions = null;
 		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
 			if(mode.getForm().getResolution().size() != 1) {
 				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
@@ -36,10 +37,12 @@ public class RelExportGenerator {
 			resolutions = mode.getForm().getResolution();
 		}
 
-		return generate(mode.getForm().getPrerequisite(), mode.getFeatures(), mode.getOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutions, namespaces);
+		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(resolutions, mode.getTimeUnit().getAlignment());
+
+		return generate(mode.getForm().getPrerequisite(), mode.getFeatures(), mode.getOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), namespaces, resolutionsAndAlignments);
 	}
 	
-	public static RelativeFormQuery generate(IQuery query, List<CQElement> features, List<CQElement> outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContextMode timeUnit, List<DateContextMode> resolutions, DatasetRegistry namespaces) {
+	public static RelativeFormQuery generate(IQuery query, List<CQElement> features, List<CQElement> outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContext.CalendarUnit timeUnit, DatasetRegistry namespaces, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(outcomes, namespaces);
 
@@ -57,8 +60,8 @@ public class RelExportGenerator {
 			indexPlacement, 
 			timeCountBefore, 
 			timeCountAfter, 
-			timeUnit, 
-			resolutions);
+			timeUnit,
+			resolutionsAndAlignments);
 	}
 	
 	/**
