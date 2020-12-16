@@ -10,9 +10,14 @@ import { T } from "../localization";
 import { ConceptQueryNodeType, StandardQueryType } from "./types";
 import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 import { setSelectedSecondaryId } from "./actions";
+import { SecondaryId } from "js/api/types";
 
-const Headline = styled.h3`
-  font-size: ${({ theme }) => theme.font.md};
+const Headline = styled.h3<{ active?: boolean }>`
+  font-size: ${({ theme }) => theme.font.sm};
+  margin: 0;
+  text-transform: uppercase;
+  color: ${({ theme, active }) =>
+    active ? theme.col.blueGrayDark : theme.col.gray};
 `;
 
 const SecondaryIdSelector: FC = () => {
@@ -23,10 +28,14 @@ const SecondaryIdSelector: FC = () => {
   const selectedSecondaryId = useSelector<StateT, SelectedSecondaryIdStateT>(
     (state) => state.queryEditor.selectedSecondaryId
   );
+  const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
+    (state) => state.conceptTrees.secondaryIds
+  );
 
   const dispatch = useDispatch();
-  const onSetSelectedSecondaryId = (id: string) =>
-    dispatch(setSelectedSecondaryId(id));
+  const onSetSelectedSecondaryId = (id: string | null) => {
+    dispatch(setSelectedSecondaryId(id === "standard" ? null : id));
+  };
 
   const availableSecondaryIds = Array.from(
     new Set(
@@ -41,27 +50,42 @@ const SecondaryIdSelector: FC = () => {
           )
       )
     )
-  );
+  )
+    .map((id) => loadedSecondaryIds.find((secId) => secId.id === id))
+    .filter(exists);
 
   useEffect(() => {
     if (
-      availableSecondaryIds.length > 0 &&
-      (!selectedSecondaryId ||
-        !availableSecondaryIds.includes(selectedSecondaryId))
+      !!selectedSecondaryId &&
+      (availableSecondaryIds.length === 0 ||
+        !availableSecondaryIds.map((id) => id.id).includes(selectedSecondaryId))
     ) {
-      onSetSelectedSecondaryId(availableSecondaryIds[0]);
+      onSetSelectedSecondaryId(null);
     }
   }, [JSON.stringify(availableSecondaryIds)]);
 
+  const options = [
+    {
+      value: "standard",
+      label: T.translate("queryEditor.secondaryIdStandard") as string,
+    },
+    ...availableSecondaryIds.map((id) => ({
+      label: id.label,
+      value: id.id,
+    })),
+  ];
+
   return (
     <div>
-      <Headline>{T.translate("queryEditor.secondaryId")}</Headline>
+      <Headline active={!!selectedSecondaryId}>
+        {T.translate("queryEditor.secondaryId")}
+      </Headline>
       <ToggleButton
         input={{
-          value: selectedSecondaryId,
+          value: selectedSecondaryId || "standard",
           onChange: onSetSelectedSecondaryId,
         }}
-        options={availableSecondaryIds.map((id) => ({ label: id, value: id }))}
+        options={options}
       />
     </div>
   );

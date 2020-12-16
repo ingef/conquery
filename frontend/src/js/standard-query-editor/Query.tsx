@@ -33,9 +33,12 @@ import { StateT } from "app-types";
 import { TreesT } from "../concept-trees/reducer";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryHeader from "./QueryHeader";
+import QueryFooter from "./QueryFooter";
 
 const Container = styled("div")`
   height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Groups = styled("div")`
@@ -43,6 +46,7 @@ const Groups = styled("div")`
   flex-direction: row;
   align-items: flex-start;
   padding: 0 0 20px;
+  flex-grow: 1;
 `;
 
 const QueryGroupConnector = styled("p")`
@@ -141,6 +145,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
               onLoadPreviousQuery={onLoadPreviousQuery}
             />
           </Groups>
+          <QueryFooter />
         </>
       )}
     </Container>

@@ -42,8 +42,8 @@ const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
     (state) => state.queryEditor.queryRunner
   );
-  const version = useSelector<StateT, string | null>(
-    (state) => state.conceptTrees.version
+  const selectedSecondaryId = useSelector<StateT, string | null>(
+    (state) => state.queryEditor.selectedSecondaryId
   );
 
   const queryId = queryRunner.runningQuery;
@@ -56,7 +56,11 @@ const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const dispatch = useDispatch();
 
   const startQuery = () =>
-    dispatch(startStandardQuery(datasetId, query, version));
+    dispatch(
+      startStandardQuery(datasetId, query, {
+        selectedSecondaryId,
+      })
+    );
   const stopQuery = () => dispatch(stopStandardQuery(datasetId, queryId));
 
   return (

@@ -24,7 +24,7 @@ const Tab: TabT = {
   label: "rightPane.queryEditor",
   reducer: combineReducers({
     query: queryReducer,
-    selectedSecondaryIds: selectedSecondaryIdsReducer,
+    selectedSecondaryId: selectedSecondaryIdsReducer,
     queryRunner: queryRunnerReducer,
   }),
   component: StandardQueryEditorTab,

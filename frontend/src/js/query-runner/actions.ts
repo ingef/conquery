@@ -59,14 +59,24 @@ export default function createQueryRunnerActions(
   const startQuery = (
     datasetId: DatasetIdT,
     query: StandardQueryStateT | TimebasedQueryStateT,
-    formQueryTransformation: Function = (form: any) => form
+    {
+      formQueryTransformation = (form: any) => form,
+      selectedSecondaryId,
+    }: {
+      formQueryTransformation?: Function;
+      selectedSecondaryId?: string | null;
+    }
   ) => {
     return (dispatch) => {
       dispatch(startQueryStart());
 
       const apiMethod = isExternalForm
         ? () => postFormQueries(datasetId, query, { formQueryTransformation })
-        : () => postQueries(datasetId, query, { queryType: type });
+        : () =>
+            postQueries(datasetId, query, {
+              queryType: type,
+              selectedSecondaryId,
+            });
 
       return apiMethod().then(
         (r) => {

@@ -52,7 +52,8 @@
     "expand": "Expandieren",
     "previousQuery": "Anfrage",
     "loadingPreviousQuery": "Lade Anfragedetails",
-    "secondaryId": "Analyse-Ebene"
+    "secondaryId": "Analyse-Ebene",
+    "secondaryIdStandard": "Standard"
   },
   "dropzone": {
     "dragElementPlease": "Füge ein Element hinzu",

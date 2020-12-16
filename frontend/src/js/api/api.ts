@@ -63,10 +63,10 @@ export const getConcept = (
 export function postQueries(
   datasetId: DatasetIdT,
   query: Object,
-  { queryType }: { queryType: string }
+  options: { queryType: string; selectedSecondaryId?: string | null }
 ): Promise<PostQueriesResponseT> {
   // Transform into backend-compatible format
-  const data = transformQueryToApi(query, queryType);
+  const data = transformQueryToApi(query, options);
 
   return fetchJson(getProtectedUrl(`/datasets/${datasetId}/queries`), {
     method: "POST",

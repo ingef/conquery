@@ -15,7 +15,7 @@ const Option = styled("span")<{ active?: boolean }>`
   color: ${({ theme, active }) => (active ? theme.col.black : theme.col.gray)};
   border: 1px solid ${({ theme }) => theme.col.gray};
   background-color: ${({ theme, active }) =>
-    active ? "white" : theme.col.grayLight};
+    active ? "white" : theme.col.grayVeryLight};
 
   margin-left: -1px;
 
@@ -32,7 +32,7 @@ const Option = styled("span")<{ active?: boolean }>`
 
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? "white" : theme.col.grayVeryLight};
+      active ? "white" : theme.col.graySuperLight};
   }
 `;
 

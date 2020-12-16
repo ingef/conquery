@@ -16,6 +16,7 @@ import type {
   SelectedSelectorType,
   SelectedDateColumnT,
 } from "../standard-query-editor/types";
+import { isEmpty } from "../common/helpers";
 
 export const transformFilterValueToApi = (filter: any) => {
   const { value, mode } = filter;
@@ -62,7 +63,9 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
         selects: transformSelectsToApi(table.selects),
         filters: table.filters
           ? table.filters
-              .filter((filter) => exists(filter.value)) // Only send filters with a value
+              .filter(
+                (filter) => exists(filter.value) && !isEmpty(filter.value)
+              ) // Only send filters with a value
               .map((filter) => ({
                 filter: filter.id,
                 type: filter.type,
@@ -76,8 +79,16 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
 export const transformElementsToApi = (conceptGroup: any) =>
   conceptGroup.map(createConcept);
 
-const transformStandardQueryToApi = (query: any) =>
-  createConceptQuery(createAnd(createQueryConcepts(query)));
+const transformStandardQueryToApi = (
+  query: any,
+  selectedSecondaryId?: string | null
+) => {
+  const queryAnd = createAnd(createQueryConcepts(query));
+
+  return selectedSecondaryId
+    ? createSecondaryIdQuery(queryAnd, selectedSecondaryId)
+    : createConceptQuery(queryAnd);
+};
 
 const createSecondaryIdQuery = (root: any, secondaryId: string) => ({
   type: "SECONDARY_ID_QUERY",
@@ -193,12 +204,15 @@ const createExternal = (query: any) => {
 // The query state already contains the query.
 // But small additions are made (properties whitelisted), empty things filtered out
 // to make it compatible with the backend API
-export const transformQueryToApi = (query: Object, queryType: string) => {
-  switch (queryType) {
+export const transformQueryToApi = (
+  query: Object,
+  options: { queryType: string; selectedSecondaryId?: string | null }
+) => {
+  switch (options.queryType) {
     case "timebased":
       return transformTimebasedQueryToApi(query);
     case "standard":
-      return transformStandardQueryToApi(query);
+      return transformStandardQueryToApi(query, options.selectedSecondaryId);
     case "external":
       return transformExternalQueryToApi(query);
     default:

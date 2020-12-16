@@ -230,7 +230,14 @@ export interface GetFrontendConfigResponseT {
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
 
+export interface SecondaryId {
+  id: string;
+  label: string;
+  description?: string;
+}
+
 export interface GetConceptsResponseT {
+  secondaryIds: SecondaryId[];
   concepts: {
     [conceptId: string]: ConceptStructT | ConceptElementT;
   };
