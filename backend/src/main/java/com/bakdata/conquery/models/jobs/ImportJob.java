@@ -280,10 +280,6 @@ public class ImportJob extends Job {
 
 			getProgressReporter().report(1);
 
-			log.debug("\t\tsending");
-
-			namespace.sendToAll(new UpdateDictionary(primaryDict));
-
 			getProgressReporter().report(1);
 		}
 
