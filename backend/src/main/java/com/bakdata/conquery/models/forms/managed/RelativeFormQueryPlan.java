@@ -106,7 +106,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			// that don't target the same feature group,
 			// which would be a mistake by the generation
 			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE
-			// is the coarsed resolution it must be at the first
+			// is the most coarse resolution it must be at the first
 			// to indexes of the list.
 			Object[] mergedFull = new Object[size];
 
@@ -117,8 +117,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			if (outcomePlan.getAggregatorSize() > 0) {
 				setOutcomeValues(
 						mergedFull,
-						outcomeResult.getValues().get(resultStartIndex),
-						featureLength
+						outcomeResult.getValues().get(resultStartIndex)
 				);
 			}
 
@@ -135,7 +134,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
 			Object[] result = new Object[size];
-			setOutcomeValues(result, outcomeResult.getValues().get(i), featureLength);
+			setOutcomeValues(result, outcomeResult.getValues().get(i));
 			values.add(result);
 		}
 
@@ -218,10 +217,10 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		// copy daterange
 		result[getFeatureDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
-		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition(), value.length - (SUB_RESULT_DATE_RANGE_POS+1));
+		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition(), featurePlan.getAggregatorSize());
 	}
 
-	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
+	private void setOutcomeValues(Object[] result, Object[] value) {
 		// copy everything up to including index
 		for (int i = 0; i <= EVENTDATE_POS; i++) {
 			if(result[i] != null){
@@ -232,7 +231,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		// copy daterange
 		result[getOutcomeDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
-		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, 1 + featureLength, value.length - (SUB_RESULT_DATE_RANGE_POS+1));
+		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition() + featurePlan.getAggregatorSize(), outcomePlan.getAggregatorSize());
 	}
 	
 	public List<Aggregator<?>> getAggregators() {
