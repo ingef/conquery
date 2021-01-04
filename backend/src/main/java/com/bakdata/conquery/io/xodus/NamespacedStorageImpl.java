@@ -147,6 +147,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		// Order is important here
 		environmentToStores.putAll(environment, List.of(
 				dataset,
+				secondaryIds,
+				tables,
 				dictionaries,
 				concepts,
 				imports

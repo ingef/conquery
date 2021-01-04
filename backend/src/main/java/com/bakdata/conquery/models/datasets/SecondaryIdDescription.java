@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.datasets;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> {
 
-	@JsonBackReference
+	@NsIdRef
 	private Dataset dataset;
 
 	private String description;

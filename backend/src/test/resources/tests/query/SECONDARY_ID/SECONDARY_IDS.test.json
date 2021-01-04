@@ -85,7 +85,7 @@
   "content": {
     "secondaryIds": [
       {
-        "name" : "secondary"
+        "name": "secondary"
       }
     ],
     "tables": [

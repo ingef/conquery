@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import lombok.Data;
 
 @Data
-public class RequiredSecondaryIds {
+public class RequiredSecondaryId {
 	@NotEmpty
 	public final String name;
 
