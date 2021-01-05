@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
+import com.bakdata.conquery.models.api.description.FESecondaryId;
 import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.api.description.FEValidityDate;
@@ -87,7 +88,12 @@ public class FrontEndConceptBuilder {
 			roots.put(sn.getId(), node);
 		}
 		//add all secondary IDs
-		root.getSecondaryIds().addAll(storage.getSecondaryIds());
+		root.getSecondaryIds()
+			.addAll(
+					storage.getSecondaryIds().stream()
+						   .map(sid -> new FESecondaryId(sid.getId().toString(), sid.getDescription()))
+						   .collect(Collectors.toSet())
+			);
 
 		return root;
 	}

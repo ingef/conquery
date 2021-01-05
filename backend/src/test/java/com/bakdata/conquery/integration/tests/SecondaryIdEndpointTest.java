@@ -13,8 +13,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.api.description.FESecondaryId;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
@@ -48,13 +48,13 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 				.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
 
 		{
-			final Set<SecondaryIdDescription> secondaryIds = fetchSecondaryIdDescriptions(conquery);
+			final Set<FESecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
 			description.setDataset(conquery.getDataset());
 			assertThat(secondaryIds)
-					.extracting(IdentifiableImpl::getId)
-					.containsExactly(description.getId());
+					.extracting(FESecondaryId::getId)
+					.containsExactly(description.getId().toString());
 		}
 		{
 			final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("admin"), DatasetsUIResource.class, "getDataset")
@@ -73,7 +73,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 				.returns(Response.Status.Family.SUCCESSFUL,response -> response.getStatusInfo().getFamily());
 
 		{
-			final Set<SecondaryIdDescription> secondaryIds = fetchSecondaryIdDescriptions(conquery);
+			final Set<FESecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
 
@@ -82,7 +82,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 		}
 	}
 
-	private Set<SecondaryIdDescription> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
+	private Set<FESecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
 		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("api"), DatasetResource.class, "getRoot")
 									   .scheme("http")
 									   .host("localhost")
@@ -104,7 +104,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 		return objectNode.get("secondaryIds")
 						 .traverse(mapper.getFactory().getCodec())
-						 .readValueAs(new TypeReference<Set<SecondaryIdDescription>>() {});
+						 .readValueAs(new TypeReference<Set<FESecondaryId>>() {});
 	}
 
 	private Response uploadDescription(StandaloneSupport conquery, SecondaryIdDescription description) {
