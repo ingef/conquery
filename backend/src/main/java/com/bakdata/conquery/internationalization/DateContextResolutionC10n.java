@@ -3,7 +3,7 @@ package com.bakdata.conquery.internationalization;
 import c10n.annotations.De;
 import c10n.annotations.En;
 
-public interface DateContextModeC10n {
+public interface DateContextResolutionC10n {
 	@En("complete")
 	@De("Gesamt")
 	String complete();

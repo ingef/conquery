@@ -5,36 +5,35 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import lombok.Getter;
 
 @Getter
 public class ConceptNode extends QPChainNode {
 
 	private final ConceptElement<?>[] concepts;
 	private final long requiredBits;
-	private final Connector resolvedConnector;
+	private final CQTable table;
 	private final SecondaryIdDescriptionId selectedSecondaryId;
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, QPNode child, Connector resolvedConnector, SecondaryIdDescriptionId selectedSecondaryId) {
+
+	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, , SecondaryIdDescriptionId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;
-
-		this.resolvedConnector = resolvedConnector;
+		this.table = table;
 
 		this.selectedSecondaryId = selectedSecondaryId;
 	}
@@ -42,16 +41,15 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(), getResolvedConnector().getId());
+		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		tableActive = getResolvedConnector().getTable().getId().equals(currentTable)
+		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable)
 					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
-
-		if (tableActive) {
-			super.nextTable(ctx.withConnector(getResolvedConnector()), currentTable);
+		if(tableActive) {
+			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
 		}
 	}
 
@@ -66,7 +64,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return context.getBucketManager().hasEntityCBlocksForConnector(entity, getResolvedConnector().getId());
+		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getId());
 	}
 
 	@Override
@@ -80,7 +78,7 @@ public class ConceptNode extends QPChainNode {
 		int localEntity = bucket.toLocal(entity.getId());
 		long bits = row.getIncludedConcepts()[localEntity];
 
-		if ((bits & requiredBits) != 0L || requiredBits == 0L) {
+		if((bits & requiredBits) != 0L || requiredBits == 0L) {
 			return super.isOfInterest(bucket);
 		}
 		return false;
@@ -119,12 +117,12 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, ctx.clone(getChild()), getResolvedConnector(), selectedSecondaryId);
+		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()), selectedSecondaryId);
 	}
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		requiredTables.add(getResolvedConnector().getTable().getId());
+		requiredTables.add(table.getResolvedConnector().getTable().getId());
 	}
 }

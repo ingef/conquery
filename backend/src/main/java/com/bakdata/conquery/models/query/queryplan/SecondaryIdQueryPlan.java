@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -15,6 +16,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -48,8 +50,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 */
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-
-
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return EntityResult.notContained();
@@ -130,7 +130,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, TableId currentTable) {
-
 		nextTable(ctx, currentTable);
 
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);

@@ -36,12 +36,12 @@ public class ResultModifier {
 		 * EXIST select. This would cause null (empty cell), so we fetch all EXIST
 		 * result and put them to the end result.
 		 */
-		for (Aggregator<?> agg : aggregators) {
+		for (int i = 0; i < aggregators.size(); i++) {
+			Aggregator<?> agg = aggregators.get(i);
 			// Fill EXIST aggregators with false which evaluated to 'null'
-			if (agg instanceof ExistsAggregator && Objects.isNull(result[aggIdx])) {
-				result[aggIdx] = false;
+			if (agg instanceof ExistsAggregator && Objects.isNull(result[i + aggIdx])) {
+				result[i + aggIdx] = agg.getAggregationResult();
 			}
-			aggIdx++;
 		}
 		return result;
 	}

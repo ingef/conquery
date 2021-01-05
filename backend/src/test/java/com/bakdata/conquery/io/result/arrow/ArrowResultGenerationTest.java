@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -107,7 +107,7 @@ public class ArrowResultGenerationTest {
 		// Prepare every input data
 		PrintSettings printSettings  = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
 		List<EntityResult> results = List.of(
-			new SinglelineContainedEntityResult(1,new Object[] { Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContextMode.DAYS.toString(), 5646, "test_string", 4521 }),
+			new SinglelineContainedEntityResult(1,new Object[] { Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, "test_string", 4521 }),
 			new SinglelineContainedEntityResult(2, new Object[] { Boolean.FALSE, null, null, null, null, null, null, null }),
 			new MultilineContainedEntityResult(3, List.of(
 				new Object[] { Boolean.TRUE, null, null, null, null, null, null, null },
