@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Getter;
 
 @Getter
 public class ConceptNode extends QPChainNode {
@@ -29,7 +30,7 @@ public class ConceptNode extends QPChainNode {
 	private CBlock currentRow = null;
 
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, , SecondaryIdDescriptionId selectedSecondaryId) {
+	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescriptionId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;
