@@ -144,12 +144,8 @@ public class AdminProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);
 		}
 
-		datasetRegistry.get(dataset.getId()).getJobManager()
-			.addSlowJob(new SimpleJob("Adding concept " + concept.getId(), () -> datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept)));
-
-		datasetRegistry.get(dataset.getId()).getJobManager()
-			.addSlowJob(new SimpleJob("sendToAll " + concept.getId(), () -> datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept))));
-		// see #144 check duplicate names
+		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
+		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
 	}
 
 	public Dataset addDataset(String name) throws JSONException {

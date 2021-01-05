@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -47,6 +48,9 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+
+			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();

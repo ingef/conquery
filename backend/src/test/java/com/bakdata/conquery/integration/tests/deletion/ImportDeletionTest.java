@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -58,6 +59,9 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+
+			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();

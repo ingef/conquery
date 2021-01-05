@@ -73,10 +73,6 @@ public class LoadingUtil {
 	public static void importTables(StandaloneSupport support, RequiredData content) throws JSONException {
 		Dataset dataset = support.getDataset();
 
-		for (RequiredSecondaryId secondaryId : content.getSecondaryIds()) {
-			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(),secondaryId.toSecondaryId());
-		}
-
 		for (RequiredTable rTable : content.getTables()) {
 			support.getDatasetsProcessor().addTable(dataset, rTable.toTable(support.getDataset()), support.getNamespace());
 		}
@@ -155,6 +151,12 @@ public class LoadingUtil {
 
 		try (InputStream in = content.getIdMapping().stream()) {
 			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
+		}
+	}
+
+	public static void importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
+		for (RequiredSecondaryId secondaryId : secondaryIds) {
+			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(), secondaryId.toSecondaryId());
 		}
 	}
 }

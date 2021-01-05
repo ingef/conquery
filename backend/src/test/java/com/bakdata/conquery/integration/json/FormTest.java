@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -79,6 +80,8 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
+		importSecondaryIds(support, content.getSecondaryIds());
+		support.waitUntilWorkDone();
 
 		LoadingUtil.importTables(support, content);
 		support.waitUntilWorkDone();

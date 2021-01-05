@@ -67,19 +67,15 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 						  .onAdd(centralRegistry::register)
 						  .onRemove(centralRegistry::remove);
 
-		secondaryIds = StoreInfo.SECONDARY_IDS.<SecondaryIdDescription>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
-							   .onAdd(centralRegistry::register)
-							   .onRemove(centralRegistry::remove);
+		secondaryIds = StoreInfo.SECONDARY_IDS.<SecondaryIdDescription>identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 
 		tables = StoreInfo.TABLES.<Table>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
 						 .onAdd(table -> {
-							 centralRegistry.register(table);
 							 for (Column c : table.getColumns()) {
 								 centralRegistry.register(c);
 							 }
 						 })
 						 .onRemove(table -> {
-							 centralRegistry.remove(table);
 							 for (Column c : table.getColumns()) {
 								 centralRegistry.remove(c);
 							 }
