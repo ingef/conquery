@@ -16,13 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
 public class UpdateSecondaryId extends WorkerMessage.Slow {
 
-	private SecondaryIdDescription table;
+	private SecondaryIdDescription secondaryId;
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.info("Received update of SecondaryId {}", table.getId());
+		log.info("Received update of SecondaryId {}", secondaryId.getId());
 		synchronized (context.getStorage()) {
-			context.addSecondaryId(table);
+			context.addSecondaryId(secondaryId);
 		}
 	}
 }
