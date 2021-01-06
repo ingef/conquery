@@ -69,12 +69,16 @@ const SharePreviousQueryModal = ({
   const initialUserGroupsValue =
     previousQuery && previousQuery.groups
       ? userGroups
-          .filter((group) => previousQuery.groups?.includes(group.groupId))
+          .filter((group) =>
+            previousQuery.groups!.find((g) => g.id === group.groupId)
+          )
           .map((group) => ({
             label: group.label,
             value: group.groupId,
           }))
       : [];
+  // console.log(userGroups);
+  // console.log(previousQuery ? previousQuery.groups : null);
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(
     initialUserGroupsValue
@@ -114,7 +118,6 @@ const SharePreviousQueryModal = ({
 
     try {
       await patchStoredQuery(datasetId, previousQueryId, {
-        shared,
         groups: userGroupsToShare,
       });
 

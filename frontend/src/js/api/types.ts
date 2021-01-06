@@ -298,7 +298,11 @@ export interface GetStoredQueryResponseT {
   query: QueryT;
   owner: string; // TODO: Remove. Not used. And it's actually an ID
   status: "DONE" | "NEW"; // TODO: Remove. Not used here
-  groups?: UserGroupIdT[];
+  groups?: {
+    // TODO: Only list of ids required here
+    id: UserGroupIdT;
+    label: string; // TODO: Not used
+  }[];
 }
 
 // TODO: This actually returns a lot of unused fields, see above
@@ -339,7 +343,7 @@ export interface PermissionT {
 
 export type UserGroupIdT = string;
 export interface UserGroupT {
-  groupId: UserGroupIdT;
+  groupId: UserGroupIdT; // This should really just be called 'id'
   label: string;
 }
 

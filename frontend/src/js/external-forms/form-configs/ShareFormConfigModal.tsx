@@ -111,7 +111,6 @@ const ShareFormConfigModal = ({
 
     try {
       await patchFormConfig(datasetId, formConfigId, {
-        shared,
         groups: userGroupsToShare,
       });
 
