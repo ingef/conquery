@@ -2,7 +2,7 @@
 // - response type provided by the backend API
 // - partial types that the reponses are built from
 
-import { Forms } from "js/external-forms/config-types";
+import { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
 import { SupportedErrorCodesT } from "./errorCodes";
 

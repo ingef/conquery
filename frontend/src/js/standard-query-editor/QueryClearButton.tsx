@@ -1,9 +1,9 @@
 import React, { FC } from "react";
+import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";
 
 import { clearQuery } from "./actions";
-import { useDispatch } from "react-redux";
 
 interface PropsT {
   className?: string;

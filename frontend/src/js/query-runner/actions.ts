@@ -1,5 +1,5 @@
-import { StandardQueryStateT } from "js/standard-query-editor/queryReducer";
-import { TimebasedQueryStateT } from "js/timebased-query-editor/reducer";
+import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
 import {
   deleteQuery,
   getQuery,

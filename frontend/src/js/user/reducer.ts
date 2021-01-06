@@ -1,7 +1,7 @@
 import { LOAD_ME_START, LOAD_ME_ERROR, LOAD_ME_SUCCESS } from "./actionTypes";
 
 import type { GetMeResponseT } from "../api/types";
-import { ActionT } from "js/common/actions";
+import { ActionT } from "../common/actions";
 
 export type UserStateT = {
   loading: boolean;
