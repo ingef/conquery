@@ -51,11 +51,11 @@ public class CalculateCBlocksJob extends Job {
 		for (CalculationInformation info : infos) {
 			try {
 				if (bucketManager.hasCBlock(info.getCBlockId())) {
-					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.");
+					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
 					continue;
 				}
 
-				CBlock cBlock = createCBlock(connector, info);
+				CBlock cBlock = new CBlock(info.getBucket().getId(), connector.getId());
 				cBlock.initIndizes(info.getBucket().getBucketSize());
 
 				connector.calculateCBlock(cBlock, info.getBucket());
@@ -104,10 +104,6 @@ public class CalculateCBlocksJob extends Job {
 				cBlock.getMaxDate()[entry.getLocalEntity()] = Math.max(cBlock.getMaxDate()[entry.getLocalEntity()], range.getMaxValue());
 			}
 		}
-	}
-
-	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBucket().getId(), connector.getId());
 	}
 
 

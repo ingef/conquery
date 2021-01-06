@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.CheckForNull;
 import javax.validation.Valid;
@@ -24,26 +26,31 @@ import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.google.common.util.concurrent.Striped;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter
+@Getter
+@Setter
 @Slf4j
 public class ConceptTreeConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
 
-	@NsIdRef @CheckForNull
+	@NsIdRef
+	@CheckForNull
 	private Table table;
 
-	@NsIdRef @CheckForNull
+	@NsIdRef
+	@CheckForNull
 	private Column column = null;
 
 	private CTCondition condition = null;
 
-	@Valid @JsonManagedReference
+	@Valid
+	@JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();
 
 	@ValidationMethod(message = "Table and Column usage are exclusive")
@@ -52,9 +59,10 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 
-	@Override @JsonIgnore
+	@Override
+	@JsonIgnore
 	public Table getTable() {
-		if(column != null){
+		if (column != null) {
 			return column.getTable();
 		}
 
@@ -64,11 +72,6 @@ public class ConceptTreeConnector extends Connector {
 	@Override
 	public List<Filter<?>> collectAllFilters() {
 		return filters;
-	}
-
-	@Override
-	public TreeConcept getConcept() {
-		return (TreeConcept) super.getConcept();
 	}
 
 	@Override
@@ -83,6 +86,8 @@ public class ConceptTreeConnector extends Connector {
 
 		final AStringType<?> stringType;
 
+		final Striped<Lock> entityLock = Striped.lock(bucket.getBucketSize());
+
 		// If we have a column and it is of string-type, we create indices and caches.
 		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof AStringType) {
 
@@ -96,7 +101,7 @@ public class ConceptTreeConnector extends Connector {
 			treeConcept.initializeIdCache(stringType, importId);
 		}
 		// No column only possible if we have just one tree element!
-		else if(treeConcept.countElements() == 1){
+		else if (treeConcept.countElements() == 1) {
 			stringType = null;
 		}
 		else {
@@ -110,57 +115,9 @@ public class ConceptTreeConnector extends Connector {
 
 		final int[] root = getConcept().getPrefix();
 
-		for (BucketEntry entry : bucket.entries()) {
-			try {
-				final int event = entry.getEvent();
-
-				// Events without values are omitted
-				// Events can also be filtered, allowing a single table to be used by multiple connectors.
-				if (column != null && !bucket.has(event, column)) {
-					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
-					continue;
-				}
-				String stringValue = "";
-				int valueIndex = -1;
-
-				if (stringType != null) {
-					valueIndex = bucket.getString(event, column);
-					stringValue = stringType.getElement(valueIndex);
-				}
-
-				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, imp));
-
-
-				if ((getCondition() != null && !getCondition().matches(stringValue, rowMap))) {
-					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
-					continue;
-				}
-
-				ConceptTreeChild child = cache == null
-										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
-										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
-
-				// All unresolved elements resolve to the root.
-				if (child == null) {
-					mostSpecificChildren[event] = root;
-					continue;
-				}
-
-				// put path into event
-				mostSpecificChildren[event] = child.getPrefix();
-
-				// also add concepts into bloom filter of entity cblock.
-				ConceptTreeNode<?> it = child;
-				while (it != null) {
-					cBlock.addEntityIncludedConcept(entry.getLocalEntity(), it);
-					it = it.getParent();
-				}
-			}
-			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event " + bucket + "-" + entry.getEvent() + " against concept " + this, ex);
-			}
-		}
+		StreamSupport.stream(bucket.entries().spliterator(), true)
+					 .parallel()
+					 .forEach(entry -> calculateEvent(cBlock, bucket, column, treeConcept, imp, stringType, mostSpecificChildren, cache, root, entry, entityLock));
 
 		cBlock.setMostSpecificChildren(mostSpecificChildren);
 
@@ -174,6 +131,74 @@ public class ConceptTreeConnector extends Connector {
 					(double) cache.getHits() / (cache.getHits() + cache.getMisses())
 			);
 		}
+	}
+
+	@Override
+	public TreeConcept getConcept() {
+		return (TreeConcept) super.getConcept();
+	}
+
+	private void calculateEvent(CBlock cBlock, Bucket bucket, Column column, TreeConcept treeConcept, Import imp, AStringType<?> stringType, int[][] mostSpecificChildren, ConceptTreeCache cache, int[] root, BucketEntry entry, Striped<Lock> entityLock) {
+		final int event = entry.getEvent();
+
+		// Events without values are omitted
+		// Events can also be filtered, allowing a single table to be used by multiple connectors.
+		if (column != null && !bucket.has(event, column)) {
+			mostSpecificChildren[event] = Connector.NOT_CONTAINED;
+			return;
+		}
+		String stringValue = "";
+		int valueIndex = -1;
+
+		if (stringType != null) {
+			valueIndex = bucket.getString(event, column);
+			stringValue = stringType.getElement(valueIndex);
+		}
+
+		// Lazy evaluation of map to avoid allocations if possible.
+		final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, imp));
+		ConceptTreeChild child = null;
+
+		try {
+
+			if ((getCondition() != null && !getCondition().matches(stringValue, rowMap))) {
+				mostSpecificChildren[event] = Connector.NOT_CONTAINED;
+				return;
+			}
+
+			child = cache == null ? treeConcept.findMostSpecificChild(stringValue, rowMap)
+								  : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+		}
+		catch (ConceptConfigurationException ex) {
+			log.error("Failed to resolve Bucket[{}](event = {}) against Concept[{}]", bucket.getId(), entry.getEvent(), this.getConcept().getId(), ex);
+		}
+
+
+		// All unresolved elements resolve to the root.
+		if (child == null) {
+			mostSpecificChildren[event] = root;
+			return;
+		}
+
+		// put path into event
+		mostSpecificChildren[event] = child.getPrefix();
+
+		final Lock lock = entityLock.get(entry.getLocalEntity());
+
+		try {
+			lock.lock();
+
+			// also add concepts into bloom filter of entity cblock.
+			ConceptTreeNode<?> it = child;
+			while (it != null) {
+				cBlock.addEntityIncludedConcept(entry.getLocalEntity(), it);
+				it = it.getParent();
+			}
+		}
+		finally {
+			lock.unlock();
+		}
+
 	}
 
 }
