@@ -91,7 +91,7 @@ public class FrontEndConceptBuilder {
 		root.getSecondaryIds()
 			.addAll(
 					storage.getSecondaryIds().stream()
-						   .map(sid -> new FESecondaryId(sid.getId().toString(), sid.getDescription()))
+						   .map(sid -> new FESecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
 						   .collect(Collectors.toSet())
 			);
 
