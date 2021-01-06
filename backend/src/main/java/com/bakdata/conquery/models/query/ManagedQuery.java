@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
@@ -154,7 +155,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
+
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
+
+		if (query instanceof SecondaryIdQuery) {
+			status.setSecondaryId(((SecondaryIdQuery) query).getSecondaryId().getId());
+		}
 	}
 	
 	@Override
