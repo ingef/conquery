@@ -137,7 +137,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
+		lastResultCount = query.countResults(results);
 
 		super.finish(storage, executionState);
 	}
