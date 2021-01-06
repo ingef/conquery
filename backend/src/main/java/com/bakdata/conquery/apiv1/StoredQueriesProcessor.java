@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
@@ -47,7 +48,7 @@ public class StoredQueriesProcessor {
 		return allQueries
 			.stream()
 			// to exclude subtypes from somewhere else
-			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
+			.filter(StoredQueriesProcessor::canFrontendRender)
 			.filter(q -> q.getDataset().equals(datasetId))
 			.filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
@@ -65,6 +66,22 @@ public class StoredQueriesProcessor {
 					return Stream.empty();
 				}
 			});
+	}
+
+	private static boolean canFrontendRender(ManagedExecution<?> q) {
+		if (!(q instanceof ManagedQuery)) {
+			return false;
+		}
+
+		if (((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class)) {
+			return true;
+		}
+
+		if (((ManagedQuery) q).getQuery().getClass().equals(SecondaryIdQuery.class)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public void deleteQuery(Namespace namespace, ManagedExecutionId queryId) {
