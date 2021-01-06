@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -26,7 +25,6 @@ import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
-import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -103,10 +101,13 @@ public class Preprocessor {
 	 */
 	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
 
-
-		//create temporary folders and check for correct permissions
 		final File preprocessedFile = descriptor.getInputFile().getPreprocessedFile();
-		File tmp = ConqueryFileUtil.createTempFile(preprocessedFile.getName(), ConqueryConstants.EXTENSION_PREPROCESSED.substring(1));
+
+		// Create temp file that will be moved when finished (we ensure the same file system, to avoid unnecessary copying)
+		File tmp = new File(preprocessedFile.getParentFile(),preprocessedFile.getName() + ".tmp");
+
+		// Ensures deletion on failure
+		tmp.deleteOnExit();
 
 		if (!Files.isWritable(tmp.getParentFile().toPath())) {
 			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(tmp.getParentFile()));
