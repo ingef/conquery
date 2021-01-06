@@ -9,5 +9,5 @@ initializeEnvironment({
   // All API requests will be mocked, so this value doesn't really matter
   apiUrl: "http://localhost:8001",
   isProduction: true,
-  disableLogin: false
+  disableLogin: false,
 });

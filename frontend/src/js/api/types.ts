@@ -2,7 +2,7 @@
 // - response type provided by the backend API
 // - partial types that the reponses are built from
 
-import type { Forms } from "./form-types";
+import { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
 import { SupportedErrorCodesT } from "./errorCodes";
 
@@ -230,7 +230,14 @@ export interface GetFrontendConfigResponseT {
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
 
+export interface SecondaryId {
+  id: string;
+  label: string;
+  description?: string;
+}
+
 export interface GetConceptsResponseT {
+  secondaryIds: SecondaryId[];
   concepts: {
     [conceptId: string]: ConceptStructT | ConceptElementT;
   };
