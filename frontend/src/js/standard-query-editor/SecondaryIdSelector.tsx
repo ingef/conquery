@@ -1,5 +1,5 @@
 import { StateT } from "app-types";
-import styled from "app-theme";
+import styled from "@emotion/styled";
 import React, { FC, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
