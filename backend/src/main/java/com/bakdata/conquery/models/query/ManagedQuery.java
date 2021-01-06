@@ -154,6 +154,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(storage, url, user, status);
 		status.setNumberOfResults(lastResultCount);
+		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
 	}
 	
 	@Override

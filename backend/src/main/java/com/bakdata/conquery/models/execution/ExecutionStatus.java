@@ -43,6 +43,8 @@ public class ExecutionStatus {
 		private Long numberOfResults;
 		private Long requiredTime;
 		private URL resultUrl;
+
+		private String queryType;
 		
 		/**
 		 * Holds a description for each column, present in the result.
