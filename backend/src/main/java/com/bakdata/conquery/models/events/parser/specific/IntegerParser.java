@@ -41,26 +41,40 @@ public class IntegerParser extends Parser<Long> {
 		}
 	}
 
+
 	@Override
 	protected ColumnStore<Long> decideType() {
 		long span = maxValue - minValue;
 
-		//TODO if values are in value range without rebasing, skip rebasing
-
+		// Create minimally required store.
+		// if values are in value range without rebasing, skip rebasing as that's faster.
 		// max value is reserved for NULL
+
 		if (span + 1 < (long) Byte.MAX_VALUE - (long)  Byte.MIN_VALUE) {
+			if(minValue >= Byte.MIN_VALUE && maxValue + 1 <= Byte.MAX_VALUE) {
+				return ByteStore.create(getLines());
+			}
+
 			return new RebasingStore(minValue, (long) Byte.MIN_VALUE, ByteStore.create(getLines()));
 		}
 
 		if (span + 1 < (long) Short.MAX_VALUE - (long)  Short.MIN_VALUE) {
+			if(minValue >= Short.MIN_VALUE && maxValue + 1 <= Short.MAX_VALUE) {
+				return ShortStore.create(getLines());
+			}
+
 			return new RebasingStore(minValue, Short.MIN_VALUE, ShortStore.create(getLines()));
 		}
 
 		if (span + 1 < (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE) {
+			if(minValue >= Integer.MIN_VALUE && maxValue + 1 <= Integer.MAX_VALUE) {
+				return IntegerStore.create(getLines());
+			}
+
 			return new RebasingStore(minValue, Integer.MIN_VALUE, IntegerStore.create(getLines()));
 		}
 
-		return new RebasingStore(minValue, Long.MIN_VALUE, LongStore.create(getLines()));
+		return LongStore.create(getLines());
 	}
 
 }
