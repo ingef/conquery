@@ -16,14 +16,7 @@
           "label": "vs",
           "tables": [
             {
-              "id": "${dataset}.concept.connector1",
-              "filters": [
-                {
-                  "filter": "${dataset}.concept.connector1.value",
-                  "type": "STRING",
-                  "value": "0"
-                }
-              ]
+              "id": "${dataset}.concept.connector1"
             }
           ]
         },
@@ -40,8 +33,10 @@
               "filters": [
                 {
                   "filter": "${dataset}.concept.connector1.value",
-                  "type": "STRING",
-                  "value": "0"
+                  "type": "INTEGER_RANGE",
+                  "value": {
+                    "min": 2
+                  }
                 }
               ]
             }
@@ -65,7 +60,8 @@
           "filter": {
             "name": "value",
             "column": "table1.value",
-            "type": "SINGLE_SELECT"
+            "type": "COUNT",
+            "distinct" : true
           }
         }
       ]
@@ -74,7 +70,7 @@
   "content": {
     "secondaryIds": [
       {
-        "name" : "secondary"
+        "name": "secondary"
       }
     ],
     "tables": [

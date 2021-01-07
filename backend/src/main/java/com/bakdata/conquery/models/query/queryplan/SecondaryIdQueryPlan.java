@@ -121,8 +121,8 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 				}
 
 				String key = ((String) bucket.createScriptValue(event, secondaryIdColumn));
-				childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumn, ctxWithPhase, bucket))
-						   .nextEvent(bucket, event);
+				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumn, ctxWithPhase, bucket));
+				plan.nextEvent(bucket, event);
 			}
 		}
 	}
