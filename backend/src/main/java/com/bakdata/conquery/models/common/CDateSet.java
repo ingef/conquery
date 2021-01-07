@@ -304,7 +304,7 @@ public class CDateSet {
 			return;
 		}
 
-		Integer search = Integer.MIN_VALUE;
+		Integer search = null;
 
 		if (toAdd.hasLowerBound()) {
 			search = mask.rangesByLowerBound.floorKey(toAdd.getMinValue());
