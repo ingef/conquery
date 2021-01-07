@@ -284,43 +284,40 @@ public class CDateSet {
 	}
 
 
-	public void maskedAdd(CDateRange add, CDateSet mask){
+	public void maskedAdd(CDateRange toAdd, CDateSet mask){
 		if(mask.isEmpty()){
 			return;
 		}
 
 		if(mask.isAll()){
-			add(add);
+			add(toAdd);
 			return;
 		}
 
-		if(add.isAll()){
+		if(toAdd.isAll()){
 			addAll(mask);
 			return;
 		}
 
-		if(add.isExactly() && mask.contains(add.getMinValue())){
-			add(add);
+		if(toAdd.isExactly() && mask.contains(toAdd.getMinValue())){
+			add(toAdd);
 			return;
 		}
 
-		int search = Integer.MIN_VALUE;
+		Integer search = Integer.MIN_VALUE;
 
-		if (add.hasLowerBound()) {
-			final Integer key = mask.rangesByLowerBound.floorKey(add.getMinValue());
-			if (key != null) {
-				search = key;
-			}
+		if (toAdd.hasLowerBound()) {
+			search = mask.rangesByLowerBound.floorKey(toAdd.getMinValue());
 		}
 
-		if(search == Integer.MIN_VALUE) {
+		if(search == null) {
 			search = mask.rangesByLowerBound.firstKey();
 		}
 
 		int searchEnd = Integer.MAX_VALUE;
 
-		if(add.hasUpperBound()){
-			final Integer key = mask.rangesByLowerBound.floorKey(add.getMaxValue());
+		if(toAdd.hasUpperBound()){
+			final Integer key = mask.rangesByLowerBound.floorKey(toAdd.getMaxValue());
 			if (key != null) {
 				searchEnd = key;
 			}
@@ -330,30 +327,27 @@ public class CDateSet {
 			searchEnd = mask.rangesByLowerBound.lastKey();
 		}
 
-		Integer current = search;
+		while(search != null && search <= searchEnd) {
+			final CDateRange range = mask.rangesByLowerBound.get(search);
 
-		while(current != null && current <= searchEnd) {
-			final CDateRange range = mask.rangesByLowerBound.get(current);
-
-			current = mask.rangesByLowerBound.higherKey(current);
+			search = mask.rangesByLowerBound.higherKey(search);
 
 			int min = range.getMinValue();
 			int max = range.getMaxValue();
 
-			if(max < add.getMinValue()){
+			if(max < toAdd.getMinValue()){
 				continue;
 			}
 
-			if(min < add.getMinValue()){
-				min = add.getMinValue();
+			if(min < toAdd.getMinValue()){
+				min = toAdd.getMinValue();
 			}
 
-			if(max > add.getMaxValue()){
-				max = add.getMaxValue();
+			if(max > toAdd.getMaxValue()){
+				max = toAdd.getMaxValue();
 			}
 
 			add(CDateRange.of(min, max));
-
 		}
 	}
 
