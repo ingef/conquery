@@ -62,8 +62,24 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 		final File outStoreDirectory = namespace.get("out");
 		final long outLogSize = Size.parse(namespace.get("out_logsize")).toKilobytes();
 
-		log.info("Recoding Environment at `{} ({})` to `{} ({})`", inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
+		log.info("Recoding Storage at `{} ({})` to `{} ({})`", inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
 
+		final File[] environments = inStoreDirectory.listFiles(File::isDirectory);
+
+		if(environments == null){
+			log.error("In Store is empty");
+			return;
+		}
+
+		for (File environment : environments) {
+			final File environmentDirectory = new File(outStoreDirectory, environment.getName());
+			environmentDirectory.mkdirs();
+
+			processEnvironment(environment, inLogSize, environmentDirectory, outLogSize);
+		}
+	}
+
+	private void processEnvironment(File inStoreDirectory, long inLogSize, File outStoreDirectory, long outLogSize) {
 		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
 				inStoreDirectory,
 				new EnvironmentConfig().setLogFileSize(inLogSize)
@@ -82,7 +98,7 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 		final List<String> stores = inEnvironment.computeInReadonlyTransaction(inEnvironment::getAllStoreNames);
 
-		log.info("Environment contains {} Stores {}", stores.size(), stores);
+		log.info("Environment {} contains {} Stores {}", inStoreDirectory, stores.size(), stores);
 		// Clear it before writing
 		outEnvironment.clear();
 
