@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": "src",
-    "jsx": "preserve",
+    "jsx": "react",
     "moduleResolution": "node",
     "sourceMap": true,
     "inlineSourceMap": false,
@@ -17,12 +17,28 @@
     "module": "esnext",
     "target": "es5",
     "allowJs": true,
-    "lib": ["es5", "es6", "dom", "dom.iterable", "es2019"],
+    "lib": [
+      "es5",
+      "es6",
+      "dom",
+      "dom.iterable",
+      "es2019"
+    ],
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "node_modules/**/*/*.d.ts"],
-  "exclude": ["node_modules", "public", ".cache", ".idea", "src/ignored/*"]
+  "include": [
+    "src",
+    "node_modules/**/*/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "public",
+    ".cache",
+    ".idea",
+    "src/ignored/*"
+  ]
 }
