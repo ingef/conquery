@@ -32,13 +32,13 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 				.addArgument("--in")
 				.help("Input store.")
 				.required(true)
-				.type(Arguments.fileType().verifyIsDirectory());
+				.type(Arguments.fileType().verifyIsDirectory().verifyCanRead());
 
 		subparser
 				.addArgument("--out")
 				.help("Output store.")
 				.required(true)
-				.type(Arguments.fileType().verifyIsDirectory());
+				.type(Arguments.fileType().verifyCanCreate().verifyCanWriteParent());
 
 		subparser
 				.addArgument("--in_logsize")
