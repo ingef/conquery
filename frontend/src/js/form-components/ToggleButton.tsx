@@ -75,9 +75,8 @@ const ToggleButton: FC<PropsT> = ({ options, input }) => {
   return (
     <Root>
       {options.map(({ value, label, description }, i) => (
-        <WithTooltip text={description}>
+        <WithTooltip key={value} text={description}>
           <Option
-            key={i}
             active={input.value === value}
             onClick={() => {
               if (value !== input.value) input.onChange(value);
