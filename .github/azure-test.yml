@@ -52,27 +52,27 @@ jobs:
   - task: Maven@3
     displayName: build root
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersionOption: '1.14'
       goals: install
       options: $(MVN) -T 1C -N
 
   - task: Maven@3
     displayName: unit tests
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersionOption: '1.14'
       goals: install
       options: $(MVN) -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
   - task: Maven@3
     displayName: programmatic integration tests
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersionOption: '1.14'
       options: $(MVN) -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
 
   - task: Maven@3
     displayName: json integration tests
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersionOption: '1.14'
       options: $(MVN) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
 
   - task: DeleteFiles@1
