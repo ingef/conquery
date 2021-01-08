@@ -26,6 +26,11 @@ steps:
       $(Build.SourcesDirectory)/executable/pom.xml
       $(Build.SourcesDirectory)/frontend/yarn.lock
     path: $(CACHE_DIR)
+- task: JavaToolInstaller@0
+inputs:
+  versionSpec: '14'
+  jdkArchitectureOption: 'x64'
+  jdkSourceOption: 'PreInstalled'
 - task: Maven@3
   displayName: set version
   inputs:

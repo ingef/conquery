@@ -10,6 +10,13 @@ pool:
 steps:
 - checkout: self
   persistCredentials: true
+
+- task: JavaToolInstaller@0
+  inputs:
+    versionSpec: '14'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+
 - task: Maven@3
   displayName: build conquery
   inputs:
