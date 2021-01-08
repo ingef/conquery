@@ -1,0 +1,48 @@
+{
+    "title": {
+        "de": "Export"
+    },
+    "type": "TABLE_EXPORT_FORM",
+    "headline": {
+        "de": "Tabellenexport"
+    },
+    "fields": [
+        {
+            "name": "queryGroup",
+            "type": "RESULT_GROUP",
+            "label": {
+                "de": "Versichertengruppe"
+            },
+            "dropzoneLabel": {
+                "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
+            },
+            "validations": [
+                "NOT_EMPTY"
+            ]
+        },
+      {
+        "name": "dateRange",
+        "type": "DATE_RANGE",
+        "label": {
+          "de": "Export Zeitraum"
+        },
+        "validations": [
+          "NOT_EMPTY"
+        ]
+      },
+      {
+        "name": "tables",
+        "type": "CONCEPT_LIST",
+        "label": {
+          "de": "Tabellen"
+        },
+        "isTwoDimensional": false,
+        "conceptDropzoneLabel": {
+          "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
+        },
+        "validations": [
+          "NOT_EMPTY"
+        ]
+      }
+    ]
+}

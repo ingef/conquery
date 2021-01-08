@@ -14,6 +14,7 @@ import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.internationalization.TableExportFormC10n;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -26,11 +27,12 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 
+@CPSType(base = Form.class, id = "TABLE_EXPORT_FORM")
 public class TableExportForm implements Form {
 
 	@Valid
 	@NotNull
-	protected IQuery query;
+	protected IQuery queryGroup;
 
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
@@ -40,17 +42,17 @@ public class TableExportForm implements Form {
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
-		return query.collectRequiredQueries();
+		return queryGroup.collectRequiredQueries();
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		query.resolve(context);
+		queryGroup.resolve(context);
 	}
 
 	@Override
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-		final TableExportQuery exportQuery = new TableExportQuery(query);
+		final TableExportQuery exportQuery = new TableExportQuery(queryGroup);
 		exportQuery.setDateRange(dateRange);
 		exportQuery.setTables(tables);
 
@@ -65,6 +67,6 @@ public class TableExportForm implements Form {
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
-		query.visit(visitor);
+		queryGroup.visit(visitor);
 	}
 }
