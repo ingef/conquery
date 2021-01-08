@@ -6,7 +6,7 @@ import java.util.List;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.util.DataSize;
+import io.dropwizard.util.Size;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.EnvironmentConfig;
 import jetbrains.exodus.env.Environments;
@@ -57,10 +57,10 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
 		final File inStoreDirectory = namespace.get("in");
-		final long inLogSize = DataSize.parse(namespace.get("in_logsize")).toKilobytes();
+		final long inLogSize = Size.parse(namespace.get("in_logsize")).toKilobytes();
 
 		final File outStoreDirectory = namespace.get("out");
-		final long outLogSize = DataSize.parse(namespace.get("out_logsize")).toKilobytes();
+		final long outLogSize = Size.parse(namespace.get("out_logsize")).toKilobytes();
 
 		log.info("Recoding Environment at `{} ({})` to `{} ({})`", inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
 
