@@ -303,6 +303,8 @@ export interface GetStoredQueryResponseT {
   requiredTime: number; // TODO: Not used
   tags?: string[];
   query: QueryT;
+  queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  secondaryId: string | null;
   owner: string; // TODO: Remove. Not used. And it's actually an ID
   status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
