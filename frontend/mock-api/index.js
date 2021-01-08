@@ -183,6 +183,12 @@ module.exports = function (app, port) {
             shared: Math.random() < 0.8,
             resultUrl: notExecuted ? null : `/api/results/results.csv`,
             ownerName: "System",
+            ...(Math.random() > 0.2
+              ? { queryType: "CONCEPT_QUERY" }
+              : {
+                  queryType: "SECONDARY_ID_QUERY",
+                  secondaryId: "fun_fall_id",
+                }),
           });
         }
 

@@ -10,12 +10,20 @@ import { T } from "../localization";
 import { ConceptQueryNodeType, StandardQueryType } from "./types";
 import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 import { setSelectedSecondaryId } from "./actions";
-import { SecondaryId } from "js/api/types";
+import { SecondaryId } from "../api/types";
+import FaIcon from "../icon/FaIcon";
 
 const Headline = styled.h3<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
   margin: 0;
   text-transform: uppercase;
+  transition: color ${({ theme }) => theme.transitionTime};
+  color: ${({ theme, active }) =>
+    active ? theme.col.blueGrayDark : theme.col.gray};
+`;
+
+const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
+  transition: color ${({ theme }) => theme.transitionTime};
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.gray};
 `;
@@ -72,12 +80,14 @@ const SecondaryIdSelector: FC = () => {
     ...availableSecondaryIds.map((id) => ({
       label: id.label,
       value: id.id,
+      description: id.description,
     })),
   ];
 
   return (
     <div>
       <Headline active={!!selectedSecondaryId}>
+        <SxFaIcon active={!!selectedSecondaryId} left icon="microscope" />
         {T.translate("queryEditor.secondaryId")}
       </Headline>
       <ToggleButton
