@@ -118,13 +118,19 @@ public class RecodeStoreCommand extends ConqueryCommand {
 		while (cursor.getNext()){
 			outStore.putRight(writeTx, cursor.getKey(), cursor.getValue());
 			if(processed++ % 1000 == 0){
-				log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / count));
+				log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
 			}
 		}
+
+
+
+		log.info("Done writing. Commiting, then GC.");
 
 		writeTx.commit();
 
 		outStore.getEnvironment().gc();
+
+		log.info("GC Done.");
 	}
 
 }
