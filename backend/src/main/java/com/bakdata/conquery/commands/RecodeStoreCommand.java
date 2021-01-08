@@ -103,7 +103,7 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 			}
 
 			doRecode(inEnvironment, inStore, outEnvironment, outStore);
-			log.info("Done writing {}. Commiting, then GC.", store);
+			log.info("Done writing {}.", store);
 		}
 
 		outConfig.setGcEnabled(true);
@@ -123,7 +123,7 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 		while (cursor.getNext()) {
 			outStore.putRight(writeTx, cursor.getKey(), cursor.getValue());
-			if (processed++ % 1000 == 0) {
+			if (++processed % (count / 10) == 0) {
 				log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
 			}
 		}
