@@ -85,14 +85,14 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 				new EnvironmentConfig().setLogFileSize(inLogSize)
 									   .setEnvIsReadonly(true)
 									   .setEnvCompactOnOpen(false)
-									   .setGcEnabled(false)
+									   .setGcEnabled(false) // we dump first, then enable GC.
 		);
 
 		final EnvironmentConfig outConfig = new EnvironmentConfig().setLogFileSize(outLogSize)
 															.setGcEnabled(false);
 		final jetbrains.exodus.env.Environment outEnvironment = Environments.newInstance(
 				outStoreDirectory,
-				outConfig // we dump first, then enable GC.
+				outConfig
 		);
 
 
@@ -124,6 +124,9 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 		outConfig.setGcEnabled(true);
 		outEnvironment.gc();
+
+		outEnvironment.close();
+		inEnvironment.close();
 	}
 
 	private void doRecode(jetbrains.exodus.env.Environment inEnvironment, Store inStore, jetbrains.exodus.env.Environment outEnvironment, Store outStore) {
