@@ -1,14 +1,46 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
+import WithTooltip from "../tooltip/WithTooltip";
 
-const Root = styled("p")`
+const Root = styled("div")`
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  > span {
+    &:first-child {
+      margin-left: 0;
+      border-top-left-radius: 2px;
+      border-bottom-left-radius: 2px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 2px;
+      border-bottom-right-radius: 2px;
+    }
+  }
+  > div {
+    &:first-child {
+      span {
+        margin-left: 0;
+        border-top-left-radius: 2px;
+        border-bottom-left-radius: 2px;
+      }
+    }
+    &:last-child {
+      span {
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+      }
+    }
+  }
 `;
 
 const Option = styled("span")<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.xs};
   display: inline-block;
-  padding: 2px 8px;
+  padding: 4px 8px;
   cursor: pointer;
   transition: color ${({ theme }) => theme.transitionTime},
     background-color ${({ theme }) => theme.transitionTime};
@@ -19,17 +51,6 @@ const Option = styled("span")<{ active?: boolean }>`
 
   margin-left: -1px;
 
-  &:first-of-type {
-    margin-left: 0;
-    border-top-left-radius: 2px;
-    border-bottom-left-radius: 2px;
-  }
-
-  &:last-of-type {
-    border-top-right-radius: 2px;
-    border-bottom-right-radius: 2px;
-  }
-
   &:hover {
     background-color: ${({ theme, active }) =>
       active ? "white" : theme.col.graySuperLight};
@@ -39,6 +60,7 @@ const Option = styled("span")<{ active?: boolean }>`
 interface OptionsT {
   label: string;
   value: string;
+  description?: string;
 }
 
 interface PropsT {
@@ -52,16 +74,18 @@ interface PropsT {
 const ToggleButton: FC<PropsT> = ({ options, input }) => {
   return (
     <Root>
-      {options.map(({ value, label }, i) => (
-        <Option
-          key={i}
-          active={input.value === value}
-          onClick={() => {
-            if (value !== input.value) input.onChange(value);
-          }}
-        >
-          {label}
-        </Option>
+      {options.map(({ value, label, description }, i) => (
+        <WithTooltip text={description}>
+          <Option
+            key={i}
+            active={input.value === value}
+            onClick={() => {
+              if (value !== input.value) input.onChange(value);
+            }}
+          >
+            {label}
+          </Option>
+        </WithTooltip>
       ))}
     </Root>
   );
