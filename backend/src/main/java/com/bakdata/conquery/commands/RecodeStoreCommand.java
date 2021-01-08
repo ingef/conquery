@@ -1,8 +1,8 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
+import java.util.List;
 
-import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
@@ -25,14 +25,9 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 	public RecodeStoreCommand() {
 		super("xodus-recode", "Recode a Xodus-Store to a new log-size.");
 	}
-	
+
 	@Override
 	public void configure(Subparser subparser) {
-		subparser.addArgument("--name")
-				 .help("Name of the store.")
-				 .type(Arguments.caseInsensitiveEnumStringType(StoreInfo.class))
-				 .required(true);
-
 		subparser
 				.addArgument("--in")
 				.help("Input store.")
@@ -61,16 +56,13 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 	@Override
 	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
-		final StoreInfo info = namespace.get("name");
-
 		final File inStoreDirectory = namespace.get("in");
 		final long inLogSize = DataSize.parse(namespace.get("in_logsize")).toKilobytes();
 
 		final File outStoreDirectory = namespace.get("out");
 		final long outLogSize = DataSize.parse(namespace.get("out_logsize")).toKilobytes();
 
-		log.info("Recoding {} at `{} ({})` to `{} ({})`", info, inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
-
+		log.info("Recoding Environment at `{} ({})` to `{} ({})`", inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
 
 		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
 				inStoreDirectory,
@@ -87,23 +79,33 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 		);
 
 
-		final Store inStore =  inEnvironment.computeInExclusiveTransaction(tx -> inEnvironment.openStore(info.getXodusName(), StoreConfig.USE_EXISTING, tx, false));
+		final List<String> stores = inEnvironment.computeInReadonlyTransaction(inEnvironment::getAllStoreNames);
 
-		if(inStore == null){
-			log.error("{} does not exist, aborting.", inStoreDirectory);
-			return;
-		}
-
-		final Store outStore = outEnvironment.computeInExclusiveTransaction(tx -> outEnvironment.openStore(info.getXodusName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, tx, true));
-
-		if(outEnvironment.computeInReadonlyTransaction(outStore::count) > 0){
-			log.warn("Store is not empty, it will be cleared.");
-		}
-
+		log.info("Environment contains {} Stores {}", stores.size(), stores);
 		// Clear it before writing
 		outEnvironment.clear();
 
-		doRecode(inEnvironment, inStore, outEnvironment, outStore);
+		for (String store : stores) {
+			final Store inStore =
+					inEnvironment.computeInExclusiveTransaction(tx -> inEnvironment.openStore(store, StoreConfig.USE_EXISTING, tx, false));
+
+			if (inStore == null) {
+				log.error("{} does not exist, aborting.", store);
+				return;
+			}
+
+			final Store outStore =
+					outEnvironment.computeInExclusiveTransaction(tx -> outEnvironment.openStore(store, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, tx, true));
+
+			if (outEnvironment.computeInReadonlyTransaction(outStore::count) > 0) {
+				log.warn("Store is not empty, it will be cleared.");
+			}
+
+			doRecode(inEnvironment, inStore, outEnvironment, outStore);
+			log.info("Done writing {}. Commiting, then GC.", store);
+		}
+
+		outEnvironment.gc();
 	}
 
 	private void doRecode(jetbrains.exodus.env.Environment inEnvironment, Store inStore, jetbrains.exodus.env.Environment outEnvironment, Store outStore) {
@@ -117,22 +119,14 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 		final Cursor cursor = inStore.openCursor(readTx);
 
-		while (cursor.getNext()){
+		while (cursor.getNext()) {
 			outStore.putRight(writeTx, cursor.getKey(), cursor.getValue());
-			if(processed++ % 1000 == 0){
+			if (processed++ % 1000 == 0) {
 				log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
 			}
 		}
 
-
-
-		log.info("Done writing. Commiting, then GC.");
-
 		writeTx.commit();
-
-		outStore.getEnvironment().gc();
-
-		log.info("GC Done.");
 	}
 
 }
