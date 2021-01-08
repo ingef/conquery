@@ -1,7 +1,7 @@
 import { ThunkDispatch } from "redux-thunk";
 
 import api from "../api";
-import type { DatasetIdT, DateRangeT } from "../api/types";
+import type { DatasetIdT } from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
@@ -36,6 +36,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
+  SET_SELECTED_SECONDARY_ID,
 } from "./actionTypes";
 import { TreesT } from "../concept-trees/reducer";
 
@@ -213,5 +214,12 @@ export const loadFilterSuggestions = (
         (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
         (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
       );
+  };
+};
+
+export const setSelectedSecondaryId = (secondaryId: string | null) => {
+  return {
+    type: SET_SELECTED_SECONDARY_ID,
+    payload: { secondaryId },
   };
 };

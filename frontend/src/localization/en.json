@@ -51,7 +51,9 @@
     "date": "Date",
     "expand": "Expand",
     "previousQuery": "Query",
-    "loadingPreviousQuery": "Loading Query Details"
+    "loadingPreviousQuery": "Loading Query Details",
+    "secondaryId": "Analysis layer",
+    "secondaryIdStandard": "Standard"
   },
   "dropzone": {
     "dragElementPlease": "Add an element",

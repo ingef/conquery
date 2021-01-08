@@ -4,7 +4,7 @@ import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTre
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import type { DateRangeT, TableT } from "../api/types";
+import type { TableT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 import { selectsWithDefaults } from "../model/select";
