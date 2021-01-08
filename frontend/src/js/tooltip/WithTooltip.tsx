@@ -1,20 +1,22 @@
-import * as React from "react";
+import React, { FC, ReactElement } from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
 
 interface PropsT {
   className?: string;
-  place?: string;
-  text?: React.ReactNode;
+  place?: "bottom" | "left" | "right" | "top";
+  text?: string;
+  html?: ReactElement;
 }
 
-const WithTooltip: React.FC<PropsT> = ({
+const WithTooltip: FC<PropsT> = ({
   className,
   children,
   place,
-  text
+  text,
+  html,
 }) => {
-  if (!text) return <>{children}</>;
+  if (!text && !html) return <>{children}</>;
 
   return (
     <Tooltip
@@ -22,8 +24,9 @@ const WithTooltip: React.FC<PropsT> = ({
       position={place || "top"}
       arrow={true}
       duration={0}
-      delay={[0, 0]}
+      delay={0}
       title={text}
+      html={html}
     >
       {children}
     </Tooltip>

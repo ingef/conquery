@@ -1,23 +1,22 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 
 import FaIcon from "../icon/FaIcon";
 
 import WithTooltip from "./WithTooltip";
 
-type PropsType = {
+interface PropsT {
   text: string;
   className?: string;
   noIcon?: boolean;
-  place?: string;
-};
+}
 
 const Root = styled(WithTooltip)`
   display: inline-block;
   padding: 0 10px;
 `;
 
-const InfoTooltip = ({ className, text, noIcon, place }: PropsType) => {
+const InfoTooltip: FC<PropsT> = ({ className, text, noIcon }) => {
   return (
     <Root className={className} text={text}>
       {!noIcon && <FaIcon regular icon="question-circle" />}

@@ -32,6 +32,8 @@ export interface PreviousQueryT {
   shared: boolean;
   isPristineLabel?: boolean;
   groups?: UserGroupIdT[];
+  queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  secondaryId?: string | null;
 }
 
 export interface PreviousQueriesStateT {
