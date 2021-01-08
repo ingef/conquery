@@ -72,10 +72,11 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 									   .setGcEnabled(false)
 		);
 
+		final EnvironmentConfig outConfig = new EnvironmentConfig().setLogFileSize(outLogSize)
+															.setGcEnabled(false);
 		final jetbrains.exodus.env.Environment outEnvironment = Environments.newInstance(
 				outStoreDirectory,
-				new EnvironmentConfig().setLogFileSize(outLogSize)
-									   .setGcEnabled(false) // we dump first, then enable GC.
+				outConfig // we dump first, then enable GC.
 		);
 
 
@@ -105,6 +106,7 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 			log.info("Done writing {}. Commiting, then GC.", store);
 		}
 
+		outConfig.setGcEnabled(true);
 		outEnvironment.gc();
 	}
 
@@ -125,6 +127,8 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 				log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
 			}
 		}
+
+		log.info("Processed {} / {} ({}%)", processed, count, 100);
 
 		writeTx.commit();
 	}
