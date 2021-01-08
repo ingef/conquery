@@ -4,7 +4,8 @@ import java.io.File;
 
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.cli.ConfiguredCommand;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.util.DataSize;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.EnvironmentConfig;
@@ -18,7 +19,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 @Slf4j
-public class RecodeStoreCommand extends ConqueryCommand {
+public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 
 	public RecodeStoreCommand() {
@@ -58,7 +59,8 @@ public class RecodeStoreCommand extends ConqueryCommand {
 	}
 
 	@Override
-	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+
 		final StoreInfo info = namespace.get("name");
 
 		final File inStoreDirectory = namespace.get("in");
