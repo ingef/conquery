@@ -21,7 +21,7 @@
   "homepage": "/app/static",
   "dependencies": {
     "@emotion/babel-plugin": "^11.0.0-next.12",
-    "@emotion/is-prop-valid": "^0.8.8",
+    "@emotion/is-prop-valid": "^1.0.0",
     "@emotion/react": "^11.0.0-next.12",
     "@emotion/styled": "^11.0.0-next.12",
     "@fortawesome/fontawesome-svg-core": "^1.2.28",
