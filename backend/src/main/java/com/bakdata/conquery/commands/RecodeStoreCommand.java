@@ -139,7 +139,7 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 		while (cursor.getNext()) {
 			outStore.putRight(writeTx, cursor.getKey(), cursor.getValue());
-			if (++processed % (count / 10) == 0) {
+			if (++processed % (1 + (count / 10)) == 0) {
 				log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
 			}
 		}
