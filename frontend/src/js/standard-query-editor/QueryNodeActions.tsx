@@ -1,21 +1,21 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 import FaIcon from "../icon/FaIcon";
 
-type PropsType = {
+interface PropsT {
   excludeTimestamps?: boolean;
   isExpandable?: boolean;
   hasDetails?: boolean;
   previousQueryLoading?: boolean;
   error?: string;
-  onDeleteNode: Function;
-  onEditClick: Function;
-  onExpandClick: Function;
-  onToggleTimestamps: Function;
-};
+  hasActiveSecondaryId?: boolean;
+  onDeleteNode: () => void;
+  onExpandClick: () => void;
+  onToggleTimestamps: () => void;
+}
 
 const Actions = styled("div")`
   display: flex;
@@ -32,7 +32,7 @@ const StyledIconButton = styled(IconButton)`
   padding: 0px 6px 4px;
 `;
 
-const QueryNodeActions = (props: PropsType) => {
+const QueryNodeActions: FC<PropsT> = (props) => {
   return (
     <Actions>
       <StyledIconButton
@@ -69,6 +69,11 @@ const QueryNodeActions = (props: PropsType) => {
               props.onExpandClick();
             }}
           />
+        </WithTooltip>
+      )}
+      {props.hasActiveSecondaryId && (
+        <WithTooltip text={T.translate("queryEditor.hasSecondaryId")}>
+          <StyledFaIcon icon="microscope" />
         </WithTooltip>
       )}
     </Actions>

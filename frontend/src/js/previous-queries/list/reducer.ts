@@ -28,6 +28,7 @@ export interface PreviousQueryT {
   createdAt: string;
   tags: string[];
   own: boolean;
+  system?: boolean;
   resultUrl: string | null;
   shared: boolean;
   isPristineLabel?: boolean;

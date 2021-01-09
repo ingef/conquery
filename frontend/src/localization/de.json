@@ -53,7 +53,8 @@
     "previousQuery": "Anfrage",
     "loadingPreviousQuery": "Lade Anfragedetails",
     "secondaryId": "Analyse-Ebene",
-    "secondaryIdStandard": "Standard"
+    "secondaryIdStandard": "Standard",
+    "hasSecondaryId": "Analyse-Ebene aktiv"
   },
   "dropzone": {
     "dragElementPlease": "Füge ein Element hinzu",
