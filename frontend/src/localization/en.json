@@ -53,7 +53,8 @@
     "previousQuery": "Query",
     "loadingPreviousQuery": "Loading Query Details",
     "secondaryId": "Analysis layer",
-    "secondaryIdStandard": "Standard"
+    "secondaryIdStandard": "Standard",
+    "hasSecondaryId": "Analysis layer active"
   },
   "dropzone": {
     "dragElementPlease": "Add an element",

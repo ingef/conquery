@@ -2,6 +2,9 @@ import React, { useRef, FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { useDrag } from "react-dnd";
+import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+import { css } from "@emotion/react";
 
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import { QUERY_NODE } from "../common/constants/dndTypes";
@@ -15,7 +18,9 @@ import QueryNodeActions from "./QueryNodeActions";
 import { getRootNodeLabel } from "./helper";
 import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
 
-const Root = styled("div")<{ hasActiveFilters: boolean }>`
+const Root = styled("div")<{
+  hasActiveFilters?: boolean;
+}>`
   position: relative;
   width: 100%;
   margin: 0 auto;
@@ -106,6 +111,20 @@ const QueryNode: FC<PropsT> = ({
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
 
+  const activeSecondaryId = useSelector<StateT, string | null>(
+    (state) => state.queryEditor.selectedSecondaryId
+  );
+
+  const hasActiveSecondaryId =
+    !!activeSecondaryId &&
+    !!node.tables &&
+    node.tables.some(
+      (table) =>
+        !table.exclude &&
+        table.supportedSecondaryIds &&
+        table.supportedSecondaryIds.includes(activeSecondaryId)
+    );
+
   const item = {
     // Return the data describing the dragged item
     // NOT using `...node` since that would also spread `children` in.
@@ -156,7 +175,7 @@ const QueryNode: FC<PropsT> = ({
         drag(instance);
       }}
       hasActiveFilters={hasActiveFilters}
-      onClick={!!node.error ? () => null : onEditClick}
+      onClick={!!node.error ? () => {} : onEditClick}
     >
       <Node>
         {node.isPreviousQuery && (
@@ -182,6 +201,7 @@ const QueryNode: FC<PropsT> = ({
         onDeleteNode={onDeleteNode}
         onToggleTimestamps={onToggleTimestamps}
         isExpandable={isQueryExpandable(node)}
+        hasActiveSecondaryId={hasActiveSecondaryId}
         onExpandClick={() => {
           if (!node.query) return;
 
