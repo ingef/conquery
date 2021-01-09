@@ -1,4 +1,4 @@
-FROM node:10.16-alpine
+FROM mhart/alpine-node:14
 
 RUN mkdir /conquery
 WORKDIR /conquery
