@@ -1,21 +1,21 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 import FaIcon from "../icon/FaIcon";
 
-type PropsType = {
+interface PropsT {
   excludeTimestamps?: boolean;
   isExpandable?: boolean;
   hasDetails?: boolean;
   previousQueryLoading?: boolean;
   error?: string;
-  onDeleteNode: Function;
-  onEditClick: Function;
-  onExpandClick: Function;
-  onToggleTimestamps: Function;
-};
+  hasActiveSecondaryId?: boolean;
+  onDeleteNode: () => void;
+  onExpandClick: () => void;
+  onToggleTimestamps: () => void;
+}
 
 const Actions = styled("div")`
   display: flex;
@@ -32,12 +32,12 @@ const StyledIconButton = styled(IconButton)`
   padding: 0px 6px 4px;
 `;
 
-const QueryNodeActions = (props: PropsType) => {
+const QueryNodeActions: FC<PropsT> = (props) => {
   return (
     <Actions>
       <StyledIconButton
         icon="times"
-        onClick={e => {
+        onClick={(e) => {
           e.stopPropagation();
           props.onDeleteNode();
         }}
@@ -48,7 +48,7 @@ const QueryNodeActions = (props: PropsType) => {
             red
             regular
             icon="calendar"
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               props.onToggleTimestamps();
             }}
@@ -57,19 +57,23 @@ const QueryNodeActions = (props: PropsType) => {
       )}
       {!props.error && !!props.previousQueryLoading && (
         <WithTooltip text={T.translate("queryEditor.loadingPreviousQuery")}>
-          <StyledFaIcon noFrame icon="spinner" />
+          <StyledFaIcon icon="spinner" />
         </WithTooltip>
       )}
       {!props.error && props.isExpandable && !props.previousQueryLoading && (
         <WithTooltip text={T.translate("queryEditor.expand")}>
           <StyledIconButton
-            noFrame
             icon="expand-arrows-alt"
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               props.onExpandClick();
             }}
           />
+        </WithTooltip>
+      )}
+      {props.hasActiveSecondaryId && (
+        <WithTooltip text={T.translate("queryEditor.hasSecondaryId")}>
+          <StyledFaIcon icon="microscope" />
         </WithTooltip>
       )}
     </Actions>

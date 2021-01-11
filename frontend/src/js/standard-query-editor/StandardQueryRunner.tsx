@@ -1,23 +1,27 @@
-import { connect } from "react-redux";
-import type { Dispatch } from "redux-thunk";
+import React, { FC } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import QueryRunner from "../query-runner/QueryRunner";
 
 import { validateQueryLength, validateQueryDates } from "../model/query";
 
 import actions from "../app/actions";
+import { DatasetIdT } from "../api/types";
+import { QueryRunnerStateT } from "js/query-runner/reducer";
+import { StateT } from "app-types";
+import { StandardQueryStateT } from "./queryReducer";
 
 const { startStandardQuery, stopStandardQuery } = actions;
 
-function validateQueryStartStop(queryRunner) {
-  return !queryRunner.startQuery.loading && !queryRunner.stopQuery.loading;
+function validateQueryStartStop({ startQuery, stopQuery }: QueryRunnerStateT) {
+  return !startQuery.loading && !stopQuery.loading;
 }
 
-function validateDataset(datasetId) {
+function validateDataset(datasetId: DatasetIdT) {
   return datasetId !== null;
 }
 
-function getButtonTooltipKey(hasQueryValidDates) {
+function getButtonTooltipKey(hasQueryValidDates: boolean) {
   if (!hasQueryValidDates) {
     return "queryRunner.errorDates";
   }
@@ -27,53 +31,50 @@ function getButtonTooltipKey(hasQueryValidDates) {
   return null;
 }
 
-const mapStateToProps = (state, ownProps) => {
-  const { query, queryRunner } = state.queryEditor;
+interface PropsT {
+  datasetId: DatasetIdT;
+}
 
-  const isDatasetValid = validateDataset(ownProps.datasetId);
+const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
+  const query = useSelector<StateT, StandardQueryStateT>(
+    (state) => state.queryEditor.query
+  );
+  const queryRunner = useSelector<StateT, QueryRunnerStateT>(
+    (state) => state.queryEditor.queryRunner
+  );
+  const selectedSecondaryId = useSelector<StateT, string | null>(
+    (state) => state.queryEditor.selectedSecondaryId
+  );
+
+  const queryId = queryRunner.runningQuery;
+
+  const isDatasetValid = validateDataset(datasetId);
   const hasQueryValidDates = validateQueryDates(query);
   const isQueryValid = validateQueryLength(query) && hasQueryValidDates;
   const isQueryNotStartedOrStopped = validateQueryStartStop(queryRunner);
 
-  const isButtonEnabled =
-    isDatasetValid && isQueryValid && isQueryNotStartedOrStopped;
+  const dispatch = useDispatch();
 
-  const buttonTooltipKey = getButtonTooltipKey(hasQueryValidDates);
+  const startQuery = () =>
+    dispatch(
+      startStandardQuery(datasetId, query, {
+        selectedSecondaryId,
+      })
+    );
+  const stopQuery = () => dispatch(stopStandardQuery(datasetId, queryId));
 
-  return {
-    buttonTooltipKey,
-    isButtonEnabled,
-    query,
-    queryRunner,
-    isQueryRunning: !!queryRunner.runningQuery,
-    queryId: queryRunner.runningQuery,
-    version: state.conceptTrees.version
-  };
+  return (
+    <QueryRunner
+      queryRunner={queryRunner}
+      buttonTooltipKey={getButtonTooltipKey(hasQueryValidDates)}
+      isButtonEnabled={
+        isDatasetValid && isQueryValid && isQueryNotStartedOrStopped
+      }
+      isQueryRunning={!!queryRunner.runningQuery}
+      startQuery={startQuery}
+      stopQuery={stopQuery}
+    />
+  );
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  startQuery: (datasetId, query, version) =>
-    dispatch(startStandardQuery(datasetId, query, version)),
-  stopQuery: (datasetId, queryId) =>
-    dispatch(stopStandardQuery(datasetId, queryId))
-});
-
-const mergeProps = (stateProps, dispatchProps, ownProps) => ({
-  ...stateProps,
-  ...dispatchProps,
-  ...ownProps,
-  startQuery: () =>
-    dispatchProps.startQuery(
-      ownProps.datasetId,
-      stateProps.query,
-      stateProps.version
-    ),
-  stopQuery: () =>
-    dispatchProps.stopQuery(ownProps.datasetId, stateProps.queryId)
-});
-
-export const StandardQueryRunner = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
-)(QueryRunner);
+export default StandardQueryRunner;

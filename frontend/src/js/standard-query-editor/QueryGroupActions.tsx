@@ -1,6 +1,5 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import css from "@emotion/css";
 import T from "i18n-react";
 import IconButton from "../button/IconButton";
 import { Icon } from "../icon/FaIcon";
@@ -24,59 +23,64 @@ const StyledIconButton = styled(IconButton)`
   text-decoration: ${({ active }) => (active ? "underline" : "initial")};
 `;
 
-const activeStyle = ({ theme, active }) =>
-  css`
-    color: ${active ? theme.col.red : theme.col.black};
-    ${Icon} {
-      color: ${active ? theme.col.red : theme.col.black};
-    }
-  `;
-
 const RedIconButton = styled(IconButton)`
   margin-right: 5px;
   padding: 0 3px;
 
-  ${activeStyle};
+  color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
+  ${Icon} {
+    color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
+  }
 
   &:hover {
     opacity: 0.7;
-    ${activeStyle}
+    color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
+    ${Icon} {
+      color: ${({ active, theme }) =>
+        active ? theme.col.red : theme.col.black};
+    }
   }
 `;
 
-type PropsType = {
+interface PropsT {
   excludeActive: boolean;
   dateActive: boolean;
   onExcludeClick: () => void;
   onDeleteGroup: () => void;
   onDateClick: () => void;
-};
+}
 
-const QueryGroupActions = (props: PropsType) => {
+const QueryGroupActions: FC<PropsT> = ({
+  excludeActive,
+  dateActive,
+  onExcludeClick,
+  onDeleteGroup,
+  onDateClick,
+}) => {
   return (
     <Actions>
       <div>
         <RedIconButton
           red
           tight
-          active={props.excludeActive}
+          active={excludeActive}
           icon="ban"
-          onClick={props.onExcludeClick}
+          onClick={onExcludeClick}
         >
           {T.translate("queryEditor.exclude")}
         </RedIconButton>
         <StyledIconButton
-          active={props.dateActive}
+          active={dateActive}
           regular
           tight
           icon="calendar"
-          onClick={props.onDateClick}
+          onClick={onDateClick}
         >
           {T.translate("queryEditor.date")}
         </StyledIconButton>
       </div>
       <Right>
-        <IconButton noFrame tiny icon="times" onClick={props.onDeleteGroup} />
+        <IconButton tiny icon="times" onClick={onDeleteGroup} />
       </Right>
     </Actions>
   );
