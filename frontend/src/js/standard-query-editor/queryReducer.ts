@@ -3,6 +3,7 @@ import T from "i18n-react";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 
 import type { TableT } from "../api/types";
 
@@ -50,6 +51,7 @@ import {
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
+  TOGGLE_SECONDARY_ID_EXCLUDE,
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
@@ -93,6 +95,7 @@ const filterItem = (
     return {
       ...baseItem,
 
+      excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
       ids: item.ids,
       description: item.description,
       tables: item.tables,
@@ -144,7 +147,7 @@ const setAllElementsProperties = (node, properties) => {
 };
 
 const dropAndNode = (
-  state,
+  state: StandardQueryStateT,
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType;
@@ -171,7 +174,7 @@ const dropAndNode = (
 };
 
 const dropOrNode = (
-  state,
+  state: StandardQueryStateT,
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType;
@@ -203,7 +206,7 @@ const dropOrNode = (
 
 // Delete a single Node (concept inside a group)
 const deleteNode = (
-  state,
+  state: StandardQueryStateT,
   action: { payload: { andIdx: number; orIdx: number } }
 ) => {
   const { andIdx, orIdx } = action.payload;
@@ -221,13 +224,13 @@ const deleteNode = (
   ].filter((and) => !!and.elements && and.elements.length > 0);
 };
 
-const deleteGroup = (state, action) => {
+const deleteGroup = (state: StandardQueryStateT, action: any) => {
   const { andIdx } = action.payload;
 
   return [...state.slice(0, andIdx), ...state.slice(andIdx + 1)];
 };
 
-const toggleExcludeGroup = (state, action) => {
+const toggleExcludeGroup = (state: StandardQueryStateT, action: any) => {
   const { andIdx } = action.payload;
 
   return [
@@ -240,14 +243,20 @@ const toggleExcludeGroup = (state, action) => {
   ];
 };
 
-const loadQuery = (state, action) => {
+const loadQuery = (state: StandardQueryStateT, action: any) => {
   // In case there is no query, keep state the same
   if (!action.payload.query) return state;
 
   return action.payload.query;
 };
 
-const updateNodeTable = (state, andIdx, orIdx, tableIdx, table) => {
+const updateNodeTable = (
+  state: StandardQueryStateT,
+  andIdx: number,
+  orIdx: number,
+  tableIdx: number,
+  table
+) => {
   const node = state[andIdx].elements[orIdx];
   const tables = [
     ...node.tables.slice(0, tableIdx),
@@ -258,14 +267,19 @@ const updateNodeTable = (state, andIdx, orIdx, tableIdx, table) => {
   return updateNodeTables(state, andIdx, orIdx, tables);
 };
 
-const updateNodeTables = (state, andIdx, orIdx, tables) => {
+const updateNodeTables = (
+  state: StandardQueryStateT,
+  andIdx: number,
+  orIdx: number,
+  tables
+) => {
   return setElementProperties(state, andIdx, orIdx, { tables });
 };
 
-const toggleNodeTable = (state, action) => {
+const toggleNodeTable = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, isExcluded } = action.payload;
 
-  const nodePosition = selectEditedNode(state);
+  const nodePosition = selectEditedNodePosition(state);
   if (!nodePosition) return state;
 
   const { andIdx, orIdx } = nodePosition;
@@ -278,25 +292,24 @@ const toggleNodeTable = (state, action) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, table);
 };
 
-const selectEditedNode = (state) => {
-  const selectedNodes = state
-    .reduce(
-      (acc, group, andIdx) => [
-        ...acc,
-        ...group.elements.map((element, orIdx) => ({ andIdx, orIdx, element })),
-      ],
-      []
-    )
-    .filter(({ element }) => element.isEditing)
-    .map(({ andIdx, orIdx }) => ({ andIdx, orIdx }));
+const selectEditedNodePosition = (state: StandardQueryStateT) => {
+  for (let andIdx = 0; andIdx < state.length; andIdx++) {
+    for (let orIdx = 0; orIdx < state[andIdx].elements.length; orIdx++) {
+      const node = state[andIdx].elements[orIdx];
 
-  return selectedNodes.length ? selectedNodes[0] : null;
+      if (node.isEditing) {
+        return { andIdx, orIdx };
+      }
+    }
+  }
+
+  return null;
 };
 
 const setNodeFilterProperties = (state, action, properties) => {
   const { tableIdx, filterIdx } = action.payload;
 
-  const node = selectEditedNode(state);
+  const node = selectEditedNodePosition(state);
 
   if (!node) return state;
 
@@ -323,15 +336,15 @@ const setNodeFilterProperties = (state, action, properties) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeFilterValue = (state, action) => {
+const setNodeFilterValue = (state: StandardQueryStateT, action: any) => {
   const { value } = action.payload;
 
   return setNodeFilterProperties(state, action, { value });
 };
 
-const setNodeTableSelects = (state, action) => {
+const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { selects } = table;
 
@@ -349,9 +362,9 @@ const setNodeTableSelects = (state, action) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeTableDateColumn = (state, action) => {
+const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { dateColumn } = table;
 
@@ -367,9 +380,9 @@ const setNodeTableDateColumn = (state, action) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeSelects = (state, action) => {
+const setNodeSelects = (state: StandardQueryStateT, action: any) => {
   const { value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const { selects } = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
@@ -382,7 +395,7 @@ const setNodeSelects = (state, action) => {
   });
 };
 
-const switchNodeFilterMode = (state, action) => {
+const switchNodeFilterMode = (state: StandardQueryStateT, action: any) => {
   const { mode } = action.payload;
 
   return setNodeFilterProperties(state, action, {
@@ -391,8 +404,8 @@ const switchNodeFilterMode = (state, action) => {
   });
 };
 
-const resetNodeAllFilters = (state, action) => {
-  const nodeIdx = selectEditedNode(state);
+const resetNodeAllFilters = (state: StandardQueryStateT, action: any) => {
+  const nodeIdx = selectEditedNodePosition(state);
   if (!nodeIdx) return state;
 
   const { andIdx, orIdx } = nodeIdx;
@@ -410,13 +423,13 @@ const resetNodeAllFilters = (state, action) => {
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
-const setGroupDate = (state, action) => {
+const setGroupDate = (state: StandardQueryStateT, action: any) => {
   const { andIdx, date } = action.payload;
 
   return setGroupProperties(state, andIdx, { dateRange: date });
 };
 
-const resetGroupDates = (state, action) => {
+const resetGroupDates = (state: StandardQueryStateT, action: any) => {
   const { andIdx } = action.payload;
 
   return setGroupProperties(state, andIdx, { dateRange: null });
@@ -576,6 +589,7 @@ const expandNode = (rootConcepts, node) => {
         tables,
         selects,
         excludeTimestamps: node.excludeFromTimeAggregation,
+        excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
         tree: lookupResult.root,
       };
   }
@@ -585,13 +599,13 @@ const expandNode = (rootConcepts, node) => {
 // a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (state, action) => {
+const expandPreviousQuery = (state: StandardQueryStateT, action: any) => {
   const { rootConcepts, query } = action.payload;
 
   return query.root.children.map((child) => expandNode(rootConcepts, child));
 };
 
-const findPreviousQueries = (state, action) => {
+const findPreviousQueries = (state: StandardQueryStateT, action: any) => {
   // Find all nodes that are previous queries and have the correct id
   const queries = state
     .map((group, andIdx) => {
@@ -612,7 +626,11 @@ const findPreviousQueries = (state, action) => {
   return [].concat.apply([], queries);
 };
 
-const updatePreviousQueries = (state, action, attributes) => {
+const updatePreviousQueries = (
+  state: StandardQueryStateT,
+  action: any,
+  attributes: any
+) => {
   const queries = findPreviousQueries(state, action);
 
   return queries.reduce((nextState, query) => {
@@ -636,10 +654,10 @@ const updatePreviousQueries = (state, action, attributes) => {
   }, state);
 };
 
-const loadPreviousQueryStart = (state, action) => {
+const loadPreviousQueryStart = (state: StandardQueryStateT, action: any) => {
   return updatePreviousQueries(state, action, { loading: true });
 };
-const loadPreviousQuerySuccess = (state, action) => {
+const loadPreviousQuerySuccess = (state: StandardQueryStateT, action: any) => {
   const label = action.payload.data.label
     ? { label: action.payload.data.label }
     : {};
@@ -651,41 +669,56 @@ const loadPreviousQuerySuccess = (state, action) => {
     query: action.payload.data.query,
   });
 };
-const loadPreviousQueryError = (state, action) => {
+const loadPreviousQueryError = (state: StandardQueryStateT, action: any) => {
   return updatePreviousQueries(state, action, {
     loading: false,
     error: action.payload.message,
   });
 };
-const renamePreviousQuery = (state, action) => {
+const renamePreviousQuery = (state: StandardQueryStateT, action: any) => {
   return updatePreviousQueries(state, action, {
     loading: false,
     label: action.payload.label,
   });
 };
 
-function getIndicesFromSelectedOrAction(state, action) {
+function getPositionFromActionOrEditedNode(
+  state: StandardQueryStateT,
+  action: any
+) {
   const { andIdx, orIdx } = action.payload;
 
-  if (andIdx !== null && orIdx !== null) {
+  if (exists(andIdx) && exists(orIdx)) {
     return { andIdx, orIdx };
   }
 
-  return selectEditedNode(state);
+  return selectEditedNodePosition(state);
 }
 
-const toggleTimestamps = (state, action) => {
-  const { andIdx, orIdx } = getIndicesFromSelectedOrAction(state, action);
+const toggleTimestamps = (state: StandardQueryStateT, action: any) => {
+  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
 
   return setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps,
   });
 };
 
-const loadFilterSuggestionsStart = (state, action) =>
+const toggleSecondaryIdExclude = (state: StandardQueryStateT, action: any) => {
+  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
+
+  return setElementProperties(state, andIdx, orIdx, {
+    excludeFromSecondaryIdQuery: !state[andIdx].elements[orIdx]
+      .excludeFromSecondaryIdQuery,
+  });
+};
+
+const loadFilterSuggestionsStart = (state: StandardQueryStateT, action: any) =>
   setNodeFilterProperties(state, action, { isLoading: true });
 
-const loadFilterSuggestionsSuccess = (state, action) => {
+const loadFilterSuggestionsSuccess = (
+  state: StandardQueryStateT,
+  action: any
+) => {
   // When [] comes back from the API, don't touch the current options
   if (!action.payload.data || action.payload.data.length === 0)
     return setNodeFilterProperties(state, action, { isLoading: false });
@@ -696,7 +729,7 @@ const loadFilterSuggestionsSuccess = (state, action) => {
   });
 };
 
-const loadFilterSuggestionsError = (state, action) =>
+const loadFilterSuggestionsError = (state: StandardQueryStateT, action: any) =>
   setNodeFilterProperties(state, action, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
@@ -720,7 +753,7 @@ const createQueryNodeFromConceptListUploadResult = (
     : null;
 };
 
-const insertUploadedConceptList = (state, action) => {
+const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
   const { label, rootConcepts, resolvedConcepts, andIdx } = action.payload;
 
   const queryElement = createQueryNodeFromConceptListUploadResult(
@@ -740,12 +773,15 @@ const insertUploadedConceptList = (state, action) => {
       });
 };
 
-const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
+const selectNodeForEditing = (
+  state: StandardQueryStateT,
+  { payload: { andIdx, orIdx } }
+) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 };
 
-const updateNodeLabel = (state, action) => {
-  const node = selectEditedNode(state);
+const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
+  const node = selectEditedNodePosition(state);
 
   if (!node) return state;
 
@@ -756,8 +792,8 @@ const updateNodeLabel = (state, action) => {
   });
 };
 
-const addConceptToNode = (state, action) => {
-  const nodePosition = selectEditedNode(state);
+const addConceptToNode = (state: StandardQueryStateT, action: any) => {
+  const nodePosition = selectEditedNodePosition(state);
 
   if (!nodePosition) return state;
 
@@ -769,8 +805,8 @@ const addConceptToNode = (state, action) => {
   });
 };
 
-const removeConceptFromNode = (state, action) => {
-  const nodePosition = selectEditedNode(state);
+const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
+  const nodePosition = selectEditedNodePosition(state);
 
   if (!nodePosition) return state;
 
@@ -791,7 +827,7 @@ const removeConceptFromNode = (state, action) => {
 // const toggleIncludeSubnodes = (state: StateType, action: Object) => {
 //   const { includeSubnodes } = action.payload;
 
-//   const nodePosition = selectEditedNode(state);
+//   const nodePosition = selectEditedNodePosition(state);
 
 //   if (!nodePosition) return state;
 
@@ -915,6 +951,8 @@ const query = (
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:
       return toggleTimestamps(state, action);
+    case TOGGLE_SECONDARY_ID_EXCLUDE:
+      return toggleSecondaryIdExclude(state, action);
     case QUERY_GROUP_MODAL_SET_DATE:
       return setGroupDate(state, action);
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
