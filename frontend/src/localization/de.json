@@ -40,6 +40,7 @@
     "startError": "Anfrage starten fehlgeschlagen.",
     "resultError": "Anfrageergebnis konnte nicht geladen werden.",
     "resultCount": "Ergebnisse",
+    "resultCountSecondaryIdQuery": "Analyse-Ergebnisse",
     "queryFailed": "Anfrage ist fehlgeschlagen.",
     "queryCanceled": "Anfrage wurde abgebrochen."
   },

@@ -95,6 +95,7 @@ const QueryRunner: FC<PropsT> = ({
               resultCount={queryRunner.queryResult.resultCount}
               resultUrl={queryRunner.queryResult.resultUrl}
               resultColumns={queryRunner.queryResult.resultColumns}
+              queryType={queryRunner.queryResult.queryType}
             />
           )}
       </Right>

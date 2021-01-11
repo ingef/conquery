@@ -120,6 +120,7 @@ export default function createQueryRunnerActions(
     res: GetQueryResponseDoneT,
     datasetId: DatasetIdT
   ) => defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId });
+
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
     return (dispatch) => {
       dispatch(queryResultStart());
