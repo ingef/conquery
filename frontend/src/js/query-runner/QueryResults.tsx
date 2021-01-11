@@ -8,7 +8,7 @@ import PreviewButton from "../button/PreviewButton";
 import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { canDownloadResult } from "../user/selectors";
-import type { ColumnDescription } from "../api/types";
+import type { ColumnDescription, DatasetIdT } from "../api/types";
 import type { StateT } from "app-types";
 
 const Root = styled("div")`
@@ -40,7 +40,7 @@ const Bold = styled("span")`
 `;
 
 interface PropsT {
-  datasetId: string;
+  datasetId: DatasetIdT;
   resultCount: number;
   resultUrl: string;
   resultColumns: ColumnDescription[];

@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -25,7 +24,7 @@ public class TrieTypeGuesser implements TypeGuesser {
 		}
 		long trieSize = trie.estimateMemoryConsumption();
 
-		type.setDictionaryId(p.getDictionaryId());
+		type.setDictionaryName(p.getDictionaryId().getDictionary());
 		p.setLineCounts(type);
 		StringTypeEncoded result = new StringTypeEncoded(type, p.getEncoding());
 		p.setLineCounts(result);

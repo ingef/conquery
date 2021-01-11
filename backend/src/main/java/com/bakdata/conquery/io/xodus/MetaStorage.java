@@ -17,7 +17,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 
 /**
- * Interface for the persistent data of the {@link ManagerNode} 
+ * Interface for the persistent data of the {@link ManagerNode}.
+ * Holds the informations about the auth-System such as {@link User}s and {@link Group}s, 
+ * and User provided content such as {@link ManagedExecution}s and {@link FormConfig}s.
+ * The data on which queries are performed resides in {@link WorkerStorage}s.
  */
 public interface MetaStorage extends ConqueryStorage {
 

@@ -9,6 +9,10 @@
 		<version>0.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>backend</artifactId>
+	
+	<properties>
+		<mock-server.version>5.11.1</mock-server.version>
+	</properties>
 
 	<build>
 		<resources>
@@ -48,24 +52,24 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <!-- Override io.dropwizard.dropwizard-project's defaults -->
-                <executions>
-                    <execution>
-                        <id>analyze</id>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <configuration>                            
-                            <ignoredUnusedDeclaredDependencies>
-                            	<ignoredUnusedDeclaredDependency>io.dropwizard:dropwizard-http2</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<!-- Override io.dropwizard.dropwizard-project's defaults -->
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<goals>
+							<goal>analyze-only</goal>
+						</goals>
+						<configuration>
+							<ignoredUnusedDeclaredDependencies>
+								<ignoredUnusedDeclaredDependency>io.dropwizard:dropwizard-http2</ignoredUnusedDeclaredDependency>
+							</ignoredUnusedDeclaredDependencies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -116,7 +120,7 @@
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
-			<version>3.0.6</version>
+			<version>3.0.7</version>
 			<classifier>indy</classifier>
 		</dependency>
 		<dependency>
@@ -127,12 +131,12 @@
 		<dependency>
 			<groupId>it.unimi.dsi</groupId>
 			<artifactId>fastutil</artifactId>
-			<version>8.4.2</version>
+			<version>8.4.4</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.classgraph</groupId>
 			<artifactId>classgraph</artifactId>
-			<version>4.8.90</version>
+			<version>4.8.97</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -152,6 +156,18 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-netty</artifactId>
+			<version>${mock-server.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-client-java</artifactId>
+			<version>${mock-server.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>c10n</groupId>
 			<artifactId>c10n-core</artifactId>
 			<version>1.1</version>
@@ -164,7 +180,7 @@
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>
@@ -202,7 +218,7 @@
 		<dependency>
 			<groupId>com.esotericsoftware</groupId>
 			<artifactId>kryo</artifactId>
-			<version>5.0.0-RC9</version>
+			<version>5.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -218,19 +234,29 @@
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-metrics-graphite</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-graphite</artifactId>
-        </dependency>
 		<dependency>
-		    <groupId>com.nimbusds</groupId>
-		    <artifactId>oauth2-oidc-sdk</artifactId>
-		    <version>8.22</version>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-graphite</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.keycloak</groupId>
-		    <artifactId>keycloak-authz-client</artifactId>
-		    <version>11.0.2</version>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>oauth2-oidc-sdk</artifactId>
+			<version>8.23.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-authz-client</artifactId>
+			<version>11.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.arrow</groupId>
+		    <artifactId>arrow-vector</artifactId>
+		    <version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.arrow</groupId>
+		    <artifactId>arrow-memory-netty</artifactId>
+		    <version>2.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

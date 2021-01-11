@@ -29,7 +29,7 @@ import PreviousQueryTags from "./PreviousQueryTags";
 import { formatDateDistance } from "../../common/helpers";
 import { PreviousQueryT } from "./reducer";
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import type { DatasetIdT } from "../../api/types";
+import type { DatasetIdT, SecondaryId } from "../../api/types";
 import type { StateT } from "app-types";
 import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
@@ -113,6 +113,10 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       canDownloadResult(state)
     );
 
+    const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
+      (state) => state.conceptTrees.secondaryIds
+    );
+
     const dispatch = useDispatch();
 
     const onRenamePreviousQuery = (label: string) =>
@@ -145,6 +149,10 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     );
     const label = query.label || query.id.toString();
     const mayEditQuery = query.own || query.shared;
+
+    const secondaryId = query.secondaryId
+      ? loadedSecondaryIds.find((secId) => query.secondaryId === secId.id)
+      : null;
 
     return (
       <Root
@@ -182,6 +190,15 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                     />
                   </StyledWithTooltip>
                 )}
+              {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
+                <StyledWithTooltip
+                  text={`${T.translate("queryEditor.secondaryId")}: ${
+                    secondaryId.label
+                  }`}
+                >
+                  <IconButton icon="microscope" bare onClick={() => {}} />
+                </StyledWithTooltip>
+              )}
               {query.own && !query.shared && (
                 <StyledWithTooltip text={T.translate("common.share")}>
                   <IconButton icon="upload" bare onClick={onIndicateShare} />

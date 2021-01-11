@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Mone
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +51,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@Setter
 	@NsIdRef
 	private Column subtractColumn;
-
-	private boolean distinct = false;
 
 	@Valid
 	@Getter
@@ -83,23 +80,22 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn(), getSubtractColumn(), distinct ? getDistinctByColumn() : null };
+		return new Column[]{getColumn(), getSubtractColumn(), getDistinctByColumn()};
 	}
 
 	@Override
 	public FilterNode createAggregator(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
-		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn() == null ? getColumn() :
-				getDistinctByColumn()));
+		if (distinctByColumn != null) {
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn()));
 		}
-		else {
-			if(getColumn().getType() == MajorTypeId.REAL)
-				return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
 
-			return new RangeFilterNode(value, aggregator);
+		if (getColumn().getType() == MajorTypeId.REAL) {
+			return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
 		}
+
+		return new RangeFilterNode(value, aggregator);
 	}
 
 	private ColumnAggregator<?> getAggregator() {
@@ -117,19 +113,17 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
 			}
 		}
-		else {
-			switch (getColumn().getType()) {
-				case MONEY:
-					return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
-				case INTEGER:
-					return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
-				case DECIMAL:
-					return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
-				case REAL:
-					return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
-				default:
-					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
-			}
+		switch (getColumn().getType()) {
+			case MONEY:
+				return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
+			case INTEGER:
+				return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
+			case DECIMAL:
+				return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
+			case REAL:
+				return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
+			default:
+				throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
 		}
 	}
 }

@@ -2,7 +2,7 @@
 // - response type provided by the backend API
 // - partial types that the reponses are built from
 
-import type { Forms } from "./form-types";
+import { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
 import { SupportedErrorCodesT } from "./errorCodes";
 
@@ -113,6 +113,7 @@ export interface TableT {
   exclude?: boolean;
   filters?: FilterT[]; // Empty array: key not defined
   selects?: SelectorT[]; // Empty array: key not defined
+  supportedSecondaryIds?: string[];
 }
 
 export type SelectorIdT = string;
@@ -229,7 +230,14 @@ export interface GetFrontendConfigResponseT {
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
 
+export interface SecondaryId {
+  id: string;
+  label: string;
+  description?: string;
+}
+
 export interface GetConceptsResponseT {
+  secondaryIds: SecondaryId[];
   concepts: {
     [conceptId: string]: ConceptStructT | ConceptElementT;
   };
@@ -294,9 +302,11 @@ export interface GetStoredQueryResponseT {
   resultUrl: string;
   requiredTime: number; // TODO: Not used
   tags?: string[];
-  query: QueryT; // TODO: Remove in QUERIES response. Creates a lot of additional traffic right now
+  query: QueryT;
+  queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  secondaryId: string | null;
   owner: string; // TODO: Remove. Not used. And it's actually an ID
-  status: "DONE"; // TODO: Remove. Not used here
+  status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
 }
 

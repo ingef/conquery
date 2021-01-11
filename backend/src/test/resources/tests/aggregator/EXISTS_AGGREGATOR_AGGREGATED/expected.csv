@@ -1,4 +1,4 @@
-result,dates,number.exists,number.exists_1
-1,{2014-06-30/2015-06-30},t,t
-2,{2014-06-30/2015-06-30},t,f
-5,{2014-06-30/2015-06-30},t,t
+result,dates,number.exists,number.exists_1,AND,number.exists_2,number.exists_3,OR
+1,{2020-01-01/2020-01-01},t,f,f,t,f,t
+2,{2020-01-01/2020-01-01},f,t,f,f,t,t
+3,{2020-01-01/2020-01-01},t,t,t,t,t,t

@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.concepts.filters.specific;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
@@ -18,9 +16,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWra
 import com.bakdata.conquery.models.query.queryplan.aggregators.MultiDistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
@@ -37,6 +35,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	private boolean distinct;
 
+	// todo FK: don't think the array notation is used anywhere. Del?
 	@Valid
 	@Getter @Setter @NsIdRefCollection
 	private Column[] distinctByColumn;
@@ -52,7 +51,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
-		if (distinct) {
+		if (distinct || distinctByColumn != null) {
 			if (ArrayUtils.isEmpty(distinctByColumn) || distinctByColumn.length < 2) {
 				return new RangeFilterNode(
 					value,
@@ -65,13 +64,9 @@ public class CountFilter extends Filter<Range.LongRange> {
 					)
 				);
 			}
-			else {
-				return new RangeFilterNode(value, new MultiDistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
-			}
+			return new RangeFilterNode(value, new MultiDistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
 		}
-		else {
-			return new RangeFilterNode(value, new CountAggregator(getColumn()));
-		}
+		return new RangeFilterNode(value, new CountAggregator(getColumn()));
 	}
 
 	@Override

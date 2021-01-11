@@ -137,9 +137,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 			restriction.setChild(cqConcept);
 			return new ConceptQuery(restriction);
 		}
-		else {
-			return  new ConceptQuery(cqConcept);
-		}
+		return  new ConceptQuery(cqConcept);
 	}
 
 	@Override

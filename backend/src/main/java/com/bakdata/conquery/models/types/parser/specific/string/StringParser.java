@@ -49,19 +49,20 @@ public class StringParser extends Parser<Integer> {
 	public StringParser(ParserConfig config) {
 
 	}
+	
+	private int processNewValue(String value) {
+
+		//set longest common prefix and suffix
+		prefix = Strings.commonPrefix(value, Objects.requireNonNullElse(prefix, value));
+		suffix = Strings.commonSuffix(value, Objects.requireNonNullElse(suffix, value));
+
+		//return next id
+		return strings.size();
+	}
 
 	@Override
 	protected Integer parseValue(String value) throws ParsingException {
-		return strings.computeIfAbsent(value, v-> {
-			//new values
-
-			//set longest common prefix and suffix
-			prefix = Strings.commonPrefix(v, Objects.requireNonNullElse(prefix, v));
-			suffix = Strings.commonSuffix(v, Objects.requireNonNullElse(suffix, v));
-
-			//return next id
-			return strings.size();
-		});
+		return strings.computeIfAbsent(value, this::processNewValue);
 	}
 	
 	@Override

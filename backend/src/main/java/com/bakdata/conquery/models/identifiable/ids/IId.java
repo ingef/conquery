@@ -23,16 +23,15 @@ public interface IId<TYPE> {
 	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 	
 	List<String> collectComponents();
+	
 	static <ID extends IId<?>> ID intern(ID id) {
 		@SuppressWarnings("unchecked")
 		ID old = IIdInterner.<ID>forParser((Parser<ID>)createParser(id.getClass())).putIfAbsent(id.collectComponents(), id);
 		if(old == null) {
 			return id;
 		}
-		else {
-			checkConflict(id, old);
-			return old;
-		}
+		checkConflict(id, old);
+		return old;
 	}
 	
 	interface Parser<ID extends IId<?>> {
@@ -83,9 +82,7 @@ public interface IId<TYPE> {
 					checkConflict(result, secondResult);
 					return secondResult;
 				}
-				else {
-					return result;
-				}
+				return result;
 			}
 			parts.consumeAll();
 			return result;
@@ -125,9 +122,7 @@ public interface IId<TYPE> {
 					)
 				);
 			}
-			else {
-				return id;
-			}
+			return id;
 		}
 	}
 	

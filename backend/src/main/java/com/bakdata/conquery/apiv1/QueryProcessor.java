@@ -118,10 +118,6 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb, User user) {
-		return query.buildStatus(storage, urlb, user, datasetRegistry);
-	}
-
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
 		IQuery translateable = (IQuery) query;
 		// translate the query for all other datasets of user and submit it.

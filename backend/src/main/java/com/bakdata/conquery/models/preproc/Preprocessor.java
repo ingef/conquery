@@ -71,9 +71,7 @@ public class Preprocessor {
 					log.info("\tHASH STILL VALID");
 					return false;
 				}
-				else {
-					log.info("\tHASH OUTDATED");
-				}
+				log.info("\tHASH OUTDATED");
 			} catch (Exception e) {
 				log.error("\tHEADER READING FAILED", e);
 				return false;

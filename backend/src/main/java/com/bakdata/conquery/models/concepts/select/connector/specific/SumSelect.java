@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,8 +27,6 @@ import lombok.Setter;
 @CPSType(id = "SUM", base = Select.class)
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 public class SumSelect extends Select {
-
-	private boolean distinct = false;
 
 	@Getter
 	@Setter
@@ -43,25 +40,23 @@ public class SumSelect extends Select {
 	@NsIdRef
 	private Column subtractColumn;
 
-	public SumSelect(boolean distinct, Column column) {
-		this(distinct, column, null);
+	public SumSelect(Column column) {
+		this(column, null);
 	}
 
-	public SumSelect(boolean distinct, Column column, Column subtractColumn) {
-		this.distinct = distinct;
+	public SumSelect(Column column, Column subtractColumn) {
 		this.column = column;
 		this.subtractColumn = subtractColumn;
 	}
 
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
-		if (distinct) {
-			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
+		if (distinctByColumn != null) {
+			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn());
 		}
-		else {
-			return getAggregator();
-		}
+		return getAggregator();
 	}
+
 	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
@@ -77,22 +72,21 @@ public class SumSelect extends Select {
 					throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
 			}
 		}
-		else {
-			if(getColumn().getType() != getSubtractColumn().getType()) {
-				throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn().getType()));
-			}
-			switch (getColumn().getType()) {
-				case INTEGER:
-					return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
-				case MONEY:
-					return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
-				case DECIMAL:
-					return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
-				case REAL:
-					return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
-				default:
-					throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
-			}
+		if (getColumn().getType() != getSubtractColumn().getType()) {
+			throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn()
+																																						 .getType()));
+		}
+		switch (getColumn().getType()) {
+			case INTEGER:
+				return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
+			case MONEY:
+				return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
+			case DECIMAL:
+				return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
+			case REAL:
+				return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
+			default:
+				throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
 		}
 	}
 }

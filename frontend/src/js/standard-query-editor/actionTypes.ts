@@ -27,3 +27,6 @@ export const LOAD_FILTER_SUGGESTIONS_SUCCESS =
 export const LOAD_FILTER_SUGGESTIONS_ERROR =
   "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR";
 export const SET_DATE_COLUMN = "query-editor/SET_DATE_COLUMN";
+
+export const SET_SELECTED_SECONDARY_ID =
+  "query-editor/SET_SELECTED_SECONDARY_ID";

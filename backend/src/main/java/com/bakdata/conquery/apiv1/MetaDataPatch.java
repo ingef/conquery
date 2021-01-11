@@ -32,7 +32,6 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 
 	private String[] tags;
 	private String label;
-	private Boolean shared;
 	private List<GroupId> groups;
 	
 	/**
@@ -62,7 +61,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 		if(getLabel() != null && user.isPermitted(permissionCreator.apply(Ability.LABEL.asSet(), instance.getId()))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
 		}
-		if(getShared() != null && user.isPermitted(permissionCreator.apply(Ability.SHARE.asSet(), instance.getId()))) {
+		if(getGroups() != null && user.isPermitted(permissionCreator.apply(Ability.SHARE.asSet(), instance.getId()))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user, permissionCreator));
 		}
 		return patchConsumerChain;

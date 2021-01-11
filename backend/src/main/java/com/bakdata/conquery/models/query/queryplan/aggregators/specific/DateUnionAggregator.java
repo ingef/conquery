@@ -32,12 +32,13 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 			return;
 		}
 
+    CDateRange value = bucket.getAsDateRange(event, getColumn());
 		//otherwise the result would be something weird
-		if(bucket.getAsDateRange(event, getColumn()).isOpen()) {
+		if(value.isOpen()) {
 			return;
 		}
 
-		set.maskedAdd(bucket.getAsDateRange(event, getColumn()), dateRestriction);
+		set.maskedAdd(value, dateRestriction);
 	}
 
 	@Override

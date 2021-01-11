@@ -1,8 +1,6 @@
 package com.bakdata.conquery.util.dict;
 
-import static com.bakdata.conquery.util.dict.TTDirection.LEFT;
-import static com.bakdata.conquery.util.dict.TTDirection.MIDDLE;
-import static com.bakdata.conquery.util.dict.TTDirection.RIGHT;
+import static com.bakdata.conquery.util.dict.TTDirection.*;
 
 import java.util.Arrays;
 
@@ -22,30 +20,22 @@ public class BytesNode extends ABytesNode {
 			if(getLeft()==null) {
 				return -1;
 			}
-			else {
-				return getLeft().get(k, i);
-			}
+			return getLeft().get(k, i);
 		}
 		else if(c>key) {
 			if(getRight()==null) {
 				return -1;
 			}
-			else {
-				return getRight().get(k, i);
-			}
+			return getRight().get(k, i);
 		}
 		else {
 			if(i+1==k.length) {
 				return getValue();
 			}
-			else {
-				if(getMiddle()==null) {
-					return -1;
-				}
-				else {
-					return getMiddle().get(k, i+1);
-				}
+			if(getMiddle()==null) {
+				return -1;
 			}
+			return getMiddle().get(k, i+1);
 		}
 	}
 	
@@ -56,30 +46,22 @@ public class BytesNode extends ABytesNode {
 			if(getLeft()==null) {
 				return null;
 			}
-			else {
-				return getLeft().getNode(k, i);
-			}
+			return getLeft().getNode(k, i);
 		}
 		else if(c>key) {
 			if(getRight()==null) {
 				return null;
 			}
-			else {
-				return getRight().getNode(k, i);
-			}
+			return getRight().getNode(k, i);
 		}
 		else {
 			if(i+1==k.length) {
 				return getThisAsValuesNode();
 			}
-			else {
-				if(getMiddle()==null) {
-					return null;
-				}
-				else {
-					return getMiddle().getNode(k, i+1);
-				}
+			if(getMiddle()==null) {
+				return null;
 			}
+			return getMiddle().getNode(k, i+1);
 		}
 	}
 
@@ -90,30 +72,22 @@ public class BytesNode extends ABytesNode {
 			if(getLeft()==null) {
 				return bestCandidate;
 			}
-			else {
-				return getLeft().getNearestNode(k, i, bestCandidate);
-			}
+			return getLeft().getNearestNode(k, i, bestCandidate);
 		}
 		else if(c>key) {
 			if(getRight()==null) {
 				return bestCandidate;
 			}
-			else {
-				return getRight().getNearestNode(k, i, bestCandidate);
-			}
+			return getRight().getNearestNode(k, i, bestCandidate);
 		}
 		else {
 			if(i+1==k.length) {
 				return getThisAsValuesNode();
 			}
-			else {
-				if(getMiddle()==null) {
-					return getThisAsValuesNode();
-				}
-				else {
-					return getMiddle().getNearestNode(k, i+1, getThisAsValuesNode());
-				}
+			if(getMiddle()==null) {
+				return getThisAsValuesNode();
 			}
+			return getMiddle().getNearestNode(k, i+1, getThisAsValuesNode());
 		}
 	}
 

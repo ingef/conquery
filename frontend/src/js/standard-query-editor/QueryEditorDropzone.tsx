@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import T from "i18n-react";
@@ -6,25 +6,16 @@ import T from "i18n-react";
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
 
-import * as dndTypes from "../common/constants/dndTypes";
+import {
+  CONCEPT_TREE_NODE,
+  QUERY_NODE,
+  PREVIOUS_QUERY,
+} from "../common/constants/dndTypes";
 import type { QueryIdT } from "../api/types";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
+import { DropTargetMonitor } from "react-dnd";
 
-type DraggedFileType = Object;
-
-interface PropsT {
-  isInitial?: boolean;
-  isAnd?: boolean;
-  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
-  onDropFile: (file: DraggedFileType) => void;
-  onLoadPreviousQuery: (id: QueryIdT) => void;
-}
-
-const DROP_TYPES = [
-  dndTypes.CONCEPT_TREE_NODE,
-  dndTypes.QUERY_NODE,
-  dndTypes.PREVIOUS_QUERY,
-];
+const DROP_TYPES = [CONCEPT_TREE_NODE, QUERY_NODE, PREVIOUS_QUERY];
 
 const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
   isInitial?: boolean;
@@ -81,14 +72,22 @@ const Row = styled("div")`
   align-items: center;
 `;
 
-const QueryEditorDropzone: React.FC<PropsT> = ({
+interface PropsT {
+  isInitial?: boolean;
+  isAnd?: boolean;
+  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropFile: (file: File) => void;
+  onLoadPreviousQuery: (id: QueryIdT) => void;
+}
+
+const QueryEditorDropzone: FC<PropsT> = ({
   isAnd,
   isInitial,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode,
 }) => {
-  const onDrop = (props, monitor) => {
+  const onDrop = (_: any, monitor: DropTargetMonitor) => {
     const item = monitor.getItem();
 
     if (item.files) {

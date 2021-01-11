@@ -5,9 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -24,6 +22,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
@@ -50,6 +49,8 @@ import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -140,9 +141,20 @@ public class ImportJob extends Job {
 			ProgressReporter child = getProgressReporter().subJob(countImportGroups);
 			child.setMax(countImportGroups);
 
+			// Track some info about the incoming/outgoing data.
+			IntSet sourceEntities = new IntAVLTreeSet();
+			IntSet globalEntities = new IntAVLTreeSet();
+
 			try (Input in = new Input(file.readContent())) {
 				for (long group = 0; group < countImportGroups; group++) {
-					int entityId = primaryMapping.source2Target(in.readInt(true));
+
+					final int sourceId = in.readInt(true);
+					sourceEntities.add(sourceId);
+
+					int entityId = primaryMapping.source2Target(sourceId);
+
+					globalEntities.add(entityId);
+
 					int size = in.readInt(true);
 					int bucketNumber = Entity.getBucket(entityId, bucketSize);
 					ImportBucket bucket = buckets.computeIfAbsent(bucketNumber, b -> new ImportBucket(new BucketId(outImport.getId(), b)));
@@ -172,7 +184,10 @@ public class ImportJob extends Job {
 				child.done();
 			}
 
-			sendBuckets(primaryMapping, buckets, bytes);
+			log.debug("Read {} Ids. Mapped to {} Ids", sourceEntities.size(), globalEntities.size());
+
+
+			sendBuckets(buckets, bytes);
 			getProgressReporter().done();
 		}
 		catch (IOException e) {
@@ -204,12 +219,15 @@ public class ImportJob extends Job {
 		return imp;
 	}
 
-	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
-		for (int bucketNumber : primaryMapping.getUsedBuckets()) {
-			ImportBucket bucket = buckets.get(bucketNumber);
-			//a bucket could be empty since the used buckets coming from the
-			//dictionary could contain ids that have no events (see filter)
-			if (bucket == null) {
+	private void sendBuckets(Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
+		// Track which buckets go to which worker
+		Map<WorkerId, Set<BucketId>> freshWorkerToBuckets = new HashMap<>();
+
+		for (Int2ObjectMap.Entry<ImportBucket> entry : buckets.int2ObjectEntrySet()) {
+			final int bucketNumber = entry.getIntKey();
+			final ImportBucket bucket = entry.getValue();
+
+			if(bucket == null){
 				continue;
 			}
 
@@ -226,7 +244,13 @@ public class ImportJob extends Job {
 			catch (InterruptedException e) {
 				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
 			}
+			freshWorkerToBuckets.computeIfAbsent(responsibleWorker.getId(), k -> new HashSet<>()).add(bucket.getBucket());
 			responsibleWorker.send(bucket);
+		}
+
+		// Add bucket assignments for consistency report
+		for (Map.Entry<WorkerId, Set<BucketId>> entry :freshWorkerToBuckets.entrySet()){
+			namespace.addBucketsToWorker(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -255,10 +279,6 @@ public class ImportJob extends Job {
 			namespace.getStorage().updateDictionary(primaryDict);
 
 			getProgressReporter().report(1);
-
-			log.debug("\t\tsending");
-
-			namespace.sendToAll(new UpdateDictionary(primaryDict));
 
 			getProgressReporter().report(1);
 		}

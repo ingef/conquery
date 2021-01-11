@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,10 +40,8 @@ public class StructureNodeId extends AId<StructureNode> implements NamespacedId 
 				DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);
 				return new StructureNodeId(dataset, null, name);
 			}
-			else {
-				StructureNodeId parent = parse(parts);
-				return new StructureNodeId(parent.getDataset(), parent, name);
-			}
+			StructureNodeId parent = parse(parts);
+			return new StructureNodeId(parent.getDataset(), parent, name);
 		}
 	}
 }

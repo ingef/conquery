@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +43,7 @@ import com.bakdata.conquery.util.search.SearchScorer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,6 +51,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @Slf4j
@@ -64,6 +67,20 @@ public class ConceptsProcessor {
 			public FEList load(Concept<?> concept) throws Exception {
 				return FrontEndConceptBuilder.createTreeMap(concept);
 			}
+		});
+	
+	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>,List<FEValue>> searchCache = CacheBuilder.newBuilder()
+		.expireAfterAccess(Duration.ofMinutes(2))
+		.build( new CacheLoader<>() {
+
+			@Override
+			public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) throws Exception {
+				String searchTerm = filterAndSearch.getValue();
+				AbstractSelectFilter<?> filter = filterAndSearch.getKey();
+				log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+				return autocompleteTextFilter(filter, searchTerm);
+			}
+			
 		});
 		
 	public FERoot getRoot(NamespaceStorage storage, User user) {
@@ -136,15 +153,40 @@ public class ConceptsProcessor {
 		);
 	}
 
+	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
+		int pageNumber = pageNumberOpt.orElse(0);
+		int itemsPerPage = itemsPerPageOpt.orElse(50);
+		
+		if(pageNumber < 0) {
+			throw new IllegalArgumentException("Page number must be 0 or a positive integer");
+		}
+		if(itemsPerPage < 1) {
+			throw new IllegalArgumentException("Items per page number must be larger than 0");
+		}
+		log.trace("Try to generate serach result page {} (with {} results per page) for the term \"{}\".", pageNumber, itemsPerPage, text);
+		
+		List<FEValue> fullResult = null;
+		try{
+			fullResult = searchCache.get(Pair.of(filter, text));
+		} catch (ExecutionException e) {
+			log.warn("Could not get a search result for the term \"{}\".", text, log.isTraceEnabled()? e : null);
+			return ImmutableList.of();
+		}
+		int startIncl = fullResult.isEmpty()? 0 : Math.min(itemsPerPage*pageNumber, fullResult.size());
+		int endExcl = Math.min(startIncl + itemsPerPage,fullResult.size());
+		log.trace("Preparing subresult for search term \"{}\" in the index range [{}-{})", text, startIncl, endExcl);
+		return fullResult.subList(startIncl, endExcl);
+	}
 	/**
 	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
+	 * Is used by the serach cache to load missing items
 	 */
-	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		List<FEValue> result = new LinkedList<>();
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.of(50), FilterSearch.FilterSearchType.CONTAINS::score);
+			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.empty(), FilterSearch.FilterSearchType.CONTAINS::score);
 		}
 		
 		String value = filter.getValueFor(text);
@@ -158,9 +200,9 @@ public class ConceptsProcessor {
 	/**
 	 * Do a search with the supplied values.
 	 */
-	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
+	private static List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
 		if(search == null) {
-			return Collections.emptyList();
+			return new ArrayList<>();
 		}
 
 		// Quicksearch can split and also schedule for us.
@@ -168,7 +210,7 @@ public class ConceptsProcessor {
 		result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
 		
 		if(numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
-			log.warn("The quick search return the maximum number of results ({}) which probably mean not all possible results are returned.", Integer.MAX_VALUE);
+			log.warn("The quick search returned the maximum number of results ({}) which probably means not all possible results are returned.", Integer.MAX_VALUE);
 		}
 		
 		return result

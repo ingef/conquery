@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportColumnId;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,10 +38,8 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 			if(col==this) {
 				break;
 			}
-			else {
-				if(col.type.requiresExternalNullStore()) {
-					nullPosition++;
-				}
+			if(col.type.requiresExternalNullStore()) {
+				nullPosition++;
 			}
 		}
 		return nullPosition;

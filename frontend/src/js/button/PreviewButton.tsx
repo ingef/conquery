@@ -31,7 +31,7 @@ const PreviewButton: FC<PropsT> = ({
 
   const href = `${url}?access_token=${encodeURIComponent(
     authToken || ""
-  )}&charset=utf-8`;
+  )}&charset=utf-8&pretty=false`;
 
   return (
     <IconButton

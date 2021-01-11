@@ -1,8 +1,8 @@
-import { combineReducers } from "redux";
+import { combineReducers, Reducer } from "redux";
 import {
   reducer as reduxFormReducer,
-  FormReducer,
   FormReducerMapObject,
+  FormStateMap,
 } from "redux-form";
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
@@ -34,7 +34,7 @@ export interface FormContextStateT {
 function buildFormReducer(form: Form) {
   const conceptListFieldNames = collectConceptListFieldNames(form);
 
-  if (conceptListFieldNames.length === 0) return null;
+  if (conceptListFieldNames.length === 0) return (state: any) => state;
 
   return combineReducers(
     conceptListFieldNames.reduce(
@@ -56,7 +56,7 @@ function buildFormReducer(form: Form) {
 export interface FormsStateT {
   activeForm: string | null;
   queryRunner: QueryRunnerStateT;
-  reduxForm: FormReducer;
+  reduxForm: FormStateMap;
   availableForms: {
     [formName: string]: Form;
   };
@@ -65,13 +65,16 @@ export interface FormsStateT {
   };
 }
 
+// Because this function is called multiple times, and the reducers are being replaced
+// we have to make sure that all reducers in here can deal with a changing default state,
+// meaning: return it when the default state changes changes, without expecting another @@INIT action
 const buildExternalFormsReducer = (availableForms: {
   [formName: string]: Form;
 }) => {
   const forms = Object.values(availableForms);
 
   const formReducers = forms.reduce<{
-    [formName: string]: null | FormContextStateT;
+    [formName: string]: Reducer<FormContextStateT>;
   }>((all, form) => {
     const reducer = buildFormReducer(form);
 
@@ -92,9 +95,11 @@ const buildExternalFormsReducer = (availableForms: {
       case SET_EXTERNAL_FORM:
         return action.payload.form;
       default:
-        return state;
+        return state || defaultFormType;
     }
   };
+
+  const availableFormsReducer = () => availableForms;
 
   const reduxFormReducerPlugin: FormReducerMapObject = forms.reduce(
     (all, form) => ({
@@ -138,9 +143,12 @@ const buildExternalFormsReducer = (availableForms: {
     // Query Runner reducer that works with external forms
     queryRunner: createQueryRunnerReducer("externalForms"),
 
-    availableForms: (state = availableForms) => state,
+    availableForms: availableFormsReducer,
 
-    formsContext: combineReducers(formReducers),
+    formsContext:
+      Object.keys(formReducers).length > 0
+        ? combineReducers(formReducers)
+        : (state = {}) => state,
   });
 };
 

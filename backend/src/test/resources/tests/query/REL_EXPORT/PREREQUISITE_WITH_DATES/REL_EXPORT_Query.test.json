@@ -1,0 +1,143 @@
+{
+    "type": "QUERY_TEST",
+    "label": "REL_EXPORT WITH DATES Test",
+    "expectedCsv": "tests/query/REL_EXPORT/PREREQUISITE_WITH_DATES/expected.csv",
+    "query": {
+        "type": "RELATIVE_FORM_QUERY",
+        "resolutionsAndAlignmentMap": [
+            {
+                "resolution": "COMPLETE",
+                "alignment": "NO_ALIGN"
+            },
+            {
+                "resolution": "QUARTERS",
+                "alignment": "QUARTER"
+            }
+        ],
+        "query": {
+            "type": "CONCEPT_QUERY",
+            "root": {
+                "type": "CONCEPT",
+                "ids": [
+                    "${dataset}.test_tree.test_child1"
+                ],
+                "tables": [
+                    {
+                        "id": "${dataset}.test_tree.test_column",
+                        "filters": []
+                    }
+                ]
+            }
+        },
+        "features": {
+            "type": "ARRAY_CONCEPT_QUERY",
+            "childQueries": {
+                "type": "CONCEPT_QUERY",
+                "root": {
+                    "type": "CONCEPT",
+                    "ids": [
+                        "${dataset}.test_tree.test_child1"
+                    ],
+                    "selects": [
+                        "${dataset}.test_tree.exists"
+                    ],
+                    "tables": [
+                        {
+                            "id": "${dataset}.test_tree.test_column",
+                            "filters": []
+                        }
+                    ]
+                }
+            }
+        },
+        "outcomes": {
+            "type": "ARRAY_CONCEPT_QUERY",
+            "childQueries": {
+                "type": "CONCEPT_QUERY",
+                "root": {
+                    "type": "CONCEPT",
+                    "ids": [
+                        "${dataset}.test_tree.test_child1"
+                    ],
+                    "selects": [
+                        "${dataset}.test_tree.exists"
+                    ],
+                    "tables": [
+                        {
+                            "id": "${dataset}.test_tree.test_column",
+                            "filters": []
+                        }
+                    ]
+                }
+            }
+        },
+        "indexSelector": "EARLIEST",
+        "indexPlacement": "BEFORE",
+        "timeCountBefore": 4,
+        "timeCountAfter": 4,
+        "timeUnit": "QUARTERS"
+    },
+    "concepts": [
+        {
+            "label": "test_tree",
+            "type": "TREE",
+            "connectors": {
+                "label": "tree_label",
+                "name": "test_column",
+                "column": "test_table.test_column",
+                "validityDates": {
+                    "label": "datum",
+                    "column": "test_table.datum"
+                }
+            },
+            "selects": [
+                {
+                    "type": "EXISTS",
+                    "name": "exists"
+                }
+            ],
+            "children": [
+                {
+                    "label": "test_child1",
+                    "description": " ",
+                    "condition": {
+                        "type": "PREFIX_LIST",
+                        "prefixes": "A1"
+                    },
+                    "children": []
+                },
+                {
+                    "label": "test_child2",
+                    "description": " ",
+                    "condition": {
+                        "type": "PREFIX_LIST",
+                        "prefixes": "B2"
+                    },
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+            {
+                "csv": "tests/query/REL_EXPORT/PREREQUISITE_WITH_DATES/content.csv",
+                "name": "test_table",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name": "datum",
+                        "type": "DATE"
+                    },
+                    {
+                        "name": "test_column",
+                        "type": "STRING"
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -13,11 +13,13 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
 	
@@ -25,9 +27,10 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	private MetaStorage metaStorage;
 	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
+	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator, config, directory);
+		super(validator, config, directory, true);
 	}
 
 
@@ -42,16 +45,28 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 		this.idMapping.update(idMapping);
 	}
 
-	
+	@Override
+	@SneakyThrows(JSONException.class)
+	public void setWorkerToBucketsMap(WorkerToBucketsMap map) {
+		workerToBuckets.update(map);
+	}
+
+	public WorkerToBucketsMap getWorkerBuckets() {
+		return workerToBuckets.get();
+	}
+
+
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 		super.createStores(environmentToStores);
 		structure = StoreInfo.STRUCTURE.singleton(getConfig(), environment, getValidator(), new SingletonNamespaceCollection(centralRegistry));
 		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), environment, getValidator());
+		workerToBuckets = StoreInfo.WORKER_TO_BUCKETS.singleton(getConfig(), environment, getValidator());
 
 		environmentToStores.putAll(environment, List.of(
 			structure,
-			idMapping
+			idMapping,
+			workerToBuckets
 			));
 	}
 

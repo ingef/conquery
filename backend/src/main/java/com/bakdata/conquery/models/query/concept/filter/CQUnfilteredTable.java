@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.concept.filter;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +17,7 @@ public class CQUnfilteredTable {
 	@NotNull
 	private ConnectorId id;
 
-	@NotNull
+	@Nullable
 	private ValidityDateContainer dateColumn;
 
 	@JsonIgnore

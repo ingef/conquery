@@ -3,9 +3,12 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.generation.EmptyBucket;
+import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -17,6 +20,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.tomgibara.bits.BitStore;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -31,7 +35,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	@ToString.Exclude
 	private boolean specialDateUnion = false;
 
-	public ArrayConceptQueryPlan(boolean generateSpecialDateUnion) {
+	private ArrayConceptQueryPlan(boolean generateSpecialDateUnion) {
 		specialDateUnion = generateSpecialDateUnion;
 	}
 
@@ -100,6 +104,12 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 			// Check if child returned a result
 			if (!result.isContained()) {
+				final Object[] applied = ResultModifier.existAggValuesSetterFor(child.getAggregators(), OptionalInt.of(0)).apply(new Object[child.getAggregatorSize()]);
+
+				// applied[0] is the child-queries DateUnion, which we don't copy.
+				int copyLength = applied.length - (specialDateUnion ? 1 : 0);
+				System.arraycopy(applied, specialDateUnion ? 1 : 0, resultValues, resultInsertIdx, copyLength);
+
 				// Advance pointer for the result insertion by the number of currently handled
 				// aggregators.
 				resultInsertIdx = nextIndex(resultInsertIdx, child);
@@ -173,7 +183,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 	private int nextIndex(int currentIdx, ConceptQueryPlan child) {
 		/**
-		 * If we have as specialDateUnion, we also have those in the children. We don't
+		 * If we have a specialDateUnion, we also have those in the children. We don't
 		 * want to add the result directly to the end result (its merged in a single
 		 * DateSet). Hence the index for the result insertion is reduces by one.
 		 */

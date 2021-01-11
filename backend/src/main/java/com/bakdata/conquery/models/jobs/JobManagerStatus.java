@@ -36,8 +36,6 @@ public class JobManagerStatus {
 		if(duration.toSeconds()>0) {
 			return Long.toString(duration.toSeconds())+" s";
 		}
-		else {
-			return Long.toString(duration.toMillis())+" ms";
-		}
+		return Long.toString(duration.toMillis())+" ms";
 	}
 }

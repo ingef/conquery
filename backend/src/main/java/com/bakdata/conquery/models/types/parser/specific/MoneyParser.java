@@ -70,12 +70,10 @@ public class MoneyParser extends Parser<Long> {
 				new MoneyTypeVarInt(subDecision.getType())
 			);
 		}
-		else {
-			return new Decision<Long, Long, MoneyTypeLong>(
-				new NoopTransformer<>(),
-				new MoneyTypeLong()
-			);
-		}
+		return new Decision<Long, Long, MoneyTypeLong>(
+			new NoopTransformer<>(),
+			new MoneyTypeLong()
+		);
 	}
 
 }

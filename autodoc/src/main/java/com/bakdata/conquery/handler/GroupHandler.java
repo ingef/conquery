@@ -448,9 +448,7 @@ public class GroupHandler {
 			if(typeParam.getClassBound()!=null) {
 				return printType(ctx, typeParam.getClassBound());
 			}
-			else {
-				return printType(ctx, typeParam.getInterfaceBounds().get(0));
-			}
+			return printType(ctx, typeParam.getInterfaceBounds().get(0));
 		}
 		
 		return printType(ctx, type.getTypeSignature());

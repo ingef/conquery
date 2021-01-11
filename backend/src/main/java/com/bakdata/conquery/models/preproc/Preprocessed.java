@@ -71,9 +71,19 @@ public class Preprocessed {
 		// Write content to file
 		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 
+		final long empty = entries.values().stream().filter(List::isEmpty).count();
+
+		if(empty > 0) {
+			log.warn("Have {} empty lines", empty);
+		}
+
+		log.debug("Have {} Entities with Data", entries.size());
+
 		try (Output out = new Output(outFile.writeContent())) {
-			for(int entityId = 0; entityId < entries.size(); entityId++) {
-				List<Object[]> events = entries.getOrDefault(entityId, Collections.emptyList());
+			for (Int2ObjectMap.Entry<List<Object[]>> entry : entries.int2ObjectEntrySet()) {
+
+				int entityId = entry.getIntKey();
+				List<Object[]> events = entry.getValue();
 
 				if(!events.isEmpty()) {
 					writeRowsToFile(out, imp, entityId, events);
@@ -169,8 +179,9 @@ public class Preprocessed {
 		
 		Bucket bucket = imp.getBlockFactory().create(imp, events);
 		
-		out.writeInt(entityId, true);
 		bucket.writeContent(buffer);
+
+		out.writeInt(entityId, true);
 		out.writeInt(buffer.position(), true);
 		out.writeBytes(buffer.getBuffer(), 0, buffer.position());
 		
