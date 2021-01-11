@@ -8,7 +8,7 @@ import {
   selectEditedConceptPosition,
   selectEditedConcept,
   selectSuggestions,
-  selectFormContextState
+  selectFormContextState,
 } from "../stateSelectors";
 import { createFormSuggestionActions } from "../form-suggestions/actions";
 import { tableIsEditable } from "../../model/table";
@@ -53,7 +53,7 @@ const mapStateToProps = (state, ownProps) => {
     node &&
     node.tables &&
     (node.tables.length > 1 ||
-      node.tables.some(table => tableIsEditable(table)));
+      node.tables.some((table) => tableIsEditable(table)));
 
   const formState = selectFormContextState(state, ownProps.formType);
   const suggestions = conceptPosition
@@ -66,6 +66,7 @@ const mapStateToProps = (state, ownProps) => {
     orIdx,
     editorState: formState[ownProps.fieldName],
     isExcludeTimestampsPossible: false,
+    isExcludeFromSecondaryIdQueryPossible: false,
     showTables,
     blacklistedTables: ownProps.blacklistedTables,
     whitelistedTables: ownProps.whitelistedTables,
@@ -74,9 +75,9 @@ const mapStateToProps = (state, ownProps) => {
 
     onToggleTimestamps: () => {},
     onCloseModal: () => ownProps.onCloseModal(andIdx, orIdx),
-    onUpdateLabel: label => ownProps.onUpdateLabel(andIdx, orIdx, label),
-    onDropConcept: concept => ownProps.onDropConcept(andIdx, orIdx, concept),
-    onRemoveConcept: conceptId =>
+    onUpdateLabel: (label) => ownProps.onUpdateLabel(andIdx, orIdx, label),
+    onDropConcept: (concept) => ownProps.onDropConcept(andIdx, orIdx, concept),
+    onRemoveConcept: (conceptId) =>
       ownProps.onRemoveConcept(andIdx, orIdx, conceptId),
     onToggleTable: (...args) => ownProps.onToggleTable(andIdx, orIdx, ...args),
     onSelectSelects: (...args) =>
@@ -89,7 +90,7 @@ const mapStateToProps = (state, ownProps) => {
       ownProps.onSwitchFilterMode(andIdx, orIdx, ...args),
     onResetAllFilters: () => ownProps.onResetAllFilters(andIdx, orIdx),
     onSetDateColumn: (...args) =>
-      ownProps.onSetDateColumn(andIdx, orIdx, ...args)
+      ownProps.onSetDateColumn(andIdx, orIdx, ...args),
   };
 };
 
@@ -108,7 +109,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
           ...params
         )
       );
-    }
+    },
   };
 };
 
@@ -121,7 +122,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
       ...params,
       stateProps.andIdx,
       stateProps.orIdx
-    )
+    ),
 });
 
 const QueryNodeEditor = createConnectedQueryNodeEditor(

@@ -84,6 +84,10 @@ const SecondaryIdSelector: FC = () => {
     })),
   ];
 
+  if (options.length < 2) {
+    return null;
+  }
+
   return (
     <div>
       <Headline active={!!selectedSecondaryId}>
