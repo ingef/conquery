@@ -304,6 +304,7 @@ public class CDateSet {
 			return;
 		}
 
+		// Look for start and end of iteration.
 		Integer search = null;
 
 		if (toAdd.hasLowerBound()) {
@@ -314,16 +315,13 @@ public class CDateSet {
 			search = mask.rangesByLowerBound.firstKey();
 		}
 
-		int searchEnd = Integer.MAX_VALUE;
+		Integer searchEnd = null;
 
 		if(toAdd.hasUpperBound()){
-			final Integer key = mask.rangesByLowerBound.floorKey(toAdd.getMaxValue());
-			if (key != null) {
-				searchEnd = key;
-			}
+			searchEnd = mask.rangesByLowerBound.floorKey(toAdd.getMaxValue());
 		}
 
-		if(searchEnd == Integer.MAX_VALUE){
+		if(searchEnd == null){
 			searchEnd = mask.rangesByLowerBound.lastKey();
 		}
 
