@@ -132,6 +132,7 @@ const createConcept = (concept: any) => ({
   ids: concept.ids,
   label: concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
+  excludeFromSecondaryIdQuery: concept.excludeFromSecondaryIdQuery,
   tables: transformTablesToApi(concept.tables),
   selects: transformSelectsToApi(concept.selects),
 });

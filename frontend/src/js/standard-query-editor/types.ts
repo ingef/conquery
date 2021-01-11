@@ -95,6 +95,7 @@ export interface DraggedNodeType {
   tree: ConceptIdT;
   label: string;
   excludeTimestamps?: boolean;
+  excludeFromSecondaryIdQuery?: boolean;
 
   additionalInfos: Object;
   matchingEntries: number;
@@ -120,6 +121,7 @@ export interface ConceptQueryNodeType {
   label: string;
   description?: string;
   excludeTimestamps?: boolean;
+  excludeFromSecondaryIdQuery?: boolean;
   loading?: boolean;
   error?: string;
 
