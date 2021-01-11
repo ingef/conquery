@@ -28,7 +28,14 @@
 				<td>${column.label}</td>
 				<td><code>${column.id}</code></td>
 				<td>${column.type}</td>
-				<td>${("Shared Dictionary <code>"?no_esc+column.sharedDictionary+"</code>"?no_esc)!}</td>
+				<td>
+				    <#if column.sharedDictionary??>
+				        <p>Shared Dictionary  ${("<code>"?no_esc+column.sharedDictionary+"</code>"?no_esc)!}</p>
+                    </#if>
+				    <#if column.secondaryId??>
+                        <p>{{column.secondaryId}}</p>
+				    </#if>
+				</td>
 			</tr>
 		</#list>
 		</table>

@@ -6,12 +6,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @NoArgsConstructor
 @Setter
 @Getter
-@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> {
 
 	@NsIdRef
@@ -22,5 +20,10 @@ public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> {
 	@Override
 	public SecondaryIdDescriptionId createId() {
 		return new SecondaryIdDescriptionId(dataset.getId(), getName());
+	}
+
+	@Override
+	public String toString() {
+		return "SecondaryIdDescription(id = " + getId() + ", label = " + getLabel() + " )";
 	}
 }
