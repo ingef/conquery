@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "SECONDARY_ID_MIXED Test",
+  "label": "SECONDARY_ID_EXCLUDED Test",
   "expectedCsv": "tests/query/SECONDARY_ID_EXCLUDED/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
@@ -26,7 +26,6 @@
           ],
           "excludeFromSecondaryIdQuery": true,
           "type": "CONCEPT",
-          "label": "vs",
           "tables": [
             {
               "id": "${dataset}.concept.connector1",
@@ -60,8 +59,7 @@
           "filter": {
             "name": "value",
             "column": "table1.value",
-            "type": "COUNT",
-            "distinct" : true
+            "type": "COUNT"
           }
         }
       ]
