@@ -34,31 +34,11 @@ public class MeProcessor {
 		return FEMeInformation.builder()
 			.userName(user.getLabel())
 			.hideLogoutButton(!user.isDisplayLogout())
-			.groups(FEGroup.from(AuthorizationHelper.getGroupsOf(user, storage)))
+			.groups(AuthorizationHelper.getGroupsOf(user, storage).stream().map(g -> new IdLabel(g.getId(),g.getLabel())).collect(Collectors.toList()))
 			.permissions( FEPermission.from(AuthorizationHelper.getEffectiveUserPermissions(user.getId(), List.of(DatasetPermission.DOMAIN), storage).values()))
 			.build();
 	}
 
-	
-	/**
-	 * Front end (API) data container to describe a single group.
-	 */
-	@AllArgsConstructor(access = AccessLevel.PRIVATE)
-	@Data
-	public static class FEGroup {
-
-		private GroupId groupId;
-		private String label;
-
-		public static FEGroup from(@NonNull Group group) {
-			return new FEGroup(group.getId(), group.getLabel());
-		}
-		
-		public static List<FEGroup> from(List<Group> groups) {
-			return groups.stream().map(FEGroup::from).collect(Collectors.toList());
-		}
-	}
-	
 	/**
 	 * Front end (API) data container to describe a single user.
 	 */
@@ -68,7 +48,7 @@ public class MeProcessor {
 		String userName;
 		boolean hideLogoutButton;
 		List<FEPermission> permissions;
-		List<FEGroup> groups;
+		List<IdLabel<GroupId>> groups;
 	}
 
 }

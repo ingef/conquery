@@ -7,6 +7,10 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Container class for the frontend to provide a tuple of id.
+ * @param <I> The id type to use
+ */
 @Getter @RequiredArgsConstructor
 public class IdLabel<I extends IId<?>> implements Comparable<IdLabel<I>> {
 	@NotEmpty
