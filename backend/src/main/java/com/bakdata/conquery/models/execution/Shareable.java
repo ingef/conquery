@@ -80,7 +80,7 @@ public interface  Shareable {
 		@NonNull O other,
 		boolean shared) {
 		
-		ConqueryPermission sharePermission = sharedPermissionCreator.apply(AbilitySets.FORM_CONFIG_SHAREHOLDER, shareable.getId());
+		ConqueryPermission sharePermission = sharedPermissionCreator.apply(AbilitySets.SHAREHOLDER, shareable.getId());
 		if (shared) {
 			other.addPermission(storage, sharePermission);
 			log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, other);
