@@ -7,6 +7,7 @@ import FaIcon from "../icon/FaIcon";
 
 interface PropsT {
   excludeTimestamps?: boolean;
+  excludeFromSecondaryIdQuery?: boolean;
   isExpandable?: boolean;
   hasDetails?: boolean;
   previousQueryLoading?: boolean;
@@ -15,6 +16,7 @@ interface PropsT {
   onDeleteNode: () => void;
   onExpandClick: () => void;
   onToggleTimestamps: () => void;
+  onToggleSecondaryIdExclude: () => void;
 }
 
 const Actions = styled("div")`
@@ -30,6 +32,21 @@ const StyledFaIcon = styled(FaIcon)`
 
 const StyledIconButton = styled(IconButton)`
   padding: 0px 6px 4px;
+`;
+
+const RelativeContainer = styled.div`
+  position: relative;
+`;
+const CrossedOut = styled.div`
+  position: absolute;
+  top: 40%;
+  left: 10%;
+  width: 22px;
+  height: 3px;
+  transform: rotate(135deg);
+  background-color: ${({ theme }) => theme.col.red};
+  opacity: 0.5;
+  pointer-events: none;
 `;
 
 const QueryNodeActions: FC<PropsT> = (props) => {
@@ -72,8 +89,23 @@ const QueryNodeActions: FC<PropsT> = (props) => {
         </WithTooltip>
       )}
       {props.hasActiveSecondaryId && (
-        <WithTooltip text={T.translate("queryEditor.hasSecondaryId")}>
-          <StyledFaIcon icon="microscope" />
+        <WithTooltip
+          text={
+            props.excludeFromSecondaryIdQuery
+              ? T.translate("queryNodeEditor.excludingFromSecondaryIdQuery")
+              : T.translate("queryEditor.hasSecondaryId")
+          }
+        >
+          <RelativeContainer>
+            <StyledIconButton
+              icon="microscope"
+              onClick={(e) => {
+                e.stopPropagation();
+                props.onToggleSecondaryIdExclude();
+              }}
+            />
+            {props.excludeFromSecondaryIdQuery && <CrossedOut />}
+          </RelativeContainer>
         </WithTooltip>
       )}
     </Actions>
