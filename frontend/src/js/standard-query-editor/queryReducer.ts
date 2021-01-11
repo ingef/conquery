@@ -277,7 +277,7 @@ const updateNodeTables = (
 const toggleNodeTable = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, isExcluded } = action.payload;
 
-  const nodePosition = selectEditedNode(state);
+  const nodePosition = selectEditedNodePosition(state);
   if (!nodePosition) return state;
 
   const { andIdx, orIdx } = nodePosition;
@@ -290,25 +290,24 @@ const toggleNodeTable = (state: StandardQueryStateT, action: any) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, table);
 };
 
-const selectEditedNode = (state: StandardQueryStateT) => {
-  const selectedNodes = state
-    .reduce(
-      (acc, group, andIdx) => [
-        ...acc,
-        ...group.elements.map((element, orIdx) => ({ andIdx, orIdx, element })),
-      ],
-      []
-    )
-    .filter(({ element }) => element.isEditing)
-    .map(({ andIdx, orIdx }) => ({ andIdx, orIdx }));
+const selectEditedNodePosition = (state: StandardQueryStateT) => {
+  for (let andIdx = 0; andIdx < state.length; andIdx++) {
+    for (let orIdx = 0; orIdx < state[andIdx].elements.length; orIdx++) {
+      const node = state[andIdx].elements[orIdx];
 
-  return selectedNodes.length ? selectedNodes[0] : null;
+      if (node.isEditing) {
+        return { andIdx, orIdx };
+      }
+    }
+  }
+
+  return null;
 };
 
 const setNodeFilterProperties = (state, action, properties) => {
   const { tableIdx, filterIdx } = action.payload;
 
-  const node = selectEditedNode(state);
+  const node = selectEditedNodePosition(state);
 
   if (!node) return state;
 
@@ -343,7 +342,7 @@ const setNodeFilterValue = (state: StandardQueryStateT, action: any) => {
 
 const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { selects } = table;
 
@@ -363,7 +362,7 @@ const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
 
 const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { dateColumn } = table;
 
@@ -381,7 +380,7 @@ const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
 
 const setNodeSelects = (state: StandardQueryStateT, action: any) => {
   const { value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const { selects } = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
@@ -404,7 +403,7 @@ const switchNodeFilterMode = (state: StandardQueryStateT, action: any) => {
 };
 
 const resetNodeAllFilters = (state: StandardQueryStateT, action: any) => {
-  const nodeIdx = selectEditedNode(state);
+  const nodeIdx = selectEditedNodePosition(state);
   if (!nodeIdx) return state;
 
   const { andIdx, orIdx } = nodeIdx;
@@ -690,7 +689,7 @@ function getIndicesFromSelectedOrAction(
     return { andIdx, orIdx };
   }
 
-  return selectEditedNode(state);
+  return selectEditedNodePosition(state);
 }
 
 const toggleTimestamps = (state: StandardQueryStateT, action: any) => {
@@ -770,7 +769,7 @@ const selectNodeForEditing = (
 };
 
 const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
-  const node = selectEditedNode(state);
+  const node = selectEditedNodePosition(state);
 
   if (!node) return state;
 
@@ -782,7 +781,7 @@ const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
 };
 
 const addConceptToNode = (state: StandardQueryStateT, action: any) => {
-  const nodePosition = selectEditedNode(state);
+  const nodePosition = selectEditedNodePosition(state);
 
   if (!nodePosition) return state;
 
@@ -795,7 +794,7 @@ const addConceptToNode = (state: StandardQueryStateT, action: any) => {
 };
 
 const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
-  const nodePosition = selectEditedNode(state);
+  const nodePosition = selectEditedNodePosition(state);
 
   if (!nodePosition) return state;
 
@@ -816,7 +815,7 @@ const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
 // const toggleIncludeSubnodes = (state: StateType, action: Object) => {
 //   const { includeSubnodes } = action.payload;
 
-//   const nodePosition = selectEditedNode(state);
+//   const nodePosition = selectEditedNodePosition(state);
 
 //   if (!nodePosition) return state;
 
