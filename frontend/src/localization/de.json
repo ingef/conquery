@@ -51,7 +51,10 @@
     "date": "Datum",
     "expand": "Expandieren",
     "previousQuery": "Anfrage",
-    "loadingPreviousQuery": "Lade Anfragedetails"
+    "loadingPreviousQuery": "Lade Anfragedetails",
+    "secondaryId": "Analyse-Ebene",
+    "secondaryIdStandard": "Standard",
+    "hasSecondaryId": "Analyse-Ebene aktiv"
   },
   "dropzone": {
     "dragElementPlease": "Füge ein Element hinzu",

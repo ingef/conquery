@@ -35,6 +35,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	private boolean distinct;
 
+	// todo FK: don't think the array notation is used anywhere. Del?
 	@Valid
 	@Getter @Setter @NsIdRefCollection
 	private Column[] distinctByColumn;
@@ -50,7 +51,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
-		if (distinct) {
+		if (distinct || distinctByColumn != null) {
 			if (ArrayUtils.isEmpty(distinctByColumn) || distinctByColumn.length < 2) {
 				return new RangeFilterNode(
 					value,

@@ -1,12 +1,16 @@
 import { ThunkDispatch } from "redux-thunk";
 
 import api from "../api";
-import type { DateRangeT } from "../api/types";
+import type { DatasetIdT } from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
 
-import type { DraggedNodeType, DraggedQueryType } from "./types";
+import type {
+  DraggedNodeType,
+  DraggedQueryType,
+  PreviousQueryQueryNodeType,
+} from "./types";
 import {
   DROP_AND_NODE,
   DROP_OR_NODE,
@@ -32,14 +36,13 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
+  SET_SELECTED_SECONDARY_ID,
 } from "./actionTypes";
+import { TreesT } from "../concept-trees/reducer";
 
-export const dropAndNode = (
-  item: DraggedNodeType | DraggedQueryType,
-  dateRange: DateRangeT | null
-) => ({
+export const dropAndNode = (item: DraggedNodeType | DraggedQueryType) => ({
   type: DROP_AND_NODE,
-  payload: { item, dateRange },
+  payload: { item },
 });
 
 export const dropOrNode = (
@@ -94,7 +97,11 @@ const findPreviousQueryIds = (node, queries = []) => {
   1) Expands previous query in the editor
   2) Triggers a load for all nested queries
 */
-export const expandPreviousQuery = (datasetId, rootConcepts, query) => {
+export const expandPreviousQuery = (
+  datasetId: DatasetIdT,
+  rootConcepts: TreesT,
+  query: PreviousQueryQueryNodeType
+) => {
   if (!query.root || query.root.type !== "AND") {
     throw new Error("Cant expand query, because root is not AND");
   }
@@ -207,5 +214,12 @@ export const loadFilterSuggestions = (
         (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
         (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
       );
+  };
+};
+
+export const setSelectedSecondaryId = (secondaryId: string | null) => {
+  return {
+    type: SET_SELECTED_SECONDARY_ID,
+    payload: { secondaryId },
   };
 };

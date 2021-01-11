@@ -10,7 +10,8 @@ import Modal from "../../modal/Modal";
 import ErrorMessage from "../../error-message/ErrorMessage";
 import FaIcon from "../../icon/FaIcon";
 
-import CSVColumnPicker from "./CSVColumnPicker";
+import CSVColumnPicker, { ExternalQueryT } from "./CSVColumnPicker";
+import { DropTargetMonitor } from "react-dnd";
 
 const Root = styled("div")`
   text-align: center;
@@ -46,18 +47,24 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
   cursor: pointer;
 `;
 
-type PropsT = {
+interface PropsT {
   loading: boolean;
   success: Object | null;
   error: Object | null;
-  onClose: Function;
-  onUpload: Function;
-};
+  onClose: () => void;
+  onUpload: (query: ExternalQueryT) => void;
+}
 
-export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
-  const [file, setFile] = React.useState(null);
+const UploadQueryResultsModal: React.FC<PropsT> = ({
+  loading,
+  success,
+  error,
+  onClose,
+  onUpload,
+}) => {
+  const [file, setFile] = React.useState<File | null>(null);
 
-  function onDrop(_, monitor) {
+  function onDrop(_: any, monitor: DropTargetMonitor) {
     const item = monitor.getItem();
 
     if (item.files) {
@@ -119,3 +126,5 @@ export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
     </Modal>
   );
 };
+
+export default UploadQueryResultsModal;

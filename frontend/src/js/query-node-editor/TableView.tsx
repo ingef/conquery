@@ -30,7 +30,7 @@ const TableView = (props: PropsType) => {
 
     onSetFilterValue,
     onSwitchFilterMode,
-    onLoadFilterSuggestions
+    onLoadFilterSuggestions,
   } = props;
 
   const table = node.tables[editorState.selectedInputTableIdx];
@@ -46,7 +46,7 @@ const TableView = (props: PropsType) => {
         <ContentCell headline={T.translate("queryNodeEditor.selects")}>
           <TableSelects
             selects={table.selects}
-            onSelectTableSelects={value =>
+            onSelectTableSelects={(value) =>
               onSelectTableSelects(editorState.selectedInputTableIdx, value)
             }
           />
@@ -58,7 +58,7 @@ const TableView = (props: PropsType) => {
         >
           <DateColumnSelect
             dateColumn={table.dateColumn}
-            onSelectDateColumn={value =>
+            onSelectDateColumn={(value) =>
               onSetDateColumn(editorState.selectedInputTableIdx, value)
             }
           />
@@ -72,9 +72,9 @@ const TableView = (props: PropsType) => {
             context={{
               datasetId,
               treeId: node.tree,
-              tableId: table.id
+              tableId: table.id,
             }}
-            onSetFilterValue={(filterIdx, value) =>
+            onSetFilterValue={(filterIdx: number, value: unknown) =>
               onSetFilterValue(
                 editorState.selectedInputTableIdx,
                 filterIdx,

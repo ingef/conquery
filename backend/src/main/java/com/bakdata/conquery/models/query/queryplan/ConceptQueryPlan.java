@@ -21,10 +21,12 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @ToString
+@Slf4j
 public class ConceptQueryPlan implements QueryPlan {
 
 	@Getter
@@ -120,8 +122,6 @@ public class ConceptQueryPlan implements QueryPlan {
 		nextBlock(EmptyBucket.getInstance());
 		nextEvent(EmptyBucket.getInstance(), 0);
 
-
-
 		for (TableId currentTableId : requiredTables.get()) {
 
 			if(currentTableId.equals(ctx.getStorage().getDataset().getAllIdsTableId())){
@@ -131,6 +131,8 @@ public class ConceptQueryPlan implements QueryPlan {
 			nextTable(ctx, currentTableId);
 
 			final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTableId);
+
+			log.trace("Table[{}] has {} buckets for Entity[{}]", currentTableId, tableBuckets, entity);
 
 			for (Bucket bucket : tableBuckets) {
 

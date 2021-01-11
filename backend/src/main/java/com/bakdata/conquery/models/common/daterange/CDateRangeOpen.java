@@ -6,8 +6,8 @@ import lombok.With;
 
 @With
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CDateRangeAll extends CDateRange {
-	public static final CDateRange INSTANCE = new CDateRangeAll();
+public class CDateRangeOpen extends CDateRange {
+	public static final CDateRange INSTANCE = new CDateRangeOpen();
 
 	@Override
 	public boolean contains(int rep) {

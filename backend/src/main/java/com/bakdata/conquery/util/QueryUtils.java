@@ -33,7 +33,6 @@ import org.apache.shiro.authz.Permission;
 @UtilityClass
 public class QueryUtils {
 
-
 	/**
 	 * Provides a starting operator for consumer chains, that does nothing.
 	 */

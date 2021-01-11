@@ -28,8 +28,6 @@ import lombok.Setter;
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 public class SumSelect extends Select {
 
-	private boolean distinct = false;
-
 	@Getter
 	@Setter
 	@NsIdRef
@@ -42,23 +40,23 @@ public class SumSelect extends Select {
 	@NsIdRef
 	private Column subtractColumn;
 
-	public SumSelect(boolean distinct, Column column) {
-		this(distinct, column, null);
+	public SumSelect(Column column) {
+		this(column, null);
 	}
 
-	public SumSelect(boolean distinct, Column column, Column subtractColumn) {
-		this.distinct = distinct;
+	public SumSelect(Column column, Column subtractColumn) {
 		this.column = column;
 		this.subtractColumn = subtractColumn;
 	}
 
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
-		if (distinct) {
-			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
+		if (distinctByColumn != null) {
+			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn());
 		}
 		return getAggregator();
 	}
+
 	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
@@ -74,8 +72,9 @@ public class SumSelect extends Select {
 					throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
 			}
 		}
-		if(getColumn().getType() != getSubtractColumn().getType()) {
-			throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn().getType()));
+		if (getColumn().getType() != getSubtractColumn().getType()) {
+			throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn()
+																																						 .getType()));
 		}
 		switch (getColumn().getType()) {
 			case INTEGER:

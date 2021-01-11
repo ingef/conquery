@@ -8,7 +8,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,7 +28,7 @@ import lombok.Setter;
 @CPSType(id="RELATIVE", base=Mode.class)
 public class RelativeMode extends Mode {
 	@NotNull
-	private DateContextMode timeUnit;
+	private DateContext.CalendarUnit timeUnit;
 	@Min(0)
 	private int timeCountBefore;
 	@Min(0)
@@ -36,10 +37,16 @@ public class RelativeMode extends Mode {
 	private IndexPlacement indexPlacement;
 	@NotNull
 	private TemporalSampler indexSelector;
-	@NotEmpty
+
 	private List<CQElement> features = Collections.emptyList();
-	@NotEmpty
+
 	private List<CQElement> outcomes = Collections.emptyList();
+
+	@ValidationMethod
+	boolean isWithFeatureOrOutcomes(){
+		// Its allowed to have one of them emtpy
+		return !(features.isEmpty() && outcomes.isEmpty());
+	}
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
