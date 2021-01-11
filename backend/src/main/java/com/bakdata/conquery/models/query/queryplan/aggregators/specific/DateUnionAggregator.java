@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -32,9 +33,9 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 			return;
 		}
 
-    CDateRange value = bucket.getAsDateRange(event, getColumn());
+		CDateRange value = bucket.getAsDateRange(event, getColumn());
 		//otherwise the result would be something weird
-		if(value.isOpen()) {
+		if (value.isOpen()) {
 			return;
 		}
 
@@ -50,7 +51,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 	public String getAggregationResult() {
 		return set.toString();
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.STRING;
