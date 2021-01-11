@@ -80,6 +80,8 @@
     "resetSettings": "Reset all settings",
     "excludeTimestamps": "Exclude from time calculation",
     "excludingTimestamps": "Excluded from time calculation",
+    "excludeFromSecondaryIdQuery": "Exclude from analysis layer",
+    "excludingFromSecondaryIdQuery": "Excluded from analysis layer",
     "description": "Description",
     "noDescriptionProvided": "No description provided.",
     "selectAFilter": "Select a filter to see its description here.",
