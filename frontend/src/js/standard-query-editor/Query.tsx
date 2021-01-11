@@ -85,8 +85,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
   ) => dispatch(dropOrNode(item, andIdx));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
     dispatch(deleteNode(andIdx, orIdx));
-  const onDeleteGroup = (andIdx: number, orIdx: number) =>
-    dispatch(deleteGroup(andIdx, orIdx));
+  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup(andIdx));
   const onToggleExcludeGroup = (andIdx: number) =>
     dispatch(toggleExcludeGroup(andIdx));
   const onToggleTimestamps = (andIdx: number, orIdx: number) =>
@@ -122,7 +121,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
                 onDropNode={(item) => onDropOrNode(item, andIdx)}
                 onDropFile={(file: File) => onDropConceptListFile(file, andIdx)}
                 onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
-                onDeleteGroup={(orIdx: number) => onDeleteGroup(andIdx, orIdx)}
+                onDeleteGroup={() => onDeleteGroup(andIdx)}
                 onEditClick={(orIdx: number) =>
                   onSelectNodeForEditing(andIdx, orIdx)
                 }

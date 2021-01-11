@@ -58,9 +58,9 @@ export const deleteNode = (andIdx: number, orIdx: number) => ({
   payload: { andIdx, orIdx },
 });
 
-export const deleteGroup = (andIdx: number, orIdx: number) => ({
+export const deleteGroup = (andIdx: number) => ({
   type: DELETE_GROUP,
-  payload: { andIdx, orIdx },
+  payload: { andIdx },
 });
 
 export const toggleExcludeGroup = (andIdx: number) => ({
