@@ -22,7 +22,7 @@ public class AbilitySets {
 		Ability.TAG,
 		Ability.LABEL,
 		Ability.MODIFY);
-	public static final EnumSet<Ability> SHAREHOLDER = EnumSet.of(
+	public static final EnumSet<Ability> FORM_CONFIG_SHAREHOLDER = EnumSet.of(
 		Ability.READ);
 	public static final EnumSet<Ability> DATASET_CREATOR = EnumSet.of(Ability.READ, Ability.DOWNLOAD, Ability.PRESERVE_ID);
 }
