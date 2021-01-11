@@ -26,6 +26,7 @@ export interface QueryRunnerStateT {
         resultCount?: number;
         resultUrl?: string;
         resultColumns?: ColumnDescription[];
+        queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
       })
     | null;
 }
@@ -67,6 +68,7 @@ export default function createQueryRunnerReducer(type: string) {
       resultCount: data.numberOfResults,
       resultUrl: data.resultUrl,
       resultColumns: data.columnDescriptions,
+      queryType: data.queryType,
     };
   };
 

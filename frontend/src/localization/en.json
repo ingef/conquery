@@ -40,6 +40,7 @@
     "startError": "Failed to start the query.",
     "resultError": "Could not load the query result.",
     "resultCount": "results",
+    "resultCountSecondaryIdQuery": "analysis results",
     "queryFailed": "The query failed.",
     "queryCanceled": "The query was canceled."
   },
