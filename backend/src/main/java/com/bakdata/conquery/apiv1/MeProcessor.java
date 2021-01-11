@@ -34,7 +34,7 @@ public class MeProcessor {
 		return FEMeInformation.builder()
 			.userName(user.getLabel())
 			.hideLogoutButton(!user.isDisplayLogout())
-			.groups(AuthorizationHelper.getGroupsOf(user, storage).stream().map(g -> new IdLabel(g.getId(),g.getLabel())).collect(Collectors.toList()))
+			.groups(AuthorizationHelper.getGroupsOf(user, storage).stream().map(g -> new IdLabel<GroupId>(g.getId(),g.getLabel())).collect(Collectors.toList()))
 			.permissions( FEPermission.from(AuthorizationHelper.getEffectiveUserPermissions(user.getId(), List.of(DatasetPermission.DOMAIN), storage).values()))
 			.build();
 	}
