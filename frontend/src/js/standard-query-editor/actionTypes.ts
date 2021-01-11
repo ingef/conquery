@@ -20,6 +20,8 @@ export const SET_TABLE_SELECTS = "query-editor/SET_TABLE_SELECTS";
 export const RESET_ALL_FILTERS = "query-editor/RESET_ALL_FILTERS";
 export const SWITCH_FILTER_MODE = "query-editor/SWITCH_FILTER_MODE";
 export const TOGGLE_TIMESTAMPS = "query-editor/TOGGLE_TIMESTAMPS";
+export const TOGGLE_SECONDARY_ID_EXCLUDE =
+  "query-editor/TOGGLE_SECONDARY_ID_EXCLUDE";
 export const LOAD_FILTER_SUGGESTIONS_START =
   "query-editor/LOAD_FILTER_SUGGESTIONS_START";
 export const LOAD_FILTER_SUGGESTIONS_SUCCESS =

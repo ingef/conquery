@@ -55,6 +55,7 @@ interface PropsT {
   onDeleteGroup: () => void;
   onLoadPreviousQuery: (id: PreviousQueryIdT) => void;
   onToggleTimestamps: (orIdx: number) => void;
+  onToggleSecondaryIdExclude: (orIdx: number) => void;
 }
 
 const QueryGroup = (props: PropsT) => {
@@ -84,6 +85,9 @@ const QueryGroup = (props: PropsT) => {
               onDeleteNode={() => props.onDeleteNode(orIdx)}
               onEditClick={() => props.onEditClick(orIdx)}
               onToggleTimestamps={() => props.onToggleTimestamps(orIdx)}
+              onToggleSecondaryIdExclude={() =>
+                props.onToggleSecondaryIdExclude(orIdx)
+              }
               onExpandClick={props.onExpandClick}
             />
             {orIdx !== props.group.elements.length - 1 && (

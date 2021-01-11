@@ -19,6 +19,7 @@ import {
   expandPreviousQuery,
   selectNodeForEditing,
   toggleTimestamps,
+  toggleSecondaryIdExclude,
 } from "./actions";
 
 import type {
@@ -90,6 +91,8 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
     dispatch(toggleExcludeGroup(andIdx));
   const onToggleTimestamps = (andIdx: number, orIdx: number) =>
     dispatch(toggleTimestamps(andIdx, orIdx));
+  const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
+    dispatch(toggleSecondaryIdExclude(andIdx, orIdx));
   const onSelectNodeForEditing = (andIdx: number, orIdx: number) =>
     dispatch(selectNodeForEditing(andIdx, orIdx));
   const onQueryGroupModalSetNode = (andIdx: number) =>
@@ -131,6 +134,9 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
                 onLoadPreviousQuery={onLoadPreviousQuery}
                 onToggleTimestamps={(orIdx: number) =>
                   onToggleTimestamps(andIdx, orIdx)
+                }
+                onToggleSecondaryIdExclude={(orIdx: number) =>
+                  onToggleSecondaryIdExclude(andIdx, orIdx)
                 }
               />,
               <QueryGroupConnector key={`${andIdx}.and`}>

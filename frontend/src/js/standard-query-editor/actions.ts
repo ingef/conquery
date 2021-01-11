@@ -37,6 +37,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
   SET_SELECTED_SECONDARY_ID,
+  TOGGLE_SECONDARY_ID_EXCLUDE,
 } from "./actionTypes";
 import { TreesT } from "../concept-trees/reducer";
 
@@ -173,12 +174,20 @@ export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
   payload: { tableIdx, filterIdx, mode },
 });
 
-export const toggleTimestamps = (andIdx, orIdx) => ({
+export const toggleTimestamps = (andIdx?: number, orIdx?: number) => ({
   type: TOGGLE_TIMESTAMPS,
   payload: { andIdx, orIdx },
 });
 
-export const loadFilterSuggestionsStart = (tableIdx, filterIdx) => ({
+export const toggleSecondaryIdExclude = (andIdx?: number, orIdx?: number) => ({
+  type: TOGGLE_SECONDARY_ID_EXCLUDE,
+  payload: { andIdx, orIdx },
+});
+
+export const loadFilterSuggestionsStart = (
+  tableIdx: number,
+  filterIdx: number
+) => ({
   type: LOAD_FILTER_SUGGESTIONS_START,
   payload: { tableIdx, filterIdx },
 });

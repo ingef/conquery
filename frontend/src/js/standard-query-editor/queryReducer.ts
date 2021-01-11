@@ -3,6 +3,7 @@ import T from "i18n-react";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 
 import type { TableT } from "../api/types";
 
@@ -50,6 +51,7 @@ import {
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
+  TOGGLE_SECONDARY_ID_EXCLUDE,
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
@@ -62,7 +64,6 @@ import type {
   DraggedNodeType,
   DraggedQueryType,
 } from "./types";
-import { ActionT } from "js/common/actions";
 
 export type StandardQueryStateT = StandardQueryType;
 
@@ -94,6 +95,7 @@ const filterItem = (
     return {
       ...baseItem,
 
+      excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
       ids: item.ids,
       description: item.description,
       tables: item.tables,
@@ -587,6 +589,7 @@ const expandNode = (rootConcepts, node) => {
         tables,
         selects,
         excludeTimestamps: node.excludeFromTimeAggregation,
+        excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
         tree: lookupResult.root,
       };
   }
@@ -679,13 +682,13 @@ const renamePreviousQuery = (state: StandardQueryStateT, action: any) => {
   });
 };
 
-function getIndicesFromSelectedOrAction(
+function getPositionFromActionOrEditedNode(
   state: StandardQueryStateT,
   action: any
 ) {
   const { andIdx, orIdx } = action.payload;
 
-  if (andIdx !== null && orIdx !== null) {
+  if (exists(andIdx) && exists(orIdx)) {
     return { andIdx, orIdx };
   }
 
@@ -693,10 +696,19 @@ function getIndicesFromSelectedOrAction(
 }
 
 const toggleTimestamps = (state: StandardQueryStateT, action: any) => {
-  const { andIdx, orIdx } = getIndicesFromSelectedOrAction(state, action);
+  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
 
   return setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps,
+  });
+};
+
+const toggleSecondaryIdExclude = (state: StandardQueryStateT, action: any) => {
+  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
+
+  return setElementProperties(state, andIdx, orIdx, {
+    excludeFromSecondaryIdQuery: !state[andIdx].elements[orIdx]
+      .excludeFromSecondaryIdQuery,
   });
 };
 
@@ -939,6 +951,8 @@ const query = (
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:
       return toggleTimestamps(state, action);
+    case TOGGLE_SECONDARY_ID_EXCLUDE:
+      return toggleSecondaryIdExclude(state, action);
     case QUERY_GROUP_MODAL_SET_DATE:
       return setGroupDate(state, action);
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
