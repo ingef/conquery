@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Container class for the frontend to provide a tuple of id.
+ * Container class for the frontend to provide a tuple of id and a corresponding label.
  * @param <I> The id type to use
  */
 @Getter @RequiredArgsConstructor
