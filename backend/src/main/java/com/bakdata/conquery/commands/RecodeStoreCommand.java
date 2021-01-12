@@ -85,6 +85,7 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 				new EnvironmentConfig().setLogFileSize(inLogSize)
 									   .setEnvIsReadonly(true)
 									   .setEnvCompactOnOpen(false)
+									   .setEnvCloseForcedly(true)
 									   .setGcEnabled(false) // we dump first, then enable GC.
 		);
 
@@ -152,8 +153,6 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 		if(!writeTx.commit()){
 			log.error("Failed to commit Tx for {}", outEnvironment);
 		}
-
-		readTx.commit();
 	}
 
 }
