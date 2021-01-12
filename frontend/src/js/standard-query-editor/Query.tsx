@@ -19,6 +19,7 @@ import {
   expandPreviousQuery,
   selectNodeForEditing,
   toggleTimestamps,
+  toggleSecondaryIdExclude,
 } from "./actions";
 
 import type {
@@ -85,12 +86,13 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
   ) => dispatch(dropOrNode(item, andIdx));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
     dispatch(deleteNode(andIdx, orIdx));
-  const onDeleteGroup = (andIdx: number, orIdx: number) =>
-    dispatch(deleteGroup(andIdx, orIdx));
+  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup(andIdx));
   const onToggleExcludeGroup = (andIdx: number) =>
     dispatch(toggleExcludeGroup(andIdx));
   const onToggleTimestamps = (andIdx: number, orIdx: number) =>
     dispatch(toggleTimestamps(andIdx, orIdx));
+  const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
+    dispatch(toggleSecondaryIdExclude(andIdx, orIdx));
   const onSelectNodeForEditing = (andIdx: number, orIdx: number) =>
     dispatch(selectNodeForEditing(andIdx, orIdx));
   const onQueryGroupModalSetNode = (andIdx: number) =>
@@ -122,7 +124,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
                 onDropNode={(item) => onDropOrNode(item, andIdx)}
                 onDropFile={(file: File) => onDropConceptListFile(file, andIdx)}
                 onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
-                onDeleteGroup={(orIdx: number) => onDeleteGroup(andIdx, orIdx)}
+                onDeleteGroup={() => onDeleteGroup(andIdx)}
                 onEditClick={(orIdx: number) =>
                   onSelectNodeForEditing(andIdx, orIdx)
                 }
@@ -132,6 +134,9 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
                 onLoadPreviousQuery={onLoadPreviousQuery}
                 onToggleTimestamps={(orIdx: number) =>
                   onToggleTimestamps(andIdx, orIdx)
+                }
+                onToggleSecondaryIdExclude={(orIdx: number) =>
+                  onToggleSecondaryIdExclude(andIdx, orIdx)
                 }
               />,
               <QueryGroupConnector key={`${andIdx}.and`}>

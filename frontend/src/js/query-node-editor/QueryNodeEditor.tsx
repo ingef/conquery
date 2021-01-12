@@ -67,6 +67,7 @@ export interface PropsType {
   node: QueryNodeType;
   showTables: boolean;
   isExcludeTimestampsPossible: boolean;
+  isExcludeFromSecondaryIdQueryPossible: boolean;
   datasetId: DatasetIdT;
   suggestions: Object | null;
   whitelistedTables?: string[];
@@ -80,6 +81,7 @@ export interface PropsType {
   onSetFilterValue: Function;
   onResetAllFilters: Function;
   onToggleTimestamps: Function;
+  onToggleSecondaryIdExclude: Function;
   onSwitchFilterMode: Function;
   onLoadFilterSuggestions: Function;
   onSelectSelects: Function;
@@ -126,7 +128,7 @@ const QueryNodeEditor = (props: PropsType) => {
 export const createConnectedQueryNodeEditor = (
   mapStateToProps: Function,
   mapDispatchToProps: Function,
-  mergeProps: Function
+  mergeProps?: Function
 ) => {
   const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
     const externalDispatchProps = mapDispatchToProps

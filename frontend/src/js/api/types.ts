@@ -273,6 +273,7 @@ export interface GetQueryResponseDoneT {
   numberOfResults: number;
   resultUrl: string;
   columnDescriptions: ColumnDescription[];
+  queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
