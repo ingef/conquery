@@ -67,7 +67,7 @@ public class ExecutionStatus {
 		/**
 		 * The groups this execution is shared with.
 		 */
-		private Collection<IdLabel<GroupId>> groups;
+		private Collection<GroupId> groups;
 		
 		public static enum CreationFlag{
 			WITH_COLUMN_DESCIPTION,
