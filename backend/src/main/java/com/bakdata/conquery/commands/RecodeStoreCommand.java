@@ -149,7 +149,11 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 		log.info("Processed {} / {} ({}%)", processed, count, 100);
 
-		writeTx.commit();
+		if(!writeTx.commit()){
+			log.error("Failed to commit Tx for {}", outEnvironment);
+		}
+
+		readTx.commit();
 	}
 
 }
