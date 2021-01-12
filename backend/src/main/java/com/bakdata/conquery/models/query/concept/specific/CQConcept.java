@@ -129,18 +129,19 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
-
-
-
+			
 			final Connector connector = table.getResolvedConnector();
 
-			final SecondaryIdDescriptionId selectedSecondaryId = Arrays.stream(connector.getTable().getColumns())
-																	   .map(Column::getSecondaryId)
-																	   .filter(Objects::nonNull)
-																	   .map(SecondaryIdDescription::getId)
-																	   .filter(o -> Objects.equals(context.getSelectedSecondaryId(), o))
-																	   .collect(MoreCollectors.toOptional())
-																	   .orElse(null);
+			// Select matching secondaryId if available
+			final SecondaryIdDescriptionId selectedSecondaryId =
+					Arrays.stream(connector.getTable().getColumns())
+						  .map(Column::getSecondaryId)
+						  .filter(Objects::nonNull)
+						  .map(SecondaryIdDescription::getId)
+						  .filter(o -> Objects.equals(context.getSelectedSecondaryId(), o))
+						  .collect(MoreCollectors.toOptional())
+						  .orElse(null);
+
 			tableNodes.add(
 				new ConceptNode(
 					concepts,
@@ -151,6 +152,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 						selectValidityDateColumn(table),
 						filtersNode
 					),
+					// if the node is excluded, don't pass it into the Node.
 					excludeFromSecondaryIdQuery ? null : selectedSecondaryId
 				)
 			);

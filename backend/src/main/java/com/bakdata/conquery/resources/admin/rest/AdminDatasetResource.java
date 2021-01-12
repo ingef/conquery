@@ -90,11 +90,11 @@ public class AdminDatasetResource extends HAdmin {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public void addTable(@FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
 		ObjectMapper mapper = namespace.getDataset().injectInto(processor.getDatasetRegistry().injectInto(Jackson.MAPPER));
-
+		// todo migrate to normal rest api
 		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
 				Table t = mapper.readValue(is, Table.class);
-				processor.addTable(namespace.getDataset(), t, namespace);
+				processor.addTable(t, namespace);
 			}
 		}
 	}

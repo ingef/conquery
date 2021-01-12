@@ -116,7 +116,9 @@ public class AdminProcessor {
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final int entityBucketSize;
 
-	public void addTable(Dataset dataset, Table table, Namespace namespace) throws JSONException {
+	public void addTable(Table table, Namespace namespace) throws JSONException {
+		Dataset dataset = namespace.getDataset();
+
 		Objects.requireNonNull(dataset);
 		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
@@ -623,7 +625,6 @@ public class AdminProcessor {
 		final Dataset dataset = namespace.getDataset();
 		secondaryId.setDataset(dataset);
 
-		log.trace("Received new {}", secondaryId);
 		log.info("Received new SecondaryId[{}]", secondaryId.getId());
 
 		namespace.getStorage().addSecondaryId(secondaryId);
@@ -637,10 +638,10 @@ public class AdminProcessor {
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
-											   .map(Table::getColumns).flatMap(Arrays::stream)
-											   .filter(column -> column.getSecondaryId() != null)
-											   .filter(column -> column.getSecondaryId().getId().equals(secondaryId))
-											   .collect(Collectors.toList());
+												 .map(Table::getColumns).flatMap(Arrays::stream)
+												 .filter(column -> column.getSecondaryId() != null)
+												 .filter(column -> column.getSecondaryId().getId().equals(secondaryId))
+												 .collect(Collectors.toList());
 
 		if(!dependents.isEmpty()){
 			log.error(

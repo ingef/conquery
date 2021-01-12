@@ -298,7 +298,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId) {
+	public synchronized void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId) {
 		secondaryIds.remove(secondaryIdDescriptionId);
 	}
 }

@@ -197,7 +197,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			// only import the deleted import/table
 			for (RequiredTable table : test.getContent().getTables()) {
-				conquery2.getDatasetsProcessor().addTable(newDataset, table.toTable(conquery.getDataset()), conquery2.getNamespace());
+				conquery2.getDatasetsProcessor().addTable(table.toTable(conquery.getDataset()), conquery2.getNamespace());
 			}
 
 			assertThat(conquery2.getNamespace().getStorage().getTables()).isNotEmpty();

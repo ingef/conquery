@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -75,7 +74,7 @@ public class LoadingUtil {
 		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(dataset, rTable.toTable(support.getDataset()), support.getNamespace());
+			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset()), support.getNamespace());
 		}
 	}
 	
