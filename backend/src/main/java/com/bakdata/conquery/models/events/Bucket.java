@@ -140,7 +140,7 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 							 .boxed()
 							 .flatMap(le -> IntStream
 													.range(getFirstEventOfLocal(le), getLastEventOfLocal(le))
-													.mapToObj(e -> new BucketEntry(le, e))
+													.mapToObj(e -> new BucketEntry(this, le, e))
 							 )
 							 .iterator();
 	}

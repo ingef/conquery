@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor @Getter
 public class BucketEntry {
+	private final Bucket bucket;
 	private final int localEntity;
 	private final int event;
 }
