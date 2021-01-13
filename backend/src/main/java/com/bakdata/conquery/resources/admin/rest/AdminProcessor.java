@@ -116,7 +116,7 @@ public class AdminProcessor {
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final int entityBucketSize;
 
-	public void addTable(Table table, Namespace namespace) throws JSONException {
+	public synchronized void addTable(Table table, Namespace namespace) throws JSONException {
 		Dataset dataset = namespace.getDataset();
 
 		Objects.requireNonNull(dataset);
@@ -138,7 +138,7 @@ public class AdminProcessor {
 		namespace.sendToAll(new UpdateTable(table));
 	}
 
-	public void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
+	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
 		concept.setDataset(dataset.getId());
 		ValidatorHelper.failOnError(log, validator.validate(concept));
 		// Register the Concept in the ManagerNode and Workers
@@ -150,7 +150,7 @@ public class AdminProcessor {
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
 	}
 
-	public Dataset addDataset(String name) throws JSONException {
+	public synchronized Dataset addDataset(String name) throws JSONException {
 		// create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
@@ -538,31 +538,21 @@ public class AdminProcessor {
 		writer.writeValuesToRow();
 	}
 
-	public void deleteImport(ImportId importId) {
+	public synchronized void deleteImport(ImportId importId) {
 		// TODO explain when the includedBucket Information is updated/cleared in the WorkerInformation
 
 		final Namespace namespace = datasetRegistry.get(importId.getDataset());
 
-		jobManager.addSlowJob(new SimpleJob(
-				"Delete Import" + importId,
-				() -> {
-					namespace.getStorage().removeImport(importId);
-				}
-		));
 
-		jobManager.addSlowJob(new SimpleJob(
-				"Import delete on " + importId,
-				() -> {
-					namespace.sendToAll(new RemoveImportJob(importId));
-				}
-		));
+		namespace.getStorage().removeImport(importId);
+		namespace.sendToAll(new RemoveImportJob(importId));
+
 		// Remove bucket assignments for consistency report
 		namespace.removeBucketAssignmentsForImportFormWorkers(importId);
 	}
 
-	public void deleteTable(TableId tableId)  {
+	public synchronized void deleteTable(TableId tableId)  {
 		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
-		final Dataset dataset = namespace.getDataset();
 
 		final List<? extends Connector> connectors = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
 															  .filter(con -> con.getTable().getId().equals(tableId))
@@ -582,16 +572,15 @@ public class AdminProcessor {
 		namespace.sendToAll(new RemoveTable(tableId));
 	}
 
-	public void deleteConcept(ConceptId conceptId) {
+	public synchronized void deleteConcept(ConceptId conceptId) {
 		final Namespace namespace = datasetRegistry.get(conceptId.getDataset());
 
-		getJobManager()
-				.addSlowJob(new SimpleJob("Removing concept " + conceptId, () -> namespace.getStorage().removeConcept(conceptId)));
+		namespace.getStorage().removeConcept(conceptId);
 		getJobManager()
 				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(conceptId))));
 	}
 
-	public void deleteDataset(DatasetId datasetId) {
+	public synchronized void deleteDataset(DatasetId datasetId) {
 		final Namespace namespace = datasetRegistry.get(datasetId);
 
 		if(!namespace.getStorage().getTables().isEmpty()){
@@ -614,14 +603,11 @@ public class AdminProcessor {
 	public void updateMatchingStats(DatasetId datasetId) {
 		final Namespace ns = getDatasetRegistry().get(datasetId);
 
-		ns.getJobManager().addSlowJob(new SimpleJob("Start Update Matching Stats", () -> {
-			ns.sendToAll(new UpdateMatchingStatsMessage());
-		}));
-
+		ns.sendToAll(new UpdateMatchingStatsMessage());
 		FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager());
 	}
 
-	public void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
+	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
 		final Dataset dataset = namespace.getDataset();
 		secondaryId.setDataset(dataset);
 
@@ -632,9 +618,8 @@ public class AdminProcessor {
 		namespace.sendToAll(new UpdateSecondaryId(secondaryId));
 	}
 
-	public void deleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
+	public synchronized void deleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset());
-		final Dataset dataset = namespace.getDataset();
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
