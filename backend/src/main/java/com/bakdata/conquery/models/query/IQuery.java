@@ -68,7 +68,7 @@ public abstract class IQuery implements QueryDescription {
 	}
 
 	/**
-	 * Implement Query-type aware counting of results. Standard method is counting person-lines.
+	 * Implement Query-type aware counting of results. Standard method is counting unique entities.
 	 *
 	 * @see ManagedQuery#finish(MetaStorage, ExecutionState) for how it's used.
 	 * @return the number of results in the result List.
