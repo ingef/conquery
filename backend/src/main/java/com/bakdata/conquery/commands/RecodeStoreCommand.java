@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -71,12 +72,14 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 			return;
 		}
 
-		for (File environment : environments) {
-			final File environmentDirectory = new File(outStoreDirectory, environment.getName());
-			environmentDirectory.mkdirs();
-
-			processEnvironment(environment, inLogSize, environmentDirectory, outLogSize);
-		}
+		Arrays.stream(environments)
+			  .parallel()
+			  .forEach(environment ->
+					   {
+						   final File environmentDirectory = new File(outStoreDirectory, environment.getName());
+						   environmentDirectory.mkdirs();
+						   processEnvironment(environment, inLogSize, environmentDirectory, outLogSize);
+					   });
 	}
 
 	private void processEnvironment(File inStoreDirectory, long inLogSize, File outStoreDirectory, long outLogSize) {
@@ -86,14 +89,14 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 									   .setEnvIsReadonly(true)
 									   .setEnvCompactOnOpen(false)
 									   .setEnvCloseForcedly(true)
-									   .setGcEnabled(false) // we dump first, then enable GC.
+									   .setGcEnabled(false)
 		);
 
-		final EnvironmentConfig outConfig = new EnvironmentConfig().setLogFileSize(outLogSize)
-															.setGcEnabled(false);
+		// we dump first, then enable GC.
 		final jetbrains.exodus.env.Environment outEnvironment = Environments.newInstance(
 				outStoreDirectory,
-				outConfig
+				new EnvironmentConfig().setLogFileSize(outLogSize)
+																		   .setGcEnabled(false)
 		);
 
 
@@ -109,28 +112,36 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 			if (inStore == null) {
 				log.error("{} does not exist, aborting.", store);
-				return;
+				continue;
 			}
 
 			final Store outStore =
 					outEnvironment.computeInExclusiveTransaction(tx -> outEnvironment.openStore(store, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, tx, true));
 
 			if (outEnvironment.computeInReadonlyTransaction(outStore::count) > 0) {
-				log.warn("Store is not empty, it will be cleared.");
+				log.warn("Store is not empty, aborting.");
+				continue;
 			}
 
 			doRecode(inEnvironment, inStore, outEnvironment, outStore);
 			log.info("Done writing {}.", store);
 		}
 
-		outConfig.setGcEnabled(true);
+		// enable and run gc.
+
+		outEnvironment.getEnvironmentConfig().setGcEnabled(true);
+		log.info("Starting GC.");
 		outEnvironment.gc();
 
 		outEnvironment.close();
+		log.info("GC Done.");
+
 		inEnvironment.close();
 	}
 
 	private void doRecode(jetbrains.exodus.env.Environment inEnvironment, Store inStore, jetbrains.exodus.env.Environment outEnvironment, Store outStore) {
+
+
 		final Transaction readTx = inEnvironment.beginReadonlyTransaction();
 		final Transaction writeTx = outEnvironment.beginExclusiveTransaction();
 
@@ -139,13 +150,17 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 
 		log.info("Contains {} Entries", count);
 
-		final Cursor cursor = inStore.openCursor(readTx);
+		try(final Cursor cursor = inStore.openCursor(readTx)) {
 
-		while (cursor.getNext()) {
-			outStore.putRight(writeTx, cursor.getKey(), cursor.getValue());
-			if (++processed % (1 + (count / 10)) == 0) {
-				log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
+			while (cursor.getNext()) {
+				outStore.putRight(writeTx, cursor.getKey(), cursor.getValue());
+				if (++processed % (1 + (count / 10)) == 0) {
+					log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
+				}
 			}
+		}
+		finally {
+			readTx.abort();
 		}
 
 		log.info("Processed {} / {} ({}%)", processed, count, 100);
