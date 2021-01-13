@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.preproc;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.HCFile;
@@ -110,12 +109,14 @@ public class Preprocessed {
 			try {
 				Jackson.BINARY_MAPPER.writeValue(out, header);
 				primaryColumn.getType().writeHeader(out);
-				for(PPColumn col:columns) {
+
+				for (PPColumn col : columns) {
 					col.getType().writeHeader(out);
 				}
 				out.flush();
-			} catch (Exception e) {
-				throw new RuntimeException("Failed to serialize header "+header, e);
+			}
+			catch (Exception e) {
+				throw new RuntimeException("Failed to serialize header " + header, e);
 			}
 		}
 	}
