@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -67,7 +68,8 @@ public class DatasetsUIResource extends HAdmin {
 				processor.getUIContext(),
 				new DatasetInfos(
 						namespace.getDataset(),
-						namespace.getDataset().getTables().stream()
+						namespace.getStorage().getSecondaryIds(),
+						namespace.getStorage().getTables().stream()
 								 .map(table -> new TableInfos(
 										 table.getId(),
 										 table.getName(),
@@ -124,6 +126,7 @@ public class DatasetsUIResource extends HAdmin {
 	public static class DatasetInfos {
 
 		private Dataset ds;
+		private Collection<SecondaryIdDescription> secondaryIds;
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;

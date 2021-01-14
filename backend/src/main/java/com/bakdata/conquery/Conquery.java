@@ -9,6 +9,7 @@ import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.PreprocessorCommand;
+import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -54,7 +55,8 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
-		
+		bootstrap.addCommand(new RecodeStoreCommand());
+
 		((MutableInjectableValues)bootstrap.getObjectMapper().getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
 
 		// do some setup in other classes after initialization but before running a

@@ -14,6 +14,7 @@ import NodeDetailsView from "./NodeDetailsView";
 import TableView from "./TableView";
 
 import { createQueryNodeEditorActions } from "./actions";
+import { DatasetIdT } from "../api/types";
 
 const Root = styled("div")`
   margin: 0 10px;
@@ -47,7 +48,7 @@ const CloseButton = styled(BasicButton)`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-type QueryNodeEditorState = {
+interface QueryNodeEditorState {
   detailsViewActive: boolean;
   selectedInputTableIdx: number;
   selectedInput: number;
@@ -58,15 +59,16 @@ type QueryNodeEditorState = {
   onShowDescription: Function;
   onToggleEditLabel: Function;
   onReset: Function;
-};
+}
 
-export type PropsType = {
+export interface PropsType {
   name: string;
   editorState: QueryNodeEditorState;
   node: QueryNodeType;
   showTables: boolean;
   isExcludeTimestampsPossible: boolean;
-  datasetId: number;
+  isExcludeFromSecondaryIdQueryPossible: boolean;
+  datasetId: DatasetIdT;
   suggestions: Object | null;
   whitelistedTables?: string[];
   blacklistedTables?: string[];
@@ -79,12 +81,13 @@ export type PropsType = {
   onSetFilterValue: Function;
   onResetAllFilters: Function;
   onToggleTimestamps: Function;
+  onToggleSecondaryIdExclude: Function;
   onSwitchFilterMode: Function;
   onLoadFilterSuggestions: Function;
   onSelectSelects: Function;
   onSelectTableSelects: Function;
   onSetDateColumn: Function;
-};
+}
 
 const QueryNodeEditor = (props: PropsType) => {
   const { node, editorState } = props;
@@ -125,7 +128,7 @@ const QueryNodeEditor = (props: PropsType) => {
 export const createConnectedQueryNodeEditor = (
   mapStateToProps: Function,
   mapDispatchToProps: Function,
-  mergeProps: Function
+  mergeProps?: Function
 ) => {
   const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
     const externalDispatchProps = mapDispatchToProps
@@ -137,7 +140,7 @@ export const createConnectedQueryNodeEditor = (
       toggleEditLabel,
       setInputTableViewActive,
       setFocusedInput,
-      reset
+      reset,
     } = createQueryNodeEditorActions(ownProps.name);
 
     return {
@@ -146,11 +149,11 @@ export const createConnectedQueryNodeEditor = (
         ...(externalDispatchProps.editorState || {}),
         onSelectDetailsView: () => dispatch(setDetailsViewActive()),
         onToggleEditLabel: () => dispatch(toggleEditLabel()),
-        onSelectInputTableView: tableIdx =>
+        onSelectInputTableView: (tableIdx) =>
           dispatch(setInputTableViewActive(tableIdx)),
-        onShowDescription: filterIdx => dispatch(setFocusedInput(filterIdx)),
-        onReset: () => dispatch(reset())
-      }
+        onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
+        onReset: () => dispatch(reset()),
+      },
     };
   };
 
@@ -163,8 +166,8 @@ export const createConnectedQueryNodeEditor = (
       ...externalMergedProps,
       editorState: {
         ...(stateProps.editorState || {}),
-        ...(dispatchProps.editorState || {})
-      }
+        ...(dispatchProps.editorState || {}),
+      },
     };
   };
 

@@ -9,12 +9,11 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
@@ -30,6 +29,7 @@ import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
@@ -47,17 +47,19 @@ public class TablesUIResource extends HAdmin {
 	protected TableId tableId;
 	protected Table table;
 
+	@SneakyThrows({NotFoundException.class})
 	@PostConstruct
 	@Override
 	public void init() {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.table = namespace
-							 .getStorage()
-							 .getDataset()
-							 .getTables()
-							 .getOptional(tableId)
-							 .orElseThrow(() -> new WebApplicationException("Could not find table " + tableId, Status.NOT_FOUND));
+			.getStorage()
+			.getTable(tableId);
+
+		if(table == null){
+			throw new NotFoundException("Could not find Table " + tableId.toString());
+		}
 	}
 
 	@GET

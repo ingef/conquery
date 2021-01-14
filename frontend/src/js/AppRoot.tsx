@@ -1,6 +1,5 @@
 import React, { FC } from "react";
 import { Provider } from "react-redux";
-import { hot } from "react-hot-loader";
 import { StateT } from "app-types";
 
 import type { TabT } from "./pane/types";
@@ -20,4 +19,4 @@ const AppRoot: FC<PropsT> = ({ store, browserHistory, rightTabs }) => (
   </Provider>
 );
 
-export default hot(module)(AppRoot);
+export default AppRoot;

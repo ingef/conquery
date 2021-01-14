@@ -8,6 +8,7 @@ import java.util.OptionalInt;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
@@ -27,6 +28,12 @@ import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.OptionalInt;
+
 @Slf4j
 @Getter @RequiredArgsConstructor
 public class RelativeFormQueryPlan implements QueryPlan {
@@ -45,8 +52,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final IndexPlacement indexPlacement;
 	private final int timeCountBefore;
 	private final int timeCountAfter;
-	private final DateContextMode timeUnit;
-	private final List<DateContextMode> resolutions;
+	private final DateContext.CalendarUnit timeUnit;
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -70,8 +77,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
-			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutions);
-
+			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
+		
 		// create feature and outcome plans
 		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
 		FormQueryPlan outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
@@ -105,7 +112,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			// that don't target the same feature group,
 			// which would be a mistake by the generation
 			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE
-			// is the coarsed resolution it must be at the first
+			// is the most coarse resolution it must be at the first
 			// to indexes of the list.
 			Object[] mergedFull = new Object[size];
 
@@ -116,8 +123,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			if (outcomePlan.getAggregatorSize() > 0) {
 				setOutcomeValues(
 						mergedFull,
-						outcomeResult.getValues().get(resultStartIndex),
-						featureLength
+						outcomeResult.getValues().get(resultStartIndex)
 				);
 			}
 
@@ -134,7 +140,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
 			Object[] result = new Object[size];
-			setOutcomeValues(result, outcomeResult.getValues().get(i), featureLength);
+			setOutcomeValues(result, outcomeResult.getValues().get(i));
 			values.add(result);
 		}
 
@@ -188,16 +194,19 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 
 	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
+		if(contexts.isEmpty()){
+			return false;
+		}
 		if (featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() > 0) {
 			// We have features and outcomes check if both have complete date ranges (they should be at the beginning of the list)
 			return contexts.size()>=2
-				&& contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE)
-				&& contexts.get(1).getSubdivisionMode().equals(DateContextMode.COMPLETE)
+				&& contexts.get(0).getSubdivisionMode().equals(DateContext.Resolution.COMPLETE)
+				&& contexts.get(1).getSubdivisionMode().equals(DateContext.Resolution.COMPLETE)
 				&& !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
 		}
 		// Otherwise, if only features or outcomes are given check the first date context. The empty feature/outcome query
 		// will still return an empty result which will be merged with to a complete result.
-		return contexts.get(0).getSubdivisionMode().equals(DateContextMode.COMPLETE);
+		return contexts.get(0).getSubdivisionMode().equals(DateContext.Resolution.COMPLETE);
 	}
 
 	private FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {
@@ -214,10 +223,10 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		// copy daterange
 		result[getFeatureDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
-		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition(), value.length - (SUB_RESULT_DATE_RANGE_POS+1));
+		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition(), featurePlan.getAggregatorSize());
 	}
 
-	private void setOutcomeValues(Object[] result, Object[] value, int featureLength) {
+	private void setOutcomeValues(Object[] result, Object[] value) {
 		// copy everything up to including index
 		for (int i = 0; i <= EVENTDATE_POS; i++) {
 			if(result[i] != null){
@@ -228,7 +237,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		// copy daterange
 		result[getOutcomeDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
-		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, 1 + featureLength, value.length - (SUB_RESULT_DATE_RANGE_POS+1));
+		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition() + featurePlan.getAggregatorSize(), outcomePlan.getAggregatorSize());
 	}
 
 	public List<Aggregator<?>> getAggregators() {
@@ -246,7 +255,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			timeCountBefore,
 			timeCountAfter,
 			timeUnit,
-			resolutions
+			resolutionsAndAlignmentMap
 		);
 		return copy;
 	}

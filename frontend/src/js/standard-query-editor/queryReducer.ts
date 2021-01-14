@@ -3,22 +3,23 @@ import T from "i18n-react";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 
-import type { DateRangeT, TableT } from "../api/types";
+import type { TableT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 import { selectsWithDefaults } from "../model/select";
 
 import {
   QUERY_GROUP_MODAL_SET_DATE,
-  QUERY_GROUP_MODAL_RESET_ALL_DATES
+  QUERY_GROUP_MODAL_RESET_ALL_DATES,
 } from "../query-group-modal/actionTypes";
 
 import {
   LOAD_PREVIOUS_QUERY_START,
   LOAD_PREVIOUS_QUERY_SUCCESS,
   LOAD_PREVIOUS_QUERY_ERROR,
-  RENAME_PREVIOUS_QUERY_SUCCESS
+  RENAME_PREVIOUS_QUERY_SUCCESS,
 } from "../previous-queries/list/actionTypes";
 
 import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
@@ -26,7 +27,7 @@ import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query
 import {
   INTEGER_RANGE,
   REAL_RANGE,
-  MONEY_RANGE
+  MONEY_RANGE,
 } from "../form-components/filterTypes";
 
 import {
@@ -50,17 +51,18 @@ import {
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
+  TOGGLE_SECONDARY_ID_EXCLUDE,
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_DATE_COLUMN
+  SET_DATE_COLUMN,
 } from "./actionTypes";
 
 import type {
   QueryNodeType,
   StandardQueryType,
   DraggedNodeType,
-  DraggedQueryType
+  DraggedQueryType,
 } from "./types";
 
 export type StandardQueryStateT = StandardQueryType;
@@ -77,7 +79,7 @@ const filterItem = (
     label: item.label,
     excludeTimestamps: item.excludeTimestamps,
     loading: item.loading,
-    error: item.error
+    error: item.error,
   };
 
   if (item.isPreviousQuery)
@@ -87,12 +89,13 @@ const filterItem = (
       id: item.id,
       // eslint-disable-next-line no-use-before-define
       query: item.query,
-      isPreviousQuery: item.isPreviousQuery
+      isPreviousQuery: item.isPreviousQuery,
     };
   else
     return {
       ...baseItem,
 
+      excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
       ids: item.ids,
       description: item.description,
       tables: item.tables,
@@ -103,7 +106,7 @@ const filterItem = (
       matchingEntries: item.matchingEntries,
       dateRange: item.dateRange,
 
-      isPreviousQuery: item.isPreviousQuery
+      isPreviousQuery: item.isPreviousQuery,
     };
 };
 
@@ -112,9 +115,9 @@ const setGroupProperties = (node, andIdx, properties) => {
     ...node.slice(0, andIdx),
     {
       ...node[andIdx],
-      ...properties
+      ...properties,
     },
-    ...node.slice(andIdx + 1)
+    ...node.slice(andIdx + 1),
   ];
 };
 
@@ -124,55 +127,54 @@ const setElementProperties = (node, andIdx, orIdx, properties) => {
       ...node[andIdx].elements.slice(0, orIdx),
       {
         ...node[andIdx].elements[orIdx],
-        ...properties
+        ...properties,
       },
-      ...node[andIdx].elements.slice(orIdx + 1)
-    ]
+      ...node[andIdx].elements.slice(orIdx + 1),
+    ],
   };
 
   return setGroupProperties(node, andIdx, groupProperties);
 };
 
 const setAllElementsProperties = (node, properties) => {
-  return node.map(group => ({
+  return node.map((group) => ({
     ...group,
-    elements: group.elements.map(element => ({
+    elements: group.elements.map((element) => ({
       ...element,
-      ...properties
-    }))
+      ...properties,
+    })),
   }));
 };
 
 const dropAndNode = (
-  state,
+  state: StandardQueryStateT,
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType;
-      dateRange?: DateRangeT;
     };
   }
 ) => {
   const group = state[state.length - 1];
   const dateRangeOfLastGroup = group ? group.dateRange : null;
-  const { item, dateRange = dateRangeOfLastGroup } = action.payload;
+  const { item } = action.payload;
 
   const nextState = [
     ...state,
     {
       elements: [filterItem(item)],
-      dateRange: dateRange
-    }
+      dateRange: dateRangeOfLastGroup,
+    },
   ];
 
   return item.moved
     ? deleteNode(nextState, {
-        payload: { andIdx: item.andIdx, orIdx: item.orIdx }
+        payload: { andIdx: item.andIdx, orIdx: item.orIdx },
       })
     : nextState;
 };
 
 const dropOrNode = (
-  state,
+  state: StandardQueryStateT,
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType;
@@ -186,25 +188,25 @@ const dropOrNode = (
     ...state.slice(0, andIdx),
     {
       ...state[andIdx],
-      elements: [filterItem(item), ...state[andIdx].elements]
+      elements: [filterItem(item), ...state[andIdx].elements],
     },
-    ...state.slice(andIdx + 1)
+    ...state.slice(andIdx + 1),
   ];
 
   return item.moved
     ? item.andIdx === andIdx
       ? deleteNode(nextState, {
-          payload: { andIdx: item.andIdx, orIdx: item.orIdx + 1 }
+          payload: { andIdx: item.andIdx, orIdx: item.orIdx + 1 },
         })
       : deleteNode(nextState, {
-          payload: { andIdx: item.andIdx, orIdx: item.orIdx }
+          payload: { andIdx: item.andIdx, orIdx: item.orIdx },
         })
     : nextState;
 };
 
 // Delete a single Node (concept inside a group)
 const deleteNode = (
-  state,
+  state: StandardQueryStateT,
   action: { payload: { andIdx: number; orIdx: number } }
 ) => {
   const { andIdx, orIdx } = action.payload;
@@ -215,89 +217,99 @@ const deleteNode = (
       ...state[andIdx],
       elements: [
         ...state[andIdx].elements.slice(0, orIdx),
-        ...state[andIdx].elements.slice(orIdx + 1)
-      ]
+        ...state[andIdx].elements.slice(orIdx + 1),
+      ],
     },
-    ...state.slice(andIdx + 1)
-  ].filter(and => !!and.elements && and.elements.length > 0);
+    ...state.slice(andIdx + 1),
+  ].filter((and) => !!and.elements && and.elements.length > 0);
 };
 
-const deleteGroup = (state, action) => {
+const deleteGroup = (state: StandardQueryStateT, action: any) => {
   const { andIdx } = action.payload;
 
   return [...state.slice(0, andIdx), ...state.slice(andIdx + 1)];
 };
 
-const toggleExcludeGroup = (state, action) => {
+const toggleExcludeGroup = (state: StandardQueryStateT, action: any) => {
   const { andIdx } = action.payload;
 
   return [
     ...state.slice(0, andIdx),
     {
       ...state[andIdx],
-      exclude: state[andIdx].exclude ? undefined : true
+      exclude: state[andIdx].exclude ? undefined : true,
     },
-    ...state.slice(andIdx + 1)
+    ...state.slice(andIdx + 1),
   ];
 };
 
-const loadQuery = (state, action) => {
+const loadQuery = (state: StandardQueryStateT, action: any) => {
   // In case there is no query, keep state the same
   if (!action.payload.query) return state;
 
   return action.payload.query;
 };
 
-const updateNodeTable = (state, andIdx, orIdx, tableIdx, table) => {
+const updateNodeTable = (
+  state: StandardQueryStateT,
+  andIdx: number,
+  orIdx: number,
+  tableIdx: number,
+  table
+) => {
   const node = state[andIdx].elements[orIdx];
   const tables = [
     ...node.tables.slice(0, tableIdx),
     table,
-    ...node.tables.slice(tableIdx + 1)
+    ...node.tables.slice(tableIdx + 1),
   ];
 
   return updateNodeTables(state, andIdx, orIdx, tables);
 };
 
-const updateNodeTables = (state, andIdx, orIdx, tables) => {
+const updateNodeTables = (
+  state: StandardQueryStateT,
+  andIdx: number,
+  orIdx: number,
+  tables
+) => {
   return setElementProperties(state, andIdx, orIdx, { tables });
 };
 
-const toggleNodeTable = (state, action) => {
+const toggleNodeTable = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, isExcluded } = action.payload;
 
-  const nodePosition = selectEditedNode(state);
+  const nodePosition = selectEditedNodePosition(state);
   if (!nodePosition) return state;
 
   const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
   const table = {
     ...node.tables[tableIdx],
-    exclude: isExcluded
+    exclude: isExcluded,
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, table);
 };
 
-const selectEditedNode = state => {
-  const selectedNodes = state
-    .reduce(
-      (acc, group, andIdx) => [
-        ...acc,
-        ...group.elements.map((element, orIdx) => ({ andIdx, orIdx, element }))
-      ],
-      []
-    )
-    .filter(({ element }) => element.isEditing)
-    .map(({ andIdx, orIdx }) => ({ andIdx, orIdx }));
+const selectEditedNodePosition = (state: StandardQueryStateT) => {
+  for (let andIdx = 0; andIdx < state.length; andIdx++) {
+    for (let orIdx = 0; orIdx < state[andIdx].elements.length; orIdx++) {
+      const node = state[andIdx].elements[orIdx];
 
-  return selectedNodes.length ? selectedNodes[0] : null;
+      if (node.isEditing) {
+        return { andIdx, orIdx };
+      }
+    }
+  }
+
+  return null;
 };
 
 const setNodeFilterProperties = (state, action, properties) => {
   const { tableIdx, filterIdx } = action.payload;
 
-  const node = selectEditedNode(state);
+  const node = selectEditedNodePosition(state);
 
   if (!node) return state;
 
@@ -315,44 +327,44 @@ const setNodeFilterProperties = (state, action, properties) => {
       ...filters.slice(0, filterIdx),
       {
         ...filter,
-        ...properties
+        ...properties,
       },
-      ...filters.slice(filterIdx + 1)
-    ]
+      ...filters.slice(filterIdx + 1),
+    ],
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeFilterValue = (state, action) => {
+const setNodeFilterValue = (state: StandardQueryStateT, action: any) => {
   const { value } = action.payload;
 
   return setNodeFilterProperties(state, action, { value });
 };
 
-const setNodeTableSelects = (state, action) => {
+const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { selects } = table;
 
   // value contains the selects that have now been selected
   const newTable = {
     ...table,
-    selects: selects.map(select => ({
+    selects: selects.map((select) => ({
       ...select,
       selected:
         !!value &&
-        !!value.find(selectedValue => selectedValue.value === select.id)
-    }))
+        !!value.find((selectedValue) => selectedValue.value === select.id),
+    })),
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeTableDateColumn = (state, action) => {
+const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
   const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { dateColumn } = table;
 
@@ -361,39 +373,39 @@ const setNodeTableDateColumn = (state, action) => {
     ...table,
     dateColumn: {
       ...dateColumn,
-      value
-    }
+      value,
+    },
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeSelects = (state, action) => {
+const setNodeSelects = (state: StandardQueryStateT, action: any) => {
   const { value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNode(state);
+  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const { selects } = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    selects: selects.map(select => ({
+    selects: selects.map((select) => ({
       ...select,
       selected:
         !!value &&
-        !!value.find(selectedValue => selectedValue.value === select.id)
-    }))
+        !!value.find((selectedValue) => selectedValue.value === select.id),
+    })),
   });
 };
 
-const switchNodeFilterMode = (state, action) => {
+const switchNodeFilterMode = (state: StandardQueryStateT, action: any) => {
   const { mode } = action.payload;
 
   return setNodeFilterProperties(state, action, {
     mode,
-    value: null
+    value: null,
   });
 };
 
-const resetNodeAllFilters = (state, action) => {
-  const nodeIdx = selectEditedNode(state);
+const resetNodeAllFilters = (state: StandardQueryStateT, action: any) => {
+  const nodeIdx = selectEditedNodePosition(state);
   if (!nodeIdx) return state;
 
   const { andIdx, orIdx } = nodeIdx;
@@ -401,7 +413,7 @@ const resetNodeAllFilters = (state, action) => {
 
   const newState = setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: false,
-    selects: selectsWithDefaults(node.selects)
+    selects: selectsWithDefaults(node.selects),
   });
 
   if (!node.tables) return newState;
@@ -411,13 +423,13 @@ const resetNodeAllFilters = (state, action) => {
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
-const setGroupDate = (state, action) => {
+const setGroupDate = (state: StandardQueryStateT, action: any) => {
   const { andIdx, date } = action.payload;
 
   return setGroupProperties(state, andIdx, { dateRange: date });
 };
 
-const resetGroupDates = (state, action) => {
+const resetGroupDates = (state: StandardQueryStateT, action: any) => {
   const { andIdx } = action.payload;
 
   return setGroupProperties(state, andIdx, { dateRange: null });
@@ -435,10 +447,10 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
 
   if (!savedTable.filters) return null;
 
-  return savedTable.filters.map(filter => {
+  return savedTable.filters.map((filter) => {
     // TODO: Improve the api and don't use `.filter`, but `.id` or `.filterId`
     const matchingFilter =
-      table.filters.find(f => f.filter === filter.id) || {};
+      table.filters.find((f) => f.filter === filter.id) || {};
 
     const filterModeWithValue =
       matchingFilter.type === INTEGER_RANGE ||
@@ -457,17 +469,17 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
       filterModeWithValue.value && filterModeWithValue.value instanceof Array
         ? {
             ...filterModeWithValue,
-            value: filterModeWithValue.value.map(val =>
+            value: filterModeWithValue.value.map((val) =>
               !!filter.options
-                ? filter.options.find(op => op.value === val)
+                ? filter.options.find((op) => op.value === val)
                 : val
-            )
+            ),
           }
         : filterModeWithValue;
 
     return {
       ...filter,
-      ...filterModeWithMappedValue // => this one may contain a "value" property
+      ...filterModeWithMappedValue, // => this one may contain a "value" property
     };
   });
 };
@@ -477,8 +489,10 @@ const mergeSelects = (savedSelects, conceptOrTable) => {
 
   if (!savedSelects) return null;
 
-  return savedSelects.map(select => {
-    const selectedSelect = conceptOrTable.selects.find(id => id === select.id);
+  return savedSelects.map((select) => {
+    const selectedSelect = conceptOrTable.selects.find(
+      (id) => id === select.id
+    );
 
     return { ...select, selected: !!selectedSelect };
   });
@@ -490,16 +504,18 @@ const mergeDateColumn = (savedTable: TableT, table: TableT) => {
 
   return {
     ...savedTable.dateColumn,
-    value: table.dateColumn.value
+    value: table.dateColumn.value,
   };
 };
 
 const mergeTables = (savedTables, concept) => {
   return savedTables
-    ? savedTables.map(savedTable => {
+    ? savedTables.map((savedTable) => {
         // Find corresponding table in previous queryObject
         // TODO: Disentangle id / connectorId mixing
-        const table = concept.tables.find(t => t.id === savedTable.connectorId);
+        const table = concept.tables.find(
+          (t) => t.id === savedTable.connectorId
+        );
         const filters = mergeFiltersFromSavedConcept(savedTable, table);
         const selects = mergeSelects(savedTable.selects, table);
         const dateColumn = mergeDateColumn(savedTable, table);
@@ -509,7 +525,7 @@ const mergeTables = (savedTables, concept) => {
           exclude: !table,
           filters,
           selects,
-          dateColumn
+          dateColumn,
         };
       })
     : [];
@@ -530,23 +546,23 @@ const expandNode = (rootConcepts, node) => {
     case "OR":
       return {
         ...node,
-        elements: node.children.map(c => expandNode(rootConcepts, c))
+        elements: node.children.map((c) => expandNode(rootConcepts, c)),
       };
     case "SAVED_QUERY":
       return {
         ...node,
         id: node.query,
-        isPreviousQuery: true
+        isPreviousQuery: true,
       };
     case "DATE_RESTRICTION":
       return {
         dateRange: node.dateRange,
-        ...expandNode(rootConcepts, node.child)
+        ...expandNode(rootConcepts, node.child),
       };
     case "NEGATION":
       return {
         exclude: true,
-        ...expandNode(rootConcepts, node.child)
+        ...expandNode(rootConcepts, node.child),
       };
     default:
       const ids = node.ids || [node.id];
@@ -558,7 +574,7 @@ const expandNode = (rootConcepts, node) => {
       if (!lookupResult)
         return {
           ...node,
-          error: T.translate("queryEditor.couldNotExpandNode")
+          error: T.translate("queryEditor.couldNotExpandNode"),
         };
 
       const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
@@ -573,7 +589,8 @@ const expandNode = (rootConcepts, node) => {
         tables,
         selects,
         excludeTimestamps: node.excludeFromTimeAggregation,
-        tree: lookupResult.root
+        excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
+        tree: lookupResult.root,
       };
   }
 };
@@ -582,34 +599,38 @@ const expandNode = (rootConcepts, node) => {
 // a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (state, action) => {
+const expandPreviousQuery = (state: StandardQueryStateT, action: any) => {
   const { rootConcepts, query } = action.payload;
 
-  return query.root.children.map(child => expandNode(rootConcepts, child));
+  return query.root.children.map((child) => expandNode(rootConcepts, child));
 };
 
-const findPreviousQueries = (state, action) => {
+const findPreviousQueries = (state: StandardQueryStateT, action: any) => {
   // Find all nodes that are previous queries and have the correct id
   const queries = state
     .map((group, andIdx) => {
       return group.elements
         .map((concept, orIdx) => ({ ...concept, orIdx }))
         .filter(
-          concept =>
+          (concept) =>
             concept.isPreviousQuery && concept.id === action.payload.queryId
         )
-        .map(concept => ({
+        .map((concept) => ({
           andIdx,
           orIdx: concept.orIdx,
-          node: objectWithoutKey("orIdx")(concept)
+          node: objectWithoutKey("orIdx")(concept),
         }));
     })
-    .filter(group => group.length > 0);
+    .filter((group) => group.length > 0);
 
   return [].concat.apply([], queries);
 };
 
-const updatePreviousQueries = (state, action, attributes) => {
+const updatePreviousQueries = (
+  state: StandardQueryStateT,
+  action: any,
+  attributes: any
+) => {
   const queries = findPreviousQueries(state, action);
 
   return queries.reduce((nextState, query) => {
@@ -623,20 +644,20 @@ const updatePreviousQueries = (state, action, attributes) => {
           ...nextState[andIdx].elements.slice(0, orIdx),
           {
             ...node,
-            ...attributes
+            ...attributes,
           },
-          ...nextState[andIdx].elements.slice(orIdx + 1)
-        ]
+          ...nextState[andIdx].elements.slice(orIdx + 1),
+        ],
       },
-      ...nextState.slice(andIdx + 1)
+      ...nextState.slice(andIdx + 1),
     ];
   }, state);
 };
 
-const loadPreviousQueryStart = (state, action) => {
+const loadPreviousQueryStart = (state: StandardQueryStateT, action: any) => {
   return updatePreviousQueries(state, action, { loading: true });
 };
-const loadPreviousQuerySuccess = (state, action) => {
+const loadPreviousQuerySuccess = (state: StandardQueryStateT, action: any) => {
   const label = action.payload.data.label
     ? { label: action.payload.data.label }
     : {};
@@ -645,55 +666,70 @@ const loadPreviousQuerySuccess = (state, action) => {
     ...label,
     id: action.payload.data.id,
     loading: false,
-    query: action.payload.data.query
+    query: action.payload.data.query,
   });
 };
-const loadPreviousQueryError = (state, action) => {
+const loadPreviousQueryError = (state: StandardQueryStateT, action: any) => {
   return updatePreviousQueries(state, action, {
     loading: false,
-    error: action.payload.message
+    error: action.payload.message,
   });
 };
-const renamePreviousQuery = (state, action) => {
+const renamePreviousQuery = (state: StandardQueryStateT, action: any) => {
   return updatePreviousQueries(state, action, {
     loading: false,
-    label: action.payload.label
+    label: action.payload.label,
   });
 };
 
-function getIndicesFromSelectedOrAction(state, action) {
+function getPositionFromActionOrEditedNode(
+  state: StandardQueryStateT,
+  action: any
+) {
   const { andIdx, orIdx } = action.payload;
 
-  if (andIdx !== null && orIdx !== null) {
+  if (exists(andIdx) && exists(orIdx)) {
     return { andIdx, orIdx };
   }
 
-  return selectEditedNode(state);
+  return selectEditedNodePosition(state);
 }
 
-const toggleTimestamps = (state, action) => {
-  const { andIdx, orIdx } = getIndicesFromSelectedOrAction(state, action);
+const toggleTimestamps = (state: StandardQueryStateT, action: any) => {
+  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
 
   return setElementProperties(state, andIdx, orIdx, {
-    excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps
+    excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps,
   });
 };
 
-const loadFilterSuggestionsStart = (state, action) =>
+const toggleSecondaryIdExclude = (state: StandardQueryStateT, action: any) => {
+  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
+
+  return setElementProperties(state, andIdx, orIdx, {
+    excludeFromSecondaryIdQuery: !state[andIdx].elements[orIdx]
+      .excludeFromSecondaryIdQuery,
+  });
+};
+
+const loadFilterSuggestionsStart = (state: StandardQueryStateT, action: any) =>
   setNodeFilterProperties(state, action, { isLoading: true });
 
-const loadFilterSuggestionsSuccess = (state, action) => {
+const loadFilterSuggestionsSuccess = (
+  state: StandardQueryStateT,
+  action: any
+) => {
   // When [] comes back from the API, don't touch the current options
   if (!action.payload.data || action.payload.data.length === 0)
     return setNodeFilterProperties(state, action, { isLoading: false });
 
   return setNodeFilterProperties(state, action, {
     isLoading: false,
-    options: action.payload.data
+    options: action.payload.data,
   });
 };
 
-const loadFilterSuggestionsError = (state, action) =>
+const loadFilterSuggestionsError = (state: StandardQueryStateT, action: any) =>
   setNodeFilterProperties(state, action, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
@@ -712,12 +748,12 @@ const createQueryNodeFromConceptListUploadResult = (
         ids: resolvedConcepts,
         tables: lookupResult.tables,
         selects: lookupResult.selects,
-        tree: lookupResult.root
+        tree: lookupResult.root,
       }
     : null;
 };
 
-const insertUploadedConceptList = (state, action) => {
+const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
   const { label, rootConcepts, resolvedConcepts, andIdx } = action.payload;
 
   const queryElement = createQueryNodeFromConceptListUploadResult(
@@ -730,31 +766,34 @@ const insertUploadedConceptList = (state, action) => {
 
   return andIdx === null
     ? dropAndNode(state, {
-        payload: { item: queryElement }
+        payload: { item: queryElement },
       })
     : dropOrNode(state, {
-        payload: { andIdx, item: queryElement }
+        payload: { andIdx, item: queryElement },
       });
 };
 
-const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
+const selectNodeForEditing = (
+  state: StandardQueryStateT,
+  { payload: { andIdx, orIdx } }
+) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 };
 
-const updateNodeLabel = (state, action) => {
-  const node = selectEditedNode(state);
+const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
+  const node = selectEditedNodePosition(state);
 
   if (!node) return state;
 
   const { andIdx, orIdx } = node;
 
   return setElementProperties(state, andIdx, orIdx, {
-    label: action.payload.label
+    label: action.payload.label,
   });
 };
 
-const addConceptToNode = (state, action) => {
-  const nodePosition = selectEditedNode(state);
+const addConceptToNode = (state: StandardQueryStateT, action: any) => {
+  const nodePosition = selectEditedNodePosition(state);
 
   if (!nodePosition) return state;
 
@@ -762,12 +801,12 @@ const addConceptToNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: [...action.payload.concept.ids, ...node.ids]
+    ids: [...action.payload.concept.ids, ...node.ids],
   });
 };
 
-const removeConceptFromNode = (state, action) => {
-  const nodePosition = selectEditedNode(state);
+const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
+  const nodePosition = selectEditedNodePosition(state);
 
   if (!nodePosition) return state;
 
@@ -775,7 +814,7 @@ const removeConceptFromNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: node.ids.filter(id => id !== action.payload.conceptId)
+    ids: node.ids.filter((id) => id !== action.payload.conceptId),
   });
 };
 
@@ -788,7 +827,7 @@ const removeConceptFromNode = (state, action) => {
 // const toggleIncludeSubnodes = (state: StateType, action: Object) => {
 //   const { includeSubnodes } = action.payload;
 
-//   const nodePosition = selectEditedNode(state);
+//   const nodePosition = selectEditedNodePosition(state);
 
 //   if (!nodePosition) return state;
 
@@ -912,6 +951,8 @@ const query = (
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:
       return toggleTimestamps(state, action);
+    case TOGGLE_SECONDARY_ID_EXCLUDE:
+      return toggleSecondaryIdExclude(state, action);
     case QUERY_GROUP_MODAL_SET_DATE:
       return setGroupDate(state, action);
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:

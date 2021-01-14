@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
+import com.bakdata.conquery.models.api.description.FESecondaryId;
 import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.api.description.FEValidityDate;
@@ -26,8 +27,8 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -87,13 +88,13 @@ public class FrontEndConceptBuilder {
 			roots.put(sn.getId(), node);
 		}
 		//add all secondary IDs
-		for(Table table : storage.getDataset().getTables().values()) {
-			for(Column column : table.getColumns()) {
-				if(column.getSecondaryId() != null) {
-					root.getSecondaryIds().add(column.getSecondaryId().toString());
-				}
-			}
-		}
+		root.getSecondaryIds()
+			.addAll(
+					storage.getSecondaryIds().stream()
+						   .map(sid -> new FESecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
+						   .collect(Collectors.toSet())
+			);
+
 		return root;
 	}
 
@@ -205,31 +206,31 @@ public class FrontEndConceptBuilder {
 	}
 
 	public static FETable createTable(Connector con) {
-		FETable result = FETable.builder()
-			.id(con.getTable().getId())
-			.connectorId(con.getId())
-			.label(con.getLabel())
-			.filters(con
-				.collectAllFilters()
-				.stream()
-				.map(FrontEndConceptBuilder::createFilter)
-				.collect(Collectors.toList())
-			)
-			.selects(con
-				.getSelects()
-				.stream()
-				.map(FrontEndConceptBuilder::createSelect)
-				.collect(Collectors.toList())
-			)
-			.supportedSecondaryIds(Arrays.stream(con
-				.getTable()
-				.getColumns())
-				.map(Column::getSecondaryId)
-				.filter(Objects::nonNull)
-				.map(Object::toString)
-				.distinct()
-				.collect(Collectors.toSet())
-			).build();
+		FETable result =
+				FETable.builder()
+					   .id(con.getTable().getId())
+					   .connectorId(con.getId())
+					   .label(con.getLabel())
+					   .filters(
+							   con.collectAllFilters()
+								  .stream()
+								  .map(FrontEndConceptBuilder::createFilter)
+								  .collect(Collectors.toList())
+					   )
+					   .selects(
+							   con.getSelects()
+								  .stream()
+								  .map(FrontEndConceptBuilder::createSelect)
+								  .collect(Collectors.toList())
+					   )
+					   .supportedSecondaryIds(
+							   Arrays.stream(con.getTable().getColumns())
+									 .map(Column::getSecondaryId)
+									 .filter(Objects::nonNull)
+									 .map(Identifiable::getId)
+									 .collect(Collectors.toSet())
+					   )
+					   .build();
 		
 		if(con.getValidityDates().size() > 1) {
 			result.setDateColumn(

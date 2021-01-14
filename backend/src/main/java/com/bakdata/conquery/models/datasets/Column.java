@@ -2,12 +2,12 @@ package com.bakdata.conquery.models.datasets;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,7 +39,8 @@ public class Column extends Labeled<ColumnId> {
 	 * if this is set this column counts as the secondary id of the given name for this
 	 * table
 	 */
-	private SecondaryId secondaryId;
+	@NsIdRef
+	private SecondaryIdDescription secondaryId;
 
 	@Override
 	public ColumnId createId() {

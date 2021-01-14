@@ -109,8 +109,7 @@
         "columns": [
           {
             "name": "sid",
-            "type": "STRING",
-            "secondaryId": "secondary"
+            "type": "STRING"
           },
           {
             "name": "value",
@@ -132,8 +131,7 @@
         "columns": [
           {
             "name": "sid",
-            "type": "STRING",
-            "secondaryId": "secondary"
+            "type": "STRING"
           },
           {
             "name": "value",

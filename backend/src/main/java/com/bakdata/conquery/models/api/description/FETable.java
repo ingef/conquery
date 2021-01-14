@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.Builder;
 import lombok.Data;
@@ -19,5 +20,5 @@ public class FETable {
 	private FEValidityDate dateColumn;
 	private List<FEFilter> filters;
 	private List<FESelect> selects;
-	private Set<String> supportedSecondaryIds;
+	private Set<SecondaryIdDescriptionId> supportedSecondaryIds;
 }

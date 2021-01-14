@@ -28,10 +28,13 @@ export interface PreviousQueryT {
   createdAt: string;
   tags: string[];
   own: boolean;
+  system?: boolean;
   resultUrl: string | null;
   shared: boolean;
   isPristineLabel?: boolean;
   groups?: UserGroupIdT[];
+  queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  secondaryId?: string | null;
 }
 
 export interface PreviousQueriesStateT {

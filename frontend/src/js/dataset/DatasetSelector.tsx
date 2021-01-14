@@ -1,14 +1,15 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import type { Dispatch } from "redux-thunk";
 import T from "i18n-react";
-import { connect } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 
-import type { DatasetType } from "./reducer";
+import { DatasetT } from "./reducer";
 import { selectDataset } from "./actions";
+import { StateT } from "app-types";
+import { StandardQueryType } from "../standard-query-editor/types";
 
 const Root = styled("div")`
   min-width: 300px;
@@ -16,30 +17,35 @@ const Root = styled("div")`
   color: ${({ theme }) => theme.col.black};
 `;
 
-type PropsType = {
-  selectedDatasetId: String;
-  datasets: DatasetType[];
-  error: string;
-  loadDatasets: Function;
-  selectDataset: Function;
-};
+const DatasetSelector: FC = () => {
+  const selectedDatasetId = useSelector<StateT, string | null>(
+    (state) => state.datasets.selectedDatasetId
+  );
+  const datasets = useSelector<StateT, DatasetT[]>(
+    (state) => state.datasets.data
+  );
+  const error = useSelector<StateT, string | null>(
+    (state) => state.datasets.error
+  );
+  const query = useSelector<StateT, StandardQueryType>(
+    (state) => state.queryEditor.query
+  );
 
-const DatasetSelector = (props: PropsType) => {
-  const { selectedDatasetId, datasets, selectDataset, error } = props;
+  const dispatch = useDispatch();
+  const onSelectDataset = (datasetId: string | null) =>
+    dispatch(selectDataset(datasets, datasetId, selectedDatasetId, query));
 
   const options =
-    datasets && datasets.map(db => ({ value: db.id, label: db.label }));
-  const selected = options.filter(set => selectedDatasetId === set.value);
+    datasets && datasets.map((db) => ({ value: db.id, label: db.label }));
+  const selected = options.filter((set) => selectedDatasetId === set.value);
 
   return (
     <Root>
       <ReactSelect
         name="dataset-selector"
         value={error ? -1 : selected}
-        onChange={value =>
-          !isEmpty(value)
-            ? selectDataset(value.value, selectedDatasetId)
-            : selectDataset(null, selectedDatasetId)
+        onChange={(value) =>
+          !isEmpty(value) ? onSelectDataset(value.value) : onSelectDataset(null)
         }
         placeholder={
           error
@@ -53,35 +59,4 @@ const DatasetSelector = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = state => ({
-  selectedDatasetId: state.datasets.selectedDatasetId,
-  datasets: state.datasets.data,
-  error: state.datasets.error,
-  query: state.queryEditor.query
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  selectDataset: (datasets, datasetId, previouslySelectedDatasetId, query) =>
-    dispatch(
-      selectDataset(datasets, datasetId, previouslySelectedDatasetId, query)
-    )
-});
-
-const mergeProps = (stateProps, dispatchProps, ownProps) => ({
-  ...ownProps,
-  ...stateProps,
-  ...dispatchProps,
-  selectDataset: (datasetId, selectedDatasetId) =>
-    dispatchProps.selectDataset(
-      stateProps.datasets,
-      datasetId,
-      selectedDatasetId,
-      stateProps.query
-    )
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
-)(DatasetSelector);
+export default DatasetSelector;

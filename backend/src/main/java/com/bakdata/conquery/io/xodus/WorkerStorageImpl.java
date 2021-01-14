@@ -6,11 +6,13 @@ import java.util.List;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -78,7 +80,16 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		log.debug("Removing CBlock[{}]", id);
 		cBlocks.remove(id);
 	}
-	
+
+	@Override
+	public void addDictionary(Dictionary dict) {
+		if (dict.getId().equals(ConqueryConstants.getPrimaryDictionary(getDataset()))) {
+			throw new IllegalStateException("Workers may not receive the primary dictionary");
+		}
+
+		super.addDictionary(dict);
+	}
+
 	@Override
 	public Collection<CBlock> getAllCBlocks() {
 		return cBlocks.getAll();

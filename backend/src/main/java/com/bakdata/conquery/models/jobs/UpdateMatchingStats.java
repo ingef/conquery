@@ -87,7 +87,7 @@ public class UpdateMatchingStats extends Job {
 
 			try {
 				Bucket bucket = worker.getStorage().getBucket(cBlock.getBucket());
-				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
+				Table table = worker.getStorage().getTable(bucket.getImp().getTable());
 
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 					if (!(concept instanceof TreeConcept)

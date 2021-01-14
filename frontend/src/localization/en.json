@@ -40,6 +40,7 @@
     "startError": "Failed to start the query.",
     "resultError": "Could not load the query result.",
     "resultCount": "results",
+    "resultCountSecondaryIdQuery": "analysis results",
     "queryFailed": "The query failed.",
     "queryCanceled": "The query was canceled."
   },
@@ -51,7 +52,10 @@
     "date": "Date",
     "expand": "Expand",
     "previousQuery": "Query",
-    "loadingPreviousQuery": "Loading Query Details"
+    "loadingPreviousQuery": "Loading Query Details",
+    "secondaryId": "Analysis layer",
+    "secondaryIdStandard": "Standard",
+    "hasSecondaryId": "Analysis layer active"
   },
   "dropzone": {
     "dragElementPlease": "Add an element",
@@ -77,6 +81,8 @@
     "resetSettings": "Reset all settings",
     "excludeTimestamps": "Exclude from time calculation",
     "excludingTimestamps": "Excluded from time calculation",
+    "excludeFromSecondaryIdQuery": "Exclude from analysis layer",
+    "excludingFromSecondaryIdQuery": "Excluded from analysis layer",
     "description": "Description",
     "noDescriptionProvided": "No description provided.",
     "selectAFilter": "Select a filter to see its description here.",

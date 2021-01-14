@@ -52,8 +52,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@NsIdRef
 	private Column subtractColumn;
 
-	private boolean distinct = false;
-
 	@Valid
 	@Getter
 	@Setter
@@ -82,19 +80,20 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn(), getSubtractColumn(), distinct ? getDistinctByColumn() : null };
+		return new Column[]{getColumn(), getSubtractColumn(), getDistinctByColumn()};
 	}
 
 	@Override
 	public FilterNode createAggregator(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
-		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn() == null ? getColumn() :
-				getDistinctByColumn()));
+		if (distinctByColumn != null) {
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn()));
 		}
-		if(getColumn().getType() == MajorTypeId.REAL)
+
+		if (getColumn().getType() == MajorTypeId.REAL) {
 			return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
+		}
 
 		return new RangeFilterNode(value, aggregator);
 	}

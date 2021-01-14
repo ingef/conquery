@@ -8,7 +8,7 @@ import PreviewButton from "../button/PreviewButton";
 import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { canDownloadResult } from "../user/selectors";
-import type { ColumnDescription } from "../api/types";
+import type { ColumnDescription, DatasetIdT } from "../api/types";
 import type { StateT } from "app-types";
 
 const Root = styled("div")`
@@ -40,10 +40,11 @@ const Bold = styled("span")`
 `;
 
 interface PropsT {
-  datasetId: string;
+  datasetId: DatasetIdT;
   resultCount: number;
   resultUrl: string;
   resultColumns: ColumnDescription[];
+  queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
 const QueryResults: FC<PropsT> = ({
@@ -51,6 +52,7 @@ const QueryResults: FC<PropsT> = ({
   resultUrl,
   resultCount,
   resultColumns,
+  queryType,
 }) => {
   const userCanDownloadResult = useSelector<StateT, boolean>((state) =>
     canDownloadResult(state, datasetId)
@@ -68,7 +70,10 @@ const QueryResults: FC<PropsT> = ({
         </Text>
       ) : (
         <LgText>
-          <Bold>{resultCount}</Bold> {T.translate("queryRunner.resultCount")}
+          <Bold>{resultCount}</Bold>{" "}
+          {queryType === "SECONDARY_ID_QUERY"
+            ? T.translate("queryRunner.resultCountSecondaryIdQuery")
+            : T.translate("queryRunner.resultCount")}
         </LgText>
       )}
       {ending === "csv" && (

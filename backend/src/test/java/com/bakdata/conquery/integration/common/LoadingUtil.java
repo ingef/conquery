@@ -74,7 +74,7 @@ public class LoadingUtil {
 		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(dataset, rTable.toTable());
+			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset()), support.getNamespace());
 		}
 	}
 	
@@ -124,7 +124,7 @@ public class LoadingUtil {
 
 		// import preprocessedFiles
 		for (File file : preprocessedFiles) {
-			support.getDatasetsProcessor().addImport(dataset, file);
+			support.getDatasetsProcessor().addImport(support.getNamespace(), file);
 		}
 	}
 
@@ -151,6 +151,12 @@ public class LoadingUtil {
 
 		try (InputStream in = content.getIdMapping().stream()) {
 			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
+		}
+	}
+
+	public static void importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
+		for (RequiredSecondaryId secondaryId : secondaryIds) {
+			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(), secondaryId.toSecondaryId());
 		}
 	}
 }
