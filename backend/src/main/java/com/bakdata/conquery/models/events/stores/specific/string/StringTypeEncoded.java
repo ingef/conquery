@@ -128,7 +128,7 @@ public class StringTypeEncoded extends StringType {
 
 	@Override
 	public int getString(int event) {
-		return (int) subType.getInteger(event);
+		return subType.getString(event);
 	}
 
 	@Override
