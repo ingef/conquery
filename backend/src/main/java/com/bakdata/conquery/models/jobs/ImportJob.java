@@ -101,7 +101,7 @@ public class ImportJob extends Job {
 			return;
 		}
 
-		final Table table = namespace.getStorage().getDataset().getTables().get(this.tableId);
+		final Table table = namespace.getStorage().getTable(this.tableId);
 		final Map<String,ColumnStore<?>> stores = container.getValues();
 
 
@@ -221,7 +221,7 @@ public class ImportJob extends Job {
 			PreprocessedHeader header = headerReader.readValue(in);
 
 
-			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(tableId);
+			Table tab = Objects.requireNonNull(namespace.getStorage().getTable(tableId));
 
 			header.assertMatch(tab);
 

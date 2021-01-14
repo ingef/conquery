@@ -2,12 +2,14 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
@@ -19,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.RequiredArgsConstructor;
@@ -115,6 +118,11 @@ public class ModificationShieldedWorkerStorage implements WorkerStorage {
 		throw new NotImplementedException();
 	}
 
+	@Override
+	public List<Table> getTables() {
+		return delegate.getTables();
+	}
+
 	public Concept<?> getConcept(ConceptId id) {
 		return delegate.getConcept(id);
 	}
@@ -194,7 +202,37 @@ public class ModificationShieldedWorkerStorage implements WorkerStorage {
 
 	public Table getTable(TableId tableId){
 		return delegate.getTable(tableId);
-	};
+	}
+
+	@Override
+	public void addTable(Table table) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void removeTable(TableId table) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public List<SecondaryIdDescription> getSecondaryIds() {
+		return delegate.getSecondaryIds();
+	}
+
+	@Override
+	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
+		return delegate.getSecondaryId(descriptionId);
+	}
+
+	@Override
+	public void addSecondaryId(SecondaryIdDescription secondaryIdDescription) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId) {
+		throw new NotImplementedException();
+	}
 
 	@Override
 	public void close() throws IOException {
