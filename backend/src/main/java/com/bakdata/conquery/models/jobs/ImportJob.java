@@ -287,7 +287,7 @@ public class ImportJob extends Job {
 
 		log.debug("\tsending secondary dictionaries");
 
-		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
+		Table table = namespace.getStorage().getTable(this.table);
 
 		for (int colPos = 0; colPos < header.getColumns().length; colPos++) {
 			PPColumn col = header.getColumns()[colPos];
@@ -354,7 +354,7 @@ public class ImportJob extends Job {
 			PreprocessedHeader header = headerReader.readValue(in);
 
 			log.info("Importing {} into {}", header.getName(), table);
-			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
+			Table tab = Objects.requireNonNull(namespace.getStorage().getTable(table), "Table is missing");
 
 			header.assertMatch(tab);
 

@@ -24,8 +24,7 @@ public class Jackson {
 
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
-		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()))
-								.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, 										 SerializationFeature.WRITE_NULL_MAP_VALUES);
+		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
 	}
 
 	public static <T extends ObjectMapper> T configure(T objectMapper) {

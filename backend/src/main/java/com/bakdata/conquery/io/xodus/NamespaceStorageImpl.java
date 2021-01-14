@@ -28,7 +28,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
-	
+
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory, true);
 	}
@@ -54,7 +54,6 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	public WorkerToBucketsMap getWorkerBuckets() {
 		return workerToBuckets.get();
 	}
-
 
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {

@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,6 +44,9 @@ public class ExecutionStatus {
 		private Long numberOfResults;
 		private Long requiredTime;
 		private URL resultUrl;
+
+		private String queryType;
+		private SecondaryIdDescriptionId secondaryId;
 		
 		/**
 		 * Holds a description for each column, present in the result.

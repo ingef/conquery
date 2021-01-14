@@ -40,7 +40,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		//read test specification
-		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+		String testJson = In.resource("/tests/query/RESTART_TEST_DATA/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
 		PersistentIdMap persistentIdMap = IdMapSerialisationTest.createTestPersistentMap();

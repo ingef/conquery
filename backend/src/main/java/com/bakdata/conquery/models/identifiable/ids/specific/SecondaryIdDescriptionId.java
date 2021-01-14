@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class SecondaryId extends AId<Table> implements NamespacedId {
+public class SecondaryIdDescriptionId extends AId<SecondaryIdDescription> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final String name;
@@ -23,14 +23,14 @@ public class SecondaryId extends AId<Table> implements NamespacedId {
 		components.add(name);
 	}
 	
-	public static enum Parser implements IId.Parser<SecondaryId> {
+	public static enum Parser implements IId.Parser<SecondaryIdDescriptionId> {
 		INSTANCE;
 		
 		@Override
-		public SecondaryId parseInternally(IdIterator parts) {
+		public SecondaryIdDescriptionId parseInternally(IdIterator parts) {
 			String name = parts.next();
 			DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);
-			return new SecondaryId(dataset, name);
+			return new SecondaryIdDescriptionId(dataset, name);
 		}
 	}
 }

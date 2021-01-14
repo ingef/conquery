@@ -33,55 +33,56 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
-	@JsonIgnore
-	protected abstract IQuery getQuery();
-
-	protected abstract ResourceFile getExpectedCsv();
-
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
 		UserId userId = standaloneSupport.getTestUser().getId();
 		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();
-		
+
 		IQuery query = getQuery();
 
 		log.info("{} QUERY INIT", getLabel());
-		
+
 		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, dataset);
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
-		while(managed.getState()!=ExecutionState.DONE && managed.getState()!=ExecutionState.FAILED) {
-			log.warn("waiting for more than 10 seconds on "+getLabel());
+		while (managed.getState() != ExecutionState.DONE && managed.getState() != ExecutionState.FAILED) {
+			log.warn("waiting for more than 10 seconds on " + getLabel());
 			managed.awaitDone(1, TimeUnit.DAYS);
 		}
 
 		if (managed.getState() == ExecutionState.FAILED) {
-			log.error("Failure in Query[{}]. The error was: {}" + managed.getId(),managed.getError());
+			log.error("Failure in Query[{}]. The error was: {}", managed.getId(), managed.getError());
 			fail("Query failed (see above)");
 		}
-		
+
 		//check result info size
 		ResultInfoCollector resultInfos = managed.collectResultInfos();
 		assertThat(
-			managed
-				.fetchContainedEntityResult()
-				.flatMap(ContainedEntityResult::streamValues)
+				managed
+						.fetchContainedEntityResult()
+						.flatMap(ContainedEntityResult::streamValues)
 		)
-		.as("Should have same size as result infos")
-		.allSatisfy(v->
-			assertThat(v).hasSameSizeAs(resultInfos.getInfos())
-		);
+				.as("Should have same size as result infos")
+				.allSatisfy(v ->
+									assertThat(v).hasSameSizeAs(resultInfos.getInfos())
+				);
 
-		PrintSettings PRINT_SETTINGS = new PrintSettings(false,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo, dr) -> columnInfo.getSelect().getId().toStringWithoutDataset());
+		PrintSettings
+				PRINT_SETTINGS =
+				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo, dr) -> columnInfo.getSelect()
+																																		 .getId()
+																																		 .toStringWithoutDataset());
 		IdMappingState mappingState = standaloneSupport.getConfig().getIdMapping().initToExternal(standaloneSupport.getTestUser(), managed);
-		
+
 		List<String> actual = QueryToCSVRenderer
-			.toCSV(
-				PRINT_SETTINGS,
-				managed,
-				cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, standaloneSupport.getConfig().getIdMapping(), mappingState))
-			.collect(Collectors.toList());
+									  .toCSV(
+											  PRINT_SETTINGS,
+											  managed,
+											  cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, standaloneSupport.getConfig()
+																																 .getIdMapping(), mappingState)
+									  )
+									  .collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
 
@@ -95,4 +96,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		log.info("INTEGRATION TEST SUCCESSFUL {} {} on {} rows", getClass().getSimpleName(), this, expected.size());
 	}
+
+	@JsonIgnore
+	protected abstract IQuery getQuery();
+
+	protected abstract ResourceFile getExpectedCsv();
 }

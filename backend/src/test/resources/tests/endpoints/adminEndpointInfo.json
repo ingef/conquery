@@ -44,6 +44,7 @@
 		"path": "/datasets/{dataset}/concepts",
 		"clazz": "AdminDatasetResource"
 	},
+
 	{
 		"method": "POST",
 		"path": "/datasets/{dataset}/mapping",
@@ -54,11 +55,21 @@
 		"path": "/datasets/{dataset}/imports",
 		"clazz": "AdminDatasetResource"
 	},
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/tables",
-		"clazz": "AdminDatasetResource"
-	},
+    {
+      "method": "POST",
+      "path": "/datasets/{dataset}/tables",
+      "clazz": "AdminDatasetResource"
+    },
+    {
+      "method": "POST",
+      "path": "/datasets/{dataset}/secondaryId",
+      "clazz": "AdminDatasetResource"
+    },
+    {
+      "method": "DELETE",
+      "path": "/datasets/{dataset}/secondaryId/{secondaryId}",
+      "clazz": "AdminDatasetResource"
+    },
 	{
 		"method": "POST",
 		"path": "/datasets/{dataset}/structure",

@@ -47,6 +47,9 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
+		importSecondaryIds(support, content.getSecondaryIds());
+		support.waitUntilWorkDone();
+
 		importTables(support, content);
 		support.waitUntilWorkDone();
 

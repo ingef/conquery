@@ -86,7 +86,7 @@ public class CalculateCBlocksJob extends Job {
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 */
 	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-		Table table = storage.getDataset().getTables().get(bucket.getImp().getTable());
+		Table table = storage.getTable(bucket.getImp().getTable());
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;

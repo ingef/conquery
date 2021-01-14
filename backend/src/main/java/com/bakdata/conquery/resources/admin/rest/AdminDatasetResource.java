@@ -1,11 +1,11 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -31,11 +31,12 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
@@ -88,11 +89,12 @@ public class AdminDatasetResource extends HAdmin {
 	@Path("tables")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public void addTable(@FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
-		ObjectMapper mapper = processor.getDatasetRegistry().injectInto(Jackson.MAPPER);
+		ObjectMapper mapper = namespace.getDataset().injectInto(processor.getDatasetRegistry().injectInto(Jackson.MAPPER));
+		// todo migrate to normal rest api
 		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
 				Table t = mapper.readValue(is, Table.class);
-				processor.addTable(namespace.getDataset(), t);
+				processor.addTable(t, namespace);
 			}
 		}
 	}
@@ -124,14 +126,26 @@ public class AdminDatasetResource extends HAdmin {
 		}
 
 
-		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
+		processor.addImport(namespace, selectedFile);
 	}
 
 
 	@POST
 	@Path("concepts")
-	public void addConcept(Concept<?> concept) throws IOException, JSONException, ConfigurationException {
+	public void addConcept(Concept<?> concept) throws JSONException {
 		processor.addConcept(namespace.getDataset(), concept);
+	}
+
+	@POST
+	@Path("secondaryId")
+	public void addSecondaryId(SecondaryIdDescription secondaryId) {
+		processor.addSecondaryId(namespace, secondaryId);
+	}
+
+	@DELETE
+	@Path("secondaryId/{" + SECONDARY_ID + "}")
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescriptionId secondaryId) {
+		processor.deleteSecondaryId(secondaryId);
 	}
 
 	@POST
@@ -144,7 +158,7 @@ public class AdminDatasetResource extends HAdmin {
 	@GET
 	@Path("tables")
 	public List<TableId> listTables(){
-		return new ArrayList<>(namespace.getDataset().getTables().keySet());
+		return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
 	}
 
 	@GET
