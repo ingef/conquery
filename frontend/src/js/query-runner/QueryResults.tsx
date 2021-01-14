@@ -44,6 +44,7 @@ interface PropsT {
   resultCount: number;
   resultUrl: string;
   resultColumns: ColumnDescription[];
+  queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
 const QueryResults: FC<PropsT> = ({
@@ -51,6 +52,7 @@ const QueryResults: FC<PropsT> = ({
   resultUrl,
   resultCount,
   resultColumns,
+  queryType,
 }) => {
   const userCanDownloadResult = useSelector<StateT, boolean>((state) =>
     canDownloadResult(state, datasetId)
@@ -68,7 +70,10 @@ const QueryResults: FC<PropsT> = ({
         </Text>
       ) : (
         <LgText>
-          <Bold>{resultCount}</Bold> {T.translate("queryRunner.resultCount")}
+          <Bold>{resultCount}</Bold>{" "}
+          {queryType === "SECONDARY_ID_QUERY"
+            ? T.translate("queryRunner.resultCountSecondaryIdQuery")
+            : T.translate("queryRunner.resultCount")}
         </LgText>
       )}
       {ending === "csv" && (
