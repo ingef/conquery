@@ -2,9 +2,10 @@ package com.bakdata.conquery.models.events.parser.specific;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.stream.LongStream;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.ByteStore;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
 import com.bakdata.conquery.models.events.stores.base.LongStore;
@@ -14,104 +15,55 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.InstanceOfAssertFactory;
 import org.assertj.core.api.ObjectAssertFactory;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 class IntegerParserTest {
 
-	public static LongStream arguments(){
+	public static Stream<Arguments> arguments() {
 		return Stream.of(
-				Long.MIN_VALUE,
-				Integer.MIN_VALUE,
-				Short.MIN_VALUE,
-				Byte.MIN_VALUE,
-				0,
-				Integer.MAX_VALUE,
-				Short.MAX_VALUE,
-				Byte.MAX_VALUE
-		)
-					 .mapToLong(Number::longValue);
+				// Long is everything not match-able to other sizes.
+				Arguments.of(Integer.MIN_VALUE, Integer.MAX_VALUE * 2L, direct(LongStore.class)),
+
+				// IntegerStore
+				Arguments.of(Integer.MIN_VALUE, (long) Integer.MAX_VALUE - 1L, direct(IntegerStore.class)),
+				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + (long) Integer.MAX_VALUE - 1L, rebased(IntegerStore.class)),
+
+				// ByteStore
+				Arguments.of(Byte.MIN_VALUE, Byte.MAX_VALUE - 1L, direct(ByteStore.class)),
+				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + 255 - 1L, rebased(ByteStore.class)),
+				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + 255 - 1L, rebased(ByteStore.class)),
+
+				// ShortStore
+				Arguments.of(Short.MIN_VALUE, Short.MAX_VALUE - 1L, direct(ShortStore.class)),
+				Arguments.of(Integer.MIN_VALUE, Integer.MIN_VALUE + ((long) Short.MAX_VALUE - (long) Short.MIN_VALUE) - 1L, rebased(ShortStore.class)),
+				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + (Short.MAX_VALUE - Short.MIN_VALUE) - 1L, rebased(ShortStore.class))
+		);
 	}
 
-	@ParameterizedTest
-	@MethodSource("arguments")
-	public void byteRange(long root) {
-		final int span = Byte.MAX_VALUE - Byte.MIN_VALUE - 1;
-		final Class<ByteStore> clazz = ByteStore.class;
-		assertChain(root, span, clazz);
-
-		assertChain(root, span / 2, clazz);
-
-
-		assertExcess(root, span, clazz);
+	public static Consumer<ColumnStore<?>> direct(Class<?> clazz) {
+		return store -> assertThat(store).isInstanceOf(clazz);
 	}
 
-
-	@ParameterizedTest
-	@MethodSource("arguments")
-	public void shortRange(long root) {
-		final int span = Short.MAX_VALUE - Short.MIN_VALUE - 1;
-		final Class<?> clazz = ShortStore.class;
-
-		assertChain(root, span, clazz);
-
-		assertChain(root, span / 2, clazz);
-
-		assertExcess(root, span, clazz);
-	}
-
-
-	@ParameterizedTest
-	@MethodSource("arguments")
-	public void intRange(long root) {
-		final long span = (long) Integer.MAX_VALUE - Integer.MIN_VALUE - 1;
-		final Class<?> clazz = IntegerStore.class;
-
-		assertChain(root, span, clazz);
-
-		assertChain(root, span / 2, clazz);
-
-		assertExcess(root, span, clazz);
-	}
-
-	private void assertExcess(long root, long span, Class<?> clazz) {
-		// barely exceeding the range to the right
-		{
-			final IntegerParser parser = new IntegerParser();
-			parser.setMinValue(root);
-			parser.setMaxValue(root + span + 1);
-
-
-			assertThat(parser.decideType())
+	public static Consumer<ColumnStore<?>> rebased(Class<?> clazz) {
+		return store -> {
+			assertThat(store)
 					.asInstanceOf(new InstanceOfAssertFactory<>(RebasingStore.class, new ObjectAssertFactory<>()))
 					.extracting(RebasingStore::getStore)
-					.isNotInstanceOf(clazz);
-		}
+					.isInstanceOf(clazz);
+		};
 	}
 
-	public void assertChain(long root, long span, Class<?> clazz) {
-		// Full range
-		{
-			final IntegerParser parser = new IntegerParser();
-			parser.setMinValue(root);
-			parser.setMaxValue(root + span - 1);
-
-			assertThat(parser.decideType())
-					.asInstanceOf(new InstanceOfAssertFactory<>(RebasingStore.class, new ObjectAssertFactory<>()))
-					.extracting(RebasingStore::getStore)
-					.isInstanceOf(clazz)
-			;
-		}
-	}
 
 	@ParameterizedTest
 	@MethodSource("arguments")
-	public void longRange(long root) {
-		final long span = ((long) Integer.MAX_VALUE - Integer.MIN_VALUE)  * 2L;
-		final Class<?> clazz = LongStore.class;
+	public void test(long min, long max, Consumer<ColumnStore<Long>> test) {
+		final IntegerParser parser = new IntegerParser();
+		parser.setMinValue(min);
+		parser.setMaxValue(max);
 
-		assertChain(root, span, clazz);
-
-		assertChain(root, span / 2, clazz);
+		assertThat(parser.decideType())
+				.satisfies(test);
 	}
 }
