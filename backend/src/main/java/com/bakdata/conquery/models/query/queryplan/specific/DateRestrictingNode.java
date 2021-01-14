@@ -63,13 +63,13 @@ public class DateRestrictingNode extends QPChainNode {
 
 		int entityId = entity.getId();
 
-		final int min = cBlock.getMinDate().get(entityId);
-		final int max = cBlock.getMaxDate().get(entityId);
-
-		// This means the Entity is not contained.
-		if (min > max) {
-			return false;
+		// Entity has no date-columns.
+		if(!cBlock.getMinDate().containsKey(entityId) && !cBlock.getMaxDate().containsKey(entityId)){
+			return super.isOfInterest(bucket);
 		}
+
+		final int min = cBlock.getMinDate().getOrDefault(entityId, Integer.MIN_VALUE);
+		final int max = cBlock.getMaxDate().getOrDefault(entityId, Integer.MAX_VALUE);
 
 		CDateRange range = CDateRange.of(min, max);
 
