@@ -122,7 +122,7 @@ public class Preprocessed {
 	}
 
 	/**
-	 * Combine by-Entity data into column stores, appropriately formatted.
+	 * Combine raw by-Entity data into column stores, appropriately formatted.
 	 */
 	@SuppressWarnings("rawtypes")
 	private Map<String, ColumnStore<?>> combineStores() {

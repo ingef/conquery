@@ -21,6 +21,12 @@ public class DateParser extends Parser<Integer> {
 	}
 
 	@Override
+	public void setLines(int lines) {
+		super.setLines(lines);
+		subType.setLines(lines);
+	}
+
+	@Override
 	protected Integer parseValue(@Nonnull String value) throws ParsingException {
 		return CDate.ofLocalDate(DateFormats.parseToLocalDate(value));
 	}
