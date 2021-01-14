@@ -20,7 +20,7 @@ class DateRangeParserTest {
 		final DateRangeParser parser = new DateRangeParser(new ParserConfig());
 
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10))
-			.forEach(parser::registerValue);
+			.forEach(parser::addLine);
 
 		final ColumnStore<CDateRange> actual = parser.decideType();
 
