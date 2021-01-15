@@ -30,6 +30,9 @@ public abstract class StringType extends ColumnStore<Integer> implements Iterabl
 
 	public abstract void setUnderlyingDictionary(DictionaryId newDict);
 
+	/**
+	 * After applying DictionaryMapping a new store might be needed.
+	 */
 	public abstract void setIndexStore(ColumnStore<Long> newType);
 
 	public void loadDictionaries(NamespacedStorage storage) {}

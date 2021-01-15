@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import javax.annotation.Nonnull;
@@ -100,7 +101,9 @@ public class StringTypePrefixSuffix extends StringType {
 
 	@Override
 	public long estimateMemoryConsumption() {
-		return subType.estimateMemoryConsumption();
+		return (long) prefix.getBytes(StandardCharsets.UTF_8).length * Byte.SIZE +
+			   (long) suffix.getBytes(StandardCharsets.UTF_8).length * Byte.SIZE +
+			   subType.estimateMemoryConsumption();
 	}
 
 	@Override

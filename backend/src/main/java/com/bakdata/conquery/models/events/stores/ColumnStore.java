@@ -52,9 +52,9 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	}
 
 	public long estimateMemoryConsumption() {
-		long bytes = estimateEventBits();
+		long bits = estimateEventBits();
 
-		return getLines() * bytes;
+		return getLines() * bits;
 	}
 
 	public abstract long estimateEventBits();
