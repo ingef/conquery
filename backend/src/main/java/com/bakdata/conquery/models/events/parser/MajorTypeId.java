@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public enum MajorTypeId {
 
 	STRING(false, StringParser::new),
-	INTEGER(false, t -> new IntegerParser()),
+	INTEGER(false, IntegerParser::new),
 	BOOLEAN(false, BooleanParser::new),
 	REAL(false, RealParser::new),
 	DECIMAL(false, DecimalParser::new),

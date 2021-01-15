@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -33,7 +34,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
@@ -53,6 +53,9 @@ import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This is the main routine to load data into Conquery.
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class ImportJob extends Job {
@@ -60,7 +63,8 @@ public class ImportJob extends Job {
 	private final ObjectReader headerReader = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class);
 
 	private final Namespace namespace;
-	private final TableId tableId;
+
+	private final Table table;
 	private final File importFile;
 	private final int bucketSize;
 
@@ -76,7 +80,7 @@ public class ImportJob extends Job {
 			}
 
 			header = readHeader(file);
-			log.info("Importing {} into {}", header.getName(), tableId);
+			log.info("Importing {} into {}", header.getName(), table);
 
 			//check that all workers are connected
 			namespace.checkConnections();
@@ -93,17 +97,13 @@ public class ImportJob extends Job {
 			throw new IllegalStateException("Failed to load the file " + importFile, exception);
 		}
 
-		final Map<Integer, Integer> starts = container.getStarts();
-		log.info("Done reading data. Contains {} Entities.", starts.size());
 
 		if (container.isEmpty()) {
 			log.warn("Import was empty. Skipping.");
 			return;
 		}
 
-		final Table table = namespace.getStorage().getTable(this.tableId);
-		final Map<String,ColumnStore<?>> stores = container.getValues();
-
+		log.info("Done reading data. Contains {} Entities.", container.size());
 
 		// Update primary dictionary: load new data, and create mapping.
 		DictionaryMapping primaryMapping = importPrimaryDictionary(container.getPrimaryDictionary());
@@ -111,36 +111,33 @@ public class ImportJob extends Job {
 		// Distribute the new IDs among workers
 		distributeWorkerResponsibilities(primaryMapping);
 
+		final Map<String, DictionaryMapping> mappings = importDictionaries(container.getDictionaries(), table.getColumns(), header.getName(), container.getStores());
 
-		final Map<String, DictionaryMapping> mappings = importDictionaries(container.getDictionaries(), table.getColumns(), header.getName(), stores);
+		setDictionaryIds(container.getStores(), table.getColumns(), header.getName());
 
-		setDictionaryIds(stores, table.getColumns(), header.getName());
-
-		applyDictionaryMappings(mappings, stores, table.getColumns());
+		applyDictionaryMappings(mappings, container.getStores(), table.getColumns());
 
 
 		//create data import and store/send it
 
-		Import imp = createImport(header, stores, table.getColumns());
+		Import imp = createImport(header, container.getStores(), table.getColumns());
 
 		namespace.getStorage().updateImport(imp);
 		namespace.sendToAll(new AddImport(imp));
 
+		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(container.entities(), primaryMapping, bucketSize);
 
-		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(starts.keySet(), primaryMapping, bucketSize);
 
-
-		// per incoming bucket:
 		final ColumnStore<?>[] storesSorted = Arrays.stream(table.getColumns())
-												 .map(Column::getName)
-												 .map(stores::get)
-												 .peek(Objects::requireNonNull)
-												 .toArray(ColumnStore[]::new);
+													.map(Column::getName)
+													.map(container.getStores()::get)
+													.map(Objects::requireNonNull)
+													.toArray(ColumnStore[]::new);
 
 
-		// we use this to track ass
+		// we use this to track assignment to workers.
 		final Map<WorkerId, Set<BucketId>> workerAssignments =
-				sendBuckets(starts, container.getLengths(), primaryMapping, imp, buckets2LocalEntities, storesSorted);
+				sendBuckets(container.getStarts(), container.getLengths(), primaryMapping, imp, buckets2LocalEntities, storesSorted);
 
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 	}
@@ -220,10 +217,7 @@ public class ImportJob extends Job {
 		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
 			PreprocessedHeader header = headerReader.readValue(in);
 
-
-			Table tab = Objects.requireNonNull(namespace.getStorage().getTable(tableId));
-
-			header.assertMatch(tab);
+			header.assertMatch(table);
 
 			return header;
 		}
@@ -387,7 +381,7 @@ public class ImportJob extends Job {
 
 
 			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
-			final IntegerParser indexParser = new IntegerParser();
+			final IntegerParser indexParser = new IntegerParser(new ParserConfig());
 
 			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
 
@@ -407,7 +401,7 @@ public class ImportJob extends Job {
 	}
 
 	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore<?>> stores, Column[] columns) {
-		Import imp = new Import(tableId);
+		Import imp = new Import(table.getId());
 
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
@@ -485,7 +479,7 @@ public class ImportJob extends Job {
 
 	@Override
 	public String getLabel() {
-		return "Importing into " + tableId + " from " + importFile;
+		return "Importing into " + table + " from " + importFile;
 	}
 
 }

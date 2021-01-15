@@ -194,7 +194,7 @@ public class AdminProcessor {
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			datasetRegistry.get(ds.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table.getId(), selectedFile, entityBucketSize));
+					  .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
 		}
 	}
 

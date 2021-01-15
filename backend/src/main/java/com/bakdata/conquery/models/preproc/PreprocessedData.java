@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 import javax.validation.constraints.NotNull;
@@ -19,7 +20,7 @@ public class PreprocessedData {
 	private final Map<Integer, Integer> starts;
 	private final Map<Integer, Integer> lengths;
 
-	private final Map<String, ColumnStore<?>> values;
+	private final Map<String, ColumnStore<?>> stores;
 
 	@NotNull
 	private final Dictionary primaryDictionary;
@@ -30,5 +31,13 @@ public class PreprocessedData {
 	@JsonIgnore
 	public boolean isEmpty() {
 		return getStarts() == null;
+	}
+
+	public int size() {
+		return starts.size();
+	}
+
+	public Set<Integer> entities() {
+		return starts.keySet();
 	}
 }

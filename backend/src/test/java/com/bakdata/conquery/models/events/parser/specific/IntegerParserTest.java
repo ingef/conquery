@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.ByteStore;
 import com.bakdata.conquery.models.events.stores.base.IntegerStore;
@@ -59,7 +60,7 @@ class IntegerParserTest {
 	@ParameterizedTest
 	@MethodSource("arguments")
 	public void test(long min, long max, Consumer<ColumnStore<Long>> test) {
-		final IntegerParser parser = new IntegerParser();
+		final IntegerParser parser = new IntegerParser(new ParserConfig());
 		parser.setMinValue(min);
 		parser.setMaxValue(max);
 

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.ByteStore;
@@ -9,21 +10,22 @@ import com.bakdata.conquery.models.events.stores.base.ShortStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @ToString(callSuper = true)
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class IntegerParser extends Parser<Long> {
 
+	private final ParserConfig config;
 	private long minValue = Long.MAX_VALUE;
 	private long maxValue = Long.MIN_VALUE;
+
+	public IntegerParser(ParserConfig config){
+		this.config = config;
+	}
 
 
 	@Override
