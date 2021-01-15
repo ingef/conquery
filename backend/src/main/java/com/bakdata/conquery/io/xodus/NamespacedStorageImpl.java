@@ -19,12 +19,10 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -143,16 +141,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 				centralRegistry.register(imp);
 
-				for (ImportColumn column : imp.getColumns()) {
-					centralRegistry.register(column);
-				}
 			})
 			.onRemove(imp -> {
 				centralRegistry.remove(imp);
 
-				for (ImportColumn column : imp.getColumns()) {
-					centralRegistry.remove(column);
-				}
 			});
 
 		// Order is important here
@@ -212,15 +204,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		dictionaries.remove(id);
 	}
 
-	@Override
-	public Dictionary computeDictionary(DictionaryId id) {
-		Dictionary e = getDictionary(id);
-		if (e == null) {
-			e = new MapDictionary(id.getDataset(), id.getDictionary());
-			updateDictionary(e);
-		}
-		return e;
-	}
 
 	@Override
 	public Dictionary getDictionary(DictionaryId id) {

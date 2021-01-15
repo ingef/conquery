@@ -4,7 +4,6 @@ package com.bakdata.conquery.models.dictionary;
 import java.util.Arrays;
 
 import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.worker.Namespace;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Create a mapping from one {@link Dictionary} to the other (Map source to target). Adding all ids in target, not in source, to source. Additionally, gather all encountered Buckets (see {@link Namespace}) and all not yet used Buckets.
+ * Create a mapping from one {@link Dictionary} to the other (Map source to target). Adding all ids in target, not in source, to source.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter

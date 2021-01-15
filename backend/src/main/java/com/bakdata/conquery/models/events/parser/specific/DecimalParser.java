@@ -53,15 +53,14 @@ public class DecimalParser extends Parser<BigDecimal> {
 		}
 
 		IntegerParser sub = new IntegerParser();
-		sub.registerValue(unscaled.longValueExact());
-		sub.registerValue(-unscaled.longValueExact());
+		sub.setMaxValue(unscaled.longValueExact());
+		sub.setMinValue(-unscaled.longValueExact());
 		sub.setLines(getLines());
 		sub.setNullLines(getNullLines());
 		ColumnStore<Long> subDecision = sub.findBestType();
 
-		return
-				new DecimalTypeScaled(maxScale, subDecision)
-		;
+		return new DecimalTypeScaled(maxScale, subDecision)
+				;
 	}
 
 }

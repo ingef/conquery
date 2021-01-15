@@ -9,6 +9,8 @@ import java.util.stream.IntStream;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.serializer.Int2IntArrayMapDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.Int2IntMapSerializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -20,8 +22,12 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
@@ -35,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)
@@ -54,24 +61,18 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
-	private final Map<Integer, Integer> start;
+	@JsonSerialize(using = Int2IntMapSerializer.class)
+	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
+	private final Int2IntArrayMap start;
 
 	/**
 	 * Number of events per Entity in {@code stores}.
 	 */
-	private final Map<Integer, Integer> length;
+	@JsonSerialize(using = Int2IntMapSerializer.class)
+	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
+	private final Int2IntArrayMap length;
 
 	private final int bucketSize;
-
-	public Bucket(@Min(0) int bucket, ImportId importId, @Min(0) int numberOfEvents, ColumnStore<?>[] stores, Map<Integer, Integer> start, Map<Integer, Integer> length, int bucketSize) {
-		this.bucket = bucket;
-		this.importId = importId;
-		this.numberOfEvents = numberOfEvents;
-		this.stores = stores;
-		this.start = new Int2IntArrayMap(start); // copy constructor with efficient representation
-		this.length = new Int2IntArrayMap(length);
-		this.bucketSize = bucketSize;
-	}
 
 
 	@Override
