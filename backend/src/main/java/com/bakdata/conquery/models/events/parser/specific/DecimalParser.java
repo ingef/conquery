@@ -45,7 +45,6 @@ public class DecimalParser extends Parser<BigDecimal> {
 	@Override
 	protected ColumnStore<BigDecimal> decideType() {
 
-
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
 			return DecimalStore.create(getLines());
@@ -58,8 +57,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 		sub.setNullLines(getNullLines());
 		ColumnStore<Long> subDecision = sub.findBestType();
 
-		return new DecimalTypeScaled(maxScale, subDecision)
-				;
+		return new DecimalTypeScaled(maxScale, subDecision);
 	}
 
 }
