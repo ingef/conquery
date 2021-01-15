@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
@@ -14,13 +15,14 @@ import lombok.RequiredArgsConstructor;
 public class NumberTypeGuesser implements TypeGuesser {
 
 	private final StringParser p;
+	private final ParserConfig config;
 
 	@Override
 	public Guess createGuess() {
 		//check if the remaining strings are all numbers
 		try {
 			Range<Integer> range = new IntegerRange(0, 0);
-			IntegerParser numberParser = new IntegerParser();
+			IntegerParser numberParser = new IntegerParser(config);
 			int[] intMap = new int[p.getStrings().size()];
 			Arrays.fill(intMap, -1);
 			for (Entry<String, Integer> e : p.getStrings().entrySet()) {

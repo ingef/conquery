@@ -25,12 +25,11 @@ public class DateRangeParser extends Parser<CDateRange> {
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
 	private boolean anyOpen;
-	private ParserConfig config;
 
 	public DateRangeParser(ParserConfig config) {
+		super(config);
 		minParser = new DateParser(config);
 		maxParser = new DateParser(config);
-		this.config = config;
 	}
 
 	@Override
@@ -74,7 +73,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 
 		// Quarters cannot encode open ranges.
 		if (!anyOpen && onlyQuarters) {
-			final IntegerParser quarterParser = new IntegerParser();
+			final IntegerParser quarterParser = new IntegerParser(getConfig());
 			quarterParser.setLines(getLines());
 			quarterParser.setMaxValue(maxValue);
 			quarterParser.setMinValue(minValue);

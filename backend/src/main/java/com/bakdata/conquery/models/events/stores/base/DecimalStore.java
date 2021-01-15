@@ -26,7 +26,7 @@ public class DecimalStore extends ColumnStore<BigDecimal> {
 
 	@Override
 	public long estimateEventBits() {
-		return 500; // It's a lot but non-deterministic so we have no idea :)
+		return 256; // Source: http://javamoods.blogspot.com/2009/03/how-big-is-bigdecimal.html
 	}
 
 	public DecimalStore select(int[] starts, int[] ends) {

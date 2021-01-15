@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.events.parser;
 
 import javax.annotation.Nonnull;
 
+import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -17,8 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE> {
+	private final ParserConfig config;
+
 	private int lines = 0;
 	private int nullLines = 0;
+
 	
 	public MAJOR_JAVA_TYPE parse(String v) throws ParsingException {
 		if(v==null) {

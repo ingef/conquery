@@ -19,10 +19,9 @@ public class DecimalParser extends Parser<BigDecimal> {
 
 	private transient int maxScale = Integer.MIN_VALUE;
 	private transient BigDecimal maxAbs;
-	private transient ParserConfig config;
 
 	public DecimalParser(ParserConfig config) {
-		this.config = config;
+		super(config);
 	}
 
 	@Override
@@ -52,7 +51,7 @@ public class DecimalParser extends Parser<BigDecimal> {
 			return DecimalStore.create(getLines());
 		}
 
-		IntegerParser sub = new IntegerParser();
+		IntegerParser sub = new IntegerParser(getConfig());
 		sub.setMaxValue(unscaled.longValueExact());
 		sub.setMinValue(-unscaled.longValueExact());
 		sub.setLines(getLines());

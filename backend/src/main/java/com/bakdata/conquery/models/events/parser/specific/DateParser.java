@@ -14,10 +14,11 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class DateParser extends Parser<Integer> {
 
-	private IntegerParser subType = new IntegerParser();
+	private IntegerParser subType;
 
 	public DateParser(ParserConfig config) {
-
+		super(config);
+		subType = new IntegerParser(config);
 	}
 
 	@Override

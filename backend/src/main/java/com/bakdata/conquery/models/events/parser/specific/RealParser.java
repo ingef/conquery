@@ -20,6 +20,7 @@ public class RealParser extends Parser<Double> {
 	private double floatULP = Float.NEGATIVE_INFINITY;
 
 	public RealParser(ParserConfig config) {
+		super(config);
 		requiredPrecision = config.getMinPrecision();
 	}
 

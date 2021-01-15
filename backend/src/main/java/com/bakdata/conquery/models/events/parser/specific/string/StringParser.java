@@ -43,8 +43,9 @@ public class StringParser extends Parser<Integer> {
 	private String suffix = null;
 
 	public StringParser(ParserConfig config) {
-
+		super(config);
 	}
+
 
 	public int processSingleValue(String value) {
 		//set longest common prefix and suffix
@@ -101,7 +102,7 @@ public class StringParser extends Parser<Integer> {
 		Guess guess = Stream.of(
 				new TrieTypeGuesser(this),
 				new MapTypeGuesser(this),
-				new NumberTypeGuesser(this)
+				new NumberTypeGuesser(this, getConfig())
 		)
 							.map(TypeGuesser::createGuess)
 							.filter(Objects::nonNull)
@@ -154,7 +155,7 @@ public class StringParser extends Parser<Integer> {
 	}
 
 	public ColumnStore<Long> decideIndexType() {
-		final IntegerParser indexParser = new IntegerParser();
+		final IntegerParser indexParser = new IntegerParser(getConfig());
 
 		final IntSummaryStatistics indexStatistics = getStrings().values().stream()
 																 .mapToInt(Integer::intValue)

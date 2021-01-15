@@ -19,12 +19,11 @@ import lombok.ToString;
 @Setter
 public class IntegerParser extends Parser<Long> {
 
-	private final ParserConfig config;
 	private long minValue = Long.MAX_VALUE;
 	private long maxValue = Long.MIN_VALUE;
 
 	public IntegerParser(ParserConfig config){
-		this.config = config;
+		super(config);
 	}
 
 

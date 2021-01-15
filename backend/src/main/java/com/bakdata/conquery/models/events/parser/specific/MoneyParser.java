@@ -23,7 +23,7 @@ public class MoneyParser extends Parser<Long> {
 	private long minValue = Long.MAX_VALUE;
 
 	public MoneyParser(ParserConfig config) {
-
+		super(config);
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class MoneyParser extends Parser<Long> {
 
 	@Override
 	protected ColumnStore<Long> decideType() {
-		IntegerParser subParser = new IntegerParser();
+		IntegerParser subParser = new IntegerParser(getConfig());
 		subParser.registerValue(maxValue);
 		subParser.registerValue(minValue);
 		subParser.setLines(getLines());

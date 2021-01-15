@@ -13,7 +13,7 @@ import lombok.ToString;
 public class BooleanParser extends Parser<Boolean> {
 
 	public BooleanParser(ParserConfig config) {
-
+		super(config);
 	}
 
 	@Override
