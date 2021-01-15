@@ -148,9 +148,9 @@ public class StringParser extends Parser<Integer> {
 	public void setEncoding(Encoding encoding) {
 		this.encoding = encoding;
 		decoded = strings
-						  .entrySet()
+						  .keySet()
 						  .stream()
-						  .map(e -> encoding.decode(e.getKey()))
+						  .map(encoding::decode)
 						  .collect(Collectors.toList());
 	}
 
