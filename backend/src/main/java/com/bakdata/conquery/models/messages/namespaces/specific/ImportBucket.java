@@ -24,12 +24,6 @@ public class ImportBucket extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		log.debug("Received {}", bucket);
 
-		// todo get import via idRef instead.
-
-		// todo encapsulate this better.
-		bucket.loadDictionaries(context.getStorage());
-
-		bucket.setImp(context.getStorage().getImport(bucket.getImportId()));
 		context.addBucket(bucket);
 	}
 
