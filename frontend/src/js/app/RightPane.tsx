@@ -36,7 +36,11 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
           selectedDatasetId: selectedDatasetId,
         });
 
-        return <Tab isActive={isActive}>{tabComponent}</Tab>;
+        return (
+          <Tab key={tab.key} isActive={isActive}>
+            {tabComponent}
+          </Tab>
+        );
       })}
     </Pane>
   );

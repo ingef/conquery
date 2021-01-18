@@ -40,7 +40,9 @@ const FormsTab = (props: TabPropsType) => {
       updateReducers(store, tabs);
     }
 
-    loadForms();
+    if (props.selectedDatasetId) {
+      loadForms();
+    }
   }, [store, props.selectedDatasetId]);
 
   return (

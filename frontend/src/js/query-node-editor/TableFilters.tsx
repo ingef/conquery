@@ -14,7 +14,7 @@ import {
   REAL_RANGE,
   MONEY_RANGE,
   STRING,
-  BIG_MULTI_SELECT
+  BIG_MULTI_SELECT,
 } from "../form-components/filterTypes";
 
 import type { FilterWithValueType } from "../standard-query-editor/types";
@@ -23,16 +23,16 @@ import type {
   CurrencyConfigT,
   DatasetIdT,
   ConceptIdT,
-  TableIdT
+  TableIdT,
 } from "../api/types";
 
-export type FiltersContextT = {
+export interface FiltersContextT {
   datasetId: DatasetIdT;
   treeId: ConceptIdT;
   tableId: TableIdT;
-};
+}
 
-type PropsType = {
+interface PropsT {
   context: FiltersContextT;
   filters: FilterWithValueType[] | null;
   className?: string;
@@ -43,13 +43,13 @@ type PropsType = {
   onShowDescription: Function;
   suggestions: Object | null;
   currencyConfig: CurrencyConfigT;
-};
+}
 
 const Row = styled("div")`
   margin-bottom: 10px;
 `;
 
-const TableFilters = (props: PropsType) => {
+const TableFilters = (props: PropsT) => {
   if (!props.filters || props.filters.length === 0) return null;
 
   return (
@@ -64,7 +64,8 @@ const TableFilters = (props: PropsType) => {
                     clearable: filter.value !== filter.defaultValue,
                     defaultValue: filter.defaultValue,
                     value: filter.value,
-                    onChange: value => props.onSetFilterValue(filterIdx, value)
+                    onChange: (value) =>
+                      props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
                   options={filter.options}
@@ -78,7 +79,8 @@ const TableFilters = (props: PropsType) => {
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
-                    onChange: value => props.onSetFilterValue(filterIdx, value)
+                    onChange: (value) =>
+                      props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
                   options={filter.options}
@@ -93,7 +95,8 @@ const TableFilters = (props: PropsType) => {
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
-                    onChange: value => props.onSetFilterValue(filterIdx, value)
+                    onChange: (value) =>
+                      props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
                   options={
@@ -111,7 +114,7 @@ const TableFilters = (props: PropsType) => {
                       props.suggestions[filterIdx].isLoading)
                   }
                   startLoadingThreshold={filter.threshold || 1}
-                  onLoad={prefix =>
+                  onLoad={(prefix) =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)
                   }
                 />
@@ -123,14 +126,15 @@ const TableFilters = (props: PropsType) => {
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
-                    onChange: value => props.onSetFilterValue(filterIdx, value)
+                    onChange: (value) =>
+                      props.onSetFilterValue(filterIdx, value),
                   }}
                   limits={{ min: filter.min, max: filter.max }}
                   unit={filter.unit}
                   label={filter.label}
                   mode={filter.mode || "range"}
                   disabled={!!props.excludeTable}
-                  onSwitchMode={mode =>
+                  onSwitchMode={(mode) =>
                     props.onSwitchFilterMode(filterIdx, mode)
                   }
                   placeholder="-"
@@ -144,7 +148,8 @@ const TableFilters = (props: PropsType) => {
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
-                    onChange: value => props.onSetFilterValue(filterIdx, value)
+                    onChange: (value) =>
+                      props.onSetFilterValue(filterIdx, value),
                   }}
                   limits={{ min: filter.min, max: filter.max }}
                   unit={filter.unit}
@@ -152,7 +157,7 @@ const TableFilters = (props: PropsType) => {
                   mode={filter.mode || "range"}
                   stepSize={filter.precision || 0.1}
                   disabled={!!props.excludeTable}
-                  onSwitchMode={mode =>
+                  onSwitchMode={(mode) =>
                     props.onSwitchFilterMode(filterIdx, mode)
                   }
                   placeholder="-"
@@ -166,13 +171,14 @@ const TableFilters = (props: PropsType) => {
                   valueType={MONEY_RANGE}
                   input={{
                     value: filter.value,
-                    onChange: value => props.onSetFilterValue(filterIdx, value)
+                    onChange: (value) =>
+                      props.onSetFilterValue(filterIdx, value),
                   }}
                   unit={filter.unit}
                   label={filter.label}
                   mode={filter.mode || "range"}
                   disabled={!!props.excludeTable}
-                  onSwitchMode={mode =>
+                  onSwitchMode={(mode) =>
                     props.onSwitchFilterMode(filterIdx, mode)
                   }
                   placeholder="-"
@@ -186,7 +192,8 @@ const TableFilters = (props: PropsType) => {
                   input={{
                     value: filter.value || "",
                     defaultValue: filter.defaultValue,
-                    onChange: value => props.onSetFilterValue(filterIdx, value)
+                    onChange: (value) =>
+                      props.onSetFilterValue(filterIdx, value),
                   }}
                   placeholder="-"
                   label={filter.label}
@@ -197,7 +204,7 @@ const TableFilters = (props: PropsType) => {
               return null;
           }
         })
-        .filter(input => !!input)
+        .filter((input) => !!input)
         .map((input, filterIdx) => (
           <Row
             key={filterIdx}

@@ -113,6 +113,7 @@ export interface TableT {
   exclude?: boolean;
   filters?: FilterT[]; // Empty array: key not defined
   selects?: SelectorT[]; // Empty array: key not defined
+  supportedSecondaryIds?: string[];
 }
 
 export type SelectorIdT = string;
@@ -294,9 +295,9 @@ export interface GetStoredQueryResponseT {
   resultUrl: string;
   requiredTime: number; // TODO: Not used
   tags?: string[];
-  query: QueryT; // TODO: Remove in QUERIES response. Creates a lot of additional traffic right now
+  query: QueryT;
   owner: string; // TODO: Remove. Not used. And it's actually an ID
-  status: "DONE"; // TODO: Remove. Not used here
+  status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
 }
 

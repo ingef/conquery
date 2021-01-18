@@ -5,22 +5,11 @@ import T from "i18n-react";
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryNode from "./QueryNode";
 import QueryGroupActions from "./QueryGroupActions";
-import type { QueryGroupType } from "./types";
-
-type PropsType = {
-  group: QueryGroupType;
-  andIdx: number;
-  onDropNode: (node: Object) => void;
-  onDropFile: Function;
-  onDeleteNode: Function;
-  onEditClick: Function;
-  onExcludeClick: Function;
-  onExpandClick: Function;
-  onDateClick: Function;
-  onDeleteGroup: Function;
-  onLoadPreviousQuery: Function;
-  onToggleTimestamps: Function;
-};
+import type {
+  DraggedNodeType,
+  DraggedQueryType,
+  QueryGroupType,
+} from "./types";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -46,11 +35,26 @@ const QueryOrConnector = styled("p")`
   text-align: center;
 `;
 
-const isDateActive = dateRange => {
+const isDateActive = (dateRange) => {
   return !!dateRange && (!!dateRange.min || !!dateRange.max);
 };
 
-const QueryGroup = (props: PropsType) => {
+interface PropsT {
+  group: QueryGroupType;
+  andIdx: number;
+  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropFile: Function;
+  onDeleteNode: Function;
+  onEditClick: Function;
+  onExcludeClick: Function;
+  onExpandClick: Function;
+  onDateClick: Function;
+  onDeleteGroup: Function;
+  onLoadPreviousQuery: Function;
+  onToggleTimestamps: Function;
+}
+
+const QueryGroup = (props: PropsT) => {
   return (
     <Root>
       <QueryEditorDropzone

@@ -21,7 +21,7 @@ import {
   SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  TOGGLE_SHOW_MISMATCHES
+  TOGGLE_SHOW_MISMATCHES,
 } from "./actionTypes";
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
@@ -33,7 +33,7 @@ export const loadTreesSuccess = (res: any) =>
 
 export const loadTrees = (datasetId: DatasetIdT) => {
   return async (dispatch: Dispatch) => {
-    // TODO: Careful, side effect, extract this soon
+    // CAREFUL: side effect!
     resetAllTrees();
 
     dispatch(clearTrees());
@@ -59,7 +59,7 @@ export const loadTrees = (datasetId: DatasetIdT) => {
 
 export const loadTreeStart = (treeId: ConceptIdT) => ({
   type: LOAD_TREE_START,
-  payload: { treeId }
+  payload: { treeId },
 });
 export const loadTreeError = (treeId: ConceptIdT, err: any) =>
   defaultError(LOAD_TREE_ERROR, err, { treeId });
@@ -97,11 +97,11 @@ export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
 
 export const searchTreesStart = (query: string) => ({
   type: SEARCH_TREES_START,
-  payload: { query }
+  payload: { query },
 });
 export const searchTreesSuccess = (query: string, result: Object) => ({
   type: SEARCH_TREES_SUCCESS,
-  payload: { query, result }
+  payload: { query, result },
 });
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });

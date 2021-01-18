@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.concepts.select.concept.specific;
 import java.util.stream.Collectors;
 
 import c10n.C10N;
-import com.bakdata.conquery.internationalization.EventDateUnionSelectC10n;
+import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -27,12 +27,12 @@ public class EventDateUnionSelect extends UniversalSelect {
 		 *  The label is here internationalized but that doesn't have an effect on the effective label, which is used in a result header.
 		 *  For the result header, the label is generated on a per request basis with respect to the request provided locale.  
 		 */
-		this.setLabel(C10N.get(EventDateUnionSelectC10n.class).label());		
+		this.setLabel(C10N.get(ResultHeadersC10n.class).dates());
 	}
 	
 	@Override
 	public String getLabel() {
-		return C10N.get(EventDateUnionSelectC10n.class, I18n.LOCALE.get()).label();
+		return C10N.get(ResultHeadersC10n.class, I18n.LOCALE.get()).dates();
 	}
 
 	@Override

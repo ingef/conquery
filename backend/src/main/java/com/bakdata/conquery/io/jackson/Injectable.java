@@ -3,6 +3,9 @@ package com.bakdata.conquery.io.jackson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
+/**
+ * Helper interface to build bridge implementations for {@link io.dropwizard.jackson.Jackson}.
+ */
 public interface Injectable {
 
 	public default ObjectReader injectInto(ObjectReader reader) {

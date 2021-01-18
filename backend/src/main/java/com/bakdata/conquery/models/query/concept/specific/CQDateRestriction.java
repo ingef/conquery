@@ -29,7 +29,7 @@ import lombok.Setter;
 @CPSType(id = "DATE_RESTRICTION", base = CQElement.class)
 @Setter
 @Getter
-public class CQDateRestriction implements CQElement {
+public class CQDateRestriction extends CQElement {
 	@NotNull
 	private Range<LocalDate> dateRange;
 	@Valid
@@ -78,7 +78,7 @@ public class CQDateRestriction implements CQElement {
 	
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		CQElement.super.visit(visitor);
+		super.visit(visitor);
 		child.visit(visitor);
 	}
 }

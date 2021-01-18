@@ -6,9 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.function.IntFunction;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -17,8 +15,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.IdMutex.Locked;
-import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -92,7 +88,8 @@ public class BucketManager {
 	 */
 	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets) {
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, createEntityFor(bucket, storage));
+
+			entities.computeIfAbsent(entity, Entity::new);
 		}
 
 		tableBuckets
@@ -115,23 +112,6 @@ public class BucketManager {
 				.computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
 				.computeIfAbsent(bucket.getId().getBucket(), bucketId -> new HashMap<>(3))
 				.put(cBlock.getBucket(), cBlock);
-	}
-
-	/**
-	 * Logic for tracing the creation of new Entities.
-	 */
-	private static IntFunction<Entity> createEntityFor(Identifiable<?> idable, WorkerStorage storage) {
-
-		return id -> {
-
-			if (log.isDebugEnabled() && idable.getId() instanceof NamespacedId) {
-				byte[] thename = storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
-
-				log.trace("Creating new Entitiy[{}]=`{}` for Bucket[{}]", id, new String(thename), idable.getId());
-			}
-
-			return new Entity(id);
-		};
 	}
 
 	@SneakyThrows

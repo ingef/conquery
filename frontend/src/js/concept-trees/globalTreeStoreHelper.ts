@@ -26,14 +26,14 @@ export function resetAllTrees() {
 // SETTER
 //
 export function setTree(
-  rootConcept: ConceptIdT,
+  rootConcept: ConceptT,
   treeId: ConceptIdT,
   tree: ConceptT
 ): void {
   // This replaces the root concept with the one loaded initially (at /concepts)
   const concepts = {
     ...tree,
-    [treeId]: rootConcept
+    [treeId]: rootConcept,
   };
 
   window.conceptTrees[treeId] = concepts;
@@ -66,7 +66,7 @@ const findParentConcepts = (concepts: ConceptT[]): ConceptT[] => {
 
   const parentConceptWithId = {
     ...parentConcept,
-    id: parentId
+    id: parentId,
   };
 
   // Will return a list like
@@ -75,10 +75,10 @@ const findParentConcepts = (concepts: ConceptT[]): ConceptT[] => {
 };
 
 interface ConceptsByIds {
-  concepts: (ConceptT & { id: ConceptIdT })[],
-  root: ConceptIdT,
-  tables: TableT[],
-  selects?: SelectorT[]
+  concepts: (ConceptT & { id: ConceptIdT })[];
+  root: ConceptIdT;
+  tables: TableT[];
+  selects?: SelectorT[];
 }
 
 export const getConceptsByIdsWithTablesAndSelects = (
@@ -86,18 +86,18 @@ export const getConceptsByIdsWithTablesAndSelects = (
   rootConcepts: TreesT
 ): ConceptsByIds | null => {
   const concepts = conceptIds
-    .map(id => ({ concept: getConceptById(id), id }))
+    .map((id) => ({ concept: getConceptById(id), id }))
     .filter(({ concept }) => !!concept)
     .map(({ concept, id }) => ({ ...concept, id }));
 
   if (concepts.length !== conceptIds.length) return null;
 
   const parentConceptIds = findParentConcepts(concepts).map(
-    c => c.id.toString() // toString so we can find them by object keys
+    (c) => c.id.toString() // toString so we can find them by object keys
   );
 
   const rootConceptId = Object.keys(rootConcepts).find(
-    id => includes(parentConceptIds, id) && !!rootConcepts[id].tables
+    (id) => includes(parentConceptIds, id) && !!rootConcepts[id].tables
   );
 
   // There should only be one exact root node that has table information
@@ -117,7 +117,7 @@ export const getConceptsByIdsWithTablesAndSelects = (
     concepts,
     root: rootConceptId,
     tables: tablesWithDefaults(rootConcept.tables),
-    ...selects
+    ...selects,
   };
 };
 
@@ -152,7 +152,7 @@ export const globalSearch = async (trees: TreesT, query: string) => {
   const combinedTrees = Object.assign({}, formattedTrees, window.conceptTrees);
 
   const result = Object.keys(combinedTrees)
-    .filter(key => !combinedTrees[key].parent)
+    .filter((key) => !combinedTrees[key].parent)
     .reduce(
       (all, key) => ({
         ...all,
@@ -162,7 +162,7 @@ export const globalSearch = async (trees: TreesT, query: string) => {
           key,
           combinedTrees[key][key],
           lowerQuery
-        )
+        ),
       }),
       {}
     );

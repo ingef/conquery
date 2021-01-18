@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,8 +33,8 @@ public class ArrayConceptQuery extends IQuery {
 	private List<ConceptQuery> childQueries = new ArrayList<>();
 	
 	public ArrayConceptQuery( List<ConceptQuery> queries) {
-		if(queries == null || queries.isEmpty()) {
-			throw new IllegalArgumentException("No sub queries provided.");
+		if(queries == null) {
+			throw new IllegalArgumentException("No sub query list provided.");
 		}
 		this.childQueries = queries;
 	}
@@ -63,7 +62,7 @@ public class ArrayConceptQuery extends IQuery {
 		List<ResultInfo> infos = collector.getInfos();
 		int lastIndex = Math.max(0,infos.size()-1);
 		childQueries.forEach(q -> q.collectResultInfos(collector));
-		SimpleResultInfo dateInfo = ConqueryConstants.DATES_INFO;
+		ResultInfo dateInfo = ConqueryConstants.DATES_INFO;
 		
 		if(!infos.isEmpty()) {
 			// Remove DateInfo from each childQuery			

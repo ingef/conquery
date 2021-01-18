@@ -46,6 +46,11 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
+/**
+ * This node holds a shard of data (in so called {@link Worker}s for the different datasets in conquery.
+ * It delegates incomming queries to the corresponding worker and is responsible for the network communication
+ * to the {@link ManagerNode}. 
+ */
 @Slf4j
 @Getter
 public class ShardNode extends ConqueryCommand implements IoHandler, Managed {

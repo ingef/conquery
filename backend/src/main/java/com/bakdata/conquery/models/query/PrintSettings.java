@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.query;
 
+import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
@@ -12,24 +14,47 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@Getter @RequiredArgsConstructor @AllArgsConstructor @ToString
+@Getter @ToString(onlyExplicitlyIncluded = true)
 public class PrintSettings implements SelectNameExtractor {
 
+	private static final Function<Locale,NumberFormat> NUMBER_FORMAT = (locale) -> NumberFormat.getNumberInstance(locale);
+	private static final Function<Locale,NumberFormat> DECIMAL_FORMAT = (locale) -> {
+		NumberFormat fmt = NumberFormat.getNumberInstance(locale);
+		fmt.setMaximumFractionDigits(Integer.MAX_VALUE);
+		return fmt;
+	};
+
+	@ToString.Include
 	private final boolean prettyPrint;
+	@ToString.Include
 	private final Locale locale;
+	private final NumberFormat decimalFormat;
+	private final NumberFormat integerFormat;
+	
 	/**
 	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept::getIds()}.
 	 */
 	private final DatasetRegistry datasetRegistry;
 	
 	@NonNull
-	private BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer = PrintSettings::defaultColumnName;
+	private final BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer;
+	
+	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer) {		
+		this.prettyPrint = prettyPrint;
+		this.locale = locale;
+		this.datasetRegistry = datasetRegistry;
+		this.columnNamer = columnNamer;
+		this.integerFormat = NUMBER_FORMAT.apply(locale);
+		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
+	}
+	
+	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry) {
+		this(prettyPrint, locale, datasetRegistry, PrintSettings::defaultColumnName);
+	}
 	
 
 	/**

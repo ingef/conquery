@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "EXTERNAL", base = CQElement.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-public class CQExternal implements CQElement {
+public class CQExternal extends CQElement {
 
 	@Getter
 	@NotEmpty

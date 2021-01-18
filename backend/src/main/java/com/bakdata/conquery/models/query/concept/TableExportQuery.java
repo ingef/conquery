@@ -12,14 +12,12 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -31,6 +29,7 @@ import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExp
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,8 +57,9 @@ public class TableExportQuery extends IQuery {
 	@NotEmpty
 	@Valid
 	private List<CQUnfilteredTable> tables;
-	@InternalOnly
-	private List<ColumnId> resolvedHeader;
+
+	@JsonIgnore
+	private List<Column> resolvedHeader;
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -69,13 +69,28 @@ public class TableExportQuery extends IQuery {
 			try {
 				Concept<?> concept = context.getCentralRegistry().resolve(table.getId().getConcept());
 				Connector connector = concept.getConnectorByName(table.getId().getConnector());
-				resolvedConnectors.add(
-						new TableExportDescription(
-								connector.getTable(),
-								connector.getValidityDateColumn(table.getDateColumn().getValue()),
-								totalColumns
-						)
+				final Column validityDateColumn;
+
+				// if no dateColumn is provided, we use the default instead which is always the first one.
+				// Set to null if none-available in the connector.
+				if (table.getDateColumn() != null) {
+					validityDateColumn = connector.getValidityDateColumn(table.getDateColumn().getValue());
+				}
+				else if (!connector.getValidityDates().isEmpty()) {
+					validityDateColumn = connector.getValidityDates().get(0).getColumn();
+				}
+				else {
+					validityDateColumn = null;
+				}
+
+				final TableExportDescription exportDescription = new TableExportDescription(
+						connector.getTable(),
+						validityDateColumn,
+						totalColumns
 				);
+
+				resolvedConnectors.add(exportDescription);
+
 				totalColumns += connector.getTable().getColumns().length;
 			}
 			catch (NoSuchElementException exc) {
@@ -108,7 +123,7 @@ public class TableExportQuery extends IQuery {
 				Connector connector = concept.getConnectorByName(table.getId().getConnector());
 
 				for (Column col : connector.getTable().getColumns()) {
-					resolvedHeader.add(col.getId());
+					resolvedHeader.add(col);
 				}
 			}
 			catch (NoSuchElementException exc) {
@@ -117,12 +132,15 @@ public class TableExportQuery extends IQuery {
 			}
 		}
 
+		if (resolvedHeader.isEmpty()) {
+			throw new IllegalArgumentException("Could not Resolve any Table");
+		}
 	}
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		for (ColumnId col : resolvedHeader) {
-			collector.add(new SimpleResultInfo(col.toStringWithoutDataset(), ResultType.STRING));
+		for (Column col : resolvedHeader) {
+			collector.add(new SimpleResultInfo(col.getId().toStringWithoutDataset(), ResultType.resolveResultType(col.getType())));
 		}
 	}
 
