@@ -14,7 +14,6 @@ public class EmptyStore<T> extends ColumnStore<T> {
 	public EmptyStore(){
 		super();
 		setLines(0);
-		setNullLines(0);
 	}
 
 	@Override

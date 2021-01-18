@@ -386,7 +386,6 @@ public class ImportJob extends Job {
 			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
 
 			indexParser.setLines(stringType.getLines());
-			indexParser.setNullLines(stringType.getNullLines());
 			indexParser.setMinValue(statistics.getMin());
 			indexParser.setMaxValue(statistics.getMax());
 

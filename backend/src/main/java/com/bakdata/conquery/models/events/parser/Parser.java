@@ -67,6 +67,5 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 	
 	public void copyLineCounts(ColumnStore<?> type) {
 		type.setLines(lines);
-		type.setNullLines(nullLines);
 	}
 }

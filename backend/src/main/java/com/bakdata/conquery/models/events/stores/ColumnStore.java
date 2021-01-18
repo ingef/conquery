@@ -23,7 +23,6 @@ import lombok.ToString;
 public abstract class ColumnStore<JAVA_TYPE> {
 
 	private int lines = 0;
-	private int nullLines = 0;
 
 	/**
 	 * Helper method to select partitions of an array. Resulting array is of length sum(lengths). Incoming type T has to be of ArrayType or this will fail.
@@ -75,7 +74,6 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	public ColumnStore<JAVA_TYPE> createDescription() {
 		final ColumnStore<JAVA_TYPE> select = select(new int[0], new int[0]);
 		select.setLines(getLines());
-		select.setNullLines(getNullLines());
 		return select;
 	}
 
@@ -132,6 +130,6 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	}
 
 	public boolean isEmpty() {
-		return getNullLines() == getLines();
+		return getLines() == 0;
 	}
 }
