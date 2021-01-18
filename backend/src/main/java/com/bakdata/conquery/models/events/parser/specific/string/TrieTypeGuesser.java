@@ -32,7 +32,7 @@ public class TrieTypeGuesser implements TypeGuesser {
 		return new Guess(
 				this,
 				result,
-				indexType.estimateMemoryConsumption(),
+				indexType.estimateMemoryConsumptionBytes(),
 				trie.estimateMemoryConsumption()
 		) {
 			@Override

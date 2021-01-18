@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.events.stores;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.function.Function;
 
 import javax.annotation.CheckForNull;
 
@@ -10,6 +9,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -23,12 +23,14 @@ import lombok.ToString;
 @ToString
 public abstract class ColumnStore<JAVA_TYPE> {
 
-	private int lines = 0;
+	private int lines = 0; // todo this is only used for estimating size, extract it somehow.
 
 	/**
 	 * Helper method to select partitions of an array. Resulting array is of length sum(lengths). Incoming type T has to be of ArrayType or this will fail.
+	 *
+	 * @param provider method to allocate an Array of the required size.
 	 */
-	public static <T> T selectArray(int[] starts, int[] lengths, T values, Function<Integer, T> provider) {
+	public static <T> T selectArray(int[] starts, int[] lengths, T values, Int2ObjectFunction<T> provider) {
 		int length = Arrays.stream(lengths).sum();
 
 		final T out = provider.apply(length);
@@ -43,6 +45,7 @@ public abstract class ColumnStore<JAVA_TYPE> {
 		return out;
 	}
 
+
 	public Object createPrintValue(JAVA_TYPE value) {
 		return value != null ? createScriptValue(value) : "";
 	}
@@ -51,15 +54,24 @@ public abstract class ColumnStore<JAVA_TYPE> {
 		return value;
 	}
 
-	public long estimateMemoryConsumption() {
+	/**
+	 * Calculate estimate of total bytes used by this store.
+	 */
+	public long estimateMemoryConsumptionBytes() {
 		long bits = estimateEventBits();
 
-		return getLines() * bits;
+		return Math.floorDiv(getLines() * bits, Byte.SIZE);
 	}
 
+	/**
+	 * Number of bits required to store a single value.
+	 */
 	public abstract long estimateEventBits();
 
-	public long estimateTypeSize() {
+	/**
+	 * Bytes required to store auxilary data.
+	 */
+	public long estimateTypeSizeBytes() {
 		return 0;
 	}
 

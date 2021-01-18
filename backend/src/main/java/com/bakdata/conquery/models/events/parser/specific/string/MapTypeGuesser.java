@@ -33,7 +33,7 @@ public class MapTypeGuesser implements TypeGuesser {
 		return new Guess(
 				this,
 				result,
-				indexType.estimateMemoryConsumption(),
+				indexType.estimateMemoryConsumptionBytes(),
 				mapSize
 		) {
 			@Override

@@ -93,7 +93,7 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	@Override
-	public long estimateTypeSize() {
+	public long estimateTypeSizeBytes() {
 		return dictionary.estimateMemoryConsumption();
 	}
 

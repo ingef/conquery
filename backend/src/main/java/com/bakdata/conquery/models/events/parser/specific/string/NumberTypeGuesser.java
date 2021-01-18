@@ -53,7 +53,7 @@ public class NumberTypeGuesser implements TypeGuesser {
 			return new Guess(
 					this,
 					type,
-					decision.estimateMemoryConsumption(),
+					decision.estimateMemoryConsumptionBytes(),
 					0
 			);
 		}

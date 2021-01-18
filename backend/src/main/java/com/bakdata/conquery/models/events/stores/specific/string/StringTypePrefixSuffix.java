@@ -100,15 +100,15 @@ public class StringTypePrefixSuffix extends StringType {
 	}
 
 	@Override
-	public long estimateMemoryConsumption() {
+	public long estimateMemoryConsumptionBytes() {
 		return (long) prefix.getBytes(StandardCharsets.UTF_8).length * Byte.SIZE +
 			   (long) suffix.getBytes(StandardCharsets.UTF_8).length * Byte.SIZE +
-			   subType.estimateMemoryConsumption();
+			   subType.estimateMemoryConsumptionBytes();
 	}
 
 	@Override
-	public long estimateTypeSize() {
-		return subType.estimateTypeSize();
+	public long estimateTypeSizeBytes() {
+		return subType.estimateTypeSizeBytes();
 	}
 
 	@Override

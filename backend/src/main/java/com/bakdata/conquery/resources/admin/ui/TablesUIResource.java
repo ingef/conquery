@@ -87,7 +87,7 @@ public class TablesUIResource extends HAdmin {
 								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
 								.values()
 								.stream()
-								.mapToLong(l -> l.get(0).estimateTypeSize())
+								.mapToLong(l -> l.get(0).estimateTypeSizeBytes())
 								.sum(),
 						//total size of entries
 						imports

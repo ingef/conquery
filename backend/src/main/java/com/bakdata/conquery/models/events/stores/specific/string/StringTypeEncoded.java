@@ -87,13 +87,13 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public long estimateMemoryConsumption() {
-		return subType.estimateMemoryConsumption();
+	public long estimateMemoryConsumptionBytes() {
+		return subType.estimateMemoryConsumptionBytes();
 	}
 
 	@Override
-	public long estimateTypeSize() {
-		return subType.estimateTypeSize();
+	public long estimateTypeSizeBytes() {
+		return subType.estimateTypeSizeBytes();
 	}
 
 	@Override
