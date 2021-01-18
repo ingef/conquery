@@ -57,7 +57,7 @@ function getMinMaxExact(value) {
   return {
     min: value.min || "",
     max: value.max || "",
-    exact: value.exact || ""
+    exact: value.exact || "",
   };
 }
 
@@ -76,7 +76,7 @@ const InputRange = (props: PropsType) => {
     unit,
     tooltip,
     onSwitchMode,
-    input: { value, onChange }
+    input: { value, onChange },
   } = props;
   // Make sure undefined / null is never set as a value, but an empty string instead
   const val = getMinMaxExact(value);
@@ -86,7 +86,7 @@ const InputRange = (props: PropsType) => {
     step: stepSize || null,
     min: (limits && limits.min) || null,
     max: (limits && limits.max) || null,
-    pattern: pattern
+    pattern: pattern,
   };
 
   const onChangeValue = (type, newValue) => {
@@ -106,7 +106,7 @@ const InputRange = (props: PropsType) => {
         onChange({
           min: value ? value.min : null,
           max: value ? value.max : null,
-          [type]: nextValue
+          [type]: nextValue,
         });
     else onChange(null);
   };
@@ -122,11 +122,11 @@ const InputRange = (props: PropsType) => {
       <ToggleButton
         input={{
           value: mode || "range",
-          onChange: mode => onSwitchMode(mode)
+          onChange: (mode) => onSwitchMode(mode),
         }}
         options={[
           { value: "range", label: T.translate("inputRange.range") },
-          { value: "exact", label: T.translate("inputRange.exact") }
+          { value: "exact", label: T.translate("inputRange.exact") },
         ]}
       />
       <Container>
@@ -141,7 +141,7 @@ const InputRange = (props: PropsType) => {
               tinyLabel={true}
               input={{
                 value: val.min,
-                onChange: value => onChangeValue("min", value)
+                onChange: (value) => onChangeValue("min", value),
               }}
               inputProps={inputProps}
             />
@@ -154,7 +154,7 @@ const InputRange = (props: PropsType) => {
               tinyLabel={true}
               input={{
                 value: val.max,
-                onChange: value => onChangeValue("max", value)
+                onChange: (value) => onChangeValue("max", value),
               }}
               inputProps={inputProps}
             />
@@ -169,7 +169,7 @@ const InputRange = (props: PropsType) => {
             tinyLabel={true}
             input={{
               value: val.exact,
-              onChange: value => onChangeValue("exact", value)
+              onChange: (value) => onChangeValue("exact", value),
             }}
             inputProps={inputProps}
           />
