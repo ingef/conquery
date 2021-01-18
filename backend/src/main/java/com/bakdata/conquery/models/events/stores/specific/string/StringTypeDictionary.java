@@ -19,6 +19,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Strings are stored in a Dictionary, ids are handles into the Dictionary.
+ *
+ * @implNote this is NOT a {@link StringType}, but is the base class of it. This enables some shenanigans with encodings.
+ */
 @Getter
 @Setter
 @Slf4j

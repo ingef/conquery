@@ -16,6 +16,9 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Strings with common, but stripped prefix/suffix.
+ */
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")

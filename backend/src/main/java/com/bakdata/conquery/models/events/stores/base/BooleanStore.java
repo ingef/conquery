@@ -13,7 +13,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.ToString;
 
-
+/**
+ * Stores boolean values as bits. Can therefore not store null.
+ */
 @CPSType(id = "BOOLEANS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)

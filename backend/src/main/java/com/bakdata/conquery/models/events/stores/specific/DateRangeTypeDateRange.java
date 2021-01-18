@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Stores {@link CDateRange} as pair of two {@link DateStore}s.
+ */
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
@@ -33,7 +36,7 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
 	@Override
 	public long estimateEventBits() {
-		return minStore.estimateEventBits() * 2;
+		return minStore.estimateEventBits() + maxStore.estimateEventBits();
 	}
 
 	@Override

@@ -17,6 +17,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * The strings are only numbers and can therefore be used directly.
+ */
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")

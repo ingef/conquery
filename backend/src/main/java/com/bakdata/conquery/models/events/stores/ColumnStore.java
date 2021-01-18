@@ -15,6 +15,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Class representing the data of a single {@link com.bakdata.conquery.models.datasets.Column} of a {@link com.bakdata.conquery.models.events.Bucket}. {@code JAVA_TYPE} is the outermost used for type-safe set/get, usage is to be avoided.
+ *
+ * Internal representation of data is completely transparent to the caller. get may only be called if has is true.
+ *
+ * @param <JAVA_TYPE> The outer-most type of the store, with which it is compatible.
+ */
 @Getter
 @Setter
 @RequiredArgsConstructor

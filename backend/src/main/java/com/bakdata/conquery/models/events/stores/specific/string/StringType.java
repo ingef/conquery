@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 /**
  * Every implementation must guarantee IDs between 0 and size.
  *
- * Abstract
  */
 @NoArgsConstructor
 public abstract class StringType extends ColumnStore<Integer> implements Iterable<String> {

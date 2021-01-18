@@ -17,6 +17,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+/**
+ *
+ */
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_ENCODED")

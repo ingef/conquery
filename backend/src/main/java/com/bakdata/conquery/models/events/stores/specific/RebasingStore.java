@@ -8,7 +8,9 @@ import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.Nullable;
 
-
+/**
+ * Delegates to an underlying Store to transform values into a smaller bit-size.
+ */
 @CPSType(base = ColumnStore.class, id = "REBASE")
 @Getter
 @ToString(of = {"min", "store"})

@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Stores fixed point decimals as BigDecimals. Null is Null.
+ */
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)

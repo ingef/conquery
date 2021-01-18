@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Stores values as 64bit doubles, where NaN is null.
+ */
 @CPSType(id = "DOUBLES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)

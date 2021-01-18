@@ -9,6 +9,9 @@ import lombok.Getter;
 import lombok.ToString;
 
 
+/**
+ * Stores Dates as {@link CDate}s by delegating to a {@link ColumnStore<Integer>} via {@link com.bakdata.conquery.models.events.parser.specific.IntegerParser}.
+ */
 @CPSType(base = ColumnStore.class, id = "DATES")
 @ToString(of = "store")
 public class DateStore extends ColumnStore<Integer> {

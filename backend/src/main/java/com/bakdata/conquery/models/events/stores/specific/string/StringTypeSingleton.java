@@ -13,6 +13,9 @@ import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Only one string.
+ */
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")

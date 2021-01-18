@@ -8,6 +8,9 @@ import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
+/**
+ * Store Decimals as longs with a fixed scale.
+ */
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
 public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
