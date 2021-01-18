@@ -167,7 +167,7 @@ const TableFilters = (props: PropsT) => {
             case MONEY_RANGE:
               return (
                 <InputRange
-                  inputType="text"
+                  inputType="number"
                   valueType={MONEY_RANGE}
                   input={{
                     value: filter.value,
