@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -110,7 +111,7 @@ public class ImportJob extends Job {
 		// Distribute the new IDs among workers
 		distributeWorkerResponsibilities(primaryMapping);
 
-		final Map<String, DictionaryMapping> mappings = importDictionaries(container.getDictionaries(), table.getColumns(), header.getName(), container.getStores());
+		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(container.getDictionaries(), table.getColumns(), header.getName(), container.getStores());
 
 		setDictionaryIds(container.getStores(), table.getColumns(), header.getName());
 
@@ -123,6 +124,9 @@ public class ImportJob extends Job {
 
 		namespace.getStorage().updateImport(imp);
 		namespace.sendToAll(new AddImport(imp));
+
+		// Tests are so fast, Import hasn't been stored before Buckets arrive.
+		TimeUnit.MILLISECONDS.sleep(200);
 
 		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(container.entities(), primaryMapping, bucketSize);
 
@@ -152,20 +156,11 @@ public class ImportJob extends Job {
 			final Bucket bucket =
 					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
-			int bucketNumber = bucket.getBucket();
+			WorkerInformation responsibleWorker =
+					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket.getBucket()), () -> "No responsible worker for bucket "
+																											  + bucket.getBucket());
+			awaitFreeJobQueue(responsibleWorker);
 
-			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
-
-			if (responsibleWorker == null) {
-				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
-			}
-
-			try {
-				responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
-			}
-			catch (InterruptedException e) {
-				log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
-			}
 			workerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
 							 .add(bucket.getId());
 
@@ -173,6 +168,15 @@ public class ImportJob extends Job {
 		}
 
 		return workerAssignments;
+	}
+
+	private void awaitFreeJobQueue(WorkerInformation responsibleWorker) {
+		try {
+			responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
+		}
+		catch (InterruptedException e) {
+			log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
+		}
 	}
 
 	/**
@@ -275,7 +279,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Map<String, DictionaryMapping> importDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, Map<String, ColumnStore<?>> stores)
+	private Map<String, DictionaryMapping> importAndSendDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, Map<String, ColumnStore<?>> stores)
 			throws JSONException {
 
 		// Empty Maps are Coalesced to null by Jackson
@@ -287,8 +291,7 @@ public class ImportJob extends Job {
 
 		log.debug("Import contains Dictionaries = {}", dicts);
 
-		for (int i = 0; i < columns.length; i++) {
-			Column column = columns[i];
+		for (Column column : columns) {
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
 
 			if (column.getType() != MajorTypeId.STRING) {
@@ -338,9 +341,7 @@ public class ImportJob extends Job {
 	}
 
 	public void setDictionaryIds(Map<String, ColumnStore<?>> values, Column[] columns, String importName) {
-		for (int i = 0; i < columns.length; i++) {
-			Column column = columns[i];
-
+		for (Column column : columns) {
 			if (column.getType() != MajorTypeId.STRING) {
 				continue;
 			}
