@@ -131,4 +131,7 @@ public abstract class ColumnStore<JAVA_TYPE> {
 		throw NotImplemented();
 	}
 
+	public boolean isEmpty() {
+		return getNullLines() == getLines();
+	}
 }

@@ -4,7 +4,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -42,11 +41,12 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (Column column : getRequiredColumns()) {
-			ColumnStore type = bucket.getImp().getColumns()[column.getPosition()].getTypeDescription();
-			if (type.getNullLines() != type.getLines())
+			if (!bucket.getStores()[column.getPosition()].isEmpty()) {
 				return true;
+			}
 		}
 
 		return false;
 	}
+
 }
