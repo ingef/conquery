@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
@@ -145,13 +144,13 @@ public class ImportJob extends Job {
 	/**
 	 * select, then send buckets.
 	 */
-	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import outImport, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore<?>[] storesSorted) {
+	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore<?>[] storesSorted) {
 
 		Map<WorkerId, Set<BucketId>> workerAssignments = new HashMap<>();
 
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 			final Bucket bucket =
-					selectBucket(starts, lengths, storesSorted, primaryMapping, outImport.getId(), bucket2entities.getKey(), bucket2entities.getValue());
+					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
 			int bucketNumber = bucket.getBucket();
 
@@ -181,7 +180,7 @@ public class ImportJob extends Job {
 	 * - calculate per-Entity regions of Bucklet (start/end)
 	 * - split stores
 	 */
-	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, ColumnStore<?>[] stores, DictionaryMapping primaryMapping, ImportId importId, int bucketId, List<Integer> bucketEntities) {
+	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, ColumnStore<?>[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> bucketEntities) {
 
 		int[] globalIds = bucketEntities.stream().mapToInt(primaryMapping::source2Target).toArray();
 
@@ -204,12 +203,12 @@ public class ImportJob extends Job {
 
 		return new Bucket(
 				bucketId,
-				importId,
 				Arrays.stream(entityLengths).sum(),
 				bucketStores,
 				new Int2IntArrayMap(globalIds, entityStarts),
 				new Int2IntArrayMap(globalIds, entityLengths),
-				globalIds.length
+				globalIds.length,
+				imp
 		);
 	}
 

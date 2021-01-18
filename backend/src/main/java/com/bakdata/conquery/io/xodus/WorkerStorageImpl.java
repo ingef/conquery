@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.xodus;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import javax.validation.Validator;
 
@@ -46,7 +45,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		blocks = StoreInfo.BUCKETS.<Bucket>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
 						 .onAdd((Bucket bucket) -> {
 							 bucket.loadDictionaries(this);
-							 bucket.setImp(Objects.requireNonNull(getImport(bucket.getImportId())));
 						 });
 
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());

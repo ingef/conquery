@@ -21,11 +21,10 @@ import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -46,38 +45,28 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)
 	private final int bucket;
-
-	private final ImportId importId;
-
-	@NsIdRef
-	private Import imp;
-
 	@Min(0)
 	private final int numberOfEvents;
-
 	private final ColumnStore<?>[] stores;
-
-
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
 	@JsonSerialize(using = Int2IntMapSerializer.class)
 	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
-	private final Int2IntArrayMap start;
-
+	private final Int2IntMap start;
 	/**
 	 * Number of events per Entity in {@code stores}.
 	 */
 	@JsonSerialize(using = Int2IntMapSerializer.class)
 	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
-	private final Int2IntArrayMap length;
-
+	private final Int2IntMap length;
 	private final int bucketSize;
-
+	@NsIdRef
+	private final Import imp;
 
 	@Override
 	public BucketId createId() {
-		return new BucketId(importId, bucket);
+		return new BucketId(imp.getId(), bucket);
 	}
 
 	/**
@@ -124,7 +113,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return stores[column.getPosition()].getBoolean(event);
 	}
 
-	public double getReal(int event,@NotNull Column column) {
+	public double getReal(int event, @NotNull Column column) {
 		return stores[column.getPosition()].getReal(event);
 	}
 
@@ -136,7 +125,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return stores[column.getPosition()].getMoney(event);
 	}
 
-	public int getDate(int event,@NotNull Column column) {
+	public int getDate(int event, @NotNull Column column) {
 		return stores[column.getPosition()].getDate(event);
 	}
 
@@ -156,7 +145,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
 	}
 
-	public Object createScriptValue(int event, @NotNull Column column){
+	public Object createScriptValue(int event, @NotNull Column column) {
 		final ColumnStore<?> store = stores[column.getPosition()];
 		return ((ColumnStore) store).createScriptValue(store.get(event));
 	}
