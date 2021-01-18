@@ -8,6 +8,7 @@ import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -129,6 +130,7 @@ public abstract class ColumnStore<JAVA_TYPE> {
 		throw NotImplemented();
 	}
 
+	 @JsonIgnore
 	public boolean isEmpty() {
 		return getLines() == 0;
 	}
