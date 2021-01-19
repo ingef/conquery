@@ -56,17 +56,23 @@ public class DefaultLabelTest {
 
 		})).when(DATASET_REGISTRY).resolve(any(ConceptId.class));
 	}
+
+	private static CQConcept makeCQConcept(String label) {
+		CQConcept concept = new CQConcept();
+		concept.setLabel(label);
+		concept.setIds(List.of(CONCEPT.getId()));
+		return concept;
+
+	}
 	
 	@ParameterizedTest
 	@CsvSource({
-		"de,Concept",
-		"en,Concept"})
+		"de,Default-Concept-Concept",
+		"en,Default-Concept-Concept"})
 	void autoLabelConceptQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
-		
-		CQConcept concept = new CQConcept();
-		concept.setLabel("Concept");
-		concept.setIds(List.of(CONCEPT.getId()));
+
+		CQConcept concept = makeCQConcept("Concept");
 		ConceptQuery cq = new ConceptQuery(concept);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
@@ -134,18 +140,15 @@ public class DefaultLabelTest {
 	
 	@ParameterizedTest
 	@CsvSource({
-		"de,Hochgeladene-Liste Frühere-Anfrage Concept1-Concept2",
-		"en,Uploaded-List Previous-Query Concept1-Concept2"})
+		"de,Hochgeladene-Liste Frühere-Anfrage Default-Concept-Concept1 Default-Concept-Concept2 und weitere",
+		"en,Uploaded-List Previous-Query Default-Concept-Concept1 Default-Concept-Concept2 and further"})
 	void autoLabelComplexQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 		
 		CQAnd and = new CQAnd();
-		CQConcept concept1 = new CQConcept();
-		concept1.setLabel("Concept1");
-		CQConcept concept2 = new CQConcept();
-		concept2.setLabel("Concept2");
-		CQConcept concept3 = new CQConcept();
-		concept3.setLabel("Concept3");
+		CQConcept concept1 = makeCQConcept("Concept1");
+		CQConcept concept2 = makeCQConcept("Concept2");
+		CQConcept concept3 = makeCQConcept("Concept3veryveryveryveryveryveryveryverylooooooooooooooooooooonglabel");
 		and.setChildren(List.of(
 			new CQExternal(List.of(), new String[0][0]),
 			new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID())),
@@ -165,18 +168,16 @@ public class DefaultLabelTest {
 	
 	@ParameterizedTest
 	@CsvSource({
-		"de,Hochgeladene-Liste Frühere-Anfrage Concept2-Concept3",
-		"en,Uploaded-List Previous-Query Concept2-Concept3"})
+		"de,Hochgeladene-Liste Frühere-Anfrage Default-Concept-Concept2 Default-Concept-Concept3",
+		"en,Uploaded-List Previous-Query Default-Concept-Concept2 Default-Concept-Concept3"})
 	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 		
 		CQAnd and = new CQAnd();
 		CQConcept concept1 = new CQConcept();
 		concept1.setLabel(null);
-		CQConcept concept2 = new CQConcept();
-		concept2.setLabel("Concept2");
-		CQConcept concept3 = new CQConcept();
-		concept3.setLabel("Concept3");
+		CQConcept concept2 = makeCQConcept("Concept2");
+		CQConcept concept3 = makeCQConcept("Concept3");
 		and.setChildren(List.of(
 			new CQExternal(List.of(), new String[0][0]),
 			new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID())),

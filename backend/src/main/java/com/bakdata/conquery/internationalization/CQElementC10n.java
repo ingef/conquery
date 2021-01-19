@@ -17,4 +17,7 @@ public interface CQElementC10n {
 	@De("Frühere-Anfrage")
 	String reused();
 
+	@En("and further")
+	@De("und weitere")
+	String furtherConcepts();
 }

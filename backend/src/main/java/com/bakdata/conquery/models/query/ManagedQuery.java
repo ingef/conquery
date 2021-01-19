@@ -54,6 +54,7 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -288,15 +289,20 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			.map((CQConcept.class::cast))
 			.map(c -> makeLabelWithRootAndChild(datasetRegistry, c))
 			.distinct()
-			.filter(Objects::nonNull)
+			.filter((s) -> !Strings.isNullOrEmpty(s))
 			.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
-			.collect(Collectors.joining("-"));
+			.collect(Collectors.joining(" "));
 		
 		if (sb.length() > 0 && usedConcepts.length() > 0) {
 			sb.append(" ");
 		}
 		sb.append(usedConcepts);
 
+		// If not all Concept could be included in the name, point that out
+		if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {
+			sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
+		}
+		
 		// Fallback to id if nothing could be extracted from the query description
 		if(sbStartSize == sb.length()) {
 			sb.append(getId().getExecution());
@@ -305,8 +311,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept){
 		String cqConceptLabel = cqConcept.getLabel();
+		if (cqConceptLabel == null){
+			return "";
+		}
+
 		if(cqConcept.getIds().isEmpty()){
-			return cqConceptLabel; // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
+			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
 		}
 
 		ConceptElementId<?> id = cqConcept.getIds().iterator().next();
@@ -314,9 +324,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		Concept<?> concept = datasetRegistry.resolve(id.findConcept());
 		String conceptLabel = concept.getLabel();
 		if(cqConceptLabel.equalsIgnoreCase(conceptLabel)){
-			return cqConceptLabel;
+			return cqConceptLabel.replace(" ", "-");
 		}
 
-		return conceptLabel + "-" + cqConceptLabel;
+		// Concat everything with dashes
+		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
 	}
 }
