@@ -36,6 +36,8 @@ public class TableExportForm implements Form {
 
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
+
+	// TODO implement this as a standard concept query and ignore most of it so the frontend understands it.
 	@NotEmpty
 	@Valid
 	private List<CQUnfilteredTable> tables;
