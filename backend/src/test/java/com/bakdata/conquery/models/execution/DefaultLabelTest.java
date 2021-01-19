@@ -8,9 +8,14 @@ import java.util.Locale;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -23,14 +28,33 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 public class DefaultLabelTest {
-	private static final DatasetRegistry DATASET_REGISTRY = new DatasetRegistry(0);
-	private static final Dataset DATASET = new Dataset();
+	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
+	private static final Dataset DATASET = new Dataset() {{setName("dataset");}};
+
+	private static final TreeConcept CONCEPT = new TreeConcept() {
+		{
+			setDataset(DATASET.getId());
+			setName("defaultconcept");
+			setLabel("Default Concept");
+		}
+	};
 	
 	@BeforeAll
 	static void beforeAll() {
+
 		I18n.init();
+
+		doAnswer((invocation -> {
+			return CONCEPT;
+
+		})).when(DATASET_REGISTRY).resolve(any(ConceptId.class));
 	}
 	
 	@ParameterizedTest
@@ -42,10 +66,11 @@ public class DefaultLabelTest {
 		
 		CQConcept concept = new CQConcept();
 		concept.setLabel("Concept");
+		concept.setIds(List.of(CONCEPT.getId()));
 		ConceptQuery cq = new ConceptQuery(concept);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel());
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
 		
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -65,7 +90,7 @@ public class DefaultLabelTest {
 		UUID uuid = UUID.randomUUID();
 		mQuery.setQueryId(uuid);
 
-		mQuery.setLabel(mQuery.makeAutoLabel());
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
 		
 		assertThat(mQuery.getLabel()).isEqualTo(uuid+AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(uuid.toString());
@@ -83,7 +108,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(reused);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel());
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -101,7 +126,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(external);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel());
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -131,7 +156,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel());
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -162,7 +187,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel());
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -179,7 +204,7 @@ public class DefaultLabelTest {
 		ManagedForm mForm = form.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 		mForm.setCreationTime(LocalDateTime.of(2020, 10, 30, 12, 37));
 
-		mForm.setLabel(mForm.makeAutoLabel());
+		mForm.setLabel(mForm.makeAutoLabel(DATASET_REGISTRY));
 		
 		assertThat(mForm.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
 		assertThat(mForm.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
