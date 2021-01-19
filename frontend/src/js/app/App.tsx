@@ -5,6 +5,7 @@ import { useStartup } from "../startup/useStartup";
 import Header from "../header/Header";
 import SnackMessage from "../snack-message/SnackMessage";
 import Content from "./Content";
+import { useKeycloak } from "@react-keycloak/web";
 
 const Root = styled("div")`
   height: 100vh;
@@ -12,8 +13,12 @@ const Root = styled("div")`
   position: relative;
 `;
 
-const App = props => {
+const App = (props) => {
   useStartup();
+
+  const { initialized, keycloak } = useKeycloak();
+
+  console.log(initialized, keycloak);
 
   return (
     <Root>
