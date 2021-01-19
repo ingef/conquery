@@ -29,11 +29,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
-import io.dropwizard.util.DataSize;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.collections4.IteratorUtils;
 
 /**
@@ -50,12 +48,13 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final StoreInfo storeInfo;
 
 	@Getter
-	@Setter
-	private int chunkSize = Ints.checkedCast(DataSize.megabytes(100).toBytes());
+	private final int chunkSize;
 
 
 	public BigStore(StorageConfig config, Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
+
+		this.chunkSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
 				storeInfo.getXodusName() + "_META",
