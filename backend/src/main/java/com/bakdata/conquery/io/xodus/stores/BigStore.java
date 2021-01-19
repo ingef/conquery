@@ -54,6 +54,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public BigStore(StorageConfig config, Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
 
+		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
 		this.chunkSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
