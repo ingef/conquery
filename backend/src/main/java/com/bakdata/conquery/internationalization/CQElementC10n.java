@@ -13,8 +13,8 @@ public interface CQElementC10n {
 	@De("Hochgeladene-Liste")
 	String external();
 	
-	@En("Previous-Query")
-	@De("Frühere-Anfrage")
+	@En("Query")
+	@De("Anfrage")
 	String reused();
 
 	@En("and further")

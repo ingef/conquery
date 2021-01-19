@@ -105,8 +105,8 @@ public class DefaultLabelTest {
 	
 	@ParameterizedTest
 	@CsvSource({
-		"de,Frühere-Anfrage",
-		"en,Previous-Query"})
+		"de,Anfrage",
+		"en,Query"})
 	void autoLabelReusedQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 		
@@ -140,8 +140,8 @@ public class DefaultLabelTest {
 	
 	@ParameterizedTest
 	@CsvSource({
-		"de,Hochgeladene-Liste Frühere-Anfrage Default-Concept-Concept1 Default-Concept-Concept2 und weitere",
-		"en,Uploaded-List Previous-Query Default-Concept-Concept1 Default-Concept-Concept2 and further"})
+		"de,Hochgeladene-Liste Anfrage Default-Concept-Concept1 Default-Concept-Concept2 und weitere",
+		"en,Uploaded-List Query Default-Concept-Concept1 Default-Concept-Concept2 and further"})
 	void autoLabelComplexQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 		
@@ -168,8 +168,8 @@ public class DefaultLabelTest {
 	
 	@ParameterizedTest
 	@CsvSource({
-		"de,Hochgeladene-Liste Frühere-Anfrage Default-Concept-Concept2 Default-Concept-Concept3",
-		"en,Uploaded-List Previous-Query Default-Concept-Concept2 Default-Concept-Concept3"})
+		"de,Hochgeladene-Liste Anfrage Default-Concept-Concept2 Default-Concept-Concept3",
+		"en,Uploaded-List Query Default-Concept-Concept2 Default-Concept-Concept3"})
 	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 		
