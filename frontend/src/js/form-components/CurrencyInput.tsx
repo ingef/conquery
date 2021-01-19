@@ -1,55 +1,38 @@
-import * as React from "react";
+import React, { FC, useState, useEffect } from "react";
 import NumberFormat from "react-number-format";
 
 import { isEmpty } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 import type { CurrencyConfigT } from "../api/types";
 
-type PropsType = {
+interface PropsT {
   value: number | null;
   onChange: (parsed: number | null) => void;
   currencyConfig?: CurrencyConfigT;
   placeholder?: string;
-};
+}
 
-// https://github.com/s-yadav/react-number-format#values-object
-type NumberFormatValueType = {
-  formattedValue: string;
-  value: string;
-  floatValue: number;
-};
-
-const CurrencyInput = ({
+const CurrencyInput: FC<PropsT> = ({
   currencyConfig,
   value,
   onChange,
-  placeholder
-}: PropsType) => {
+  placeholder,
+}) => {
   const factor = currencyConfig ? Math.pow(10, currencyConfig.decimalScale) : 1;
   // Super weird: In react-number-format,
   //   in order to properly display the placeholder, "-", the only way is to
   //   NOT supply isNumberString
   //   and instead to supply EITHER a float value OR an empty string
-  const [formattedValue, setFormattedValue] = React.useState<number | string>(
-    isEmpty(value) ? "" : value / factor
-  );
+  const [numberFormatValue, setNumberFormatValue] = useState<
+    number | string | null
+  >(exists(value) ? value / factor : null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // If formatted is cleared from outside, reset
     if (isEmpty(value)) {
-      setFormattedValue("");
+      setNumberFormatValue("");
     }
   }, [value]);
-
-  function onValueChange(values: NumberFormatValueType) {
-    const parsed =
-      isEmpty(values.floatValue) || isNaN(values.floatValue)
-        ? null
-        : parseInt((values.floatValue * factor).toFixed(0), 10);
-
-    setFormattedValue(values.formattedValue);
-
-    onChange(parsed);
-  }
 
   return (
     <NumberFormat
@@ -57,8 +40,16 @@ const CurrencyInput = ({
       className="clearable-input__input"
       placeholder={placeholder}
       type="text"
-      onValueChange={onValueChange}
-      value={formattedValue}
+      value={numberFormatValue}
+      onValueChange={(values) => {
+        if (exists(values.floatValue) && !isNaN(values.floatValue)) {
+          setNumberFormatValue(values.floatValue);
+          onChange(parseInt((values.floatValue * factor).toFixed(0), 10));
+        } else {
+          setNumberFormatValue("");
+          onChange(null);
+        }
+      }}
     />
   );
 };
