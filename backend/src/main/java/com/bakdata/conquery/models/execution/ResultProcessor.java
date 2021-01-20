@@ -98,7 +98,7 @@ public class ResultProcessor {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
 				"attachment; filename=\"%s.%s\"",
-				FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(exec.getLabel()).replaceAll("_"),
+				FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label).replaceAll("_"),
 				fileExtension));
 		}
 		return response;
