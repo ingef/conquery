@@ -54,7 +54,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return ((StringType) bucket.getImp().getColumns()[getColumn().getPosition()].getTypeDescription()).getId(filterValue) != -1;
+		return ((StringType) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
 	}
 
 	@Override

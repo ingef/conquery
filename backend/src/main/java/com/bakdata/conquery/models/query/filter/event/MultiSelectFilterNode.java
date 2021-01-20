@@ -68,7 +68,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : getFilterValue()) {
-			if(((StringType) bucket.getImp().getColumns()[getColumn().getPosition()].getTypeDescription()).getId(selected) != -1) {
+			if(((StringType) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1) {
 				return true;
 			}
 		}

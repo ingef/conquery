@@ -62,6 +62,6 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return super.isOfInterest(bucket) &&
-			   ((StringType) bucket.getImp().getColumns()[column.getPosition()].getTypeDescription()).getId(selected) != -1;
+			   ((StringType) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1;
 	}
 }
