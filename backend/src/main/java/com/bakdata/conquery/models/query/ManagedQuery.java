@@ -152,8 +152,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
-		super.setStatusBase(storage, url, user, status);
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status) {
+		super.setStatusBase(storage, user, status);
 		status.setNumberOfResults(lastResultCount);
 
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -164,7 +164,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions(datasetRegistry);

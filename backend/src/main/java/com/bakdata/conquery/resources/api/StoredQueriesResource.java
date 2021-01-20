@@ -50,7 +50,7 @@ public class StoredQueriesResource extends HDatasets {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 		
-		ExecutionStatus status = processor.getQueryWithSource(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
+		ExecutionStatus status = processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 		if (status == null) {
 			throw new WebApplicationException("Unknown query " + queryId, Status.NOT_FOUND);
 		}
@@ -63,7 +63,7 @@ public class StoredQueriesResource extends HDatasets {
 		authorize(user, datasetId, Ability.READ);
 		processor.patchQuery(user, queryId, patch);
 		
-		return processor.getQueryWithSource(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
+		return processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 	}
 
 	@DELETE

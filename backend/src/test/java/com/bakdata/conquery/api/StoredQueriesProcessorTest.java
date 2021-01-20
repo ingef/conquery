@@ -145,7 +145,21 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId) {
-		return new ExecutionStatus(new String[0], id.getExecution().toString(), true, LocalDateTime.MIN.atZone(ZoneId.systemDefault()), null, owner.getId(), null, false, owner.equals(callingUser), false, id, state, null, null, null, typeLabel, secondaryId, null, false, null, null, null);
+		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
+
+		status.setTags(new String[0]);
+		status.setLabel(id.getExecution().toString());
+		status.setPristineLabel(true);
+		status.setCreatedAt(LocalDateTime.MIN.atZone(ZoneId.systemDefault()));
+		status.setOwner(owner.getId());
+		status.setShared(false);
+		status.setOwn(owner.equals(callingUser));
+		status.setId(id);
+		status.setStatus(state);
+		status.setQueryType(typeLabel);
+		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
+
+		return status;
 	}
 
 }
