@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Getter
 @Slf4j
-public class UpdateDictionary extends WorkerMessage {
+public class UpdateDictionary extends WorkerMessage.Slow {
 
 	private final Dictionary dictionary;
 

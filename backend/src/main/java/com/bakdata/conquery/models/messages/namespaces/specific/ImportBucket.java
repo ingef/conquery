@@ -1,12 +1,14 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +26,13 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 	private final byte[] rawBucket;
 
+	public static ImportBucket forBucket(Bucket bucket) throws JsonProcessingException {
+		return new ImportBucket(bucket.getId().toString(), Jackson.BINARY_MAPPER.writerWithView(InternalOnly.class).writeValueAsBytes(bucket));
+	}
+
 	@Override
 	public void react(Worker context) throws Exception {
-		final ObjectMapper objectMapper = context.getStorage().getCentralRegistry().injectInto(Jackson.BINARY_MAPPER);
+		final ObjectMapper objectMapper = context.inject(Jackson.BINARY_MAPPER);
 
 		final Bucket bucket = objectMapper.readValue(rawBucket, Bucket.class);
 

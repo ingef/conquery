@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id="ADD_IMPORT", base=NamespacedMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Setter @Getter
 @Slf4j
-public class AddImport extends WorkerMessage {
+public class AddImport extends WorkerMessage.Slow {
 
 	private Import imp;
 
