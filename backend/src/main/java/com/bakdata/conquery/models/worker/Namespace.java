@@ -58,10 +58,10 @@ public class Namespace implements Closeable {
 	@JsonIgnore
 	private transient DatasetRegistry namespaces;
 
-	public Namespace(NamespaceStorage storage) {
+	public Namespace(NamespaceStorage storage, boolean failOnError) {
 		this.storage = storage;
 		this.queryManager = new ExecutionManager(this);
-		this.jobManager = new JobManager(storage.getDataset().getName());
+		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
 	}
 
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {

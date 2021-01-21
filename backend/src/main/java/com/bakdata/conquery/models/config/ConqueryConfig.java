@@ -79,6 +79,8 @@ public class ConqueryConfig extends Configuration {
 	 */
 	private Boolean debugMode = null;
 
+	private boolean failOnError = false;
+
 	//this is needed to force start the REST backend on /api/
 	public ConqueryConfig() {
 		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");

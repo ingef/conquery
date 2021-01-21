@@ -88,7 +88,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				.add(IdResolveContext.class, datasetRegistry);
 
 
-		this.jobManager = new JobManager("ManagerNode");
+		this.jobManager = new JobManager("ManagerNode", config.isFailOnError());
 		this.environment = environment;
 		this.validator = environment.getValidator();
 		this.config = config;
@@ -125,7 +125,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 					return;
 				}
 
-				Namespace ns = new Namespace(datasetStorage);
+				Namespace ns = new Namespace(datasetStorage, config.isFailOnError());
 				ns.initMaintenance(maintenanceService);
 				datasetRegistry.add(ns);
 			});
