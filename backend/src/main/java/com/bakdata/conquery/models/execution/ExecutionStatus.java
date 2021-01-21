@@ -61,6 +61,7 @@ public abstract class ExecutionStatus {
 	@NoArgsConstructor
 	@Data
 	@EqualsAndHashCode(callSuper = true)
+	@FieldNameConstants
 	public static class Full extends ExecutionStatus {
 
 		/**
