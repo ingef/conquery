@@ -47,6 +47,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
@@ -70,7 +71,7 @@ public class ImportJob extends Job {
 
 
 	@Override
-	public void execute() throws JSONException, InterruptedException {
+	public void execute() throws JSONException, InterruptedException, JsonProcessingException {
 		final PreprocessedData container;
 		final PreprocessedHeader header;
 
@@ -148,26 +149,28 @@ public class ImportJob extends Job {
 	/**
 	 * select, then send buckets.
 	 */
-	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore<?>[] storesSorted) {
+	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore<?>[] storesSorted)
+			throws JsonProcessingException {
 
-		Map<WorkerId, Set<BucketId>> workerAssignments = new HashMap<>();
+		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
 
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 			final Bucket bucket =
 					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
 			WorkerInformation responsibleWorker =
-					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket.getBucket()), () -> "No responsible worker for bucket "
-																											  + bucket.getBucket());
+					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket.getBucket()), () -> "No responsible worker for bucket " + bucket.getBucket());
+
 			awaitFreeJobQueue(responsibleWorker);
 
-			workerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
-							 .add(bucket.getId());
+			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
+								.add(bucket.getId());
 
-			responsibleWorker.send(new ImportBucket(bucket));
+
+			responsibleWorker.send(new ImportBucket(bucket.getId().toString(), Jackson.BINARY_MAPPER.writeValueAsBytes(bucket)));
 		}
 
-		return workerAssignments;
+		return newWorkerAssignments;
 	}
 
 	private void awaitFreeJobQueue(WorkerInformation responsibleWorker) {

@@ -47,6 +47,9 @@ public class DateParser extends Parser<Integer> {
 	@Override
 	protected DateStore decideType() {
 		ColumnStore<Long> subDecision = subType.findBestType();
-		return new DateStore(subDecision);
+		subDecision.setLines(getLines());
+		final DateStore dateStore = new DateStore(subDecision);
+		dateStore.setLines(getLines());
+		return dateStore;
 	}
 }
