@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.cli.Command;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Size;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.EnvironmentConfig;
@@ -58,10 +59,10 @@ public class RecodeStoreCommand extends Command {
 	public void run(Bootstrap<?> bootstrap, Namespace namespace) {
 
 		final File inStoreDirectory = namespace.get("in");
-		final long inLogSize = Size.parse(namespace.get("in_logsize")).toKilobytes();
+		final long inLogSize = DataSize.parse(namespace.get("in_logsize")).toKilobytes();
 
 		final File outStoreDirectory = namespace.get("out");
-		final long outLogSize = Size.parse(namespace.get("out_logsize")).toKilobytes();
+		final long outLogSize = DataSize.parse(namespace.get("out_logsize")).toKilobytes();
 
 		log.info("Recoding Storage at `{} ({})` to `{} ({})`", inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
 
