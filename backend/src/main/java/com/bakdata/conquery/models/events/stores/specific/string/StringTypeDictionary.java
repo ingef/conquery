@@ -105,7 +105,7 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 
 	public void setUnderlyingDictionary(DictionaryId newDict) {
 		name = newDict.getDictionary();
-		this.dataset = newDict.getDataset();
+		this.dataset = Objects.requireNonNull(newDict.getDataset());
 	}
 
 	@Override

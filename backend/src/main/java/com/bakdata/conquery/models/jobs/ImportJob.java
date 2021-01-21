@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -126,9 +125,6 @@ public class ImportJob extends Job {
 		namespace.getStorage().updateImport(imp);
 		namespace.sendToAll(new AddImport(imp));
 
-		// Tests are so fast, Import hasn't been stored before Buckets arrive.
-		TimeUnit.MILLISECONDS.sleep(200);
-
 		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(container.entities(), primaryMapping, bucketSize);
 
 
@@ -166,8 +162,8 @@ public class ImportJob extends Job {
 			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
 								.add(bucket.getId());
 
-
-			responsibleWorker.send(new ImportBucket(bucket.getId().toString(), Jackson.BINARY_MAPPER.writeValueAsBytes(bucket)));
+			log.info("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
+			responsibleWorker.send(ImportBucket.forBucket(bucket));
 		}
 
 		return newWorkerAssignments;
