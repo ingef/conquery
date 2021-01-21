@@ -41,7 +41,7 @@ public class RecodeStoreCommand extends Command {
 				.addArgument("--out")
 				.help("Output store.")
 				.required(true)
-				.type(Arguments.fileType().verifyCanCreate().verifyCanWriteParent());
+				.type(Arguments.fileType());
 
 		subparser
 				.addArgument("--in_logsize")
