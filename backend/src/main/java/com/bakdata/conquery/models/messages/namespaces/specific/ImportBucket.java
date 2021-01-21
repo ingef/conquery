@@ -24,6 +24,9 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 	private final String name;
 
+	/**
+	 * @implSpec We need to deserialize this lazily, as this message and it's dependencies are transmitted in such quick succession, that they are sometimes not there on deserialization of the message.
+	 */
 	private final byte[] rawBucket;
 
 	public static ImportBucket forBucket(Bucket bucket) throws JsonProcessingException {

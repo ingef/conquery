@@ -151,13 +151,14 @@ public class ImportJob extends Job {
 		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
 
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
-			final Bucket bucket =
-					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
 			WorkerInformation responsibleWorker =
-					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket.getBucket()), () -> "No responsible worker for bucket " + bucket.getBucket());
+					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for bucket " + bucket2entities.getKey());
 
 			awaitFreeJobQueue(responsibleWorker);
+
+			final Bucket bucket =
+					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
 			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
 								.add(bucket.getId());

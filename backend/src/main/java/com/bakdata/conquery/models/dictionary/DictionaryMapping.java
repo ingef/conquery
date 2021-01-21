@@ -66,7 +66,7 @@ public class DictionaryMapping {
 				continue;
 			}
 
-			to.set(row, (long) source2Target(from.get(row)));
+			to.set(row, (long) source2Target(from.getString(row)));
 		}
 	}
 

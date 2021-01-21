@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
@@ -10,7 +11,6 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -28,7 +28,8 @@ public class Column extends Labeled<ColumnId> {
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
-	@JsonIgnore
+
+	@InternalOnly
 	private int position = UNKNOWN_POSITION;
 	/**
 	 * if set this column should use the given dictionary
@@ -58,21 +59,6 @@ public class Column extends Labeled<ColumnId> {
 		return bucket.getStores()[getPosition()];
 	}
 
-	public int getPosition() {
-		if (position == UNKNOWN_POSITION) {
-			for (int i = 0; i < table.getColumns().length; i++) {
-				if (table.getColumns()[i] == this) {
-					position = i;
-					break;
-				}
-			}
-
-			if (position == UNKNOWN_POSITION) {
-				throw new IllegalStateException("Could not find the position of column" + this.getId() + " in its table");
-			}
-		}
-		return position;
-	}
 
 	//TODO try to remove this method methods, they are quite leaky
 	public ColumnStore getTypeFor(Import imp) {

@@ -65,7 +65,7 @@ public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 
 	@Override
 	public BigDecimal getDecimal(int event) {
-		return scale(scale, subType.get(event));
+		return scale(scale, subType.getInteger(event));
 	}
 
 	public static BigDecimal scale(int scale, long value) {
