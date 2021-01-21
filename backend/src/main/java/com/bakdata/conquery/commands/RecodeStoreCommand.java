@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import io.dropwizard.cli.Command;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.util.Size;
@@ -20,7 +21,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 @Slf4j
-public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
+public class RecodeStoreCommand extends Command {
 
 
 	public RecodeStoreCommand() {
@@ -51,11 +52,10 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 				.help("Logsize of outgoing store.")
 				.required(true);
 
-		super.configure(subparser);
 	}
 
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+	public void run(Bootstrap<?> bootstrap, Namespace namespace) {
 
 		final File inStoreDirectory = namespace.get("in");
 		final long inLogSize = Size.parse(namespace.get("in_logsize")).toKilobytes();
