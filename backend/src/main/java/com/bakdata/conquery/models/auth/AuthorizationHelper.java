@@ -140,7 +140,7 @@ public class AuthorizationHelper {
 	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
 		List<Group> userGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(user)) {
+			if(group.containsMember(user.getId())) {
 				userGroups.add(group);
 			}
 		}
@@ -173,7 +173,7 @@ public class AuthorizationHelper {
 		Set<Permission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
 
 		for (Group group : storage.getAllGroups()) {
-			if (group.containsMember(user)) {
+			if (group.containsMember(user.getId())) {
 				// Get effective permissions of the group
 				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group.getId(), storage));
 			}
