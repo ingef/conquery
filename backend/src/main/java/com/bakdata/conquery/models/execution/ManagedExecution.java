@@ -117,14 +117,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	/**
 	 * Executed right before execution submission.
-	 * @param namespaces
 	 */
-	public void initExecutable(DatasetRegistry namespaces) {
+	public void initExecutable(DatasetRegistry datasetRegistry) {
 		synchronized (getExecution()) {
 			if(label == null) {
-				label = makeAutoLabel();
+				label = makeAutoLabel(datasetRegistry);
 			}
-			doInitExecutable(namespaces);
+			doInitExecutable(datasetRegistry);
 		}
 	}
 
@@ -379,11 +378,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb);
+	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry);
 	
-	protected String makeAutoLabel() {
+	protected String makeAutoLabel(DatasetRegistry datasetRegistry) {
 		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb);
+		makeDefaultLabel(sb, datasetRegistry);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
 	}
 }
