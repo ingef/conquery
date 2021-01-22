@@ -14,12 +14,10 @@ public class JobManager implements Closeable{
 
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
-	private final AtomicBoolean executorDied = new AtomicBoolean();
 
-	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> { executorDied.set(true);};
+	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> { System.exit(1);};
 
 	public JobManager(String name, boolean failOnError) {
-		executorDied.set(false);
 
 		slowExecutor = new JobExecutor("Job Manager slow " + name, failOnError);
 		fastExecutor = new JobExecutor("Job Manager fast " + name, failOnError);
@@ -29,10 +27,6 @@ public class JobManager implements Closeable{
 
 		slowExecutor.start();
 		fastExecutor.start();
-	}
-
-	public boolean isExecutorDead(){
-		return executorDied.get();
 	}
 
 	public void addSlowJob(Job job) {
@@ -49,9 +43,6 @@ public class JobManager implements Closeable{
 	}
 
 	public JobManagerStatus reportStatus() {
-		if(executorDied.get()) {
-			throw new RuntimeException("Either " + slowExecutor.getName() + " or " + fastExecutor.getName() + "died.");
-		}
 
 		return new JobManagerStatus(
 				getSlowJobs()

@@ -266,28 +266,14 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			return;
 		}
 
-		JobManagerStatus jobManagerStatus = null;
 
-		try {
-			// Collect the ShardNode and all its workers jobs into a single queue
-			jobManagerStatus = jobManager.reportStatus();
+		// Collect the ShardNode and all its workers jobs into a single queue
+		final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
 
-			for (Worker worker : workers.getWorkers().values()) {
-				jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
-			}
-
-		} catch (Exception e) {
-			// Only trapped if failOnError is set
-			log.error("A job manager failed", e);
-			System.exit(1);
-
+		for (Worker worker : workers.getWorkers().values()) {
+			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
 		}
 
-		if (jobManagerStatus == null) {
-			// Should never be executed
-			log.error("Jobmanager Status could not be retrieved");
-			return;
-		}
 
 		try {
 			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));

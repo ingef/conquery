@@ -27,6 +27,7 @@ public class JobExecutor extends Thread {
 
 	public JobExecutor(String name, boolean failOnError) {
 		super(name);
+
 		this.failOnError = failOnError;
 		JobMetrics.createJobQueueGauge(name, jobs);
 	}
@@ -124,9 +125,10 @@ public class JobExecutor extends Thread {
 
 						log.error("Job "+job+" failed", e);
 						if (failOnError) {
+							log.error("Propagating Error inner loop");
 							throw e;
 						}
-					}finally {
+					} finally {
 						ConqueryMDC.setLocation(this.getName());
 
 						log.trace("Finished job {} within {}", job, timer.stop());
@@ -137,6 +139,11 @@ public class JobExecutor extends Thread {
 				currentJob.set(null);
 			} catch (InterruptedException e) {
 				log.warn("Interrupted JobManager polling", e);
+
+				if (failOnError) {
+					log.error("Propagating Error outer loop");
+					throw e.getCause();
+				}
 			}
 		}
 	}
