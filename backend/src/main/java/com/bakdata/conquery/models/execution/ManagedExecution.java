@@ -37,7 +37,6 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -216,7 +215,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull  User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -228,11 +227,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
-		status.setResultUrl(getDownloadURL(url, user).orElse(null));
-		if (state.equals(ExecutionState.FAILED) && error != null) {
-			// Use plain format here to have a uniform serialization.
-			status.setError(error.asPlain());
-		}
 	}
 	
 
@@ -251,36 +245,39 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@Nullable
 	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, datasetRegistry, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
-	}
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull ExecutionStatus.CreationFlag creationFlag) {
-		return buildStatus(storage, url, user, datasetRegistry, EnumSet.of(creationFlag));
-	}
-	
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
-		ExecutionStatus status = new ExecutionStatus();
-		setStatusBase(storage, url, user, status);
-		for(CreationFlag flag : creationFlags) {
-			switch (flag) {
-				case WITH_COLUMN_DESCIPTION:
-					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
-					break;
-				case WITH_SOURCE:
-					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
-					break;
-				case WITH_GROUPS:
-					setAdditionalFieldsForStatusWithGroups(storage, user, status);
-					break;
-				default:
-					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
-			}
-		}
+	/**
+	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
+	 */
+	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, User user, DatasetRegistry datasetRegistry) {
+		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
+		setStatusBase(storage, user, status);
+
 		return status;
-		
 	}
 
-	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus status) {
+	/**
+	 * Renders an extensive status of this query (see {@link ExecutionStatus.Full}. The rendering can be computation intensive and can produce a large
+	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
+	 */
+	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		ExecutionStatus.Full status = new ExecutionStatus.Full();
+		setStatusBase(storage, user, status);
+
+		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
+		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		setAdditionalFieldsForStatusWithGroups(storage, user, status);
+
+		if (state.equals(ExecutionState.FAILED) && error != null) {
+			// Use plain format here to have a uniform serialization.
+			status.setError(error.asPlain());
+		}
+
+		status.setResultUrl(getDownloadURL(url, user).orElse(null));
+
+		return status;
+	}
+
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus.Full status) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
@@ -297,14 +294,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
