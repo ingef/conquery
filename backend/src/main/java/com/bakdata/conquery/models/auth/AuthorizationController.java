@@ -160,4 +160,11 @@ public final class AuthorizationController implements Managed{
 		return copy;
 	}
 
+	/**
+	 * @see AuthorizationController#flatCopyUser(UserId, String, MetaStorage)
+	 */
+	public User flatCopyUser(@NonNull UserId originUserId, String namePrefix) {
+		return flatCopyUser(originUserId, namePrefix, storage);
+	}
+
 }
