@@ -42,7 +42,7 @@ public class CopyUserTest {
 
 		// Check that the copy does not have any mappings
 		assertThat(group.containsMember(copy.getId())).isFalse();
-		assertThat(copy.getRoles().contains(role.getId())).isFalse();
+		assertThat(copy.getRoles()).isEmpty();
 
 		// Check that the flat map worked
 		assertThat(copy.getPermissions()).containsExactlyInAnyOrderElementsOf(AuthorizationHelper.getEffectiveUserPermissions(originUser.getId(),storage));
