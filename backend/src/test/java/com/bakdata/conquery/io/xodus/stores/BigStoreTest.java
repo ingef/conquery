@@ -49,7 +49,7 @@ public class BigStoreTest {
 	public void testFull() throws JSONException, IOException {
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new StorageConfig(), Validators.newValidator(), env,
 			StoreInfo.DICTIONARIES);
-		store.setChunkSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
+		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
 		Dictionary nDict = new MapDictionary();
 		nDict.setName("dict");
@@ -87,7 +87,7 @@ public class BigStoreTest {
 	public void testEmpty() throws JSONException, IOException {
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new StorageConfig(), Validators.newValidator(), env,
 			StoreInfo.DICTIONARIES);
-		store.setChunkSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
+		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
 		Dictionary nDict = new MapDictionary();
 		nDict.setName("dict");

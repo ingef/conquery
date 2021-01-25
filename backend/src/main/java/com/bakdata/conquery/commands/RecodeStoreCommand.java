@@ -5,8 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import io.dropwizard.cli.Command;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Size;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.EnvironmentConfig;
@@ -20,7 +22,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 @Slf4j
-public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
+public class RecodeStoreCommand extends Command {
 
 
 	public RecodeStoreCommand() {
@@ -39,7 +41,7 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 				.addArgument("--out")
 				.help("Output store.")
 				.required(true)
-				.type(Arguments.fileType().verifyCanCreate().verifyCanWriteParent());
+				.type(Arguments.fileType());
 
 		subparser
 				.addArgument("--in_logsize")
@@ -51,17 +53,16 @@ public class RecodeStoreCommand extends ConfiguredCommand<ConqueryConfig> {
 				.help("Logsize of outgoing store.")
 				.required(true);
 
-		super.configure(subparser);
 	}
 
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+	public void run(Bootstrap<?> bootstrap, Namespace namespace) {
 
 		final File inStoreDirectory = namespace.get("in");
-		final long inLogSize = Size.parse(namespace.get("in_logsize")).toKilobytes();
+		final long inLogSize = DataSize.parse(namespace.get("in_logsize")).toKilobytes();
 
 		final File outStoreDirectory = namespace.get("out");
-		final long outLogSize = Size.parse(namespace.get("out_logsize")).toKilobytes();
+		final long outLogSize = DataSize.parse(namespace.get("out_logsize")).toKilobytes();
 
 		log.info("Recoding Storage at `{} ({})` to `{} ({})`", inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
 
