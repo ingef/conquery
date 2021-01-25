@@ -331,10 +331,10 @@ export interface PostFilterResolveResponseT {
   };
 }
 
-interface FilterSuggestion {
+export interface FilterSuggestion {
   label: string;
   value: string;
-  optionValue: string | null;
+  optionValue: string;
   templateValues: string[]; // unclear whether that's correct
 }
 export type PostFilterSuggestionsResponseT = FilterSuggestion[];
@@ -349,7 +349,7 @@ export interface PermissionT {
 
 export type UserGroupIdT = string;
 export interface UserGroupT {
-  groupId: UserGroupIdT;
+  id: UserGroupIdT;
   label: string;
 }
 

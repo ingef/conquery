@@ -49,6 +49,20 @@ interface PropsT {
   onShareSuccess: () => void;
 }
 
+const getUserGroupsValue = (
+  userGroups: UserGroupT[],
+  previousQuery?: PreviousQueryT
+) => {
+  return previousQuery && previousQuery.groups
+    ? userGroups
+        .filter((group) => previousQuery.groups?.includes(group.id))
+        .map((group) => ({
+          label: group.label,
+          value: group.id,
+        }))
+    : [];
+};
+
 const SharePreviousQueryModal = ({
   previousQueryId,
   onClose,
@@ -66,21 +80,14 @@ const SharePreviousQueryModal = ({
         (query) => query.id === previousQueryId
       )
   );
-  const initialUserGroupsValue =
-    previousQuery && previousQuery.groups
-      ? userGroups
-          .filter((group) => previousQuery.groups?.includes(group.groupId))
-          .map((group) => ({
-            label: group.label,
-            value: group.groupId,
-          }))
-      : [];
+  const initialUserGroupsValue = getUserGroupsValue(userGroups, previousQuery);
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(
     initialUserGroupsValue
   );
 
   const previousPreviousQueryId = usePrevious(previousQueryId);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -93,6 +100,10 @@ const SharePreviousQueryModal = ({
     }
   }, [datasetId, previousPreviousQueryId, previousQueryId, dispatch]);
 
+  useEffect(() => {
+    setUserGroupsValue(getUserGroupsValue(userGroups, previousQuery));
+  }, [userGroups, previousQuery]);
+
   const onSetUserGroupsValue = (value: SelectValueT[] | null) => {
     setUserGroupsValue(value ? value : []);
   };
@@ -103,24 +114,20 @@ const SharePreviousQueryModal = ({
 
   const userGroupOptions = userGroups.map((group) => ({
     label: group.label,
-    value: group.groupId,
+    value: group.id,
   }));
 
   async function onShareClicked() {
     if (!datasetId) return;
 
-    const shared = userGroupsValue.length > 0;
     const userGroupsToShare = userGroupsValue.map((group) => group.value);
 
     try {
       await patchStoredQuery(datasetId, previousQueryId, {
-        shared,
         groups: userGroupsToShare,
       });
 
-      dispatch(
-        sharePreviousQuerySuccess(previousQueryId, shared, userGroupsToShare)
-      );
+      dispatch(sharePreviousQuerySuccess(previousQueryId, userGroupsToShare));
 
       onShareSuccess();
     } catch (e) {

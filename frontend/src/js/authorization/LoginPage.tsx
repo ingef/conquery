@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import T from "i18n-react";
 import { useDispatch } from "react-redux";
-import { push } from "react-router-redux";
 import styled from "@emotion/styled";
 
 import InputText from "../form-components/InputText";
 import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";
-import { postLogin } from "../api/api";
 import { storeAuthToken } from "./helper";
 import ErrorMessage from "../error-message/ErrorMessage";
+import { usePostLogin } from "../api/api";
+import { useHistory } from "react-router-dom";
 
 const Root = styled("div")`
   display: flex;
@@ -78,9 +78,8 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const dispatch = useDispatch();
-
-  const redirectToApp = () => dispatch(push("/"));
+  const history = useHistory();
+  const postLogin = usePostLogin();
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -92,7 +91,7 @@ const LoginPage = () => {
 
       if (result.access_token) {
         storeAuthToken(result.access_token);
-        redirectToApp();
+        history.push("/");
 
         return;
       }
@@ -116,10 +115,10 @@ const LoginPage = () => {
             large
             input={{
               value: user,
-              onChange: setUser
+              onChange: setUser,
             }}
             inputProps={{
-              disabled: loading
+              disabled: loading,
             }}
           />
           <SxInputText
@@ -128,10 +127,10 @@ const LoginPage = () => {
             large
             input={{
               value: password,
-              onChange: setPassword
+              onChange: setPassword,
             }}
             inputProps={{
-              disabled: loading
+              disabled: loading,
             }}
           />
           <SxPrimaryButton disabled={!user || !password} large type="submit">

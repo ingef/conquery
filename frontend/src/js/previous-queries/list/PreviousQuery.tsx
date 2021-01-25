@@ -147,8 +147,9 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       new Date(),
       true
     );
+    const isShared = query.shared || (query.groups && query.groups.length > 0);
     const label = query.label || query.id.toString();
-    const mayEditQuery = query.own || query.shared;
+    const mayEditQuery = query.own || isShared;
 
     const secondaryId = query.secondaryId
       ? loadedSecondaryIds.find((secId) => query.secondaryId === secId.id)
@@ -158,8 +159,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       <Root
         ref={ref}
         own={!!query.own}
-        shared={!!query.shared}
-        system={!!query.system || (!query.own && !query.shared)}
+        system={!!query.system || (!query.own && !isShared)}
       >
         <TopInfos>
           <div>
@@ -172,7 +172,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             ) : (
               peopleFound
             )}
-            {query.own && query.shared && (
+            {query.own && isShared && (
               <SharedIndicator onClick={onIndicateShare}>
                 {T.translate("common.shared")}
               </SharedIndicator>
@@ -199,7 +199,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                   <IconButton icon="microscope" bare onClick={() => {}} />
                 </StyledWithTooltip>
               )}
-              {query.own && !query.shared && (
+              {query.own && !isShared && (
                 <StyledWithTooltip text={T.translate("common.share")}>
                   <IconButton icon="upload" bare onClick={onIndicateShare} />
                 </StyledWithTooltip>

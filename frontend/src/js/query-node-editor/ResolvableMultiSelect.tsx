@@ -1,5 +1,5 @@
-import * as React from "react";
-import type { FieldPropsType } from "redux-form";
+import React, { FC } from "react";
+import type { WrappedFieldProps } from "redux-form";
 
 import type { SelectOptionsT, FilterIdT } from "../api/types";
 
@@ -12,25 +12,25 @@ import { postFilterValuesResolve } from "../api/api";
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
 
-type FilterContextT = FiltersContextT & {
-  filterId: FilterIdT
-};
+interface FilterContextT extends FiltersContextT {
+  filterId: FilterIdT;
+}
 
-type PropsT = FieldPropsType & {
-  context: FilterContextT,
+interface PropsT extends WrappedFieldProps {
+  context: FilterContextT;
 
-  label: string,
-  options: SelectOptionsT,
-  disabled?: boolean,
-  tooltip?: string,
-  allowDropFile?: boolean,
+  label: string;
+  options: SelectOptionsT;
+  disabled?: boolean;
+  tooltip?: string;
+  allowDropFile?: boolean;
 
-  isLoading?: boolean,
-  onLoad?: Function,
-  startLoadingThreshold: number
-};
+  isLoading?: boolean;
+  onLoad?: Function;
+  startLoadingThreshold: number;
+}
 
-export default ({
+const ResolvableMultiSelect: FC<PropsT> = ({
   context,
   input,
   label,
@@ -41,8 +41,8 @@ export default ({
 
   startLoadingThreshold,
   onLoad,
-  isLoading
-}: PropsT) => {
+  isLoading,
+}) => {
   const [resolved, setResolved] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(false);
@@ -51,7 +51,7 @@ export default ({
   // Can be both, an auto-completable (async) multi select or a regular one
   const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelect;
 
-  const onDropFile = async file => {
+  const onDropFile = async (file) => {
     setLoading(true);
 
     const rows = await getUniqueFileRows(file);
@@ -106,3 +106,5 @@ export default ({
     </>
   );
 };
+
+export default ResolvableMultiSelect;

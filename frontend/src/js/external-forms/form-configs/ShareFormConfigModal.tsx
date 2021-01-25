@@ -66,8 +66,8 @@ const ShareFormConfigModal = ({
   const initialUserGroupsValue =
     formConfig && formConfig.groups
       ? userGroups
-          .filter((group) => formConfig.groups?.includes(group.groupId))
-          .map((group) => ({ label: group.label, value: group.groupId }))
+          .filter((group) => formConfig.groups?.includes(group.id))
+          .map((group) => ({ label: group.label, value: group.id }))
       : [];
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(

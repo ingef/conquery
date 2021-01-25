@@ -1,7 +1,7 @@
 import * as React from "react";
 import styled from "@emotion/styled";
 import { useDispatch } from "react-redux";
-import type { FieldProps } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 import T from "i18n-react";
 
 import { resetAllFiltersInTables } from "../../model/table";
@@ -45,7 +45,7 @@ import FormConceptCopyModal from "./FormConceptCopyModal";
 import { useAllowExtendedCopying } from "../stateSelectors";
 import TransparentButton from "../../button/TransparentButton";
 
-type PropsType = FieldProps & {
+interface PropsType extends WrappedFieldProps {
   fieldName: string;
   label: string;
   datasetId: string;
@@ -57,7 +57,7 @@ type PropsType = FieldProps & {
   whitelistedTables?: string[];
   defaults: ConceptListDefaultsType;
   isValidConcept?: Function;
-};
+}
 
 const addValue = (value, newValue) => [...value, newValue];
 

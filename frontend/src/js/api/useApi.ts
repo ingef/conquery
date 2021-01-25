@@ -1,15 +1,49 @@
 import axios, { AxiosRequestConfig } from "axios";
+import { isLoginDisabled } from "js/environment";
+import { useHistory } from "react-router-dom";
 import { getStoredAuthToken } from "../authorization/helper";
 
+export const useApiUnauthorized = <T>(
+  requestConfig: Partial<AxiosRequestConfig> = {}
+) => {
+  return (finalRequestConfig: Partial<AxiosRequestConfig> = {}): Promise<T> =>
+    fetchJsonUnauthorized({
+      ...requestConfig,
+      ...finalRequestConfig,
+    });
+};
+
+export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
+  const history = useHistory();
+  const loginDisabled = isLoginDisabled();
+
+  return async (
+    finalRequestConfig: Partial<AxiosRequestConfig> = {}
+  ): Promise<T> => {
+    try {
+      const response = await fetchJson({
+        ...requestConfig,
+        ...finalRequestConfig,
+      });
+
+      return response;
+    } catch (error) {
+      if (!loginDisabled && error.status && error.status === 401) {
+        history.push("/login");
+      }
+
+      throw error;
+    }
+  };
+};
+
 export async function fetchJsonUnauthorized(
-  url: string,
   request?: Partial<AxiosRequestConfig>,
   rawBody: boolean = false
 ) {
   const finalRequest: AxiosRequestConfig = request
     ? {
         ...request,
-        url,
         data: rawBody ? request.data : JSON.stringify(request.data),
         headers: {
           Accept: "application/json",
@@ -18,7 +52,6 @@ export async function fetchJsonUnauthorized(
         },
       }
     : {
-        url,
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -51,11 +84,7 @@ export async function fetchJsonUnauthorized(
   }
 }
 
-function fetchJson(
-  url: string,
-  request?: Partial<AxiosRequestConfig>,
-  rawBody: boolean = false
-) {
+function fetchJson(request?: Partial<AxiosRequestConfig>) {
   const authToken = getStoredAuthToken() || "";
   const finalRequest = {
     ...(request || {}),
@@ -65,7 +94,7 @@ function fetchJson(
     },
   };
 
-  return fetchJsonUnauthorized(url, finalRequest, rawBody);
+  return fetchJsonUnauthorized(finalRequest);
 }
 
 export default fetchJson;

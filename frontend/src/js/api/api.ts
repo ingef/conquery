@@ -20,9 +20,10 @@ import type {
   PostFormConfigsResponseT,
   GetFormConfigsResponseT,
   GetFormConfigResponseT,
+  GetDatasetsResponseT,
 } from "./types";
 
-import fetchJson, { fetchJsonUnauthorized } from "./fetchJson";
+import fetchJson, { useApi, useApiUnauthorized } from "./useApi";
 import { transformQueryToApi } from "./apiHelper";
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 import type {
@@ -36,27 +37,32 @@ function getProtectedUrl(url: string) {
   return apiUrl() + PROTECTED_PREFIX + url;
 }
 
-export function getFrontendConfig(): Promise<GetFrontendConfigResponseT> {
-  return fetchJson(getProtectedUrl("/config/frontend"));
-}
-
-export function getDatasets() {
-  return fetchJson(getProtectedUrl(`/datasets`));
-}
-
-export const getConcepts = (
-  datasetId: DatasetIdT
-): Promise<GetConceptsResponseT> => {
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/concepts`));
+export const useGetFrontendConfig = () => {
+  return useApi<GetFrontendConfigResponseT>({
+    url: getProtectedUrl("/config/frontend"),
+  });
 };
 
-export const getConcept = (
-  datasetId: DatasetIdT,
-  conceptId: ConceptIdT
-): Promise<GetConceptResponseT> => {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`)
-  );
+export const useGetDatasets = () => {
+  return useApi<GetDatasetsResponseT>({ url: getProtectedUrl(`/datasets`) });
+};
+
+export const useGetConcepts = () => {
+  const api = useApi<GetConceptsResponseT>({});
+
+  return (datasetId: DatasetIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/concepts`),
+    });
+};
+
+export const useGetConcept = () => {
+  const api = useApi<GetConceptResponseT>({});
+
+  return (datasetId: DatasetIdT, conceptId: ConceptIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
+    });
 };
 
 // Same signature as postFormQueries
@@ -68,7 +74,8 @@ export function postQueries(
   // Transform into backend-compatible format
   const data = transformQueryToApi(query, options);
 
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/queries`), {
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/queries`),
     method: "POST",
     data,
   });
@@ -83,7 +90,8 @@ export function postFormQueries(
   // Transform into backend-compatible format
   const data = transformFormQueryToApi(query, formQueryTransformation);
 
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/queries`), {
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/queries`),
     method: "POST",
     data,
   });
@@ -93,54 +101,55 @@ export function deleteQuery(
   datasetId: DatasetIdT,
   queryId: QueryIdT
 ): Promise<null> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
-    {
-      method: "DELETE",
-    }
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+    method: "DELETE",
+  });
 }
 
 export function getQuery(
   datasetId: DatasetIdT,
   queryId: QueryIdT
 ): Promise<GetQueryResponseT> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`)
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+  });
 }
 
-export function getForms(
-  datasetId: DatasetIdT
-): Promise<GetFormQueriesResponseT> {
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-queries`));
-}
+export const useGetForms = () => {
+  const api = useApi<GetFormQueriesResponseT>();
+
+  return (datasetId: DatasetIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/form-queries`),
+    });
+};
 
 export function getStoredQueries(
   datasetId: DatasetIdT
 ): Promise<GetStoredQueriesResponseT> {
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/stored-queries`));
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries`),
+  });
 }
 
 export function getStoredQuery(
   datasetId: DatasetIdT,
   queryId: QueryIdT
 ): Promise<GetStoredQueryResponseT> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`)
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
+  });
 }
 
 export function deleteStoredQuery(
   datasetId: DatasetIdT,
   queryId: QueryIdT
 ): Promise<null> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
-    {
-      method: "DELETE",
-    }
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
+    method: "DELETE",
+  });
 }
 
 export function patchStoredQuery(
@@ -148,13 +157,11 @@ export function patchStoredQuery(
   queryId: QueryIdT,
   attributes: Object
 ): Promise<null> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
-    {
-      method: "PATCH",
-      data: attributes,
-    }
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
+    method: "PATCH",
+    data: attributes,
+  });
 }
 
 export function postPrefixForSuggestions(
@@ -164,15 +171,13 @@ export function postPrefixForSuggestions(
   filterId: string,
   text: string
 ): Promise<PostFilterSuggestionsResponseT> {
-  return fetchJson(
-    getProtectedUrl(
+  return fetchJson({
+    url: getProtectedUrl(
       `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`
     ),
-    {
-      method: "POST",
-      data: { text },
-    }
-  );
+    method: "POST",
+    data: { text },
+  });
 }
 
 export function postConceptsListToResolve(
@@ -180,13 +185,13 @@ export function postConceptsListToResolve(
   conceptId: string,
   concepts: string[]
 ): Promise<PostConceptResolveResponseT> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}/resolve`),
-    {
-      method: "POST",
-      data: { concepts },
-    }
-  );
+  return fetchJson({
+    url: getProtectedUrl(
+      `/datasets/${datasetId}/concepts/${conceptId}/resolve`
+    ),
+    method: "POST",
+    data: { concepts },
+  });
 }
 
 export function postFilterValuesResolve(
@@ -196,39 +201,40 @@ export function postFilterValuesResolve(
   filterId: string,
   values: string[]
 ): Promise<PostFilterResolveResponseT> {
-  return fetchJson(
-    getProtectedUrl(
+  return fetchJson({
+    url: getProtectedUrl(
       `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`
     ),
-    {
-      method: "POST",
-      data: { values },
-    }
-  );
-}
-
-export function getMe(): Promise<GetMeResponseT> {
-  return fetchJson(getProtectedUrl(`/me`));
-}
-
-export function postLogin(
-  user: string,
-  password: string
-): Promise<PostLoginResponseT> {
-  return fetchJsonUnauthorized(apiUrl() + "/auth", {
     method: "POST",
-    data: {
-      user,
-      password,
-    },
+    data: { values },
   });
+}
+
+export const useGetMe = () => {
+  return useApi<GetMeResponseT>({ url: getProtectedUrl(`/me`) });
+};
+
+export function usePostLogin() {
+  const api = useApiUnauthorized<PostLoginResponseT>({
+    url: apiUrl() + "/auth",
+    method: "POST",
+  });
+
+  return (user: string, password: string) =>
+    api({
+      data: {
+        user,
+        password,
+      },
+    });
 }
 
 export function postFormConfig(
   datasetId: DatasetIdT,
   data: BaseFormConfigT
 ): Promise<PostFormConfigsResponseT> {
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-configs`), {
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
     method: "POST",
     data,
   });
@@ -238,9 +244,9 @@ export function getFormConfig(
   datasetId: DatasetIdT,
   formConfigId: string
 ): Promise<GetFormConfigResponseT> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`)
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
+  });
 }
 
 export function patchFormConfig(
@@ -248,29 +254,27 @@ export function patchFormConfig(
   formConfigId: string,
   data: Partial<FormConfigT>
 ): Promise<PostFormConfigsResponseT> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
-    {
-      method: "PATCH",
-      data,
-    }
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
+    method: "PATCH",
+    data,
+  });
 }
 
 export function getFormConfigs(
   datasetId: DatasetIdT
 ): Promise<GetFormConfigsResponseT> {
-  return fetchJson(getProtectedUrl(`/datasets/${datasetId}/form-configs`));
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
+  });
 }
 
 export function deleteFormConfig(
   datasetId: DatasetIdT,
   formConfigId: string
 ): Promise<null> {
-  return fetchJson(
-    getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
-    {
-      method: "DELETE",
-    }
-  );
+  return fetchJson({
+    url: getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
+    method: "DELETE",
+  });
 }

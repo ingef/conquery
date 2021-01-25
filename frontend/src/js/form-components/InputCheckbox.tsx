@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-import type { FieldPropsType } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 
 const Row = styled("div")`
   display: flex;
@@ -48,10 +48,10 @@ const Checkmark = styled("div")`
   }
 `;
 
-type PropsType = FieldPropsType & {
+interface PropsType extends WrappedFieldProps {
   label: string;
   className?: string;
-};
+}
 
 const InputCheckbox = (props: PropsType) => (
   <Row
