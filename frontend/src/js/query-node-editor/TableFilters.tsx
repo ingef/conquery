@@ -102,8 +102,10 @@ const TableFilters = (props: PropsT) => {
                   options={
                     filter.options ||
                     (props.suggestions &&
-                      props.suggestions[filterIdx] &&
-                      props.suggestions[filterIdx].options)
+                    props.suggestions[filterIdx] &&
+                    props.suggestions[filterIdx].options
+                      ? props.suggestions[filterIdx].options
+                      : [])
                   }
                   disabled={!!props.excludeTable}
                   allowDropFile={!!filter.allowDropFile}

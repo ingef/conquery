@@ -10,8 +10,7 @@ import InputText from "../../form-components/InputText";
 import InputDateRange from "../../form-components/InputDateRange";
 import InputCheckbox from "../../form-components/InputCheckbox";
 
-import type { SelectOptionsType } from "../../standard-query-editor/types";
-import type { DatasetIdT } from "../../api/types";
+import type { DatasetIdT, SelectOptionT } from "../../api/types";
 
 import {
   FormQueryDropzone,
@@ -64,7 +63,7 @@ type PropsType = {
   field: GeneralField;
   getFieldValue: (fieldName: string) => any;
   locale: "de" | "en";
-  availableDatasets: SelectOptionsType;
+  availableDatasets: SelectOptionT;
   selectedDatasetId: DatasetIdT;
 };
 

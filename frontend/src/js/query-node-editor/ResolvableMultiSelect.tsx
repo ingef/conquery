@@ -1,10 +1,11 @@
 import React, { FC } from "react";
-import type { WrappedFieldProps } from "redux-form";
 
-import type { SelectOptionsT, FilterIdT } from "../api/types";
+import type { FilterIdT, SelectOptionT } from "../api/types";
 
 import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
-import InputMultiSelect from "../form-components/InputMultiSelect";
+import InputMultiSelect, {
+  MultiSelectInputProps,
+} from "../form-components/InputMultiSelect";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 
 import { postFilterValuesResolve } from "../api/api";
@@ -16,11 +17,11 @@ interface FilterContextT extends FiltersContextT {
   filterId: FilterIdT;
 }
 
-interface PropsT extends WrappedFieldProps {
+interface PropsT {
   context: FilterContextT;
 
   label: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   disabled?: boolean;
   tooltip?: string;
   allowDropFile?: boolean;
@@ -28,6 +29,8 @@ interface PropsT extends WrappedFieldProps {
   isLoading?: boolean;
   onLoad?: Function;
   startLoadingThreshold: number;
+
+  input: MultiSelectInputProps;
 }
 
 const ResolvableMultiSelect: FC<PropsT> = ({

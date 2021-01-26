@@ -5,13 +5,13 @@ import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
 
 import { isEmpty } from "../common/helpers";
-import type { SelectOptionsT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 interface PropsT {
   className?: string;
   label?: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   disabled?: boolean;
   small?: boolean;
   selectProps?: Object;

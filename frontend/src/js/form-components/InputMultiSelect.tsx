@@ -68,7 +68,13 @@ const optionContainsStr = (str: string) => (option: SelectOptionT) => {
   );
 };
 
-interface PropsT {
+export interface MultiSelectInputProps {
+  defaultValue?: string[];
+  value: SelectOptionT[] | FilterSuggestion[];
+  onChange: (value: string[] | null) => void;
+}
+
+export interface InputMultiSelectProps {
   label?: string;
   options: SelectOptionT[];
   disabled?: boolean | null;
@@ -79,11 +85,7 @@ interface PropsT {
   allowDropFile?: boolean | null;
   onDropFile?: Function;
 
-  input: {
-    defaultValue?: string[];
-    value: SelectOptionT[] | FilterSuggestion[];
-    onChange: (value: string[] | null) => void;
-  };
+  input: MultiSelectInputProps;
 }
 
 // Typescript typeguard
@@ -95,7 +97,7 @@ const isFilterSuggestion = (
   );
 };
 
-const InputMultiSelect: FC<PropsT> = (props) => {
+const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
   const allowDropFile = props.allowDropFile && !!props.onDropFile;
 
   const hasTooManyValues =

@@ -17,8 +17,6 @@ export interface SelectOptionT {
   value: number | string;
 }
 
-export type SelectOptionsT = SelectOptionT[];
-
 // Example: { min: "2019-01-01", max: "2019-12-31" }
 export interface DateRangeT {
   min?: string;
@@ -58,7 +56,7 @@ export interface RangeFilterT extends FilterBaseT {
 export type MultiSelectFilterValueT = (string | number)[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: MultiSelectFilterValueT | null;
 }
 
@@ -83,7 +81,7 @@ export type SelectFilterValueT = string | number;
 export interface SelectFilterT extends FilterBaseT {
   type: "SELECT";
   unit?: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: SelectFilterValueT | null;
 }
 
@@ -93,7 +91,7 @@ export interface StringFilterT extends FilterBaseT {
 }
 
 export interface DateColumnT {
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: string | null;
   value?: string;
 }

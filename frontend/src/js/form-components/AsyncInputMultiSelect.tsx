@@ -1,19 +1,9 @@
 import React from "react";
-import type { WrappedFieldProps } from "redux-form";
+import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
 
-import type { SelectOptionsT } from "../api/types";
-import InputMultiSelect from "./InputMultiSelect";
-
-interface PropsType extends WrappedFieldProps {
-  label: string;
-  isLoading: boolean;
-  options: SelectOptionsT;
-  disabled?: boolean | null;
+interface PropsType extends InputMultiSelectProps {
   startLoadingThreshold: number;
-  tooltip?: string;
   onLoad: Function;
-  onDropFile: Function;
-  allowDropFile?: boolean | null;
 }
 
 const AsyncInputMultiSelect = ({
