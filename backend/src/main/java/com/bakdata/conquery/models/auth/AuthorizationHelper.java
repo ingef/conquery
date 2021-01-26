@@ -44,7 +44,7 @@ import org.apache.shiro.authz.Permission;
  */
 @Slf4j
 public class AuthorizationHelper {
-	
+
 	// Dataset Instances
 	/**
 	 * Helper function for authorizing an ability on a dataset.
@@ -55,17 +55,17 @@ public class AuthorizationHelper {
 	public static void authorize(@NonNull User user, @NonNull DatasetId dataset, @NonNull Ability ability) {
 		authorize(user, dataset, EnumSet.of(ability));
 	}
-	
+
 	/**
 	 * Helper function for authorizing an ability on a dataset.
 	 * @param user The subject that needs authorization.
 	 * @param dataset The id of the object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
+	 * @param abilities The kind of ability that is checked.
 	 */
 	public static void authorize(@NonNull User user, @NonNull DatasetId dataset, @NonNull EnumSet<Ability> abilities) {
 		user.checkPermission(DatasetPermission.onInstance(abilities, dataset));
 	}
-	
+
 	// Query Instances
 	/**
 	 * Helper function for authorizing an ability on a query.
@@ -76,17 +76,17 @@ public class AuthorizationHelper {
 	public static void authorize(@NonNull User user, @NonNull ManagedExecutionId query, @NonNull Ability ability) {
 		authorize(user, query, EnumSet.of(ability));
 	}
-	
+
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
 	 * @param query The id of the object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
+	 * @param abilities The kind of ability that is checked.
 	 */
 	public static void authorize(@NonNull User user, @NonNull ManagedExecutionId query, @NonNull EnumSet<Ability> abilities) {
 		user.checkPermission(QueryPermission.onInstance(abilities, query));
 	}
-	
+
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
@@ -96,17 +96,17 @@ public class AuthorizationHelper {
 	public static void authorize(@NonNull User user, @NonNull ManagedQuery query, @NonNull Ability ability) {
 		authorize(user, query.getId(), EnumSet.of(ability));
 	}
-	
+
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
 	 * @param query The object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
+	 * @param abilities The kind of ability that is checked.
 	 */
 	public static void authorize(@NonNull User user, @NonNull ManagedQuery query, @NonNull EnumSet<Ability> abilities) {
 		user.checkPermission(QueryPermission.onInstance(abilities, query.getId()));
 	}
-	
+
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
@@ -116,7 +116,7 @@ public class AuthorizationHelper {
 	public static void authorize(@NonNull User user, @NonNull ConqueryPermission toBeChecked) {
 		user.checkPermission(toBeChecked);
 	}
-	
+
 	/**
 	 * Utility function to add a permission to a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
@@ -126,7 +126,7 @@ public class AuthorizationHelper {
 	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission, @NonNull MetaStorage storage) {
 		owner.addPermission(storage, permission);
 	}
-	
+
 	/**
 	 * Utility function to remove a permission from a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
@@ -136,11 +136,11 @@ public class AuthorizationHelper {
 	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission, @NonNull MetaStorage storage) {
 		owner.removePermission(storage, permission);
 	}
-	
-	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
+
+	public static List<Group> getGroupsOf(@NonNull UserId userId, @NonNull MetaStorage storage){
 		List<Group> userGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(user.getId())) {
+			if(group.containsMember(userId)) {
 				userGroups.add(group);
 			}
 		}
@@ -151,17 +151,17 @@ public class AuthorizationHelper {
 	 * Find the primary group of the user. All users must have a primary group.
 	 * @implNote Currently this is the first group of a user and should also be the only group.
 	 */
-	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MetaStorage storage) {
-		List<Group> groups = getGroupsOf(user, storage);
+	public static Optional<Group> getPrimaryGroup(@NonNull UserId userId, @NonNull MetaStorage storage) {
+		List<Group> groups = getGroupsOf(userId, storage);
 		if(groups.isEmpty()) {
 			return Optional.empty();
 		}
 		// TODO: 17.02.2020 implement primary flag for user etc.
 		return Optional.of(groups.get(0));
 	}
-	
 
-	
+
+
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits.
@@ -180,7 +180,7 @@ public class AuthorizationHelper {
 		}
 		return tmpView;
 	}
-	
+
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits.
@@ -190,11 +190,11 @@ public class AuthorizationHelper {
 	 */
 	public static Set<Permission> getEffectiveGroupPermissions(GroupId groupId, MetaStorage storage) {
 		Group group = Objects.requireNonNull(
-			storage.getGroup(groupId),
-			() -> String.format("Group with id %s was not found", groupId));
+				storage.getGroup(groupId),
+				() -> String.format("Group with id %s was not found", groupId));
 
 		Set<Permission> tmpView = collectRolePermissions(storage, group, group.getPermissions());
-		
+
 		return tmpView;
 	}
 
@@ -209,8 +209,8 @@ public class AuthorizationHelper {
 		}
 		return tmpView;
 	}
-	
-	
+
+
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
@@ -230,31 +230,31 @@ public class AuthorizationHelper {
 		}
 		return mappedPerms;
 	}
-	
 
-	
+
+
 	public static <P extends PermissionOwner<?>> void addRoleTo(MetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
 		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
 		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-		
+
 		if(!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));			
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
 
 		((RoleOwner)owner).addRole(storage, role);
 		log.trace("Added role {} to {}", role, owner);
 	}
-	
+
 	public static <P extends PermissionOwner<?>> void deleteRoleFrom(MetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
 		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
 		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-		
+
 		if(!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));			
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
 
 		((RoleOwner)owner).removeRole(storage,role);
-		
+
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
@@ -269,7 +269,7 @@ public class AuthorizationHelper {
 		}
 		storage.removeRole(roleId);
 	}
-	
+
 
 
 	public static List<User> getUsersByRole(MetaStorage storage, Role role) {
@@ -286,14 +286,14 @@ public class AuthorizationHelper {
 	 */
 	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
 		List<Permission> perms = exec.getUsedNamespacedIds().stream()
-			.map(NamespacedId::getDataset)
-			.distinct()
-			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
-			.map(Permission.class::cast)
-			.collect(Collectors.toList());
+				.map(NamespacedId::getDataset)
+				.distinct()
+				.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
+				.map(Permission.class::cast)
+				.collect(Collectors.toList());
 		user.checkPermissions(perms);
 	}
-	
+
 	/**
 	 * Checks if a {@link Visitable} has only references to {@link Dataset}s a user is allowed to read.
 	 * This checks all used {@link DatasetId}s for the {@link Ability.READ} on the user.
@@ -302,11 +302,11 @@ public class AuthorizationHelper {
 		NamespacedIdCollector collector = new NamespacedIdCollector();
 		visitable.visit(collector);
 		List<Permission> perms = collector.getIds().stream()
-			.map(NamespacedId::getDataset)
-			.distinct()
-			.map(d -> DatasetPermission.onInstance(Ability.READ, d))
-			.map(Permission.class::cast)
-			.collect(Collectors.toList());
+				.map(NamespacedId::getDataset)
+				.distinct()
+				.map(d -> DatasetPermission.onInstance(Ability.READ, d))
+				.map(Permission.class::cast)
+				.collect(Collectors.toList());
 		user.checkPermissions(perms);
 	}
 }

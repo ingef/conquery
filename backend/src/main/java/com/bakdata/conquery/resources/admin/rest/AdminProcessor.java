@@ -157,9 +157,9 @@ public class AdminProcessor {
 
 		// store dataset in own storage
 		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
-			storage.getValidator(),
-			config.getStorage(),
-			new File(config.getStorage().getDirectory(), "dataset_" + name));
+				storage.getValidator(),
+				config.getStorage(),
+				new File(config.getStorage().getDirectory(), "dataset_" + name));
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
@@ -195,7 +195,7 @@ public class AdminProcessor {
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			datasetRegistry.get(ds.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table.getId(), selectedFile, entityBucketSize));
+					.addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table.getId(), selectedFile, entityBucketSize));
 		}
 	}
 
@@ -205,9 +205,9 @@ public class AdminProcessor {
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
 		CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv()
-													   .withSkipHeader(false)
-													   .withParseHeaders(false)
-													   .createCsvParserSettings());
+				.withSkipHeader(false)
+				.withParseHeaders(false)
+				.createCsvParserSettings());
 
 		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
 
@@ -266,13 +266,13 @@ public class AdminProcessor {
 	public FERoleContent getRoleContent(RoleId roleId) {
 		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
 		return FERoleContent
-			.builder()
-			.permissions(wrapInFEPermission(role.getPermissions()))
-			.permissionTemplateMap(preparePermissionTemplate())
-			.users(getUsers(role))
-			.groups(getGroups(role))
-			.owner(role)
-			.build();
+				.builder()
+				.permissions(wrapInFEPermission(role.getPermissions()))
+				.permissionTemplateMap(preparePermissionTemplate())
+				.users(getUsers(role))
+				.groups(getGroups(role))
+				.owner(role)
+				.build();
 	}
 
 	private SortedSet<FEPermission> wrapInFEPermission(Collection<Permission> permissions) {
@@ -295,7 +295,7 @@ public class AdminProcessor {
 
 		// Grab all possible permission types for the "Create Permission" section
 		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver
-			.listImplementations(StringPermissionBuilder.class);
+				.listImplementations(StringPermissionBuilder.class);
 		for (Class<? extends StringPermissionBuilder> permissionType : permissionTypes) {
 			try {
 				StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
@@ -346,13 +346,13 @@ public class AdminProcessor {
 	public FEUserContent getUserContent(UserId userId) {
 		User user = Objects.requireNonNull(storage.getUser(userId));
 		return FEUserContent
-			.builder()
-			.owner(user)
-			.roles(user.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
-			.availableRoles(storage.getAllRoles())
-			.permissions(wrapInFEPermission(user.getPermissions()))
-			.permissionTemplateMap(preparePermissionTemplate())
-			.build();
+				.builder()
+				.owner(user)
+				.roles(user.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
+				.availableRoles(storage.getAllRoles())
+				.permissions(wrapInFEPermission(user.getPermissions()))
+				.permissionTemplateMap(preparePermissionTemplate())
+				.build();
 	}
 
 	public synchronized void deleteUser(UserId userId) {
@@ -392,15 +392,15 @@ public class AdminProcessor {
 		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
 		return FEGroupContent
-			.builder()
-			.owner(group)
-			.members(membersIds.stream().map(storage::getUser).collect(Collectors.toList()))
-			.availableMembers(availableMembers)
-			.roles(group.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
-			.availableRoles(storage.getAllRoles())
-			.permissions(wrapInFEPermission(group.getPermissions()))
-			.permissionTemplateMap(preparePermissionTemplate())
-			.build();
+				.builder()
+				.owner(group)
+				.members(membersIds.stream().map(storage::getUser).collect(Collectors.toList()))
+				.availableMembers(availableMembers)
+				.roles(group.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
+				.availableRoles(storage.getAllRoles())
+				.permissions(wrapInFEPermission(group.getPermissions()))
+				.permissionTemplateMap(preparePermissionTemplate())
+				.build();
 	}
 
 	public synchronized void addGroup(Group group) throws JSONException {
@@ -425,8 +425,8 @@ public class AdminProcessor {
 	public void addUserToGroup(GroupId groupId, UserId userId) {
 		synchronized (storage) {
 			Objects
-				.requireNonNull(groupId.getPermissionOwner(storage))
-				.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+					.requireNonNull(groupId.getPermissionOwner(storage))
+					.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
@@ -434,8 +434,8 @@ public class AdminProcessor {
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) {
 		synchronized (storage) {
 			Objects
-				.requireNonNull(groupId.getPermissionOwner(storage))
-				.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+					.requireNonNull(groupId.getPermissionOwner(storage))
+					.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
@@ -466,7 +466,7 @@ public class AdminProcessor {
 	public FEAuthOverview getAuthOverview() {
 		Collection<OverviewRow> overview = new TreeSet<>();
 		for (User user : storage.getAllUsers()) {
-			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user.getId(), storage);
 			List<Role> effectiveRoles = user.getRoles().stream().map(storage::getRole).collect(Collectors.toList());
 			userGroups.forEach(g -> {
 				effectiveRoles.addAll(g.getRoles().stream().map(storage::getRole).collect(Collectors.toList()));
@@ -500,8 +500,8 @@ public class AdminProcessor {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = CsvIo.createWriter(sWriter);
 		List<String> scope = ConqueryConfig.getInstance()
-			.getAuthorization()
-			.getOverviewScope();
+				.getAuthorization()
+				.getOverviewScope();
 		// Header
 		writeAuthOverviewHeader(writer, scope);
 		// Body
@@ -532,8 +532,8 @@ public class AdminProcessor {
 		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
 		for(String domain : scope) {
 			writer.addValue(permissions.get(domain).stream()
-				.map(Object::toString)
-				.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
+					.map(Object::toString)
+					.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
 		}
 		writer.writeValuesToRow();
 	}
@@ -555,8 +555,8 @@ public class AdminProcessor {
 		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
 
 		final List<? extends Connector> connectors = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-															  .filter(con -> con.getTable().getId().equals(tableId))
-															  .collect(Collectors.toList());
+				.filter(con -> con.getTable().getId().equals(tableId))
+				.collect(Collectors.toList());
 
 		if(!connectors.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors for Concepts: `%s`", tableId, connectors.stream().map(Connector::getConcept).collect(Collectors.toList())));
@@ -564,9 +564,9 @@ public class AdminProcessor {
 
 
 		namespace.getStorage().getAllImports().stream()
-				 .filter(imp -> imp.getTable().equals(tableId))
-				 .map(Import::getId)
-				 .forEach(this::deleteImport);
+				.filter(imp -> imp.getTable().equals(tableId))
+				.map(Import::getId)
+				.forEach(this::deleteImport);
 
 		namespace.getStorage().removeTable(tableId);
 		namespace.sendToAll(new RemoveTable(tableId));
@@ -586,11 +586,11 @@ public class AdminProcessor {
 		if(!namespace.getStorage().getTables().isEmpty()){
 			throw new IllegalArgumentException(
 					String.format("Cannot delete dataset `%s`, because it still has tables: `%s`",
-								  datasetId,
-								  namespace.getStorage().getTables().stream()
-										   .map(Table::getId)
-										   .map(Objects::toString)
-										   .collect(Collectors.joining(","))
+							datasetId,
+							namespace.getStorage().getTables().stream()
+									.map(Table::getId)
+									.map(Objects::toString)
+									.collect(Collectors.joining(","))
 					));
 		}
 
@@ -623,10 +623,10 @@ public class AdminProcessor {
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
-												 .map(Table::getColumns).flatMap(Arrays::stream)
-												 .filter(column -> column.getSecondaryId() != null)
-												 .filter(column -> column.getSecondaryId().getId().equals(secondaryId))
-												 .collect(Collectors.toList());
+				.map(Table::getColumns).flatMap(Arrays::stream)
+				.filter(column -> column.getSecondaryId() != null)
+				.filter(column -> column.getSecondaryId().getId().equals(secondaryId))
+				.collect(Collectors.toList());
 
 		if(!dependents.isEmpty()){
 			log.error(
