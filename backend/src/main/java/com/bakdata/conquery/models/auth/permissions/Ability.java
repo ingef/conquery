@@ -15,9 +15,9 @@ public enum Ability {
 	SHARE,
 
 	// Dataset specific
-	STATISTIC, // Only get aggregations over entities and statistics about query results
+	STATISTIC, // Not used yet: Only get aggregations over entities and statistics about query results
 	DOWNLOAD,  // Allow download of per entity results
-	PRESERVE_ID,
+	PRESERVE_ID,  // Needs extra implementation: Allow the user to see the real id of entities and externally resolve real ids into conquery
 	
 	// FormConfig specific
 	MODIFY
