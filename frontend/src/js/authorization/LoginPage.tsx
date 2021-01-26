@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import T from "i18n-react";
-import { useDispatch } from "react-redux";
 import styled from "@emotion/styled";
 
 import InputText from "../form-components/InputText";
