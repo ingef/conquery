@@ -11,10 +11,12 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
 
+import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
@@ -40,20 +42,18 @@ import org.apache.shiro.realm.Realm;
 @Priority(Priorities.AUTHENTICATION)
 public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
-	private final AuthorizationController controller;
+	private final Set<TokenExtractor> tokenExtractors = new HashSet<>();
 
 	@Override
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
 
 		// The token extraction process
 		Set<AuthenticationToken> tokens = new HashSet<>();
-		for (ConqueryAuthenticationRealm realm : controller.getAuthenticationRealms()) {
+		for (TokenExtractor tokenExtractor : tokenExtractors) {
 			AuthenticationToken token = null;
-			if ((token = realm.extractToken(requestContext)) != null) {
-				log.trace("Realm {} extracted a token form the request: {}", ((Realm) realm).getName(), token);
+			if ((token = tokenExtractor.apply(requestContext) ) != null) {
+				log.trace("Extracted a token form the request: {}", token);
 				tokens.add(token);
-			} else {				
-				log.trace("Realm {} did not extract a token form the request.", ((Realm) realm).getName());
 			}
 		}
 
@@ -93,6 +93,14 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
 
+	public void registerTokenExtractor(TokenExtractor extractor){
+		tokenExtractors.add(extractor);
+	}
+
+	public static interface TokenExtractor extends Function<ContainerRequestContext, AuthenticationToken> {
+
+	}
+
 	/**
 	 * Builder for {@link DefaultAuthFilter}.
 	 * <p>
@@ -107,20 +115,17 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	@Setter
 	private static class Builder extends AuthFilterBuilder<AuthenticationToken, User, DefaultAuthFilter> {
 
-		private AuthorizationController controller;
-
 		@Override
 		protected DefaultAuthFilter newInstance() {
-			Preconditions.checkNotNull(controller);
-			return new DefaultAuthFilter(controller);
+			return new DefaultAuthFilter();
 		}
 	}
 
-	public static AuthFilter<AuthenticationToken, User> asDropwizardFeature(AuthorizationController controller) {
+	public static DefaultAuthFilter asDropwizardFeature(MetaStorage storage) {
 		Builder builder = new Builder();
-		DefaultAuthFilter authFilter = builder.setController(controller)
-			.setAuthenticator(new ConqueryAuthenticator(controller.getStorage())).setUnauthorizedHandler(new DefaultUnauthorizedHandler())
-			.buildAuthFilter();
+		DefaultAuthFilter authFilter = builder
+				.setAuthenticator(new ConqueryAuthenticator(storage)).setUnauthorizedHandler(new DefaultUnauthorizedHandler())
+				.buildAuthFilter();
 		return authFilter;
 	}
 }

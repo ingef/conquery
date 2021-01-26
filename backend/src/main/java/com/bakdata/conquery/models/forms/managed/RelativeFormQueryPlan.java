@@ -59,7 +59,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		int size = calculateCompleteLength();
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
 		CDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
-		final OptionalInt sampled = indexSelector.sample(dateSet);
+			final OptionalInt sampled = indexSelector.sample(dateSet);
 		
 		// dateset is empty or sampling failed.
 		if (sampled.isEmpty()) {

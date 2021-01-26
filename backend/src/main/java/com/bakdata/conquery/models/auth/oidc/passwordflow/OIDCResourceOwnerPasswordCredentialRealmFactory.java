@@ -1,22 +1,26 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
-import static com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealm.CONFIDENTIAL_CREDENTIAL;
+import static com.bakdata.conquery.models.auth.oidc.passwordflow.TokenProcessor.CONFIDENTIAL_CREDENTIAL;
 
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
+import com.bakdata.conquery.models.auth.oidc.OIDCAuthenticationConfig;
+import com.bakdata.conquery.resources.unprotected.LoginResource;
+import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.servlets.tasks.Task;
-import io.dropwizard.setup.Environment;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authorization.client.AuthzClient;
@@ -73,10 +77,10 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 	}
 
 	@Override
-	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController controller) {
+	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
 		this.authClient = getAuthClient(false);
-		if(environment != null && environment.admin() != null) {
-			environment.admin().addTask(new Task("keycloak-update-authz-client") {
+		if(managerNode != null && managerNode.getEnvironment().admin() != null) {
+			managerNode.getEnvironment().admin().addTask(new Task("keycloak-update-authz-client") {
 				
 				@Override
 				public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
@@ -84,9 +88,24 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory extends Configurati
 				}
 			});
 		}
-		return new OIDCResourceOwnerPasswordCredentialRealm<>(controller.getStorage(), this);
+
+		TokenProcessor tokenProcessor = new TokenProcessor(this);
+		registerAdminUnprotectedAuthenticationResources(managerNode.getUnprotectedAuthAdmin(),tokenProcessor);
+		registerApiUnprotectedAuthenticationResources(managerNode.getUnprotectedAuthApi(),tokenProcessor);
+
+		return new IntrospectionDelegatingRealm<>(managerNode.getStorage(), this);
 	}
-	
+
+	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, TokenProcessor tokenProcessor) {
+		jerseyConfig.register(new TokenResource(tokenProcessor));
+		jerseyConfig.register(LoginResource.class);
+	}
+
+	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, TokenProcessor tokenProcessor) {
+		jerseyConfig.register(new TokenResource(tokenProcessor));
+	}
+
+
 	@JsonIgnore
 	@ValidationMethod(message = "Realm was emtpy")
 	public boolean isRealmFilled() {

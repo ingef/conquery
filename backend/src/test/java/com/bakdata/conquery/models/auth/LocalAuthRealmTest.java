@@ -13,15 +13,15 @@ import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
-import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
-import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.google.common.collect.MoreCollectors;
-import io.dropwizard.setup.Environment;
+import com.bakdata.conquery.util.NonPersistentMetaStorage;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,25 +39,23 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 public class LocalAuthRealmTest {
 
 	private File tmpDir;
-	private AuthorizationController controller;
 	private LocalAuthenticationRealm realm;
 	private MetaStorage storage;
 	private User user1;
+	private ConqueryTokenRealm conqueryTokenRealm;
 
 	@BeforeAll
 	public void setupAll() throws Exception {
 		LocalAuthenticationConfig config = new LocalAuthenticationConfig();
 
-		storage = mock(MetaStorage.class);
-		File tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
-
+		storage = new NonPersistentMetaStorage();
+		tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
 		tmpDir.mkdir();
-
 		ConqueryConfig.getInstance().getStorage().setDirectory(tmpDir);
-		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(),List.of(config), storage);
-		controller.init();
-		controller.start();
-		realm = (LocalAuthenticationRealm) controller.getAuthenticationRealms().stream().filter(r -> r instanceof LocalAuthenticationRealm).collect(MoreCollectors.onlyElement());
+
+		conqueryTokenRealm = new ConqueryTokenRealm(storage);
+
+		realm = new LocalAuthenticationRealm(storage, conqueryTokenRealm, "localtestRealm", new XodusConfig());
 	}
 
 	@BeforeEach
@@ -113,7 +111,7 @@ public class LocalAuthRealmTest {
 		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
-		assertThat(controller.getCentralTokenRealm().doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
+		assertThat(conqueryTokenRealm.doGetAuthenticationInfo(new BearerToken(jwt)).getPrincipals().getPrimaryPrincipal())
 			.isEqualTo(new UserId("TestUser"));
 	}
 

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.auth.conquerytoken;
 
-import javax.ws.rs.container.ContainerRequestContext;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -14,7 +12,6 @@ import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler;
-import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -23,15 +20,14 @@ import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.ExpiredCredentialsException;
-import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.*;
+
+import javax.ws.rs.container.ContainerRequestContext;
 
 @Slf4j
 public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
-	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
+	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
 	private final MetaStorage storage;
 	

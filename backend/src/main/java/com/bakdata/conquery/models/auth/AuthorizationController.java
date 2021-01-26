@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -40,8 +41,6 @@ import org.apache.shiro.util.LifecycleUtils;
 @RequiredArgsConstructor
 public final class AuthorizationController implements Managed{
 	
-	public static AuthorizationController INSTANCE;
-	
 	@NonNull
 	private final Environment environment;
 	@NonNull
@@ -61,7 +60,11 @@ public final class AuthorizationController implements Managed{
 	@Getter
 	private List<Realm> realms = new ArrayList<>();
 	
-	public void init() {
+	public void init(ManagerNode manager) {
+		// Create Jersey filter for authentication this is just referenced here and can be graped and registered by
+		// any servlet. In the following configured realms can register TokenExtractors in the filter.
+		this.authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
+
 		// Add the central authentication realm
 		centralTokenRealm = new ConqueryTokenRealm(storage);
 		authenticationRealms.add(centralTokenRealm);
@@ -73,17 +76,12 @@ public final class AuthorizationController implements Managed{
 
 		// Init authentication realms provided by the config.
 		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
-			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(environment, this);
+			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(manager);
 			authenticationRealms.add(realm);
 			realms.add(realm);
 		}
 		
 		registerShiro(realms);
-		
-		// Create Jersey filter for authentication
-		this.authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
-
-		INSTANCE = this;
 	}
 	
 	@Override

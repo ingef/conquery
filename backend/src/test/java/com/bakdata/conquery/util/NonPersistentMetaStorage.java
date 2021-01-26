@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.Validator;
+import javax.xml.crypto.Data;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -22,8 +23,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-
+@NoArgsConstructor
+@AllArgsConstructor
 public class NonPersistentMetaStorage implements MetaStorage {
 	
 	private static final UnsupportedOperationException NOT_IMPLEMENTED = new UnsupportedOperationException("Not implemented");
@@ -33,6 +37,8 @@ public class NonPersistentMetaStorage implements MetaStorage {
 	private final IdMap<RoleId,Role> ROLES = new IdMap<>();
 	private final Map<ManagedExecutionId,ManagedExecution<?>> EXECUTIONS = new ConcurrentHashMap<>();
 	private final IdMap<FormConfigId,FormConfig> FORM_CONFIGS = new IdMap<>();
+
+	private DatasetRegistry datasetRegistry;
 
 	@Override
 	public Validator getValidator() {
@@ -173,7 +179,7 @@ public class NonPersistentMetaStorage implements MetaStorage {
 
 	@Override
 	public DatasetRegistry getDatasetRegistry() {
-		throw NOT_IMPLEMENTED;
+		return datasetRegistry;
 	}
 
 	@Override

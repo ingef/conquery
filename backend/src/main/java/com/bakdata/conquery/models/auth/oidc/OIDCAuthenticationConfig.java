@@ -1,9 +1,9 @@
-package com.bakdata.conquery.models.auth.oidc.passwordflow;
+package com.bakdata.conquery.models.auth.oidc;
 
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 
-public interface OIDCAuthenticationConfig extends AuthenticationConfig{
+public interface OIDCAuthenticationConfig extends AuthenticationConfig {
 	
 	
 	public String getTokenEndpoint();

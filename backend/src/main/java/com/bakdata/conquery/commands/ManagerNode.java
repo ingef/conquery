@@ -46,6 +46,7 @@ import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Throwables;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
@@ -72,12 +73,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private ConqueryConfig config;
 	private AdminServlet admin;
 	private AuthorizationController authController;
-	private AuthServlet authServletApp;
-	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
 	private DatasetRegistry datasetRegistry;
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
+
+	// Resources without authentication
+	private DropwizardResourceConfig unprotectedAuthApi;
+	private DropwizardResourceConfig unprotectedAuthAdmin;
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 
@@ -149,9 +152,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			sn.getStorage().setMetaStorage(storage);
 		}
 
-		
+		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
+		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+
 		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
-		authController.init();
+		authController.init(this);
 		environment.lifecycle().manage(authController);
 
 		log.info("Registering ResourcesProvider");
