@@ -16,8 +16,6 @@ import WithTooltip from "../../tooltip/WithTooltip";
 
 import EditableTags from "../../form-components/EditableTags";
 
-import { canDownloadResult } from "../../user/selectors";
-
 import {
   renamePreviousQuery,
   retagPreviousQuery,
@@ -109,9 +107,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const availableTags = useSelector<StateT, string[]>(
       (state) => state.previousQueries.tags
     );
-    const userCanDownloadResults = useSelector<StateT, boolean>((state) =>
-      canDownloadResult(state)
-    );
 
     const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
       (state) => state.conceptTrees.secondaryIds
@@ -163,7 +158,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       >
         <TopInfos>
           <div>
-            {!!query.resultUrl && userCanDownloadResults ? (
+            {!!query.resultUrl ? (
               <WithTooltip text={T.translate("previousQuery.downloadResults")}>
                 <DownloadButton tight bare url={query.resultUrl}>
                   {peopleFound}
