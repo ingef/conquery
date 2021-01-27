@@ -229,52 +229,62 @@ export function usePostLogin() {
     });
 }
 
-export function postFormConfig(
-  datasetId: DatasetIdT,
-  data: BaseFormConfigT
-): Promise<PostFormConfigsResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
-    method: "POST",
-    data,
-  });
-}
+export const usePostFormConfig = () => {
+  const api = useApi<PostFormConfigsResponseT>();
 
-export function getFormConfig(
-  datasetId: DatasetIdT,
-  formConfigId: string
-): Promise<GetFormConfigResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
-  });
-}
+  return (datasetId: DatasetIdT, data: BaseFormConfigT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
+      method: "POST",
+      data,
+    });
+};
 
-export function patchFormConfig(
-  datasetId: DatasetIdT,
-  formConfigId: string,
-  data: Partial<FormConfigT>
-): Promise<PostFormConfigsResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
-    method: "PATCH",
-    data,
-  });
-}
+export const useGetFormConfig = () => {
+  const api = useApi<GetFormConfigResponseT>();
 
-export function getFormConfigs(
-  datasetId: DatasetIdT
-): Promise<GetFormConfigsResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
-  });
-}
+  return (datasetId: DatasetIdT, formConfigId: string) =>
+    api({
+      url: getProtectedUrl(
+        `/datasets/${datasetId}/form-configs/${formConfigId}`
+      ),
+    });
+};
 
-export function deleteFormConfig(
-  datasetId: DatasetIdT,
-  formConfigId: string
-): Promise<null> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/form-configs/${formConfigId}`),
-    method: "DELETE",
-  });
-}
+export const usePatchFormConfig = () => {
+  const api = useApi<GetFormConfigResponseT>();
+
+  return (
+    datasetId: DatasetIdT,
+    formConfigId: string,
+    data: Partial<FormConfigT>
+  ) =>
+    api({
+      url: getProtectedUrl(
+        `/datasets/${datasetId}/form-configs/${formConfigId}`
+      ),
+      method: "PATCH",
+      data,
+    });
+};
+
+export const useGetFormConfigs = () => {
+  const api = useApi<GetFormConfigsResponseT>();
+
+  return (datasetId: DatasetIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
+    });
+};
+
+export const useDeleteFormConfig = () => {
+  const api = useApi<null>();
+
+  return (datasetId: DatasetIdT, formConfigId: string) =>
+    api({
+      url: getProtectedUrl(
+        `/datasets/${datasetId}/form-configs/${formConfigId}`
+      ),
+      method: "DELETE",
+    });
+};

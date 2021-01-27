@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
 
 import Modal from "../../modal/Modal";
-import { patchFormConfig } from "../../api/api";
+import { usePatchFormConfig } from "../../api/api";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 import TransparentButton from "../../button/TransparentButton";
@@ -77,6 +77,7 @@ const ShareFormConfigModal = ({
   const previousFormConfigId = usePrevious(formConfigId);
 
   const { loadFormConfig } = useLoadFormConfig();
+  const patchFormConfig = usePatchFormConfig();
 
   useEffect(() => {
     if (

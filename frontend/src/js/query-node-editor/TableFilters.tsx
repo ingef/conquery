@@ -33,9 +33,9 @@ export interface FiltersContextT {
 }
 
 interface PropsT {
+  className?: string;
   context: FiltersContextT;
   filters: FilterWithValueType[] | null;
-  className?: string;
   excludeTable: boolean;
   onSwitchFilterMode: Function;
   onSetFilterValue: Function;
@@ -79,7 +79,7 @@ const TableFilters = (props: PropsT) => {
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
-                    onChange: (value) =>
+                    onChange: (value: string[]) =>
                       props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
