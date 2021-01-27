@@ -34,7 +34,7 @@ public class TokenProcessorTest {
 	// User 1
 	private static final String USER_1_NAME = "test_name1";
 	private static final String USER_1_PASSWORD = "test_password1";
-	private static final String USER_1_TOKEN = JWT.create().withClaim("name", USER_1_NAME).sign(Algorithm.HMAC256("secret"));;
+	private static final String USER_1_TOKEN = JWT.create().withClaim("name", USER_1_NAME).sign(Algorithm.HMAC256("secret"));
 
 	private static TokenProcessor tokenProcessor;
 

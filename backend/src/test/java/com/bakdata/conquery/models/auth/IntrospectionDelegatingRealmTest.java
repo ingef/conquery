@@ -43,7 +43,7 @@ import static org.mockserver.model.Parameter.param;
 import static org.mockserver.model.ParameterBody.params;
 
 @Slf4j
-public class IntropectionDelegatingRealmTest {
+public class IntrospectionDelegatingRealmTest {
 
 	private static final MetaStorage STORAGE = new NonPersistentMetaStorage();
 	private static final OIDCResourceOwnerPasswordCredentialRealmFactory CONFIG = new OIDCResourceOwnerPasswordCredentialRealmFactory();
@@ -167,7 +167,7 @@ public class IntropectionDelegatingRealmTest {
 		
 		AuthenticationToken token = REALM.extractToken(request);
 		
-		assertThat(token).isEqualTo(USER1_TOKEN_WRAPPED);
+		assertThat(token).usingRecursiveComparison().isEqualTo(USER1_TOKEN_WRAPPED);
 	}
 
 	@Test
