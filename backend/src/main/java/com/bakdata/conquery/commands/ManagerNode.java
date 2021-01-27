@@ -1,14 +1,10 @@
 package com.bakdata.conquery.commands;
 
-import java.io.File;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -22,8 +18,6 @@ import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.MetaStorageImpl;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -107,40 +101,13 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		
 		environment.lifecycle().manage(this);
 
-		if(config.getStorage().getDirectory().mkdirs()){
-			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
-		}
+		config.getStorage().loadNamespaceStorages(this);
+
+
 
 		log.info("Started meta storage");
-
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
-
-
-		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {
-			loaders.submit(() -> {
-				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
-
-				if (datasetStorage == null) {
-					log.warn("Unable to load a dataset at `{}`", directory);
-					return;
-				}
-
-				Namespace ns = new Namespace(datasetStorage);
-				ns.initMaintenance(maintenanceService);
-				datasetRegistry.add(ns);
-			});
-		}
-
-
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)){
-			log.debug("Still waiting for Datasets to load. {} already finished.", datasetRegistry.getDatasets());
-		}
-
-		log.info("All stores loaded: {}", datasetRegistry.getDatasets());
 		
-		
-		this.storage = new MetaStorageImpl(datasetRegistry, environment.getValidator(), config.getStorage());
+		this.storage = config.getStorage().createMetaStorage(validator, datasetRegistry );
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 

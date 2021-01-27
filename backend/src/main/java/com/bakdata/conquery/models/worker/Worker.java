@@ -13,7 +13,8 @@ import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.StorageFactory;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -85,12 +86,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		@NonNull Dataset dataset,
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull ExecutorService executorService,
-		@NonNull StorageConfig config,
-		@NonNull File directory,
+		@NonNull StorageFactory config,
+		@NonNull String directory,
 		@NonNull Validator validator,
 		int entityBucketSize) {
 
-		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
+		WorkerStorage workerStorage = config.createWorkerStorage(validator,directory,true);
 		if (workerStorage != null) {
 			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
 		}
@@ -98,10 +99,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setName(directory.getName());
+		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
 
-		workerStorage = new WorkerStorageImpl(validator, config, directory);
+		workerStorage = config.createWorkerStorage(validator,directory,false);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);

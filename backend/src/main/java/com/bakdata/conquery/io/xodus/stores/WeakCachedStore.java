@@ -11,31 +11,37 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import lombok.RequiredArgsConstructor;
+import io.dropwizard.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Weakly cached store, using {@link LoadingCache} to maintain values. Is a wrapper around the supplied {@link Store}.
  */
-@RequiredArgsConstructor @Slf4j
+@Slf4j
 public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private LoadingCache<KEY, Optional<VALUE>> cache = CacheBuilder.newBuilder()
-		.weakValues()
-		.expireAfterAccess(
-			ConqueryConfig.getInstance().getStorage().getWeakCacheDuration().getQuantity(),
-			ConqueryConfig.getInstance().getStorage().getWeakCacheDuration().getUnit()
-		)
-		.build(new CacheLoader<KEY, Optional<VALUE>>() {
-			@Override
-			public Optional<VALUE> load(KEY key) throws Exception {
-				log.trace("Needing to load entry "+key+" in "+this);
-				return Optional.ofNullable(store.get(key));
-			}
-		});
+	private final LoadingCache<KEY, Optional<VALUE>> cache;
 
 	private final Store<KEY, VALUE> store;
-	
+
+	public WeakCachedStore(Store<KEY, VALUE> store, Duration weakCacheDuration) {
+		this.store = store;
+		this.cache = CacheBuilder.newBuilder()
+				.weakValues()
+				.expireAfterAccess(
+						weakCacheDuration.getQuantity(),
+						weakCacheDuration.getUnit()
+				)
+				.build(new CacheLoader<KEY, Optional<VALUE>>() {
+					@Override
+					public Optional<VALUE> load(KEY key) throws Exception {
+						log.trace("Needing to load entry "+key+" in "+this);
+						return Optional.ofNullable(store.get(key));
+					}
+				});
+	}
+
+
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		try {

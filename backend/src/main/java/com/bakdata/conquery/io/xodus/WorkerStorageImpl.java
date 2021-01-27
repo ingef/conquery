@@ -11,7 +11,7 @@ import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -32,7 +32,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	private IdentifiableStore<Bucket> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
 	
-	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
+	public WorkerStorageImpl(Validator validator, File directory, XodusStorageFactory config) {
 		super(validator, config, directory, false);
 	}
 

@@ -26,15 +26,14 @@ public class AddWorker extends MessageToShardNode.Slow {
 		log.info("creating a new worker for {}", dataset);
 		ConqueryConfig config = context.getConfig();
 
-		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), createWorkerName(context), context.getValidator());
+		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), createWorkerName(), context.getValidator());
 
 		worker.setSession(context.getRawSession());
 		
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 
-	private File createWorkerName(ShardNodeNetworkContext context) {
-		String name = "worker_"+dataset.getName()+"_"+UUID.randomUUID().toString();
-		return new File(context.getConfig().getStorage().getDirectory(), name);
+	private String createWorkerName() {
+		return "worker_"+dataset.getName()+"_"+UUID.randomUUID().toString();
 	}
 }

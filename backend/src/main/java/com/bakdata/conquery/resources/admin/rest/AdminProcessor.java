@@ -30,7 +30,6 @@ import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
@@ -156,10 +155,10 @@ public class AdminProcessor {
 		dataset.setName(name);
 
 		// store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
-			storage.getValidator(),
-			config.getStorage(),
-			new File(config.getStorage().getDirectory(), "dataset_" + name));
+		NamespaceStorage datasetStorage = config.getStorage().createNamespaceStorage(storage.getValidator(), "dataset_" + name, true);
+		if (datasetStorage == null ) {
+			throw new IllegalStateException("There is already a NamespaceStorage for the dataset " + dataset.getName());
+		}
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);

@@ -8,7 +8,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.metrics.JobMetrics;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
@@ -25,14 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 	protected final Validator validator;
-	protected final StorageConfig config;
+	protected final XodusStorageFactory config;
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final List<KeyIncludingStore<?,?>> stores = new ArrayList<>();
 	
 	private final Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores = MultimapBuilder.linkedHashKeys().arrayListValues().build();
 
-	public ConqueryStorageImpl(Validator validator, StorageConfig config) {
+	public ConqueryStorageImpl(Validator validator, XodusStorageFactory config) {
 		this.validator = validator;
 		this.config = config;
 	}

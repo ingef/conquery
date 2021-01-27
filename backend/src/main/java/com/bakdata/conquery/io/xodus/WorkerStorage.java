@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -31,7 +31,7 @@ public interface WorkerStorage extends NamespacedStorage {
 	void removeCBlock(CBlockId id);
 	Collection<CBlock> getAllCBlocks();
 
-	public static WorkerStorage tryLoad(Validator validator, StorageConfig config, File directory) {
+	public static WorkerStorage tryLoad(Validator validator, XodusStorageFactory config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
 		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
 		env.close();
@@ -40,7 +40,7 @@ public interface WorkerStorage extends NamespacedStorage {
 			return null;
 		}
 		
-		WorkerStorage storage = new WorkerStorageImpl(validator, config, directory);
+		WorkerStorage storage = new WorkerStorageImpl(validator, directory, config);
 		storage.loadData();
 		return storage;
 	}

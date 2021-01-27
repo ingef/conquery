@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
@@ -17,9 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 public class XodusStore {
 	private final Store store;
 	private final Environment environment;
-	private final long timeout = ConqueryConfig.getInstance().getStorage().getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()/2;
+	private final long timeout;
 	
-	public XodusStore(Environment env, IStoreInfo storeId) {
+	public XodusStore(Environment env, IStoreInfo storeId, long envMonitorTxnsTimeoutNanoSec) {
+		this.timeout = envMonitorTxnsTimeoutNanoSec/2;
 		this.environment = env;
 		this.store = env.computeInTransaction(
 			t->env.openStore(storeId.getXodusName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)

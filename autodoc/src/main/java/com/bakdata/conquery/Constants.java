@@ -53,7 +53,7 @@ import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.config.QueryConfig;
 import com.bakdata.conquery.models.config.StandaloneConfig;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -86,7 +86,6 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
-import io.dropwizard.util.Size;
 
 public class Constants {
 	public static final Group[] GROUPS = {
@@ -130,7 +129,7 @@ public class Constants {
 			.otherClass(PreprocessingConfig.class)
 			.otherClass(QueryConfig.class)
 			.otherClass(StandaloneConfig.class)
-			.otherClass(StorageConfig.class)
+			.otherClass(XodusStorageFactory.class)
 			.otherClass(MinaConfig.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(XodusConfig.class)

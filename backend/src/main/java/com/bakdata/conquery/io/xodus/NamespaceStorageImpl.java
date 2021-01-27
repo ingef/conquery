@@ -9,13 +9,14 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.StructureNode;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.env.Environments;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -29,7 +30,23 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
+
+
+	public static NamespaceStorageImpl tryLoad(Validator validator, XodusStorageFactory config, File directory) {
+		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
+		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
+		env.close();
+
+		if(!exists) {
+			return null;
+		}
+
+		NamespaceStorageImpl storage = new NamespaceStorageImpl(validator, directory, config);
+		storage.loadData();
+		return storage;
+	}
+
+	public NamespaceStorageImpl(Validator validator, File directory, XodusStorageFactory config) {
 		super(validator, config, directory, true);
 	}
 

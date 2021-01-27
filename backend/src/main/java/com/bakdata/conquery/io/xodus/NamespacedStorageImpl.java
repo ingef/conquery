@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -45,6 +45,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	 * true if imports need to be registered with {@link Connector#addImport(Import)}.
 	 */
 	private final boolean registerImports;
+
+	/**
+	 * Use weak caching for dictonaries.
+	 */
+	private final boolean useWeakDictionaryCaching;
 	protected SingletonStore<Dataset> dataset;
 	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
@@ -52,10 +57,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory, boolean registerImports) {
+	public NamespacedStorageImpl(Validator validator, XodusStorageFactory config, File directory, boolean registerImports) {
 		super(validator, config);
 		this.registerImports = registerImports;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
+		this.useWeakDictionaryCaching = config.isUseWeakDictionaryCaching();
 
 	}
 
@@ -81,7 +87,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 							 }
 						 });
 
-		if (ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
+		if (useWeakDictionaryCaching) {
 			dictionaries = StoreInfo.DICTIONARIES.weakBig(getConfig(), environment, getValidator(), getCentralRegistry());
 		}
 		else {

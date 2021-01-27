@@ -23,7 +23,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -52,7 +52,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private int chunkByteSize;
 
 
-	public BigStore(StorageConfig config, Validator validator, Environment env, StoreInfo storeInfo) {
+	public BigStore(XodusStorageFactory config, Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
@@ -66,7 +66,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		metaStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, metaStoreInfo), validator,
+				new XodusStore(env, metaStoreInfo, config.getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()), validator,
 				metaStoreInfo
 		);
 
@@ -78,7 +78,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		dataStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, dataStoreInfo), validator,
+				new XodusStore(env, dataStoreInfo, config.getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()), validator,
 				dataStoreInfo
 		);
 

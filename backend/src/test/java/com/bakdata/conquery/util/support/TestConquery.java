@@ -22,6 +22,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -154,7 +155,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		ConqueryConfig config = new ConqueryConfig();
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
-		config.getStorage().setDirectory(tmpDir);
+		XodusStorageFactory storageConfig = new XodusStorageFactory();
+		storageConfig.setDirectory(tmpDir.toPath());
+		config.setStorage(storageConfig);
 		config.getStandalone().setNumberOfShardNodes(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());

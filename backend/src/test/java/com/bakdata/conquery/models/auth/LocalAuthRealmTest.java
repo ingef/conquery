@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.setup.Environment;
@@ -53,7 +54,7 @@ public class LocalAuthRealmTest {
 
 		tmpDir.mkdir();
 
-		ConqueryConfig.getInstance().getStorage().setDirectory(tmpDir);
+		((XodusStorageFactory)ConqueryConfig.getInstance().getStorage()).setDirectory(tmpDir.toPath());
 		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(),List.of(config), storage);
 		controller.init();
 		controller.start();

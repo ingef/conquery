@@ -14,7 +14,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -39,7 +39,7 @@ public class SerializingStoreDumpTest {
 
 	private File tmpDir;
 	private Environment env;
-	private StorageConfig config;
+	private XodusStorageFactory config;
 
 	// Test data
 	private final ConceptQuery cQuery = new ConceptQuery(
@@ -50,7 +50,7 @@ public class SerializingStoreDumpTest {
 	public void init() {
 		tmpDir = Files.createTempDir();
 		env = Environments.newInstance(tmpDir);
-		config = new StorageConfig();
+		config = new XodusStorageFactory();
 	}
 
 	@AfterEach
@@ -59,8 +59,8 @@ public class SerializingStoreDumpTest {
 		FileUtils.deleteDirectory(tmpDir);
 	}
 
-	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(StorageConfig config, Environment environment, Validator validator, IStoreInfo storeId) {
-		return new SerializingStore<>(config, new XodusStore(environment, storeId), validator, storeId);
+	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStorageFactory config, Environment environment, Validator validator, IStoreInfo storeId) {
+		return new SerializingStore<>(config, new XodusStore(environment, storeId, config.getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()), validator, storeId);
 	}
 
 	/**

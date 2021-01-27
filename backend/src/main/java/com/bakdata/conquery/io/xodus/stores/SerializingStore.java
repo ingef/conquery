@@ -18,7 +18,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.util.io.FileUtil;
@@ -86,6 +86,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 */
 	private final IStoreInfo storeInfo;
 
+	/**
+	 * Validate elements on write
+	 */
+	private final boolean validateOnWrite;
+
 
 	/**
 	 * If set, all values that cannot be read are dumped as single files into this directory.
@@ -95,10 +100,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
 	@SuppressWarnings("unchecked")
-	public SerializingStore(StorageConfig config, XodusStore store, Validator validator, IStoreInfo storeInfo) {
+	public SerializingStore(XodusStorageFactory config, XodusStore store, Validator validator, IStoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
 		this.store = store;
 		this.validator = validator;
+		this.validateOnWrite = config.isValidateOnWrite();
 
 		valueType = (Class<VALUE>) storeInfo.getValueType();
 
@@ -140,7 +146,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
 		}
-		if (ConqueryConfig.getInstance().getStorage().isValidateOnWrite()) {
+		if (validateOnWrite) {
 			ValidatorHelper.failOnError(log, validator.validate(value), "encoding " + value.getClass().getSimpleName() + " " + Objects.toString(value));
 		}
 
@@ -168,7 +174,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	/**
 	 * Iterates a given consumer over the entries of this store.
-	 * Depending on the {@link StorageConfig} corrupt entries may be dump to a file and/or removed from the store.
+	 * Depending on the {@link XodusStorageFactory} corrupt entries may be dump to a file and/or removed from the store.
 	 * These entries are not submitted to the consumer.
 	 */
 	@Override
@@ -266,7 +272,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
 		}
 
-		if (ConqueryConfig.getInstance().getStorage().isValidateOnWrite()) {
+		if (validateOnWrite) {
 			ValidatorHelper.failOnError(log, validator.validate(value), "encoding " + value.getClass().getSimpleName() + " " + Objects.toString(value));
 		}
 

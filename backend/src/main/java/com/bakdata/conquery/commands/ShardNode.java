@@ -60,6 +60,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	private Validator validator;
 	private ConqueryConfig config;
 	private ShardNodeNetworkContext context;
+	@Setter
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
@@ -95,39 +96,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		this.config = config;
 
 
-
-		if (config.getStorage().getDirectory().mkdirs()) {
-			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
-		}
-
-		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads(), config.getCluster().getEntityBucketSize());
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
-
-
-		File storageDir = config.getStorage().getDirectory();
-		for (File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
-
-			loaders.submit(() -> {
-				ConqueryMDC.setLocation(directory.toString());
-
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if (workerStorage == null) {
-					log.warn("No valid WorkerStorage found.");
-					return;
-				}
-
-				workers.createWorker(
-						workerStorage
-				);
-
-				ConqueryMDC.clearLocation();
-			});
-		}
-
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
-		}
+		config.getStorage().loadWorkerStorages(this);
 
 		log.info("All Worker Storages loaded: {}", workers.getWorkers().size());
 	}

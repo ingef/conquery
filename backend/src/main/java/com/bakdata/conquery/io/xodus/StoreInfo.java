@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -28,8 +28,6 @@ import com.bakdata.conquery.models.worker.*;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Set;
 
 /**
  * Enums and helper methods to create stores of a certain kind.
@@ -66,7 +64,7 @@ public enum StoreInfo implements IStoreInfo {
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
-	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(StorageConfig config, Environment environment, Validator validator, CentralRegistry centralRegistry, Injectable... injectables) {
+	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry, Injectable... injectables) {
 
 		final CachedStore<IId<T>, T> store = cached(config, environment, validator);
 
@@ -82,18 +80,18 @@ public enum StoreInfo implements IStoreInfo {
 	/**
 	 * Store for identifiable values, without injectors. Store is also cached.
 	 */
-	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(StorageConfig config,Environment environment, Validator validator, CentralRegistry centralRegistry) {
+	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
 		return identifiable(config, environment, validator, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
 	}
 
 	/**
 	 * General Key-Value store with caching.
 	 */
-	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(StorageConfig config, Environment environment, Validator validator) {
+	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(XodusStorageFactory config, Environment environment, Validator validator) {
 		return new CachedStore<>(
 				new SerializingStore<>(
 						config,
-						new XodusStore(environment, this),
+						new XodusStore(environment, this, config.getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()),
 						validator,
 						this
 				)
@@ -103,14 +101,14 @@ public enum StoreInfo implements IStoreInfo {
 	/**
 	 * Store holding a single value.
 	 */
-	public <VALUE> SingletonStore<VALUE> singleton(StorageConfig config, Environment environment, Validator validator, Injectable... injectables) {
+	public <VALUE> SingletonStore<VALUE> singleton(XodusStorageFactory config, Environment environment, Validator validator, Injectable... injectables) {
 		return new SingletonStore<>(cached(config, environment, validator), injectables);
 	}
 
 	/**
 	 * Identifiable store with split Data and Metadata.
 	 */
-	public <T extends Identifiable<?>> IdentifiableStore<T> big(StorageConfig config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
+	public <T extends Identifiable<?>> IdentifiableStore<T> big(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
 		return new IdentifiableStore<>(
 				centralRegistry,
 				new CachedStore<>(
@@ -122,11 +120,12 @@ public enum StoreInfo implements IStoreInfo {
 	/**
 	 * Big-Store with weakly held cache.
 	 */
-	public <T extends Identifiable<?>> IdentifiableCachedStore<T> weakBig(StorageConfig config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
+	public <T extends Identifiable<?>> IdentifiableCachedStore<T> weakBig(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
 		return new IdentifiableCachedStore<>(
 				centralRegistry,
 				new WeakCachedStore<>(
-						new BigStore<>(config, validator, environment, this)
+						new BigStore<>(config, validator, environment, this),
+						config.getWeakCacheDuration()
 				)
 		);
 	}

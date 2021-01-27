@@ -60,8 +60,8 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting ManagerNode");
 		ConqueryConfig managerConfig = Cloner.clone(config, Map.of(Validator.class, environment.getValidator()));
-		managerConfig.getStorage().setDirectory(new File(managerConfig.getStorage().getDirectory(), "manager"));
-		managerConfig.getStorage().getDirectory().mkdir();
+//		managerConfig.getStorage().setDirectory(new File(managerConfig.getStorage().getDirectory(), "manager"));
+//		managerConfig.getStorage().getDirectory().mkdir();
 		conquery.run(managerConfig, environment);
 		
 		//create thread pool to start multiple ShardNodes at the same time
@@ -85,8 +85,8 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 				
 				ConqueryMDC.setLocation(sc.getName());
 				ConqueryConfig clone = Cloner.clone(config, Map.of(Validator.class, environment.getValidator()));
-				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "shard_" + id));
-				clone.getStorage().getDirectory().mkdir();
+//				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "shard_" + id));
+//				clone.getStorage().getDirectory().mkdir();
 
 				sc.run(environment, namespace, clone);
 				return sc;

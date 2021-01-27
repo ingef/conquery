@@ -11,7 +11,7 @@ import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -61,18 +61,18 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 	@Getter
 	private final Environment groupsEnvironment;
 
-	public MetaStorageImpl(DatasetRegistry datasets, Validator validator, StorageConfig config) {
+	public MetaStorageImpl(DatasetRegistry datasets, Validator validator, XodusStorageFactory config) {
 		super(validator, config);
 
-		executionsEnvironment = Environments.newInstance(new File(config.getDirectory(), "executions"), config.getXodus().createConfig());
+		executionsEnvironment = Environments.newInstance(config.getDirectory().resolve("executions").toFile(), config.getXodus().createConfig());
 
-		formConfigEnvironment = Environments.newInstance(new File(config.getDirectory(), "formConfigs"), config.getXodus().createConfig());
+		formConfigEnvironment = Environments.newInstance(config.getDirectory().resolve("formConfigs").toFile(), config.getXodus().createConfig());
 
-		usersEnvironment = Environments.newInstance(new File(config.getDirectory(), "users"), config.getXodus().createConfig());
+		usersEnvironment = Environments.newInstance(config.getDirectory().resolve("users").toFile(), config.getXodus().createConfig());
 
-		rolesEnvironment = Environments.newInstance(new File(config.getDirectory(), "roles"), config.getXodus().createConfig());
+		rolesEnvironment = Environments.newInstance(config.getDirectory().resolve("roles").toFile(), config.getXodus().createConfig());
 
-		groupsEnvironment = Environments.newInstance(new File(config.getDirectory(), "groups"), config.getXodus().createConfig());
+		groupsEnvironment = Environments.newInstance(config.getDirectory().resolve("groups").toFile(), config.getXodus().createConfig());
 
 		this.datasetRegistry = datasets;
 	}
@@ -235,6 +235,6 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 
 	@Override
 	public String getStorageOrigin() {
-		return config.getDirectory().getPath();
+		return config.getDirectory().toString();
 	}
 }
