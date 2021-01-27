@@ -21,15 +21,12 @@ import org.apache.shiro.authc.BearerToken;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
-/**
- * Realm that supports the Open ID Connect Resource-Owner-Password-Credential-Flow with a Keycloak IdP.
- */
+
 @Slf4j
 @Getter
 @Setter
 public class TokenProcessor<C extends OIDCAuthenticationConfig> implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
 
-	public static final String CONFIDENTIAL_CREDENTIAL = "secret";
 	private static final String GROUPS_CLAIM = "groups";
 
 	private final OIDCAuthenticationConfig authProviderConf;

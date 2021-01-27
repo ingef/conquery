@@ -8,10 +8,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public interface AuthenticationConfig {
-
-	default void initialize(ManagerNode manager) {
-
-	}
 	
 	/**
 	 * Gets the realm specified in the configuration.

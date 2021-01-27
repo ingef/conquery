@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealmFactory;
+import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.auth.oidc.passwordflow.TokenProcessor;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import io.dropwizard.validation.BaseValidator;
@@ -16,6 +16,7 @@ import org.mockserver.model.MediaType;
 import javax.validation.Validator;
 import java.util.Map;
 
+import static com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockserver.model.Header.header;
@@ -28,7 +29,7 @@ import static org.mockserver.model.ParameterBody.params;
 public class TokenProcessorTest {
 
 	private static final OIDCMockServer OIDC_SERVER =  new OIDCMockServer();
-	private static final OIDCResourceOwnerPasswordCredentialRealmFactory CONFIG = new OIDCResourceOwnerPasswordCredentialRealmFactory();
+	private static final IntrospectionDelegatingRealmFactory CONFIG = new IntrospectionDelegatingRealmFactory();
 	private static final Validator VALIDATOR = BaseValidator.newValidator();
 
 	// User 1
@@ -52,7 +53,7 @@ public class TokenProcessorTest {
 	private static void initRealmConfig() {
 		CONFIG.setRealm(OIDCMockServer.REALM_NAME);
 		CONFIG.setResource("test_cred");
-		CONFIG.setCredentials(Map.of(TokenProcessor.CONFIDENTIAL_CREDENTIAL, "test_cred"));
+		CONFIG.setCredentials(Map.of(CONFIDENTIAL_CREDENTIAL, "test_cred"));
 		CONFIG.setAuthServerUrl(OIDCMockServer.MOCK_SERVER_URL);
 
 		ValidatorHelper.failOnError(log, VALIDATOR.validate(CONFIG));

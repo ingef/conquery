@@ -5,9 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
-import com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealmFactory;
-import com.bakdata.conquery.models.auth.oidc.passwordflow.TokenProcessor;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -33,6 +32,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import static com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
@@ -46,7 +46,7 @@ import static org.mockserver.model.ParameterBody.params;
 public class IntrospectionDelegatingRealmTest {
 
 	private static final MetaStorage STORAGE = new NonPersistentMetaStorage();
-	private static final OIDCResourceOwnerPasswordCredentialRealmFactory CONFIG = new OIDCResourceOwnerPasswordCredentialRealmFactory();
+	private static final IntrospectionDelegatingRealmFactory CONFIG = new IntrospectionDelegatingRealmFactory();
 	private static final Validator VALIDATOR = BaseValidator.newValidator();
 	private static final TestRealm REALM = new TestRealm(STORAGE, CONFIG);
 
@@ -98,7 +98,7 @@ public class IntrospectionDelegatingRealmTest {
 	private static void initRealmConfig() {
 		CONFIG.setRealm(OIDCMockServer.REALM_NAME);
 		CONFIG.setResource("test_cred");
-		CONFIG.setCredentials(Map.of(TokenProcessor.CONFIDENTIAL_CREDENTIAL, "test_cred"));
+		CONFIG.setCredentials(Map.of(CONFIDENTIAL_CREDENTIAL, "test_cred"));
 		CONFIG.setAuthServerUrl(OIDCMockServer.MOCK_SERVER_URL);
 
 		ValidatorHelper.failOnError(log, VALIDATOR.validate(CONFIG));
@@ -235,7 +235,7 @@ public class IntrospectionDelegatingRealmTest {
 
 	private static class TestRealm extends IntrospectionDelegatingRealm {
 
-		public TestRealm(MetaStorage storage, OIDCResourceOwnerPasswordCredentialRealmFactory config) {
+		public TestRealm(MetaStorage storage, IntrospectionDelegatingRealmFactory config) {
 			super(storage, config);
 		}
 
