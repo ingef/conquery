@@ -1,15 +1,16 @@
 import React, { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "app-types";
 
 import QueryRunner from "../query-runner/QueryRunner";
 
 import { validateQueryLength, validateQueryDates } from "../model/query";
 
 import actions from "../app/actions";
-import { DatasetIdT } from "../api/types";
-import { QueryRunnerStateT } from "js/query-runner/reducer";
-import { StateT } from "app-types";
-import { StandardQueryStateT } from "./queryReducer";
+
+import type { DatasetIdT } from "../api/types";
+import type { QueryRunnerStateT } from "../query-runner/reducer";
+import type { StandardQueryStateT } from "./queryReducer";
 
 const { startStandardQuery, stopStandardQuery } = actions;
 

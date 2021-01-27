@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { isLoginDisabled } from "js/environment";
 import { useHistory } from "react-router-dom";
+
+import { isLoginDisabled } from "../environment";
 import { getStoredAuthToken } from "../authorization/helper";
 
 export const useApiUnauthorized = <T>(
