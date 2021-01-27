@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { StateT } from "app-types";
 
 import type { DatasetIdT } from "js/api/types";
-import { getFormConfig, getFormConfigs } from "../../api/api";
+import { useGetFormConfig, useGetFormConfigs } from "../../api/api";
 import { setMessage } from "../../snack-message/actions";
 
 import { FormConfigT } from "./reducer";
@@ -99,6 +99,7 @@ export const useIsLabelHighlighted = (label: string) => {
 export const useLoadFormConfigs = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
+  const getFormConfigs = useGetFormConfigs();
 
   const loadFormConfigs = useCallback(
     async (datasetId: DatasetIdT) => {
@@ -124,6 +125,7 @@ export const useLoadFormConfigs = () => {
 export const useLoadFormConfig = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
+  const getFormConfig = useGetFormConfig();
 
   const loadFormConfig = useCallback(
     async (datasetId: DatasetIdT, id: string) => {

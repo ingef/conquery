@@ -40,7 +40,7 @@ interface InnerZonePropsType {
   isOver: boolean;
   canDrop: boolean;
   itemType: string;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export const InnerZone = ({
@@ -69,7 +69,7 @@ interface PropsT<TargetProps> {
   acceptedDropTypes: string[];
   children?: (args: ChildArgs) => React.ReactNode;
   onDrop: (props: TargetProps, monitor: DropTargetMonitor) => void;
-  onClick: () => void;
+  onClick?: () => void;
   target?: TargetProps;
 }
 

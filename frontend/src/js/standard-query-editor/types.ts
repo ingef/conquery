@@ -20,13 +20,6 @@ export interface ConceptType {
   matchingEntries?: number;
 }
 
-export interface SelectOptionType {
-  label: string;
-  value: number | string;
-}
-
-export type SelectOptionsType = SelectOptionType[];
-
 export interface InfoType {
   key: string;
   value: string;
