@@ -30,19 +30,5 @@ public interface WorkerStorage extends NamespacedStorage {
 	void updateCBlock(CBlock cBlock);
 	void removeCBlock(CBlockId id);
 	Collection<CBlock> getAllCBlocks();
-
-	public static WorkerStorage tryLoad(Validator validator, XodusStorageFactory config, File directory) {
-		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
-		env.close();
-
-		if(!exists) {
-			return null;
-		}
-		
-		WorkerStorage storage = new WorkerStorageImpl(validator, directory, config);
-		storage.loadData();
-		return storage;
-	}
 	
 }

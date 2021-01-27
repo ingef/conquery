@@ -135,7 +135,7 @@ public class XodusStorageFactory implements StorageFactory {
 			loaders.submit(() -> {
 				ConqueryMDC.setLocation(directory.toString());
 
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(shardNode.getValidator(), this, directory);
+				WorkerStorage workerStorage = WorkerStorageImpl.tryLoad(shardNode.getValidator(), this, directory);
 				if (workerStorage == null) {
 					log.warn("No valid WorkerStorage found.");
 					return;

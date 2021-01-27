@@ -92,7 +92,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		int entityBucketSize) {
 
 		WorkerStorage workerStorage = config.createWorkerStorage(validator,directory,true);
-		if (workerStorage != null) {
+		if (workerStorage == null) {
 			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
 		}
 
@@ -102,7 +102,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
 
-		workerStorage = config.createWorkerStorage(validator,directory,false);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);

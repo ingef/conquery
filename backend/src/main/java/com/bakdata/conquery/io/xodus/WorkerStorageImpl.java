@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.env.Environments;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +32,21 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
+
+
+	public static WorkerStorageImpl tryLoad(Validator validator, XodusStorageFactory config, File directory) {
+		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
+		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
+		env.close();
+
+		if(!exists) {
+			return null;
+		}
+
+		WorkerStorageImpl storage = new WorkerStorageImpl(validator, directory, config);
+		storage.loadData();
+		return storage;
+	}
 	
 	public WorkerStorageImpl(Validator validator, File directory, XodusStorageFactory config) {
 		super(validator, config, directory, false);
