@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { StateT } from "app-types";
 
-import type { DatasetIdT } from "js/api/types";
+import type { DatasetIdT } from "../../api/types";
 import { useGetFormConfig, useGetFormConfigs } from "../../api/api";
 import { setMessage } from "../../snack-message/actions";
 
