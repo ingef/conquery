@@ -23,6 +23,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.util.LifecycleUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,7 @@ public class LocalAuthRealmTest {
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
 		realm = new LocalAuthenticationRealm(storage, conqueryTokenRealm, "localtestRealm", new XodusConfig());
+		LifecycleUtils.init(realm);
 	}
 
 	@BeforeEach
@@ -63,9 +65,8 @@ public class LocalAuthRealmTest {
 		// Create User in Realm
 		user1 = new User("TestUser", "Test User");
 		PasswordCredential user1Password = new PasswordCredential(new String("testPassword").toCharArray());
+		storage.addUser(user1);
 		realm.addUser(user1, List.of(user1Password));
-		// And mock him into the storage
-		when(storage.getUser(user1.getId())).thenReturn(user1);
 	}
 
 	@AfterAll
