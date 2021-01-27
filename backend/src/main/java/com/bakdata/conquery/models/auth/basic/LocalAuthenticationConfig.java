@@ -34,6 +34,8 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
+		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
+
 		return new LocalAuthenticationRealm(managerNode.getStorage(), managerNode.getAuthController().getCentralTokenRealm(), storeName, passwordStoreConfig);
 	}
 }

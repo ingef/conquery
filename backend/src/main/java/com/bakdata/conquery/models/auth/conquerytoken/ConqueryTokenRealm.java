@@ -11,7 +11,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.basic.TokenHandler;
+import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -91,7 +91,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		if(storage.getUser(userId) == null) {
 			throw new IllegalArgumentException("Cannot create a JWT for unknown user with id: " + userId);
 		}
-		return TokenHandler.createToken(userId.toString(), jwtConfig.getJwtDuration(), getName(), jwtConfig.getTokenSignAlgorithm());
+		return JWTokenHandler.createToken(userId.toString(), jwtConfig.getJwtDuration(), getName(), jwtConfig.getTokenSignAlgorithm());
 	}
 	
 	public static class JWTConfig{
@@ -101,7 +101,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		
 		@JsonIgnore
 		@Getter
-		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(TokenHandler.generateTokenSecret());
+		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(JWTokenHandler.generateTokenSecret());
 		@JsonIgnore
 		private JWTVerifier tokenVerifier;
 		
@@ -112,13 +112,5 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 			}
 			return tokenVerifier;
 		}
-		
-
 	}
-
-	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext request) {
-		return TokenHandler.extractToken(request);
-	}
-
 }

@@ -24,7 +24,7 @@ import org.apache.shiro.authc.BearerToken;
 
 @UtilityClass
 @Slf4j
-public class TokenHandler {
+public class JWTokenHandler {
 
 	private static final String PREFIX = "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";

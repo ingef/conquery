@@ -1,13 +1,5 @@
 package com.bakdata.conquery.models.auth;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.util.List;
-
 import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -24,12 +16,14 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.util.LifecycleUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Tests the basic functionality of the LocalAuthenticationRealm, which stores
@@ -47,11 +41,9 @@ public class LocalAuthRealmTest {
 
 	@BeforeAll
 	public void setupAll() throws Exception {
-		LocalAuthenticationConfig config = new LocalAuthenticationConfig();
-
 		storage = new NonPersistentMetaStorage();
 		tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
-		tmpDir.mkdir();
+		assert tmpDir.mkdir();
 		ConqueryConfig.getInstance().getStorage().setDirectory(tmpDir);
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
@@ -64,7 +56,7 @@ public class LocalAuthRealmTest {
 	public void setupEach() {
 		// Create User in Realm
 		user1 = new User("TestUser", "Test User");
-		PasswordCredential user1Password = new PasswordCredential(new String("testPassword").toCharArray());
+		PasswordCredential user1Password = new PasswordCredential("testPassword".toCharArray());
 		storage.addUser(user1);
 		realm.addUser(user1, List.of(user1Password));
 	}
@@ -84,32 +76,32 @@ public class LocalAuthRealmTest {
 
 	@Test
 	public void testEmptyUsername() {
-		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("", new String("testPassword").toCharArray()))
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("", "testPassword".toCharArray()))
 			.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Username was empty");
 	}
 
 	@Test
 	public void testEmptyPassword() {
-		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("").toCharArray()))
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", "".toCharArray()))
 			.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was empty");
 	}
 
 	@Test
 	public void testWrongPassword() {
-		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("wrongPassword").toCharArray()))
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", "wrongPassword".toCharArray()))
 			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
 	}
 
 	@Test
 	public void testWrongUsername() {
-		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("NoTestUser", new String("testPassword").toCharArray()))
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("NoTestUser", "testPassword".toCharArray()))
 			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
 	}
 
 	@Test
 	public void testValidUsernamePassword() {
 		// Right username and password should yield a JWT
-		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
+		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", "testPassword".toCharArray());
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
 		assertThat(conqueryTokenRealm.doGetAuthenticationInfo(new BearerToken(jwt)).getPrincipals().getPrimaryPrincipal())
@@ -119,13 +111,13 @@ public class LocalAuthRealmTest {
 	@Test
 	public void testUserUpdate() {
 
-		realm.updateUser(user1, List.of(new PasswordCredential(new String("newTestPassword").toCharArray())));
+		realm.updateUser(user1, List.of(new PasswordCredential("newTestPassword".toCharArray())));
 		// Wrong (old) password
-		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray()))
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", "testPassword".toCharArray()))
 			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
 
 		// Right (new) password
-		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("newTestPassword").toCharArray());
+		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", "newTestPassword".toCharArray());
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 	}
 
@@ -133,7 +125,7 @@ public class LocalAuthRealmTest {
 	public void testRemoveUser() {
 		realm.removeUser(user1);
 		// Wrong password
-		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray()))
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", "testPassword".toCharArray()))
 			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
 
 	}

@@ -159,18 +159,6 @@ public class IntrospectionDelegatingRealmTest {
 	}
 
 	@Test
-	public void tokenExtraction() {
-		// Create a request with the very basics to run this test
-		ContainerRequestContext request = new ContainerRequest(null, URI.create("http://localhost"), null, null,
-			new MapPropertiesDelegate(), null);
-		request.getHeaders().put(HttpHeaders.AUTHORIZATION, List.of("Bearer " + USER_1_TOKEN));
-		
-		AuthenticationToken token = REALM.extractToken(request);
-		
-		assertThat(token).usingRecursiveComparison().isEqualTo(USER1_TOKEN_WRAPPED);
-	}
-
-	@Test
 	public void tokenIntrospectionSimpleUserNew() {
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
 		

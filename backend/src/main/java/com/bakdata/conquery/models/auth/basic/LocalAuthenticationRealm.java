@@ -14,7 +14,6 @@ import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
 import com.bakdata.conquery.io.xodus.stores.XodusStore;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
@@ -158,11 +157,6 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			.filter(PasswordCredential.class::isInstance)
 			.map(PasswordCredential.class::cast)
 			.collect(MoreCollectors.toOptional());
-	}
-
-	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext request) {
-		return TokenHandler.extractToken(request);
 	}
 
 	//////////////////// USER MANAGEMENT ////////////////////

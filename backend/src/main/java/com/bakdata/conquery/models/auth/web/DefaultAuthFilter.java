@@ -94,9 +94,25 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	}
 
 	public void registerTokenExtractor(TokenExtractor extractor){
-		tokenExtractors.add(extractor);
+		if(!tokenExtractors.add(extractor)) {
+			log.info("Token extractor {} was already added.", extractor.getClass().getName());
+		}
 	}
 
+	/**
+	 * Authenticating realms need to be able to extract a token from a request. How
+	 * it performs the extraction is implementation dependent. Anyway the realm
+	 * should NOT alter the request. This function is called prior to the
+	 * authentication process in the {@link DefaultAuthFilter}. After the token
+	 * extraction process the Token is resubmitted to the realm from the AuthFilter
+	 * to the {@link ConqueryAuthenticator} which dispatches it to shiro.
+	 *
+	 * @param request
+	 *            An incoming request that potentially holds a token for the
+	 *            implementing realm.
+	 * @return The extracted {@link AuthenticationToken} or <code>null</code> if no
+	 *         token could be parsed.
+	 */
 	public static interface TokenExtractor extends Function<ContainerRequestContext, AuthenticationToken> {
 
 	}

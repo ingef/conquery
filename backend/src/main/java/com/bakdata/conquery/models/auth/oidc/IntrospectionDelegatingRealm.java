@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth.oidc;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.basic.TokenHandler;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
@@ -32,7 +31,6 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -141,12 +139,6 @@ public class IntrospectionDelegatingRealm<C extends OIDCAuthenticationConfig> ex
 		}
 		return successResponse;
 	}
-
-	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext request) {
-		return TokenHandler.extractToken(request);
-	}
-
 
 
 	private class TokenValidator extends CacheLoader<BearerToken, TokenIntrospectionSuccessResponse> {

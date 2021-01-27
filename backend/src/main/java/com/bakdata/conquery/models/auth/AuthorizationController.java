@@ -56,7 +56,7 @@ public final class AuthorizationController implements Managed{
 	@Getter
 	private List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
 	@Getter
-	private AuthFilter<AuthenticationToken, User> authenticationFilter;
+	private DefaultAuthFilter authenticationFilter;
 	@Getter
 	private List<Realm> realms = new ArrayList<>();
 	

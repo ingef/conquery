@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.oidc;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
@@ -10,7 +11,6 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.Config;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
 
@@ -26,6 +26,8 @@ public class IntrospectionDelegatingRealmFactory extends Configuration implement
 
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
+
+		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
 
 		authClient = getAuthClient(false);
 		if(managerNode != null && managerNode.getEnvironment().admin() != null) {
