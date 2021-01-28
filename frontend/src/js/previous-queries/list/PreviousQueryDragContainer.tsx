@@ -31,6 +31,7 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
     id: query.id,
     label: query.label,
     isPreviousQuery: true,
+    canExpand: query.canExpand,
   };
 
   const [, drag] = useDrag({

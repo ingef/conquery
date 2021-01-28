@@ -307,6 +307,7 @@ export interface GetStoredQueryResponseT {
   owner: string; // TODO: Remove. Not used. And it's actually an ID
   status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
+  canExpand?: boolean;
 }
 
 // TODO: This actually returns a lot of unused fields, see above

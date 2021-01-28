@@ -90,6 +90,7 @@ const filterItem = (
       // eslint-disable-next-line no-use-before-define
       query: item.query,
       isPreviousQuery: item.isPreviousQuery,
+      canExpand: item.canExpand,
     };
   else
     return {
@@ -667,6 +668,7 @@ const loadPreviousQuerySuccess = (state: StandardQueryStateT, action: any) => {
     id: action.payload.data.id,
     loading: false,
     query: action.payload.data.query,
+    canExpand: action.payload.data.canExpand,
   });
 };
 const loadPreviousQueryError = (state: StandardQueryStateT, action: any) => {
