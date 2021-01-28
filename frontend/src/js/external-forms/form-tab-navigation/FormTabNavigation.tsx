@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 
-import type { FieldPropsType } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 
 interface OptionsT {
@@ -9,7 +9,7 @@ interface OptionsT {
   value: string;
 }
 
-interface PropsT extends FieldPropsType {
+interface PropsT extends WrappedFieldProps {
   options: OptionsT[];
 }
 

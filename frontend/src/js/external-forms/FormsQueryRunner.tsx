@@ -3,6 +3,10 @@ import { StateT } from "app-types";
 import { useDispatch, useSelector } from "react-redux";
 import { isValid, isPristine, getFormValues, FormStateMap } from "redux-form";
 
+import QueryRunner from "../query-runner/QueryRunner";
+import { DatasetIdT } from "../api/types";
+import { QueryRunnerStateT } from "../query-runner/reducer";
+
 import transformQueryToApi from "./transformQueryToApi";
 import * as actions from "./actions";
 import {
@@ -12,10 +16,6 @@ import {
   selectRunningQuery,
   selectActiveFormType,
 } from "./stateSelectors";
-
-import QueryRunner from "../query-runner/QueryRunner";
-import { DatasetIdT } from "js/api/types";
-import { QueryRunnerStateT } from "js/query-runner/reducer";
 import { Form } from "./config-types";
 
 const { startExternalFormsQuery, stopExternalFormsQuery } = actions;
