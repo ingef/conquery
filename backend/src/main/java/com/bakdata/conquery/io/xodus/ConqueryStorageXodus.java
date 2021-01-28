@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
  * Base class of persistent storages to uniformly handle load of data and closing of storages.
  */
 @Getter @Slf4j
-public abstract class ConqueryStorageImpl implements ConqueryStorage {
+public abstract class ConqueryStorageXodus implements ConqueryStorage {
 
 	protected final Validator validator;
 	protected final XodusStorageFactory config;
@@ -38,7 +38,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	
 	private final Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores = MultimapBuilder.linkedHashKeys().arrayListValues().build();
 
-	public ConqueryStorageImpl(Validator validator, XodusStorageFactory config) {
+	public ConqueryStorageXodus(Validator validator, XodusStorageFactory config) {
 		this.validator = validator;
 		this.config = config;
 	}

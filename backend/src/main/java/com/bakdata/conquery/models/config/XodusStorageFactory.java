@@ -58,7 +58,7 @@ public class XodusStorageFactory implements StorageFactory {
 
 	@Override
 	public MetaStorage createMetaStorage(Validator validator, DatasetRegistry datasets) {
-		return new MetaStorageImpl(datasets, validator, this);
+		return new MetaStorageXodus(datasets, validator, this);
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class XodusStorageFactory implements StorageFactory {
 		if (returnNullOnExisting && storageDir.exists()) {
 			return null;
 		}
-		return new NamespaceStorageImpl(validator, storageDir, this);
+		return new NamespaceStorageXodus(validator, storageDir, this);
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class XodusStorageFactory implements StorageFactory {
 		if (returnNullOnExisting && storageDir.exists()) {
 			return null;
 		}
-		return new WorkerStorageImpl(validator, storageDir, this);
+		return new WorkerStorageXodus(validator, storageDir, this);
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class XodusStorageFactory implements StorageFactory {
 
 		for (File directory : getDirectory().toFile().listFiles((file, name) -> name.startsWith("dataset_"))) {
 			loaders.submit(() -> {
-				NamespaceStorage datasetStorage = NamespaceStorageImpl.tryLoad(managerNode.getValidator(), this, directory);
+				NamespaceStorage datasetStorage = NamespaceStorageXodus.tryLoad(managerNode.getValidator(), this, directory);
 
 				if (datasetStorage == null) {
 					log.warn("Unable to load a dataset at `{}`", directory);
@@ -135,7 +135,7 @@ public class XodusStorageFactory implements StorageFactory {
 			loaders.submit(() -> {
 				ConqueryMDC.setLocation(directory.toString());
 
-				WorkerStorage workerStorage = WorkerStorageImpl.tryLoad(shardNode.getValidator(), this, directory);
+				WorkerStorage workerStorage = WorkerStorageXodus.tryLoad(shardNode.getValidator(), this, directory);
 				if (workerStorage == null) {
 					log.warn("No valid WorkerStorage found.");
 					return;

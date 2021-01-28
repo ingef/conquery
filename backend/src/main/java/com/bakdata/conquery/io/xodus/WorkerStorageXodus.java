@@ -27,14 +27,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
+public class WorkerStorageXodus extends NamespacedStorageXodus implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
 	private IdentifiableStore<Bucket> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
 
 
-	public static WorkerStorageImpl tryLoad(Validator validator, XodusStorageFactory config, File directory) {
+	public static WorkerStorageXodus tryLoad(Validator validator, XodusStorageFactory config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
 		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
 		env.close();
@@ -43,12 +43,12 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 			return null;
 		}
 
-		WorkerStorageImpl storage = new WorkerStorageImpl(validator, directory, config);
+		WorkerStorageXodus storage = new WorkerStorageXodus(validator, directory, config);
 		storage.loadData();
 		return storage;
 	}
 	
-	public WorkerStorageImpl(Validator validator, File directory, XodusStorageFactory config) {
+	public WorkerStorageXodus(Validator validator, File directory, XodusStorageFactory config) {
 		super(validator, config, directory, false);
 	}
 

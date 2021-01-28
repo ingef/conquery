@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
@@ -11,10 +10,8 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageFactory;
-import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;

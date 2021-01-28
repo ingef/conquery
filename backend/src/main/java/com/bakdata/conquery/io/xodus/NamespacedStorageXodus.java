@@ -14,7 +14,6 @@ import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -38,7 +37,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
+public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implements NamespacedStorage {
 
 	protected final Environment environment;
 	/**
@@ -57,7 +56,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorageImpl(Validator validator, XodusStorageFactory config, File directory, boolean registerImports) {
+	public NamespacedStorageXodus(Validator validator, XodusStorageFactory config, File directory, boolean registerImports) {
 		super(validator, config);
 		this.registerImports = registerImports;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
 import java.util.Collection;
 
 import javax.validation.Validator;
@@ -35,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  * converted into {@link RuntimeException}s by this implementation.
  */
 @Slf4j
-public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage, ConqueryStorage {
+public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorage, ConqueryStorage {
 
 	private IdentifiableStore<ManagedExecution<?>> executions;
 	private IdentifiableStore<FormConfig> formConfigs;
@@ -61,7 +60,7 @@ public class MetaStorageImpl extends ConqueryStorageImpl implements MetaStorage,
 	@Getter
 	private final Environment groupsEnvironment;
 
-	public MetaStorageImpl(DatasetRegistry datasets, Validator validator, XodusStorageFactory config) {
+	public MetaStorageXodus(DatasetRegistry datasets, Validator validator, XodusStorageFactory config) {
 		super(validator, config);
 
 		executionsEnvironment = Environments.newInstance(config.getDirectory().resolve("executions").toFile(), config.getXodus().createConfig());

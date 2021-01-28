@@ -22,7 +22,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
-public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
+public class NamespaceStorageXodus extends NamespacedStorageXodus implements NamespaceStorage {
 	
 	@Getter @Setter @NonNull
 	private MetaStorage metaStorage;
@@ -32,7 +32,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 
 
 
-	public static NamespaceStorageImpl tryLoad(Validator validator, XodusStorageFactory config, File directory) {
+	public static NamespaceStorageXodus tryLoad(Validator validator, XodusStorageFactory config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
 		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
 		env.close();
@@ -41,12 +41,12 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 			return null;
 		}
 
-		NamespaceStorageImpl storage = new NamespaceStorageImpl(validator, directory, config);
+		NamespaceStorageXodus storage = new NamespaceStorageXodus(validator, directory, config);
 		storage.loadData();
 		return storage;
 	}
 
-	public NamespaceStorageImpl(Validator validator, File directory, XodusStorageFactory config) {
+	public NamespaceStorageXodus(Validator validator, File directory, XodusStorageFactory config) {
 		super(validator, config, directory, true);
 	}
 
