@@ -59,6 +59,11 @@ public class NonPersistentMetaStorage implements MetaStorage {
 	}
 
 	@Override
+	public void remove() {
+		throw NOT_IMPLEMENTED;
+	}
+
+	@Override
 	public String getStorageOrigin() {
 		return "Non-persistent storage just for testing.";
 	}

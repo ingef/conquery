@@ -70,6 +70,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 				// remove all associated data.
 				removed.getStorage().clear();
 				removed.getStorage().close();
+				removed.getStorage().remove();
 			}
 			catch(Exception e) {
 				log.error("Failed to delete storage "+removed, e);

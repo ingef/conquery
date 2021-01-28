@@ -1,6 +1,11 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +21,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -84,6 +90,34 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 			log.info("Clearing environment {}", environment.getLocation());
 			environment.clear();
 			log.info("Cleared environment {}", environment.getLocation());
+		}
+	}
+
+	@Override
+	@SneakyThrows
+	public void remove() {
+		for(Environment environment : environmentToStores.keySet()) {
+			log.info("Removing {}", environment.getLocation());
+			Files.walkFileTree(Path.of(environment.getLocation()),
+					new SimpleFileVisitor<Path>() {
+						@Override
+						public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+							if (!dir.toFile().delete()) {
+								throw new IOException("Could not delete " + dir);
+							}
+							return super.postVisitDirectory(dir, exc);
+						}
+
+						@Override
+						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+							if (!file.toFile().delete()) {
+								throw new IOException("Could not delete " + file);
+							}
+							return super.visitFile(file, attrs);
+						}
+					});
+
+			Path.of(environment.getLocation()).toFile().delete();
 		}
 	}
 }

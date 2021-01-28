@@ -17,6 +17,11 @@ public interface ConqueryStorage extends Closeable {
 	 * Delete the storage's contents.
 	 */
 	void clear();
+
+	/**
+	 * Remove the storage.
+	 */
+	void remove();
 	
 	/**
 	 * Gives a human readable information about the origin of this store,
