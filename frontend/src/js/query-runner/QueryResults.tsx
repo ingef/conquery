@@ -1,5 +1,4 @@
 import React, { FC } from "react";
-import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
@@ -7,9 +6,7 @@ import DownloadButton from "../button/DownloadButton";
 import PreviewButton from "../button/PreviewButton";
 import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
-import { canDownloadResult } from "../user/selectors";
-import type { ColumnDescription, DatasetIdT } from "../api/types";
-import type { StateT } from "app-types";
+import type { ColumnDescription } from "../api/types";
 
 const Root = styled("div")`
   display: flex;
@@ -40,7 +37,6 @@ const Bold = styled("span")`
 `;
 
 interface PropsT {
-  datasetId: DatasetIdT;
   resultCount: number;
   resultUrl: string;
   resultColumns: ColumnDescription[];
@@ -48,17 +44,12 @@ interface PropsT {
 }
 
 const QueryResults: FC<PropsT> = ({
-  datasetId,
   resultUrl,
   resultCount,
   resultColumns,
   queryType,
 }) => {
-  const userCanDownloadResult = useSelector<StateT, boolean>((state) =>
-    canDownloadResult(state, datasetId)
-  );
-
-  const isDownloadAllowed = !!resultUrl && userCanDownloadResult;
+  const isDownloadAllowed = !!resultUrl;
   const ending = isDownloadAllowed ? resultUrl.split(".").reverse()[0] : null;
 
   return (
