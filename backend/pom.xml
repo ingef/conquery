@@ -11,7 +11,7 @@
 	<artifactId>backend</artifactId>
 	
 	<properties>
-		<mock-server.version>5.11.1</mock-server.version>
+		<mock-server.version>5.11.2</mock-server.version>
 	</properties>
 
 	<build>
