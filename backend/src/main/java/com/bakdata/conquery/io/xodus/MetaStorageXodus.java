@@ -1,6 +1,9 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
@@ -60,18 +63,19 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	@Getter
 	private final Environment groupsEnvironment;
 
-	public MetaStorageXodus(DatasetRegistry datasets, Validator validator, XodusStorageFactory config) {
+	public MetaStorageXodus(DatasetRegistry datasets, Validator validator, XodusStorageFactory config, List<String> pathName) {
 		super(validator, config);
+		Path basePath = config.getDirectory().resolve(pathName.stream().collect(Collectors.joining("/")));
 
-		executionsEnvironment = Environments.newInstance(config.getDirectory().resolve("executions").toFile(), config.getXodus().createConfig());
+		executionsEnvironment = Environments.newInstance(basePath.resolve("executions").toFile(), config.getXodus().createConfig());
 
-		formConfigEnvironment = Environments.newInstance(config.getDirectory().resolve("formConfigs").toFile(), config.getXodus().createConfig());
+		formConfigEnvironment = Environments.newInstance(basePath.resolve("formConfigs").toFile(), config.getXodus().createConfig());
 
-		usersEnvironment = Environments.newInstance(config.getDirectory().resolve("users").toFile(), config.getXodus().createConfig());
+		usersEnvironment = Environments.newInstance(basePath.resolve("users").toFile(), config.getXodus().createConfig());
 
-		rolesEnvironment = Environments.newInstance(config.getDirectory().resolve("roles").toFile(), config.getXodus().createConfig());
+		rolesEnvironment = Environments.newInstance(basePath.resolve("roles").toFile(), config.getXodus().createConfig());
 
-		groupsEnvironment = Environments.newInstance(config.getDirectory().resolve("groups").toFile(), config.getXodus().createConfig());
+		groupsEnvironment = Environments.newInstance(basePath.resolve("groups").toFile(), config.getXodus().createConfig());
 
 		this.datasetRegistry = datasets;
 	}

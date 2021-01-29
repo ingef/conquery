@@ -114,6 +114,7 @@ public class AdminProcessor {
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final int entityBucketSize;
+	private final String storagePrefix;
 
 	public synchronized void addTable(Table table, Namespace namespace) throws JSONException {
 		Dataset dataset = namespace.getDataset();
@@ -155,7 +156,7 @@ public class AdminProcessor {
 		dataset.setName(name);
 
 		// store dataset in own storage
-		NamespaceStorage datasetStorage = config.getStorage().createNamespaceStorage(storage.getValidator(), "dataset_" + name, true);
+		NamespaceStorage datasetStorage = config.getStorage().createNamespaceStorage(storage.getValidator(), List.of(storagePrefix, "dataset_" + name), true);
 		if (datasetStorage == null ) {
 			throw new IllegalStateException("There is already a NamespaceStorage for the dataset " + dataset.getName());
 		}
@@ -593,7 +594,7 @@ public class AdminProcessor {
 					));
 		}
 
-
+		namespace.close();
 		datasetRegistry.removeNamespace(datasetId);
 		datasetRegistry.getShardNodes().values().forEach( shardNode -> shardNode.send(new RemoveWorker(datasetId)));
 

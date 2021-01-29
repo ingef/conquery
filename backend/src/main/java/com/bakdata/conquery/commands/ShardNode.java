@@ -55,6 +55,8 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 @Getter
 public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
+	public static final String DEFAULT_NAME = "shard-node";
+
 	private NioSocketConnector connector;
 	private JobManager jobManager;
 	private Validator validator;
@@ -65,8 +67,15 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Setter
 	private ScheduledExecutorService scheduler;
 
+	/**
+	 * Flags if the instance name should be a prefix for the instances storage.
+	 */
+	@Getter
+	@Setter
+	private boolean useNameForStoragePrefix = false;
+
 	public ShardNode() {
-		this("shard-node");
+		this(DEFAULT_NAME);
 	}
 
 	public ShardNode(String name) {
@@ -134,7 +143,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
+		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator, useNameForStoragePrefix ? getName() : "");
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode

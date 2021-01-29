@@ -10,16 +10,17 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import javax.validation.Validator;
+import java.util.List;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface StorageFactory {
 
-	MetaStorage createMetaStorage(Validator validator, DatasetRegistry datasets);
+	MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets);
 
-	NamespaceStorage createNamespaceStorage(Validator validator, String directory, boolean returnNullOnExisting);
+	NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting);
 
-	WorkerStorage createWorkerStorage(Validator validator, String directory, boolean returnNullOnExisting);
+	WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting);
 
 	void loadNamespaceStorages(ManagerNode managerNode);
 

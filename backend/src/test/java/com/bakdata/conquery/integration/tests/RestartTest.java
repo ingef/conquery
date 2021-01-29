@@ -47,14 +47,14 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
 		AdminProcessor adminProcessor = new AdminProcessor(
-
 				manager.getConfig(),
 				manager.getStorage(),
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
 				manager.getValidator(),
-				ConqueryConfig.getInstance().getCluster().getEntityBucketSize()
+				ConqueryConfig.getInstance().getCluster().getEntityBucketSize(),
+				manager.isUseNameForStoragePrefix() ? manager.getName() : ""
 		);
 
 
@@ -120,6 +120,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		testConquery.getDropwizard().after();
 		//restart
 		testConquery.beforeAll(testConquery.getBeforeAllContext());
+		testConquery.getStandaloneCommand().getManager().getConfig().getStorage().loadNamespaceStorages(testConquery.getStandaloneCommand().getManager());
 
 		final StandaloneSupport support = testConquery.openDataset(dataset);
 

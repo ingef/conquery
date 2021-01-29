@@ -44,6 +44,8 @@ import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -59,6 +61,10 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 @Getter
 public class ManagerNode extends IoHandlerAdapter implements Managed {
 
+	public static final String DEFAULT_NAME = "manager";
+
+	private final String name;
+
 	private IoAcceptor acceptor;
 	private MetaStorage storage;
 	private JobManager jobManager;
@@ -72,6 +78,21 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private DatasetRegistry datasetRegistry;
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
+
+	/**
+	 * Flags if the instance name should be a prefix for the instances storage.
+	 */
+	@Getter
+	@Setter
+	private boolean useNameForStoragePrefix = false;
+
+	public ManagerNode() {
+		this(DEFAULT_NAME);
+	}
+
+	public ManagerNode(@NonNull String name) {
+		this.name = name;
+	}
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 
@@ -107,7 +128,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		log.info("Started meta storage");
 		
-		this.storage = config.getStorage().createMetaStorage(validator, datasetRegistry );
+		this.storage = config.getStorage().createMetaStorage(validator, List.of(useNameForStoragePrefix? getName() : ""), datasetRegistry);
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 

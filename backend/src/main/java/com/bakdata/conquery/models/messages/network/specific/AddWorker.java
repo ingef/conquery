@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -26,7 +27,7 @@ public class AddWorker extends MessageToShardNode.Slow {
 		log.info("creating a new worker for {}", dataset);
 		ConqueryConfig config = context.getConfig();
 
-		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), createWorkerName(), context.getValidator());
+		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), context.getStoragePrefix(), createWorkerName(), context.getValidator());
 
 		worker.setSession(context.getRawSession());
 		

@@ -96,28 +96,25 @@ public abstract class ConqueryStorageXodus implements ConqueryStorage {
 	@Override
 	@SneakyThrows
 	public void remove() {
-		for(Environment environment : environmentToStores.keySet()) {
+		for (Environment environment : environmentToStores.keySet()) {
+			if(environment.isOpen()) {
+				throw new IllegalStateException("The environment to be removed is still open: "+ environment);
+			}
 			log.info("Removing {}", environment.getLocation());
 			Files.walkFileTree(Path.of(environment.getLocation()),
 					new SimpleFileVisitor<Path>() {
 						@Override
 						public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-							if (!dir.toFile().delete()) {
-								throw new IOException("Could not delete " + dir);
-							}
-							return super.postVisitDirectory(dir, exc);
+							Files.delete(dir);
+							return FileVisitResult.CONTINUE;
 						}
 
 						@Override
 						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-							if (!file.toFile().delete()) {
-								throw new IOException("Could not delete " + file);
-							}
-							return super.visitFile(file, attrs);
+							Files.delete(file);
+							return FileVisitResult.CONTINUE;
 						}
 					});
-
-			Path.of(environment.getLocation()).toFile().delete();
 		}
 	}
 }

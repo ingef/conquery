@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
@@ -35,6 +36,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -84,11 +86,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull ExecutorService executorService,
 		@NonNull StorageFactory config,
+		@NonNull String storagePrefix,
 		@NonNull String directory,
 		@NonNull Validator validator,
 		int entityBucketSize) {
 
-		WorkerStorage workerStorage = config.createWorkerStorage(validator,directory,true);
+		WorkerStorage workerStorage = config.createWorkerStorage(validator, List.of(storagePrefix,directory),true);
 		if (workerStorage == null) {
 			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
 		}
@@ -194,9 +197,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.updateWorker(info);
 	}
 
+	@SneakyThrows
 	public void remove() {
-		storage.clear();
 		close();
+		storage.remove();
 	}
 
 	public void addTable(Table table) {

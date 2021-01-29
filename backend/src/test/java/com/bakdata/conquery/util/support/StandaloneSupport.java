@@ -56,7 +56,8 @@ public class StandaloneSupport implements Closeable {
 
 	@Override
 	public void close() {
-		testConquery.closeNamespace(getDataset().getId());
+		testConquery.removeSupportDataset(this);
+		testConquery.removeSupport(this);
 	}
 
 	public Validator getValidator() {

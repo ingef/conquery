@@ -2,10 +2,12 @@ package com.bakdata.conquery.models.config;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
@@ -57,13 +59,13 @@ public class XodusStorageFactory implements StorageFactory {
 	private Optional<File> unreadbleDataDumpDirectory = Optional.empty();
 
 	@Override
-	public MetaStorage createMetaStorage(Validator validator, DatasetRegistry datasets) {
-		return new MetaStorageXodus(datasets, validator, this);
+	public MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets) {
+		return new MetaStorageXodus(datasets, validator, this, pathName);
 	}
 
 	@Override
-	public NamespaceStorage createNamespaceStorage(Validator validator, String directory, boolean returnNullOnExisting) {
-		File storageDir = getDirectory().resolve(directory).toFile();
+	public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
+		File storageDir = getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
 		if (returnNullOnExisting && storageDir.exists()) {
 			return null;
 		}
@@ -71,8 +73,9 @@ public class XodusStorageFactory implements StorageFactory {
 	}
 
 	@Override
-	public WorkerStorage createWorkerStorage(Validator validator, String directory, boolean returnNullOnExisting) {
-		File storageDir = getDirectory().resolve(directory).toFile();
+	public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
+		File storageDir = getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
+
 		if (returnNullOnExisting && storageDir.exists()) {
 			return null;
 		}
@@ -82,15 +85,16 @@ public class XodusStorageFactory implements StorageFactory {
 	@Override
 	@SneakyThrows
 	public void loadNamespaceStorages(ManagerNode managerNode) {
+		Path baseDir = getDirectory().resolve(managerNode.isUseNameForStoragePrefix() ? managerNode.getName() : "");
 
-		if(getDirectory().toFile().mkdir()){
+		if(baseDir.toFile().mkdirs()){
 			log.warn("Had to create Storage Dir at `{}`", getDirectory());
 		}
 
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
-		for (File directory : getDirectory().toFile().listFiles((file, name) -> name.startsWith("dataset_"))) {
+		for (File directory : baseDir.toFile().listFiles((file, name) -> name.startsWith("dataset_"))) {
 			loaders.submit(() -> {
 				NamespaceStorage datasetStorage = NamespaceStorageXodus.tryLoad(managerNode.getValidator(), this, directory);
 
@@ -117,8 +121,9 @@ public class XodusStorageFactory implements StorageFactory {
 	@Override
 	@SneakyThrows
 	public void loadWorkerStorages(ShardNode shardNode) {
+		Path baseDir = getDirectory().resolve(shardNode.isUseNameForStoragePrefix() ? shardNode.getName() : "");
 
-		if (getDirectory().toFile().mkdir()) {
+		if(baseDir.toFile().mkdirs()){
 			log.warn("Had to create Storage Dir at `{}`", getDirectory());
 		}
 
@@ -130,7 +135,7 @@ public class XodusStorageFactory implements StorageFactory {
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
-		for (File directory : getDirectory().toFile().listFiles((file, name) -> name.startsWith("worker_"))) {
+		for (File directory : baseDir.toFile().listFiles((file, name) -> name.startsWith("worker_"))) {
 
 			loaders.submit(() -> {
 				ConqueryMDC.setLocation(directory.toString());

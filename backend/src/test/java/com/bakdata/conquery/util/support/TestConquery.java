@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.HashSet;
@@ -40,6 +39,7 @@ import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -143,12 +143,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		DatasetId dataset = support.getDataset().getId();
 
 		standaloneCommand.getManager().getDatasetRegistry().get(dataset).sendToAll(new ShutdownWorkerStorage());
+		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
 
-		try {
-			standaloneCommand.getManager().getStorage().close();
-		} catch (IOException e) {
-			log.error("",e);
-		}
+		openSupports.remove(support);
 	}
 
 	protected ConqueryConfig getConfig() throws Exception {
@@ -222,14 +219,16 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 	@Override
 	public void afterEach(ExtensionContext context) throws Exception {
-		for (Iterator<StandaloneSupport> it = openSupports.iterator(); it.hasNext(); ) {
-			StandaloneSupport openSupport = it.next();
-
+		for (StandaloneSupport openSupport : openSupports ) {
 			log.info("Tearing down dataset");
 			DatasetId dataset = openSupport.getDataset().getId();
-			closeNamespace(dataset);
-			it.remove();
+			removeSupportDataset(openSupport);
 		}
+		openSupports.clear();
+	}
+
+	public void removeSupport(StandaloneSupport support) {
+		openSupports.remove(support);
 	}
 	
 
@@ -267,9 +266,12 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		}
 		log.info("all jobs finished");
 	}
-	
-	public void closeNamespace(DatasetId dataset) {
-		standaloneCommand.getManager().getDatasetRegistry().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
-		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(dataset);
+
+	@SneakyThrows
+	public void removeSupportDataset(StandaloneSupport support) {
+		DatasetId datasetId = support.getDataset().getId();
+		standaloneCommand.getManager().getDatasetRegistry().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(datasetId)));
+		standaloneCommand.getManager().getDatasetRegistry().get(datasetId).close();
+		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(datasetId);
 	}
 }
