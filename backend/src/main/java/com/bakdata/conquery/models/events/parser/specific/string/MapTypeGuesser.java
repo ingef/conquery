@@ -7,8 +7,11 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDicti
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Map implementation using {@link MapDictionary} implementation.
+ */
 @RequiredArgsConstructor
-public class MapTypeGuesser implements TypeGuesser {
+public class MapTypeGuesser extends StringTypeGuesser {
 
 	private final StringParser p;
 
@@ -31,7 +34,6 @@ public class MapTypeGuesser implements TypeGuesser {
 		p.copyLineCounts(indexType);
 
 		return new Guess(
-				this,
 				result,
 				indexType.estimateMemoryConsumptionBytes(),
 				mapSize

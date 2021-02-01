@@ -7,8 +7,11 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncod
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Construct a {@link SuccinctTrie} and estimate it's memory usage. Return
+ */
 @RequiredArgsConstructor
-public class TrieTypeGuesser implements TypeGuesser {
+public class TrieTypeGuesser extends StringTypeGuesser {
 
 	private final StringParser p;
 
@@ -30,7 +33,6 @@ public class TrieTypeGuesser implements TypeGuesser {
 		p.copyLineCounts(indexType);
 
 		return new Guess(
-				this,
 				result,
 				indexType.estimateMemoryConsumptionBytes(),
 				trie.estimateMemoryConsumption()

@@ -11,9 +11,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
-import com.bakdata.conquery.models.events.parser.specific.string.TypeGuesser.Guess;
+import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser.Guess;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.base.BooleanStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringType;
@@ -30,6 +31,11 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Analyze all strings for common suffix/prefix, or if they are singleton.
+ *
+ * Values are stored DictionaryEncoded(Integer->String), Integers are stored using {@link IntegerParser}.
+ */
 @Slf4j
 @Getter
 @ToString(callSuper = true, of = {"encoding", "prefix","suffix"})
@@ -67,15 +73,13 @@ public class StringParser extends Parser<Integer> {
 	protected ColumnStore<Integer> decideType() {
 
 		//check if a singleton type is enough
-		if (strings.size() <= 1) {
-			StringTypeSingleton type;
-			if (strings.isEmpty()) {
-				// todo empty store ?
-				type = new StringTypeSingleton(null, BooleanStore.create(getLines()));
-			}
-			else {
-				type = new StringTypeSingleton(strings.keySet().iterator().next(), BooleanStore.create(getLines()));
-			}
+		if (strings.isEmpty()) {
+			return new EmptyStore<>();
+		}
+
+		// Is this a singleton?
+		if (strings.size() == 1) {
+			StringTypeSingleton type = new StringTypeSingleton(strings.keySet().iterator().next(), BooleanStore.create(getLines()));
 			copyLineCounts(type);
 			return type;
 		}
@@ -99,12 +103,13 @@ public class StringParser extends Parser<Integer> {
 
 		decode();
 
+		// Try all guesses and select the least memory intensive one.
 		Guess guess = Stream.of(
 				new TrieTypeGuesser(this),
 				new MapTypeGuesser(this),
 				new NumberTypeGuesser(this, getConfig())
 		)
-							.map(TypeGuesser::createGuess)
+							.map(StringTypeGuesser::createGuess)
 							.filter(Objects::nonNull)
 							.min(Comparator.naturalOrder())
 							.get();
@@ -121,21 +126,32 @@ public class StringParser extends Parser<Integer> {
 			result = new StringTypePrefixSuffix(result, prefix, suffix);
 			copyLineCounts(result);
 		}
+
 		return result;
 	}
 
+	/**
+	 * Select the least memory intensive encoding and decode all values using it.
+	 */
 	private void decode() {
 		encoding = findEncoding();
 		log.info("\tChosen encoding is {}", encoding);
-		setEncoding(encoding);
+		applyEncoding(encoding);
 	}
 
+	/**
+	 * Test all available encodings and of the ones that can decode all values, use the one using the least memory.
+	 */
 	private Encoding findEncoding() {
 		EnumSet<Encoding> bases = EnumSet.allOf(Encoding.class);
 		for (String value : strings.keySet()) {
 			bases.removeIf(encoding -> !encoding.canDecode(value));
 			if (bases.size() == 1) {
 				return bases.iterator().next();
+			}
+
+			if(bases.isEmpty()){
+				throw new IllegalStateException("No Encoding can encode the values.");
 			}
 		}
 
@@ -145,7 +161,7 @@ public class StringParser extends Parser<Integer> {
 
 	}
 
-	public void setEncoding(Encoding encoding) {
+	public void applyEncoding(Encoding encoding) {
 		this.encoding = encoding;
 		decoded = strings
 						  .keySet()

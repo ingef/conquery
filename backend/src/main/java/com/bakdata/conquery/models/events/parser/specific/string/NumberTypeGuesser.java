@@ -11,8 +11,11 @@ import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Guess, testing if all values can be represented as Integer Numbers without leading zeros. If selected, the values will be compressed using {@link IntegerParser}.
+ */
 @RequiredArgsConstructor
-public class NumberTypeGuesser implements TypeGuesser {
+public class NumberTypeGuesser extends StringTypeGuesser {
 
 	private final StringParser p;
 	private final ParserConfig config;
@@ -51,7 +54,6 @@ public class NumberTypeGuesser implements TypeGuesser {
 			final StringTypeNumber type = new StringTypeNumber(range, decision, p.getStrings().inverse());
 
 			return new Guess(
-					this,
 					type,
 					decision.estimateMemoryConsumptionBytes(),
 					0
