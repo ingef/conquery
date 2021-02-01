@@ -12,8 +12,7 @@ const ListItem = styled("div")`
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
-  margin-bottom: 3px;
+  margin-bottom: 5px;
 `;
 
 const StyledIconButton = styled(IconButton)`

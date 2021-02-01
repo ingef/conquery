@@ -3,28 +3,33 @@ import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
 
-type PropsType = {
+interface PropsT {
   className?: string;
   label?: string;
   items: Array<Element>;
   limit?: number;
-  onAddClick: Function;
-  onRemoveClick: Function;
-};
+  onAddClick: () => void;
+  onRemoveClick: (idx: number) => void;
+}
+
+const Container = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
 
 const AddBtn = styled(IconButton)``;
 
 const RemoveBtn = styled(IconButton)`
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -5px;
+  right: -7px;
+  background-color: white;
 `;
 
 const GroupItem = styled("div")`
-  padding: 2px 20px 2px 0;
+  padding: 2px 2px 2px 0;
   position: relative;
-  display: inline-block;
-  vertical-align: middle;
+  margin: 0 5px 5px 0;
 `;
 
 const DynamicInputGroup = ({
@@ -33,13 +38,13 @@ const DynamicInputGroup = ({
   items,
   limit,
   onRemoveClick,
-  onAddClick
-}: PropsType) => {
+  onAddClick,
+}: PropsT) => {
   // 0 means "infinite"
   const limitNotReached = limit === 0 || items.length < limit;
 
   return (
-    <div className={className}>
+    <Container className={className}>
       {label && <span>{label}</span>}
       {items.map((item, idx) => (
         <GroupItem key={idx}>
@@ -58,7 +63,7 @@ const DynamicInputGroup = ({
         </GroupItem>
       ))}
       {limitNotReached && <AddBtn icon="plus" tiny onClick={onAddClick} />}
-    </div>
+    </Container>
   );
 };
 

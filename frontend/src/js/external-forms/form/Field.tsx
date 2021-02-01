@@ -24,15 +24,8 @@ import FormField from "../common/FormField";
 import { isFormField } from "../helper";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 
-const Headline = styled("h3")`
-  font-size: 14px;
-  margin: 10px 0 0;
-`;
-
-const Description = styled("p")`
-  font-size: 14px;
-  margin: 0 0 10px;
-`;
+import { Headline } from "../form-components/Headline";
+import { Description } from "../form-components/Description";
 
 const TabsField = styled("div")``;
 
@@ -58,16 +51,16 @@ const NestedFields = styled("div")`
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 `;
 
-type PropsType = {
+interface PropsT {
   formType: string;
   field: GeneralField;
   getFieldValue: (fieldName: string) => any;
   locale: "de" | "en";
   availableDatasets: SelectOptionT;
   selectedDatasetId: DatasetIdT;
-};
+}
 
-const Field = ({ field, ...commonProps }: PropsType) => {
+const Field = ({ field, ...commonProps }: PropsT) => {
   const {
     formType,
     locale,
@@ -247,11 +240,12 @@ const Field = ({ field, ...commonProps }: PropsType) => {
             newValue: field.rowPrefixField
               ? {
                   concepts: [],
+                  connector: "OR",
                   type: field.rowPrefixField.apiType,
                   [field.rowPrefixField.name]:
                     field.rowPrefixField.defaultValue,
                 }
-              : { concepts: [] },
+              : { concepts: [], connector: "OR" },
             renderRowPrefix:
               field.rowPrefixField &&
               ((input, feature, i) => (
