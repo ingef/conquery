@@ -2,8 +2,8 @@ import { transformElementsToApi } from "../api/apiHelper";
 import { Form } from "./config-types";
 
 function transformElementGroupsToApi(elementGroups) {
-  return elementGroups.map(({ concepts, ...rest }) => ({
-    type: "OR",
+  return elementGroups.map(({ concepts, connector, ...rest }) => ({
+    type: connector,
     children: transformElementsToApi(concepts),
     ...rest,
   }));
