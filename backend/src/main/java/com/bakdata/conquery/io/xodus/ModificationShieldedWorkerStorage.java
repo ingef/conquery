@@ -1,29 +1,29 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Provides a view on the storage that does not allow modification of the storage (update, delete). 
+ * Provides a view on the storage that does not allow modification of the storage (update, delete).
  */
 @RequiredArgsConstructor
 public class ModificationShieldedWorkerStorage {
@@ -38,11 +38,12 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getCentralRegistry();
 	}
 
-	public Dictionary getDictionary(DictionaryId id) {
-		return delegate.getDictionary(id);
+	public String getStorageOrigin() {
+		return delegate.getStorageOrigin();
 	}
 
-	public DirectDictionary getPrimaryDictionary() {
+
+	public EncodedDictionary getPrimaryDictionary() {
 		return delegate.getPrimaryDictionary();
 	}
 
@@ -54,8 +55,15 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getAllImports();
 	}
 
+
+
 	public Dataset getDataset() {
 		return delegate.getDataset();
+	}
+
+
+	public List<Table> getTables() {
+		return delegate.getTables();
 	}
 
 	public Concept<?> getConcept(ConceptId id) {
@@ -66,6 +74,7 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.hasConcept(id);
 	}
 
+
 	public Collection<? extends Concept<?>> getAllConcepts() {
 		return delegate.getAllConcepts();
 	}
@@ -74,17 +83,16 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getWorker();
 	}
 
+
 	public Bucket getBucket(BucketId id) {
 		return delegate.getBucket(id);
 	}
+
 
 	public Collection<Bucket> getAllBuckets() {
 		return delegate.getAllBuckets();
 	}
 
-	public CBlock getCBlock(CBlockId id) {
-		return delegate.getCBlock(id);
-	}
 
 	public Collection<CBlock> getAllCBlocks() {
 		return delegate.getAllCBlocks();
@@ -92,5 +100,13 @@ public class ModificationShieldedWorkerStorage {
 
 	public Table getTable(TableId tableId){
 		return delegate.getTable(tableId);
-	};
+	}
+
+	public List<SecondaryIdDescription> getSecondaryIds() {
+		return delegate.getSecondaryIds();
+	}
+
+	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
+		return delegate.getSecondaryId(descriptionId);
+	}
 }

@@ -2,16 +2,15 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import java.io.Serializable;
 import java.util.InputMismatchException;
-import java.util.Objects;
 import java.util.StringJoiner;
 
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -57,14 +56,13 @@ public abstract class OutputDescription implements Serializable {
 		 * Parse row and test for NULL values, throwing an exception when Required but missing.
 		 */
 		public Object createOutput(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
-			if(OutputDescription.this.isRequired()) {
-				return Objects.requireNonNull(
-						parseLine(row, type, sourceLine),
-						() -> String.format("Required Output[%s] produced NULL value at line %d=%s", OutputDescription.this.getName(), sourceLine, row)
-				);
+			final Object parsed = parseLine(row, type, sourceLine);
+
+			if(OutputDescription.this.isRequired() && parsed == null) {
+				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
 			}
 
-			return parseLine(row, type, sourceLine);
+			return parsed;
 		}
 	}
 
