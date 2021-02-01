@@ -175,6 +175,7 @@ const onToggleIncludeSubnodes = (
 
     return {
       ...newValue,
+      ...element,
       concepts: [
         {
           ids: [childId],
@@ -276,7 +277,13 @@ const initializeConcept = (item, defaults) => {
   });
 };
 
-const toggleTable = (value, valueIdx, conceptIdx, tableIdx, isExcluded) => {
+const toggleTable = (
+  value,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  isExcluded: boolean
+) => {
   return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
     exclude: isExcluded,
   });
