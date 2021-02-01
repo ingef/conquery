@@ -1,5 +1,18 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.ValidationException;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -17,6 +30,8 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,18 +40,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import javax.validation.Valid;
-import javax.validation.ValidationException;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
@@ -86,6 +89,16 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	public void resolve(QueryResolveContext context) {
 		timeMode.resolve(context);
 		prerequisite = Form.resolvePrerequisite(context, queryGroup);
+
+		// createExists is always true in ExportForm.
+		this.visit(visitable -> {
+			if(visitable instanceof CQAnd){
+				((CQAnd) visitable).setCreateExists(true);
+			}
+			if(visitable instanceof CQOr){
+				((CQOr) visitable).setCreateExists(true);
+			}
+		});
 	}
 
 	@Override
