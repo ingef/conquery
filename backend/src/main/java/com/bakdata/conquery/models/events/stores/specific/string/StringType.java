@@ -16,7 +16,7 @@ public abstract class StringType extends ColumnStore<Integer> implements Iterabl
 
 
 	@Override
-	public abstract StringType select(int[] starts, int[] length) ;
+	public abstract StringType doSelect(int[] starts, int[] length) ;
 
 	public abstract String getElement(int id);
 	

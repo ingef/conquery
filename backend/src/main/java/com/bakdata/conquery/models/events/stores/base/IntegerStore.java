@@ -35,7 +35,7 @@ public class IntegerStore extends ColumnStore<Long> {
 		return Integer.SIZE;
 	}
 
-	public IntegerStore select(int[] starts, int[] ends) {
+	public IntegerStore doSelect(int[] starts, int[] ends) {
 		return new IntegerStore(ColumnStore.selectArray(starts, ends, values, int[]::new), nullValue);
 	}
 

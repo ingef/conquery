@@ -30,7 +30,7 @@ public class DoubleStore extends ColumnStore<Double> {
 		return Double.SIZE;
 	}
 
-	public DoubleStore select(int[] starts, int[] ends) {
+	public DoubleStore doSelect(int[] starts, int[] ends) {
 		return new DoubleStore(ColumnStore.selectArray(starts, ends, values, double[]::new));
 	}
 

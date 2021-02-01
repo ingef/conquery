@@ -29,7 +29,7 @@ public class MoneyTypeInteger extends ColumnStore<Long> {
 	}
 
 	@Override
-	public MoneyTypeInteger select(int[] starts, int[] length) {
+	public MoneyTypeInteger doSelect(int[] starts, int[] length) {
 		return new MoneyTypeInteger(numberType.select(starts, length));
 	}
 

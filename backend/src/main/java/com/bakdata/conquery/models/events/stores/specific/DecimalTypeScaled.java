@@ -40,7 +40,7 @@ public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 	}
 
 	@Override
-	public DecimalTypeScaled select(int[] starts, int[] length) {
+	public DecimalTypeScaled doSelect(int[] starts, int[] length) {
 		return new DecimalTypeScaled(scale, subType.select(starts, length));
 	}
 

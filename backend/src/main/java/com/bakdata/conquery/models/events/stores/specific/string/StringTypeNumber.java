@@ -107,8 +107,8 @@ public class StringTypeNumber extends StringType {
 	public void setIndexStore(ColumnStore<Long> indexStore) {	}
 
 	@Override
-	public StringTypeNumber select(int[] starts, int[] length) {
-		return new StringTypeNumber(range, delegate.select(starts, length));
+	public StringTypeNumber doSelect(int[] starts, int[] length) {
+		return new StringTypeNumber(range, delegate.doSelect(starts, length));
 	}
 
 	@Override

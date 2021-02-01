@@ -29,7 +29,7 @@ public class ShortStore extends ColumnStore<Long> {
 		return Short.SIZE;
 	}
 
-	public ShortStore select(int[] starts, int[] ends) {
+	public ShortStore doSelect(int[] starts, int[] ends) {
 		return new ShortStore(ColumnStore.selectArray(starts, ends, values, short[]::new), nullValue);
 	}
 

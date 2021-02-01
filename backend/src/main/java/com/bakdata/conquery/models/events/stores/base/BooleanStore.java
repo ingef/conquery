@@ -39,7 +39,7 @@ public class BooleanStore extends ColumnStore<Boolean> {
 		return 1;
 	}
 
-	public BooleanStore select(int[] starts, int[] lengths) {
+	public BooleanStore doSelect(int[] starts, int[] lengths) {
 		int length = Arrays.stream(lengths).sum();
 
 		final BitSet out = new BitSet(length);

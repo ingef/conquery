@@ -22,7 +22,7 @@ public class EmptyStore<T> extends ColumnStore<T> {
 	}
 
 	@Override
-	public EmptyStore<T> select(int[] starts, int[] length) {
+	public EmptyStore<T> doSelect(int[] starts, int[] length) {
 		return this;
 	}
 

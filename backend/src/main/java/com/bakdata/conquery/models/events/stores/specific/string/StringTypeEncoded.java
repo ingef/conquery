@@ -115,8 +115,8 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public StringTypeEncoded select(int[] starts, int[] length) {
-		return new StringTypeEncoded(subType.select(starts, length), getEncoding());
+	public StringTypeEncoded doSelect(int[] starts, int[] length) {
+		return new StringTypeEncoded(subType.doSelect(starts, length), getEncoding());
 	}
 
 	@Override

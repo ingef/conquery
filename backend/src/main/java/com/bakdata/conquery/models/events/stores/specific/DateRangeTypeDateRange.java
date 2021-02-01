@@ -40,8 +40,8 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 	}
 
 	@Override
-	public DateRangeTypeDateRange select(int[] starts, int[] length) {
-		return new DateRangeTypeDateRange(minStore.select(starts, length), maxStore.select(starts, length));
+	public DateRangeTypeDateRange doSelect(int[] starts, int[] length) {
+		return new DateRangeTypeDateRange(((DateStore) minStore.select(starts, length)), ((DateStore) maxStore.select(starts, length)));
 	}
 
 	@Override

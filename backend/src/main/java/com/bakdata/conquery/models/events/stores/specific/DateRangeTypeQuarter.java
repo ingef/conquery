@@ -34,7 +34,7 @@ public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
 		return value;
 	}
 
-	public DateRangeTypeQuarter select(int[] starts, int[] ends) {
+	public DateRangeTypeQuarter doSelect(int[] starts, int[] ends) {
 		return new DateRangeTypeQuarter(store.select(starts, ends));
 	}
 

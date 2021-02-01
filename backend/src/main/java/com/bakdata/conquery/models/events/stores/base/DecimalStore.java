@@ -32,7 +32,7 @@ public class DecimalStore extends ColumnStore<BigDecimal> {
 		return 256; // Source: http://javamoods.blogspot.com/2009/03/how-big-is-bigdecimal.html
 	}
 
-	public DecimalStore select(int[] starts, int[] ends) {
+	public DecimalStore doSelect(int[] starts, int[] ends) {
 		return new DecimalStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
 	}
 

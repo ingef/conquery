@@ -38,7 +38,7 @@ public class DateStore extends ColumnStore<Integer> {
 		return new DateStore(IntegerStore.create(size));
 	}
 
-	public DateStore select(int[] starts, int[] ends) {
+	public DateStore doSelect(int[] starts, int[] ends) {
 		return new DateStore(store.select(starts, ends));
 	}
 

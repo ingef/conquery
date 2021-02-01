@@ -109,8 +109,8 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	@Override
-	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
+	public StringTypeDictionary doSelect(int[] starts, int[] length) {
+		return new StringTypeDictionary(numberType.doSelect(starts, length), getDataset(), getName());
 	}
 
 	@Override

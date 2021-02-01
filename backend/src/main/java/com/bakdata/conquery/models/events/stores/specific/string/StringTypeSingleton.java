@@ -42,8 +42,8 @@ public class StringTypeSingleton extends StringType {
 	}
 
 	@Override
-	public StringTypeSingleton select(int[] starts, int[] length) {
-		return new StringTypeSingleton(singleValue, delegate.select(starts, length));
+	public StringTypeSingleton doSelect(int[] starts, int[] length) {
+		return new StringTypeSingleton(singleValue, delegate.doSelect(starts, length));
 	}
 
 	@Override

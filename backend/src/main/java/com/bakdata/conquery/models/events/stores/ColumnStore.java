@@ -82,17 +82,27 @@ public abstract class ColumnStore<JAVA_TYPE> {
 		return 0;
 	}
 
+
+	public abstract ColumnStore<JAVA_TYPE> doSelect(int[] starts, int[] lengths);
+
 	/**
 	 * Select the partition of this store.
 	 * The returning store has to accept queries up to {@code sum(lenghts)}, values may not be reordered.
 	 */
-	public abstract ColumnStore<JAVA_TYPE> select(int[] starts, int[] lengths);
+	public ColumnStore<JAVA_TYPE> select(int[] starts, int[] lengths){
+		//TODO FK: this is just WIP as getLines is only used for isEmpty and AdminEnd description, but detangling requires a lot of refactoring.
+		final ColumnStore<JAVA_TYPE> select = doSelect(starts, lengths);
+		select.setLines(Arrays.stream(lengths).sum());
+		return select;
+	}
+
+
 
 	/**
 	 * Create an empty store that's only a description of the transformation.
 	 */
 	public ColumnStore<JAVA_TYPE> createDescription() {
-		final ColumnStore<JAVA_TYPE> select = select(new int[0], new int[0]);
+		final ColumnStore<JAVA_TYPE> select = doSelect(new int[0], new int[0]);
 		select.setLines(getLines());
 		return select;
 	}
@@ -125,7 +135,7 @@ public abstract class ColumnStore<JAVA_TYPE> {
 		throw NotImplemented();
 	}
 
-	public IllegalStateException NotImplemented() {
+	protected IllegalStateException NotImplemented() {
 		return new IllegalStateException(String.format("%s does not implement this method", getClass().getSimpleName()));
 	}
 

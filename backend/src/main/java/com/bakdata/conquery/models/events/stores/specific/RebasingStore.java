@@ -34,7 +34,7 @@ public class RebasingStore extends ColumnStore<Long> {
 	}
 
 	@Override
-	public RebasingStore select(int[] starts, int[] length) {
+	public RebasingStore doSelect(int[] starts, int[] length) {
 		return new RebasingStore(min, root, store.select(starts, length));
 	}
 

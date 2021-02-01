@@ -34,7 +34,7 @@ public class LongStore extends ColumnStore<Long> {
 		return Long.SIZE;
 	}
 
-	public LongStore select(int[] starts, int[] ends) {
+	public LongStore doSelect(int[] starts, int[] ends) {
 		return new LongStore(ColumnStore.selectArray(starts, ends, values, long[]::new), nullValue);
 	}
 

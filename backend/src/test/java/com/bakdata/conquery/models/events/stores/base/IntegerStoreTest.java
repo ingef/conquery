@@ -30,7 +30,7 @@ class IntegerStoreTest {
 			}
 		}
 
-		final ColumnStore<Long> selection = store.select(new int[]{0, 4}, new int[]{2, 1});
+		final ColumnStore<Long> selection = store.doSelect(new int[]{0, 4}, new int[]{2, 1});
 
 		assertThat(selection.get(0)).isEqualTo(1);
 		assertThat(selection.get(1)).isEqualTo(2);
@@ -59,7 +59,7 @@ class IntegerStoreTest {
 			}
 		}
 
-		final ColumnStore<Long> selection = store.select(new int[]{0, 5}, new int[]{2, 1});
+		final ColumnStore<Long> selection = store.doSelect(new int[]{0, 5}, new int[]{2, 1});
 
 		assertThat(selection.get(0)).isEqualTo(1);
 		assertThat(selection.get(1)).isEqualTo(2);
@@ -89,7 +89,7 @@ class IntegerStoreTest {
 			}
 		}
 
-		final ColumnStore<Long> selection = store.select(new int[]{0, 5}, new int[]{2, 1});
+		final ColumnStore<Long> selection = store.doSelect(new int[]{0, 5}, new int[]{2, 1});
 
 		assertThat(selection.get(0)).isEqualTo(1);
 		assertThat(selection.get(1)).isEqualTo(2);

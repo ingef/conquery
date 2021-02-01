@@ -35,7 +35,7 @@ public class ByteStore extends ColumnStore<Long> {
 		return Byte.SIZE;
 	}
 
-	public ByteStore select(int[] starts, int[] ends) {
+	public ByteStore doSelect(int[] starts, int[] ends) {
 		return new ByteStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
 	}
 
