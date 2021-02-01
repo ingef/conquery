@@ -87,7 +87,7 @@ public class IntegerParser extends Parser<Long> {
 			return new RebasingStore(minValue, Integer.MIN_VALUE, IntegerStore.create(getLines()));
 		}
 
-		if(maxValue == Integer.MAX_VALUE){
+		if(maxValue == Long.MAX_VALUE){
 			throw new IllegalStateException("Exceeds capacity of LongStore."); // todo migrate to external null-store
 		}
 
