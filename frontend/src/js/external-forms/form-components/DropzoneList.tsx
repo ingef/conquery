@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
@@ -21,25 +21,24 @@ const StyledIconButton = styled(IconButton)`
   right: 0;
 `;
 
-type PropsType = {
+interface PropsT {
   className?: string;
-  label?: React.ReactNode;
-  dropzoneChildren: (args: ChildArgs) => React.ReactNode;
-  items: any;
+  label?: ReactNode;
+  dropzoneChildren: (args: ChildArgs) => ReactNode;
+  items: ReactNode[];
   acceptedDropTypes: string[];
   onDrop: (props: any, monitor: any) => void;
   onDropFile?: (file: File) => void;
-  onDelete: Function;
-  allowFile?: boolean;
+  onDelete: (idx: number) => void;
   disallowMultipleColumns?: boolean;
-};
+}
 
-const DropzoneList = (props: PropsType) => {
+const DropzoneList = (props: PropsT) => {
   // allow at least one column
   const showDropzone =
     (props.items && props.items.length === 0) || !props.disallowMultipleColumns;
 
-  const DropzoneClass = props.allowFile ? DropzoneWithFileInput : Dropzone;
+  const DropzoneClass = props.onDropFile ? DropzoneWithFileInput : Dropzone;
 
   return (
     <div className={props.className}>
@@ -61,7 +60,7 @@ const DropzoneList = (props: PropsType) => {
         <DropzoneClass
           acceptedDropTypes={props.acceptedDropTypes}
           onDrop={props.onDrop}
-          onSelectFile={props.onDropFile}
+          onSelectFile={props.onDropFile!}
         >
           {props.dropzoneChildren}
         </DropzoneClass>

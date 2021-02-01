@@ -504,7 +504,6 @@ const FormConceptGroup = (props: PropsType) => {
             : props.attributeDropzoneText
         }
         acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
-        allowFile={true}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={(i) =>
           props.input.onChange(removeValue(props.input.value, i))
