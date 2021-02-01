@@ -33,7 +33,12 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 		testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
 
 	}
-	
+
+	@Override
+	public void overrideConfig(ConqueryConfig conf) {
+		testSpec.overrideConfig(conf);
+	}
+
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		ValidatorHelper.failOnError(log, VALIDATOR.validate(testSpec));

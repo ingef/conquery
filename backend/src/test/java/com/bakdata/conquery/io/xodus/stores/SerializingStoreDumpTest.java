@@ -69,7 +69,7 @@ public class SerializingStoreDumpTest {
 	@Test
 	public void testCorruptValueDump() throws JSONException, IOException {
 		// Set dump directory to this tests temp-dir
-		config.setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadableDataDumpDirectory(Optional.of(tmpDir));
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
@@ -122,7 +122,7 @@ public class SerializingStoreDumpTest {
 	@Test
 	public void testCorruptKeyDump() throws JSONException, IOException {
 		// Set dump directory to this tests temp-dir
-		config.setUnreadbleDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadableDataDumpDirectory(Optional.of(tmpDir));
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
@@ -173,7 +173,7 @@ public class SerializingStoreDumpTest {
 	public void testCorruptionRemoval() throws JSONException, IOException {
 		log.info("This test with throw some warnings from the SerializingStore.");
 		// Set config to remove corrupt entries
-		config.setRemoveUnreadablesFromStore(true);
+		config.setRemoveUnreadableFromStore(true);
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)

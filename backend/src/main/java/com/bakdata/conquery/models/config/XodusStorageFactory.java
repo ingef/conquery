@@ -51,12 +51,12 @@ public class XodusStorageFactory implements StorageFactory {
 	/**
 	 * Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore.
 	 */
-	private boolean removeUnreadablesFromStore = false;
+	private boolean removeUnreadableFromStore = false;
 	
 	/**
 	 * When set, all values that could not be deserialized from the persistent store, are dump into individual files.
 	 */
-	private Optional<File> unreadbleDataDumpDirectory = Optional.empty();
+	private Optional<File> unreadableDataDumpDirectory = Optional.empty();
 
 	@Override
 	public MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets) {
@@ -127,12 +127,10 @@ public class XodusStorageFactory implements StorageFactory {
 			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
-		Workers workers = new Workers(
-				shardNode.getConfig().getQueries().getExecutionPool(),
-				getNThreads(),
-				shardNode.getConfig().getCluster().getEntityBucketSize());
 
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
+
+		Workers workers = shardNode.getWorkers();
 
 
 		for (File directory : baseDir.toFile().listFiles((file, name) -> name.startsWith("worker_"))) {
@@ -158,6 +156,5 @@ public class XodusStorageFactory implements StorageFactory {
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
 			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
 		}
-		shardNode.setWorkers(workers);
 	}
 }

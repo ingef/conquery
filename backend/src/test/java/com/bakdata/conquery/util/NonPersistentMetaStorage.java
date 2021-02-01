@@ -22,18 +22,21 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import lombok.Getter;
 
 
 public class NonPersistentMetaStorage implements MetaStorage {
-	
-	private static final UnsupportedOperationException NOT_IMPLEMENTED = new UnsupportedOperationException("Not implemented");
-	
+
+	@Getter
+	private final CentralRegistry centralRegistry = new CentralRegistry();
 	private final IdMap<UserId,User> USERS = new IdMap<>();
 	private final IdMap<GroupId,Group> GROUPS = new IdMap<>();
 	private final IdMap<RoleId,Role> ROLES = new IdMap<>();
 	private final Map<ManagedExecutionId,ManagedExecution<?>> EXECUTIONS = new ConcurrentHashMap<>();
 	private final IdMap<FormConfigId,FormConfig> FORM_CONFIGS = new IdMap<>();
 	private final DatasetRegistry datasetRegistry;
+
+	private Validator validator;
 
 	public NonPersistentMetaStorage(){
 		this(null);
@@ -43,19 +46,19 @@ public class NonPersistentMetaStorage implements MetaStorage {
 		this.datasetRegistry = datasetRegistry;
 	}
 
-	@Override
-	public Validator getValidator() {
-		throw NOT_IMPLEMENTED;
+	public NonPersistentMetaStorage(DatasetRegistry datasetRegistry, Validator validator) {
+		this.datasetRegistry = datasetRegistry;
+		this.validator = validator;
 	}
 
 	@Override
-	public CentralRegistry getCentralRegistry() {
-		throw NOT_IMPLEMENTED;
+	public Validator getValidator() {
+		return validator;
 	}
+
 
 	@Override
 	public void loadData() {
-		throw NOT_IMPLEMENTED;
 	}
 
 	@Override
@@ -69,7 +72,6 @@ public class NonPersistentMetaStorage implements MetaStorage {
 
 	@Override
 	public void remove() {
-		throw NOT_IMPLEMENTED;
 	}
 
 	@Override

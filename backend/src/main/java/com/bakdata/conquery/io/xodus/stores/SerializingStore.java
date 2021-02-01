@@ -17,7 +17,6 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -124,10 +123,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 							.readerFor(storeInfo.getKeyType())
 							.withView(InternalOnly.class);
 		
-		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadablesFromStore();
+		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadableFromStore();
 		
 		// Prepare dump directory if there is one set in the config
-		Optional<File> dumpUnreadable = config.getUnreadbleDataDumpDirectory();
+		Optional<File> dumpUnreadable = config.getUnreadableDataDumpDirectory();
 		if(dumpUnreadable.isPresent()) {
 			unreadableValuesDumpDir = dumpUnreadable.get();
 			if(!unreadableValuesDumpDir.exists()) {

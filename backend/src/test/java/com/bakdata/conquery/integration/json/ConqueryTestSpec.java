@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
@@ -33,6 +34,10 @@ public abstract class ConqueryTestSpec {
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
 
 	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
+
+	public void overrideConfig(ConqueryConfig config){
+
+	}
 
 	@Override
 	public String toString() {
