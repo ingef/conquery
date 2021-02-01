@@ -2,11 +2,13 @@ package com.bakdata.conquery.models.query.concept.filter;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -38,4 +40,15 @@ public class CQTable {
 
 	@JsonIgnore
 	private Connector resolvedConnector;
+
+
+	public boolean resolveConnector(Concept<?> concept) {
+		try {
+			setResolvedConnector(concept.getConnectorByName(getId().getConnector()));
+		}
+		catch (NoSuchElementException exc){
+			return false;
+		}
+		return true;
+	}
 }

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +25,9 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 
 @CPSType(base = Form.class, id = "TABLE_EXPORT_FORM")
@@ -40,7 +43,7 @@ public class TableExportForm implements Form {
 	// TODO implement this as a standard concept query and ignore most of it so the frontend understands it.
 	@NotEmpty
 	@Valid
-	private List<CQUnfilteredTable> tables;
+	private List<CQConcept> concepts;
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
@@ -54,6 +57,22 @@ public class TableExportForm implements Form {
 
 	@Override
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+
+		final List<CQUnfilteredTable> tables = new ArrayList<>();
+
+		// Extract necessary info from query.
+		for (CQConcept concept : concepts) {
+			for (CQTable table : concept.getTables()) {
+
+				tables.add(new CQUnfilteredTable(
+						table.getId(),
+						table.getDateColumn(),
+						null
+				));
+			}
+		}
+
+
 		final TableExportQuery exportQuery = new TableExportQuery(queryGroup);
 		exportQuery.setDateRange(dateRange);
 		exportQuery.setTables(tables);

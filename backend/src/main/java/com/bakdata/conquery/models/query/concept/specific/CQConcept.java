@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -78,11 +77,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable table : tables) {
-			try {
-				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
-			}
-			catch (NoSuchElementException exc){
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), concept.getDataset(), exc);
+			if (!table.resolveConnector(concept)) {
+				log.warn("Unable to resolve connector `{}` in dataset `{}`.", table.getId().getConnector(), concept.getDataset());
 				continue;
 			}
 
