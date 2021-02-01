@@ -9,6 +9,7 @@ import InputSelect from "../../form-components/InputSelect";
 import InputText from "../../form-components/InputText";
 import InputDateRange from "../../form-components/InputDateRange";
 import InputCheckbox from "../../form-components/InputCheckbox";
+import ToggleButton from "../../form-components/ToggleButton";
 
 import type { DatasetIdT, SelectOptionT } from "../../api/types";
 
@@ -40,10 +41,8 @@ const Select = FormField(InputSelect);
 const Checkbox = FormField(InputCheckbox);
 const Tabs = FormField(TabsField);
 
-const SxInputSelect = styled(InputSelect)`
-  margin-right: 5px;
-  flex-grow: 1;
-  max-width: 125px;
+const SxToggleButton = styled(ToggleButton)`
+  margin-bottom: 5px;
 `;
 
 const NestedFields = styled("div")`
@@ -249,7 +248,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             renderRowPrefix:
               field.rowPrefixField &&
               ((input, feature, i) => (
-                <SxInputSelect
+                <SxToggleButton
                   options={field.rowPrefixField.options.map((option) => ({
                     label: option.label[locale],
                     value: option.value,
@@ -265,11 +264,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                         },
                         ...input.value.slice(i + 1),
                       ]),
-                  }}
-                  selectProps={{
-                    clearable: false,
-                    autosize: true,
-                    searchable: false,
                   }}
                 />
               )),
