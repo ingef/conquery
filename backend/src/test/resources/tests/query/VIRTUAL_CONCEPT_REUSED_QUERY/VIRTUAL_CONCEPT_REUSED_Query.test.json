@@ -13,16 +13,16 @@
                 },
                 {
                     "ids": [
-                        "${dataset}.test_concept"
+                        "test_concept"
                     ],
                     "type": "CONCEPT",
                     "label": "test_concept",
                     "tables": [
                         {
-                            "id": "${dataset}.test_concept.test_connector",
+                            "id": "test_concept.test_connector",
                             "filters": [
                                 {
-                                    "filter": "${dataset}.test_concept.test_connector.test_filter",
+                                    "filter": "test_concept.test_connector.test_filter",
                                     "type": "MULTI_SELECT",
                                     "value": [
                                         "2"

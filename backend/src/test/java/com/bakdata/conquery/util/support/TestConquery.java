@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -19,6 +20,7 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.config.XodusStorageFactory;
@@ -39,10 +41,12 @@ import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -55,7 +59,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  */
 @Slf4j
-public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallback, AfterEachCallback {
+@RequiredArgsConstructor
+public class TestConquery {
 
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
 
@@ -63,11 +68,13 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
-	private File tmpDir;
-	private ConqueryConfig config;
+	private final File tmpDir;
+	private final ConqueryConfig config;
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
+
+	private AtomicBoolean started = new AtomicBoolean(false);
 
 	/**
 	 * Returns the extension context used by the beforeAll-callback.
@@ -148,8 +155,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		openSupports.remove(support);
 	}
 
-	protected ConqueryConfig getConfig() throws Exception {
-		ConqueryConfig config = new ConqueryConfig();
+	@SneakyThrows
+	public static void configurePortsAndPaths(ConqueryConfig config, File tmpDir) {
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		XodusStorageFactory storageConfig = new XodusStorageFactory();
@@ -176,24 +183,12 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		// but not so small that we can't test bucket problems
 		config.getCluster().setEntityBucketSize(3);
 
-		return config;
 	}
 
-	@Override
-	public void beforeAll(ExtensionContext context) throws Exception {
-		this.beforeAllContext = context;
-		// create tmp dir if it was not already created
-		if (tmpDir == null) {
-			tmpDir = Files.createTempDir();
-		}
+	public void beforeAll() throws Exception {
+
 		log.info("Working in temporary directory {}", tmpDir);
 
-		config = getConfig();
-		context
-			.getTestInstance()
-			.filter(ConfigOverride.class::isInstance)
-			.map(ConfigOverride.class::cast)
-			.ifPresent(co -> co.override(config));
 
 		// define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(TestBootstrappingConquery.class, config, app -> {
@@ -210,15 +205,13 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			.build("test client");
 	}
 
-	@Override
-	public void afterAll(ExtensionContext context) throws Exception {
+	public void afterAll() throws Exception {
 		client.close();
 		dropwizard.after();
 		FileUtils.deleteQuietly(tmpDir);
 	}
 
-	@Override
-	public void afterEach(ExtensionContext context) throws Exception {
+	public void afterEach() throws Exception {
 		for (StandaloneSupport openSupport : openSupports ) {
 			log.info("Tearing down dataset");
 			DatasetId dataset = openSupport.getDataset().getId();
