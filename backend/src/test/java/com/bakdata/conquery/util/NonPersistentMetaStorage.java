@@ -33,6 +33,15 @@ public class NonPersistentMetaStorage implements MetaStorage {
 	private final IdMap<RoleId,Role> ROLES = new IdMap<>();
 	private final Map<ManagedExecutionId,ManagedExecution<?>> EXECUTIONS = new ConcurrentHashMap<>();
 	private final IdMap<FormConfigId,FormConfig> FORM_CONFIGS = new IdMap<>();
+	private final DatasetRegistry datasetRegistry;
+
+	public NonPersistentMetaStorage(){
+		this(null);
+	}
+
+	public NonPersistentMetaStorage(DatasetRegistry datasetRegistry) {
+		this.datasetRegistry = datasetRegistry;
+	}
 
 	@Override
 	public Validator getValidator() {
@@ -178,7 +187,7 @@ public class NonPersistentMetaStorage implements MetaStorage {
 
 	@Override
 	public DatasetRegistry getDatasetRegistry() {
-		throw NOT_IMPLEMENTED;
+		return datasetRegistry;
 	}
 
 	@Override

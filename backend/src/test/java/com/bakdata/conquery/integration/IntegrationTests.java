@@ -30,6 +30,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @Slf4j
 public class IntegrationTests {
 	private static final ObjectWriter CONFIG_WRITER = Jackson.MAPPER.writerFor(ConqueryConfig.class);
+	private static final Int2ObjectArrayMap<TestConquery> reusedInstances = new Int2ObjectArrayMap<>();
 	
 	private final String defaultTestRoot;
 	private final String defaultTestRootPackage;
@@ -90,9 +92,6 @@ public class IntegrationTests {
 			.filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
 			.loadClasses();
 
-		TestConquery conquery = new TestConquery(getWorkDir(), getDEFAULT_CONFIG());
-		conquery.beforeAll();
-
 		return programmatic
 			.stream()
 			.<ProgrammaticIntegrationTest>map(c-> {
@@ -103,14 +102,17 @@ public class IntegrationTests {
 					throw new RuntimeException(e);
 				}
 			})
-			.map(c->
-				DynamicTest.dynamicTest(
-					c.getClass().getSimpleName(),
-					//classpath URI
-					URI.create("classpath:/"+c.getClass().getName().replace('.', '/')+".java"),
-					new IntegrationTest.Wrapper(c.getClass().getSimpleName(), conquery, c)
-				)
-			);
+			.map(this::createDynamicProgrammaticTestNode);
+	}
+
+	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test) {
+		TestConquery conquery = getCachedConqueryInstance(workDir, getConfigOverride(test));
+		return DynamicTest.dynamicTest(
+				test.getClass().getSimpleName(),
+				//classpath URI
+				URI.create("classpath:/"+test.getClass().getName().replace('.', '/')+".java"),
+				new IntegrationTest.Wrapper(test.getClass().getSimpleName(), conquery, test)
+		);
 	}
 
 	private DynamicNode collectTests(ResourceTree currentDir) {
@@ -134,31 +136,22 @@ public class IntegrationTests {
 		);
 	}
 
-	private static final Int2ObjectArrayMap<TestConquery> reusedInstances = new Int2ObjectArrayMap<>();
-
 	private static DynamicTest readTest(Resource resource, String name, IntegrationTests integrationTests) {
 		try(InputStream in = resource.open()) {
 			JsonIntegrationTest test = new JsonIntegrationTest(in);
-			ConqueryConfig conf = Cloner.clone(DEFAULT_CONFIG, Map.of());
-			test.overrideConfig(conf);
+			ConqueryConfig conf = getConfigOverride(test);
 
 			name = test.getTestSpec().getLabel();
 
-			int confStringHash = CONFIG_WRITER.writeValueAsString(conf).hashCode();
-			if(!reusedInstances.containsKey(confStringHash)){
-				log.info("Creating a new test conquery instance for test {}", name);
-				TestConquery conquery = new TestConquery(integrationTests.getWorkDir(), conf);
-				conquery.beforeAll();
-				reusedInstances.put(confStringHash, conquery);
-			}
-			
+			TestConquery conquery = getCachedConqueryInstance(integrationTests.getWorkDir(), conf);
+
 			return DynamicTest.dynamicTest(
-				name,
-				URI.create("classpath:/"+resource.getPath()),
-				new IntegrationTest.Wrapper(
 					name,
-						reusedInstances.get(confStringHash),
-						test)
+					URI.create("classpath:/" + resource.getPath()),
+					new IntegrationTest.Wrapper(
+							name,
+							conquery,
+							test)
 			);
 		}
 		catch(Exception e) {
@@ -170,6 +163,26 @@ public class IntegrationTests {
 				}
 			);
 		}
+	}
+
+	@NotNull
+	private static ConqueryConfig getConfigOverride(IntegrationTest test) {
+		ConqueryConfig conf = Cloner.clone(DEFAULT_CONFIG, Map.of());
+		test.overrideConfig(conf);
+		return conf;
+	}
+
+	@SneakyThrows
+	private static TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf) {
+		int confStringHash = CONFIG_WRITER.writeValueAsString(conf).hashCode();
+		if(!reusedInstances.containsKey(confStringHash)){
+			log.trace("Creating a new test conquery instance for test {}", conf);
+			TestConquery conquery = new TestConquery(workDir, conf);
+			conquery.beforeAll();
+			reusedInstances.put(confStringHash, conquery);
+		}
+		TestConquery conquery = reusedInstances.get(confStringHash);
+		return conquery;
 	}
 
 	@EqualsAndHashCode(callSuper = true)

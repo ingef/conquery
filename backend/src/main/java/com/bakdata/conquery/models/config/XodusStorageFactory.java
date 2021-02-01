@@ -124,7 +124,7 @@ public class XodusStorageFactory implements StorageFactory {
 		Path baseDir = getDirectory().resolve(shardNode.isUseNameForStoragePrefix() ? shardNode.getName() : "");
 
 		if(baseDir.toFile().mkdirs()){
-			log.warn("Had to create Storage Dir at `{}`", getDirectory());
+			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
 		Workers workers = new Workers(

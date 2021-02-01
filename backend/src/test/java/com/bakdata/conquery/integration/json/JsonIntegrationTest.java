@@ -69,8 +69,4 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 		
 		return jsonReader.readValue(json);
 	}
-
-	public void overrideConfig(ConqueryConfig conf){
-
-	}
 }

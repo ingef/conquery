@@ -15,6 +15,12 @@ public interface IntegrationTest {
 
 	void execute(String name, TestConquery testConquery) throws Exception;
 
+
+
+	public default void overrideConfig(ConqueryConfig conf){
+
+	}
+
 	abstract class Simple implements IntegrationTest {
 		public abstract void execute(StandaloneSupport conquery) throws Exception;
 		
