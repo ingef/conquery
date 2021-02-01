@@ -342,7 +342,7 @@ public class ImportJob extends Job {
 
 	public void setDictionaryIds(Map<String, ColumnStore<?>> values, Column[] columns, String importName) {
 		for (Column column : columns) {
-			if (column.getType() != MajorTypeId.STRING) {
+			if (values.get(column.getName()) instanceof StringType) {
 				continue;
 			}
 
