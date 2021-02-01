@@ -7,11 +7,11 @@
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "${dataset}.test_tree.test_child1"
+        "${dataset}.concept.a1"
       ],
       "tables": [
         {
-          "id": "${dataset}.test_tree.test_column",
+          "id": "${dataset}.concept.connector",
           "filters": []
         }
       ]
@@ -19,25 +19,23 @@
   },
   "concepts": [
     {
-      "label": "test_tree",
+      "name": "concept",
       "type": "TREE",
       "connectors": {
         "condition": {
           "type": "PRESENT",
           "column": "include"
         },
-        "label": "tree_label",
-        "name": "test_column",
-        "column": "test_table.test_column",
+        "name": "connector",
+        "column": "table.test_column",
         "validityDates": {
           "label": "datum",
-          "column": "test_table.datum"
+          "column": "table.datum"
         }
       },
       "children": [
         {
-          "label": "test_child1",
-          "description": " ",
+          "name": "a1",
           "condition": {
             "type": "PREFIX_LIST",
             "prefixes": "A1"
@@ -45,8 +43,7 @@
           "children": []
         },
         {
-          "label": "test_child2",
-          "description": " ",
+          "name": "b2",
           "condition": {
             "type": "PREFIX_LIST",
             "prefixes": "B2"
@@ -60,7 +57,7 @@
     "tables": [
       {
         "csv": "tests/query/SIMPLE_TREECONCEPT_PRESENT_CONDITION_QUERY/content.csv",
-        "name": "test_table",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

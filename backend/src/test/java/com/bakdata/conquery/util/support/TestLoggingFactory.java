@@ -14,13 +14,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.logback.InstrumentedAppender;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.Lists;
-
 import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -30,6 +23,12 @@ import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.util.StatusPrinter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.logback.InstrumentedAppender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
 import io.dropwizard.logging.ConsoleAppenderFactory;
 import io.dropwizard.logging.LoggingFactory;
 import io.dropwizard.logging.LoggingUtil;
@@ -42,7 +41,7 @@ import io.dropwizard.logging.layout.LayoutFactory;
 
 public class TestLoggingFactory implements LoggingFactory {
 
-	public static final String LOG_PATTERN = "[%level] [TEST] [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n";
+	public static final String LOG_PATTERN = "[%level] [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n";
 	
 	private static final ReentrantLock MBEAN_REGISTRATION_LOCK = new ReentrantLock();
 	private static final ReentrantLock CHANGE_LOGGER_CONTEXT_LOCK = new ReentrantLock();
@@ -140,32 +139,6 @@ public class TestLoggingFactory implements LoggingFactory {
 
 	@Override
 	public void reset() {
-		/*
-		CHANGE_LOGGER_CONTEXT_LOCK.lock();
-		try {
-			// Flush all the loggers and reinstate only the console logger as a
-			// sane default.
-			loggerContext.stop();
-			final Logger logger = loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-			logger.detachAndStopAllAppenders();
-			final DropwizardLayout formatter = new DropwizardLayout(loggerContext, TimeZone.getDefault());
-			formatter.setPattern(LOG_PATTERN);
-			formatter.start();
-			final LayoutWrappingEncoder<ILoggingEvent> layoutEncoder = new LayoutWrappingEncoder<>();
-			layoutEncoder.setLayout(formatter);
-			final ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
-			consoleAppender.addFilter(new ThresholdLevelFilterFactory().build(Level.INFO));
-			consoleAppender.setEncoder(layoutEncoder);
-			consoleAppender.setContext(loggerContext);
-			consoleAppender.start();
-			logger.addAppender(consoleAppender);
-			configureLoggers();
-			loggerContext.start();
-		}
-		finally {
-			CHANGE_LOGGER_CONTEXT_LOCK.unlock();
-		}
-		*/
 	}
 
 	private void flushAppender(AsyncAppender appender) throws InterruptedException {
@@ -202,7 +175,7 @@ public class TestLoggingFactory implements LoggingFactory {
 
 		root.setLevel(Level.WARN);
 
-		loggerContext.getLogger("com.bakdata").setLevel(Level.INFO);
+		loggerContext.getLogger("com.bakdata").setLevel(Level.DEBUG);
 
 		return root;
 	}

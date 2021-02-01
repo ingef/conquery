@@ -1,32 +1,32 @@
 package com.bakdata.conquery.models.events;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.BucketDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.Int2IntArrayMapDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.Int2IntMapSerializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializable;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.tomgibara.bits.BitStore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
@@ -39,168 +39,137 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @Getter
 @Setter
-@ToString
-@JsonDeserialize(using = BucketDeserializer.class)
-public abstract class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer>, JsonSerializable {
+@ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)
-	private int bucket;
-	@NotNull
+	private final int bucket;
+	@Min(0)
+	private final int numberOfEvents;
+	private final ColumnStore<?>[] stores;
+	/**
+	 * start of each Entity in {@code stores}.
+	 */
+	@JsonSerialize(using = Int2IntMapSerializer.class)
+	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
+	private final Int2IntMap start;
+	/**
+	 * Number of events per Entity in {@code stores}.
+	 */
+	@JsonSerialize(using = Int2IntMapSerializer.class)
+	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
+	private final Int2IntMap length;
+	private final int bucketSize;
 	@NsIdRef
-	private Import imp;
-	@Min(0)
-	private int numberOfEvents;
-	@ToString.Exclude
-	private int[] offsets;
-	@NotNull
-	@Setter
-	@ToString.Exclude
-	protected BitStore nullBits;
-
-	public Bucket(int bucket, Import imp, int[] offsets) {
-		this.bucket = bucket;
-		this.imp = imp;
-		this.offsets = offsets;
-	}
+	private final Import imp;
 
 	@Override
 	public BucketId createId() {
 		return new BucketId(imp.getId(), bucket);
 	}
 
-
-	public abstract int getBucketSize();
-
-	@Override
-	public PrimitiveIterator.OfInt iterator() {
-		return IntStream.range(0, getBucketSize())
-						.filter(this::containsLocalEntity)
-						.map(this::toGlobal)
-						.iterator();
+	/**
+	 * Iterate entities
+	 */
+	public Collection<Integer> entities() {
+		return start.keySet();
 	}
 
-	public boolean containsLocalEntity(int localEntity) {
-		if(offsets.length != 1 && offsets.length != getBucketSize()) {
-			log.warn("Encountered unexpected bucket size of {}. This does not correspond to a single entity bucket (1) nor to a combined bucket ({})",offsets.length, getBucketSize());
-			return false;
-		}
-		if(offsets.length - 1 < localEntity) {
-			return false;
-		}
-		return offsets[localEntity] != -1;
-	}
-
-	public abstract void initFields(int numberOfEntities);
-
-	public int toLocal(int entity) {
-		return entity - getBucketSize() * bucket;
-	}
-
-	public int toGlobal(int entity) {
-		return entity + getBucketSize() * bucket;
-	}
-
-
-	public int getFirstEventOfLocal(int localEntity) {
-		return offsets[localEntity];
-	}
-
-	public int getLastEventOfLocal(int localEntity) {
-		for (localEntity++; localEntity < offsets.length; localEntity++) {
-			if (offsets[localEntity] != -1) {
-				return offsets[localEntity];
-			}
-		}
-		return numberOfEvents;
-	}
-
-	@Override
-	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-		java.io.OutputStream outputStream = baos;
-		try (Output output = new Output(outputStream)) {
-			writeContent(output);
-		}
-		byte[] content = baos.toByteArray();
-		gen.writeStartObject();
-		gen.writeNumberField(Fields.bucket, bucket);
-		gen.writeStringField(Fields.imp, imp.getId().toString());
-		gen.writeNumberField(Fields.numberOfEvents, numberOfEvents);
-		gen.writeFieldName(Fields.offsets);
-		gen.writeArray(offsets, 0, offsets.length);
-		gen.writeBinaryField("content", content);
-		gen.writeEndObject();
+	public boolean containsEntity(int entity) {
+		return start.containsKey(entity);
 	}
 
 	public Iterable<BucketEntry> entries() {
-		return () -> IntStream
-							 .range(0, getBucketSize())
-							 .filter(this::containsLocalEntity)
-							 .boxed()
-							 .flatMap(le -> IntStream
-													.range(getFirstEventOfLocal(le), getLastEventOfLocal(le))
-													.mapToObj(e -> new BucketEntry(le, e))
-							 )
-							 .iterator();
+		return () -> start.keySet()
+						  .stream()
+						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
+													  .mapToObj(e -> new BucketEntry(entity, e))
+						  )
+						  .iterator();
 	}
 
-
-	public boolean has(int event, @NotNull Column column) {
-		return has(event, column.getPosition());
+	public int getEntityStart(int entityId) {
+		return start.get(entityId);
 	}
 
-	public abstract boolean has(int event, int columnPosition);
-
-	public abstract int getString(int event, @NotNull Column column);
-
-	public abstract long getInteger(int event, @NotNull Column column);
-
-	public abstract boolean getBoolean(int event, @NotNull Column column);
-
-	public abstract double getReal(int event,@NotNull Column column);
-
-	public abstract BigDecimal getDecimal(int event, @NotNull Column column);
-
-	public abstract long getMoney(int event, @NotNull Column column);
-
-	public abstract int getDate(int event,@NotNull Column column);
-
-	public abstract CDateRange getDateRange(int event, @NotNull Column column);
-
-	public Object getRaw(int event, @NotNull Column column) {
-		return getRaw(event, column.getPosition());
+	public int getEntityEnd(int entityId) {
+		return start.get(entityId) + length.get(entityId);
 	}
 
-	public abstract Object getRaw(int event, int columnPosition);
+	public final boolean has(int event, Column column) {
+		return stores[column.getPosition()].has(event);
+	}
+
+	public int getString(int event, @NotNull Column column) {
+		return stores[column.getPosition()].getString(event);
+	}
+
+	public long getInteger(int event, @NotNull Column column) {
+		return stores[column.getPosition()].getInteger(event);
+	}
+
+	public boolean getBoolean(int event, @NotNull Column column) {
+		return stores[column.getPosition()].getBoolean(event);
+	}
+
+	public double getReal(int event, @NotNull Column column) {
+		return stores[column.getPosition()].getReal(event);
+	}
+
+	public BigDecimal getDecimal(int event, @NotNull Column column) {
+		return stores[column.getPosition()].getDecimal(event);
+	}
+
+	public long getMoney(int event, @NotNull Column column) {
+		return stores[column.getPosition()].getMoney(event);
+	}
+
+	public int getDate(int event, @NotNull Column column) {
+		return stores[column.getPosition()].getDate(event);
+	}
+
+	public CDateRange getAsDateRange(int event, Column currentColumn) {
+		return getDateRange(event, currentColumn);
+	}
+
+	public CDateRange getDateRange(int event, Column column) {
+		return stores[column.getPosition()].getDateRange(event);
+	}
 
 	public Object getAsObject(int event, @NotNull Column column) {
-		return getAsObject(event, column.getPosition());
+		return stores[column.getPosition()].get(event);
 	}
 
-	public abstract Object getAsObject(int event, int columnPosition);
-
-	public abstract boolean eventIsContainedIn(int event, @NotNull Column column, CDateRange dateRange);
-
-	public boolean eventIsContainedIn(int event, @NotNull Column column, CDateSet dateRanges) {
-		return dateRanges.intersects(getAsDateRange(event, column));
+	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
+		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
 	}
 
-
-	public abstract CDateRange getAsDateRange(int event, @NotNull Column currentColumn);
-
-	@Override
-	public void serializeWithType(JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
-		this.serialize(gen, serializers);
+	public Object createScriptValue(int event, @NotNull Column column) {
+		final ColumnStore<?> store = stores[column.getPosition()];
+		return ((ColumnStore) store).createScriptValue(store.get(event));
 	}
 
-	public Object createScriptValue(int event, Column column){
-		return column.getTypeFor(this).createPrintValue(getRaw(event, column));
+	public Map<String, Object> calculateMap(int event) {
+		Map<String, Object> out = new HashMap<>(stores.length);
+
+		for (int i = 0; i < stores.length; i++) {
+			ColumnStore store = stores[i];
+			if (!store.has(event)) {
+				continue;
+			}
+			// todo rework this to use table directly
+			out.put(imp.getColumns()[i].getName(), store.createScriptValue(store.get(event)));
+		}
+
+		return out;
 	}
 
-	public abstract Map<String, Object> calculateMap(int event, Import imp);
-
-	public abstract void writeContent(Output output) throws IOException;
-
-	public abstract void read(Input input) throws IOException;
+	public void loadDictionaries(NamespacedStorage storage) {
+		for (ColumnStore<?> store : getStores()) {
+			if (store instanceof StringType) {
+				((StringType) store).loadDictionaries(storage);
+			}
+		}
+	}
 }

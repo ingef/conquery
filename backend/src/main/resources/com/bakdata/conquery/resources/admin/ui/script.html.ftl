@@ -30,7 +30,7 @@ for(def ns : namespaces.getNamespaces()) {
 	for(def imp : storage.getAllImports()) {
 		if(imp.getTable().getTable()!="ALL_IDS_TABLE") {
 			for(def col : imp.getColumns()) {
-				if(col.getType() instanceof com.bakdata.conquery.models.types.specific.AStringType) {
+				if(col.getType() instanceof com.bakdata.conquery.models.events.stores.specific.AStringType) {
 					result.add(new Tuple(
 						   col.getType().estimateTypeSize(),
 						   col.getType().size(),
