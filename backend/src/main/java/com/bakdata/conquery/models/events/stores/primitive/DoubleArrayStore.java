@@ -41,13 +41,13 @@ public class DoubleArrayStore implements RealStore {
 	}
 
 	@Override
-	public void set(int event, Double value) {
+	public void set(int event, Object value) {
 		if(value == null){
 			values[event] = Double.NaN;
 			return;
 		}
 
-		values[event] = value;
+		values[event] = ((Number) value).doubleValue();
 	}
 
 	@Override

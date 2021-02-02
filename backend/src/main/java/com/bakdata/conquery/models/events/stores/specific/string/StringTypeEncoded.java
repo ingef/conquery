@@ -25,7 +25,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
-public class StringTypeEncoded extends StringStore {
+public class StringTypeEncoded implements StringStore {
 
 	@Nonnull
 	protected StringTypeDictionary subType;
@@ -50,8 +50,8 @@ public class StringTypeEncoded extends StringStore {
 	}
 
 	@Override
-	public String createScriptValue(Integer value) {
-		return getElement(value);
+	public String createScriptValue(Object value) {
+		return getElement((Integer) value);
 	}
 
 	@Override
@@ -106,6 +106,7 @@ public class StringTypeEncoded extends StringStore {
 		return subType.estimateTypeSizeBytes();
 	}
 
+
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return subType.getDictionary();
@@ -127,7 +128,7 @@ public class StringTypeEncoded extends StringStore {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void set(int event, Object value) {
 		subType.set(event, value);
 	}
 

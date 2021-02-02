@@ -32,11 +32,6 @@ public class DecimalTypeScaled implements DecimalStore {
 	}
 
 	@Override
-	public BigDecimal createScriptValue(BigDecimal value) {
-		return null;
-	}
-
-	@Override
 	public String toString() {
 		return "DecimalTypeScaled[numberType=" + subType + "]";
 	}
@@ -52,13 +47,16 @@ public class DecimalTypeScaled implements DecimalStore {
 	}
 
 	@Override
-	public void set(int event, BigDecimal value) {
-		if (value == null) {
+	public void set(int event, Object raw) {
+
+		if (raw == null) {
 			subType.set(event, null);
+			return;
 		}
-		else {
-			subType.set(event, unscale(scale, value).longValue());
-		}
+
+		BigDecimal value = (BigDecimal) raw;
+
+		subType.set(event, unscale(scale, value).longValue());
 	}
 
 	public static BigInteger unscale(int scale, BigDecimal value) {

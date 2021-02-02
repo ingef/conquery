@@ -25,7 +25,7 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
 @ToString(of = {"prefix", "suffix", "subType"})
-public class StringTypePrefixSuffix extends StringStore {
+public class StringTypePrefixSuffix implements StringStore {
 
 	@Nonnull
 	protected StringStore subType;
@@ -55,7 +55,7 @@ public class StringTypePrefixSuffix extends StringStore {
 	}
 
 	@Override
-	public String createScriptValue(Integer value) {
+	public String createScriptValue(Object value) {
 		return prefix + subType.createScriptValue(value);
 	}
 
@@ -121,6 +121,7 @@ public class StringTypePrefixSuffix extends StringStore {
 		return subType.estimateTypeSizeBytes();
 	}
 
+
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return subType.getUnderlyingDictionary();
@@ -142,7 +143,7 @@ public class StringTypePrefixSuffix extends StringStore {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void set(int event, Object value) {
 		subType.set(event, value);
 	}
 

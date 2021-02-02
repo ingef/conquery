@@ -41,13 +41,13 @@ public class FloatArrayStore implements RealStore {
 	}
 
 	@Override
-	public void set(int event, Double value) {
+	public void set(int event, Object value) {
 		if(value == null){
 			values[event] = Float.NaN;
 			return;
 		}
 
-		values[event] = value.floatValue();
+		values[event] = ((Number) value).floatValue();
 	}
 
 	@Override

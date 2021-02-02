@@ -45,13 +45,13 @@ public class RebasingStore implements IntegerStore {
 	}
 
 	@Override
-	public void set(int event, @Nullable Long value) {
+	public void set(int event, @Nullable Object value) {
 		if (value == null) {
 			store.set(event, null);
 			return;
 		}
 
-		store.set(event, value - min + root);
+		store.set(event, ((Number) value).longValue() - min + root);
 	}
 
 	@Override

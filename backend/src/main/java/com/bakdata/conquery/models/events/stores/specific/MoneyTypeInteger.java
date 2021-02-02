@@ -26,12 +26,7 @@ public class MoneyTypeInteger implements MoneyStore {
 	}
 
 	@Override
-	public Object createPrintValue(Long value) {
-		return createScriptValue(value);
-	}
-
-	@Override
-	public Long createScriptValue(Long value) {
+	public Long createScriptValue(Object value) {
 		return (long) numberType.createScriptValue(value);
 	}
 
@@ -61,13 +56,8 @@ public class MoneyTypeInteger implements MoneyStore {
 	}
 
 	@Override
-	public void set(int event, Long value) {
-		if (value == null) {
-			numberType.set(event, null);
-		}
-		else {
-			numberType.set(event, value.longValue());
-		}
+	public void set(int event, Object value) {
+		numberType.set(event, value);
 	}
 
 	@Override

@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.EmptyStore;
-import com.bakdata.conquery.models.events.EmptyStringType;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
@@ -84,8 +83,7 @@ public class SerializationTest {
 				FloatArrayStore.create(10),
 				DoubleArrayStore.create(10),
 				BitSetStore.create(10),
-				new EmptyStore<>(),
-				new EmptyStringType(),
+				new EmptyStore(),
 				new RebasingStore(10, 10, IntArrayStore.create(10))
 		);
 	}

@@ -44,13 +44,13 @@ public class ShortArrayStore implements IntegerStore {
 	}
 
 	@Override
-	public void set(int event, Long value) {
+	public void set(int event, Object value) {
 		if (value == null) {
 			values[event] = nullValue;
 			return;
 		}
 
-		values[event] = value.shortValue();
+		values[event] = ((Number) value).shortValue();
 	}
 
 	@Override

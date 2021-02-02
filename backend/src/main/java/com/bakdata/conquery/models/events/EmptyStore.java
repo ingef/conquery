@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
  * An empty generic store to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
-public class EmptyStore<T> implements
+public class EmptyStore implements
 		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore
 {
 
@@ -41,17 +42,17 @@ public class EmptyStore<T> implements
 	}
 
 	@Override
+	public void set(int event, @Nullable Object value) {
+
+	}
+
+	@Override
 	public Long get(int event) {
 		return null;
 	}
 
 	@Override
-	public void set(int event, @Nullable Integer value) {
-
-	}
-
-	@Override
-	public EmptyStore<T> select(int[] starts, int[] length) {
+	public EmptyStore select(int[] starts, int[] length) {
 		return this;
 	}
 
@@ -72,7 +73,7 @@ public class EmptyStore<T> implements
 
 	@Override
 	public BigDecimal getDecimal(int event) {
-		return null;
+		return BigDecimal.ZERO;
 	}
 
 	@Override
@@ -128,6 +129,6 @@ public class EmptyStore<T> implements
 	@NotNull
 	@Override
 	public Iterator<String> iterator() {
-		return null;
+		return Collections.emptyIterator();
 	}
 }

@@ -31,8 +31,8 @@ public class IntegerDateStore implements DateStore {
 	}
 
 	@Override
-	public Object createScriptValue(Integer value) {
-		return CDate.toLocalDate(value);
+	public Object createScriptValue(Object value) {
+		return CDate.toLocalDate(((Long) value).intValue());
 	}
 
 	@Override
@@ -49,13 +49,8 @@ public class IntegerDateStore implements DateStore {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
-		if (value == null) {
-			store.set(event, null);
-			return;
-		}
-
-		store.set(event, value.longValue());
+	public void set(int event, Object value) {
+		store.set(event, value);
 	}
 
 	@Override
@@ -65,8 +60,8 @@ public class IntegerDateStore implements DateStore {
 
 
 	@Override
-	public Integer get(int event) {
-		return getDate(event);
+	public Long get(int event) {
+		return (long) getDate(event);
 	}
 
 	@Override

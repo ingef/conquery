@@ -46,17 +46,13 @@ public class ByteArrayStore implements IntegerStore {
 	}
 
 	@Override
-	public void set(int event, Long value) {
-		if (value == null) {
+	public void set(int event, Object raw) {
+		if (raw == null) {
 			values[event] = nullValue;
 			return;
 		}
 
-		if (!(value >= Byte.MIN_VALUE && value < Byte.MAX_VALUE)) {
-			throw new IllegalArgumentException(String.format("%d not in ByteRange", value));
-		}
-
-		values[event] = value.byteValue();
+		values[event] = ((Number) raw).byteValue();
 	}
 
 	@Override

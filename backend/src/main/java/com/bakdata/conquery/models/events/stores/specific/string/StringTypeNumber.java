@@ -26,7 +26,7 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
 @ToString(of = "delegate")
-public class StringTypeNumber extends StringStore {
+public class StringTypeNumber implements StringStore {
 
 	@Override
 	public int getLines() {
@@ -70,15 +70,6 @@ public class StringTypeNumber extends StringStore {
 					   .iterator();
 	}
 
-	@Override
-	public Object createPrintValue(Integer value) {
-		return value;
-	}
-
-	@Override
-	public Object createScriptValue(Integer value) {
-		return value.toString();
-	}
 
 	@Override
 	public String getElement(int id) {
@@ -129,12 +120,12 @@ public class StringTypeNumber extends StringStore {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void set(int event, Object value) {
 		if (value == null) {
 			getDelegate().set(event, null);
 		}
 		else {
-			getDelegate().set(event, Long.valueOf(dictionary.get(value)));
+			getDelegate().set(event, Long.valueOf(dictionary.get((Integer) value)));
 		}
 	}
 

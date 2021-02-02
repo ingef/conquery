@@ -32,31 +32,25 @@ public class DateRangeTypeDateRange implements DateRangeStore {
 	}
 
 	@Override
-	public Object createPrintValue(CDateRange value) {
-		if (value == null) {
-			return "";
-		}
-
-		return value.toString();
-	}
-
-	@Override
 	public long estimateEventBits() {
 		return minStore.estimateEventBits() + maxStore.estimateEventBits();
 	}
 
 	@Override
 	public DateRangeTypeDateRange select(int[] starts, int[] length) {
-		return new DateRangeTypeDateRange(((IntegerDateStore) minStore.select(starts, length)), ((IntegerDateStore) maxStore.select(starts, length)));
+		return new DateRangeTypeDateRange(minStore.select(starts, length), maxStore.select(starts, length));
 	}
 
 	@Override
-	public void set(int event, CDateRange value) {
-		if (value == null) {
+	public void set(int event, Object raw) {
+
+		if (raw == null) {
 			minStore.set(event, null);
 			maxStore.set(event, null);
 			return;
 		}
+
+		CDateRange value = (CDateRange) raw;
 
 		if (value.hasLowerBound()) {
 			minStore.set(event, value.getMinValue());

@@ -30,21 +30,14 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends ColumnStore {
+public class StringTypeDictionary implements ColumnStore {
 
 	protected IntegerStore numberType;
 
 	@JsonIgnore
 	private transient Dictionary dictionary;
-
-	@Override
-	public int getLines() {
-		return numberType.getLines();
-	}
-
 	// todo use NsIdRef
 	private String name;
-
 	@InternalOnly
 	private DatasetId dataset;
 
@@ -62,8 +55,13 @@ public class StringTypeDictionary extends ColumnStore {
 	}
 
 	@Override
-	public Object createScriptValue(Integer value) {
-		return getElement(value);
+	public int getLines() {
+		return numberType.getLines();
+	}
+
+	@Override
+	public Object createScriptValue(Object value) {
+		return getElement((Integer) value);
 	}
 
 	public byte[] getElement(int value) {
@@ -71,8 +69,8 @@ public class StringTypeDictionary extends ColumnStore {
 	}
 
 	@Override
-	public Object createPrintValue(Integer value) {
-		return getElement(value);
+	public Object createPrintValue(Object value) {
+		return getElement((Integer) value);
 	}
 
 
@@ -92,7 +90,7 @@ public class StringTypeDictionary extends ColumnStore {
 	}
 
 	public Iterator<byte[]> iterator() {
-		if(dictionary == null){
+		if (dictionary == null) {
 			return Collections.emptyIterator();
 		}
 
@@ -120,13 +118,13 @@ public class StringTypeDictionary extends ColumnStore {
 		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
 	}
 
-	public int getString(int event) {
-		return (int) getNumberType().getInteger(event);
-	}
-
 	@Override
 	public Integer get(int event) {
 		return getString(event);
+	}
+
+	public int getString(int event) {
+		return (int) getNumberType().getInteger(event);
 	}
 
 	@Override
@@ -135,12 +133,12 @@ public class StringTypeDictionary extends ColumnStore {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void set(int event, Object value) {
 		if (value == null) {
 			numberType.set(event, null);
 		}
 		else {
-			numberType.set(event, value.longValue());
+			numberType.set(event, ((Integer) value).longValue());
 		}
 	}
 

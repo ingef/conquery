@@ -36,21 +36,22 @@ public class DateRangeTypeQuarter implements DateRangeStore {
 		return store.getLines();
 	}
 
-	@Override
-	public CDateRange createScriptValue(CDateRange value) {
-		return value;
-	}
 
 	public DateRangeTypeQuarter select(int[] starts, int[] ends) {
 		return new DateRangeTypeQuarter(store.select(starts, ends));
 	}
 
 	@Override
-	public void set(int event, CDateRange value) {
-		if (value == null) {
+	public void set(int event, Object raw) {
+
+		if (raw == null) {
 			store.set(event, null);
+			return;
 		}
-		else if (value.hasLowerBound()) {
+
+		CDateRange value = (CDateRange) raw;
+
+		if (value.hasLowerBound()) {
 			store.set(event, (long) value.getMinValue());
 		}
 		else {

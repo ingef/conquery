@@ -21,7 +21,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
-public class StringTypeSingleton extends StringStore {
+public class StringTypeSingleton implements StringStore {
 
 	private final String singleValue;
 	private final BitSetStore delegate;
@@ -59,7 +59,7 @@ public class StringTypeSingleton extends StringStore {
 	}
 
 	@Override
-	public String createScriptValue(Integer value) {
+	public String createScriptValue(Object value) {
 		return singleValue;
 	}
 
@@ -84,6 +84,8 @@ public class StringTypeSingleton extends StringStore {
 		return Byte.SIZE;
 	}
 
+
+
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return null;
@@ -95,8 +97,8 @@ public class StringTypeSingleton extends StringStore {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
-		getDelegate().set(event, value != null && value == 0);
+	public void set(int event, Object value) {
+		getDelegate().set(event, value != null && (Integer) value == 0);
 	}
 
 	@Override
