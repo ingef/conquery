@@ -83,6 +83,7 @@ export interface InputMultiSelectProps {
   isLoading?: boolean;
   className?: string;
   allowDropFile?: boolean | null;
+  closeMenuOnSelect?: boolean;
   onDropFile?: Function;
 
   input: MultiSelectInputProps;
@@ -153,7 +154,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       isDisabled={props.disabled}
       isLoading={!!props.isLoading}
       classNamePrefix={"react-select"}
-      closeMenuOnSelect={false}
+      closeMenuOnSelect={!!props.closeMenuOnSelect}
       placeholder={
         allowDropFile
           ? T.translate("reactSelect.dndPlaceholder")
