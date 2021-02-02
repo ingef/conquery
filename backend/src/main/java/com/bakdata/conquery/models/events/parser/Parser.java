@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @ToString
 @Slf4j
-public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore<MAJOR_JAVA_TYPE>> {
+public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	private final ParserConfig config;
 
 	private int lines = 0;

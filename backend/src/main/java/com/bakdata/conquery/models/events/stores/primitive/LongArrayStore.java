@@ -15,7 +15,7 @@ import lombok.ToString;
 @CPSType(id = "LONGS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class LongArrayStore extends IntegerStore {
+public class LongArrayStore implements IntegerStore {
 
 	private final long nullValue;
 	private final long[] values;
@@ -40,7 +40,7 @@ public class LongArrayStore extends IntegerStore {
 		return Long.SIZE;
 	}
 
-	public LongArrayStore doSelect(int[] starts, int[] ends) {
+	public LongArrayStore select(int[] starts, int[] ends) {
 		return new LongArrayStore(ColumnStore.selectArray(starts, ends, values, long[]::new), nullValue);
 	}
 

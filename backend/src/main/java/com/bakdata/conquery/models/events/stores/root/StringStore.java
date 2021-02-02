@@ -4,20 +4,15 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.NoArgsConstructor;
 
 /**
  * Every implementation must guarantee IDs between 0 and size.
  *
  */
-@NoArgsConstructor
-public abstract class StringStore extends ColumnStore<Integer> implements Iterable<String> {
+public interface StringStore extends Iterable<String>, ColumnStore {
 
 
 	public abstract int getString(int event);
-
-	@Override
-	public abstract StringStore doSelect(int[] starts, int[] length) ;
 
 	public abstract String getElement(int id);
 	
@@ -35,5 +30,5 @@ public abstract class StringStore extends ColumnStore<Integer> implements Iterab
 	 */
 	public abstract void setIndexStore(IntegerStore newType);
 
-	public void loadDictionaries(NamespacedStorage storage) {}
+	public default void loadDictionaries(NamespacedStorage storage) {}
 }

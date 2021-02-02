@@ -16,7 +16,7 @@ import lombok.ToString;
 @CPSType(id = "INTEGERS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class IntArrayStore extends IntegerStore {
+public class IntArrayStore implements IntegerStore {
 
 	private final int nullValue;
 	private final int[] values;
@@ -41,7 +41,7 @@ public class IntArrayStore extends IntegerStore {
 		return Integer.SIZE;
 	}
 
-	public IntArrayStore doSelect(int[] starts, int[] ends) {
+	public IntArrayStore select(int[] starts, int[] ends) {
 		return new IntArrayStore(ColumnStore.selectArray(starts, ends, values, int[]::new), nullValue);
 	}
 

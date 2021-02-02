@@ -18,7 +18,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-public abstract class ColumnStore<JAVA_TYPE> {
+public interface ColumnStore {
 
 	@JsonIgnore
 	public abstract int getLines();
@@ -44,18 +44,18 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	}
 
 
-	public Object createPrintValue(JAVA_TYPE value) {
+	public default Object createPrintValue(Object value) {
 		return value != null ? createScriptValue(value) : "";
 	}
 
-	public Object createScriptValue(JAVA_TYPE value) {
+	public default Object createScriptValue(Object value) {
 		return value;
 	}
 
 	/**
 	 * Calculate estimate of total bytes used by this store.
 	 */
-	public long estimateMemoryConsumptionBytes() {
+	public default long estimateMemoryConsumptionBytes() {
 		long bits = estimateEventBits();
 
 		return Math.floorDiv(getLines() * bits, Byte.SIZE);
@@ -69,42 +69,36 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	/**
 	 * Bytes required to store auxilary data.
 	 */
-	public long estimateTypeSizeBytes() {
+	public default long estimateTypeSizeBytes() {
 		return 0;
 	}
 
 
-	public abstract ColumnStore<JAVA_TYPE> doSelect(int[] starts, int[] lengths);
 
 	/**
 	 * Select the partition of this store.
 	 * The returning store has to accept queries up to {@code sum(lenghts)}, values may not be reordered.
 	 */
-	public <T extends ColumnStore<JAVA_TYPE>> T select(int[] starts, int[] lengths){
-		//TODO FK: this is just WIP as getLines is only used for isEmpty and AdminEnd description, but detangling requires a lot of refactoring.
-		final T select = (T) doSelect(starts, lengths);
-
-		return select;
-	}
+	public abstract  <T extends ColumnStore> T select(int[] starts, int[] lengths);
 
 
 
 	/**
 	 * Create an empty store that's only a description of the transformation.
 	 */
-	public ColumnStore<JAVA_TYPE> createDescription() {
-		return doSelect(new int[0], new int[0]);
+	public default ColumnStore createDescription() {
+		return this.select(new int[0], new int[0]);
 	}
 
 	/**
 	 * Set the event. If null, the store will store a null value, making {@link #has(int)} return false.
 	 */
-	public abstract void set(int event, @CheckForNull JAVA_TYPE value);
+	public abstract void set(int event, @CheckForNull Object value);
 
 	/**
 	 * Generic getter for storage. May not be called when {@link #has(int)} is false.
 	 */
-	public abstract JAVA_TYPE get(int event);
+	public abstract Object get(int event);
 
 	/**
 	 * Test if the store has the event.
@@ -113,7 +107,7 @@ public abstract class ColumnStore<JAVA_TYPE> {
 
 
 	 @JsonIgnore
-	public boolean isEmpty() {
+	public default boolean isEmpty() {
 		return getLines() == 0;
 	}
 }

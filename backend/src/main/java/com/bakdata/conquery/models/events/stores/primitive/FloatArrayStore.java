@@ -13,7 +13,7 @@ import lombok.ToString;
 @CPSType(id = "FLOATS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class FloatArrayStore extends RealStore {
+public class FloatArrayStore implements RealStore {
 
 	private final float[] values;
 
@@ -36,7 +36,7 @@ public class FloatArrayStore extends RealStore {
 		return Float.SIZE;
 	}
 
-	public FloatArrayStore doSelect(int[] starts, int[] ends) {
+	public FloatArrayStore select(int[] starts, int[] ends) {
 		return new FloatArrayStore(ColumnStore.selectArray(starts, ends, values, float[]::new));
 	}
 

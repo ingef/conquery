@@ -44,8 +44,8 @@ public class StringTypeSingleton extends StringStore {
 	}
 
 	@Override
-	public StringTypeSingleton doSelect(int[] starts, int[] length) {
-		return new StringTypeSingleton(singleValue, delegate.doSelect(starts, length));
+	public StringTypeSingleton select(int[] starts, int[] length) {
+		return new StringTypeSingleton(singleValue, delegate.select(starts, length));
 	}
 
 	@Override

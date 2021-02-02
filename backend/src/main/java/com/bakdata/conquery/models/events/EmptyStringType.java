@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
  * An empty generic StringStore to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY_STRING")
-public class EmptyStringType extends StringStore {
+public class EmptyStringType implements StringStore {
 
 	@JsonCreator
 	public EmptyStringType(){
@@ -60,7 +60,7 @@ public class EmptyStringType extends StringStore {
 	}
 
 	@Override
-	public StringStore doSelect(int[] starts, int[] length) {
+	public StringStore select(int[] starts, int[] length) {
 		return this;
 	}
 

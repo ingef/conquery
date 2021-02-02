@@ -18,7 +18,7 @@ class BooleanStoreTest {
 
 		final BitSetStore booleanStore = new BitSetStore(values);
 
-		assertThat(booleanStore.doSelect(new int[]{0}, new int[]{10}).getValues())
+		assertThat(booleanStore.select(new int[]{0}, new int[]{10}).getValues())
 				.isEqualTo(values);
 
 		{
@@ -27,7 +27,7 @@ class BooleanStoreTest {
 			expected.set(1);
 			expected.set(2, false);
 
-			assertThat(booleanStore.doSelect(new int[]{0, 6}, new int[]{1, 2}).getValues())
+			assertThat(booleanStore.select(new int[]{0, 6}, new int[]{1, 2}).getValues())
 					.isEqualTo(expected);
 		}
 
@@ -35,7 +35,7 @@ class BooleanStoreTest {
 			final BitSet expected = new BitSet();
 			expected.set(0);
 
-			assertThat(booleanStore.doSelect(new int[]{0}, new int[]{1}).getValues())
+			assertThat(booleanStore.select(new int[]{0}, new int[]{1}).getValues())
 					.isEqualTo(expected);
 		}
 

@@ -90,8 +90,8 @@ public class StringTypePrefixSuffix extends StringStore {
 
 
 	@Override
-	public StringTypePrefixSuffix doSelect(int[] starts, int[] length) {
-		return new StringTypePrefixSuffix(subType.doSelect(starts, length), getPrefix(), getSuffix());
+	public StringTypePrefixSuffix select(int[] starts, int[] length) {
+		return new StringTypePrefixSuffix(subType.select(starts, length), getPrefix(), getSuffix());
 	}
 
 	@Override

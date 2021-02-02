@@ -16,7 +16,7 @@ import lombok.ToString;
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class ByteArrayStore extends IntegerStore {
+public class ByteArrayStore implements IntegerStore {
 
 	private final byte nullValue;
 	private final byte[] values;
@@ -41,7 +41,7 @@ public class ByteArrayStore extends IntegerStore {
 		return Byte.SIZE;
 	}
 
-	public ByteArrayStore doSelect(int[] starts, int[] ends) {
+	public ByteArrayStore select(int[] starts, int[] ends) {
 		return new ByteArrayStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
 	}
 

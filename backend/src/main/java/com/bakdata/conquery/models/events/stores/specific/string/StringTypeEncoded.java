@@ -122,8 +122,8 @@ public class StringTypeEncoded extends StringStore {
 	}
 
 	@Override
-	public StringTypeEncoded doSelect(int[] starts, int[] length) {
-		return new StringTypeEncoded(subType.doSelect(starts, length), getEncoding());
+	public StringTypeEncoded select(int[] starts, int[] length) {
+		return new StringTypeEncoded(subType.select(starts, length), getEncoding());
 	}
 
 	@Override

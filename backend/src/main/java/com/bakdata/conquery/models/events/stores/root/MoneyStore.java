@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.events.stores.root;
 
-public abstract class MoneyStore extends ColumnStore<Long> {
+public interface MoneyStore extends ColumnStore {
 
-	public abstract long getMoney(int event);
+	long getMoney(int event);
 }

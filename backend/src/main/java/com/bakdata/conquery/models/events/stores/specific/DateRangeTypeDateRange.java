@@ -15,7 +15,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
-public class DateRangeTypeDateRange extends DateRangeStore {
+public class DateRangeTypeDateRange implements DateRangeStore {
 
 	private final IntegerDateStore minStore;
 	private final IntegerDateStore maxStore;
@@ -46,7 +46,7 @@ public class DateRangeTypeDateRange extends DateRangeStore {
 	}
 
 	@Override
-	public DateRangeTypeDateRange doSelect(int[] starts, int[] length) {
+	public DateRangeTypeDateRange select(int[] starts, int[] length) {
 		return new DateRangeTypeDateRange(((IntegerDateStore) minStore.select(starts, length)), ((IntegerDateStore) maxStore.select(starts, length)));
 	}
 

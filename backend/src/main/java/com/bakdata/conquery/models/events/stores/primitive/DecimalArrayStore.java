@@ -15,7 +15,7 @@ import lombok.ToString;
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DecimalArrayStore extends DecimalStore {
+public class DecimalArrayStore implements DecimalStore {
 
 	private final BigDecimal[] values;
 
@@ -38,7 +38,7 @@ public class DecimalArrayStore extends DecimalStore {
 		return 256; // Source: http://javamoods.blogspot.com/2009/03/how-big-is-bigdecimal.html
 	}
 
-	public DecimalArrayStore doSelect(int[] starts, int[] ends) {
+	public DecimalArrayStore select(int[] starts, int[] ends) {
 		return new DecimalArrayStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
 	}
 

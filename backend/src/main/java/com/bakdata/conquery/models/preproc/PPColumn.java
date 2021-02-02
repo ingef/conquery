@@ -23,9 +23,9 @@ public class PPColumn {
 	@JsonIgnore
 	private transient Parser parser = null;
 
-	public ColumnStore<?> findBestType() {
+	public ColumnStore findBestType() {
 		log.info("Compute best Subtype for  Column[{}] with {}", getName(), getParser());
-		ColumnStore<?> decision = parser.findBestType();
+		ColumnStore decision = parser.findBestType();
 		// this only creates the headers
 
 		log.info("\t{}: {} -> {}", getName(), getParser(), decision);

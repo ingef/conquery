@@ -93,7 +93,7 @@ public class Preprocessed {
 
 		calculateEntitySpans(entityStart, entityLength);
 
-		Map<String, ColumnStore<?>> columnStores = combineStores();
+		Map<String, ColumnStore> columnStores = combineStores();
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
@@ -125,8 +125,8 @@ public class Preprocessed {
 	 * Combine raw by-Entity data into column stores, appropriately formatted.
 	 */
 	@SuppressWarnings("rawtypes")
-	private Map<String, ColumnStore<?>> combineStores() {
-		Map<String, ColumnStore<?>> columnStores = new HashMap<>(this.columns.length);
+	private Map<String, ColumnStore> combineStores() {
+		Map<String, ColumnStore> columnStores = new HashMap<>(this.columns.length);
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
@@ -162,9 +162,9 @@ public class Preprocessed {
 		return primaryDictionary;
 	}
 
-	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore<?>> columnStores) {
+	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore> columnStores) {
 		final Map<String, Dictionary> collect = new HashMap<>();
-		for (Map.Entry<String, ColumnStore<?>> entry : columnStores.entrySet()) {
+		for (Map.Entry<String, ColumnStore> entry : columnStores.entrySet()) {
 			if (!(entry.getValue() instanceof StringStore)) {
 				continue;
 			}
@@ -201,7 +201,7 @@ public class Preprocessed {
 		}
 	}
 
-	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore<?>> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
+	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
 			throws IOException {
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(out1))) {
 			CONTAINER_WRITER.writeValue(out, new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts));

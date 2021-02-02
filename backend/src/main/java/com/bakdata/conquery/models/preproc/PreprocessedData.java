@@ -20,7 +20,7 @@ public class PreprocessedData {
 	private final Map<Integer, Integer> starts;
 	private final Map<Integer, Integer> lengths;
 
-	private final Map<String, ColumnStore<?>> stores;
+	private final Map<String, ColumnStore> stores;
 
 	@NotNull
 	private final Dictionary primaryDictionary;

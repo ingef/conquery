@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.events.stores.root;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
-public abstract class DateRangeStore extends ColumnStore<CDateRange> {
+public interface DateRangeStore extends ColumnStore {
 
-	public abstract CDateRange getDateRange(int event);
+	CDateRange getDateRange(int event);
 }

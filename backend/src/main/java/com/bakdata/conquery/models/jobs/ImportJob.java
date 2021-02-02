@@ -129,11 +129,11 @@ public class ImportJob extends Job {
 		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(container.entities(), primaryMapping, bucketSize);
 
 
-		final ColumnStore<?>[] storesSorted = Arrays.stream(table.getColumns())
-													.map(Column::getName)
-													.map(container.getStores()::get)
-													.map(Objects::requireNonNull)
-													.toArray(ColumnStore[]::new);
+		final ColumnStore[] storesSorted = Arrays.stream(table.getColumns())
+												 .map(Column::getName)
+												 .map(container.getStores()::get)
+												 .map(Objects::requireNonNull)
+												 .toArray(ColumnStore[]::new);
 
 
 		// we use this to track assignment to workers.
@@ -146,7 +146,7 @@ public class ImportJob extends Job {
 	/**
 	 * select, then send buckets.
 	 */
-	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore<?>[] storesSorted)
+	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted)
 			throws JsonProcessingException {
 
 		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
@@ -185,7 +185,7 @@ public class ImportJob extends Job {
 	 * - calculate per-Entity regions of Bucklet (start/end)
 	 * - split stores
 	 */
-	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, ColumnStore<?>[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> bucketEntities) {
+	public Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, ColumnStore[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> bucketEntities) {
 
 		int[] globalIds = bucketEntities.stream().mapToInt(primaryMapping::source2Target).toArray();
 
@@ -200,10 +200,10 @@ public class ImportJob extends Job {
 		}
 
 		// copy only the parts of the bucket we need
-		final ColumnStore<?>[] bucketStores =
+		final ColumnStore[] bucketStores =
 				Arrays.stream(stores)
 					  .map(store -> store.select(selectionStart, entityLengths))
-					  .toArray(ColumnStore<?>[]::new);
+					  .toArray(ColumnStore[]::new);
 
 
 		return new Bucket(
@@ -340,7 +340,7 @@ public class ImportJob extends Job {
 		return out;
 	}
 
-	public void setDictionaryIds(Map<String, ColumnStore<?>> values, Column[] columns, String importName) {
+	public void setDictionaryIds(Map<String, ColumnStore> values, Column[] columns, String importName) {
 		for (Column column : columns) {
 			if (!(values.get(column.getName()) instanceof StringStore)) {
 				continue;
@@ -358,7 +358,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore<?>> values, Column[] columns) {
+	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values, Column[] columns) {
 		for (Column column : columns) {
 			if (!(values.get(column.getName()) instanceof StringStore) || column.getSharedDictionary() == null) {
 				continue;
@@ -399,7 +399,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore<?>> stores, Column[] columns) {
+	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns) {
 		Import imp = new Import(table.getId());
 
 		imp.setName(header.getName());
@@ -408,7 +408,7 @@ public class ImportJob extends Job {
 		final ImportColumn[] importColumns = new ImportColumn[columns.length];
 
 		for (int i = 0; i < columns.length; i++) {
-			final ColumnStore<?> store = stores.get(columns[i].getName());
+			final ColumnStore store = stores.get(columns[i].getName());
 
 			ImportColumn col = new ImportColumn(imp, store.createDescription());
 

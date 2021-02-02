@@ -13,7 +13,7 @@ import lombok.ToString;
 @CPSType(id = "DOUBLES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DoubleArrayStore extends RealStore {
+public class DoubleArrayStore implements RealStore {
 
 	private final double[] values;
 
@@ -36,7 +36,7 @@ public class DoubleArrayStore extends RealStore {
 		return Double.SIZE;
 	}
 
-	public DoubleArrayStore doSelect(int[] starts, int[] ends) {
+	public DoubleArrayStore select(int[] starts, int[] ends) {
 		return new DoubleArrayStore(ColumnStore.selectArray(starts, ends, values, double[]::new));
 	}
 

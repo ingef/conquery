@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends ColumnStore<Integer> {
+public class StringTypeDictionary extends ColumnStore {
 
 	protected IntegerStore numberType;
 
@@ -116,8 +116,8 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	@Override
-	public StringTypeDictionary doSelect(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.doSelect(starts, length), getDataset(), getName());
+	public StringTypeDictionary select(int[] starts, int[] length) {
+		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
 	}
 
 	public int getString(int event) {

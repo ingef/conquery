@@ -54,7 +54,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	private final int bucket;
 	@Min(0)
 	private final int numberOfEvents;
-	private final ColumnStore<?>[] stores;
+	private final ColumnStore[] stores;
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
@@ -160,7 +160,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
-		final ColumnStore<?> store = stores[column.getPosition()];
+		final ColumnStore store = stores[column.getPosition()];
 		return ((ColumnStore) store).createScriptValue(store.get(event));
 	}
 
@@ -180,7 +180,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public void loadDictionaries(NamespacedStorage storage) {
-		for (ColumnStore<?> store : getStores()) {
+		for (ColumnStore store : getStores()) {
 			if (store instanceof StringStore) {
 				((StringStore) store).loadDictionaries(storage);
 			}

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.events.stores.root;
 
-public abstract class BooleanStore extends ColumnStore<Boolean> {
+public interface BooleanStore extends ColumnStore {
 
-	public abstract boolean getBoolean(int event);
+	boolean getBoolean(int event);
 }

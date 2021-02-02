@@ -19,7 +19,7 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 	private final Import parent;
 
 	@NotNull @Valid
-	private final ColumnStore<?> typeDescription;
+	private final ColumnStore typeDescription;
 
 	@Override
 	public ImportColumnId createId() {

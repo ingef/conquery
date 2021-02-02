@@ -23,7 +23,7 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10))
 			.forEach(parser::addLine);
 
-		final ColumnStore<CDateRange> actual = parser.decideType();
+		final ColumnStore actual = parser.decideType();
 
 		assertThat(actual).isInstanceOf(DateRangeTypeDateRange.class);
 

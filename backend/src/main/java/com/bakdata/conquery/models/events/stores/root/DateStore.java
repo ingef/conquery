@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.events.stores.root;
 
-public abstract class DateStore extends ColumnStore<Integer> {
+public interface DateStore extends ColumnStore {
 
-	public abstract int getDate(int event);
+	int getDate(int event);
 }

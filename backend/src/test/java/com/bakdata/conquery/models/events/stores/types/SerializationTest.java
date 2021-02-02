@@ -61,7 +61,7 @@ public class SerializationTest {
 				);
 	}
 
-	public static List<ColumnStore<?>> createCTypes() {
+	public static List<ColumnStore> createCTypes() {
 		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
 		return Arrays.asList(
 				new DecimalTypeScaled(13, IntArrayStore.create(10)),

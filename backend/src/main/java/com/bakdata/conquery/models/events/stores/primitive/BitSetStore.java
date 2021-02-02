@@ -20,7 +20,7 @@ import lombok.ToString;
 @CPSType(id = "BOOLEANS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class BitSetStore extends BooleanStore {
+public class BitSetStore implements BooleanStore {
 
 	@JsonSerialize(using = BitSetSerializer.class)
 	@JsonDeserialize(using = BitSetDeserializer.class)
@@ -45,7 +45,7 @@ public class BitSetStore extends BooleanStore {
 		return 1;
 	}
 
-	public BitSetStore doSelect(int[] starts, int[] lengths) {
+	public BitSetStore select(int[] starts, int[] lengths) {
 		int length = Arrays.stream(lengths).sum();
 
 		final BitSet out = new BitSet(length);

@@ -30,7 +30,7 @@ class IntArrayStoreTest {
 			}
 		}
 
-		final IntegerStore selection = store.doSelect(new int[]{0, 4}, new int[]{2, 1});
+		final IntegerStore selection = store.select(new int[]{0, 4}, new int[]{2, 1});
 
 		assertThat(selection.get(0)).isEqualTo(1);
 		assertThat(selection.get(1)).isEqualTo(2);
@@ -57,7 +57,7 @@ class IntArrayStoreTest {
 			}
 		}
 
-		final ColumnStore<Long> selection = store.doSelect(new int[]{0, 5}, new int[]{2, 1});
+		final ColumnStore selection = store.select(new int[]{0, 5}, new int[]{2, 1});
 
 		assertThat(selection.get(0)).isEqualTo(1);
 		assertThat(selection.get(1)).isEqualTo(2);
@@ -86,7 +86,7 @@ class IntArrayStoreTest {
 			}
 		}
 
-		final ColumnStore<Long> selection = store.doSelect(new int[]{0, 5}, new int[]{2, 1});
+		final ColumnStore selection = store.select(new int[]{0, 5}, new int[]{2, 1});
 
 		assertThat(selection.get(0)).isEqualTo(1);
 		assertThat(selection.get(1)).isEqualTo(2);

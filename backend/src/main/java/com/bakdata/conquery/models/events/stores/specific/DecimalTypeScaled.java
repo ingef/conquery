@@ -15,7 +15,7 @@ import lombok.Getter;
  */
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
-public class DecimalTypeScaled extends DecimalStore {
+public class DecimalTypeScaled implements DecimalStore {
 
 	private final int scale;
 	private final IntegerStore subType;
@@ -47,7 +47,7 @@ public class DecimalTypeScaled extends DecimalStore {
 	}
 
 	@Override
-	public DecimalTypeScaled doSelect(int[] starts, int[] length) {
+	public DecimalTypeScaled select(int[] starts, int[] length) {
 		return new DecimalTypeScaled(scale, subType.select(starts, length));
 	}
 

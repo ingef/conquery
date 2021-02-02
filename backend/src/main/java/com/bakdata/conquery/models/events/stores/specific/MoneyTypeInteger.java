@@ -11,7 +11,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
-public class MoneyTypeInteger extends MoneyStore {
+public class MoneyTypeInteger implements MoneyStore {
 
 	protected IntegerStore numberType;
 
@@ -36,7 +36,7 @@ public class MoneyTypeInteger extends MoneyStore {
 	}
 
 	@Override
-	public MoneyTypeInteger doSelect(int[] starts, int[] length) {
+	public MoneyTypeInteger select(int[] starts, int[] length) {
 		return new MoneyTypeInteger(numberType.select(starts, length));
 	}
 

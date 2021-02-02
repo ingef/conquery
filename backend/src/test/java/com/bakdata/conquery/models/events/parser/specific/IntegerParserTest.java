@@ -44,11 +44,11 @@ class IntegerParserTest {
 		);
 	}
 
-	public static Consumer<ColumnStore<?>> direct(Class<?> clazz) {
+	public static Consumer<ColumnStore> direct(Class<?> clazz) {
 		return store -> assertThat(store).isInstanceOf(clazz);
 	}
 
-	public static Consumer<ColumnStore<?>> rebased(Class<?> clazz) {
+	public static Consumer<ColumnStore> rebased(Class<?> clazz) {
 		return store -> {
 			assertThat(store)
 					.asInstanceOf(new InstanceOfAssertFactory<>(RebasingStore.class, new ObjectAssertFactory<>()))

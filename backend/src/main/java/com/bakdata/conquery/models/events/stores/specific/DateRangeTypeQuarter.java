@@ -17,7 +17,7 @@ import lombok.Getter;
  **/
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
 @Getter
-public class DateRangeTypeQuarter extends DateRangeStore {
+public class DateRangeTypeQuarter implements DateRangeStore {
 
 	private final IntegerStore store;
 
@@ -41,7 +41,7 @@ public class DateRangeTypeQuarter extends DateRangeStore {
 		return value;
 	}
 
-	public DateRangeTypeQuarter doSelect(int[] starts, int[] ends) {
+	public DateRangeTypeQuarter select(int[] starts, int[] ends) {
 		return new DateRangeTypeQuarter(store.select(starts, ends));
 	}
 

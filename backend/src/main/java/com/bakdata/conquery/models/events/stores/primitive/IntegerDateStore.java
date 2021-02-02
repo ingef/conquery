@@ -15,7 +15,7 @@ import lombok.ToString;
  */
 @CPSType(base = ColumnStore.class, id = "DATES")
 @ToString(of = "store")
-public class IntegerDateStore extends DateStore {
+public class IntegerDateStore implements DateStore {
 
 	@Getter
 	private final IntegerStore store;
@@ -44,7 +44,7 @@ public class IntegerDateStore extends DateStore {
 		return new IntegerDateStore(IntArrayStore.create(size));
 	}
 
-	public IntegerDateStore doSelect(int[] starts, int[] ends) {
+	public IntegerDateStore select(int[] starts, int[] ends) {
 		return new IntegerDateStore(store.select(starts, ends));
 	}
 
