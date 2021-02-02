@@ -14,8 +14,10 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.univocity.parsers.common.DataProcessingException;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.Getter;
 
 /**
  * Output's are used for preprocessing to generate cqpp files. Their main function is to selectivley read data from an Input CSV and prepare it for fast reading into a live Conquery instance. An output describes the transformation of an input row into an output row. It can do some transformation but should avoid complex work.
@@ -67,11 +69,13 @@ public abstract class OutputDescription implements Serializable {
 		}
 	}
 
-	@Data
-	public static class OutputException extends Exception {
+	@Getter
+	public static class OutputException extends DataProcessingException {
+
 		private final OutputDescription source;
+
 		public OutputException(OutputDescription source, Exception cause){
-			super(cause);
+			super("Failed to apply Output", cause);
 			this.source = source;
 		}
 	}

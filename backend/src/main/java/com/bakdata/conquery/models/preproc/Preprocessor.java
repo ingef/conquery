@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -21,16 +21,17 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
+import com.univocity.parsers.common.Context;
+import com.univocity.parsers.common.DataProcessingException;
 import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.common.ProcessorErrorHandler;
 import com.univocity.parsers.common.processor.AbstractRowProcessor;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -101,7 +102,7 @@ public class Preprocessor {
 	/**
 	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
 	 * <p>
-	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
+	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link com.bakdata.conquery.models.events.stores.ColumnStore}.
 	 */
 	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
 
@@ -167,9 +168,18 @@ public class Preprocessor {
 
 					parserSettings.selectFields(input.getRequiredHeaders().toArray(new String[0]));
 
-					final PreprocessingProcessor
-							processor =
+					final PreprocessingProcessor processor =
 							new PreprocessingProcessor(input, result, lineId, exceptions, errors, config, totalProgress, countingIn);
+
+					parserSettings.setProcessorErrorHandler(
+							new ProcessorErrorHandler<Context>() {
+								@Override
+								public void handleError(DataProcessingException error, Object[] inputRow, Context context) {
+
+
+								}
+							}
+					);
 
 					parserSettings.setProcessor(processor);
 
@@ -252,10 +262,10 @@ public class Preprocessor {
 		private final ProgressBar totalProgress;
 		private final CountingInputStream countingIn;
 
-		GroovyPredicate filter;
-		OutputDescription.Output primaryOut;
-		List<OutputDescription.Output> outputs;
-		long progress;
+		private GroovyPredicate filter;
+		private OutputDescription.Output primaryOut;
+		private List<OutputDescription.Output> outputs;
+		private long progress;
 
 
 		@Override
@@ -264,7 +274,9 @@ public class Preprocessor {
 
 			final Object2IntArrayMap<String> headerMap = new Object2IntArrayMap<>(headers.length);
 
-			Arrays.stream(headers).forEach(header -> headerMap.computeIfAbsent(header, context::indexOf));
+			for (String header : headers) {
+				headerMap.computeIfAbsent(header, (ToIntFunction<String>) context::indexOf);
+			}
 
 			// Compile filter.
 			filter = input.createFilter(headers);
@@ -296,39 +308,48 @@ public class Preprocessor {
 
 			}
 			catch (OutputDescription.OutputException e) {
-				exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
-
-				errors.getAndIncrement();
-
-				if (log.isTraceEnabled() || errors.get() < config.getPreprocessor().getMaximumPrintedErrors()) {
-					log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
-				}
-				else if (errors.get() == config.getPreprocessor().getMaximumPrintedErrors()) {
-					log.warn("More erroneous lines occurred. Only the first "
-							 + config.getPreprocessor().getMaximumPrintedErrors()
-							 + " were printed.");
-				}
-
+				handleOutputException(row, e);
 			}
 			catch (Exception e) {
-				exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
-
-				errors.getAndIncrement();
-
-				if (log.isTraceEnabled() || errors.get() < config.getPreprocessor().getMaximumPrintedErrors()) {
-					log.warn("Failed to parse line: {} content: {}", lineId, row, e);
-				}
-				else if (errors.get() == config.getPreprocessor().getMaximumPrintedErrors()) {
-					log.warn("More erroneous lines occurred. Only the first "
-							 + config.getPreprocessor().getMaximumPrintedErrors()
-							 + " were printed.");
-				}
+				handleRawException(row, e);
 			}
-			finally {
-				//report progress
-				totalProgress.addCurrentValue(countingIn.getCount() - progress);
-				progress = countingIn.getCount();
-				lineId.getAndIncrement();
+
+			//report progress
+			totalProgress.addCurrentValue(countingIn.getCount() - progress);
+			progress = countingIn.getCount();
+			lineId.getAndIncrement();
+		}
+
+		private void handleRawException(String[] row, Exception e) {
+			exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
+
+			errors.getAndIncrement();
+
+			if (log.isTraceEnabled() || errors.get() < config.getPreprocessor().getMaximumPrintedErrors()) {
+				log.warn("Failed to parse line: {} content: {}", lineId, row, e);
+			}
+			else if (errors.get() == config.getPreprocessor().getMaximumPrintedErrors()) {
+				log.warn("More erroneous lines occurred. Only the first "
+						 + config.getPreprocessor().getMaximumPrintedErrors()
+						 + " were printed.");
+			}
+		}
+
+		/**
+		 * OutputExceptions have more Information on their origin.
+		 */
+		private void handleOutputException(String[] row, OutputDescription.OutputException e) {
+			exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
+
+			errors.getAndIncrement();
+
+			if (log.isTraceEnabled() || errors.get() < config.getPreprocessor().getMaximumPrintedErrors()) {
+				log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
+			}
+			else if (errors.get() == config.getPreprocessor().getMaximumPrintedErrors()) {
+				log.warn("More erroneous lines occurred. Only the first "
+						 + config.getPreprocessor().getMaximumPrintedErrors()
+						 + " were printed.");
 			}
 		}
 
