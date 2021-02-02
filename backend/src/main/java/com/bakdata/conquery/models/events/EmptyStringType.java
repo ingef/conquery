@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * An empty generic store to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
+ * An empty generic StringStore to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY_STRING")
 public class EmptyStringType extends StringType {

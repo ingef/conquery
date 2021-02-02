@@ -16,11 +16,11 @@ import lombok.Setter;
 @Setter
 public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
-	private final DateStore minStore;
-	private final DateStore maxStore;
+	private final ColumnStore<Integer> minStore;
+	private final ColumnStore<Integer> maxStore;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(DateStore minStore, DateStore maxStore) {
+	public DateRangeTypeDateRange(ColumnStore<Integer> minStore, ColumnStore<Integer> maxStore) {
 		this.minStore = minStore;
 		this.maxStore = maxStore;
 	}

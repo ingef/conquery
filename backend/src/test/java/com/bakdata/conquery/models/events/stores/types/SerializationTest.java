@@ -84,6 +84,7 @@ public class SerializationTest {
 				DoubleStore.create(10),
 				BooleanStore.create(10),
 				new EmptyStore<>(),
+				new EmptyStore<>(),
 				new RebasingStore(10,10,IntegerStore.create(10))
 		);
 	}
