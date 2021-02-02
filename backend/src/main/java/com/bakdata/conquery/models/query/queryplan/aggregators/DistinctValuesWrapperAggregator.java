@@ -39,6 +39,10 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
+		if(!bucket.has(event,getColumn())){
+			return;
+		}
+
 		if (observed.add(bucket.createScriptValue(event, getColumn()))) {
 			aggregator.acceptEvent(bucket, event);
 		}
