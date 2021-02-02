@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
@@ -13,18 +15,23 @@ import lombok.Getter;
  */
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
-public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
+public class DecimalTypeScaled extends DecimalStore {
 
 	private final int scale;
-	private final ColumnStore<Long> subType;
+	private final IntegerStore subType;
 
 	@JsonCreator
-	public DecimalTypeScaled(int scale, ColumnStore<Long> subType) {
+	public DecimalTypeScaled(int scale, IntegerStore subType) {
 		this.scale = scale;
 		this.subType = subType;
 	}
 
-		@Override
+	@Override
+	public int getLines() {
+		return subType.getLines();
+	}
+
+	@Override
 	public BigDecimal createScriptValue(BigDecimal value) {
 		return null;
 	}

@@ -1,7 +1,8 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -15,19 +16,24 @@ import lombok.ToString;
 @CPSType(id = "INTEGERS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class IntegerStore extends ColumnStore<Long> {
+public class IntArrayStore extends IntegerStore {
 
 	private final int nullValue;
 	private final int[] values;
 
+	@Override
+	public int getLines() {
+		return values.length;
+	}
+
 	@JsonCreator
-	public IntegerStore(int[] values, int nullValue) {
+	public IntArrayStore(int[] values, int nullValue) {
 		this.nullValue = nullValue;
 		this.values = values;
 	}
 
-	public static IntegerStore create(int size) {
-		return new IntegerStore(new int[size], Integer.MAX_VALUE);
+	public static IntArrayStore create(int size) {
+		return new IntArrayStore(new int[size], Integer.MAX_VALUE);
 	}
 
 	@Override
@@ -35,8 +41,8 @@ public class IntegerStore extends ColumnStore<Long> {
 		return Integer.SIZE;
 	}
 
-	public IntegerStore doSelect(int[] starts, int[] ends) {
-		return new IntegerStore(ColumnStore.selectArray(starts, ends, values, int[]::new), nullValue);
+	public IntArrayStore doSelect(int[] starts, int[] ends) {
+		return new IntArrayStore(ColumnStore.selectArray(starts, ends, values, int[]::new), nullValue);
 	}
 
 	@Override

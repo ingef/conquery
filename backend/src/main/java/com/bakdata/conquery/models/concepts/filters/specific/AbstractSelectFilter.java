@@ -14,8 +14,8 @@ import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -89,7 +89,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 		final ColumnStore<?> store = getColumn().getTypeFor(imp);
 
-		values.addAll(Sets.newHashSet(((StringType) store).iterator()));
+		values.addAll(Sets.newHashSet(((StringStore) store).iterator()));
 	}
 
 	public String getLabelFor(String value) {

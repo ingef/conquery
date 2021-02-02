@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific.string;
 
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
@@ -17,7 +17,7 @@ public class TrieTypeGuesser extends StringTypeGuesser {
 
 	@Override
 	public Guess createGuess() {
-		ColumnStore<Long> indexType = p.decideIndexType();
+		IntegerStore indexType = p.decideIndexType();
 
 		SuccinctTrie trie = new SuccinctTrie(null, "");
 		StringTypeDictionary type = new StringTypeDictionary(indexType, trie, trie.getName());
@@ -27,10 +27,7 @@ public class TrieTypeGuesser extends StringTypeGuesser {
 		}
 
 
-		p.copyLineCounts(type);
 		StringTypeEncoded result = new StringTypeEncoded(type, p.getEncoding());
-		p.copyLineCounts(result);
-		p.copyLineCounts(indexType);
 
 		return new Guess(
 				result,
@@ -38,7 +35,7 @@ public class TrieTypeGuesser extends StringTypeGuesser {
 				trie.estimateMemoryConsumption()
 		) {
 			@Override
-			public StringType getType() {
+			public StringStore getType() {
 				trie.compress();
 				return super.getType();
 			}

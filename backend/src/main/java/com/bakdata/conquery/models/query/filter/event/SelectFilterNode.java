@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
@@ -33,7 +33,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((StringType) getColumn().getTypeFor(bucket)).getId(filterValue);
+		selectedId = ((StringStore) getColumn().getTypeFor(bucket)).getId(filterValue);
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return ((StringType) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
+		return ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
 	}
 
 	@Override

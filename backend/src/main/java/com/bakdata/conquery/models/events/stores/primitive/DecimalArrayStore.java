@@ -1,9 +1,10 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -14,17 +15,22 @@ import lombok.ToString;
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DecimalStore extends ColumnStore<BigDecimal> {
+public class DecimalArrayStore extends DecimalStore {
 
 	private final BigDecimal[] values;
 
 	@JsonCreator
-	public DecimalStore(BigDecimal[] values) {
+	public DecimalArrayStore(BigDecimal[] values) {
 		this.values = values;
 	}
 
-	public static DecimalStore create(int size) {
-		return new DecimalStore(new BigDecimal[size]);
+	public static DecimalArrayStore create(int size) {
+		return new DecimalArrayStore(new BigDecimal[size]);
+	}
+
+	@Override
+	public int getLines() {
+		return values.length;
 	}
 
 	@Override
@@ -32,8 +38,8 @@ public class DecimalStore extends ColumnStore<BigDecimal> {
 		return 256; // Source: http://javamoods.blogspot.com/2009/03/how-big-is-bigdecimal.html
 	}
 
-	public DecimalStore doSelect(int[] starts, int[] ends) {
-		return new DecimalStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
+	public DecimalArrayStore doSelect(int[] starts, int[] ends) {
+		return new DecimalArrayStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
 	}
 
 	@Override

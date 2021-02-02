@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -88,8 +88,8 @@ public class DatasetsUIResource extends HAdmin {
 								.getAllImports()
 								.stream()
 								.flatMap(i -> Arrays.stream(i.getColumns()))
-								.filter(c -> c.getTypeDescription() instanceof StringType)
-								.map(c -> (StringType) c.getTypeDescription())
+								.filter(c -> c.getTypeDescription() instanceof StringStore)
+								.map(c -> (StringStore) c.getTypeDescription())
 								.filter(c -> c.getUnderlyingDictionary() != null)
 								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
 								.values()

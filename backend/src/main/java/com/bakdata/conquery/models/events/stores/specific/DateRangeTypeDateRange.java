@@ -2,27 +2,33 @@ package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.DateStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Stores {@link CDateRange} as pair of two {@link DateStore}s.
+ * Stores {@link CDateRange} as pair of two {@link IntegerDateStore}s.
  */
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
-public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
+public class DateRangeTypeDateRange extends DateRangeStore {
 
-	private final ColumnStore<Integer> minStore;
-	private final ColumnStore<Integer> maxStore;
+	private final IntegerDateStore minStore;
+	private final IntegerDateStore maxStore;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(ColumnStore<Integer> minStore, ColumnStore<Integer> maxStore) {
+	public DateRangeTypeDateRange(IntegerDateStore minStore, IntegerDateStore maxStore) {
 		this.minStore = minStore;
 		this.maxStore = maxStore;
+	}
+
+	@Override
+	public int getLines() {
+		return minStore.getLines();
 	}
 
 	@Override
@@ -41,7 +47,7 @@ public class DateRangeTypeDateRange extends ColumnStore<CDateRange> {
 
 	@Override
 	public DateRangeTypeDateRange doSelect(int[] starts, int[] length) {
-		return new DateRangeTypeDateRange(((DateStore) minStore.select(starts, length)), ((DateStore) maxStore.select(starts, length)));
+		return new DateRangeTypeDateRange(((IntegerDateStore) minStore.select(starts, length)), ((IntegerDateStore) maxStore.select(starts, length)));
 	}
 
 	@Override

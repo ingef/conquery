@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.datasets;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportColumnId;
 import com.fasterxml.jackson.annotation.JsonBackReference;

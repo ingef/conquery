@@ -7,9 +7,9 @@ import java.util.List;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.ByteStore;
-import com.bakdata.conquery.models.events.stores.base.DateStore;
+import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
@@ -27,8 +27,8 @@ class DateRangeParserTest {
 
 		assertThat(actual).isInstanceOf(DateRangeTypeDateRange.class);
 
-		assertThat(((DateStore) ((DateRangeTypeDateRange) actual).getMinStore()).getStore())
-				.isInstanceOfAny(ByteStore.class, RebasingStore.class);
+		assertThat(((IntegerDateStore) ((DateRangeTypeDateRange) actual).getMinStore()).getStore())
+				.isInstanceOfAny(ByteArrayStore.class, RebasingStore.class);
 	}
 
 

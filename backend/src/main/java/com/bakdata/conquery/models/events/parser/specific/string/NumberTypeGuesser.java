@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
 import lombok.RequiredArgsConstructor;
 
@@ -48,8 +48,7 @@ public class NumberTypeGuesser extends StringTypeGuesser {
 				return null;
 			}
 
-			ColumnStore<Long> decision = numberParser.findBestType();
-			p.copyLineCounts(decision);
+			IntegerStore decision = numberParser.findBestType();
 
 			final StringTypeNumber type = new StringTypeNumber(range, decision, p.getStrings().inverse());
 

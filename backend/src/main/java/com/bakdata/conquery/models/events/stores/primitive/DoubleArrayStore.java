@@ -1,7 +1,8 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -12,17 +13,22 @@ import lombok.ToString;
 @CPSType(id = "DOUBLES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DoubleStore extends ColumnStore<Double> {
+public class DoubleArrayStore extends RealStore {
 
 	private final double[] values;
 
 	@JsonCreator
-	public DoubleStore(double[] values) {
+	public DoubleArrayStore(double[] values) {
 		this.values = values;
 	}
 
-	public static DoubleStore create(int size) {
-		return new DoubleStore(new double[size]);
+	public static DoubleArrayStore create(int size) {
+		return new DoubleArrayStore(new double[size]);
+	}
+
+	@Override
+	public int getLines() {
+		return values.length;
 	}
 
 	@Override
@@ -30,8 +36,8 @@ public class DoubleStore extends ColumnStore<Double> {
 		return Double.SIZE;
 	}
 
-	public DoubleStore doSelect(int[] starts, int[] ends) {
-		return new DoubleStore(ColumnStore.selectArray(starts, ends, values, double[]::new));
+	public DoubleArrayStore doSelect(int[] starts, int[] ends) {
+		return new DoubleArrayStore(ColumnStore.selectArray(starts, ends, values, double[]::new));
 	}
 
 	@Override

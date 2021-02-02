@@ -6,11 +6,12 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.ByteStore;
-import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.events.stores.base.LongStore;
-import com.bakdata.conquery.models.events.stores.base.ShortStore;
+import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.InstanceOfAssertFactory;
@@ -25,21 +26,21 @@ class IntegerParserTest {
 	public static Stream<Arguments> arguments() {
 		return Stream.of(
 				// Long is everything not match-able to other sizes.
-				Arguments.of(Integer.MIN_VALUE, Integer.MAX_VALUE * 2L, direct(LongStore.class)),
+				Arguments.of(Integer.MIN_VALUE, Integer.MAX_VALUE * 2L, direct(LongArrayStore.class)),
 
 				// IntegerStore
-				Arguments.of(Integer.MIN_VALUE, (long) Integer.MAX_VALUE - 1L, direct(IntegerStore.class)),
-				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + (long) Integer.MAX_VALUE - 1L, rebased(IntegerStore.class)),
+				Arguments.of(Integer.MIN_VALUE, (long) Integer.MAX_VALUE - 1L, direct(IntArrayStore.class)),
+				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + (long) Integer.MAX_VALUE - 1L, rebased(IntArrayStore.class)),
 
-				// ByteStore
-				Arguments.of(Byte.MIN_VALUE, Byte.MAX_VALUE - 1L, direct(ByteStore.class)),
-				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + 255 - 1L, rebased(ByteStore.class)),
-				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + 255 - 1L, rebased(ByteStore.class)),
+				// ByteArrayStore
+				Arguments.of(Byte.MIN_VALUE, Byte.MAX_VALUE - 1L, direct(ByteArrayStore.class)),
+				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + 255 - 1L, rebased(ByteArrayStore.class)),
+				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + 255 - 1L, rebased(ByteArrayStore.class)),
 
-				// ShortStore
-				Arguments.of(Short.MIN_VALUE, Short.MAX_VALUE - 1L, direct(ShortStore.class)),
-				Arguments.of(Integer.MIN_VALUE, Integer.MIN_VALUE + ((long) Short.MAX_VALUE - (long) Short.MIN_VALUE) - 1L, rebased(ShortStore.class)),
-				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + (Short.MAX_VALUE - Short.MIN_VALUE) - 1L, rebased(ShortStore.class))
+				// ShortArrayStore
+				Arguments.of(Short.MIN_VALUE, Short.MAX_VALUE - 1L, direct(ShortArrayStore.class)),
+				Arguments.of(Integer.MIN_VALUE, Integer.MIN_VALUE + ((long) Short.MAX_VALUE - (long) Short.MIN_VALUE) - 1L, rebased(ShortArrayStore.class)),
+				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + (Short.MAX_VALUE - Short.MIN_VALUE) - 1L, rebased(ShortArrayStore.class))
 		);
 	}
 
@@ -59,7 +60,7 @@ class IntegerParserTest {
 
 	@ParameterizedTest
 	@MethodSource("arguments")
-	public void test(long min, long max, Consumer<ColumnStore<Long>> test) {
+	public void test(long min, long max, Consumer<IntegerStore> test) {
 		final IntegerParser parser = new IntegerParser(new ParserConfig());
 		parser.setMinValue(min);
 		parser.setMaxValue(max);

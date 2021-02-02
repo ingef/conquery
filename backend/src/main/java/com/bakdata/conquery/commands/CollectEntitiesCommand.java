@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -129,7 +129,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 //			}
 		}
 
-		private void add(StringType primType, File file) {
+		private void add(StringStore primType, File file) {
 			Set<String> list = entities.computeIfAbsent(file, f->Sets.newConcurrentHashSet());
 			primType.forEach(list::add);
 		}

@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @ToString
 @Slf4j
-public abstract class Parser<MAJOR_JAVA_TYPE> {
+public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore<MAJOR_JAVA_TYPE>> {
 	private final ParserConfig config;
 
 	private int lines = 0;
@@ -40,15 +40,15 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 
 	protected void registerValue(MAJOR_JAVA_TYPE v) {};
 	
-	protected abstract ColumnStore<MAJOR_JAVA_TYPE> decideType();
+	protected abstract STORE_TYPE decideType();
 	
-	public ColumnStore<MAJOR_JAVA_TYPE> findBestType() {
+	public STORE_TYPE findBestType() {
 		if (getLines() == 0 || getLines() == getNullLines()) {
-			return new EmptyStore<>();
+			return ((STORE_TYPE) new EmptyStore<>());
 		}
 
-		ColumnStore<MAJOR_JAVA_TYPE> dec = decideType();
-		copyLineCounts(dec);
+		STORE_TYPE dec = decideType();
+
 		return dec;
 	}
 	
@@ -64,8 +64,5 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 		}
 		return v;
 	}
-	
-	public void copyLineCounts(ColumnStore<?> type) {
-		type.setLines(lines);
-	}
+
 }

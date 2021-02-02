@@ -5,8 +5,10 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.BooleanStore;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
@@ -19,20 +21,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
-public class StringTypeSingleton extends StringType {
+public class StringTypeSingleton extends StringStore {
 
 	private final String singleValue;
-	private final BooleanStore delegate;
+	private final BitSetStore delegate;
 
 	@JsonCreator
-	public StringTypeSingleton(String singleValue, BooleanStore delegate) {
+	public StringTypeSingleton(String singleValue, BitSetStore delegate) {
 		super();
 		this.singleValue = singleValue;
 		this.delegate = delegate;
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> indexStore) {
+	public void setIndexStore(IntegerStore indexStore) {
 
 	}
 
@@ -49,6 +51,11 @@ public class StringTypeSingleton extends StringType {
 	@Override
 	public String getElement(int id) {
 		return singleValue;
+	}
+
+	@Override
+	public int getLines() {
+		return delegate.getLines();
 	}
 
 	@Override

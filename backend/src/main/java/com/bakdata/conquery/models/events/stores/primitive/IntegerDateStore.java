@@ -1,9 +1,10 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -14,14 +15,19 @@ import lombok.ToString;
  */
 @CPSType(base = ColumnStore.class, id = "DATES")
 @ToString(of = "store")
-public class DateStore extends ColumnStore<Integer> {
+public class IntegerDateStore extends DateStore {
 
 	@Getter
-	private final ColumnStore<Long> store;
+	private final IntegerStore store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateStore(ColumnStore<Long> store) {
+	public IntegerDateStore(IntegerStore store) {
 		this.store = store;
+	}
+
+	@Override
+	public int getLines() {
+		return store.getLines();
 	}
 
 	@Override
@@ -34,12 +40,12 @@ public class DateStore extends ColumnStore<Integer> {
 		return store.estimateEventBits();
 	}
 
-	public static DateStore create(int size) {
-		return new DateStore(IntegerStore.create(size));
+	public static IntegerDateStore create(int size) {
+		return new IntegerDateStore(IntArrayStore.create(size));
 	}
 
-	public DateStore doSelect(int[] starts, int[] ends) {
-		return new DateStore(store.select(starts, ends));
+	public IntegerDateStore doSelect(int[] starts, int[] ends) {
+		return new IntegerDateStore(store.select(starts, ends));
 	}
 
 	@Override
@@ -57,10 +63,6 @@ public class DateStore extends ColumnStore<Integer> {
 		return store.has(event);
 	}
 
-	@Override
-	public CDateRange getDateRange(int event) {
-		return CDateRange.exactly(getDate(event));
-	}
 
 	@Override
 	public Integer get(int event) {
@@ -72,7 +74,4 @@ public class DateStore extends ColumnStore<Integer> {
 		return (int) store.getInteger(event);
 	}
 
-	public Object getAsObject(int event) {
-		return CDate.toLocalDate(getDate(event));
-	}
 }

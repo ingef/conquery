@@ -3,7 +3,8 @@ package com.bakdata.conquery.models.events.stores.specific;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.Nullable;
@@ -14,18 +15,23 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(base = ColumnStore.class, id = "REBASE")
 @Getter
 @ToString(of = {"min", "store"})
-public class RebasingStore extends ColumnStore<Long> {
+public class RebasingStore extends IntegerStore {
 
 	private final long min;
 
 	private final long root;
 
-	private final ColumnStore<Long> store;
+	private final IntegerStore store;
 
-	public RebasingStore(long min, long root, ColumnStore<Long> store) {
+	public RebasingStore(long min, long root, IntegerStore store) {
 		this.min = min;
 		this.root = root;
 		this.store = store;
+	}
+
+	@Override
+	public int getLines() {
+		return store.getLines();
 	}
 
 	@Override

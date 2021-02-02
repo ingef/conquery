@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,13 +11,18 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
-public class MoneyTypeInteger extends ColumnStore<Long> {
+public class MoneyTypeInteger extends MoneyStore {
 
-	protected ColumnStore<Long> numberType;
+	protected IntegerStore numberType;
 
 	@JsonCreator
-	public MoneyTypeInteger(ColumnStore<Long> numberType) {
+	public MoneyTypeInteger(IntegerStore numberType) {
 		this.numberType = numberType;
+	}
+
+	@Override
+	public int getLines() {
+		return numberType.getLines();
 	}
 
 	@Override

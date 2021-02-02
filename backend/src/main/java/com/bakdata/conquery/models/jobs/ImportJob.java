@@ -28,8 +28,9 @@ import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -341,42 +342,42 @@ public class ImportJob extends Job {
 
 	public void setDictionaryIds(Map<String, ColumnStore<?>> values, Column[] columns, String importName) {
 		for (Column column : columns) {
-			if (!(values.get(column.getName()) instanceof StringType)) {
+			if (!(values.get(column.getName()) instanceof StringStore)) {
 				continue;
 			}
 
-			final StringType stringType = (StringType) values.get(column.getName());
+			final StringStore stringStore = (StringStore) values.get(column.getName());
 
 			// if not shared use default naming
 			if (column.getSharedDictionary() != null) {
-				stringType.setUnderlyingDictionary(computeSharedDictionaryId(column));
+				stringStore.setUnderlyingDictionary(computeSharedDictionaryId(column));
 			}
 			else {
-				stringType.setUnderlyingDictionary(computeDefaultDictionaryId(importName, column));
+				stringStore.setUnderlyingDictionary(computeDefaultDictionaryId(importName, column));
 			}
 		}
 	}
 
 	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore<?>> values, Column[] columns) {
 		for (Column column : columns) {
-			if (!(values.get(column.getName()) instanceof StringType) || column.getSharedDictionary() == null) {
+			if (!(values.get(column.getName()) instanceof StringStore) || column.getSharedDictionary() == null) {
 				continue;
 			}
 
 			// apply mapping
 			final DictionaryMapping mapping = mappings.get(column.getName());
 
-			final StringType stringType = (StringType) values.get(column.getName());
+			final StringStore stringStore = (StringStore) values.get(column.getName());
 
 			if(mapping == null){
-				if(stringType.getUnderlyingDictionary() != null) {
+				if(stringStore.getUnderlyingDictionary() != null) {
 					throw new IllegalStateException(String.format("Missing mapping for %s", column));
 				}
 
 				continue;
 			}
 
-			log.debug("Remapping Column[{}] = {} with {}", column.getId(), stringType, mapping);
+			log.debug("Remapping Column[{}] = {} with {}", column.getId(), stringStore, mapping);
 
 
 			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
@@ -384,17 +385,17 @@ public class ImportJob extends Job {
 
 			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
 
-			indexParser.setLines(stringType.getLines());
+			indexParser.setLines(stringStore.getLines());
 			indexParser.setMinValue(statistics.getMin());
 			indexParser.setMaxValue(statistics.getMax());
 
-			final ColumnStore<Long> newType = indexParser.findBestType();
+			final IntegerStore newType = indexParser.findBestType();
 
 			log.debug("Decided for {}", newType);
 
-			mapping.applyToStore(stringType, newType, stringType.getLines());
+			mapping.applyToStore(stringStore, newType, stringStore.getLines());
 
-			stringType.setIndexStore(newType);
+			stringStore.setIndexStore(newType);
 		}
 	}
 

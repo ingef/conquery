@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +16,7 @@ class BooleanStoreTest {
 		values.set(0, 9);
 		values.set(7, false);
 
-		final BooleanStore booleanStore = new BooleanStore(values);
+		final BitSetStore booleanStore = new BitSetStore(values);
 
 		assertThat(booleanStore.doSelect(new int[]{0}, new int[]{10}).getValues())
 				.isEqualTo(values);
@@ -49,9 +49,9 @@ class BooleanStoreTest {
 		bitSet.set(100);
 		bitSet.set(128, false);
 
-		final BooleanStore booleanStore = new BooleanStore(bitSet);
+		final BitSetStore booleanStore = new BitSetStore(bitSet);
 
-		final BooleanStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BooleanStore.class);
+		final BitSetStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BitSetStore.class);
 
 		assertThat(booleanStore1.getValues().get(128)).isEqualTo(false);
 

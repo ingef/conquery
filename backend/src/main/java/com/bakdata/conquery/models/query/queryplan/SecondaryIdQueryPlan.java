@@ -8,7 +8,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -106,7 +106,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		for (Bucket bucket : tableBuckets) {
 			int entityId = entity.getId();
 
-			StringType secondaryIdType = (StringType) secondaryIdColumn.getTypeFor(bucket);
+			StringStore secondaryIdType = (StringStore) secondaryIdColumn.getTypeFor(bucket);
 
 			nextBlock(bucket);
 

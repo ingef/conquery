@@ -9,7 +9,9 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Strings are stored in a Dictionary, ids are handles into the Dictionary.
  *
- * @implNote this is NOT a {@link StringType}, but is the base class of it. This enables some shenanigans with encodings.
+ * @implNote this is NOT a {@link StringStore}, but is the base class of it. This enables some shenanigans with encodings.
  */
 @Getter
 @Setter
@@ -30,10 +32,15 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
 public class StringTypeDictionary extends ColumnStore<Integer> {
 
-	protected ColumnStore<Long> numberType;
+	protected IntegerStore numberType;
 
 	@JsonIgnore
 	private transient Dictionary dictionary;
+
+	@Override
+	public int getLines() {
+		return numberType.getLines();
+	}
 
 	// todo use NsIdRef
 	private String name;
@@ -41,14 +48,14 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	@InternalOnly
 	private DatasetId dataset;
 
-	public StringTypeDictionary(ColumnStore<Long> numberType, Dictionary dictionary, String name) {
+	public StringTypeDictionary(IntegerStore numberType, Dictionary dictionary, String name) {
 		this.numberType = numberType;
 		this.dictionary = dictionary;
 		this.name = name;
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(ColumnStore<Long> numberType, DatasetId dataset, String name) {
+	public StringTypeDictionary(IntegerStore numberType, DatasetId dataset, String name) {
 		this.numberType = numberType;
 		this.name = name;
 		this.dataset = dataset;
@@ -113,7 +120,6 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 		return new StringTypeDictionary(numberType.doSelect(starts, length), getDataset(), getName());
 	}
 
-	@Override
 	public int getString(int event) {
 		return (int) getNumberType().getInteger(event);
 	}
@@ -143,7 +149,7 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 		return numberType.has(event);
 	}
 
-	public void setIndexStore(ColumnStore<Long> newType) {
+	public void setIndexStore(IntegerStore newType) {
 		numberType = newType;
 	}
 }

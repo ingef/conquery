@@ -17,8 +17,15 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.BooleanStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.MoneyStore;
+import com.bakdata.conquery.models.events.stores.root.RealStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -102,39 +109,46 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public int getString(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getString(event);
+		return ((StringStore) stores[column.getPosition()]).getString(event);
 	}
 
 	public long getInteger(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getInteger(event);
+		return ((IntegerStore) stores[column.getPosition()]).getInteger(event);
 	}
 
 	public boolean getBoolean(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getBoolean(event);
+		return ((BooleanStore) stores[column.getPosition()]).getBoolean(event);
 	}
 
 	public double getReal(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getReal(event);
+		return ((RealStore) stores[column.getPosition()]).getReal(event);
 	}
 
 	public BigDecimal getDecimal(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getDecimal(event);
+		return ((DecimalStore) stores[column.getPosition()]).getDecimal(event);
 	}
 
 	public long getMoney(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getMoney(event);
+		return ((MoneyStore) stores[column.getPosition()]).getMoney(event);
 	}
 
 	public int getDate(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getDate(event);
+		return ((DateStore) stores[column.getPosition()]).getDate(event);
 	}
 
-	public CDateRange getAsDateRange(int event, Column currentColumn) {
-		return getDateRange(event, currentColumn);
+	public CDateRange getAsDateRange(int event, Column column) {
+		switch (column.getType()) {
+			case DATE:
+				return CDateRange.exactly(((DateStore) stores[column.getPosition()]).getDate(event));
+			case DATE_RANGE:
+				return ((DateRangeStore) stores[column.getPosition()]).getDateRange(event);
+			default:
+				throw new IllegalStateException("Column is not of DateCompatible type.");
+		}
 	}
 
 	public CDateRange getDateRange(int event, Column column) {
-		return stores[column.getPosition()].getDateRange(event);
+		return ((DateRangeStore) stores[column.getPosition()]).getDateRange(event);
 	}
 
 	public Object getAsObject(int event, @NotNull Column column) {
@@ -142,7 +156,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
+		return dateRanges.intersects(getAsDateRange(event,column));
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
@@ -167,8 +181,8 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 
 	public void loadDictionaries(NamespacedStorage storage) {
 		for (ColumnStore<?> store : getStores()) {
-			if (store instanceof StringType) {
-				((StringType) store).loadDictionaries(storage);
+			if (store instanceof StringStore) {
+				((StringStore) store).loadDictionaries(storage);
 			}
 		}
 	}

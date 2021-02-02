@@ -1,21 +1,21 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import org.junit.jupiter.api.Test;
 
-class IntegerStoreTest {
+class IntArrayStoreTest {
 
 	@Test
 	public void integerStore() {
 		List<Long> values = Arrays.asList(1L, 2L, -10L, (long) Integer.MIN_VALUE, null);
 
-		final IntegerStore store = IntegerStore.create(values.size());
+		final IntArrayStore store = IntArrayStore.create(values.size());
 
 		for (int index = 0; index < values.size(); index++) {
 			store.set(index, values.get(index));
@@ -30,21 +30,19 @@ class IntegerStoreTest {
 			}
 		}
 
-		final ColumnStore<Long> selection = store.doSelect(new int[]{0, 4}, new int[]{2, 1});
+		final IntegerStore selection = store.doSelect(new int[]{0, 4}, new int[]{2, 1});
 
 		assertThat(selection.get(0)).isEqualTo(1);
 		assertThat(selection.get(1)).isEqualTo(2);
 
 		assertThat(selection.has(2)).isFalse();
-
-		assertThatThrownBy(() -> selection.getDecimal(0)).isNotNull();
 	}
 
 	@Test
 	public void byteStore() {
 		List<Long> values = Arrays.asList(1L, 2L, -10L, Byte.MAX_VALUE - 1L, (long) Byte.MIN_VALUE, null);
 
-		final ByteStore store = ByteStore.create(values.size());
+		final ByteArrayStore store = ByteArrayStore.create(values.size());
 
 		for (int index = 0; index < values.size(); index++) {
 			store.set(index, values.get(index));
@@ -66,7 +64,6 @@ class IntegerStoreTest {
 
 		assertThat(selection.has(2)).isFalse();
 
-		assertThatThrownBy(() -> selection.getDecimal(0)).isNotNull();
 	}
 
 
@@ -74,7 +71,7 @@ class IntegerStoreTest {
 	public void shortStore() {
 		List<Long> values = Arrays.asList(1L, 2L, -10L, Short.MAX_VALUE - 1L, (long) Short.MIN_VALUE, null);
 
-		final ShortStore store = ShortStore.create(values.size());
+		final ShortArrayStore store = ShortArrayStore.create(values.size());
 
 		for (int index = 0; index < values.size(); index++) {
 			store.set(index, values.get(index));
@@ -96,7 +93,6 @@ class IntegerStoreTest {
 
 		assertThat(selection.has(2)).isFalse();
 
-		assertThatThrownBy(() -> selection.getDecimal(0)).isNotNull();
 
 	}
 

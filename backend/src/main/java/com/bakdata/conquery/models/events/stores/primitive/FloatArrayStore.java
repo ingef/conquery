@@ -1,7 +1,8 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -12,17 +13,22 @@ import lombok.ToString;
 @CPSType(id = "FLOATS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class FloatStore extends ColumnStore<Double> {
+public class FloatArrayStore extends RealStore {
 
 	private final float[] values;
 
+	@Override
+	public int getLines() {
+		return values.length;
+	}
+
 	@JsonCreator
-	public FloatStore(float[] values) {
+	public FloatArrayStore(float[] values) {
 		this.values = values;
 	}
 
-	public static FloatStore create(int size) {
-		return new FloatStore(new float[size]);
+	public static FloatArrayStore create(int size) {
+		return new FloatArrayStore(new float[size]);
 	}
 
 	@Override
@@ -30,8 +36,8 @@ public class FloatStore extends ColumnStore<Double> {
 		return Float.SIZE;
 	}
 
-	public FloatStore doSelect(int[] starts, int[] ends) {
-		return new FloatStore(ColumnStore.selectArray(starts, ends, values, float[]::new));
+	public FloatArrayStore doSelect(int[] starts, int[] ends) {
+		return new FloatArrayStore(ColumnStore.selectArray(starts, ends, values, float[]::new));
 	}
 
 	@Override

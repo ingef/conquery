@@ -28,9 +28,9 @@ public enum MajorTypeId {
 
 	@Getter
 	private final boolean dateCompatible;
-	private final Function<ParserConfig, Parser<?>> supplier;
+	private final Function<ParserConfig, Parser<?, ?>> supplier;
 
-	public Parser<?> createParser(ParserConfig config) {
+	public Parser<?, ?> createParser(ParserConfig config) {
 		return supplier.apply(config);
 	}
 

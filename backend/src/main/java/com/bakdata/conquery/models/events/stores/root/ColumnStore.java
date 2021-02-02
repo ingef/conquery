@@ -1,19 +1,13 @@
-package com.bakdata.conquery.models.events.stores;
+package com.bakdata.conquery.models.events.stores.root;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Class representing the data of a single {@link com.bakdata.conquery.models.datasets.Column} of a {@link com.bakdata.conquery.models.events.Bucket}. {@code JAVA_TYPE} is the outermost used for type-safe set/get, usage is to be avoided.
@@ -22,15 +16,12 @@ import lombok.ToString;
  *
  * @param <JAVA_TYPE> The outer-most type of the store, with which it is compatible.
  */
-@Getter
-@Setter
-@RequiredArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@ToString
 public abstract class ColumnStore<JAVA_TYPE> {
 
-	private int lines = 0; // todo this is only used for estimating size, extract it somehow.
+	@JsonIgnore
+	public abstract int getLines();
 
 	/**
 	 * Helper method to select partitions of an array. Resulting array is of length sum(lengths). Incoming type T has to be of ArrayType or this will fail.
@@ -89,10 +80,10 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	 * Select the partition of this store.
 	 * The returning store has to accept queries up to {@code sum(lenghts)}, values may not be reordered.
 	 */
-	public ColumnStore<JAVA_TYPE> select(int[] starts, int[] lengths){
+	public <T extends ColumnStore<JAVA_TYPE>> T select(int[] starts, int[] lengths){
 		//TODO FK: this is just WIP as getLines is only used for isEmpty and AdminEnd description, but detangling requires a lot of refactoring.
-		final ColumnStore<JAVA_TYPE> select = doSelect(starts, lengths);
-		select.setLines(Arrays.stream(lengths).sum());
+		final T select = (T) doSelect(starts, lengths);
+
 		return select;
 	}
 
@@ -102,9 +93,7 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	 * Create an empty store that's only a description of the transformation.
 	 */
 	public ColumnStore<JAVA_TYPE> createDescription() {
-		final ColumnStore<JAVA_TYPE> select = doSelect(new int[0], new int[0]);
-		select.setLines(getLines());
-		return select;
+		return doSelect(new int[0], new int[0]);
 	}
 
 	/**
@@ -122,42 +111,6 @@ public abstract class ColumnStore<JAVA_TYPE> {
 	 */
 	public abstract boolean has(int event);
 
-
-	public int getString(int event) {
-		throw NotImplemented();
-	}
-
-	public long getInteger(int event) {
-		throw NotImplemented();
-	}
-
-	public boolean getBoolean(int event) {
-		throw NotImplemented();
-	}
-
-	protected IllegalStateException NotImplemented() {
-		return new IllegalStateException(String.format("%s does not implement this method", getClass().getSimpleName()));
-	}
-
-	public double getReal(int event) {
-		throw NotImplemented();
-	}
-
-	public BigDecimal getDecimal(int event) {
-		throw NotImplemented();
-	}
-
-	public long getMoney(int event) {
-		throw NotImplemented();
-	}
-
-	public int getDate(int event) {
-		throw NotImplemented();
-	}
-
-	public CDateRange getDateRange(int event) {
-		throw NotImplemented();
-	}
 
 	 @JsonIgnore
 	public boolean isEmpty() {

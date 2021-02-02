@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -81,8 +81,8 @@ public class TablesUIResource extends HAdmin {
 						imports
 								.stream()
 								.flatMap(i -> Arrays.stream(i.getColumns()))
-								.filter(c -> c.getTypeDescription() instanceof StringType)
-								.map(c -> (StringType) c.getTypeDescription())
+								.filter(c -> c.getTypeDescription() instanceof StringStore)
+								.map(c -> (StringStore) c.getTypeDescription())
 								.filter(c -> c.getUnderlyingDictionary() != null)
 								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
 								.values()

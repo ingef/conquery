@@ -8,7 +8,9 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -23,10 +25,10 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
 @ToString(of = {"prefix", "suffix", "subType"})
-public class StringTypePrefixSuffix extends StringType {
+public class StringTypePrefixSuffix extends StringStore {
 
 	@Nonnull
-	protected StringType subType;
+	protected StringStore subType;
 
 	@NonNull
 	private String prefix;
@@ -35,7 +37,7 @@ public class StringTypePrefixSuffix extends StringType {
 	private String suffix;
 
 	@JsonCreator
-	public StringTypePrefixSuffix(StringType subType, String prefix, String suffix) {
+	public StringTypePrefixSuffix(StringStore subType, String prefix, String suffix) {
 		super();
 		this.subType = subType;
 		this.prefix = prefix;
@@ -45,6 +47,11 @@ public class StringTypePrefixSuffix extends StringType {
 	@Override
 	public String getElement(int value) {
 		return prefix + subType.getElement(value) + suffix;
+	}
+
+	@Override
+	public int getLines() {
+		return subType.getLines();
 	}
 
 	@Override
@@ -61,7 +68,7 @@ public class StringTypePrefixSuffix extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> indexStore) {
+	public void setIndexStore(IntegerStore indexStore) {
 		subType.setIndexStore(indexStore);
 	}
 

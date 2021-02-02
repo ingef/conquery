@@ -18,8 +18,8 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
 import com.bakdata.conquery.models.events.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -41,7 +41,7 @@ public class Preprocessed {
 	private final InputFile file;
 	private final String name;
 	/**
-	 * @implSpec this is ALWAYS {@link StringType}.
+	 * @implSpec this is ALWAYS {@link StringStore}.
 	 */
 	private final StringParser primaryColumn;
 
@@ -165,11 +165,11 @@ public class Preprocessed {
 	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore<?>> columnStores) {
 		final Map<String, Dictionary> collect = new HashMap<>();
 		for (Map.Entry<String, ColumnStore<?>> entry : columnStores.entrySet()) {
-			if (!(entry.getValue() instanceof StringType)) {
+			if (!(entry.getValue() instanceof StringStore)) {
 				continue;
 			}
 
-			final Dictionary dictionary = ((StringType) entry.getValue()).getUnderlyingDictionary();
+			final Dictionary dictionary = ((StringStore) entry.getValue()).getUnderlyingDictionary();
 
 			if (dictionary == null) {
 				continue;

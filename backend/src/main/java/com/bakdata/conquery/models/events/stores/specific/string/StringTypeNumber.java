@@ -9,7 +9,9 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,10 +26,15 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
 @ToString(of = "delegate")
-public class StringTypeNumber extends StringType {
+public class StringTypeNumber extends StringStore {
+
+	@Override
+	public int getLines() {
+		return delegate.getLines();
+	}
 
 	@Nonnull
-	protected ColumnStore<Long> delegate;
+	protected IntegerStore delegate;
 	//used as a compact intset
 	private Range<Integer> range;
 
@@ -36,13 +43,13 @@ public class StringTypeNumber extends StringType {
 	private transient Map<Integer, String> dictionary;
 
 	@JsonCreator
-	public StringTypeNumber(Range<Integer> range, ColumnStore<Long> numberType) {
+	public StringTypeNumber(Range<Integer> range, IntegerStore numberType) {
 		super();
 		this.range = range;
 		this.delegate = numberType;
 	}
 
-	public StringTypeNumber(Range<Integer> range, ColumnStore<Long> numberType, Map<Integer, String> dictionary) {
+	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
 		this(range, numberType);
 		this.dictionary = dictionary;
 	}
@@ -104,7 +111,7 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> indexStore) {	}
+	public void setIndexStore(IntegerStore indexStore) {	}
 
 	@Override
 	public StringTypeNumber doSelect(int[] starts, int[] length) {

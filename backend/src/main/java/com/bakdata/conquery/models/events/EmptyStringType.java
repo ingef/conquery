@@ -5,8 +5,9 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.jetbrains.annotations.NotNull;
@@ -16,12 +17,16 @@ import org.jetbrains.annotations.Nullable;
  * An empty generic StringStore to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY_STRING")
-public class EmptyStringType extends StringType {
+public class EmptyStringType extends StringStore {
 
 	@JsonCreator
 	public EmptyStringType(){
 		super();
-		setLines(0);
+	}
+
+	@Override
+	public int getLines() {
+		return 0;
 	}
 
 	@Override
@@ -50,7 +55,12 @@ public class EmptyStringType extends StringType {
 	}
 
 	@Override
-	public StringType doSelect(int[] starts, int[] length) {
+	public int getString(int event) {
+		return 0;
+	}
+
+	@Override
+	public StringStore doSelect(int[] starts, int[] length) {
 		return this;
 	}
 
@@ -80,7 +90,7 @@ public class EmptyStringType extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> newType) {
+	public void setIndexStore(IntegerStore newType) {
 
 	}
 

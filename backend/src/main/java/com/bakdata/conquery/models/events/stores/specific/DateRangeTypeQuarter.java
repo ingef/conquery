@@ -6,7 +6,9 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
@@ -15,18 +17,23 @@ import lombok.Getter;
  **/
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
 @Getter
-public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
+public class DateRangeTypeQuarter extends DateRangeStore {
 
-	private final ColumnStore<Long> store;
+	private final IntegerStore store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeQuarter(ColumnStore<Long> store) {
+	public DateRangeTypeQuarter(IntegerStore store) {
 		this.store = store;
 	}
 
 	@Override
 	public long estimateEventBits() {
 		return store.estimateEventBits();
+	}
+
+	@Override
+	public int getLines() {
+		return store.getLines();
 	}
 
 	@Override

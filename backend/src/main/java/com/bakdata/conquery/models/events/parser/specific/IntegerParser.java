@@ -2,11 +2,11 @@ package com.bakdata.conquery.models.events.parser.specific;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.ByteStore;
-import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.events.stores.base.LongStore;
-import com.bakdata.conquery.models.events.stores.base.ShortStore;
+import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @Getter
 @Setter
-public class IntegerParser extends Parser<Long> {
+public class IntegerParser extends Parser<Long, IntegerStore> {
 
 	private long minValue = Long.MAX_VALUE;
 	private long maxValue = Long.MIN_VALUE;
@@ -44,7 +44,7 @@ public class IntegerParser extends Parser<Long> {
 
 
 	@Override
-	protected ColumnStore<Long> decideType() {
+	protected IntegerStore decideType() {
 		if (minValue > maxValue) {
 			throw new IllegalStateException(String.format("Min (%d) > Max(%d)", minValue, maxValue));
 		}
@@ -56,7 +56,7 @@ public class IntegerParser extends Parser<Long> {
 			span = Math.subtractExact(maxValue, minValue);
 		}
 		catch (ArithmeticException exception) {
-			return LongStore.create(getLines());
+			return LongArrayStore.create(getLines());
 		}
 
 		// Create minimally required store.
@@ -65,33 +65,33 @@ public class IntegerParser extends Parser<Long> {
 
 		if (span + 1 <= (long) Byte.MAX_VALUE - (long)  Byte.MIN_VALUE) {
 			if(minValue >= Byte.MIN_VALUE && maxValue + 1 <= Byte.MAX_VALUE) {
-				return ByteStore.create(getLines());
+				return ByteArrayStore.create(getLines());
 			}
 
-			return new RebasingStore(minValue, (long) Byte.MIN_VALUE, ByteStore.create(getLines()));
+			return new RebasingStore(minValue, (long) Byte.MIN_VALUE, ByteArrayStore.create(getLines()));
 		}
 
 		if (span + 1 <= (long) Short.MAX_VALUE - (long)  Short.MIN_VALUE) {
 			if(minValue >= Short.MIN_VALUE && maxValue + 1 <= Short.MAX_VALUE) {
-				return ShortStore.create(getLines());
+				return ShortArrayStore.create(getLines());
 			}
 
-			return new RebasingStore(minValue, Short.MIN_VALUE, ShortStore.create(getLines()));
+			return new RebasingStore(minValue, Short.MIN_VALUE, ShortArrayStore.create(getLines()));
 		}
 
 		if (span + 1 <= (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE) {
 			if(minValue >= Integer.MIN_VALUE && maxValue + 1 <= Integer.MAX_VALUE) {
-				return IntegerStore.create(getLines());
+				return IntArrayStore.create(getLines());
 			}
 
-			return new RebasingStore(minValue, Integer.MIN_VALUE, IntegerStore.create(getLines()));
+			return new RebasingStore(minValue, Integer.MIN_VALUE, IntArrayStore.create(getLines()));
 		}
 
 		if(maxValue == Long.MAX_VALUE){
 			throw new IllegalStateException("Exceeds capacity of LongStore."); // todo migrate to external null-store
 		}
 
-		return LongStore.create(getLines());
+		return LongArrayStore.create(getLines());
 	}
 
 }

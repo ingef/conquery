@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.events.parser.specific.string;
 
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * Abstract class to Guess the optimal {@link com.bakdata.conquery.models.events.stores.ColumnStore} class {@link StringParser}.
+ * Abstract class to Guess the optimal {@link ColumnStore} class {@link StringParser}.
  */
 public abstract class StringTypeGuesser {
 	
@@ -18,7 +19,7 @@ public abstract class StringTypeGuesser {
 			return StringTypeGuesser.this;
 		}
 
-		private final StringType type;
+		private final StringStore type;
 		private final long memoryEstimate;
 		private final long typeMemoryEstimate;
 		

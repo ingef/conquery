@@ -5,7 +5,8 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.specific.MoneyTypeInteger;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
@@ -14,7 +15,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class MoneyParser extends Parser<Long> {
+public class MoneyParser extends Parser<Long, MoneyStore> {
 
 	@JsonIgnore
 	@Getter(lazy = true)
@@ -45,13 +46,13 @@ public class MoneyParser extends Parser<Long> {
 	}
 
 	@Override
-	protected ColumnStore<Long> decideType() {
+	protected MoneyStore decideType() {
 		IntegerParser subParser = new IntegerParser(getConfig());
 		subParser.registerValue(maxValue);
 		subParser.registerValue(minValue);
 		subParser.setLines(getLines());
 		subParser.setNullLines(getNullLines());
-		ColumnStore<Long> subDecision = subParser.findBestType();
+		IntegerStore subDecision = subParser.findBestType();
 
 		return new MoneyTypeInteger(subDecision);
 	}

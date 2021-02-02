@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
@@ -13,7 +13,11 @@ public class EmptyStore<T> extends ColumnStore<T> {
 	@JsonCreator
 	public EmptyStore(){
 		super();
-		setLines(0);
+	}
+
+	@Override
+	public int getLines() {
+		return 0;
 	}
 
 	@Override

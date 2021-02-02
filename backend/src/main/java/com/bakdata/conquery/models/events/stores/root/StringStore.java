@@ -1,8 +1,7 @@
-package com.bakdata.conquery.models.events.stores.specific.string;
+package com.bakdata.conquery.models.events.stores.root;
 
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NoArgsConstructor;
@@ -12,11 +11,13 @@ import lombok.NoArgsConstructor;
  *
  */
 @NoArgsConstructor
-public abstract class StringType extends ColumnStore<Integer> implements Iterable<String> {
+public abstract class StringStore extends ColumnStore<Integer> implements Iterable<String> {
 
+
+	public abstract int getString(int event);
 
 	@Override
-	public abstract StringType doSelect(int[] starts, int[] length) ;
+	public abstract StringStore doSelect(int[] starts, int[] length) ;
 
 	public abstract String getElement(int id);
 	
@@ -32,7 +33,7 @@ public abstract class StringType extends ColumnStore<Integer> implements Iterabl
 	/**
 	 * After applying DictionaryMapping a new store might be needed.
 	 */
-	public abstract void setIndexStore(ColumnStore<Long> newType);
+	public abstract void setIndexStore(IntegerStore newType);
 
 	public void loadDictionaries(NamespacedStorage storage) {}
 }
