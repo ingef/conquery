@@ -30,7 +30,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @CPSType(id = "OR", base = CQElement.class)
-public class CQOr extends CQElement {
+public class CQOr extends CQElement implements ForcedExists {
 	@Getter
 	@Setter
 	@NotEmpty
