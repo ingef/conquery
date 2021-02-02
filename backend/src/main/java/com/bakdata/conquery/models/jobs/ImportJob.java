@@ -111,7 +111,7 @@ public class ImportJob extends Job {
 		// Distribute the new IDs among workers
 		distributeWorkerResponsibilities(primaryMapping);
 
-		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(container.getDictionaries(), table.getColumns(), header.getName(), container.getStores());
+		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(container.getDictionaries(), table.getColumns(), header.getName());
 
 		setDictionaryIds(container.getStores(), table.getColumns(), header.getName());
 
@@ -248,13 +248,12 @@ public class ImportJob extends Job {
 		//if no new ids we shouldn't recompress and store
 		if (primaryMapping.getNumberOfNewIds() == 0) {
 			log.debug("no new ids");
+			return primaryMapping;
 		}
-		//but if there are new ids we have to
-		else {
-			log.debug("{} new ids", primaryMapping.getNumberOfNewIds());
 
-			namespace.getStorage().updateDictionary(primaryDict);
-		}
+		//but if there are new ids we have to
+		log.debug("{} new ids", primaryMapping.getNumberOfNewIds());
+		namespace.getStorage().updateDictionary(primaryDict);
 		return primaryMapping;
 	}
 
@@ -279,7 +278,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Map<String, DictionaryMapping> importAndSendDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName, Map<String, ColumnStore<?>> stores)
+	private Map<String, DictionaryMapping> importAndSendDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName)
 			throws JSONException {
 
 		// Empty Maps are Coalesced to null by Jackson
@@ -310,7 +309,7 @@ public class ImportJob extends Job {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
 				final Dictionary dictionary = dicts.get(column.getName());
 
-				log.info("Column[{}.{}] = `{}` part of shared Dictionary[{}]", importName, column.getName(), stores.get(column.getName()), sharedDictionaryId);
+				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(),  sharedDictionaryId);
 
 				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
 
@@ -342,7 +341,7 @@ public class ImportJob extends Job {
 
 	public void setDictionaryIds(Map<String, ColumnStore<?>> values, Column[] columns, String importName) {
 		for (Column column : columns) {
-			if (column.getType() != MajorTypeId.STRING) {
+			if (!(values.get(column.getName()) instanceof StringType)) {
 				continue;
 			}
 
@@ -360,7 +359,7 @@ public class ImportJob extends Job {
 
 	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore<?>> values, Column[] columns) {
 		for (Column column : columns) {
-			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
+			if (!(values.get(column.getName()) instanceof StringType) || column.getSharedDictionary() == null) {
 				continue;
 			}
 
