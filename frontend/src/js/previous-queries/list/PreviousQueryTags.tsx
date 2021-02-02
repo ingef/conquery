@@ -1,28 +1,43 @@
-import { connect } from "react-redux";
+import { StateT } from "app-types";
+import React, { FC } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import Tags from "../../tags/Tags";
 
 import { addTagToPreviousQueriesSearch } from "../search/actions";
+import type { PreviousQueriesSearchStateT } from "../search/reducer";
 
-const tagContainsAnySearch = (tag, searches) => {
+interface PropsT {
+  tags?: string[];
+}
+
+const tagContainsAnySearch = (
+  tag: string,
+  searches: PreviousQueriesSearchStateT
+) => {
   return searches.some(
-    search => tag.toLowerCase().indexOf(search.toLowerCase()) !== -1
+    (search) => tag.toLowerCase().indexOf(search.toLowerCase()) !== -1
   );
 };
 
-type PropsType = {
-  tags?: string[];
+const selectPreviousQueryTags = (state: StateT, tags?: string[]) =>
+  (tags || []).map((tag) => ({
+    label: tag,
+    isSelected: tagContainsAnySearch(tag, state.previousQueriesSearch),
+  }));
+
+const PreviousQueryTags: FC<PropsT> = ({ tags }) => {
+  const selectedTags = useSelector<
+    StateT,
+    { label: string; isSelected: boolean }[]
+  >((state) => selectPreviousQueryTags(state, tags));
+
+  const dispatch = useDispatch();
+
+  const onClickTag = (tag: string) =>
+    dispatch(addTagToPreviousQueriesSearch(tag));
+
+  return <Tags tags={selectedTags} onClickTag={onClickTag} />;
 };
 
-const mapStateToProps = (state, ownProps: PropsType) => ({
-  tags: (ownProps.tags || []).map(tag => ({
-    label: tag,
-    isSelected: tagContainsAnySearch(tag, state.previousQueriesSearch)
-  }))
-});
-
-const mapDispatchToProps = (dispatch: any) => ({
-  onClickTag: tag => dispatch(addTagToPreviousQueriesSearch(tag))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Tags);
+export default PreviousQueryTags;

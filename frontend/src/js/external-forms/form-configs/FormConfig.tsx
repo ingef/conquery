@@ -22,7 +22,7 @@ import EditableTags from "../../form-components/EditableTags";
 
 import { formatDateDistance } from "../../common/helpers";
 import { FormConfigT } from "./reducer";
-import { patchFormConfig } from "../../api/api";
+import { usePatchFormConfig } from "../../api/api";
 import FormConfigTags from "./FormConfigTags";
 import { patchFormConfigSuccess } from "./actions";
 import { setMessage } from "../../snack-message/actions";
@@ -144,6 +144,8 @@ const FormConfig: React.FC<PropsT> = ({
   const isNotEditing = !(isEditingLabel || isEditingTags);
 
   const dispatch = useDispatch();
+
+  const patchFormConfig = usePatchFormConfig();
 
   const onPatchFormConfig = async (
     attributes: {

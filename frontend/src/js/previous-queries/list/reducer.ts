@@ -198,8 +198,10 @@ const previousQueriesReducer = (
       return updatePreviousQuery(state, action, {
         loading: false,
         error: null,
-        shared: action.payload.shared,
         groups: action.payload.groups,
+        ...(!action.payload.groups || action.payload.groups.length === 0
+          ? { shared: false }
+          : { shared: true }),
       });
     case DELETE_PREVIOUS_QUERY_SUCCESS:
       return deletePreviousQuery(state, action);

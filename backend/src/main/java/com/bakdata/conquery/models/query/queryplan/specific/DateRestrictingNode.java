@@ -56,26 +56,24 @@ public class DateRestrictingNode extends QPChainNode {
 	public boolean isOfInterest(Bucket bucket) {
 		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 
-		if(validityDateColumn == null) {
+		if (validityDateColumn == null) {
 			// If there is no validity date set for a concept there is nothing to restrict
 			return true;
 		}
 
-		int localId = bucket.toLocal(entity.getId());
+		int entityId = entity.getId();
 
-		// This means the Entity is not contained.
-		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
-			return false;
+		// Entity has no date-columns.
+		if(!cBlock.getMinDate().containsKey(entityId) && !cBlock.getMaxDate().containsKey(entityId)){
+			return super.isOfInterest(bucket);
 		}
 
-		CDateRange range = CDateRange.of(
-			cBlock.getMinDate()[localId],
-			cBlock.getMaxDate()[localId]
-		);
-		if(!restriction.intersects(range)) {
-			return false;
-		}
-		return super.isOfInterest(bucket);
+		final int min = cBlock.getMinDate().getOrDefault(entityId, Integer.MIN_VALUE);
+		final int max = cBlock.getMaxDate().getOrDefault(entityId, Integer.MAX_VALUE);
+
+		CDateRange range = CDateRange.of(min, max);
+
+		return restriction.intersects(range) && super.isOfInterest(bucket);
 	}
 
 	@Override
@@ -90,7 +88,7 @@ public class DateRestrictingNode extends QPChainNode {
 	public boolean isContained() {
 		return getChild().isContained();
 	}
-	
+
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		return new DateRestrictingNode(restriction, ctx.clone(getChild()));

@@ -248,6 +248,7 @@
       "accept": "Kopieren"
     },
     "common": {
+      "connectedWith": "Verknüpfung",
       "relativeToIndex": "Relativ zum Indexdatum",
       "timespan": "Zeitraum",
       "dateMinLabel": "Von",

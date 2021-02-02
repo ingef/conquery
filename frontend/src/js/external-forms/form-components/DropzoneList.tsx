@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
@@ -12,8 +12,7 @@ const ListItem = styled("div")`
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
-  margin-bottom: 3px;
+  margin-bottom: 5px;
 `;
 
 const StyledIconButton = styled(IconButton)`
@@ -22,25 +21,24 @@ const StyledIconButton = styled(IconButton)`
   right: 0;
 `;
 
-type PropsType = {
+interface PropsT {
   className?: string;
-  label?: React.ReactNode;
-  dropzoneChildren: (args: ChildArgs) => React.ReactNode;
-  items: any;
+  label?: ReactNode;
+  dropzoneChildren: (args: ChildArgs) => ReactNode;
+  items: ReactNode[];
   acceptedDropTypes: string[];
   onDrop: (props: any, monitor: any) => void;
   onDropFile?: (file: File) => void;
-  onDelete: Function;
-  allowFile?: boolean;
+  onDelete: (idx: number) => void;
   disallowMultipleColumns?: boolean;
-};
+}
 
-const DropzoneList = (props: PropsType) => {
+const DropzoneList = (props: PropsT) => {
   // allow at least one column
   const showDropzone =
     (props.items && props.items.length === 0) || !props.disallowMultipleColumns;
 
-  const DropzoneClass = props.allowFile ? DropzoneWithFileInput : Dropzone;
+  const DropzoneClass = props.onDropFile ? DropzoneWithFileInput : Dropzone;
 
   return (
     <div className={props.className}>
@@ -62,7 +60,7 @@ const DropzoneList = (props: PropsType) => {
         <DropzoneClass
           acceptedDropTypes={props.acceptedDropTypes}
           onDrop={props.onDrop}
-          onSelectFile={props.onDropFile}
+          onSelectFile={props.onDropFile!}
         >
           {props.dropzoneChildren}
         </DropzoneClass>

@@ -45,6 +45,11 @@ public abstract class ExecutionStatus {
 	private SecondaryIdDescriptionId secondaryId;
 
 	/**
+	 * The url under from which the result of the execution can be downloaded as soon as it finished successfully.
+	 */
+	private URL resultUrl;
+
+	/**
 	 * Light weight description of an execution. Rendering the overview should not cause heavy computations.
 	 */
 	@NoArgsConstructor
@@ -63,11 +68,6 @@ public abstract class ExecutionStatus {
 	@EqualsAndHashCode(callSuper = true)
 	@FieldNameConstants
 	public static class Full extends ExecutionStatus {
-
-		/**
-		 * The url under from which the result of the execution can be downloaded as soon as it finished successfully.
-		 */
-		private URL resultUrl;
 
         /**
          * Holds a description for each column, present in the result.

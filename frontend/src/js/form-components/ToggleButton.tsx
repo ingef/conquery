@@ -64,6 +64,7 @@ interface OptionsT {
 }
 
 interface PropsT {
+  className?: string;
   options: OptionsT[];
   input: {
     value: any;
@@ -71,10 +72,10 @@ interface PropsT {
   };
 }
 
-const ToggleButton: FC<PropsT> = ({ options, input }) => {
+const ToggleButton: FC<PropsT> = ({ options, input, className }) => {
   return (
-    <Root>
-      {options.map(({ value, label, description }, i) => (
+    <Root className={className}>
+      {options.map(({ value, label, description }) => (
         <WithTooltip key={value} text={description}>
           <Option
             active={input.value === value}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC } from "react";
 import Tag from "./Tag";
 
 interface PropsT {
@@ -10,7 +10,7 @@ interface PropsT {
   onClickTag: (label: string) => void;
 }
 
-const Tags: React.FC<PropsT> = props => {
+const Tags: FC<PropsT> = (props) => {
   if (!props.tags || props.tags.length <= 0) {
     return null;
   }

@@ -29,14 +29,7 @@ public class Table extends Labeled<TableId> {
 
 	@NsIdRef
 	private Dataset dataset;
-
-	@NotNull
-	@Valid
-	@JsonManagedReference
-	private Column primaryColumn; // TODO this is not used anywhere.
-	@NotNull
-	@Valid
-	@JsonManagedReference
+	@NotNull @Valid @JsonManagedReference
 	private Column[] columns = new Column[0];
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")

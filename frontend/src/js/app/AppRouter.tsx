@@ -1,27 +1,27 @@
 import React from "react";
-import { Route, Switch, Router } from "react-router";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import type { TabT } from "../pane/types";
 
 import LoginPage from "../authorization/LoginPage";
 import WithAuthToken from "../authorization/WithAuthToken";
 
 import App from "./App";
+import { basename } from "../environment";
 
-type PropsType = {
-  history: Object;
+interface PropsT {
   rightTabs: TabT[];
-};
+}
 
-const AppRouter = ({ history, ...rest }: PropsType) => {
+const AppRouter = (props: PropsT) => {
   return (
-    <Router history={history}>
+    <Router basename={basename()}>
       <Switch>
         <Route path="/login" component={LoginPage} />
         <Route
           path="/*"
-          render={routeProps => (
+          render={(routeProps) => (
             <WithAuthToken {...routeProps}>
-              <App {...rest} />
+              <App {...props} />
             </WithAuthToken>
           )}
         />

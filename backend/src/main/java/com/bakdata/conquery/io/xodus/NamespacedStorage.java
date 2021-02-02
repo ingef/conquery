@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -22,8 +22,7 @@ public interface NamespacedStorage extends ConqueryStorage {
 	Dictionary getDictionary(DictionaryId id);
 	void updateDictionary(Dictionary dict);
 	void removeDictionary(DictionaryId id);
-	Dictionary computeDictionary(DictionaryId id);
-	DirectDictionary getPrimaryDictionary();
+	EncodedDictionary getPrimaryDictionary();
 	
 	void addImport(Import imp);
 	Import getImport(ImportId id);

@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { useSelector, useDispatch } from "react-redux";
 
-import { loadTree } from "./actions";
+import { useLoadTree } from "./actions";
 
 import type { StateT } from "../app/reducers";
 
@@ -62,9 +62,8 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
     (state) => state.conceptTrees.search
   );
 
-  const dispatch = useDispatch();
-
-  const onLoadTree = (id: string) => dispatch(loadTree(datasetId, id));
+  const loadTree = useLoadTree();
+  const onLoadTree = (id: string) => loadTree(datasetId, id);
 
   const rootConceptIds = useRootConceptIds();
 

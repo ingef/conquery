@@ -7,7 +7,6 @@ import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.generation.EmptyBucket;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -20,7 +19,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
-import com.tomgibara.bits.BitStore;
 import lombok.Getter;
 import lombok.ToString;
 

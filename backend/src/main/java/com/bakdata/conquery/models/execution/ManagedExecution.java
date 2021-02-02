@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,7 +25,6 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
-import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -117,14 +115,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	/**
 	 * Executed right before execution submission.
-	 * @param namespaces
 	 */
-	public void initExecutable(DatasetRegistry namespaces) {
+	public void initExecutable(DatasetRegistry datasetRegistry) {
 		synchronized (getExecution()) {
 			if(label == null) {
-				label = makeAutoLabel();
+				label = makeAutoLabel(datasetRegistry);
 			}
-			doInitExecutable(namespaces);
+			doInitExecutable(datasetRegistry);
 		}
 	}
 
@@ -216,7 +213,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -228,6 +225,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
+		status.setResultUrl(getDownloadURL(url, user).orElse(null));
 	}
 	
 
@@ -249,9 +247,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, User user, DatasetRegistry datasetRegistry) {
+	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
 		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
-		setStatusBase(storage, user, status);
+		setStatusBase(storage, user, status, url);
 
 		return status;
 	}
@@ -262,7 +260,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
 		ExecutionStatus.Full status = new ExecutionStatus.Full();
-		setStatusBase(storage, user, status);
+		setStatusBase(storage, user, status, url);
 
 		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
@@ -272,8 +270,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
-
-		status.setResultUrl(getDownloadURL(url, user).orElse(null));
 
 		return status;
 	}
@@ -317,14 +313,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user) {
+		if(state != ExecutionState.DONE) {
+			// No url for unfinished executions, quick return
+			return false;
+		}
+
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
-		boolean isPermittedDownload = user.isPermittedAll(getUsedNamespacedIds().stream()
+		return user.isPermittedAll(getUsedNamespacedIds().stream()
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return state == ExecutionState.DONE && isPermittedDownload;
 	}
 
 	/**
@@ -379,11 +379,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb);
+	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry);
 	
-	protected String makeAutoLabel() {
+	protected String makeAutoLabel(DatasetRegistry datasetRegistry) {
 		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb);
+		makeDefaultLabel(sb, datasetRegistry);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
 	}
 }
