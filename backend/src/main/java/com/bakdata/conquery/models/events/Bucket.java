@@ -144,10 +144,6 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return ((DateRangeStore) getStore(column)).getDateRange(event);
 	}
 
-	public Object getAsObject(int event, @NotNull Column column) {
-		return getStore(column).get(event);
-	}
-
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
 		return dateRanges.intersects(getAsDateRange(event, column));
 	}

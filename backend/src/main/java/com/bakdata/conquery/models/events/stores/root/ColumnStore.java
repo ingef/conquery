@@ -97,15 +97,13 @@ public interface ColumnStore {
 	 */
 	public abstract void set(int event, @CheckForNull Object value);
 
-	/**
-	 * Generic getter for storage. May not be called when {@link #has(int)} is false.
-	 */
-	public abstract Object get(int event);
 
 	/**
 	 * Test if the store has the event.
 	 */
 	public abstract boolean has(int event);
+
+	public void setNull(int event);
 
 
 	 @JsonIgnore

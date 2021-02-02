@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import org.junit.jupiter.api.Test;
 
@@ -32,8 +31,8 @@ class IntArrayStoreTest {
 
 		final IntegerStore selection = store.select(new int[]{0, 4}, new int[]{2, 1});
 
-		assertThat(selection.get(0)).isEqualTo(1);
-		assertThat(selection.get(1)).isEqualTo(2);
+		assertThat(selection.getInteger(0)).isEqualTo(1);
+		assertThat(selection.getInteger(1)).isEqualTo(2);
 
 		assertThat(selection.has(2)).isFalse();
 	}
@@ -57,10 +56,10 @@ class IntArrayStoreTest {
 			}
 		}
 
-		final ColumnStore selection = store.select(new int[]{0, 5}, new int[]{2, 1});
+		final IntegerStore selection = store.select(new int[]{0, 5}, new int[]{2, 1});
 
-		assertThat(selection.get(0)).isEqualTo(1);
-		assertThat(selection.get(1)).isEqualTo(2);
+		assertThat(selection.getInteger(0)).isEqualTo(1);
+		assertThat(selection.getInteger(1)).isEqualTo(2);
 
 		assertThat(selection.has(2)).isFalse();
 
@@ -86,10 +85,10 @@ class IntArrayStoreTest {
 			}
 		}
 
-		final ColumnStore selection = store.select(new int[]{0, 5}, new int[]{2, 1});
+		final IntegerStore selection = store.select(new int[]{0, 5}, new int[]{2, 1});
 
-		assertThat(selection.get(0)).isEqualTo(1);
-		assertThat(selection.get(1)).isEqualTo(2);
+		assertThat(selection.getInteger(0)).isEqualTo(1);
+		assertThat(selection.getInteger(1)).isEqualTo(2);
 
 		assertThat(selection.has(2)).isFalse();
 
