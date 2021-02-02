@@ -156,7 +156,7 @@ public class TestConquery {
 	}
 
 	@SneakyThrows
-	public static void configurePortsAndPaths(ConqueryConfig config, File tmpDir) {
+	public static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		XodusStorageFactory storageConfig = new XodusStorageFactory();
@@ -166,11 +166,18 @@ public class TestConquery {
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());
 
+		config.getCluster().setEntityBucketSize(3);
+
+	}
+
+	@SneakyThrows
+	public static void configureRandomPorts(ConqueryConfig config) {
+
 		// set random open ports
 		for (ConnectorFactory con : CollectionUtils
-			.union(
-				((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
-				((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors())) {
+				.union(
+						((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
+						((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors())) {
 			try (ServerSocket s = new ServerSocket(0)) {
 				((HttpConnectorFactory) con).setPort(s.getLocalPort());
 			}
@@ -178,11 +185,6 @@ public class TestConquery {
 		try (ServerSocket s = new ServerSocket(0)) {
 			config.getCluster().setPort(s.getLocalPort());
 		}
-
-		// make buckets very small
-		// but not so small that we can't test bucket problems
-		config.getCluster().setEntityBucketSize(3);
-
 	}
 
 	public void beforeAll() throws Exception {

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Queue;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -22,7 +23,7 @@ public interface StorageFactory {
 
 	WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting);
 
-	void loadNamespaceStorages(ManagerNode managerNode);
+	Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode);
 
-	void loadWorkerStorages(ShardNode shardNode);
+	Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode);
 }

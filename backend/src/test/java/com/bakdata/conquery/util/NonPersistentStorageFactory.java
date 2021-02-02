@@ -8,12 +8,16 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.StorageFactory;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import org.apache.commons.collections4.queue.UnmodifiableQueue;
 
 import javax.validation.Validator;
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 
 @CPSType(id = "NON_PERSISTENT", base = StorageFactory.class)
 public class NonPersistentStorageFactory implements StorageFactory {
+
     @Override
     public MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets) {
         return new NonPersistentMetaStorage(datasets, validator);
@@ -30,12 +34,14 @@ public class NonPersistentStorageFactory implements StorageFactory {
     }
 
     @Override
-    public void loadNamespaceStorages(ManagerNode managerNode) {
+    public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode) {
 
+        return UnmodifiableQueue.unmodifiableQueue(new ArrayDeque<>());
     }
 
     @Override
-    public void loadWorkerStorages(ShardNode shardNode) {
+    public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode) {
 
+        return UnmodifiableQueue.unmodifiableQueue(new ArrayDeque<>());
     }
 }

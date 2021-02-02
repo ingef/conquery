@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
-import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -22,7 +21,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.github.classgraph.Resource;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
@@ -56,7 +54,7 @@ public class IntegrationTests {
 		this.defaultTestRoot = defaultTestRoot;
 		this.defaultTestRootPackage = defaultTestRootPackage;
 		this.workDir = Files.createTempDirectory("conqueryIntegrationTest").toFile();
-		TestConquery.configurePortsAndPaths(DEFAULT_CONFIG, this.workDir);
+		TestConquery.configurePathsAndLogging(DEFAULT_CONFIG, this.workDir);
 		defaultConfigString = CONFIG_WRITER.writeValueAsString(DEFAULT_CONFIG);
 	}
 
@@ -173,13 +171,17 @@ public class IntegrationTests {
 	}
 
 	@SneakyThrows
-	private static TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf) {
+	private static synchronized TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf) {
+		// This should be fast enough and a stable comparison
 		int confStringHash = CONFIG_WRITER.writeValueAsString(conf).hashCode();
 		if(!reusedInstances.containsKey(confStringHash)){
+			// For the overriden config we must override the ports so there are no clashes
+			// We do it here so the config "hash" is not influenced by the port settings
+			TestConquery.configureRandomPorts(conf);
 			log.trace("Creating a new test conquery instance for test {}", conf);
 			TestConquery conquery = new TestConquery(workDir, conf);
-			conquery.beforeAll();
 			reusedInstances.put(confStringHash, conquery);
+			conquery.beforeAll();
 		}
 		TestConquery conquery = reusedInstances.get(confStringHash);
 		return conquery;

@@ -4,9 +4,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -20,8 +19,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.*;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
@@ -84,12 +81,14 @@ public class XodusStorageFactory implements StorageFactory {
 
 	@Override
 	@SneakyThrows
-	public void loadNamespaceStorages(ManagerNode managerNode) {
+	public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode) {
 		Path baseDir = getDirectory().resolve(managerNode.isUseNameForStoragePrefix() ? managerNode.getName() : "");
 
 		if(baseDir.toFile().mkdirs()){
 			log.warn("Had to create Storage Dir at `{}`", getDirectory());
 		}
+
+		ConcurrentLinkedQueue<NamespaceStorage> storages = new ConcurrentLinkedQueue<>();
 
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
@@ -102,10 +101,7 @@ public class XodusStorageFactory implements StorageFactory {
 					log.warn("Unable to load a dataset at `{}`", directory);
 					return;
 				}
-
-				Namespace ns = new Namespace(datasetStorage);
-				ns.initMaintenance(managerNode.getMaintenanceService());
-				managerNode.getDatasetRegistry().add(ns);
+				storages.add(datasetStorage);
 			});
 		}
 
@@ -116,11 +112,12 @@ public class XodusStorageFactory implements StorageFactory {
 		}
 
 		log.info("All stores loaded: {}",  managerNode.getDatasetRegistry().getDatasets());
+		return storages;
 	}
 
 	@Override
 	@SneakyThrows
-	public void loadWorkerStorages(ShardNode shardNode) {
+	public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode) {
 		Path baseDir = getDirectory().resolve(shardNode.isUseNameForStoragePrefix() ? shardNode.getName() : "");
 
 		if(baseDir.toFile().mkdirs()){
@@ -128,9 +125,8 @@ public class XodusStorageFactory implements StorageFactory {
 		}
 
 
+		ConcurrentLinkedQueue<WorkerStorage> storages = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
-
-		Workers workers = shardNode.getWorkers();
 
 
 		for (File directory : baseDir.toFile().listFiles((file, name) -> name.startsWith("worker_"))) {
@@ -144,9 +140,7 @@ public class XodusStorageFactory implements StorageFactory {
 					return;
 				}
 
-				workers.createWorker(
-						workerStorage
-				);
+				storages.add(workerStorage);
 
 				ConqueryMDC.clearLocation();
 			});
@@ -154,7 +148,8 @@ public class XodusStorageFactory implements StorageFactory {
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
+			log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
 		}
+		return storages;
 	}
 }

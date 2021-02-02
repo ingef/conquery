@@ -18,6 +18,7 @@ import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -122,7 +123,12 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		
 		environment.lifecycle().manage(this);
 
-		config.getStorage().loadNamespaceStorages(this);
+		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this)) {
+			Namespace ns = new Namespace(namespaceStorage);
+
+			datasetRegistry.add(ns);
+		}
+
 
 
 
