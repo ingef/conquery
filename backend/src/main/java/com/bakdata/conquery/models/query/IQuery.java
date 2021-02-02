@@ -1,16 +1,21 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
@@ -62,4 +67,13 @@ public abstract class IQuery implements QueryDescription {
 		return dataset;
 	}
 
+	/**
+	 * Implement Query-type aware counting of results. Standard method is counting unique entities.
+	 *
+	 * @see ManagedQuery#finish(MetaStorage, ExecutionState) for how it's used.
+	 * @return the number of results in the result List.
+	 */
+	public long countResults(List<EntityResult> results) {
+		return results.stream().flatMap(ContainedEntityResult::filterCast).count();
+	}
 }

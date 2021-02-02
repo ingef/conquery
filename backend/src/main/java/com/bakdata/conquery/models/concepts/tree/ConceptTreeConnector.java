@@ -14,14 +14,12 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -76,7 +74,7 @@ public class ConceptTreeConnector extends Connector {
 	@Override
 	public void calculateCBlock(CBlock cBlock, Bucket bucket) {
 
-		final AStringType<?> stringType = findStringType(getColumn(), getConcept(), bucket.getImp());
+		final StringType stringType = findStringType(getColumn(), getConcept(), bucket);
 
 		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
 
@@ -103,18 +101,16 @@ public class ConceptTreeConnector extends Connector {
 		}
 	}
 
-	private AStringType<?> findStringType(Column column, TreeConcept treeConcept, Import imp) {
+	private StringType findStringType(Column column, TreeConcept treeConcept, Bucket bucket) {
 		// If we have a column and it is of string-type, we create indices and caches.
-		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof AStringType) {
+		if (column != null && bucket.getStores()[column.getPosition()] instanceof StringType) {
 
-			CType<?, ?> cType = imp.getColumns()[column.getPosition()].getType();
-
-			final AStringType<?> stringType = (AStringType<?>) cType;
+			StringType stringType = (StringType) bucket.getStores()[column.getPosition()];
 
 			// Create index and insert into Tree.
 			TreeChildPrefixIndex.putIndexInto(treeConcept);
 
-			treeConcept.initializeIdCache(stringType, imp.getId());
+			treeConcept.initializeIdCache(stringType, bucket.getImp().getId());
 
 			return stringType;
 		}
@@ -132,11 +128,11 @@ public class ConceptTreeConnector extends Connector {
 		return (TreeConcept) super.getConcept();
 	}
 
-	private void calculateEvent(BucketEntry entry, CBlock cBlock, AStringType<?> stringType, ConceptTreeCache cache, Striped<Lock> entityLock, int[][] mostSpecificChildren) {
+	private void calculateEvent(BucketEntry entry, CBlock cBlock, StringType stringType, ConceptTreeCache cache, Striped<Lock> entityLock, int[][] mostSpecificChildren) {
 
 		final Bucket bucket = entry.getBucket();
 		final int event = entry.getEvent();
-		final int entity = entry.getLocalEntity();
+		final int entity = entry.getEntity();
 
 
 		// Events without values are omitted
@@ -155,7 +151,7 @@ public class ConceptTreeConnector extends Connector {
 		}
 
 		// Lazy evaluation of map to avoid allocations if possible.
-		final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, bucket.getImp()));
+		final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event));
 		ConceptTreeChild child = null;
 
 		try {
@@ -194,7 +190,8 @@ public class ConceptTreeConnector extends Connector {
 			// also add concepts into bloom filter of entity cblock.
 			ConceptTreeNode<?> it = child;
 			while (it != null) {
-				cBlock.addEntityIncludedConcept(entity, it);
+				cBlock.getIncludedConcepts()
+					  .put(entry.getEntity(), cBlock.getIncludedConcepts().getOrDefault(entry.getEntity(), 0) | it.calculateBitMask());
 				it = it.getParent();
 			}
 		}

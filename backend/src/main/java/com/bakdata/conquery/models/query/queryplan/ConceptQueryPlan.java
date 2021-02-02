@@ -7,7 +7,7 @@ import java.util.Set;
 import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.generation.EmptyBucket;
+import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -79,7 +79,9 @@ public class ConceptQueryPlan implements QueryPlan {
 				continue;
 			}
 
-			storage.getDataset().getTables().getOrFail(tableId);
+			if(storage.getTable(tableId) == null){
+				throw new IllegalStateException("Table is missing");
+			}
 		}
 	}
 
@@ -140,9 +142,7 @@ public class ConceptQueryPlan implements QueryPlan {
 					continue;
 				}
 
-				int localEntity = bucket.toLocal(entity.getId());
-
-				if (!bucket.containsLocalEntity(localEntity)) {
+				if (!bucket.containsEntity(entity.getId())) {
 					continue;
 				}
 
@@ -151,8 +151,8 @@ public class ConceptQueryPlan implements QueryPlan {
 				}
 
 				nextBlock(bucket);
-				int start = bucket.getFirstEventOfLocal(localEntity);
-				int end = bucket.getLastEventOfLocal(localEntity);
+				int start = bucket.getEntityStart(entity.getId());
+				int end = bucket.getEntityEnd(entity.getId());
 				for (int event = start; event < end; event++) {
 					nextEvent(bucket, event);
 				}

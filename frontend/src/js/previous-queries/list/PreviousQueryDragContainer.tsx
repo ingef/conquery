@@ -15,22 +15,28 @@ interface PropsT {
   datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
-  connectDragSource: () => void;
 }
 
 const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
   const isNotEditing = !(query.editingLabel || query.editingTags);
   const ref = useRef<HTMLDivElement | null>(null);
+  const isRegularQuery =
+    !query.queryType || query.queryType === "CONCEPT_QUERY";
+  const dragType = isRegularQuery ? PREVIOUS_QUERY : "UNDROPPABLE";
+
   const item = {
     width: 0,
     height: 0,
-    type: PREVIOUS_QUERY,
+    type: dragType,
     id: query.id,
     label: query.label,
     isPreviousQuery: true,
+    canExpand: query.canExpand,
   };
+
   const [, drag] = useDrag({
     item,
+    canDrag: dragType !== "UNDROPPABLE",
     begin: (): DraggedQueryType => ({
       ...item,
       ...getWidthAndHeight(ref),

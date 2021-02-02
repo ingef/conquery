@@ -1,19 +1,17 @@
-import React from "react";
+import React, { FC } from "react";
 import { storeAuthToken, getStoredAuthToken } from "./helper";
-import { push } from "react-router-redux";
 import { isLoginDisabled } from "../environment";
-import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
 
-type PropsType = {
-  children: React.ReactNode;
+interface PropsT {
   location: {
     search: Object;
   };
-};
+}
 
-const WithAuthToken = ({ location, children }: PropsType) => {
-  const dispatch = useDispatch();
-  const goToLogin = () => dispatch(push("/login"));
+const WithAuthToken: FC<PropsT> = ({ location, children }) => {
+  const history = useHistory();
+  const goToLogin = () => history.push("/login");
 
   const { search } = location;
   const params = new URLSearchParams(search);

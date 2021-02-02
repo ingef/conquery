@@ -149,7 +149,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			sn.getStorage().setMetaStorage(storage);
 		}
 
-
 		
 		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();

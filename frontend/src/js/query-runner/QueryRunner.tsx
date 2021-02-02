@@ -17,8 +17,8 @@ interface PropsT {
   isQueryRunning: boolean;
   isButtonEnabled: boolean;
   buttonTooltipKey?: string | null;
-  startQuery: Function;
-  stopQuery: Function;
+  startQuery: () => void;
+  stopQuery: () => void;
 }
 
 const Root = styled("div")`
@@ -91,10 +91,10 @@ const QueryRunner: FC<PropsT> = ({
           !queryRunner.queryResult.loading &&
           !isQueryRunning && (
             <QueryResults
-              datasetId={queryRunner.queryResult.datasetId}
               resultCount={queryRunner.queryResult.resultCount}
               resultUrl={queryRunner.queryResult.resultUrl}
               resultColumns={queryRunner.queryResult.resultColumns}
+              queryType={queryRunner.queryResult.queryType}
             />
           )}
       </Right>

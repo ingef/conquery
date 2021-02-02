@@ -1,5 +1,11 @@
-import { connect } from "react-redux";
-import { isValid, isPristine, getFormValues } from "redux-form";
+import React, { FC } from "react";
+import { StateT } from "app-types";
+import { useDispatch, useSelector } from "react-redux";
+import { isValid, isPristine, getFormValues, FormStateMap } from "redux-form";
+
+import QueryRunner from "../query-runner/QueryRunner";
+import { DatasetIdT } from "../api/types";
+import { QueryRunnerStateT } from "../query-runner/reducer";
 
 import transformQueryToApi from "./transformQueryToApi";
 import * as actions from "./actions";
@@ -10,82 +16,92 @@ import {
   selectRunningQuery,
   selectActiveFormType,
 } from "./stateSelectors";
-
-import QueryRunner from "../query-runner/QueryRunner";
+import { Form } from "./config-types";
 
 const { startExternalFormsQuery, stopExternalFormsQuery } = actions;
 
-const isActiveFormValid = (state) => {
+const isActiveFormValid = (state: StateT) => {
   const activeForm = selectActiveFormType(state);
+  const reduxFormState = selectReduxFormState(state);
 
-  if (!activeForm) return false;
+  if (!activeForm || !reduxFormState) return false;
 
   return (
-    !isPristine(activeForm, selectReduxFormState)(state) &&
-    isValid(activeForm, selectReduxFormState)(state)
+    !isPristine(activeForm, () => reduxFormState)(state) &&
+    isValid(activeForm, () => reduxFormState)(state)
   );
 };
 
-const isButtonEnabled = (state, ownProps) => {
-  const queryRunner = selectQueryRunner(state);
-
+const selectIsButtonEnabled = (
+  datasetId: DatasetIdT,
+  queryRunner: QueryRunnerStateT | null
+) => (state: StateT) => {
   if (!queryRunner) return false;
 
   return !!(
-    ownProps.datasetId !== null &&
+    datasetId !== null &&
     !queryRunner.startQuery.loading &&
     !queryRunner.stopQuery.loading &&
     isActiveFormValid(state)
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  queryRunner: selectQueryRunner(state),
-  isButtonEnabled: isButtonEnabled(state, ownProps),
-  isQueryRunning: !!selectRunningQuery(state),
-  // Following ones only needed in dispatch functions
-  queryId: selectRunningQuery(state),
-  version: state.conceptTrees.version,
-  query: {
-    formName: selectActiveFormType(state),
-    form: selectActiveFormType(state)
-      ? getFormValues(selectActiveFormType(state), selectReduxFormState)(state)
-      : {},
-  },
-  formQueryTransformation: transformQueryToApi(selectFormConfig(state)),
-});
+interface PropsT {
+  datasetId: DatasetIdT;
+}
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  startQuery: (datasetId, query, version, formQueryTransformation) =>
+const FormQueryRunner: FC<PropsT> = ({ datasetId }) => {
+  const queryRunner = useSelector<StateT, QueryRunnerStateT | null>(
+    selectQueryRunner
+  );
+  const queryId = useSelector<StateT, string | number | null>(
+    selectRunningQuery
+  );
+  const isQueryRunning = !!queryId;
+
+  const isButtonEnabled = useSelector<StateT, boolean>(
+    selectIsButtonEnabled(datasetId, queryRunner)
+  );
+
+  const formName = useSelector<StateT, string | null>(selectActiveFormType);
+  const reduxFormState = useSelector<StateT, FormStateMap | null>(
+    selectReduxFormState
+  );
+  const form = useSelector<StateT, unknown>((state) =>
+    formName && reduxFormState
+      ? getFormValues(formName, () => reduxFormState)(state)
+      : {}
+  );
+
+  const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
+
+  const query = { formName, form };
+  const formQueryTransformation = formConfig
+    ? transformQueryToApi(formConfig)
+    : () => {};
+
+  const dispatch = useDispatch();
+  const startQuery = () =>
     dispatch(
-      startExternalFormsQuery(
-        datasetId,
-        query,
-        version,
-        formQueryTransformation
-      )
-    ),
-  stopQuery: (datasetId, queryId) =>
-    dispatch(stopExternalFormsQuery(datasetId, queryId)),
-});
+      startExternalFormsQuery(datasetId, query, {
+        formQueryTransformation,
+      })
+    );
+  const stopQuery = () => dispatch(stopExternalFormsQuery(datasetId, queryId));
 
-const mergeProps = (stateProps, dispatchProps, ownProps) => ({
-  ...stateProps,
-  ...dispatchProps,
-  ...ownProps,
-  startQuery: () =>
-    dispatchProps.startQuery(
-      ownProps.datasetId,
-      stateProps.query,
-      stateProps.version,
-      stateProps.formQueryTransformation
-    ),
-  stopQuery: () =>
-    dispatchProps.stopQuery(ownProps.datasetId, stateProps.queryId),
-});
+  if (!queryRunner) {
+    return null;
+  }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
-)(QueryRunner);
+  return (
+    <QueryRunner
+      queryRunner={queryRunner}
+      isButtonEnabled={isButtonEnabled}
+      isQueryRunning={isQueryRunning}
+      startQuery={startQuery}
+      stopQuery={stopQuery}
+    />
+  );
+};
+
+export default FormQueryRunner;

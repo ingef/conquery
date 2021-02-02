@@ -40,6 +40,7 @@
     "startError": "Anfrage starten fehlgeschlagen.",
     "resultError": "Anfrageergebnis konnte nicht geladen werden.",
     "resultCount": "Ergebnisse",
+    "resultCountSecondaryIdQuery": "Analyse-Ergebnisse",
     "queryFailed": "Anfrage ist fehlgeschlagen.",
     "queryCanceled": "Anfrage wurde abgebrochen."
   },
@@ -51,7 +52,10 @@
     "date": "Datum",
     "expand": "Expandieren",
     "previousQuery": "Anfrage",
-    "loadingPreviousQuery": "Lade Anfragedetails"
+    "loadingPreviousQuery": "Lade Anfragedetails",
+    "secondaryId": "Analyse-Ebene",
+    "secondaryIdStandard": "Standard",
+    "hasSecondaryId": "Analyse-Ebene aktiv"
   },
   "dropzone": {
     "dragElementPlease": "Füge ein Element hinzu",
@@ -77,6 +81,8 @@
     "resetSettings": "Änderungen zurücksetzen",
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
+    "excludeFromSecondaryIdQuery": "Von Analyse-Ebene ausschließen",
+    "excludingFromSecondaryIdQuery": "Von Analyse-Ebene ausgeschlossen",
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",
@@ -242,6 +248,7 @@
       "accept": "Kopieren"
     },
     "common": {
+      "connectedWith": "Verknüpfung",
       "relativeToIndex": "Relativ zum Indexdatum",
       "timespan": "Zeitraum",
       "dateMinLabel": "Von",

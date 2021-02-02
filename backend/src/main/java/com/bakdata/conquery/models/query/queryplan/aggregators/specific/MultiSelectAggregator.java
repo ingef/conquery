@@ -5,10 +5,10 @@ import java.util.Map;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.specific.AStringType;
 
 /**
  * Aggregator counting the occurrence of multiple values.
@@ -28,7 +28,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		AStringType type = (AStringType) getColumn().getTypeFor(bucket);
+		StringType type = (StringType) getColumn().getTypeFor(bucket);
 
 		for (int index = 0; index < selection.length; index++) {
 			selectedValues[index] = type.getId(selection[index]);
@@ -78,7 +78,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : selection) {
-			if(((AStringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) == -1) {
+			if(((StringType) bucket.getStores()[getColumn().getPosition()]).getId(selected) == -1) {
 				return false;
 			}
 		}

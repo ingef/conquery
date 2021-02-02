@@ -1,18 +1,12 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Set;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import jetbrains.exodus.env.Environment;

@@ -35,17 +35,12 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
 		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
-		CDateSet range = CDateSet.create();
-		range.add(value);
-
-		range.retainAll(dateRestriction);
-
-		//otherwise the result would be something weird
-		if(range.isOpen()){
+		if (value.isOpen()) {
 			return;
 		}
 
-		set.addAll(range);
+
+		set.maskedAdd(value, dateRestriction);
 	}
 
 	@Override
@@ -57,7 +52,7 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	public Long getAggregationResult() {
 		return set.isEmpty() ? null : set.countDays();
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

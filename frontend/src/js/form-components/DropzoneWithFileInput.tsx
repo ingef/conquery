@@ -36,12 +36,12 @@ const TopRight = styled("p")`
 
 interface PropsT {
   children: (args: ChildArgs) => React.ReactNode;
-  acceptedDropTypes?: string[];
   onSelectFile: (file: File) => void;
+  onDrop: (props: any, monitor: DropTargetMonitor) => void;
+  acceptedDropTypes?: string[];
   disableClick?: boolean;
   showFileSelectButton?: boolean;
   isInitial?: boolean;
-  onDrop: (props: any, monitor: DropTargetMonitor) => void;
 }
 
 /*

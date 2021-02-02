@@ -3,10 +3,12 @@ package com.bakdata.conquery.models.query.concept.specific;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,11 +20,14 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -43,6 +48,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -67,6 +73,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
+	private boolean excludeFromSecondaryIdQuery = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -122,6 +129,18 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
+			
+			final Connector connector = table.getResolvedConnector();
+
+			// Select matching secondaryId if available
+			final SecondaryIdDescriptionId selectedSecondaryId =
+					Arrays.stream(connector.getTable().getColumns())
+						  .map(Column::getSecondaryId)
+						  .filter(Objects::nonNull)
+						  .map(SecondaryIdDescription::getId)
+						  .filter(o -> Objects.equals(context.getSelectedSecondaryId(), o))
+						  .collect(MoreCollectors.toOptional())
+						  .orElse(null);
 
 			tableNodes.add(
 				new ConceptNode(
@@ -132,7 +151,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 					new ValidityDateNode(
 						selectValidityDateColumn(table),
 						filtersNode
-					)
+					),
+					// if the node is excluded, don't pass it into the Node.
+					excludeFromSecondaryIdQuery ? null : selectedSecondaryId
 				)
 			);
 		}

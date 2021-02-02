@@ -30,8 +30,12 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
     string | null
   >(null);
 
-  const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
-  const onCloseShareModal = () => setPreviousQueryToShare(null);
+  const onCloseDeleteModal = () => {
+    setPreviousQueryToDelete(null);
+  };
+  const onCloseShareModal = () => {
+    setPreviousQueryToShare(null);
+  };
 
   function onShareSuccess() {
     onCloseShareModal();

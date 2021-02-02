@@ -4,7 +4,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.google.common.primitives.Ints;
-
 import io.dropwizard.util.Duration;
 import io.dropwizard.util.Size;
 import io.dropwizard.util.SizeUnit;
@@ -23,7 +22,7 @@ public class XodusConfig {
 	private Long	cipherBasicIV;
 	private Boolean	logDurableWrite;
 	@MaxSize(value=1,unit=SizeUnit.GIGABYTES)
-	private Size	logFileSize;
+	private Size	logFileSize = Size.megabytes(400L);
 	private String	logLockId;
 	private Duration logLockTimeout = Duration.seconds(1);
 	private Size	logCachePageSize;

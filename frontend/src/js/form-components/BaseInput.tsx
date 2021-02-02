@@ -82,11 +82,12 @@ const BaseInput = (props: PropsT) => {
     }
   }
 
+  const isCurrencyInput =
+    props.valueType === MONEY_RANGE && !!props.currencyConfig;
+
   return (
     <Root className={props.className}>
-      {props.valueType === MONEY_RANGE &&
-      typeof props.value !== "string" &&
-      !!props.currencyConfig ? (
+      {isCurrencyInput ? (
         <CurrencyInput
           currencyConfig={props.currencyConfig}
           placeholder={props.placeholder}

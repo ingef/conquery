@@ -1,7 +1,7 @@
 import { ThunkDispatch } from "redux-thunk";
 
 import api from "../api";
-import type { DatasetIdT, DateRangeT } from "../api/types";
+import type { DatasetIdT } from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
@@ -36,6 +36,8 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
+  SET_SELECTED_SECONDARY_ID,
+  TOGGLE_SECONDARY_ID_EXCLUDE,
 } from "./actionTypes";
 import { TreesT } from "../concept-trees/reducer";
 
@@ -57,9 +59,9 @@ export const deleteNode = (andIdx: number, orIdx: number) => ({
   payload: { andIdx, orIdx },
 });
 
-export const deleteGroup = (andIdx: number, orIdx: number) => ({
+export const deleteGroup = (andIdx: number) => ({
   type: DELETE_GROUP,
-  payload: { andIdx, orIdx },
+  payload: { andIdx },
 });
 
 export const toggleExcludeGroup = (andIdx: number) => ({
@@ -172,12 +174,20 @@ export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
   payload: { tableIdx, filterIdx, mode },
 });
 
-export const toggleTimestamps = (andIdx, orIdx) => ({
+export const toggleTimestamps = (andIdx?: number, orIdx?: number) => ({
   type: TOGGLE_TIMESTAMPS,
   payload: { andIdx, orIdx },
 });
 
-export const loadFilterSuggestionsStart = (tableIdx, filterIdx) => ({
+export const toggleSecondaryIdExclude = (andIdx?: number, orIdx?: number) => ({
+  type: TOGGLE_SECONDARY_ID_EXCLUDE,
+  payload: { andIdx, orIdx },
+});
+
+export const loadFilterSuggestionsStart = (
+  tableIdx: number,
+  filterIdx: number
+) => ({
   type: LOAD_FILTER_SUGGESTIONS_START,
   payload: { tableIdx, filterIdx },
 });
@@ -213,5 +223,12 @@ export const loadFilterSuggestions = (
         (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
         (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
       );
+  };
+};
+
+export const setSelectedSecondaryId = (secondaryId: string | null) => {
+  return {
+    type: SET_SELECTED_SECONDARY_ID,
+    payload: { secondaryId },
   };
 };

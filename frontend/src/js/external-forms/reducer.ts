@@ -1,8 +1,8 @@
 import { combineReducers, Reducer } from "redux";
 import {
   reducer as reduxFormReducer,
-  FormReducer,
   FormReducerMapObject,
+  FormStateMap,
 } from "redux-form";
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
@@ -56,7 +56,7 @@ function buildFormReducer(form: Form) {
 export interface FormsStateT {
   activeForm: string | null;
   queryRunner: QueryRunnerStateT;
-  reduxForm: FormReducer;
+  reduxForm: FormStateMap;
   availableForms: {
     [formName: string]: Form;
   };

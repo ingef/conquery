@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.apache.shiro.authz.Permission;
 
@@ -24,8 +25,7 @@ public class Jackson {
 
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
-		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()))
-								.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, 										 SerializationFeature.WRITE_NULL_MAP_VALUES);
+		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
 	}
 
 	public static <T extends ObjectMapper> T configure(T objectMapper) {
@@ -52,6 +52,7 @@ public class Jackson {
 			.registerModule(new JavaTimeModule())
 			.registerModule(new ParameterNamesModule())
 			.registerModule(new GuavaModule())
+			.registerModule(new AfterburnerModule())
 			.registerModule(ConquerySerializersModule.INSTANCE)
 			.setSerializationInclusion(Include.ALWAYS)
 			.setDefaultPropertyInclusion(Include.ALWAYS)
