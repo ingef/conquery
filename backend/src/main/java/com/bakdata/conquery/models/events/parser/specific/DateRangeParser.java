@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.base.DateStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -78,13 +79,13 @@ public class DateRangeParser extends Parser<CDateRange> {
 			quarterParser.setMaxValue(maxValue);
 			quarterParser.setMinValue(minValue);
 
-			return new DateRangeTypeQuarter(quarterParser.decideType());
+			return new DateRangeTypeQuarter(quarterParser.findBestType());
 		}
 
 		// They need to be aligned.
 		minParser.setLines(getLines());
 		maxParser.setLines(getLines());
 
-		return new DateRangeTypeDateRange(minParser.decideType(), maxParser.decideType());
+		return new DateRangeTypeDateRange(((DateStore) minParser.findBestType()), ((DateStore) maxParser.findBestType()));
 	}
 }

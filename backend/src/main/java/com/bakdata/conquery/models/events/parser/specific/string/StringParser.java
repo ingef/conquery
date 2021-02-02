@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.EmptyStore;
+import com.bakdata.conquery.models.events.EmptyStringType;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser.Guess;
@@ -67,6 +67,16 @@ public class StringParser extends Parser<Integer> {
 		return strings.computeIfAbsent(value, this::processSingleValue);
 	}
 
+	@Override
+	public ColumnStore<Integer> findBestType() {
+		if (getLines() == 0 || getLines() == getNullLines()) {
+			return new EmptyStringType();
+		}
+
+		ColumnStore<Integer> dec = decideType();
+		copyLineCounts(dec);
+		return dec;
+	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
@@ -74,7 +84,7 @@ public class StringParser extends Parser<Integer> {
 
 		//check if a singleton type is enough
 		if (strings.isEmpty()) {
-			return new EmptyStore<>();
+			return new EmptyStringType();
 		}
 
 		// Is this a singleton?
