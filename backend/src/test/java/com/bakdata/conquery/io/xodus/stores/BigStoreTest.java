@@ -6,6 +6,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.SequenceInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
@@ -18,7 +20,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.google.common.collect.Iterators;
-import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.DataSize;
@@ -35,15 +36,16 @@ public class BigStoreTest {
 	private Environment env;
 
 	@BeforeEach
-	public void init() {
-		tmpDir = Files.createTempDir();
+	public void init() throws IOException {
+		tmpDir = Files.createTempDirectory(BigStoreTest.class.getSimpleName()).toFile();
+		tmpDir.mkdirs();
 		env = Environments.newInstance(tmpDir);
 	}
 
 	@AfterEach
 	public void destroy() throws IOException {
 		env.close();
-		FileUtils.deleteDirectory(tmpDir);
+		tmpDir.delete();
 	}
 
 	@Test
