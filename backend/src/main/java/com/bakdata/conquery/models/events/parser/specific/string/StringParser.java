@@ -73,7 +73,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 		//check if a singleton type is enough
 		if (strings.isEmpty()) {
-			return new EmptyStore();
+			return EmptyStore.INSTANCE;
 		}
 
 		// Is this a singleton?

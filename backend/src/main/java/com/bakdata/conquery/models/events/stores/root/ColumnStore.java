@@ -12,7 +12,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
  *
  * Internal representation of data is completely transparent to the caller. get may only be called if has is true.
  *
- * @param <JAVA_TYPE> The outer-most type of the store, with which it is compatible.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase

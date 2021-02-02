@@ -44,7 +44,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	
 	public STORE_TYPE findBestType() {
 		if (getLines() == 0 || getLines() == getNullLines()) {
-			return ((STORE_TYPE) new EmptyStore());
+			return (STORE_TYPE) EmptyStore.INSTANCE;
 		}
 
 		STORE_TYPE dec = decideType();

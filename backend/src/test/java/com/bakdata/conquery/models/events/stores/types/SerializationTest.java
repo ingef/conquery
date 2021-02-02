@@ -83,7 +83,7 @@ public class SerializationTest {
 				FloatArrayStore.create(10),
 				DoubleArrayStore.create(10),
 				BitSetStore.create(10),
-				new EmptyStore(),
+				EmptyStore.INSTANCE,
 				new RebasingStore(10, 10, IntArrayStore.create(10))
 		);
 	}

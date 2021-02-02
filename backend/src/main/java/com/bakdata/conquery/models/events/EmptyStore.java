@@ -14,20 +14,15 @@ import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * An empty generic store to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
-public class EmptyStore implements
+public enum EmptyStore implements
 		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore {
-
-	@JsonCreator
-	public EmptyStore() {
-		super();
-	}
+	INSTANCE;
 
 	@Override
 	public int getLines() {
