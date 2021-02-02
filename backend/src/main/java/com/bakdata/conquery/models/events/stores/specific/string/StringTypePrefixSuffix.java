@@ -55,8 +55,8 @@ public class StringTypePrefixSuffix implements StringStore {
 	}
 
 	@Override
-	public String createScriptValue(Object value) {
-		return prefix + subType.createScriptValue(value);
+	public String createScriptValue(int event) {
+		return prefix + subType.createScriptValue(event) + suffix;
 	}
 
 	@Override

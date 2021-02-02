@@ -47,6 +47,11 @@ public class EmptyStore implements
 	}
 
 	@Override
+	public Object createScriptValue(int event) {
+		return null;
+	}
+
+	@Override
 	public Long get(int event) {
 		return null;
 	}

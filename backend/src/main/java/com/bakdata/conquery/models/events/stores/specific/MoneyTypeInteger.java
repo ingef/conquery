@@ -26,23 +26,18 @@ public class MoneyTypeInteger implements MoneyStore {
 	}
 
 	@Override
-	public Long createScriptValue(Object value) {
-		return (long) numberType.createScriptValue(value);
-	}
-
-	@Override
 	public MoneyTypeInteger select(int[] starts, int[] length) {
 		return new MoneyTypeInteger(numberType.select(starts, length));
 	}
 
 	@Override
-	public long getMoney(int event) {
-		return numberType.getInteger(event);
+	public Long get(int event) {
+		return getMoney(event);
 	}
 
 	@Override
-	public Long get(int event) {
-		return getMoney(event);
+	public long getMoney(int event) {
+		return numberType.getInteger(event);
 	}
 
 	@Override

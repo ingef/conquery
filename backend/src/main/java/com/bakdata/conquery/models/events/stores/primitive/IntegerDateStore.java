@@ -31,11 +31,6 @@ public class IntegerDateStore implements DateStore {
 	}
 
 	@Override
-	public Object createScriptValue(Object value) {
-		return CDate.toLocalDate(((Long) value).intValue());
-	}
-
-	@Override
 	public long estimateEventBits() {
 		return store.estimateEventBits();
 	}

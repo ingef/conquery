@@ -44,13 +44,15 @@ public interface ColumnStore {
 	}
 
 
-	public default Object createPrintValue(Object value) {
-		return value != null ? createScriptValue(value) : "";
+	public default Object createPrintValue(int event) {
+		if(!has(event)) {
+			return "";
+		}
+
+		return createScriptValue(event);
 	}
 
-	public default Object createScriptValue(Object value) {
-		return value;
-	}
+	public Object createScriptValue(int event);
 
 	/**
 	 * Calculate estimate of total bytes used by this store.

@@ -59,18 +59,13 @@ public class StringTypeDictionary implements ColumnStore {
 		return numberType.getLines();
 	}
 
-	@Override
-	public Object createScriptValue(Object value) {
-		return getElement((Integer) value);
-	}
-
 	public byte[] getElement(int value) {
 		return dictionary.getElement(value);
 	}
 
 	@Override
-	public Object createPrintValue(Object value) {
-		return getElement((Integer) value);
+	public Object createScriptValue(int event) {
+		return getElement(getString(event));
 	}
 
 

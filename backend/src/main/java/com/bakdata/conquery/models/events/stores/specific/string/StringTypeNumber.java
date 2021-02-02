@@ -33,6 +33,11 @@ public class StringTypeNumber implements StringStore {
 		return delegate.getLines();
 	}
 
+	@Override
+	public Object createScriptValue(int event) {
+		return delegate.createScriptValue(event);
+	}
+
 	@Nonnull
 	protected IntegerStore delegate;
 	//used as a compact intset

@@ -50,8 +50,8 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
-	public String createScriptValue(Object value) {
-		return getElement((Integer) value);
+	public String createScriptValue(int event) {
+		return getElement(getString(event));
 	}
 
 	@Override

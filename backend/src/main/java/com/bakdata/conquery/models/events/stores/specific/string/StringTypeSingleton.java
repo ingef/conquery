@@ -59,7 +59,7 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 	@Override
-	public String createScriptValue(Object value) {
+	public String createScriptValue(int event) {
 		return singleValue;
 	}
 

@@ -34,6 +34,7 @@ public class RebasingStore implements IntegerStore {
 		return store.getLines();
 	}
 
+
 	@Override
 	public long estimateEventBits() {
 		return store.estimateEventBits();

@@ -136,6 +136,18 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return ((DateStore) stores[column.getPosition()]).getDate(event);
 	}
 
+	public CDateRange getDateRange(int event, Column column) {
+		return ((DateRangeStore) stores[column.getPosition()]).getDateRange(event);
+	}
+
+	public Object getAsObject(int event, @NotNull Column column) {
+		return stores[column.getPosition()].get(event);
+	}
+
+	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
+		return dateRanges.intersects(getAsDateRange(event, column));
+	}
+
 	public CDateRange getAsDateRange(int event, Column column) {
 		switch (column.getType()) {
 			case DATE:
@@ -147,21 +159,9 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		}
 	}
 
-	public CDateRange getDateRange(int event, Column column) {
-		return ((DateRangeStore) stores[column.getPosition()]).getDateRange(event);
-	}
-
-	public Object getAsObject(int event, @NotNull Column column) {
-		return stores[column.getPosition()].get(event);
-	}
-
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		return dateRanges.intersects(getAsDateRange(event,column));
-	}
-
 	public Object createScriptValue(int event, @NotNull Column column) {
 		final ColumnStore store = stores[column.getPosition()];
-		return ((ColumnStore) store).createScriptValue(store.get(event));
+		return ((ColumnStore) store).createScriptValue(event);
 	}
 
 	public Map<String, Object> calculateMap(int event) {
@@ -173,7 +173,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 				continue;
 			}
 			// todo rework this to use table directly
-			out.put(imp.getColumns()[i].getName(), store.createScriptValue(store.get(event)));
+			out.put(imp.getColumns()[i].getName(), store.createScriptValue(event));
 		}
 
 		return out;
@@ -185,5 +185,9 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 				((StringStore) store).loadDictionaries(storage);
 			}
 		}
+	}
+
+	public Object createPrintValue(int event, Column column) {
+		return stores[column.getPosition()].createPrintValue(event);
 	}
 }
