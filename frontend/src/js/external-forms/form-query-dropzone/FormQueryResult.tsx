@@ -2,9 +2,10 @@ import React, { FC } from "react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
+import type { PreviousQueryT } from "../../previous-queries/list/reducer";
 
 interface PropsT {
-  queryResult?: Object;
+  queryResult?: PreviousQueryT;
   className?: string;
   onDelete?: () => void;
 }

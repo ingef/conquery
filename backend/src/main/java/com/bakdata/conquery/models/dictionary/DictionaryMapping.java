@@ -3,8 +3,7 @@ package com.bakdata.conquery.models.dictionary;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Create a mapping from one {@link Dictionary} to the other (Map source to target). Adding all ids in target, not in source, to source. Additionally, gather all encountered Buckets (see {@link Namespace}) and all not yet used Buckets.
+ * Create a mapping from one {@link Dictionary} to the other (Map source to target). Adding all ids in target, not in source, to source.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -57,18 +56,18 @@ public class DictionaryMapping {
 		return source2TargetMap[sourceId];
 	}
 
-
-
 	/**
 	 * Mutably applies mapping to store.
 	 */
-	public void applyToStore(ColumnStore<Integer> store, long rows) {
+	public void applyToStore(ColumnStore<Integer> from, ColumnStore<Long> to, long rows) {
 		for (int row = 0; row < rows; row++) {
-			if (!store.has(row)) {
+			if (!from.has(row)) {
+				to.set(row, null);
 				continue;
 			}
 
-			store.set(row, source2Target(store.getString(row)));
+			to.set(row, (long) source2Target(from.getString(row)));
 		}
 	}
+
 }

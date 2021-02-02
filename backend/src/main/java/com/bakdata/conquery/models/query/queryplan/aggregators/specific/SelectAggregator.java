@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.specific.string.StringType;
 
 
 /**
@@ -62,6 +62,6 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return super.isOfInterest(bucket) &&
-			   ((StringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) != -1;
+			   ((StringType) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1;
 	}
 }

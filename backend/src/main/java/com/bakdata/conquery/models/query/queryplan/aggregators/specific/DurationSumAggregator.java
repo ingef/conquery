@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDateSetCache;
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -15,8 +15,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
  */
 public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
-	private BitMapCDateSet set = CDateSetCache.createPreAllocatedDateSet();
-	private BitMapCDateSet dateRestriction;
+	private CDateSet set = CDateSet.create();
+	private CDateSet dateRestriction;
 
 	public DurationSumAggregator(Column column) {
 		super(column);
@@ -33,12 +33,14 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 			return;
 		}
 
-		//otherwise the result would be something weird
-		if(bucket.getAsDateRange(event, getColumn()).isOpen()) {
+		final CDateRange value = bucket.getAsDateRange(event, getColumn());
+
+		if (value.isOpen()) {
 			return;
 		}
 
-		set.maskedAdd(bucket.getAsDateRange(event,getColumn()), dateRestriction);
+
+		set.maskedAdd(value, dateRestriction);
 	}
 
 	@Override
@@ -50,7 +52,7 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	public Long getAggregationResult() {
 		return set.isEmpty() ? null : set.countDays();
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

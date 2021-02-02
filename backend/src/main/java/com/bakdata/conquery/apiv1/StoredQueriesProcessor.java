@@ -2,14 +2,12 @@ package com.bakdata.conquery.apiv1;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -25,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
@@ -48,14 +47,14 @@ public class StoredQueriesProcessor {
 		return allQueries
 			.stream()
 			// to exclude subtypes from somewhere else
-			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
+			.filter(StoredQueriesProcessor::canFrontendRender)
 			.filter(q -> q.getDataset().equals(datasetId))
 			.filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
 			.flatMap(mq -> {
 				try {
 					return Stream.of(
-						mq.buildStatus(
+						mq.buildStatusOverview(
 							storage,
 							uriBuilder,
 							user,
@@ -68,21 +67,32 @@ public class StoredQueriesProcessor {
 			});
 	}
 
+	private static boolean canFrontendRender(ManagedExecution<?> q) {
+		if (!(q instanceof ManagedQuery)) {
+			return false;
+		}
+
+		if (((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class)) {
+			return true;
+		}
+
+		if (((ManagedQuery) q).getQuery().getClass().equals(SecondaryIdQuery.class)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public void deleteQuery(Namespace namespace, ManagedExecutionId queryId) {
 		storage.removeExecution(queryId);
 	}
-
-	public StoredQuerySingleInfo getQueryWithSource(ManagedExecutionId queryId, User user, UriBuilder url) {
+	
+	public ExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
-			throw new WebApplicationException(Response.Status.NOT_FOUND);
+			return null;
 		}
-
-		if(!(query instanceof ManagedQuery)) {
-			throw new WebApplicationException(Status.NOT_IMPLEMENTED);
-		}
-		
-		return StoredQuerySingleInfo.from((ManagedQuery) query, user, storage, url);
+		return query.buildStatusFull(storage, url, user, datasetRegistry);
 	}
 
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {

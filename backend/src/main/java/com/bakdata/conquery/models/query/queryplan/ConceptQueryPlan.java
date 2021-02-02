@@ -7,7 +7,7 @@ import java.util.Set;
 import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.generation.EmptyBucket;
+import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -21,10 +21,12 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @ToString
+@Slf4j
 public class ConceptQueryPlan implements QueryPlan {
 
 	@Getter
@@ -77,7 +79,9 @@ public class ConceptQueryPlan implements QueryPlan {
 				continue;
 			}
 
-			storage.getDataset().getTables().getOrFail(tableId);
+			if(storage.getTable(tableId) == null){
+				throw new IllegalStateException("Table is missing");
+			}
 		}
 	}
 
@@ -120,8 +124,6 @@ public class ConceptQueryPlan implements QueryPlan {
 		nextBlock(EmptyBucket.getInstance());
 		nextEvent(EmptyBucket.getInstance(), 0);
 
-
-
 		for (TableId currentTableId : requiredTables.get()) {
 
 			if(currentTableId.equals(ctx.getStorage().getDataset().getAllIdsTableId())){
@@ -132,13 +134,13 @@ public class ConceptQueryPlan implements QueryPlan {
 
 			final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTableId);
 
+			log.trace("Table[{}] has {} buckets for Entity[{}]", currentTableId, tableBuckets, entity);
+
 			for (Bucket bucket : tableBuckets) {
 
 				if(bucket == null){
 					continue;
 				}
-
-				int localEntity = entity.getId();
 
 				if (!bucket.containsEntity(entity.getId())) {
 					continue;

@@ -9,29 +9,24 @@ import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.CheckForNull;
-import javax.validation.constraints.NotNull;
+import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
-import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.types.specific.string.StringType;
-import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
+import com.bakdata.conquery.models.events.parser.specific.string.StringParser;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -40,10 +35,9 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 @Slf4j
 public class Preprocessed {
 
-	private static final ObjectReader containerReader = Jackson.BINARY_MAPPER.readerFor(DataContainer.class);
-	private static final ObjectWriter containerWriter = Jackson.BINARY_MAPPER.writerFor(DataContainer.class);
 
-
+	private static final ObjectReader CONTAINER_READER = Jackson.BINARY_MAPPER.readerFor(PreprocessedData.class);
+	private static final ObjectWriter CONTAINER_WRITER = Jackson.BINARY_MAPPER.writerFor(PreprocessedData.class);
 	private final InputFile file;
 	private final String name;
 	/**
@@ -73,22 +67,23 @@ public class Preprocessed {
 
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
-			columns[index] = new PPColumn(columnDescription.getName());
+			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 		}
 	}
 
-	public static DataContainer readContainer(InputStream in) throws IOException {
-		return containerReader.readValue(in);
+	/**
+	 * Read the data section of a CQPP file.
+	 */
+	public static PreprocessedData readContainer(InputStream in) throws IOException {
+		return CONTAINER_READER.readValue(new GZIPInputStream(in));
 	}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
 	public void write(HCFile outFile) throws IOException {
 		if (!outFile.isWrite()) {
 			throw new IllegalArgumentException("outfile was opened in read-only mode.");
 		}
 
-		// Write content to file
 		final IntSummaryStatistics statistics = entries.row(0).values().stream().mapToInt(List::size).summaryStatistics();
 
 		log.info("Statistics = {}", statistics);
@@ -98,60 +93,45 @@ public class Preprocessed {
 
 		calculateEntitySpans(entityStart, entityLength);
 
-		CType[] cTypes = combineStores();
+		Map<String, ColumnStore<?>> columnStores = combineStores();
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
-		Map<String, Dictionary> dicts = collectDictionaries(cTypes, columns);
+		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
 
-		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(outFile.writeContent()))) {
-			containerWriter.writeValue(out, new DataContainer(entityStart, entityLength, cTypes, primaryDictionary, dicts));
-		}
+		writeHeader(outFile.writeHeader());
 
-		// Then write headers.
-		try (OutputStream out = outFile.writeHeader()) {
-			int hash = descriptor.calculateValidityHash();
-
-			PreprocessedHeader header = new PreprocessedHeader(
-					descriptor.getName(),
-					descriptor.getTable(),
-					rows,
-					this.columns,
-					hash
-			);
-
-			try {
-				Jackson.BINARY_MAPPER.writeValue(out, header);
-				out.flush();
-			}
-			catch (Exception e) {
-				throw new RuntimeException("Failed to serialize header " + header, e);
-			}
-		}
-	}
-
-	public Dictionary encodePrimaryDictionary() {
-		log.info("finding optimal column types");
-
-		primaryColumn.setEncoding(StringTypeEncoded.Encoding.UTF8);
-
-		// todo this doesn't actually do anything useful
-		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
-		log.info("\tPrimaryColumn -> {}", primaryDictionary);
-		return primaryDictionary;
+		writeData(outFile.writeContent(), entityStart, entityLength, columnStores, primaryDictionary, dicts);
 	}
 
 	/**
-	 * Combine by-Entity data into column stores, appropriately formatted.
+	 * Calculate beginning and end of
+	 */
+	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
+		Map<Integer, List> values = entries.row(0);
+		int start = 0;
+
+		for (Integer entity : entries.columnKeySet()) {
+			int length = values.get(entity).size();
+
+			entityStart.put(entity.intValue(), start);
+			entityLength.put(entity.intValue(), length);
+
+			start += length;
+		}
+	}
+
+	/**
+	 * Combine raw by-Entity data into column stores, appropriately formatted.
 	 */
 	@SuppressWarnings("rawtypes")
-	public CType[] combineStores() {
-		CType<?>[] cTypes = new CType[columns.length];
+	private Map<String, ColumnStore<?>> combineStores() {
+		Map<String, ColumnStore<?>> columnStores = new HashMap<>(this.columns.length);
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
 
-			final CType store = ppColumn.findBestType();
+			final ColumnStore store = ppColumn.findBestType();
 
 			Map<Integer, List> values = entries.row(colIdx);
 			int start = 0;
@@ -167,42 +147,65 @@ public class Preprocessed {
 				start += length;
 			}
 
-			cTypes[colIdx] = store;
+			columnStores.put(ppColumn.getName(), store);
 		}
-		return cTypes;
+		return columnStores;
 	}
 
-	public void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
-		Map<Integer, List> values = entries.row(0);
-		int start = 0;
+	private Dictionary encodePrimaryDictionary() {
+		log.info("finding optimal column types");
 
-		// TODO compute start length first once, instead of doing it on-line, it makes the code hard to read
+		primaryColumn.applyEncoding(StringTypeEncoded.Encoding.UTF8);
 
-		for (Integer entity : entries.columnKeySet()) {
-			int length = values.get(entity).size();
-
-			entityStart.put(entity.intValue(), start);
-			entityLength.put(entity.intValue(), length);
-
-			start += length;
-		}
+		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
+		log.info("\tPrimaryColumn -> {}", primaryDictionary);
+		return primaryDictionary;
 	}
 
-	public static Map<String, Dictionary> collectDictionaries(CType<?>[] cTypes, PPColumn[] columns) {
-		Map<String, Dictionary> dicts = new HashMap<>();
-
-
-		for (int i = 0; i < cTypes.length; i++) {
-			CType<?> column = cTypes[i];
-			final String colName = columns[i].getName();
-
-			if (!(column instanceof StringType)) {
+	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore<?>> columnStores) {
+		final Map<String, Dictionary> collect = new HashMap<>();
+		for (Map.Entry<String, ColumnStore<?>> entry : columnStores.entrySet()) {
+			if (!(entry.getValue() instanceof StringType)) {
 				continue;
 			}
 
-			dicts.put(colName, ((StringType) column).getUnderlyingDictionary());
+			final Dictionary dictionary = ((StringType) entry.getValue()).getUnderlyingDictionary();
+
+			if (dictionary == null) {
+				continue;
+			}
+
+			collect.put(entry.getKey(), dictionary);
 		}
-		return dicts;
+
+		return collect;
+	}
+
+	private void writeHeader(OutputStream out) {
+		int hash = descriptor.calculateValidityHash();
+
+		PreprocessedHeader header = new PreprocessedHeader(
+				descriptor.getName(),
+				descriptor.getTable(),
+				rows,
+				this.columns,
+				hash
+		);
+
+		try {
+			Jackson.BINARY_MAPPER.writeValue(out, header);
+			out.flush();
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to serialize header " + header, e);
+		}
+	}
+
+	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore<?>> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
+			throws IOException {
+		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(out1))) {
+			CONTAINER_WRITER.writeValue(out, new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts));
+		}
 	}
 
 	public synchronized int addPrimary(int primary) {
@@ -221,25 +224,6 @@ public class Preprocessed {
 
 		//update stats
 		rows++;
-	}
-
-
-	@Data
-	@AllArgsConstructor(onConstructor_ = @JsonCreator)
-	public static class DataContainer {
-		private final Map<Integer, Integer> starts;
-		private final Map<Integer, Integer> lengths;
-		private final CType<?>[] values;
-
-		@NotNull
-		private final Dictionary primaryDictionary;
-		@CheckForNull
-		private final Map<String, Dictionary> dictionaries;
-
-		@JsonIgnore
-		public boolean isEmpty() {
-			return getStarts() == null;
-		}
 	}
 
 

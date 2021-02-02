@@ -3,16 +3,18 @@ package com.bakdata.conquery.models.events.stores.base;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Stores fixed point decimals as BigDecimals. Null is Null.
+ */
 @CPSType(id = "DECIMALS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DecimalStore extends ColumnStoreAdapter<BigDecimal> {
+public class DecimalStore extends ColumnStore<BigDecimal> {
 
 	private final BigDecimal[] values;
 
@@ -25,7 +27,12 @@ public class DecimalStore extends ColumnStoreAdapter<BigDecimal> {
 		return new DecimalStore(new BigDecimal[size]);
 	}
 
-	public DecimalStore select(int[] starts, int[] ends) {
+	@Override
+	public long estimateEventBits() {
+		return 256; // Source: http://javamoods.blogspot.com/2009/03/how-big-is-bigdecimal.html
+	}
+
+	public DecimalStore doSelect(int[] starts, int[] ends) {
 		return new DecimalStore(ColumnStore.selectArray(starts, ends, values, BigDecimal[]::new));
 	}
 
@@ -47,8 +54,11 @@ public class DecimalStore extends ColumnStoreAdapter<BigDecimal> {
 
 	@Override
 	public BigDecimal get(int event) {
-		return values[event];
+		return getDecimal(event);
 	}
 
-
+	@Override
+	public BigDecimal getDecimal(int event) {
+		return values[event];
+	}
 }

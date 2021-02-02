@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { DropTarget } from "react-dnd";
+import { DropTarget, DropTargetMonitor, DropTargetSpec } from "react-dnd";
 
 const Root = styled("div")<{
   isOver?: boolean;
@@ -27,21 +27,21 @@ const Root = styled("div")<{
       : theme.col.gray};
 `;
 
-export type ChildArgs = {
+export interface ChildArgs {
   isOver: boolean;
   canDrop: boolean;
   itemType: String;
-};
+}
 
-type InnerZonePropsType = {
+interface InnerZonePropsType {
   className?: string;
-  children: (args: ChildArgs) => React.ReactNode;
+  children?: (args: ChildArgs) => React.ReactNode;
   connectDropTarget: Function;
   isOver: boolean;
   canDrop: boolean;
   itemType: string;
-  onClick: () => void;
-};
+  onClick?: () => void;
+}
 
 export const InnerZone = ({
   children,
@@ -60,17 +60,18 @@ export const InnerZone = ({
       className={className}
       onClick={onClick}
     >
-      {children({ isOver, canDrop, itemType })}
+      {children && children({ isOver, canDrop, itemType })}
     </Root>
   );
 };
 
-type PropsType = {
+interface PropsT<TargetProps> {
   acceptedDropTypes: string[];
   children?: (args: ChildArgs) => React.ReactNode;
-  onDrop: (props: any, monitor: any) => void;
-  target?: Object;
-};
+  onDrop: (props: TargetProps, monitor: DropTargetMonitor) => void;
+  onClick?: () => void;
+  target?: TargetProps;
+}
 
 const collect = (connect, monitor) => ({
   connectDropTarget: connect.dropTarget(),
@@ -79,13 +80,16 @@ const collect = (connect, monitor) => ({
   itemType: monitor.getItemType(),
 });
 
-const Dropzone = ({
+const Dropzone = <TargetProps extends {}>({
   acceptedDropTypes,
   onDrop,
   target,
   ...restProps
-}: PropsType) => {
-  const dropzoneTarget = { drop: onDrop, ...target };
+}: PropsT<TargetProps>) => {
+  const dropzoneTarget: DropTargetSpec<TargetProps> = {
+    drop: onDrop,
+    ...target,
+  };
 
   const FinalZone = DropTarget(
     acceptedDropTypes,

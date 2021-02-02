@@ -3,8 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Map;
 import java.util.Objects;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDateSetCache;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -22,23 +21,26 @@ import lombok.Setter;
 @Setter
 public class DateRestrictingNode extends QPChainNode {
 
-	protected final BitMapCDateSet restriction;
+	protected final CDateSet restriction;
 	protected Column validityDateColumn;
 	protected Map<BucketId, CBlock> preCurrentRow = null;
 
-	public DateRestrictingNode(BitMapCDateSet restriction, QPNode child) {
+	public DateRestrictingNode(CDateSet restriction, QPNode child) {
 		super(child);
 		this.restriction = restriction;
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		//if there was no date restriction we can just use the restriction BitMapCDateSet
-		final BitMapCDateSet restricted = CDateSetCache.createPreAllocatedDateSet();
-		restricted.addAll(restriction);
-		restricted.retainAll(restriction);
-
-		ctx = ctx.withDateRestriction(restricted);
+		//if there was no date restriction we can just use the restriction CDateSet
+		if(ctx.getDateRestriction().isAll()) {
+			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
+		}
+		else {
+			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			dateRestriction.retainAll(restriction);
+			ctx = ctx.withDateRestriction(dateRestriction);
+		}
 		super.nextTable(ctx, currentTable);
 
 
@@ -54,26 +56,24 @@ public class DateRestrictingNode extends QPChainNode {
 	public boolean isOfInterest(Bucket bucket) {
 		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 
-		if(validityDateColumn == null) {
+		if (validityDateColumn == null) {
 			// If there is no validity date set for a concept there is nothing to restrict
 			return true;
 		}
 
-		int localId = entity.getId();
+		int entityId = entity.getId();
 
-		// This means the Entity is not contained.
-		if(cBlock.getMinDate().get(localId) > cBlock.getMaxDate().get(localId)) {
-			return false;
+		// Entity has no date-columns.
+		if(!cBlock.getMinDate().containsKey(entityId) && !cBlock.getMaxDate().containsKey(entityId)){
+			return super.isOfInterest(bucket);
 		}
 
-		CDateRange range = CDateRange.of(
-			cBlock.getMinDate().get(localId),
-			cBlock.getMaxDate().get(localId)
-		);
-		if(!restriction.intersects(range)) {
-			return false;
-		}
-		return super.isOfInterest(bucket);
+		final int min = cBlock.getMinDate().getOrDefault(entityId, Integer.MIN_VALUE);
+		final int max = cBlock.getMaxDate().getOrDefault(entityId, Integer.MAX_VALUE);
+
+		CDateRange range = CDateRange.of(min, max);
+
+		return restriction.intersects(range) && super.isOfInterest(bucket);
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class DateRestrictingNode extends QPChainNode {
 	public boolean isContained() {
 		return getChild().isContained();
 	}
-	
+
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		return new DateRestrictingNode(restriction, ctx.clone(getChild()));

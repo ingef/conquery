@@ -6,11 +6,13 @@ import java.util.List;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -21,7 +23,9 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
@@ -37,7 +41,12 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		super.createStores(environmentToStores);
 
 		worker = StoreInfo.WORKER.singleton(getConfig(), environment, getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
+
+		blocks = StoreInfo.BUCKETS.<Bucket>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+						 .onAdd((Bucket bucket) -> {
+							 bucket.loadDictionaries(this);
+						 });
+
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 		
 		environmentToStores.putAll(environment, List.of(
@@ -50,6 +59,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void addCBlock(CBlock cBlock) {
+		log.debug("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
 	}
 
@@ -58,6 +68,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		return cBlocks.get(id);
 	}
 
+	// TODO method is unused, delete it.
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void updateCBlock(CBlock cBlock) {
@@ -66,9 +77,19 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 
 	@Override
 	public void removeCBlock(CBlockId id) {
+		log.debug("Removing CBlock[{}]", id);
 		cBlocks.remove(id);
 	}
-	
+
+	@Override
+	public void addDictionary(Dictionary dict) {
+		if (dict.getId().equals(ConqueryConstants.getPrimaryDictionary(getDataset()))) {
+			throw new IllegalStateException("Workers may not receive the primary dictionary");
+		}
+
+		super.addDictionary(dict);
+	}
+
 	@Override
 	public Collection<CBlock> getAllCBlocks() {
 		return cBlocks.getAll();
@@ -77,6 +98,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void addBucket(Bucket bucket) {
+		log.debug("Adding Bucket[{}]", bucket.getId());
 		blocks.add(bucket);
 	}
 
@@ -87,6 +109,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	
 	@Override
 	public void removeBucket(BucketId id) {
+		log.debug("Removing Bucket[{}]", id);
 		blocks.remove(id);
 	}
 	
@@ -100,6 +123,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		return worker.get();
 	}
 
+	//TODO remove duplication
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void setWorker(WorkerInformation worker) {
@@ -116,11 +140,13 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	@SneakyThrows(JSONException.class)
 	public void updateConcept(Concept<?> concept) {
+		log.debug("Updating Concept[{}]", concept.getId());
 		concepts.update(concept);
 	}
 
 	@Override
 	public void removeConcept(ConceptId id) {
+		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
 	}
 

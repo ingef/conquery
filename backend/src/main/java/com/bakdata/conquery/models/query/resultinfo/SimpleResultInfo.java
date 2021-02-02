@@ -16,7 +16,6 @@ public class SimpleResultInfo extends ResultInfo {
 	private final String name;
 	private final ResultType type;
 
-
 	@Override
 	public String getName(PrintSettings settings) {
 		return name;

@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { StateT } from "app-types";
 import { FormContextStateT } from "./reducer";
 import { getLocale } from "../localization";
-import type { Form } from "../api/form-types";
+import { Form } from "./config-types";
 
 const selectFormField = (state, formName, fieldName) => {
   if (

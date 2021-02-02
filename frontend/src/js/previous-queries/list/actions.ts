@@ -1,4 +1,5 @@
 import T from "i18n-react";
+import { DatasetIdT } from "../../api/types";
 import api from "../../api";
 
 import { defaultSuccess, defaultError } from "../../common/actions";
@@ -58,7 +59,10 @@ export const loadPreviousQuerySuccess = (queryId, res) =>
 export const loadPreviousQueryError = (queryId, err) =>
   defaultError(LOAD_PREVIOUS_QUERY_ERROR, err, { queryId });
 
-export const loadPreviousQuery = (datasetId, queryId) => {
+export const loadPreviousQuery = (
+  datasetId: DatasetIdT,
+  queryId: PreviousQueryIdT
+) => {
   return (dispatch) => {
     dispatch(loadPreviousQueryStart(queryId));
 
@@ -142,12 +146,10 @@ export const retagPreviousQuery = (datasetId, queryId, tags) => {
 
 export const sharePreviousQuerySuccess = (
   queryId: string,
-  shared: boolean,
   groups: PreviousQueryIdT[]
 ) =>
   defaultSuccess(TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS, null, {
     queryId,
-    shared,
     groups,
   });
 

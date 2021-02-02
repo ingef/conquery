@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -28,23 +28,26 @@ import javax.ws.rs.core.UriBuilderException;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -62,6 +65,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
+import org.jetbrains.annotations.TestOnly;
 
 @Getter
 @Setter
@@ -71,6 +75,11 @@ import org.apache.shiro.authz.Permission;
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
+	
+	/**
+	 * Some unusual suffix. Its not too bad if someone actually uses this. 
+	 */
+	public final static String AUTO_LABEL_SUFFIX = "\t@§$";
 
 	protected DatasetId dataset;
 	protected UUID queryId;
@@ -106,9 +115,17 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	/**
 	 * Executed right before execution submission.
-	 * @param namespaces
 	 */
-	public abstract void initExecutable(DatasetRegistry namespaces);
+	public void initExecutable(DatasetRegistry datasetRegistry) {
+		synchronized (getExecution()) {
+			if(label == null) {
+				label = makeAutoLabel(datasetRegistry);
+			}
+			doInitExecutable(datasetRegistry);
+		}
+	}
+
+	protected abstract void doInitExecutable(DatasetRegistry namespaces);
 
 	/**
 	 * Returns the set of namespaces, this execution needs to be executed on.
@@ -136,7 +153,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		} else {
 			this.error = error;
 			// Log the error, so its id is atleast once in the logs
-			log.warn("The execution [{}] failed with:\n\t{}", this.error);
+			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
 		}
 		
 		finish(storage, ExecutionState.FAILED);
@@ -189,15 +206,16 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
+	@TestOnly
 	public void awaitDone(int time, TimeUnit unit) {
-		if (state == ExecutionState.RUNNING) {
+		if (state == ExecutionState.RUNNING || state == ExecutionState.NEW) {
 			Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 		}
 	}
 
-	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
-		status.setLabel(label == null ? queryId.toString() : label);
-		status.setPristineLabel(label == null || queryId.toString().equals(label));
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
+		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
+		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
@@ -208,10 +226,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
 		status.setResultUrl(getDownloadURL(url, user).orElse(null));
-		if (state.equals(ExecutionState.FAILED) && error != null) {
-			// Use plain format here to have a uniform serialization.
-			status.setError(error.asPlain());
-		}
 	}
 	
 
@@ -230,40 +244,61 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@Nullable
 	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, EnumSet.noneOf(ExecutionStatus.CreationFlag.class), datasetRegistry);
-	}
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull ExecutionStatus.CreationFlag creationFlag, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, EnumSet.of(creationFlag), datasetRegistry);
-	}
-	
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags, DatasetRegistry datasetRegistry) {
-		ExecutionStatus status = new ExecutionStatus();
-		setStatusBase(storage, url, user, status);
-		for(CreationFlag flag : creationFlags) {
-			switch (flag) {
-				case WITH_COLUMN_DESCIPTION:
-					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
-					break;
-				case WITH_SOURCE:
-					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
-					break;
-				default:
-					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
-			}
-		}
+	/**
+	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
+	 */
+	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
+		setStatusBase(storage, user, status, url);
+
 		return status;
-		
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+	/**
+	 * Renders an extensive status of this query (see {@link ExecutionStatus.Full}. The rendering can be computation intensive and can produce a large
+	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
+	 */
+	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		ExecutionStatus.Full status = new ExecutionStatus.Full();
+		setStatusBase(storage, user, status, url);
+
+		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
+		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		setAdditionalFieldsForStatusWithGroups(storage, user, status);
+
+		if (state.equals(ExecutionState.FAILED) && error != null) {
+			// Use plain format here to have a uniform serialization.
+			status.setError(error.asPlain());
+		}
+
+		return status;
+	}
+
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus.Full status) {
+		/* Calculate which groups can see this query.
+		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
+		 */
+		List<GroupId> permittedGroups = new ArrayList<>();
+		for(Group group : storage.getAllGroups()) {
+			for(Permission perm : group.getPermissions()) {
+				if(perm.implies(QueryPermission.onInstance(Ability.READ, this.getId()))) {
+					permittedGroups.add(group.getId());
+					continue;
+				}
+			}
+		}
+		
+		status.setGroups(permittedGroups);
+	}
+
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
@@ -278,14 +313,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user) {
+		if(state != ExecutionState.DONE) {
+			// No url for unfinished executions, quick return
+			return false;
+		}
+
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
-		boolean isPermittedDownload = user.isPermittedAll(getUsedNamespacedIds().stream()
+		return user.isPermittedAll(getUsedNamespacedIds().stream()
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return state == ExecutionState.DONE && isPermittedDownload;
 	}
 
 	/**
@@ -293,7 +332,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
 	 */
 	@JsonIgnore
-	public abstract StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator);
+	public abstract StreamingOutput getResult(Function<ContainedEntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator);
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
@@ -323,4 +362,28 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	@JsonIgnore
 	public abstract QueryDescription getSubmitted();
+
+	@JsonIgnore
+	public String getLabelWithoutAutoLabelSuffix() {
+		int idx;
+		if(label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1){
+		
+			return label.substring(0, idx);
+		}
+		return label;
+	}
+	
+	@JsonIgnore
+	public boolean isAutoLabeled() {
+		return label != null ? label.endsWith(AUTO_LABEL_SUFFIX) : false;
+	}
+	
+	@JsonIgnore
+	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry);
+	
+	protected String makeAutoLabel(DatasetRegistry datasetRegistry) {
+		StringBuilder sb = new StringBuilder();
+		makeDefaultLabel(sb, datasetRegistry);
+		return sb.append(AUTO_LABEL_SUFFIX).toString();
+	}
 }

@@ -1,16 +1,20 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Stores values as longs, can only Store 2^64-1 as MAX is used as NULL marker.
+ *
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.events.parser.specific.IntegerParser}
+ */
 @CPSType(id = "LONGS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class LongStore extends ColumnStoreAdapter<Long> {
+public class LongStore extends ColumnStore<Long> {
 
 	private final long nullValue;
 	private final long[] values;
@@ -25,7 +29,12 @@ public class LongStore extends ColumnStoreAdapter<Long> {
 		return new LongStore(new long[size], Long.MAX_VALUE);
 	}
 
-	public LongStore select(int[] starts, int[] ends) {
+	@Override
+	public long estimateEventBits() {
+		return Long.SIZE;
+	}
+
+	public LongStore doSelect(int[] starts, int[] ends) {
 		return new LongStore(ColumnStore.selectArray(starts, ends, values, long[]::new), nullValue);
 	}
 
@@ -46,6 +55,12 @@ public class LongStore extends ColumnStoreAdapter<Long> {
 
 	@Override
 	public Long get(int event) {
+		return getInteger(event);
+	}
+
+	@Override
+	public long getInteger(int event) {
 		return values[event];
 	}
+
 }

@@ -1,17 +1,21 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
 
+/**
+ * Can store only 255 different values, the last one is reserved as NULL-flag.
+ *
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.events.parser.specific.IntegerParser}
+ */
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class ByteStore extends ColumnStoreAdapter<Long> {
+public class ByteStore extends ColumnStore<Long> {
 
 	private final byte nullValue;
 	private final byte[] values;
@@ -26,7 +30,12 @@ public class ByteStore extends ColumnStoreAdapter<Long> {
 		return new ByteStore(new byte[size], Byte.MAX_VALUE);
 	}
 
-	public ByteStore select(int[] starts, int[] ends) {
+	@Override
+	public long estimateEventBits() {
+		return Byte.SIZE;
+	}
+
+	public ByteStore doSelect(int[] starts, int[] ends) {
 		return new ByteStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
 	}
 
@@ -51,6 +60,12 @@ public class ByteStore extends ColumnStoreAdapter<Long> {
 
 	@Override
 	public Long get(int event) {
-		return (long) values[event];
+		return getInteger(event);
 	}
+
+	@Override
+	public long getInteger(int event) {
+		return values[event];
+	}
+
 }

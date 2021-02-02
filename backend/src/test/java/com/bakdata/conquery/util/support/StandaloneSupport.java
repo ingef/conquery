@@ -48,7 +48,7 @@ public class StandaloneSupport implements Closeable {
 		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
 			Conquery.class,
 			config,
-			app -> new TestCommandWrapper(config, new PreprocessorCommand(MoreExecutors.newDirectExecutorService()))
+			app ->  new PreprocessorCommand(MoreExecutors.newDirectExecutorService())
 		);
 		prepro.before();
 		prepro.after();

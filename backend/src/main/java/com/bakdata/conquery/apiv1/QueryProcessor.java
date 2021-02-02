@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -150,7 +149,7 @@ public class QueryProcessor {
 	}
 
 	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
-		return query.buildStatus(storage, urlb, user, CreationFlag.WITH_COLUMN_DESCIPTION, datasetRegistry);
+		return query.buildStatusFull(storage, urlb, user, datasetRegistry);
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {

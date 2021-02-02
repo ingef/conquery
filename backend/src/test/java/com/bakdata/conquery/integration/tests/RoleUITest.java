@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -50,9 +51,15 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			// owning the permission
 			permission = mandator.addPermission(storage, permission);
 			user.addRole(storage, mandator);
-			
-			String base = String.format("http://localhost:%d/admin/", conquery.getAdminPort());
-			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(base, RoleUIResource.class, "getRole")
+
+
+			final UriBuilder root = UriBuilder.fromPath("admin")
+											  .host("localhost")
+											  .scheme("http")
+											  .port(conquery.getAdminPort());
+
+
+			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(root, RoleUIResource.class, "getRole")
 				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 	
 			Response response = conquery

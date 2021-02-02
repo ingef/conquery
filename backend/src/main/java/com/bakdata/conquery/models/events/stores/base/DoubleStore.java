@@ -1,16 +1,18 @@
 package com.bakdata.conquery.models.events.stores.base;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.ColumnStore;
-import com.bakdata.conquery.models.events.stores.ColumnStoreAdapter;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Stores values as 64bit doubles, where NaN is null.
+ */
 @CPSType(id = "DOUBLES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class DoubleStore extends ColumnStoreAdapter<Double> {
+public class DoubleStore extends ColumnStore<Double> {
 
 	private final double[] values;
 
@@ -23,7 +25,12 @@ public class DoubleStore extends ColumnStoreAdapter<Double> {
 		return new DoubleStore(new double[size]);
 	}
 
-	public DoubleStore select(int[] starts, int[] ends) {
+	@Override
+	public long estimateEventBits() {
+		return Double.SIZE;
+	}
+
+	public DoubleStore doSelect(int[] starts, int[] ends) {
 		return new DoubleStore(ColumnStore.selectArray(starts, ends, values, double[]::new));
 	}
 
@@ -44,6 +51,11 @@ public class DoubleStore extends ColumnStoreAdapter<Double> {
 
 	@Override
 	public Double get(int event) {
+		return getReal(event);
+	}
+
+	@Override
+	public double getReal(int event) {
 		return values[event];
 	}
 }

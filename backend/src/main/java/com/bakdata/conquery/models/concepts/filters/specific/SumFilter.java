@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
@@ -24,7 +25,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +51,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@Setter
 	@NsIdRef
 	private Column subtractColumn;
-
-	private boolean distinct = false;
 
 	@Valid
 	@Getter
@@ -82,19 +80,20 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn(), getSubtractColumn(), distinct ? getDistinctByColumn() : null };
+		return new Column[]{getColumn(), getSubtractColumn(), getDistinctByColumn()};
 	}
 
 	@Override
 	public FilterNode createAggregator(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
-		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn() == null ? getColumn() :
-				getDistinctByColumn()));
+		if (distinctByColumn != null) {
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn()));
 		}
-		if(getColumn().getType() == MajorTypeId.REAL)
+
+		if (getColumn().getType() == MajorTypeId.REAL) {
 			return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
+		}
 
 		return new RangeFilterNode(value, aggregator);
 	}

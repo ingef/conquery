@@ -5,42 +5,53 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
+import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -83,11 +94,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public void initExecutable(@NonNull DatasetRegistry namespaces) {
-		synchronized (getExecution()) {
-			this.namespace = namespaces.get(getDataset());
-			this.involvedWorkers = namespace.getWorkers().size();
-			query.resolve(new QueryResolveContext(getDataset(), namespaces));
+	protected void doInitExecutable(@NonNull DatasetRegistry namespaces) {
+		this.namespace = namespaces.get(getDataset());
+		this.involvedWorkers = namespace.getWorkers().size();
+		query.resolve(new QueryResolveContext(getDataset(), namespaces));
+		if(label == null) {
+			label = makeAutoLabel(namespaces);
 		}
 	}
 	
@@ -124,7 +136,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
+		lastResultCount = query.countResults(results);
 
 		super.finish(storage, executionState);
 	}
@@ -139,13 +151,19 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
-		super.setStatusBase(storage, url, user, status);
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
+		super.setStatusBase(storage, user, status, url);
 		status.setNumberOfResults(lastResultCount);
+
+		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
+
+		if (query instanceof SecondaryIdQuery) {
+			status.setSecondaryId(((SecondaryIdQuery) query).getSecondaryId().getId());
+		}
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions(datasetRegistry);
@@ -205,8 +223,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(IdMappingState mappingState, PrintSettings settings, Charset charset, String lineSeparator) {
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), mappingState, charset, lineSeparator);
+	public StreamingOutput getResult(Function<ContainedEntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator);
 	}
 	
 	@Override
@@ -218,5 +236,95 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
 			.build()
 			.toURL();
+	}
+
+	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
+	
+	/**
+	 * Creates a default label based on the submitted {@link QueryDescription}.
+	 * The Label is customized by mentioning that a description contained a 
+	 * {@link CQExternal}, {@link CQReusedQuery} or {@link CQConcept}, in this order.
+	 * In case of one ore more {@link CQConcept} the distinct labels of the concepts are chosen
+	 * and concatinated until a length of {@value #MAX_CONCEPT_LABEL_CONCAT_LENGTH} is reached.
+	 * All further labels are dropped.
+	 */
+	@Override
+	protected void makeDefaultLabel(final StringBuilder sb, DatasetRegistry datasetRegistry) {
+		final Map<Class<? extends Visitable>,List<Visitable>> sortedContents = new HashMap<>();
+		
+		int sbStartSize = sb.length();
+		
+		QueryVisitor visitor = new QueryVisitor() {
+			
+			@Override
+			public void accept(Visitable t) {
+				sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
+			}
+		};
+		query.visit(visitor);
+		
+		// Check for CQExternal
+		List<Visitable> externals = sortedContents.computeIfAbsent(CQExternal.class, (clazz)-> List.of());
+		if(!externals.isEmpty()) {
+			if (sb.length() > 0) {
+				sb.append(" ");
+			}
+			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).external());
+		}
+		
+		// Check for CQReused
+		if( !sortedContents.computeIfAbsent(CQReusedQuery.class, (clazz)-> List.of()).isEmpty()) {
+			if (sb.length() > 0) {
+				sb.append(" ");
+			}
+			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).reused());
+		}
+		
+		// Check for CQConcept
+		final AtomicInteger length = new AtomicInteger();
+		String usedConcepts = sortedContents.computeIfAbsent(CQConcept.class, (clazz)-> List.of()).stream()
+			.map((CQConcept.class::cast))
+			.map(c -> makeLabelWithRootAndChild(datasetRegistry, c))
+			.distinct()
+			.filter((s) -> !Strings.isNullOrEmpty(s))
+			.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
+			.collect(Collectors.joining(" "));
+		
+		if (sb.length() > 0 && usedConcepts.length() > 0) {
+			sb.append(" ");
+		}
+		sb.append(usedConcepts);
+
+		// If not all Concept could be included in the name, point that out
+		if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {
+			sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
+		}
+		
+		// Fallback to id if nothing could be extracted from the query description
+		if(sbStartSize == sb.length()) {
+			sb.append(getId().getExecution());
+		}
+	}
+
+	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept){
+		String cqConceptLabel = cqConcept.getLabel();
+		if (cqConceptLabel == null){
+			return "";
+		}
+
+		if(cqConcept.getIds().isEmpty()){
+			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
+		}
+
+		ConceptElementId<?> id = cqConcept.getIds().iterator().next();
+
+		Concept<?> concept = datasetRegistry.resolve(id.findConcept());
+		String conceptLabel = concept.getLabel();
+		if(cqConceptLabel.equalsIgnoreCase(conceptLabel)){
+			return cqConceptLabel.replace(" ", "-");
+		}
+
+		// Concat everything with dashes
+		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
 	}
 }

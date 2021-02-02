@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -47,14 +48,17 @@ public class Import extends NamedImpl<ImportId> {
 
 	public void loadExternalInfos(NamespacedStorage storage) {
 		for (ImportColumn col : columns) {
-			col.getType().loadDictionaries(storage);
+
+			if(col.getTypeDescription() instanceof StringType) {
+				((StringType) col.getTypeDescription()).loadDictionaries(storage);
+			}
 		}
 	}
 
 	public long estimateMemoryConsumption() {
 		long mem = 0;
 		for (ImportColumn col : columns) {
-			mem += col.getType().estimateMemoryConsumption();
+			mem += col.getTypeDescription().estimateMemoryConsumptionBytes();
 		}
 		return mem;
 	}

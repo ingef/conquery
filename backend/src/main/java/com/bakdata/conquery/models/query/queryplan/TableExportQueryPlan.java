@@ -3,16 +3,18 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
+import javax.annotation.Nullable;
+
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -57,18 +59,19 @@ public class TableExportQueryPlan implements QueryPlan {
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable().getId())) {
 
-				int localEntity = entity.getId();
+				int entityId = entity.getId();
 
-				if (!bucket.containsEntity(localEntity)) {
+				if (!bucket.containsEntity(entityId)) {
 					continue;
 				}
 
-				int start = bucket.getEntityStart(localEntity);
-				int end = bucket.getEntityEnd(localEntity);
+				int start = bucket.getEntityStart(entityId);
+				int end = bucket.getEntityEnd(entityId);
 
 				for (int event = start; event < end; event++) {
 
-					if (!bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), BitMapCDateSet.create(dateRange))) {
+					// Export Full-table if it has no validity date.
+					if (exportDescription.getValidityDateColumn() != null && !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
 						continue;
 					}
 
@@ -80,12 +83,12 @@ public class TableExportQueryPlan implements QueryPlan {
 							continue;
 						}
 
-						CType type = column.getTypeFor(bucket);
+						ColumnStore type = column.getTypeFor(bucket);
 
 						// depending on context use pretty printing or script value
 						entry[exportDescription.getColumnOffset() + col] = ctx.isPrettyPrint()
 																		   ? type.createPrintValue(bucket.getAsObject(event, column))
-																		   : type.createScriptValue(bucket.getAsObject(event, column));
+																		   : bucket.createScriptValue(event, column);
 					}
 
 					results.add(entry);
@@ -103,6 +106,7 @@ public class TableExportQueryPlan implements QueryPlan {
 	@Getter
 	public static class TableExportDescription {
 		private final Table table;
+		@Nullable
 		private final Column validityDateColumn;
 		private final int columnOffset;
 	}

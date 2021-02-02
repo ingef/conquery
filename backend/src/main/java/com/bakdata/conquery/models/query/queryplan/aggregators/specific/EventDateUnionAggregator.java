@@ -3,8 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.models.common.BitMapCDateSet;
-import com.bakdata.conquery.models.common.CDateSetCache;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -23,11 +22,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventDateUnionAggregator implements Aggregator<String> {
 
-	private BitMapCDateSet set = CDateSetCache.createPreAllocatedDateSet();
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
-
-	private BitMapCDateSet dateRestriction;
+	private CDateSet set = CDateSet.create();
+	private CDateSet dateRestriction;
 
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
@@ -60,7 +58,6 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}
-
 		set.maskedAdd(bucket.getAsDateRange(event, validityDateColumn), dateRestriction);
 	}
 

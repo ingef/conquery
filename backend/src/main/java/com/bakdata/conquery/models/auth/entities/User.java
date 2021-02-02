@@ -7,11 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +24,8 @@ import org.apache.shiro.subject.PrincipalCollection;
 @Slf4j
 public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 
-	@MetaIdRefCollection
-	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
+	@JsonProperty
+	private Set<RoleId> roles = Collections.synchronizedSet( new HashSet<>());
 
 	@Getter @Setter @JsonIgnore
 	private transient boolean displayLogout = true;
@@ -71,7 +72,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 
 	public void addRole(MetaStorage storage, Role role) {
-		if(roles.add(role)) {
+		if(roles.add(role.getId())) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
 			updateStorage(storage);
 		}
@@ -79,13 +80,13 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	
 	@Override
 	public void removeRole(MetaStorage storage, Role role) {
-		if(roles.remove(role)) {
+		if(roles.remove(role.getId())) {
 			log.trace("Removed role {} from user {}", role.getId(), getId());				
 			updateStorage(storage);
 		}
 	}
 
-	public Set<Role> getRoles(){
+	public Set<RoleId> getRoles(){
 		return Collections.unmodifiableSet(roles);
 	}
 	

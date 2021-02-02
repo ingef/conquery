@@ -3,7 +3,6 @@ import { Sema } from "../common/helpers/rateLimitHelper";
 import type { DatasetIdT, ConceptIdT } from "../api/types";
 import type { TreesT } from "./reducer";
 
-import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
 import { isEmpty } from "../common/helpers";
 
@@ -21,8 +20,10 @@ import {
   SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  TOGGLE_SHOW_MISMATCHES
+  TOGGLE_SHOW_MISMATCHES,
 } from "./actionTypes";
+import { useDispatch } from "react-redux";
+import { useGetConcepts, useGetConcept } from "../api/api";
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -31,16 +32,20 @@ export const loadTreesError = (err: any) => defaultError(LOAD_TREES_ERROR, err);
 export const loadTreesSuccess = (res: any) =>
   defaultSuccess(LOAD_TREES_SUCCESS, res);
 
-export const loadTrees = (datasetId: DatasetIdT) => {
-  return async (dispatch: Dispatch) => {
-    // TODO: Careful, side effect, extract this soon
+export const useLoadTrees = () => {
+  const dispatch = useDispatch();
+  const getConcepts = useGetConcepts();
+  const loadTree = useLoadTree();
+
+  return async (datasetId: DatasetIdT) => {
+    // CAREFUL: side effect!
     resetAllTrees();
 
     dispatch(clearTrees());
     dispatch(loadTreesStart());
 
     try {
-      const result = await api.getConcepts(datasetId);
+      const result = await getConcepts(datasetId);
 
       dispatch(loadTreesSuccess(result));
 
@@ -48,7 +53,7 @@ export const loadTrees = (datasetId: DatasetIdT) => {
 
       for (const treeId of Object.keys(result.concepts)) {
         if (result.concepts[treeId].detailsAvailable) {
-          dispatch(loadTree(datasetId, treeId));
+          loadTree(datasetId, treeId);
         }
       }
     } catch (e) {
@@ -59,7 +64,7 @@ export const loadTrees = (datasetId: DatasetIdT) => {
 
 export const loadTreeStart = (treeId: ConceptIdT) => ({
   type: LOAD_TREE_START,
-  payload: { treeId }
+  payload: { treeId },
 });
 export const loadTreeError = (treeId: ConceptIdT, err: any) =>
   defaultError(LOAD_TREE_ERROR, err, { treeId });
@@ -70,8 +75,11 @@ const TREES_TO_LOAD_IN_PARALLEL = 5;
 
 const semaphore = new Sema(TREES_TO_LOAD_IN_PARALLEL);
 
-export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
-  return async (dispatch: DispatchProp) => {
+export const useLoadTree = () => {
+  const dispatch = useDispatch();
+  const getConcept = useGetConcept();
+
+  return async (datasetId: DatasetIdT, treeId: ConceptIdT) => {
     await semaphore.acquire();
 
     // If the datasetId changed in the mean time, don't load the tree
@@ -84,7 +92,7 @@ export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
     dispatch(loadTreeStart(treeId));
 
     try {
-      const result = await api.getConcept(datasetId, treeId);
+      const result = await getConcept(datasetId, treeId);
 
       semaphore.release();
       dispatch(loadTreeSuccess(treeId, result));
@@ -97,11 +105,11 @@ export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
 
 export const searchTreesStart = (query: string) => ({
   type: SEARCH_TREES_START,
-  payload: { query }
+  payload: { query },
 });
 export const searchTreesSuccess = (query: string, result: Object) => ({
   type: SEARCH_TREES_SUCCESS,
-  payload: { query, result }
+  payload: { query, result },
 });
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });

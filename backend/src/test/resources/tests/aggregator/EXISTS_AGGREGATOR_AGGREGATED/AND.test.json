@@ -1,0 +1,134 @@
+{
+  "type": "QUERY_TEST",
+  "label": "EXISTS_AGGREGATOR & NUMBER Test",
+  "expectedCsv": "tests/aggregator/EXISTS_AGGREGATOR_AGGREGATED/expected.csv",
+  "query": {
+    "type": "ARRAY_CONCEPT_QUERY",
+    "childQueries": [
+      {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "type": "AND",
+          "createExists": true,
+          "children": [
+            {
+              "ids": [
+                "${dataset}.number.1"
+              ],
+              "type": "CONCEPT",
+              "tables": [
+                {
+                  "id": "${dataset}.number.number_connector",
+                  "selects": "${dataset}.number.exists"
+                }
+              ]
+            },
+            {
+              "ids": [
+                "${dataset}.number.2"
+              ],
+              "type": "CONCEPT",
+              "tables": [
+                {
+                  "id": "${dataset}.number.number_connector",
+                  "selects": "${dataset}.number.exists"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "type": "OR",
+          "createExists": true,
+          "children": [
+            {
+              "ids": [
+                "${dataset}.number.1"
+              ],
+              "type": "CONCEPT",
+              "tables": [
+                {
+                  "id": "${dataset}.number.number_connector",
+                  "selects": "${dataset}.number.exists"
+                }
+              ]
+            },
+            {
+              "ids": [
+                "${dataset}.number.2"
+              ],
+              "type": "CONCEPT",
+              "tables": [
+                {
+                  "id": "${dataset}.number.number_connector",
+                  "selects": "${dataset}.number.exists"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "selects": {
+        "type": "EXISTS",
+        "name": "exists"
+      },
+      "connectors": [
+        {
+          "column": "table1.value",
+          "label": "number_connector",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          }
+        }
+      ],
+      "children": [
+        {
+          "name": "1",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "1"
+          }
+        },
+        {
+          "name": "2",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "2"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/EXISTS_AGGREGATOR_AGGREGATED/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "STRING"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

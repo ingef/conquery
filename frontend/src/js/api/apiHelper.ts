@@ -5,24 +5,24 @@
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
 
+import { exists } from "../common/helpers/exists";
 import {
   DAYS_BEFORE,
-  DAYS_OR_NO_EVENT_BEFORE
+  DAYS_OR_NO_EVENT_BEFORE,
 } from "../common/constants/timebasedQueryOperatorTypes";
-
-import { isEmpty } from "../common/helpers";
 
 import type {
   TableWithFilterValueType,
   SelectedSelectorType,
-  SelectedDateColumnT
+  SelectedDateColumnT,
 } from "../standard-query-editor/types";
+import { isEmpty } from "../common/helpers";
 
 export const transformFilterValueToApi = (filter: any) => {
   const { value, mode } = filter;
 
   if (value instanceof Array) {
-    return value.map(v => (v.value ? v.value : v));
+    return value.map((v) => (v.value ? v.value : v));
   }
 
   if (!!mode) {
@@ -46,7 +46,7 @@ export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   if (!dateColumn) return null;
 
   return {
-    value: dateColumn.value
+    value: dateColumn.value,
   };
 };
 
@@ -54,8 +54,8 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   if (!tables) return [];
 
   return tables
-    .filter(table => !table.exclude)
-    .map(table => {
+    .filter((table) => !table.exclude)
+    .map((table) => {
       // Explicitly whitelist the tables that we allow to send to the API
       return {
         id: table.connectorId,
@@ -63,13 +63,15 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
         selects: transformSelectsToApi(table.selects),
         filters: table.filters
           ? table.filters
-              .filter(filter => !isEmpty(filter.value)) // Only send filters with a value
-              .map(filter => ({
+              .filter(
+                (filter) => exists(filter.value) && !isEmpty(filter.value)
+              ) // Only send filters with a value
+              .map((filter) => ({
                 filter: filter.id,
                 type: filter.type,
-                value: transformFilterValueToApi(filter)
+                value: transformFilterValueToApi(filter),
               }))
-          : []
+          : [],
       };
     });
 };
@@ -77,33 +79,47 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
 export const transformElementsToApi = (conceptGroup: any) =>
   conceptGroup.map(createConcept);
 
-const transformStandardQueryToApi = (query: any) =>
-  createConceptQuery(createAnd(createQueryConcepts(query)));
+const transformStandardQueryToApi = (
+  query: any,
+  selectedSecondaryId?: string | null
+) => {
+  const queryAnd = createAnd(createQueryConcepts(query));
+
+  return selectedSecondaryId
+    ? createSecondaryIdQuery(queryAnd, selectedSecondaryId)
+    : createConceptQuery(queryAnd);
+};
+
+const createSecondaryIdQuery = (root: any, secondaryId: string) => ({
+  type: "SECONDARY_ID_QUERY",
+  secondaryId,
+  root,
+});
 
 const createConceptQuery = (root: any) => ({
   type: "CONCEPT_QUERY",
-  root
+  root,
 });
 
 const createAnd = (children: any) => ({
   type: "AND",
-  children
+  children,
 });
 
 const createNegation = (group: any) => ({
   type: "NEGATION",
-  child: group
+  child: group,
 });
 
 const createDateRestriction = (dateRange: any, concept: any) => ({
   type: "DATE_RESTRICTION",
   dateRange: dateRange,
-  child: concept
+  child: concept,
 });
 
 const createSavedQuery = (conceptId: any) => ({
   type: "SAVED_QUERY",
-  query: conceptId
+  query: conceptId,
 });
 
 const createQueryConcept = (concept: any) =>
@@ -116,8 +132,9 @@ const createConcept = (concept: any) => ({
   ids: concept.ids,
   label: concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
+  excludeFromSecondaryIdQuery: concept.excludeFromSecondaryIdQuery,
   tables: transformTablesToApi(concept.tables),
-  selects: transformSelectsToApi(concept.selects)
+  selects: transformSelectsToApi(concept.selects),
 });
 
 const createQueryConcepts = (query: any) => {
@@ -140,12 +157,12 @@ const getDays = (condition: any) => {
       return {
         days: {
           min: condition.minDays,
-          max: condition.maxDays
-        }
+          max: condition.maxDays,
+        },
       };
     case DAYS_OR_NO_EVENT_BEFORE:
       return {
-        days: condition.minDaysOrNoEvent
+        days: condition.minDaysOrNoEvent,
       };
     default:
       return {};
@@ -163,12 +180,12 @@ const transformTimebasedQueryToApi = (query: any) =>
           ...days,
           preceding: {
             sampler: condition.result0.timestamp,
-            child: createSavedQuery(condition.result0.id)
+            child: createSavedQuery(condition.result0.id),
           },
           index: {
             sampler: condition.result1.timestamp,
-            child: createSavedQuery(condition.result1.id)
-          }
+            child: createSavedQuery(condition.result1.id),
+          },
         };
       })
     )
@@ -181,19 +198,22 @@ const createExternal = (query: any) => {
   return {
     type: "EXTERNAL",
     format: query.format,
-    values: query.values
+    values: query.values,
   };
 };
 
 // The query state already contains the query.
 // But small additions are made (properties whitelisted), empty things filtered out
 // to make it compatible with the backend API
-export const transformQueryToApi = (query: Object, queryType: string) => {
-  switch (queryType) {
+export const transformQueryToApi = (
+  query: Object,
+  options: { queryType: string; selectedSecondaryId?: string | null }
+) => {
+  switch (options.queryType) {
     case "timebased":
       return transformTimebasedQueryToApi(query);
     case "standard":
-      return transformStandardQueryToApi(query);
+      return transformStandardQueryToApi(query, options.selectedSecondaryId);
     case "external":
       return transformExternalQueryToApi(query);
     default:

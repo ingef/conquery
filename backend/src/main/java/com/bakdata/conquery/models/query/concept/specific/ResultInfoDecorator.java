@@ -28,7 +28,7 @@ import lombok.ToString;
 @Getter @Setter @ToString
 @NoArgsConstructor @AllArgsConstructor
 @CPSType(id="RESULT_INFO_DECORATOR", base=CQElement.class)
-public class ResultInfoDecorator implements CQElement {
+public class ResultInfoDecorator extends CQElement {
 
 	@NotNull
 	private ClassToInstanceMap<Object> values = MutableClassToInstanceMap.create();
@@ -56,7 +56,7 @@ public class ResultInfoDecorator implements CQElement {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		CQElement.super.visit(visitor);
+		super.visit(visitor);
 		child.visit(visitor);
 	}
 	

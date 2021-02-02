@@ -26,7 +26,7 @@ public class LocaleFilter implements ContainerRequestFilter {
 		// Use jetty context here because requestContext.getLanguage() does not work
 		Locale locale = request.getLocale();
 		if (locale == null) {
-			locale = I18n.DEFAULT_LOCALE;
+			locale = Locale.ROOT;
 		}
 		I18n.LOCALE.set(locale);
 	}

@@ -169,13 +169,8 @@ public class AuthorizationHelper {
 	 */
 	public static Set<Permission> getEffectiveUserPermissions(UserId userId, MetaStorage storage) {
 		User user = Objects.requireNonNull(storage.getUser(userId), () -> String.format("User with id %s was not found", userId));
-		Set<Permission> userPermissions = user.getPermissions();
-		Set<Permission> tmpView = userPermissions;
-		for (Role role : user.getRoles()) {
-			// In order to avoid copying, we build a 'tree' of Sets as a SetView,
-			tmpView = Sets.union(tmpView, role.getPermissions());
 
-		}
+		Set<Permission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
 
 		for (Group group : storage.getAllGroups()) {
 			if (group.containsMember(user)) {
@@ -196,15 +191,22 @@ public class AuthorizationHelper {
 	public static Set<Permission> getEffectiveGroupPermissions(GroupId groupId, MetaStorage storage) {
 		Group group = Objects.requireNonNull(
 			storage.getGroup(groupId),
-			() -> String.format("User with id %s was not found", groupId));
+			() -> String.format("Group with id %s was not found", groupId));
 
-		Set<Permission> groupPermissions = group.getPermissions();
-		Set<Permission> tmpView = groupPermissions;
-		for (Role role : group.getRoles()) {
-			Set<Permission> currentView = Sets.union(tmpView, role.getPermissions());
-			tmpView = currentView;
-		}
+		Set<Permission> tmpView = collectRolePermissions(storage, group, group.getPermissions());
 		
+		return tmpView;
+	}
+
+	private static Set<Permission> collectRolePermissions(MetaStorage storage, RoleOwner roleOwner, Set<Permission> tmpView) {
+		for (RoleId roleId : roleOwner.getRoles()) {
+			Role role = storage.getRole(roleId);
+			if (role == null) {
+				log.warn("Could not resolve role id [{}]", roleId);
+				continue;
+			}
+			tmpView = Sets.union(tmpView, role.getPermissions());
+		}
 		return tmpView;
 	}
 	
@@ -271,11 +273,11 @@ public class AuthorizationHelper {
 
 
 	public static List<User> getUsersByRole(MetaStorage storage, Role role) {
-		return storage.getAllUsers().stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
+		return storage.getAllUsers().stream().filter(u -> u.getRoles().contains(role.getId())).collect(Collectors.toList());
 	}
 
 	public static List<Group> getGroupsByRole(MetaStorage storage, Role role) {
-		return storage.getAllGroups().stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
+		return storage.getAllGroups().stream().filter(g -> g.getRoles().contains(role.getId())).collect(Collectors.toList());
 	}
 
 	/**

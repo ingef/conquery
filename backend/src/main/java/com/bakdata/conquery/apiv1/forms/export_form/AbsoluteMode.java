@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -36,9 +37,12 @@ public class AbsoluteMode extends Mode {
 		features.forEach(e -> visitor.accept(e));
 	}
 
+	@NotNull
+	private DateContext.Alignment alignmentHint = DateContext.Alignment.QUARTER;
+
 	@Override
 	public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(datasets, this, userId, submittedDataset);
+		return AbsExportGenerator.generate(datasets, this, userId, submittedDataset, getAlignmentHint());
 	}
 
 	@Override

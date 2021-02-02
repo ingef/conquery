@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
-import io.dropwizard.util.DataSize;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -49,13 +48,15 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final StoreInfo storeInfo;
 
-	@Getter
-	@Setter
-	private int chunkSize = Ints.checkedCast(DataSize.megabytes(100).toBytes());
+	@Getter @Setter
+	private int chunkByteSize;
 
 
 	public BigStore(StorageConfig config, Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
+
+		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
+		this.chunkByteSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
 				storeInfo.getXodusName() + "_META",
@@ -157,7 +158,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			List<UUID> uuids = new ArrayList<>();
 
 			ChunkingOutputStream cos = new ChunkingOutputStream(
-					chunkSize,
+					chunkByteSize,
 					chunk -> {
 						try {
 							// Write chunks and accumulate their size.

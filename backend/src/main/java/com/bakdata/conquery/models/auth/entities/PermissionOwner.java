@@ -13,9 +13,11 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
@@ -27,6 +29,7 @@ import org.apache.shiro.authz.Permission;
  *            The id type by which an instance is identified
  */
 @Slf4j
+@EqualsAndHashCode(callSuper = false)
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
 	
 	private static final Comparator<PermissionOwner<?>> COMPARATOR = Comparator.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
@@ -36,6 +39,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NonNull
 	@NotNull
 	@NotEmpty
+	@ToString.Include
 	protected String name;
 	
 	@Getter
@@ -43,8 +47,10 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NonNull
 	@NotNull
 	@NotEmpty
+	@ToString.Include
 	protected String label;
 	
+	@ToString.Exclude
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
 	
 	

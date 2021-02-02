@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.error;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.validation.constraints.NotEmpty;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.util.VariableDefaultValue;
@@ -164,6 +166,42 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		}
 	}
 
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT")
+	public static class ExternalResolveFormatError extends ContextError {
+
+		private final static String FORMAT_ROW_LENGTH = "formatRowLength";
+		private final static String DATA_ROW_LENGTH = "dataRowLength";
+		private final static String TEMPLATE = "There are ${" + FORMAT_ROW_LENGTH + "} columns in the format but ${" + DATA_ROW_LENGTH + "} in at least one row";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExternalResolveFormatError() {
+			super(TEMPLATE);
+		}
+
+		public ExternalResolveFormatError(int formatRowLength, int dataRowLength) {
+			this();
+			getContext().put(FORMAT_ROW_LENGTH, Integer.toString(formatRowLength));
+			getContext().put(DATA_ROW_LENGTH, Integer.toString(dataRowLength));
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_EMPTY")
+	public static class ExternalResolveEmptyError extends ContextError {
+
+		private final static String TEMPLATE = "None of the provided values could be resolved.";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		public ExternalResolveEmptyError() {
+			super(TEMPLATE);
+		}
+	}
+
 	/**
 	 * Unspecified error during {@link QueryPlan}-creation.
 	 */
@@ -172,6 +210,30 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 		public ExecutionCreationPlanError() {
 			super("Unable to generate query plan.");
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_CREATION_PLAN_DATECONTEXT_MISMATCH")
+	public static class ExecutionCreationPlanDateContextError extends ContextError {
+
+		private final static String ALIGNMENT = "alignment";
+		private final static String RESOLUTION = "resolution";
+		private final static String ALIGNMENT_SUPPORTED = "alignmentsSupported";
+		private final static String TEMPLATE = "Alignment ${" + ALIGNMENT + "} and resolution ${" + RESOLUTION + "} don't fit together. The resolution only supports these alignments: ${" + ALIGNMENT_SUPPORTED + "}";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExecutionCreationPlanDateContextError() {
+			super(TEMPLATE);
+		}
+
+		public ExecutionCreationPlanDateContextError(DateContext.Alignment alignment, DateContext.Resolution resolution) {
+			this();
+			getContext().put(ALIGNMENT, Objects.toString(alignment));
+			getContext().put(RESOLUTION, Objects.toString(resolution));
+			getContext().put(ALIGNMENT_SUPPORTED, Objects.toString(resolution.getSupportedAlignments()));
 		}
 	}
 	

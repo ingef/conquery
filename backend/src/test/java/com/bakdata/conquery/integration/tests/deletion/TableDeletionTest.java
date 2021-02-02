@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -8,7 +9,6 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -52,6 +52,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+
+			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
@@ -160,9 +163,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Load the same import into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			conquery.getDatasetsProcessor().addTable(namespace.getDataset(), test.getContent().getTables().stream()
-																				   .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-																				   .map(RequiredTable::toTable).findFirst().get());
+			conquery.getDatasetsProcessor().addTable(test.getContent().getTables().stream()
+																				 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+																				 .map(requiredTable -> requiredTable.toTable(conquery.getDataset())).findFirst().get(), conquery.getNamespace());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables().stream()
@@ -173,9 +176,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			assertThat(namespace.getDataset().getTables().getOptional(tableId))
+			assertThat(namespace.getStorage().getTable(tableId))
 					.describedAs("Table after re-import.")
-					.isPresent();
+					.isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {

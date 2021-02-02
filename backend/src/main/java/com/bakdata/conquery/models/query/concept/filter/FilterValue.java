@@ -66,10 +66,20 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
-	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
 		public CQIntegerRangeFilter(@NsIdRef Filter<?> filter, LongRange value) {
 			super(filter, value);
+		}
+	}
+
+	/**
+	 * @implNote Is basically the same as INTEGER_RANGE, but when a deserialized MONEY_RANGE was serialized again
+	 * it became an INTEGER_RANGE, which is handled differently by the frontend.
+	 */
+	@NoArgsConstructor
+	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
+	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
+		public CQMoneyRangeFilter(@NsIdRef Filter<?> filter, LongRange value) {	super(filter, value);
 		}
 	}
 

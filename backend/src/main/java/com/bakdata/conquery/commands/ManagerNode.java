@@ -36,12 +36,14 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.ClearFilterSourceSearch;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
+import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Throwables;
 import io.dropwizard.lifecycle.Managed;
@@ -54,6 +56,11 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
+/**
+ * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to 
+ * {@link ShardNode}s and respectively the {@link Worker}s hosted on them. The {@link ManagerNode} can also
+ * forward queries or results to statistic backends. Finally it collects the results of queries for access over the api.
+ */
 @Slf4j
 @Getter
 public class ManagerNode extends IoHandlerAdapter implements Managed {
@@ -142,9 +149,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			sn.getStorage().setMetaStorage(storage);
 		}
 
-
 		
-		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
+		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();
 		environment.lifecycle().manage(authController);
 
@@ -183,6 +189,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
 		environment.admin().addTask(new ClearFilterSourceSearch());
+		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);

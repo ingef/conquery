@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -25,6 +26,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Holds the necessary information about all datasets on the {@link ManagerNode}.
+ * This includes meta data of each dataset (not to confuse with {@link MetaStorage}) as well as informations about the 
+ * distributed query engine.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class DatasetRegistry extends IdResolveContext implements Closeable {

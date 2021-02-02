@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RequiredArgsConstructor
 @Slf4j
+
 public class CalculateCBlocksJob extends Job {
 
 	private final List<CalculationInformation> infos = new ArrayList<>();
@@ -47,6 +48,7 @@ public class CalculateCBlocksJob extends Job {
 	public void execute() throws Exception {
 		getProgressReporter().setMax(infos.size());
 
+		// todo compute in parallel.
 		for (CalculationInformation info : infos) {
 			try {
 				if (bucketManager.hasCBlock(info.getCBlockId())) {
@@ -89,7 +91,7 @@ public class CalculateCBlocksJob extends Job {
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 */
 	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-		Table table = storage.getDataset().getTables().get(bucket.getImp().getTable());
+		Table table = storage.getTable(bucket.getImp().getTable());
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;
@@ -102,18 +104,25 @@ public class CalculateCBlocksJob extends Job {
 
 				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
 
-				cBlock.getMinDate()
-					  .put(
-							  entry.getEntity(),
-							  Math.min(cBlock.getMinDate().getOrDefault(entry.getEntity(), Integer.MAX_VALUE), range.getMinValue())
-					  );
+				if (range.hasLowerBound()) {
+					int min = Math.min(
+							cBlock.getMinDate().getOrDefault(entry.getEntity(), Integer.MAX_VALUE),
+							range.getMinValue()
+					);
 
-				cBlock.getMaxDate()
-					  .put(
-							  entry.getEntity(),
-							  Math.max(cBlock.getMaxDate()
-											 .getOrDefault(entry.getEntity(), Integer.MIN_VALUE), range.getMaxValue())
-					  );
+					cBlock.getMinDate()
+						  .put(entry.getEntity(), min);
+				}
+
+				if (range.hasUpperBound()) {
+					int max = Math.max(
+							cBlock.getMaxDate().getOrDefault(entry.getEntity(), Integer.MIN_VALUE),
+							range.getMaxValue()
+					);
+
+					cBlock.getMaxDate()
+						  .put(entry.getEntity(), max);
+				}
 			}
 		}
 	}

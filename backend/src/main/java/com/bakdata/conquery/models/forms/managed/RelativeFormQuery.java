@@ -10,7 +10,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -44,9 +46,9 @@ public class RelativeFormQuery extends IQuery {
 	@Min(0)
 	private final int timeCountAfter;
 	@NotNull
-	private final DateContextMode timeUnit;
+	private final DateContext.CalendarUnit timeUnit;
 	@NotNull
-	private final List<DateContextMode> resolutions;
+	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
@@ -61,7 +63,7 @@ public class RelativeFormQuery extends IQuery {
 			// At the moment we do not use the dates of feature and outcome query
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
 			outcomes.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutions);
+			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 	}
 
 	@Override
@@ -88,12 +90,21 @@ public class RelativeFormQuery extends IQuery {
 		collector.add(ConqueryConstants.CONTEXT_INDEX_INFO);
 		// event date
 		collector.add(ConqueryConstants.EVENT_DATE_INFO);
+
+		final List<ResultInfo> featureInfos = featureHeader.getInfos();
+		final List<ResultInfo> outcomeInfos = outcomeHeader.getInfos();
+
 		//date ranges
-		collector.add(ConqueryConstants.FEATURE_DATE_RANGE_INFO);
-		collector.add(ConqueryConstants.OUTCOME_DATE_RANGE_INFO);
+		if (!featureInfos.isEmpty()){
+			collector.add(ConqueryConstants.FEATURE_DATE_RANGE_INFO);
+		}
+
+		if (!outcomeInfos.isEmpty()) {
+			collector.add(ConqueryConstants.OUTCOME_DATE_RANGE_INFO);
+		}
 		//features
-		collector.addAll(featureHeader.getInfos());
-		collector.addAll(outcomeHeader.getInfos());
+		collector.addAll(featureInfos);
+		collector.addAll(outcomeInfos);
 	}
 	
 	@Override

@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -15,22 +16,27 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Getter;
 
+@Getter
 public class ConceptNode extends QPChainNode {
 
 	private final ConceptElement<?>[] concepts;
 	private final long requiredBits;
 	private final CQTable table;
+	private final SecondaryIdDescriptionId selectedSecondaryId;
 	private boolean tableActive = false;
 	private Map<BucketId, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child) {
+	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescriptionId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;
 		this.table = table;
+
+		this.selectedSecondaryId = selectedSecondaryId;
 	}
 
 	@Override
@@ -41,7 +47,8 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable);
+		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable)
+					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
 		if(tableActive) {
 			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
 		}
@@ -110,7 +117,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()));
+		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()), selectedSecondaryId);
 	}
 
 	@Override

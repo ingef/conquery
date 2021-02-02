@@ -11,10 +11,10 @@ import FaIcon from "../../icon/FaIcon";
 import ReactSelect from "../../form-components/ReactSelect";
 import InputSelect from "../../form-components/InputSelect";
 
-type ExternalQueryT = {
+export interface ExternalQueryT {
   format: string[];
   values: string[][];
-};
+}
 
 type PropsT = {
   file: File;
@@ -94,13 +94,13 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
     { label: T.translate("csvColumnPicker.dateSet"), value: "DATE_SET" },
     { label: T.translate("csvColumnPicker.startDate"), value: "START_DATE" },
     { label: T.translate("csvColumnPicker.endDate"), value: "END_DATE" },
-    { label: T.translate("csvColumnPicker.ignore"), value: "IGNORE" }
+    { label: T.translate("csvColumnPicker.ignore"), value: "IGNORE" },
   ];
 
   const DELIMITER_OPTIONS = [
     { label: T.translate("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
     { label: T.translate("csvColumnPicker.comma") + " ( , )", value: "," },
-    { label: T.translate("csvColumnPicker.colon") + " ( : )", value: ":" }
+    { label: T.translate("csvColumnPicker.colon") + " ( : )", value: ":" },
   ];
 
   React.useEffect(() => {
@@ -139,7 +139,7 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
   function uploadQuery() {
     onUpload({
       format: csvHeader,
-      values: csv
+      values: csv,
     });
   }
 
@@ -156,7 +156,7 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
             input={{
               onChange: setDelimiter,
               value: delimiter,
-              defaultValue: DELIMITER_OPTIONS[0]
+              defaultValue: DELIMITER_OPTIONS[0],
             }}
             options={DELIMITER_OPTIONS}
           />
@@ -178,14 +178,14 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
                       small
                       options={SELECT_OPTIONS}
                       value={
-                        SELECT_OPTIONS.find(o => o.value === csvHeader[i]) ||
+                        SELECT_OPTIONS.find((o) => o.value === csvHeader[i]) ||
                         SELECT_OPTIONS[0]
                       }
-                      onChange={value =>
+                      onChange={(value) =>
                         setCSVHeader([
                           ...csvHeader.slice(0, i),
                           value.value,
-                          ...csvHeader.slice(i + 1)
+                          ...csvHeader.slice(i + 1),
                         ])
                       }
                     />

@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,8 +40,11 @@ public class ShardResult {
 	private LocalDateTime finishTime;
 	@JsonIgnore
 	private ListenableFuture<List<EntityResult>> future;
-	
+
 	private Optional<ConqueryError> error = Optional.empty();
+
+	@ToString.Include
+	private WorkerId workerId;
 	
 	public synchronized void addResult(EntityResult result) {
 		results.add(result);

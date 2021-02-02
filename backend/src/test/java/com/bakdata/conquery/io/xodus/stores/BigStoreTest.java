@@ -6,6 +6,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.SequenceInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
@@ -13,12 +15,11 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.types.specific.string.StringTypeEncoded;
 import com.google.common.collect.Iterators;
-import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.DataSize;
@@ -35,22 +36,23 @@ public class BigStoreTest {
 	private Environment env;
 
 	@BeforeEach
-	public void init() {
-		tmpDir = Files.createTempDir();
+	public void init() throws IOException {
+		tmpDir = Files.createTempDirectory(BigStoreTest.class.getSimpleName()).toFile();
+		tmpDir.mkdirs();
 		env = Environments.newInstance(tmpDir);
 	}
 
 	@AfterEach
 	public void destroy() throws IOException {
 		env.close();
-		FileUtils.deleteDirectory(tmpDir);
+		tmpDir.delete();
 	}
 
 	@Test
 	public void testFull() throws JSONException, IOException {
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new StorageConfig(), Validators.newValidator(), env,
 			StoreInfo.DICTIONARIES);
-		store.setChunkSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
+		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
 		Dictionary nDict = new MapDictionary(new DatasetId("test"), "dict");
 
@@ -85,7 +87,7 @@ public class BigStoreTest {
 	public void testEmpty() throws JSONException, IOException {
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new StorageConfig(), Validators.newValidator(), env,
 			StoreInfo.DICTIONARIES);
-		store.setChunkSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
+		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
 		Dictionary nDict = new MapDictionary(new DatasetId("test"), "dict");
 

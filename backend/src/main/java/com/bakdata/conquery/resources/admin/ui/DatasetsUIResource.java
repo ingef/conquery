@@ -20,11 +20,11 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.string.StringType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
@@ -36,7 +36,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter
 @Setter
 @Path("datasets/{" + DATASET + "}")
@@ -68,13 +68,17 @@ public class DatasetsUIResource extends HAdmin {
 				processor.getUIContext(),
 				new DatasetInfos(
 						namespace.getDataset(),
-						namespace.getDataset().getTables().stream()
+						namespace.getStorage().getSecondaryIds(),
+						namespace.getStorage().getTables().stream()
 								 .map(table -> new TableInfos(
-								 		table.getId(),
-										table.getName(),
-										table.getLabel(),
-										StringUtils.abbreviate(table.findImports(namespace.getStorage()).stream().map(Import::getName).collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-										table.findImports(namespace.getStorage()).stream().mapToLong(Import::getNumberOfEntries).sum()
+										 table.getId(),
+										 table.getName(),
+										 table.getLabel(),
+										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
+																	 .stream()
+																	 .map(Import::getName)
+																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
+										 table.findImports(namespace.getStorage()).stream().mapToLong(Import::getNumberOfEntries).sum()
 								 ))
 								 .collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
@@ -84,18 +88,28 @@ public class DatasetsUIResource extends HAdmin {
 								.getAllImports()
 								.stream()
 								.flatMap(i -> Arrays.stream(i.getColumns()))
-								.filter(c -> c.getType().getTypeId() == MajorTypeId.STRING)
-								.map(c -> (StringType) c.getType())
+								.filter(c -> c.getTypeDescription() instanceof StringType)
+								.map(c -> (StringType) c.getTypeDescription())
 								.filter(c -> c.getUnderlyingDictionary() != null)
 								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
 								.values()
 								.stream()
-								.mapToLong(l -> l.get(0).estimateTypeSize())
+								.mapToLong(l -> l.get(0).estimateTypeSizeBytes())
 								.sum(),
 						// total size of entries
 						namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
 				)
 		);
+	}
+
+	@GET
+	@Path("mapping")
+	public View getIdMapping() {
+		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
+		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
+			return new UIView<>("idmapping.html.ftl", processor.getUIContext(), mapping.getCsvIdToExternalIdMap());
+		}
+		return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
 	}
 
 	@Data
@@ -112,19 +126,10 @@ public class DatasetsUIResource extends HAdmin {
 	public static class DatasetInfos {
 
 		private Dataset ds;
+		private Collection<SecondaryIdDescription> secondaryIds;
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;
 		private long size;
-	}
-
-	@GET
-	@Path("mapping")
-	public View getIdMapping() {
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>("idmapping.html.ftl", processor.getUIContext(), mapping.getCsvIdToExternalIdMap());
-		}
-		return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
 	}
 }

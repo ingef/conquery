@@ -2,7 +2,6 @@ import type {
   ConceptIdT,
   QueryIdT,
   RangeFilterT,
-  RangeFilterValueT,
   MultiSelectFilterT,
   MultiSelectFilterValueT,
   SelectFilterT,
@@ -10,62 +9,60 @@ import type {
   SelectorT,
   TableT,
   DateRangeT,
-  DateColumnT
+  DateColumnT,
 } from "../api/types";
 
 // A concept that is part of a query node in the editor
-export type ConceptType = {
+export interface ConceptType {
   id: string;
   label: string;
   description?: string;
   matchingEntries?: number;
-};
+}
 
-export type SelectOptionType = {
-  label: string;
-  value: number | string;
-};
-
-export type SelectOptionsType = SelectOptionType[];
-
-export type InfoType = {
+export interface InfoType {
   key: string;
   value: string;
-};
+}
 
-export type RangeFilterWithValueType = RangeFilterT & {
-  value?: RangeFilterValueT;
-};
+export type RangeFilterWithValueType = RangeFilterT;
 
-export type MultiSelectFilterWithValueType = MultiSelectFilterT & {
+export interface MultiSelectFilterWithValueType extends MultiSelectFilterT {
   value?: MultiSelectFilterValueT;
-};
+}
 
-export type SelectFilterWithValueType = SelectFilterT & {
+export interface SelectFilterWithValueType extends SelectFilterT {
   value?: SelectFilterValueT;
-};
+}
 
 export type FilterWithValueType =
   | SelectFilterWithValueType
   | MultiSelectFilterWithValueType
   | RangeFilterWithValueType;
 
-export type SelectedSelectorType = SelectorT & {
+export interface SelectedSelectorType extends SelectorT {
   selected?: boolean;
-};
+}
 
-export type SelectedDateColumnT = DateColumnT & {
+export interface SelectedDateColumnT extends DateColumnT {
   value?: string;
-};
+}
 
-export type TableWithFilterValueType = TableT & {
-  filters: ?FilterWithValueType[];
+export interface TableWithFilterValueType
+  extends Omit<TableT, "filters" | "selects" | "dateColumn"> {
+  filters: FilterWithValueType[] | null;
   selects?: SelectedSelectorType[];
   dateColumn?: SelectedDateColumnT;
-};
+}
 
-export type DraggedQueryType = {
+export interface DraggedQueryType {
   id: QueryIdT;
+
+  // drag info;
+  type: string;
+  width: number;
+  height: number;
+
   // eslint-disable-next-line no-use-before-define
   query?: PreviousQueryType;
   label: string;
@@ -79,18 +76,21 @@ export type DraggedQueryType = {
   error?: string;
 
   files?: void;
-  isPreviousQuery: true;
-};
+  isPreviousQuery: boolean; // true
+
+  canExpand?: boolean;
+}
 
 // A Query Node that is being dragged from the tree or within the standard editor.
 // Corresponds to CONCEPT_TREE_NODE and QUERY_NODE drag-and-drop types.
-export type DraggedNodeType = {
+export interface DraggedNodeType {
   ids: ConceptIdT[];
   tables: TableWithFilterValueType[];
   selects: SelectedSelectorType[];
   tree: ConceptIdT;
   label: string;
   excludeTimestamps?: boolean;
+  excludeFromSecondaryIdQuery?: boolean;
 
   additionalInfos: Object;
   matchingEntries: number;
@@ -105,9 +105,9 @@ export type DraggedNodeType = {
 
   files?: void;
   isPreviousQuery?: void;
-};
+}
 
-export type ConceptQueryNodeType = {
+export interface ConceptQueryNodeType {
   ids: ConceptIdT[];
   tables: TableWithFilterValueType[];
   selects: SelectedSelectorType[];
@@ -116,14 +116,15 @@ export type ConceptQueryNodeType = {
   label: string;
   description?: string;
   excludeTimestamps?: boolean;
+  excludeFromSecondaryIdQuery?: boolean;
   loading?: boolean;
   error?: string;
 
   isEditing?: boolean;
   isPreviousQuery?: void | false;
-};
+}
 
-export type PreviousQueryQueryNodeType = {
+export interface PreviousQueryQueryNodeType {
   label: string;
   excludeTimestamps?: boolean;
   loading?: boolean;
@@ -133,18 +134,19 @@ export type PreviousQueryQueryNodeType = {
   // eslint-disable-next-line no-use-before-define
   query?: PreviousQueryType;
   isPreviousQuery: true;
-};
+  canExpand?: boolean;
+}
 
 export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;
 
-export type QueryGroupType = {
+export interface QueryGroupType {
   elements: QueryNodeType[];
   dateRange?: DateRangeT;
   exclude?: boolean;
-};
+}
 
-type PreviousQueryType = {
+interface PreviousQueryType {
   groups: QueryGroupType[];
-};
+}
 
 export type StandardQueryType = QueryGroupType[];

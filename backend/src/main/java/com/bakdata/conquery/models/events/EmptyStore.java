@@ -1,27 +1,29 @@
 package com.bakdata.conquery.models.events;
 
-import java.math.BigDecimal;
-
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
+/**
+ * An empty generic store to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
+ */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
-public class EmptyStore<T> implements ColumnStore<T> {
+public class EmptyStore<T> extends ColumnStore<T> {
 
-	//TODO FK: Implement usage of this
-	private static final EmptyStore INSTANCE = new EmptyStore();
-
-	public static <T> EmptyStore<T> getInstance() {
-		return (EmptyStore<T>) INSTANCE;
-	}
-
-	private EmptyStore(){
-
+	@JsonCreator
+	public EmptyStore(){
+		super();
+		setLines(0);
 	}
 
 	@Override
-	public ColumnStore select(int[] starts, int[] length) {
-		return null;
+	public long estimateEventBits() {
+		return 0;
+	}
+
+	@Override
+	public EmptyStore<T> doSelect(int[] starts, int[] length) {
+		return this;
 	}
 
 	@Override
@@ -40,47 +42,7 @@ public class EmptyStore<T> implements ColumnStore<T> {
 	}
 
 	@Override
-	public int getString(int event) {
-		return 0;
-	}
-
-	@Override
-	public long getInteger(int event) {
-		return 0;
-	}
-
-	@Override
-	public boolean getBoolean(int event) {
-		return false;
-	}
-
-	@Override
-	public double getReal(int event) {
-		return 0;
-	}
-
-	@Override
-	public BigDecimal getDecimal(int event) {
-		return null;
-	}
-
-	@Override
-	public long getMoney(int event) {
-		return 0;
-	}
-
-	@Override
-	public int getDate(int event) {
-		return 0;
-	}
-
-	@Override
-	public CDateRange getDateRange(int event) {
-		return null;
-	}
-
-	@Override
-	public Object getAsObject(int event) {
-		return null;
+	public boolean isEmpty() {
+		return true;
 	}
 }

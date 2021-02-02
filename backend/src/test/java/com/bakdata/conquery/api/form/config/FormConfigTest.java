@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.jersey.validation.Validators;
+import io.dropwizard.setup.Environment;
 import org.apache.commons.collections4.map.HashedMap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +87,6 @@ public class FormConfigTest {
 	
 	@BeforeAll
 	public void setupTestClass() throws Exception{
-		SharedMetricRegistries.setDefault(FormConfigTest.class.getName());
 		storageMock = Mockito.mock(MetaStorage.class);
 
 		dataset.setName("test");
@@ -189,7 +189,7 @@ public class FormConfigTest {
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
 		.add(IdResolveContext.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storageMock);
-		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(), Collections.emptyList(), storageMock);
+		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(), Collections.emptyList(), storageMock);
 		controller.init();
 		controller.start();
 	}
@@ -289,20 +289,23 @@ public class FormConfigTest {
 		
 		// EXECUTE
 		 FormConfigFullRepresentation response = processor.getConfig(new DatasetId("testDataset"), user, formConfig.getId());
-		
+
 		// CHECK
-		assertThat(response).isEqualToIgnoringGivenFields(FormConfigFullRepresentation.builder()
-			.formType(form.getClass().getAnnotation(CPSType.class).id())
-			.id(formConfig.getId())
-			.label(formConfig.getLabel())
-			.own(true)
-			.ownerName(user.getLabel())
-			.shared(false)
-			.system(false)
-			.tags(formConfig.getTags())
-			.values(values)
-			.build(),FormConfigOverviewRepresentation.Fields.createdAt);
-		
+		assertThat(response).usingRecursiveComparison()
+				.ignoringFields(FormConfigOverviewRepresentation.Fields.createdAt)
+				.isEqualTo(FormConfigFullRepresentation.builder()
+						.formType(form.getClass().getAnnotation(CPSType.class).id())
+						.id(formConfig.getId())
+						.label(formConfig.getLabel())
+						.own(true)
+						.ownerName(user.getLabel())
+						.shared(false)
+						.groups(Collections.emptySet())
+						.system(false)
+						.tags(formConfig.getTags())
+						.values(values)
+						.build());
+
 	}
 	
 	@Test
@@ -391,7 +394,6 @@ public class FormConfigTest {
 			 FormConfigPatch.builder()
 				 .label("newTestLabel")
 				 .tags(new String[] {"tag1", "tag2"})
-				 .shared(true)
 				 .groups(List.of(group1.getId()))
 				 .values(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))))
 			 	.build()
@@ -399,46 +401,42 @@ public class FormConfigTest {
 		
 		// CHECK PART 1
 		FormConfig patchedFormExpected = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
+		patchedFormExpected.setDataset(datasetId);
+		patchedFormExpected.setFormId(formId.getId());
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
 		patchedFormExpected.setTags(new String[] {"tag1", "tag2"});
+		patchedFormExpected.setOwner(user.getId());
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))));
 		
-		assertThat(storageMock.getFormConfig(formId)).isEqualToComparingOnlyGivenFields(patchedFormExpected,
-			FormConfig.Fields.formType,
-			FormConfig.Fields.label,
-			FormConfig.Fields.shared,
-			FormConfig.Fields.tags,
-			FormConfig.Fields.values);
+		assertThat(storageMock.getFormConfig(formId)).usingRecursiveComparison()
+				.ignoringFields("cachedId", FormConfig.Fields.creationTime)
+				.isEqualTo(patchedFormExpected);
 
-		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formId));
-		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formId));
+		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 		
 		
 		
 		// EXECUTE PART 2 (Unshare)
 		processor.patchConfig(
 			 user,
-			 new DatasetId("testDataset"),
+			 datasetId,
 			 formId, 
 			 FormConfigPatch.builder()
-				 .shared(false)
-				 .groups(List.of(group1.getId(), group2.getId()))
+				 .groups(List.of())
 			 	.build()
 			 );
 		
 		// CHECK PART 2
 		patchedFormExpected.setShared(false);
 		
-		assertThat(storageMock.getFormConfig(formId)).isEqualToComparingOnlyGivenFields(patchedFormExpected,
-			FormConfig.Fields.formType,
-			FormConfig.Fields.label,
-			FormConfig.Fields.shared,
-			FormConfig.Fields.tags,
-			FormConfig.Fields.values);
+		assertThat(storageMock.getFormConfig(formId)).usingRecursiveComparison()
+				.ignoringFields("cachedId", FormConfig.Fields.creationTime)
+				.isEqualTo(patchedFormExpected);
 
-		assertThat(groups.get(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formId));
-		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_SHAREHOLDER, formId));
+		assertThat(groups.get(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 	}
 
 }

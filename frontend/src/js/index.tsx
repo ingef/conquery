@@ -3,44 +3,45 @@ import "./browserShimsAndPolyfills";
 import React from "react";
 import ReactDOM from "react-dom";
 import { ThemeProvider, Theme } from "@emotion/react";
-import { createBrowserHistory } from "history";
 
 import "./app/actions"; //  To initialize parameterized actions
 import { makeStore } from "./store";
 import AppRoot from "./AppRoot";
 
-import { initializeEnvironment, Environment, basename } from "./environment";
+import { initializeEnvironment, Environment } from "./environment";
+import { Store } from "redux";
+import { StateT } from "app-types";
+import { TabT } from "./pane/types";
 
 // TODO: OG image required?
 // require('../../images/og.png');
 // Required for isomophic-fetch
 
-let store;
-let browserHistory;
+let store: Store<StateT>;
+
 const initialState = {};
 
 // Render the App including Hot Module Replacement
-const renderRoot = (tabs: Object, theme: Theme) => {
-  browserHistory =
-    browserHistory ||
-    createBrowserHistory({
-      basename: basename(),
-    });
-  store = store || makeStore(initialState, browserHistory, tabs);
+const renderRoot = (tabs: TabT[], theme: Theme) => {
+  store = store || makeStore(initialState, tabs);
 
   ReactDOM.render(
     <ThemeProvider theme={theme}>
-      <AppRoot store={store} browserHistory={browserHistory} rightTabs={tabs} />
+      <AppRoot store={store} rightTabs={tabs} />
     </ThemeProvider>,
     document.getElementById("root")
   );
 };
 
-export default function conquery(
-  environment: Environment,
-  tabs: Object,
-  theme: Theme // React-Emotion theme, will at some point completely replace sass
-) {
+export default function conquery({
+  environment,
+  tabs,
+  theme,
+}: {
+  environment: Environment;
+  tabs: TabT[];
+  theme: Theme; // React-Emotion theme, will at some point completely replace sass
+}) {
   initializeEnvironment(environment);
   renderRoot(tabs, theme);
 }

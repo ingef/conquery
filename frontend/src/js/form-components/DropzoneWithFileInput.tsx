@@ -1,15 +1,16 @@
-import React, { useRef } from "react";
+import React, { FC, useRef } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { NativeTypes } from "react-dnd-html5-backend";
 
 import Dropzone, { ChildArgs } from "./Dropzone";
+import { DropTargetMonitor } from "react-dnd";
 
 const FileInput = styled("input")`
   display: none;
 `;
 
-const SxDropzone = styled(Dropzone)`
+const SxDropzone = styled(Dropzone)<{ isInitial?: boolean }>`
   cursor: ${({ isInitial }) => (isInitial ? "initial" : "pointer")};
   transition: box-shadow ${({ theme }) => theme.transitionTime};
   position: relative;
@@ -22,7 +23,7 @@ const SxDropzone = styled(Dropzone)`
 const TopRight = styled("p")`
   margin: 0;
   font-size: ${({ theme }) => theme.font.tiny};
-  color: ${({ theme }) => theme.font.gray};
+  color: ${({ theme }) => theme.col.gray};
   position: absolute;
   top: 5px;
   right: 10px;
@@ -33,13 +34,15 @@ const TopRight = styled("p")`
   }
 `;
 
-type PropsT = {
+interface PropsT {
   children: (args: ChildArgs) => React.ReactNode;
-  acceptedDropTypes?: string[];
   onSelectFile: (file: File) => void;
+  onDrop: (props: any, monitor: DropTargetMonitor) => void;
+  acceptedDropTypes?: string[];
   disableClick?: boolean;
   showFileSelectButton?: boolean;
-};
+  isInitial?: boolean;
+}
 
 /*
   Augments a dropzone with file drop support
@@ -49,20 +52,22 @@ type PropsT = {
 
   => The "onDrop"-prop needs to handle the file drop itself, though!
 */
-export default ({
+const DropzoneWithFileInput: FC<PropsT> = ({
   onSelectFile,
   acceptedDropTypes,
   disableClick,
   showFileSelectButton,
   children,
   ...props
-}: PropsT) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+}) => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const dropTypes = [...(acceptedDropTypes || []), NativeTypes.FILE];
 
   function onOpenFileDialog() {
-    fileInputRef.current.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   }
 
   return (
@@ -85,10 +90,14 @@ export default ({
           <FileInput
             ref={fileInputRef}
             type="file"
-            onChange={e => {
-              onSelectFile(e.target.files[0]);
+            onChange={(e) => {
+              if (e.target.files) {
+                onSelectFile(e.target.files[0]);
+              }
 
-              fileInputRef.current.value = null;
+              if (fileInputRef.current) {
+                fileInputRef.current.value = null;
+              }
             }}
           />
           {children(args)}
@@ -97,3 +106,5 @@ export default ({
     </SxDropzone>
   );
 };
+
+export default DropzoneWithFileInput;

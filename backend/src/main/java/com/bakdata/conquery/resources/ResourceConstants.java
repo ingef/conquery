@@ -27,7 +27,11 @@ public class ResourceConstants {
 	public static final String USER_ID = "userId";
 	public static final String ROLE_ID = "roleId";
 	public static final String GROUP_ID = "groupId";
+	public static final String SECONDARY_ID = "secondaryId";
 
+	public static final String FILE_EXTENTION_ARROW_FILE = "arrf";
+	public static final String FILE_EXTENTION_ARROW_STREAM = "arrs";
+	
 	/**
 	 * Method to generate a data-model of this class's static members so that they
 	 * are accessible from within a freemarker template.

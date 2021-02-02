@@ -1,10 +1,10 @@
 /* ------------------------------ */
 /* COMMON, FORMS, TABS */
 /* ------------------------------ */
-type TranslatableString = {
+interface TranslatableString {
   de: string;
   en?: string;
-};
+}
 
 export type Forms = Form[];
 
@@ -13,25 +13,25 @@ export type NonFormField = Headline | Description;
 
 export type GeneralField = FormField | NonFormField;
 
-export type Form = {
+export interface Form {
   type: string; // Sent to backend API
   title: TranslatableString; // Displayed
   headline: TranslatableString; // Displayed
   fields: GeneralField[];
-};
+}
 
-type Tabs = {
+interface Tabs {
   name: string; // Sent to backend API
   type: "TABS";
   tabs: Tab[];
   defaultValue: string; // corresponds to Tab.name
-};
+}
 
-type Tab = {
+interface Tab {
   name: string; // // Sent to backend API
   title: TranslatableString;
   fields: GeneralField[];
-};
+}
 
 /* ------------------------------ */
 /* VALIDATIONS */
@@ -166,14 +166,14 @@ type MultiResultGroupField = CommonField & {
 /* ------------------------------ */
 
 type SelectName = string;
-export type ConnectorDefault = {
+export interface ConnectorDefault {
   name: string;
   selects: SelectName[];
-};
-export type ConceptListDefaults = {
+}
+export interface ConceptListDefaults {
   selects?: SelectName[];
   connectors?: ConnectorDefault[];
-};
+}
 type ConceptListFieldValidation = NOT_EMPTY_VALIDATION;
 type ConceptListField = CommonField & {
   type: "CONCEPT_LIST";

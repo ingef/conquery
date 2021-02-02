@@ -1,8 +1,13 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,7 +39,7 @@ public class PreprocessedHeader {
 	private long rows;
 
 	/**
-	 * The specific columns and their associated transformations+data.
+	 * The specific columns and their associated MajorType for validation.
 	 */
 	private PPColumn[] columns;
 
@@ -54,15 +59,27 @@ public class PreprocessedHeader {
 			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));
 		}
 
+		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns())
+													   .collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
+
 		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
-			if (!table.getColumns()[i].matches(getColumns()[i])) {
-				errors.add(String.format("Column[%s] does not match table Column[%s]`", getColumns()[i], table.getColumns()[i]));
+			final Column column = table.getColumns()[i];
+
+			if(!typesByName.containsKey(column.getName())){
+				errors.add(String.format("Column[%s] is missing in Import.", column.getName()));
+			}
+			else if (!typesByName.get(column.getName()).equals(column.getType())) {
+				errors.add(String.format("Column[%s] Types do not match %s != %s"
+						, column.getName(),  typesByName.get(column.getName()), column.getType())
+				);
 			}
 		}
 
 		if (errors.length() != 0) {
 			log.error(errors.toString());
-			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]", getTable(), getName(), table.getId()));
+			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]. More Info in Logs.", getTable(), getName(), table.getId()));
 		}
 	}
+
+
 }
