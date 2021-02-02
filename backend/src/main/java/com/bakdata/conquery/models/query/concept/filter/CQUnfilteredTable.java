@@ -4,26 +4,20 @@ import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class CQUnfilteredTable {
 	@Valid
 	@NotNull
-	private ConnectorId id;
+	private final ConnectorId id;
 
 	@Nullable
-	private ValidityDateContainer dateColumn;
-
-	@JsonIgnore
-	private Connector resolvedConnector;
+	private final ValidityDateContainer dateColumn;
 }

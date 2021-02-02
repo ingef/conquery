@@ -40,7 +40,6 @@ public class TableExportForm implements Form {
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
 
-	// TODO implement this as a standard concept query and ignore most of it so the frontend understands it.
 	@NotEmpty
 	@Valid
 	private List<CQConcept> concepts;
@@ -58,16 +57,19 @@ public class TableExportForm implements Form {
 	@Override
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
 
+		if(dateRange.isAll()){
+			throw new IllegalArgumentException("We don't allow open exports.");
+		}
+
 		final List<CQUnfilteredTable> tables = new ArrayList<>();
 
 		// Extract necessary info from query.
-		for (CQConcept concept : concepts) {
+		for (CQConcept concept : this.concepts) {
 			for (CQTable table : concept.getTables()) {
 
 				tables.add(new CQUnfilteredTable(
 						table.getId(),
-						table.getDateColumn(),
-						null
+						table.getDateColumn()
 				));
 			}
 		}
