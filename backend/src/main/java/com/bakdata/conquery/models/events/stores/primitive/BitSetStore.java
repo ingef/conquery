@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.ToString;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Stores boolean values as bits. Can therefore not store null.
@@ -47,13 +46,13 @@ public class BitSetStore implements BooleanStore {
 	}
 
 	@Override
-	public void set(int event, @Nullable Object value) {
-		if (value == null) {
-			set(event, false);
-			return;
-		}
+	public void setNull(int event) {
+		setBoolean(event, false);
+	}
 
-		values.set(event, (Boolean) value);
+	@Override
+	public void setBoolean(int event, boolean value) {
+		values.set(event, value);
 	}
 
 	public BitSetStore select(int[] starts, int[] lengths) {
@@ -77,11 +76,6 @@ public class BitSetStore implements BooleanStore {
 	@Override
 	public boolean has(int event) {
 		return true;
-	}
-
-	@Override
-	public Boolean get(int event) {
-		return getBoolean(event);
 	}
 
 	@Override

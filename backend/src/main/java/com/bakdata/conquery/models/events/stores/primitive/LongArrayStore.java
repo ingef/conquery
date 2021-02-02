@@ -44,24 +44,20 @@ public class LongArrayStore implements IntegerStore {
 		return new LongArrayStore(ColumnStore.selectArray(starts, ends, values, long[]::new), nullValue);
 	}
 
-	@Override
-	public void set(int event, Object value) {
-		if (value == null) {
-			values[event] = nullValue;
-			return;
-		}
 
-		values[event] = ((Number) value).longValue();
+	@Override
+	public void setNull(int event) {
+		values[event] = nullValue;
+	}
+
+	@Override
+	public void setInteger(int event, long value) {
+		values[event] = value;
 	}
 
 	@Override
 	public boolean has(int event) {
 		return values[event] != nullValue;
-	}
-
-	@Override
-	public Long get(int event) {
-		return getInteger(event);
 	}
 
 	@Override

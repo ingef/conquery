@@ -128,13 +128,13 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
+	public void setString(int event, int value) {
 		subType.set(event, value);
 	}
 
 	@Override
-	public Integer get(int event) {
-		return getString(event);
+	public void setNull(int event) {
+		subType.setNull(event);
 	}
 
 	@Override

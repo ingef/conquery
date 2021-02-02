@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.events.stores.root;
 
 import java.util.Arrays;
 
-import javax.annotation.CheckForNull;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -83,20 +81,12 @@ public interface ColumnStore {
 	 */
 	public abstract  <T extends ColumnStore> T select(int[] starts, int[] lengths);
 
-
-
 	/**
 	 * Create an empty store that's only a description of the transformation.
 	 */
 	public default ColumnStore createDescription() {
 		return this.select(new int[0], new int[0]);
 	}
-
-	/**
-	 * Set the event. If null, the store will store a null value, making {@link #has(int)} return false.
-	 */
-	public abstract void set(int event, @CheckForNull Object value);
-
 
 	/**
 	 * Test if the store has the event.

@@ -42,17 +42,14 @@ public class DateRangeTypeQuarter implements DateRangeStore {
 	}
 
 	@Override
-	public void set(int event, Object raw) {
+	public void setNull(int event) {
+		store.setNull(event);
+	}
 
-		if (raw == null) {
-			store.set(event, null);
-			return;
-		}
-
-		CDateRange value = (CDateRange) raw;
-
-		if (value.hasLowerBound()) {
-			store.set(event, (long) value.getMinValue());
+	@Override
+	public void setDateRange(int event, CDateRange raw) {
+		if (raw.hasLowerBound()) {
+			store.setInteger(event, raw.getMinValue());
 		}
 		else {
 			throw new IllegalArgumentException("Cannot store open dates in QuarterStore");
@@ -62,11 +59,6 @@ public class DateRangeTypeQuarter implements DateRangeStore {
 	@Override
 	public boolean has(int event) {
 		return store.has(event);
-	}
-
-	@Override
-	public CDateRange get(int event) {
-		return getDateRange(event);
 	}
 
 	@Override

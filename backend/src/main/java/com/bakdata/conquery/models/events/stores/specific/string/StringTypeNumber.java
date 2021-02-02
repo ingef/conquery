@@ -28,24 +28,17 @@ import lombok.ToString;
 @ToString(of = "delegate")
 public class StringTypeNumber implements StringStore {
 
-	@Override
-	public int getLines() {
-		return delegate.getLines();
-	}
-
-	@Override
-	public Object createScriptValue(int event) {
-		return delegate.createScriptValue(event);
-	}
-
 	@Nonnull
 	protected IntegerStore delegate;
 	//used as a compact intset
 	private Range<Integer> range;
-
 	// Only used for setting values in Preprocessing.
 	@JsonIgnore
 	private transient Map<Integer, String> dictionary;
+	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
+		this(range, numberType);
+		this.dictionary = dictionary;
+	}
 
 	@JsonCreator
 	public StringTypeNumber(Range<Integer> range, IntegerStore numberType) {
@@ -54,9 +47,14 @@ public class StringTypeNumber implements StringStore {
 		this.delegate = numberType;
 	}
 
-	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
-		this(range, numberType);
-		this.dictionary = dictionary;
+	@Override
+	public int getLines() {
+		return delegate.getLines();
+	}
+
+	@Override
+	public Object createScriptValue(int event) {
+		return delegate.createScriptValue(event);
 	}
 
 	@Override
@@ -107,17 +105,14 @@ public class StringTypeNumber implements StringStore {
 	}
 
 	@Override
-	public void setIndexStore(IntegerStore indexStore) {	}
+	public void setIndexStore(IntegerStore indexStore) {
+	}
 
 	@Override
 	public StringTypeNumber select(int[] starts, int[] length) {
 		return new StringTypeNumber(range, delegate.select(starts, length));
 	}
 
-	@Override
-	public Integer get(int event) {
-		return getString(event);
-	}
 
 	@Override
 	public int getString(int event) {
@@ -125,13 +120,13 @@ public class StringTypeNumber implements StringStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		if (value == null) {
-			getDelegate().set(event, null);
-		}
-		else {
-			getDelegate().set(event, Long.valueOf(dictionary.get((Integer) value)));
-		}
+	public void setNull(int event) {
+		getDelegate().setNull(event);
+	}
+
+	@Override
+	public void setString(int event, int value) {
+		getDelegate().setInteger(event, value);
 	}
 
 	@Override

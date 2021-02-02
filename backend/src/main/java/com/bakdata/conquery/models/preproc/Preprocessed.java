@@ -141,7 +141,15 @@ public class Preprocessed {
 				int length = values.get(entity).size();
 
 				for (int event = 0; event < length; event++) {
-					store.set(start + event, entityValues.get(event));
+					final Object raw = entityValues.get(event);
+					final int offset = start + event;
+
+					if (raw == null) {
+						store.setNull(offset);
+						continue;
+					}
+
+					ppColumn.getType().set(offset, raw, store);
 				}
 
 				start += length;

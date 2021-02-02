@@ -12,23 +12,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public interface StringStore extends Iterable<String>, ColumnStore {
 
 
-	public abstract int getString(int event);
+	int getString(int event);
+	void setString(int event, int value);
 
-	public abstract String getElement(int id);
+	String getElement(int id);
 	
-	public abstract int size();
+	int size();
 
-	public abstract int getId(String value);
+	int getId(String value);
 	
 	@JsonIgnore
-	public abstract Dictionary getUnderlyingDictionary();
+	Dictionary getUnderlyingDictionary();
 
-	public abstract void setUnderlyingDictionary(DictionaryId newDict);
+	void setUnderlyingDictionary(DictionaryId newDict);
 
 	/**
 	 * After applying DictionaryMapping a new store might be needed.
 	 */
-	public abstract void setIndexStore(IntegerStore newType);
+	void setIndexStore(IntegerStore newType);
 
-	public default void loadDictionaries(NamespacedStorage storage) {}
+	default void loadDictionaries(NamespacedStorage storage) {}
 }

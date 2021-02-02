@@ -113,11 +113,6 @@ public class StringTypeDictionary implements ColumnStore {
 		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
 	}
 
-	@Override
-	public Integer get(int event) {
-		return getString(event);
-	}
-
 	public int getString(int event) {
 		return (int) getNumberType().getInteger(event);
 	}
@@ -127,14 +122,13 @@ public class StringTypeDictionary implements ColumnStore {
 		return numberType.estimateEventBits();
 	}
 
+	public void set(int event, int value) {
+		numberType.setInteger(event, value);
+	}
+
 	@Override
-	public void set(int event, Object value) {
-		if (value == null) {
-			numberType.set(event, null);
-		}
-		else {
-			numberType.set(event, ((Integer) value).longValue());
-		}
+	public void setNull(int event) {
+		numberType.setNull(event);
 	}
 
 	@Override

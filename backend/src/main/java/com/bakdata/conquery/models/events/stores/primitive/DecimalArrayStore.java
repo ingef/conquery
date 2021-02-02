@@ -43,24 +43,18 @@ public class DecimalArrayStore implements DecimalStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		if(value == null){
-			values[event] = null;
-			return;
-		}
+	public void setDecimal(int event, BigDecimal value) {
+		values[event] = value;
+	}
 
-		values[event] = (BigDecimal) value;
+	@Override
+	public void setNull(int event) {
+		values[event] = null;
 	}
 
 	@Override
 	public boolean has(int event) {
 		return values[event] != null;
-	}
-
-
-	@Override
-	public BigDecimal get(int event) {
-		return getDecimal(event);
 	}
 
 	@Override

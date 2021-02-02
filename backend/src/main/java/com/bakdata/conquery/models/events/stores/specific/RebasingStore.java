@@ -46,27 +46,22 @@ public class RebasingStore implements IntegerStore {
 	}
 
 	@Override
-	public void set(int event, @Nullable Object value) {
-		if (value == null) {
-			store.set(event, null);
-			return;
-		}
-
-		store.set(event, ((Number) value).longValue() - min + root);
-	}
-
-	@Override
-	public Long get(int event) {
-		return getInteger(event);
+	public void setInteger(int event, @Nullable long value) {
+		store.setInteger(event, value - min + root);
 	}
 
 	@Override
 	public @NotNull long getInteger(int event) {
-		return - root + min + store.getInteger(event);
+		return -root + min + store.getInteger(event);
 	}
 
 	@Override
 	public boolean has(int event) {
 		return store.has(event);
+	}
+
+	@Override
+	public void setNull(int event) {
+		store.setNull(event);
 	}
 }

@@ -16,18 +16,16 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * An empty generic store to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
 public class EmptyStore implements
-		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore
-{
+		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore {
 
 	@JsonCreator
-	public EmptyStore(){
+	public EmptyStore() {
 		super();
 	}
 
@@ -41,18 +39,9 @@ public class EmptyStore implements
 		return 0;
 	}
 
-	@Override
-	public void set(int event, @Nullable Object value) {
-
-	}
 
 	@Override
 	public Object createScriptValue(int event) {
-		return null;
-	}
-
-	@Override
-	public Long get(int event) {
 		return null;
 	}
 
@@ -67,6 +56,11 @@ public class EmptyStore implements
 	}
 
 	@Override
+	public void setNull(int event) {
+
+	}
+
+	@Override
 	public boolean isEmpty() {
 		return true;
 	}
@@ -77,8 +71,18 @@ public class EmptyStore implements
 	}
 
 	@Override
+	public void setBoolean(int event, boolean value) {
+
+	}
+
+	@Override
 	public BigDecimal getDecimal(int event) {
 		return BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setDecimal(int event, BigDecimal value) {
+
 	}
 
 	@Override
@@ -87,8 +91,18 @@ public class EmptyStore implements
 	}
 
 	@Override
+	public void setInteger(int event, long value) {
+
+	}
+
+	@Override
 	public long getMoney(int event) {
 		return 0;
+	}
+
+	@Override
+	public void setMoney(int event, long money) {
+
 	}
 
 	@Override
@@ -97,8 +111,18 @@ public class EmptyStore implements
 	}
 
 	@Override
+	public void setReal(int event, double value) {
+
+	}
+
+	@Override
 	public int getString(int event) {
 		return 0;
+	}
+
+	@Override
+	public void setString(int event, int value) {
+
 	}
 
 	@Override

@@ -47,25 +47,17 @@ public class DecimalTypeScaled implements DecimalStore {
 	}
 
 	@Override
-	public void set(int event, Object raw) {
+	public void setDecimal(int event, BigDecimal raw) {
+		subType.setInteger(event, unscale(scale, raw).longValue());
+	}
 
-		if (raw == null) {
-			subType.set(event, null);
-			return;
-		}
-
-		BigDecimal value = (BigDecimal) raw;
-
-		subType.set(event, unscale(scale, value).longValue());
+	@Override
+	public void setNull(int event) {
+		subType.setNull(event);
 	}
 
 	public static BigInteger unscale(int scale, BigDecimal value) {
 		return value.movePointRight(scale).toBigIntegerExact();
-	}
-
-	@Override
-	public BigDecimal get(int event) {
-		return getDecimal(event);
 	}
 
 	@Override

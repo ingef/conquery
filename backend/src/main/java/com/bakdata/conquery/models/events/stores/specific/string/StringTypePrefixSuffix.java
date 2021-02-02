@@ -133,18 +133,18 @@ public class StringTypePrefixSuffix implements StringStore {
 	}
 
 	@Override
-	public Integer get(int event) {
-		return getString(event);
-	}
-
-	@Override
 	public int getString(int event) {
 		return subType.getString(event);
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		subType.set(event, value);
+	public void setString(int event, int value) {
+		subType.setString(event, value);
+	}
+
+	@Override
+	public void setNull(int event) {
+		subType.setNull(event);
 	}
 
 	@Override

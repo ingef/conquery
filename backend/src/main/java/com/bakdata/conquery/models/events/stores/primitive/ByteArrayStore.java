@@ -46,13 +46,8 @@ public class ByteArrayStore implements IntegerStore {
 	}
 
 	@Override
-	public void set(int event, Object raw) {
-		if (raw == null) {
-			values[event] = nullValue;
-			return;
-		}
-
-		values[event] = ((Number) raw).byteValue();
+	public void setInteger(int event, long value) {
+		values[event] = (byte) value;
 	}
 
 	@Override
@@ -61,8 +56,8 @@ public class ByteArrayStore implements IntegerStore {
 	}
 
 	@Override
-	public Long get(int event) {
-		return getInteger(event);
+	public void setNull(int event) {
+		values[event] = nullValue;
 	}
 
 	@Override

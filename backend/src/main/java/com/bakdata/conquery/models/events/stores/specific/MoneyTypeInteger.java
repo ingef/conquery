@@ -31,11 +31,6 @@ public class MoneyTypeInteger implements MoneyStore {
 	}
 
 	@Override
-	public Long get(int event) {
-		return getMoney(event);
-	}
-
-	@Override
 	public long getMoney(int event) {
 		return numberType.getInteger(event);
 	}
@@ -51,8 +46,13 @@ public class MoneyTypeInteger implements MoneyStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		numberType.set(event, value);
+	public void setMoney(int event, long value) {
+		numberType.setInteger(event, value);
+	}
+
+	@Override
+	public void setNull(int event) {
+		numberType.setNull(event);
 	}
 
 	@Override

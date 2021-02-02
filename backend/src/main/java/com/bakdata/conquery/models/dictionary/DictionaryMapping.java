@@ -63,11 +63,11 @@ public class DictionaryMapping {
 	public void applyToStore(StringStore from, IntegerStore to, long rows) {
 		for (int row = 0; row < rows; row++) {
 			if (!from.has(row)) {
-				to.set(row, null);
+				to.setNull(row);
 				continue;
 			}
 
-			to.set(row, (long) source2Target(from.getString(row)));
+			to.setInteger(row, source2Target(from.getString(row)));
 		}
 	}
 

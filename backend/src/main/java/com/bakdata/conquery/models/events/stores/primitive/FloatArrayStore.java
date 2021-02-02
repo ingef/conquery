@@ -16,6 +16,7 @@ import lombok.ToString;
 public class FloatArrayStore implements RealStore {
 
 	private final float[] values;
+	private final float nullValue = Float.NaN;
 
 	@Override
 	public int getLines() {
@@ -41,23 +42,17 @@ public class FloatArrayStore implements RealStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		if(value == null){
-			values[event] = Float.NaN;
-			return;
-		}
-
-		values[event] = ((Number) value).floatValue();
+	public void setReal(int event, double value) {
+		values[event] = (float) value;
+	}
+	@Override
+	public void setNull(int event) {
+		values[event] = nullValue;
 	}
 
 	@Override
 	public boolean has(int event) {
 		return !Float.isNaN(values[event]);
-	}
-
-	@Override
-	public Double get(int event) {
-		return getReal(event);
 	}
 
 	@Override

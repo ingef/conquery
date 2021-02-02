@@ -9,6 +9,7 @@ import lombok.ToString;
 
 /**
  * Stores values as Shorts. Can only store 2^16-1 values as MAX is used as NULL value.
+ *
  * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.events.parser.specific.IntegerParser}
  */
 @CPSType(id = "SHORTS", base = ColumnStore.class)
@@ -19,15 +20,19 @@ public class ShortArrayStore implements IntegerStore {
 	private final short nullValue;
 	private final short[] values;
 
-	@Override
-	public int getLines() {
-		return values.length;
-	}
-
 	@JsonCreator
 	public ShortArrayStore(short[] values, short nullValue) {
 		this.nullValue = nullValue;
 		this.values = values;
+	}
+
+	public static ShortArrayStore create(int size) {
+		return new ShortArrayStore(new short[size], Short.MAX_VALUE);
+	}
+
+	@Override
+	public int getLines() {
+		return values.length;
 	}
 
 	@Override
@@ -39,28 +44,19 @@ public class ShortArrayStore implements IntegerStore {
 		return new ShortArrayStore(ColumnStore.selectArray(starts, ends, values, short[]::new), nullValue);
 	}
 
-	public static ShortArrayStore create(int size) {
-		return new ShortArrayStore(new short[size], Short.MAX_VALUE);
+	@Override
+	public void setNull(int event) {
+		values[event] = nullValue;
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		if (value == null) {
-			values[event] = nullValue;
-			return;
-		}
-
-		values[event] = ((Number) value).shortValue();
+	public void setInteger(int event, long value) {
+		values[event] = (short) value;
 	}
 
 	@Override
 	public boolean has(int event) {
 		return values[event] != nullValue;
-	}
-
-	@Override
-	public Long get(int event) {
-		return getInteger(event);
 	}
 
 	@Override

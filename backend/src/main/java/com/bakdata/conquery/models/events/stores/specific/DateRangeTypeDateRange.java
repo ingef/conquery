@@ -42,34 +42,26 @@ public class DateRangeTypeDateRange implements DateRangeStore {
 	}
 
 	@Override
-	public void set(int event, Object raw) {
-
-		if (raw == null) {
-			minStore.set(event, null);
-			maxStore.set(event, null);
-			return;
-		}
-
-		CDateRange value = (CDateRange) raw;
-
-		if (value.hasLowerBound()) {
-			minStore.set(event, value.getMinValue());
+	public void setDateRange(int event, CDateRange raw) {
+		if (raw.hasLowerBound()) {
+			minStore.setDate(event, raw.getMinValue());
 		}
 		else {
-			minStore.set(event, null);
+			minStore.setNull(event);
 		}
 
-		if (value.hasUpperBound()) {
-			maxStore.set(event, value.getMaxValue());
+		if (raw.hasUpperBound()) {
+			maxStore.setDate(event, raw.getMaxValue());
 		}
 		else {
-			maxStore.set(event, null);
+			maxStore.setNull(event);
 		}
 	}
 
 	@Override
-	public CDateRange get(int event) {
-		return getDateRange(event);
+	public void setNull(int event) {
+		minStore.setNull(event);
+		maxStore.setNull(event);
 	}
 
 	@Override

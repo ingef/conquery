@@ -25,6 +25,10 @@ public class IntegerDateStore implements DateStore {
 		this.store = store;
 	}
 
+	public static IntegerDateStore create(int size) {
+		return new IntegerDateStore(IntArrayStore.create(size));
+	}
+
 	@Override
 	public int getLines() {
 		return store.getLines();
@@ -35,17 +39,18 @@ public class IntegerDateStore implements DateStore {
 		return store.estimateEventBits();
 	}
 
-	public static IntegerDateStore create(int size) {
-		return new IntegerDateStore(IntArrayStore.create(size));
-	}
-
 	public IntegerDateStore select(int[] starts, int[] ends) {
 		return new IntegerDateStore(store.select(starts, ends));
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		store.set(event, value);
+	public void setDate(int event, int value) {
+		store.setInteger(event, value);
+	}
+
+	@Override
+	public void setNull(int event) {
+		store.setNull(event);
 	}
 
 	@Override
@@ -53,11 +58,6 @@ public class IntegerDateStore implements DateStore {
 		return store.has(event);
 	}
 
-
-	@Override
-	public Long get(int event) {
-		return (long) getDate(event);
-	}
 
 	@Override
 	public int getDate(int event) {

@@ -85,7 +85,6 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 
-
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return null;
@@ -97,8 +96,13 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		getDelegate().set(event, value != null && (Integer) value == 0);
+	public void setString(int event, int value) {
+		getDelegate().setBoolean(event, true);
+	}
+
+	@Override
+	public void setNull(int event) {
+		getDelegate().setBoolean(event, false);
 	}
 
 	@Override
@@ -106,10 +110,6 @@ public class StringTypeSingleton implements StringStore {
 		return getDelegate().getBoolean(event);
 	}
 
-	@Override
-	public Integer get(int event) {
-		return getString(event);
-	}
 
 	@Override
 	public int getString(int event) {

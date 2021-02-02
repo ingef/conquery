@@ -16,6 +16,7 @@ import lombok.ToString;
 public class DoubleArrayStore implements RealStore {
 
 	private final double[] values;
+	private final double nullValue = Double.NaN;
 
 	@JsonCreator
 	public DoubleArrayStore(double[] values) {
@@ -41,13 +42,13 @@ public class DoubleArrayStore implements RealStore {
 	}
 
 	@Override
-	public void set(int event, Object value) {
-		if(value == null){
-			values[event] = Double.NaN;
-			return;
-		}
+	public void setReal(int event, double value) {
+		values[event] = value;
+	}
 
-		values[event] = ((Number) value).doubleValue();
+	@Override
+	public void setNull(int event) {
+		values[event] = nullValue;
 	}
 
 	@Override
@@ -55,10 +56,6 @@ public class DoubleArrayStore implements RealStore {
 		return !Double.isNaN(values[event]);
 	}
 
-	@Override
-	public Double get(int event) {
-		return getReal(event);
-	}
 
 	@Override
 	public double getReal(int event) {

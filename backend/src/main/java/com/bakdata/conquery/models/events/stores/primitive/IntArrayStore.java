@@ -21,11 +21,6 @@ public class IntArrayStore implements IntegerStore {
 	private final int nullValue;
 	private final int[] values;
 
-	@Override
-	public int getLines() {
-		return values.length;
-	}
-
 	@JsonCreator
 	public IntArrayStore(int[] values, int nullValue) {
 		this.nullValue = nullValue;
@@ -37,6 +32,11 @@ public class IntArrayStore implements IntegerStore {
 	}
 
 	@Override
+	public int getLines() {
+		return values.length;
+	}
+
+	@Override
 	public long estimateEventBits() {
 		return Integer.SIZE;
 	}
@@ -45,24 +45,20 @@ public class IntArrayStore implements IntegerStore {
 		return new IntArrayStore(ColumnStore.selectArray(starts, ends, values, int[]::new), nullValue);
 	}
 
-	@Override
-	public void set(int event, Object value) {
-		if(value == null) {
-			values[event] = nullValue;
-			return;
-		}
 
-		values[event] = ((Number) value).intValue();
+	@Override
+	public void setNull(int event) {
+		values[event] = nullValue;
+	}
+
+	@Override
+	public void setInteger(int event, long value) {
+		values[event] = (int) value;
 	}
 
 	@Override
 	public boolean has(int event) {
 		return values[event] != nullValue;
-	}
-
-	@Override
-	public Long get(int event) {
-		return getInteger(event);
 	}
 
 	@Override
