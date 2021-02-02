@@ -42,6 +42,10 @@ public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregato
 	public void acceptEvent(Bucket bucket, int event) {
 		List<Object> tuple = new ArrayList<>(columns.length);
 		for(Column column : columns) {
+			if(!bucket.has(event,column)) {
+				continue;
+			}
+
 			tuple.add(bucket.createScriptValue(event, column));
 		}
 		if (observed.add(tuple)) {
