@@ -38,9 +38,7 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 			return false;
 		}
 
-		int stringToken = bucket.getString(event, getColumn());
-
-		String value = (String) getColumn().getTypeFor(bucket).createScriptValue(stringToken);
+		String value = (String) bucket.createScriptValue(event, column);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
 		return value.startsWith(filterValue);

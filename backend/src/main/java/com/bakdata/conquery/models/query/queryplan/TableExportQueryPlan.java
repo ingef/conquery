@@ -83,7 +83,7 @@ public class TableExportQueryPlan implements QueryPlan {
 							continue;
 						}
 
-						ColumnStore type = column.getTypeFor(bucket);
+						ColumnStore type = bucket.getStore(column);
 
 						// depending on context use pretty printing or script value
 						entry[exportDescription.getColumnOffset() + col] = ctx.isPrettyPrint()

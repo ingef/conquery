@@ -106,7 +106,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		for (Bucket bucket : tableBuckets) {
 			int entityId = entity.getId();
 
-			StringStore secondaryIdType = (StringStore) secondaryIdColumn.getTypeFor(bucket);
+			StringStore secondaryIdType = (StringStore) bucket.getStore(secondaryIdColumn);
 
 			nextBlock(bucket);
 

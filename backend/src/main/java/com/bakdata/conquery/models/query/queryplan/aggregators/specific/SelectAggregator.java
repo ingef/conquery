@@ -24,7 +24,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		selectedId = ((StringStore) getColumn().getTypeFor(bucket)).getId(selected);
+		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(selected);
 	}
 
 	@Override

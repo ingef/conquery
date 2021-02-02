@@ -33,7 +33,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((StringStore) getColumn().getTypeFor(bucket)).getId(filterValue);
+		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(filterValue);
 	}
 
 	@Override

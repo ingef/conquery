@@ -28,7 +28,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		StringStore type = (StringStore) getColumn().getTypeFor(bucket);
+		StringStore type = (StringStore) bucket.getStore(getColumn());
 
 		for (int index = 0; index < selection.length; index++) {
 			selectedValues[index] = type.getId(selection[index]);

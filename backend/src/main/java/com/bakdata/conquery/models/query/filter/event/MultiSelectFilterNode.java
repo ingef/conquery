@@ -33,7 +33,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		StringStore type = (StringStore) getColumn().getTypeFor(bucket);
+		StringStore type = (StringStore) bucket.getStore(getColumn());
 
 		for (int index = 0; index < filterValue.length; index++) {
 			String select = filterValue[index];
