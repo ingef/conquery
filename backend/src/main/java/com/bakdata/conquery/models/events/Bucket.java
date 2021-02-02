@@ -164,8 +164,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
-		final ColumnStore store = getStore(column);
-		return ((ColumnStore) store).createScriptValue(event);
+		return getStore(column).createScriptValue(event);
 	}
 
 	public Map<String, Object> calculateMap(int event) {
