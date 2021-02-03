@@ -30,7 +30,7 @@ public class EpochOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 				if (row[columnIndex] == null) {
 					return null;
 				}

@@ -4,13 +4,13 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.BooleanStore;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
+import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class BooleanParser extends Parser<Boolean> {
+public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	public BooleanParser(ParserConfig config) {
 		super(config);
@@ -33,7 +33,12 @@ public class BooleanParser extends Parser<Boolean> {
 	}
 
 	@Override
-	protected ColumnStore<Boolean> decideType() {
-		return BooleanStore.create(getLines());
+	protected BooleanStore decideType() {
+		return BitSetStore.create(getLines());
+	}
+
+	@Override
+	public void setValue(BooleanStore store, int event, Boolean value) {
+		store.setBoolean(event, value);
 	}
 }

@@ -17,7 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 
 	private final ColumnAggregator<VALUE> aggregator;
-	private Set<Object> observed = new HashSet<>();
+	private final Set<Object> observed = new HashSet<>();
 
 	@Getter
 	private final Column column;
@@ -39,7 +39,11 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (observed.add(bucket.getAsObject(event, getColumn()))) {
+		if(!bucket.has(event,getColumn())){
+			return;
+		}
+
+		if (observed.add(bucket.createScriptValue(event, getColumn()))) {
 			aggregator.acceptEvent(bucket, event);
 		}
 	}

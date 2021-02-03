@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
@@ -9,7 +10,9 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,27 +27,38 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
 @ToString(of = "delegate")
-public class StringTypeNumber extends StringType {
+public class StringTypeNumber implements StringStore {
 
 	@Nonnull
-	protected ColumnStore<Long> delegate;
+	protected IntegerStore delegate;
 	//used as a compact intset
 	private Range<Integer> range;
 
 	// Only used for setting values in Preprocessing.
+	// TODO fk: can this be moved to the parser?
 	@JsonIgnore
 	private transient Map<Integer, String> dictionary;
 
+	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
+		this(range, numberType);
+		this.dictionary = dictionary;
+	}
+
 	@JsonCreator
-	public StringTypeNumber(Range<Integer> range, ColumnStore<Long> numberType) {
+	public StringTypeNumber(Range<Integer> range, IntegerStore numberType) {
 		super();
 		this.range = range;
 		this.delegate = numberType;
 	}
 
-	public StringTypeNumber(Range<Integer> range, ColumnStore<Long> numberType, Map<Integer, String> dictionary) {
-		this(range, numberType);
-		this.dictionary = dictionary;
+	@Override
+	public int getLines() {
+		return delegate.getLines();
+	}
+
+	@Override
+	public Object createScriptValue(int event) {
+		return Objects.toString(delegate.createScriptValue(event));
 	}
 
 	@Override
@@ -63,15 +77,6 @@ public class StringTypeNumber extends StringType {
 					   .iterator();
 	}
 
-	@Override
-	public Object createPrintValue(Integer value) {
-		return value;
-	}
-
-	@Override
-	public Object createScriptValue(Integer value) {
-		return value.toString();
-	}
 
 	@Override
 	public String getElement(int id) {
@@ -104,17 +109,14 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> indexStore) {	}
-
-	@Override
-	public StringTypeNumber doSelect(int[] starts, int[] length) {
-		return new StringTypeNumber(range, delegate.doSelect(starts, length));
+	public void setIndexStore(IntegerStore indexStore) {
 	}
 
 	@Override
-	public Integer get(int event) {
-		return getString(event);
+	public StringTypeNumber select(int[] starts, int[] length) {
+		return new StringTypeNumber(range, delegate.select(starts, length));
 	}
+
 
 	@Override
 	public int getString(int event) {
@@ -122,13 +124,13 @@ public class StringTypeNumber extends StringType {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
-		if (value == null) {
-			getDelegate().set(event, null);
-		}
-		else {
-			getDelegate().set(event, Long.valueOf(dictionary.get(value)));
-		}
+	public void setNull(int event) {
+		getDelegate().setNull(event);
+	}
+
+	@Override
+	public void setString(int event, int value) {
+		getDelegate().setInteger(event, Long.valueOf(dictionary.get(value)));
 	}
 
 	@Override

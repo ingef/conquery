@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -80,21 +80,21 @@ public class ConceptTreeConnector extends Connector {
 		final Import imp = bucket.getImp();
 		final ImportId importId = imp.getId();
 
-		final StringType stringType;
+		final StringStore stringStore;
 
 		// If we have a column and it is of string-type, we create indices and caches.
-		if (column != null && bucket.getStores()[column.getPosition()] instanceof StringType) {
+		if (column != null && bucket.getStores()[column.getPosition()] instanceof StringStore) {
 
-			stringType = (StringType) bucket.getStores()[column.getPosition()];
+			stringStore = (StringStore) bucket.getStores()[column.getPosition()];
 
 			// Create index and insert into Tree.
 			TreeChildPrefixIndex.putIndexInto(treeConcept);
 
-			treeConcept.initializeIdCache(stringType, importId);
+			treeConcept.initializeIdCache(stringStore, importId);
 		}
 		// No column only possible if we have just one tree element!
 		else if(treeConcept.countElements() == 1){
-			stringType = null;
+			stringStore = null;
 		}
 		else {
 			throw new IllegalStateException(String.format("Cannot build tree over Connector[%s] without Column", getId()));
@@ -120,9 +120,9 @@ public class ConceptTreeConnector extends Connector {
 				String stringValue = "";
 				int valueIndex = -1;
 
-				if (stringType != null) {
+				if (stringStore != null) {
 					valueIndex = bucket.getString(event, column);
-					stringValue = stringType.getElement(valueIndex);
+					stringValue = stringStore.getElement(valueIndex);
 				}
 
 				// Lazy evaluation of map to avoid allocations if possible.

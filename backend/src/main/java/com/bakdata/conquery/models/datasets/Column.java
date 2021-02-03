@@ -4,9 +4,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.preproc.PPColumn;
@@ -53,10 +52,6 @@ public class Column extends Labeled<ColumnId> {
 			return false;
 		}
 		return this.getType().equals(column.getType());
-	}
-
-	public ColumnStore getTypeFor(Bucket bucket) {
-		return bucket.getStores()[getPosition()];
 	}
 
 

@@ -6,7 +6,7 @@ import java.util.Map;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import it.unimi.dsi.fastutil.ints.Int2IntMaps;
 import lombok.Getter;
 
@@ -91,7 +91,7 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public CDateRange getAsDateRange(int event, Column currentColumn) {
+	public CDateRange getAsDateRange(int event, Column column) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 

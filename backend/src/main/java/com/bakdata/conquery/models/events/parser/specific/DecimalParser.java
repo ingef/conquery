@@ -5,8 +5,9 @@ import java.math.BigInteger;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.DecimalStore;
+import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @ToString(callSuper = true)
 @Slf4j
-public class DecimalParser extends Parser<BigDecimal> {
+public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 
 	private transient int maxScale = Integer.MIN_VALUE;
 	private transient BigDecimal maxAbs;
@@ -43,11 +44,11 @@ public class DecimalParser extends Parser<BigDecimal> {
 	}
 
 	@Override
-	protected ColumnStore<BigDecimal> decideType() {
+	protected DecimalStore decideType() {
 
 		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
-			return DecimalStore.create(getLines());
+			return DecimalArrayStore.create(getLines());
 		}
 
 		IntegerParser sub = new IntegerParser(getConfig());
@@ -55,9 +56,14 @@ public class DecimalParser extends Parser<BigDecimal> {
 		sub.setMinValue(-unscaled.longValueExact());
 		sub.setLines(getLines());
 		sub.setNullLines(getNullLines());
-		ColumnStore<Long> subDecision = sub.findBestType();
+		IntegerStore subDecision = sub.findBestType();
 
 		return new DecimalTypeScaled(maxScale, subDecision);
+	}
+
+	@Override
+	public void setValue(DecimalStore store, int event, BigDecimal value) {
+		store.setDecimal(event, value);
 	}
 
 }
