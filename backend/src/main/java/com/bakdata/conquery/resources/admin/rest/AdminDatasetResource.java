@@ -60,8 +60,6 @@ public class AdminDatasetResource extends HAdmin {
 	protected DatasetId datasetId;
 	protected Namespace namespace;
 
-	protected ObjectMapper namespacedMapper;
-
 	@PostConstruct
 	@Override
 	public void init() {
@@ -71,8 +69,6 @@ public class AdminDatasetResource extends HAdmin {
 		if (namespace == null) {
 			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
 		}
-
-		namespacedMapper = namespace.getDataset().injectInto(namespace.getNamespaces().injectInto(Jackson.MAPPER));
 	}
 
 	@POST
@@ -92,15 +88,8 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("tables")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public void addTable(@FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
-
-		for (BodyPart part : schemas.getParent().getBodyParts()) {
-			try (InputStream is = part.getEntityAs(InputStream.class)) {
-				Table t = namespacedMapper.readValue(is, Table.class);
-				processor.addTable(t, namespace);
-			}
-		}
+	public void addTable(Table table) throws IOException, JSONException {
+		processor.addTable(table, namespace);
 	}
 
 	@POST
