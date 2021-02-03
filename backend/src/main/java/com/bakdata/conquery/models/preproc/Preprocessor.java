@@ -19,7 +19,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
@@ -205,7 +204,7 @@ public class Preprocessor {
 	 * Apply each output for a single row. Returning all resulting values.
 	 */
 	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId)
-			throws ParsingException, OutputDescription.OutputException {
+			throws OutputDescription.OutputException {
 		Object[] outRow = new Object[outputs.size()];
 
 		for (int index = 0; index < outputs.size(); index++) {
