@@ -30,20 +30,23 @@ import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.RequiredArgsConstructor;
 
 @CPSType(base = QueryDescription.class, id = "TABLE_EXPORT_FORM")
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class TableExportForm implements Form {
 
 	@Valid
 	@NotNull
-	protected IQuery queryGroup;
+	protected final IQuery queryGroup;
 
 	@NotNull
-	private Range<LocalDate> dateRange = Range.all();
+	private final Range<LocalDate> dateRange;
 
 	@NotEmpty
 	@Valid
-	private List<CQConcept> concepts;
+	private final List<CQConcept> concepts;
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
