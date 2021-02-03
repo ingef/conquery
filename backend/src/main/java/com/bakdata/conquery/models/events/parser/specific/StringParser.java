@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.parser.specific.string;
+package com.bakdata.conquery.models.events.parser.specific;
 
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -13,8 +13,11 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
+import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
+import com.bakdata.conquery.models.events.parser.specific.string.NumberTypeGuesser;
+import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser;
 import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser.Guess;
+import com.bakdata.conquery.models.events.parser.specific.string.TrieTypeGuesser;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -67,7 +70,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 		return strings.computeIfAbsent(value, this::processSingleValue);
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
+
 	@Override
 	protected StringStore decideType() {
 

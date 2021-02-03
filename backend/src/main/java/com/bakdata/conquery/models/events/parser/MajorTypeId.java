@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.events.parser.specific.DecimalParser;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.events.parser.specific.MoneyParser;
 import com.bakdata.conquery.models.events.parser.specific.RealParser;
-import com.bakdata.conquery.models.events.parser.specific.string.StringParser;
+import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

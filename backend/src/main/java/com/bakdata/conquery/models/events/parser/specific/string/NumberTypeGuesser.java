@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
+import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
 import lombok.RequiredArgsConstructor;

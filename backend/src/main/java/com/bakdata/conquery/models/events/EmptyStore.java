@@ -17,7 +17,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * An empty generic store to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
+ * An empty generic store to avoid any allocations.
+ *
+ * @implNote this class is a singleton.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
 public enum EmptyStore implements
