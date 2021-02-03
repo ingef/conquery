@@ -31,10 +31,12 @@ import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @CPSType(base = QueryDescription.class, id = "TABLE_EXPORT_FORM")
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter
 public class TableExportForm implements Form {
 
 	@Valid
