@@ -153,7 +153,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 			case DATE:
 				return CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
 			case DATE_RANGE:
-				return ((DateRangeStore) getStore(column)).getDateRange(event);
+				return getDateRange(event, column);
 			default:
 				throw new IllegalStateException("Column is not of DateCompatible type.");
 		}
