@@ -67,13 +67,13 @@ jobs:
     displayName: programmatic integration tests
     inputs:
       jdkVersionOption: '1.11'
-      options: $(MVN) -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+      options: $(MVN) -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC" -Ddw.failOnError=true
 
   - task: Maven@3
     displayName: json integration tests
     inputs:
       jdkVersionOption: '1.11'
-      options: $(MVN) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
+      options: $(MVN) -T 1C -pl backend -Dgroups="INTEGRATION_JSON" -Ddw.failOnError=true
 
   - task: DeleteFiles@1
     displayName: prepare cache
