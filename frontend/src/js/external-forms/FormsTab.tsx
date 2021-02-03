@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useStore } from "react-redux";
-import { getForms } from "../api/api";
 import StandardQueryEditorTab from "../standard-query-editor";
 import TimebasedQueryEditorTab from "../timebased-query-editor";
 import type { TabPropsType } from "../pane";
 import { updateReducers } from "../store";
+import { useGetForms } from "../api/api";
 
 import buildExternalFormsReducer from "./reducer";
 
@@ -15,8 +15,9 @@ import { tabDescription } from ".";
 
 const FormsTab = (props: TabPropsType) => {
   const store = useStore();
+  const getForms = useGetForms();
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function loadForms() {
       const configuredForms = await getForms(props.selectedDatasetId);
 

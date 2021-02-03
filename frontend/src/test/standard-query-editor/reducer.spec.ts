@@ -1,9 +1,9 @@
 import {
   setFilterValue,
-  loadFilterSuggestionsSuccess
+  loadFilterSuggestionsSuccess,
 } from "../../js/standard-query-editor/actions";
 
-import reducer from "../../js/standard-query-editor/reducer";
+import reducer from "../../js/standard-query-editor/queryReducer";
 
 const createQueryStateWithOneBigMultiSelect = () => [
   {
@@ -17,16 +17,16 @@ const createQueryStateWithOneBigMultiSelect = () => [
               {
                 id: "col0",
                 type: "BIG_MULTI_SELECT",
-                options: []
-              }
-            ]
-          }
+                options: [],
+              },
+            ],
+          },
         ],
         hasActiveFilters: false,
-        isEditing: true // This is the element we want to manipulate
-      }
-    ]
-  }
+        isEditing: true, // This is the element we want to manipulate
+      },
+    ],
+  },
 ];
 
 describe("standard query editor", () => {
@@ -35,7 +35,7 @@ describe("standard query editor", () => {
       const state = createQueryStateWithOneBigMultiSelect();
 
       state[0].elements[0].tables[0].filters[0].options = [
-        { value: 1, label: "1" }
+        { value: 1, label: "1" },
       ];
       state[0].elements[0].tables[0].filters[0].value = [1];
 
@@ -55,7 +55,7 @@ describe("standard query editor", () => {
       const options = [
         { value: "0", label: "0" },
         { value: "1", label: "1" },
-        { value: "2", label: "2" }
+        { value: "2", label: "2" },
       ];
       const action = loadFilterSuggestionsSuccess(options, 0, 0);
       const updatedState = reducer(state, action);
@@ -69,7 +69,7 @@ describe("standard query editor", () => {
       const options = [
         { value: "0", label: "0" },
         { value: "1", label: "1" },
-        { value: "2", label: "2" }
+        { value: "2", label: "2" },
       ];
       const state = createQueryStateWithOneBigMultiSelect();
       state[0].elements[0].tables[0].filters[0].options = options;

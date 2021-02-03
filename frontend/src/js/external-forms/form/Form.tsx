@@ -3,7 +3,7 @@ import { reduxForm, formValueSelector } from "redux-form";
 import { connect } from "react-redux";
 
 import { getLocale } from "../../localization";
-import type { SelectOptionsT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 import type { DatasetIdT } from "../../api/types";
 
 import {
@@ -108,7 +108,7 @@ type ConfiguredFormPropsType = {
 type PropsType = {
   onSubmit: Function;
   getFieldValue: (fieldName: string) => any;
-  availableDatasets: SelectOptionsT;
+  availableDatasets: SelectOptionT[];
   selectedDatasetId: DatasetIdT;
 };
 

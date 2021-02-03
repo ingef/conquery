@@ -1,36 +1,35 @@
 package com.bakdata.conquery.models.preproc;
 
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.models.dictionary.DictionaryMapping;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Decision;
-import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.Transformer;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Data @RequiredArgsConstructor @NoArgsConstructor
+@Slf4j
+@Data
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator} )
 public class PPColumn {
 	@NonNull
-	private String name;
-	@SuppressWarnings("rawtypes") @NotNull
-	private CType type;
-	@SuppressWarnings("rawtypes") @JsonIgnore
-	private transient Transformer transformer = null;
-	@SuppressWarnings("rawtypes") @JsonIgnore
-	private transient Parser parser = null;
-	@JsonIgnore
-	private transient DictionaryMapping valueMapping;
-	@JsonIgnore
-	private transient CType oldType;
+	private final String name;
 
-	public void findBestType() {
-		Decision typeDecision = parser.findBestType();
-		type = typeDecision.getType();
-		transformer = typeDecision.getTransformer();
+	private final MajorTypeId type;
+
+	@SuppressWarnings("rawtypes")
+	@JsonIgnore
+	private transient Parser parser = null;
+
+	public ColumnStore<?> findBestType() {
+		log.info("Compute best Subtype for  Column[{}] with {}", getName(), getParser());
+		ColumnStore<?> decision = parser.findBestType();
+		// this only creates the headers
+
+		log.info("\t{}: {} -> {}", getName(), getParser(), decision);
+
+		return decision;
 	}
 }

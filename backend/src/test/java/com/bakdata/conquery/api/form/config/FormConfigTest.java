@@ -87,7 +87,6 @@ public class FormConfigTest {
 	
 	@BeforeAll
 	public void setupTestClass() throws Exception{
-		SharedMetricRegistries.setDefault(FormConfigTest.class.getName());
 		storageMock = Mockito.mock(MetaStorage.class);
 
 		dataset.setName("test");

@@ -1,14 +1,14 @@
 // import { createLogger }  from 'redux-logger';
 import prodMiddleware from "./prodMiddleware";
 
-export default function(browserHistory) {
+export default function () {
   // const reduxLogger = createLogger({
   //   diff: false,
   // });
 
   return [
     // Dev middlware uses all of production, plus some extra
-    ...prodMiddleware(browserHistory)
+    ...prodMiddleware(),
     // reduxLogger,
   ];
 }

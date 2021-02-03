@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -49,6 +50,9 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+
+			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
@@ -110,7 +114,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			conquery.waitUntilWorkDone();
 
-			conquery.getNamespace().getDataset().getTables().stream()
+			conquery.getNamespace().getStorage().getTables().stream()
 					.map(Table::getId)
 					.forEach(conquery.getDatasetsProcessor()::deleteTable);
 
@@ -193,10 +197,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			// only import the deleted import/table
 			for (RequiredTable table : test.getContent().getTables()) {
-				conquery2.getDatasetsProcessor().addTable(newDataset, table.toTable());
+				conquery2.getDatasetsProcessor().addTable(table.toTable(conquery.getDataset()), conquery2.getNamespace());
 			}
 
-			assertThat(newDataset.getTables().values()).isNotEmpty();
+			assertThat(conquery2.getNamespace().getStorage().getTables()).isNotEmpty();
 
 			conquery.waitUntilWorkDone();
 			LoadingUtil.importTableContents(conquery2, test.getContent().getTables(), newDataset);

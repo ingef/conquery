@@ -17,9 +17,9 @@ public class ConqueryFileUtil {
 			throw new Error("Could not create temporary directory", e);
 		}
 	}
-	
+
 	public static File createTempFile(String prefix, String extension) throws IOException {
-		File f = Files.createTempFile(TEMPORARY_DIRECTORY, prefix, "."+extension).toFile();
+		File f = Files.createTempFile(TEMPORARY_DIRECTORY, prefix, "." + extension).toFile();
 		f.deleteOnExit();
 		return f;
 	}

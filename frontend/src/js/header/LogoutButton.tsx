@@ -1,11 +1,10 @@
 import React, { FC } from "react";
-import { push } from "react-router-redux";
 import styled from "@emotion/styled";
 import IconButton from "../button/IconButton";
 import { deleteStoredAuthToken } from "../authorization/helper";
 import WithTooltip from "../tooltip/WithTooltip";
 import { T } from "../localization";
-import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
 
 const SxIconButton = styled(IconButton)`
   padding: 10px 6px;
@@ -16,8 +15,8 @@ interface PropsT {
 }
 
 const LogoutButton: FC<PropsT> = ({ className }) => {
-  const dispatch = useDispatch();
-  const goToLogin = () => dispatch(push("/login"));
+  const history = useHistory();
+  const goToLogin = () => history.push("/login");
 
   const onLogout = () => {
     deleteStoredAuthToken();

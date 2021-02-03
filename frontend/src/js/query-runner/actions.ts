@@ -1,3 +1,5 @@
+import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
 import {
   deleteQuery,
   getQuery,
@@ -55,19 +57,28 @@ export default function createQueryRunnerActions(
   const startQueryError = (err) => defaultError(START_QUERY_ERROR, err);
   const startQuerySuccess = (res) => defaultSuccess(START_QUERY_SUCCESS, res);
   const startQuery = (
-    datasetId,
-    query,
-    version,
-    formQueryTransformation?: Function = (form) => form
+    datasetId: DatasetIdT,
+    query: StandardQueryStateT | TimebasedQueryStateT,
+    {
+      formQueryTransformation = (form: any) => form,
+      selectedSecondaryId,
+    }: {
+      formQueryTransformation?: Function;
+      selectedSecondaryId?: string | null;
+    }
   ) => {
     return (dispatch) => {
       dispatch(startQueryStart());
 
       const apiMethod = isExternalForm
-        ? (...args) => postFormQueries(...args, formQueryTransformation)
-        : postQueries;
+        ? () => postFormQueries(datasetId, query, { formQueryTransformation })
+        : () =>
+            postQueries(datasetId, query, {
+              queryType: type,
+              selectedSecondaryId,
+            });
 
-      return apiMethod(datasetId, query, type, version).then(
+      return apiMethod().then(
         (r) => {
           dispatch(startQuerySuccess(r));
 
@@ -109,6 +120,7 @@ export default function createQueryRunnerActions(
     res: GetQueryResponseDoneT,
     datasetId: DatasetIdT
   ) => defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId });
+
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
     return (dispatch) => {
       dispatch(queryResultStart());

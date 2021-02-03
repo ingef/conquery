@@ -14,7 +14,9 @@ import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @SuppressWarnings({"rawtypes", "unchecked"}) @NoArgsConstructor
 public class CentralRegistry implements Injectable {
 	
@@ -43,14 +45,14 @@ public class CentralRegistry implements Injectable {
 
 	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {
 		Object res = map.get(name);
-		if(res!=null) {
-			return Optional.of((T)res);
+		if (res != null) {
+			return Optional.of((T) res);
 		}
 		Supplier<Identifiable<?>> supplier = cacheables.get(name);
-		if(supplier == null) {
+		if (supplier == null) {
 			return Optional.empty();
 		}
-		return Optional.of((T)supplier.get());
+		return Optional.of((T) supplier.get());
 	}
 
 	public synchronized void remove(IId<?> id) {

@@ -9,13 +9,12 @@ import { Store } from "redux";
 
 interface PropsT {
   store: Store<StateT>;
-  browserHistory: Object;
   rightTabs: TabT[];
 }
 
-const AppRoot: FC<PropsT> = ({ store, browserHistory, rightTabs }) => (
+const AppRoot: FC<PropsT> = ({ store, rightTabs }) => (
   <Provider store={store}>
-    <AppRouter history={browserHistory} rightTabs={rightTabs} />
+    <AppRouter rightTabs={rightTabs} />
   </Provider>
 );
 

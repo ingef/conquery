@@ -8,15 +8,18 @@ import QueryGroupActions from "./QueryGroupActions";
 import type {
   DraggedNodeType,
   DraggedQueryType,
+  PreviousQueryQueryNodeType,
   QueryGroupType,
 } from "./types";
+import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import { DateRangeT } from "../api/types";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
   max-width: 250px;
 `;
 
-const Group = styled("div")`
+const Group = styled("div")<{ excluded?: boolean }>`
   position: relative;
   padding: 6px 8px 8px;
   background-color: ${({ theme }) => theme.col.graySuperLight};
@@ -35,7 +38,7 @@ const QueryOrConnector = styled("p")`
   text-align: center;
 `;
 
-const isDateActive = (dateRange) => {
+const isDateActive = (dateRange?: DateRangeT) => {
   return !!dateRange && (!!dateRange.min || !!dateRange.max);
 };
 
@@ -43,15 +46,16 @@ interface PropsT {
   group: QueryGroupType;
   andIdx: number;
   onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
-  onDropFile: Function;
-  onDeleteNode: Function;
-  onEditClick: Function;
-  onExcludeClick: Function;
-  onExpandClick: Function;
-  onDateClick: Function;
-  onDeleteGroup: Function;
-  onLoadPreviousQuery: Function;
-  onToggleTimestamps: Function;
+  onDropFile: (file: File) => void;
+  onDeleteNode: (idx: number) => void;
+  onEditClick: (orIdx: number) => void;
+  onExcludeClick: () => void;
+  onExpandClick: (q: PreviousQueryQueryNodeType) => void;
+  onDateClick: () => void;
+  onDeleteGroup: () => void;
+  onLoadPreviousQuery: (id: PreviousQueryIdT) => void;
+  onToggleTimestamps: (orIdx: number) => void;
+  onToggleSecondaryIdExclude: (orIdx: number) => void;
 }
 
 const QueryGroup = (props: PropsT) => {
@@ -81,6 +85,9 @@ const QueryGroup = (props: PropsT) => {
               onDeleteNode={() => props.onDeleteNode(orIdx)}
               onEditClick={() => props.onEditClick(orIdx)}
               onToggleTimestamps={() => props.onToggleTimestamps(orIdx)}
+              onToggleSecondaryIdExclude={() =>
+                props.onToggleSecondaryIdExclude(orIdx)
+              }
               onExpandClick={props.onExpandClick}
             />
             {orIdx !== props.group.elements.length - 1 && (

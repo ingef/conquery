@@ -3,7 +3,15 @@ package com.bakdata.conquery.io.xodus;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.xodus.stores.*;
+import com.bakdata.conquery.io.xodus.stores.BigStore;
+import com.bakdata.conquery.io.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
+import com.bakdata.conquery.io.xodus.stores.IdentifiableCachedStore;
+import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
+import com.bakdata.conquery.io.xodus.stores.SerializingStore;
+import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.xodus.stores.WeakCachedStore;
+import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -12,6 +20,8 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -20,14 +30,27 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.worker.*;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Set;
 
 /**
  * Enums and helper methods to create stores of a certain kind.
@@ -43,6 +66,8 @@ public enum StoreInfo implements IStoreInfo {
 	SLAVE(ShardNodeInformation.class, Boolean.class),
 	DICTIONARIES(Dictionary.class, DictionaryId.class),
 	IMPORTS(Import.class, ImportId.class),
+	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
+	TABLES(Table.class, TableId.class),
 	CONCEPTS(Concept.class, ConceptId.class),
 	BUCKETS(Bucket.class, BucketId.class),
 	C_BLOCKS(CBlock.class, CBlockId.class),

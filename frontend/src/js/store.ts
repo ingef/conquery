@@ -6,14 +6,10 @@ import devMiddleware from "./middleware/devMiddleware";
 import prodMiddleware from "./middleware/prodMiddleware";
 import { TabT } from "./pane/types";
 
-export function makeStore(
-  initialState: Object,
-  browserHistory: Object,
-  tabs: Object
-) {
+export function makeStore(initialState: Object, tabs: Object) {
   const createMiddleware =
     process.env.NODE_ENV === "production" ? prodMiddleware : devMiddleware;
-  const middleware = applyMiddleware(...createMiddleware(browserHistory));
+  const middleware = applyMiddleware(...createMiddleware());
 
   let enhancer;
 

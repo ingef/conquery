@@ -1,4 +1,4 @@
-import type { ConceptT, ConceptIdT } from "../api/types";
+import type { ConceptT, ConceptIdT, SecondaryId } from "../api/types";
 
 import {
   LOAD_TREES_START,
@@ -34,9 +34,10 @@ export interface SearchT {
 
 export interface ConceptTreesStateT {
   loading: boolean;
-  version: any;
+  version: string | null;
   trees: TreesT;
   search: SearchT;
+  secondaryIds: SecondaryId[];
 }
 
 const initialSearch = {
@@ -55,6 +56,7 @@ const initialState: ConceptTreesStateT = {
   version: null,
   trees: {},
   search: initialSearch,
+  secondaryIds: [],
 };
 
 const setSearchTreesSuccess = (
@@ -159,7 +161,7 @@ const setLoadTreesSuccess = (
   state: ConceptTreesStateT,
   action: Object
 ): ConceptTreesStateT => {
-  const { concepts, version } = action.payload.data;
+  const { concepts, secondaryIds, version } = action.payload.data;
 
   // Assign default select filter values
   for (const concept of Object.values(concepts))
@@ -172,6 +174,7 @@ const setLoadTreesSuccess = (
     loading: false,
     version: version,
     trees: concepts,
+    secondaryIds,
   };
 };
 

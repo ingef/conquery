@@ -1,5 +1,17 @@
 {
   "version": 1,
+  "secondaryIds": [
+    {
+      "description": "Toystory 2: Electric Treppenfahrstuhl Boogaloo, weil das ganze eine sehr spannende Beschreibung ist, die relativ lange anmutet.",
+      "label": "Secondary Fall",
+      "id": "fun2_fall_id"
+    },
+    {
+      "description": "Eine Beschreibung einer Fall Id",
+      "label": "Super Fall",
+      "id": "fun_fall_id"
+    }
+  ],
   "concepts": {
     "movie_appearances": {
       "label": "Movie Appearances",
@@ -44,6 +56,7 @@
               { "label": "Another date", "value": "another_date" }
             ]
           },
+          "supportedSecondaryIds": ["fun_fall_id"],
           "selects": [
             {
               "id": "12345678",
@@ -246,6 +259,7 @@
               { "label": "Another date", "value": "another_date" }
             ]
           },
+          "supportedSecondaryIds": ["fun_fall_id", "fun2_fall_id"],
           "filters": [
             {
               "id": "award_type",

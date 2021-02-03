@@ -1,47 +1,30 @@
 package com.bakdata.conquery.models.datasets;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportColumnId;
-import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-@Getter @Setter @NoArgsConstructor
+@Data
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class ImportColumn extends NamedImpl<ImportColumnId> {
+	// TODO reduce usage of this class, it does nothing except hold a description
+	@JsonBackReference @NotNull
+	private final Import parent;
 
-	@JsonBackReference
-	private Import parent;
 	@NotNull @Valid
-	private CType type;
-	@Min(0)
-	private int position = -1;
-	
+	private final ColumnStore<?> typeDescription;
+
 	@Override
 	public ImportColumnId createId() {
 		return new ImportColumnId(parent.getId(), getName());
 	}
-	
-	@JsonIgnore
-	public int getNullPosition() {
-		if(type.getLines() == type.getNullLines()) {
-			return -1;
-		}
-		int nullPosition = 0;
-		for (ImportColumn col: parent.getColumns()) {
-			if(col==this) {
-				break;
-			}
-			if(col.type.requiresExternalNullStore()) {
-				nullPosition++;
-			}
-		}
-		return nullPosition;
-	}
+
+
 }

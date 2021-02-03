@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,7 +25,6 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
-import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MetaStorage;
@@ -37,7 +35,6 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -118,14 +115,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	/**
 	 * Executed right before execution submission.
-	 * @param namespaces
 	 */
-	public void initExecutable(DatasetRegistry namespaces) {
+	public void initExecutable(DatasetRegistry datasetRegistry) {
 		synchronized (getExecution()) {
 			if(label == null) {
-				label = makeAutoLabel();
+				label = makeAutoLabel(datasetRegistry);
 			}
-			doInitExecutable(namespaces);
+			doInitExecutable(datasetRegistry);
 		}
 	}
 
@@ -217,7 +213,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull  User user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -230,10 +226,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
 		status.setResultUrl(getDownloadURL(url, user).orElse(null));
-		if (state.equals(ExecutionState.FAILED) && error != null) {
-			// Use plain format here to have a uniform serialization.
-			status.setError(error.asPlain());
-		}
 	}
 	
 
@@ -252,44 +244,45 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@Nullable
 	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
-		return buildStatus(storage, url, user, datasetRegistry, EnumSet.noneOf(ExecutionStatus.CreationFlag.class));
-	}
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull ExecutionStatus.CreationFlag creationFlag) {
-		return buildStatus(storage, url, user, datasetRegistry, EnumSet.of(creationFlag));
-	}
-	
-	public ExecutionStatus buildStatus(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, @NonNull EnumSet<ExecutionStatus.CreationFlag> creationFlags) {
-		ExecutionStatus status = new ExecutionStatus();
-		setStatusBase(storage, url, user, status);
-		for(CreationFlag flag : creationFlags) {
-			switch (flag) {
-				case WITH_COLUMN_DESCIPTION:
-					setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
-					break;
-				case WITH_SOURCE:
-					setAdditionalFieldsForStatusWithSource(storage, url, user, status);
-					break;
-				case WITH_GROUPS:
-					setAdditionalFieldsForStatusWithGroups(storage, user, status);
-					break;
-				default:
-					throw new IllegalArgumentException(String.format("Unhandled creation flag %s", flag));
-			}
-		}
+	/**
+	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
+	 */
+	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
+		setStatusBase(storage, user, status, url);
+
 		return status;
-		
 	}
 
-	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus status) {
+	/**
+	 * Renders an extensive status of this query (see {@link ExecutionStatus.Full}. The rendering can be computation intensive and can produce a large
+	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
+	 */
+	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		ExecutionStatus.Full status = new ExecutionStatus.Full();
+		setStatusBase(storage, user, status, url);
+
+		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
+		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
+		setAdditionalFieldsForStatusWithGroups(storage, user, status);
+
+		if (state.equals(ExecutionState.FAILED) && error != null) {
+			// Use plain format here to have a uniform serialization.
+			status.setError(error.asPlain());
+		}
+
+		return status;
+	}
+
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus.Full status) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
-		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
+		List<GroupId> permittedGroups = new ArrayList<>();
 		for(Group group : storage.getAllGroups()) {
 			for(Permission perm : group.getPermissions()) {
 				if(perm.implies(QueryPermission.onInstance(Ability.READ, this.getId()))) {
-					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+					permittedGroups.add(group.getId());
 					continue;
 				}
 			}
@@ -298,14 +291,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
@@ -320,14 +313,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user) {
+		if(state != ExecutionState.DONE) {
+			// No url for unfinished executions, quick return
+			return false;
+		}
+
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
-		boolean isPermittedDownload = user.isPermittedAll(getUsedNamespacedIds().stream()
+		return user.isPermittedAll(getUsedNamespacedIds().stream()
 			.map(NamespacedId::getDataset)
 			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
 			.collect(Collectors.toList()));
-		return state == ExecutionState.DONE && isPermittedDownload;
 	}
 
 	/**
@@ -382,11 +379,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb);
+	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry);
 	
-	protected String makeAutoLabel() {
+	protected String makeAutoLabel(DatasetRegistry datasetRegistry) {
 		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb);
+		makeDefaultLabel(sb, datasetRegistry);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
 	}
 }
