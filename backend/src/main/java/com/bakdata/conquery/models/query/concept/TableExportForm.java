@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -26,11 +26,11 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +41,7 @@ public class TableExportForm implements Form {
 
 	@Valid
 	@NotNull
-	protected final IQuery queryGroup;
+	private final ManagedExecutionId queryGroup;
 
 	@NotNull
 	private final Range<LocalDate> dateRange;
@@ -50,14 +50,17 @@ public class TableExportForm implements Form {
 	@Valid
 	private final List<CQConcept> concepts;
 
+	@JsonIgnore
+	private IQuery query;
+
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
-		return queryGroup.collectRequiredQueries();
+		return query.collectRequiredQueries();
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		queryGroup.resolve(context);
+		query = Form.resolvePrerequisite(context, queryGroup);
 	}
 
 	@Override
@@ -67,21 +70,15 @@ public class TableExportForm implements Form {
 			throw new IllegalArgumentException("We don't allow open exports.");
 		}
 
-		final List<CQUnfilteredTable> tables = new ArrayList<>();
-
 		// Extract necessary info from query.
-		for (CQConcept concept : this.concepts) {
-			for (CQTable table : concept.getTables()) {
-
-				tables.add(new CQUnfilteredTable(
-						table.getId(),
-						table.getDateColumn()
-				));
-			}
-		}
+		final List<CQUnfilteredTable> tables = concepts.stream()
+													   .map(CQConcept::getTables)
+													   .flatMap(List::stream)
+													   .map(table -> new CQUnfilteredTable(table.getId(), table.getDateColumn()))
+													   .collect(Collectors.toList());
 
 
-		final TableExportQuery exportQuery = new TableExportQuery(queryGroup);
+		final TableExportQuery exportQuery = new TableExportQuery(query);
 		exportQuery.setDateRange(dateRange);
 		exportQuery.setTables(tables);
 
@@ -96,6 +93,6 @@ public class TableExportForm implements Form {
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
-		queryGroup.visit(visitor);
+		query.visit(visitor);
 	}
 }
