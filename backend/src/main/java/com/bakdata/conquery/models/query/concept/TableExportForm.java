@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +49,7 @@ public class TableExportForm implements Form {
 
 	@NotEmpty
 	@Valid
+	@JsonProperty("tables")
 	private final List<CQConcept> concepts;
 
 	@JsonIgnore
