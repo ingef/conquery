@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.internationalization.TableExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -30,7 +31,7 @@ import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 
-@CPSType(base = Form.class, id = "TABLE_EXPORT_FORM")
+@CPSType(base = QueryDescription.class, id = "TABLE_EXPORT_FORM")
 public class TableExportForm implements Form {
 
 	@Valid
