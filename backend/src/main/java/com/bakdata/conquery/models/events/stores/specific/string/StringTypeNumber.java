@@ -32,9 +32,12 @@ public class StringTypeNumber implements StringStore {
 	protected IntegerStore delegate;
 	//used as a compact intset
 	private Range<Integer> range;
+
 	// Only used for setting values in Preprocessing.
+	// TODO fk: can this be moved to the parser?
 	@JsonIgnore
 	private transient Map<Integer, String> dictionary;
+
 	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
 		this(range, numberType);
 		this.dictionary = dictionary;
@@ -126,7 +129,7 @@ public class StringTypeNumber implements StringStore {
 
 	@Override
 	public void setString(int event, int value) {
-		getDelegate().setInteger(event, value);
+		getDelegate().setInteger(event, Long.valueOf(dictionary.get(value)));
 	}
 
 	@Override
