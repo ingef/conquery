@@ -149,7 +149,7 @@ public class Preprocessed {
 						continue;
 					}
 
-					ppColumn.getType().set(offset, raw, store);
+					ppColumn.getParser().setValue(store, offset, raw);
 				}
 
 				start += length;
