@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -50,7 +51,7 @@ public class TableExportForm implements Form {
 	@NotEmpty
 	@Valid
 	@JsonProperty("tables")
-	private final List<CQConcept> concepts;
+	private final IQuery concepts;
 
 	@JsonIgnore
 	private IQuery query;
@@ -73,11 +74,18 @@ public class TableExportForm implements Form {
 		}
 
 		// Extract necessary info from query.
-		final List<CQUnfilteredTable> tables = concepts.stream()
-													   .map(CQConcept::getTables)
-													   .flatMap(List::stream)
-													   .map(table -> new CQUnfilteredTable(table.getId(), table.getDateColumn()))
-													   .collect(Collectors.toList());
+		final List<CQUnfilteredTable> tables = new ArrayList<>();
+
+		// Make no assumption on shape of Query
+		concepts.visit(qe -> {
+			if (!(qe instanceof CQConcept)) {
+				return;
+			}
+
+			for (CQTable table : ((CQConcept) qe).getTables()) {
+				tables.add(new CQUnfilteredTable(table.getId(), table.getDateColumn()));
+			}
+		});
 
 
 		final TableExportQuery exportQuery = new TableExportQuery(query);
