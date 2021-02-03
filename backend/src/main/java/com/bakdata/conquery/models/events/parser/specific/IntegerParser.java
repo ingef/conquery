@@ -22,7 +22,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	private long minValue = Long.MAX_VALUE;
 	private long maxValue = Long.MIN_VALUE;
 
-	public IntegerParser(ParserConfig config){
+	public IntegerParser(ParserConfig config) {
 		super(config);
 	}
 
@@ -63,16 +63,16 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 		// if values are in value range without rebasing, skip rebasing as that's faster.
 		// max value is reserved for NULL
 
-		if (span + 1 <= (long) Byte.MAX_VALUE - (long)  Byte.MIN_VALUE) {
-			if(minValue >= Byte.MIN_VALUE && maxValue + 1 <= Byte.MAX_VALUE) {
+		if (span + 1 <= (long) Byte.MAX_VALUE - (long) Byte.MIN_VALUE) {
+			if (minValue >= Byte.MIN_VALUE && maxValue + 1 <= Byte.MAX_VALUE) {
 				return ByteArrayStore.create(getLines());
 			}
 
-			return new RebasingStore(minValue, (long) Byte.MIN_VALUE, ByteArrayStore.create(getLines()));
+			return new RebasingStore(minValue, Byte.MIN_VALUE, ByteArrayStore.create(getLines()));
 		}
 
-		if (span + 1 <= (long) Short.MAX_VALUE - (long)  Short.MIN_VALUE) {
-			if(minValue >= Short.MIN_VALUE && maxValue + 1 <= Short.MAX_VALUE) {
+		if (span + 1 <= (long) Short.MAX_VALUE - (long) Short.MIN_VALUE) {
+			if (minValue >= Short.MIN_VALUE && maxValue + 1 <= Short.MAX_VALUE) {
 				return ShortArrayStore.create(getLines());
 			}
 
@@ -80,18 +80,23 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 		}
 
 		if (span + 1 <= (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE) {
-			if(minValue >= Integer.MIN_VALUE && maxValue + 1 <= Integer.MAX_VALUE) {
+			if (minValue >= Integer.MIN_VALUE && maxValue + 1 <= Integer.MAX_VALUE) {
 				return IntArrayStore.create(getLines());
 			}
 
 			return new RebasingStore(minValue, Integer.MIN_VALUE, IntArrayStore.create(getLines()));
 		}
 
-		if(maxValue == Long.MAX_VALUE){
+		if (maxValue == Long.MAX_VALUE) {
 			throw new IllegalStateException("Exceeds capacity of LongStore."); // todo migrate to external null-store
 		}
 
 		return LongArrayStore.create(getLines());
+	}
+
+	@Override
+	public void setValue(IntegerStore store, int event, Long value) {
+		store.setInteger(event, value);
 	}
 
 }

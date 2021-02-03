@@ -65,4 +65,6 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 		return v;
 	}
 
+	public abstract void setValue(STORE_TYPE store, int event, MAJOR_JAVA_TYPE value);
+
 }

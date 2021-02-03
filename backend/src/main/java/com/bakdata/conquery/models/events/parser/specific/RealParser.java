@@ -53,4 +53,9 @@ public class RealParser extends Parser<Double, RealStore> {
 			return DoubleArrayStore.create(getLines());
 		}
 	}
+
+	@Override
+	public void setValue(RealStore store, int event, Double value) {
+		store.setReal(event, value);
+	}
 }

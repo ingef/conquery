@@ -11,12 +11,12 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
-public class MoneyTypeInteger implements MoneyStore {
+public class MoneyIntStore implements MoneyStore {
 
 	protected IntegerStore numberType;
 
 	@JsonCreator
-	public MoneyTypeInteger(IntegerStore numberType) {
+	public MoneyIntStore(IntegerStore numberType) {
 		this.numberType = numberType;
 	}
 
@@ -26,8 +26,8 @@ public class MoneyTypeInteger implements MoneyStore {
 	}
 
 	@Override
-	public MoneyTypeInteger select(int[] starts, int[] length) {
-		return new MoneyTypeInteger(numberType.select(starts, length));
+	public MoneyIntStore select(int[] starts, int[] length) {
+		return new MoneyIntStore(numberType.select(starts, length));
 	}
 
 	@Override

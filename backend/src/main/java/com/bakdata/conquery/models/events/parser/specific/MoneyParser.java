@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
-import com.bakdata.conquery.models.events.stores.specific.MoneyTypeInteger;
+import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -54,7 +54,12 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 		subParser.setNullLines(getNullLines());
 		IntegerStore subDecision = subParser.findBestType();
 
-		return new MoneyTypeInteger(subDecision);
+		return new MoneyIntStore(subDecision);
+	}
+
+	@Override
+	public void setValue(MoneyStore store, int event, Long value) {
+		store.setMoney(event, value);
 	}
 
 }

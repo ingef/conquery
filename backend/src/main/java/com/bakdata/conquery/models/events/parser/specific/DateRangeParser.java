@@ -87,4 +87,9 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 		return new DateRangeTypeDateRange(minParser.findBestType(), maxParser.findBestType());
 	}
+
+	@Override
+	public void setValue(DateRangeStore store, int event, CDateRange value) {
+		store.setDateRange(event, value);
+	}
 }

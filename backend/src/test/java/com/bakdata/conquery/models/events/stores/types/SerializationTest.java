@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
-import com.bakdata.conquery.models.events.stores.specific.MoneyTypeInteger;
+import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
@@ -64,7 +64,7 @@ public class SerializationTest {
 		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
 		return Arrays.asList(
 				new DecimalTypeScaled(13, IntArrayStore.create(10)),
-				new MoneyTypeInteger(IntArrayStore.create(10)),
+				new MoneyIntStore(IntArrayStore.create(10)),
 				new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"),
 				new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase),
 				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase), "a", "b"),

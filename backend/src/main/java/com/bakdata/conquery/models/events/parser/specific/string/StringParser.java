@@ -45,8 +45,8 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	private List<byte[]> decoded;
 	private Encoding encoding;
-	private String prefix = null;
-	private String suffix = null;
+	private String prefix;
+	private String suffix;
 
 	public StringParser(ParserConfig config) {
 		super(config);
@@ -127,6 +127,11 @@ public class StringParser extends Parser<Integer, StringStore> {
 		}
 
 		return result;
+	}
+
+	@Override
+	public void setValue(StringStore store, int event, Integer value) {
+		store.setString(event, value);
 	}
 
 	/**

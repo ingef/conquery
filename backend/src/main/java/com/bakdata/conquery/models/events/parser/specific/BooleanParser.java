@@ -36,4 +36,9 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 	protected BooleanStore decideType() {
 		return BitSetStore.create(getLines());
 	}
+
+	@Override
+	public void setValue(BooleanStore store, int event, Boolean value) {
+		store.setBoolean(event, value);
+	}
 }

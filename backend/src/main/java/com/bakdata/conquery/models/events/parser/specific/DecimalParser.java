@@ -61,4 +61,9 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 		return new DecimalTypeScaled(maxScale, subDecision);
 	}
 
+	@Override
+	public void setValue(DecimalStore store, int event, BigDecimal value) {
+		store.setDecimal(event, value);
+	}
+
 }
