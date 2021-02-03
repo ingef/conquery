@@ -1,5 +1,5 @@
 import React from "react";
-import type { FieldPropsType } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 
 import { isEmpty } from "../common/helpers";
 
@@ -8,7 +8,7 @@ import Labeled from "./Labeled";
 
 import type { CurrencyConfigT } from "../api/types";
 
-interface PropsT extends FieldPropsType {
+interface PropsT extends WrappedFieldProps {
   label: string;
   inputType?: string;
   valueType?: string;
@@ -21,7 +21,7 @@ interface PropsT extends FieldPropsType {
   fullWidth?: boolean;
 }
 
-const InputText: React.FC<PropsT> = props => {
+const InputText: React.FC<PropsT> = (props) => {
   return (
     <Labeled
       className={props.className}

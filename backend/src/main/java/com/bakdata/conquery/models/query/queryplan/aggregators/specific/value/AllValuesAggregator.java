@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator gathering all unique values in a column, into a Set.
+ *
  * @param <VALUE> Value type of the column.
  */
 public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
@@ -24,7 +25,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.has(event, getColumn())) {
-			entries.add((VALUE) getColumn().getTypeFor(bucket).createPrintValue(bucket.getRaw(event, getColumn())));
+			entries.add((VALUE) bucket.createScriptValue(event, getColumn()));
 		}
 	}
 
@@ -34,10 +35,10 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public AllValuesAggregator doClone(CloneContext ctx) {
-		return new AllValuesAggregator(getColumn());
+	public AllValuesAggregator<VALUE> doClone(CloneContext ctx) {
+		return new AllValuesAggregator<>(getColumn());
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.STRING;

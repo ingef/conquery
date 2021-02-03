@@ -5,15 +5,16 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +29,7 @@ public class TableExportQueryPlan implements QueryPlan {
 	private final CDateRange dateRange;
 	private final List<TableExportDescription> tables;
 	private final int totalColumns;
-	
+
 	@Override
 	public QueryPlan clone(CloneContext ctx) {
 		return new TableExportQueryPlan(subPlan.clone(ctx), dateRange, tables, totalColumns);
@@ -42,52 +43,52 @@ public class TableExportQueryPlan implements QueryPlan {
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		EntityResult result = subPlan.execute(ctx, entity);
-		
-		if(!result.isContained()) {
+
+		if (!result.isContained()) {
 			return result;
 		}
-		
+
 		if (tables.isEmpty()) {
 			return EntityResult.notContained();
 		}
 
-		
+
 		List<Object[]> results = new ArrayList<>();
-		for(TableExportDescription exportDescription : tables) {
+		for (TableExportDescription exportDescription : tables) {
 
 
-			for(Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable().getId())) {
+			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable().getId())) {
 
-				int localEntity = bucket.toLocal(entity.getId());
+				int entityId = entity.getId();
 
-				if (!bucket.containsLocalEntity(localEntity)) {
+				if (!bucket.containsEntity(entityId)) {
 					continue;
 				}
 
-				int start = bucket.getFirstEventOfLocal(localEntity);
-				int end = bucket.getLastEventOfLocal(localEntity);
+				int start = bucket.getEntityStart(entityId);
+				int end = bucket.getEntityEnd(entityId);
 
-				for(int event = start; event < end ; event++) {
+				for (int event = start; event < end; event++) {
 
 					// Export Full-table if it has no validity date.
-					if (exportDescription.getValidityDateColumn() != null && !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), dateRange)) {
+					if (exportDescription.getValidityDateColumn() != null && !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
 						continue;
 					}
 
 					Object[] entry = new Object[totalColumns];
-					for(int col = 0; col < exportDescription.getTable().getColumns().length; col++) {
+					for (int col = 0; col < exportDescription.getTable().getColumns().length; col++) {
 						final Column column = exportDescription.getTable().getColumns()[col];
 
 						if (!bucket.has(event, column)) {
 							continue;
 						}
 
-						CType type = column.getTypeFor(bucket);
+						ColumnStore type = column.getTypeFor(bucket);
 
 						// depending on context use pretty printing or script value
 						entry[exportDescription.getColumnOffset() + col] = ctx.isPrettyPrint()
-															 ? type.createPrintValue(bucket.getRaw(event, col))
-															 : type.createScriptValue(bucket.getRaw(event, col));
+																		   ? type.createPrintValue(bucket.getAsObject(event, column))
+																		   : bucket.createScriptValue(event, column);
 					}
 
 					results.add(entry);
@@ -96,8 +97,8 @@ public class TableExportQueryPlan implements QueryPlan {
 		}
 
 		return EntityResult.multilineOf(
-			entity.getId(),
-			results
+				entity.getId(),
+				results
 		);
 	}
 

@@ -8,9 +8,9 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.types.specific.AStringType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Cloner {
@@ -34,11 +34,11 @@ public class Cloner {
 		}
 	}
 	
-	public static AStringType<?> clone(AStringType<?> type) {
+	public static StringType clone(StringType type) {
 		try {
-			AStringType<?> clone = Jackson.BINARY_MAPPER.readValue(
+			StringType clone = Jackson.BINARY_MAPPER.readValue(
 				Jackson.BINARY_MAPPER.writeValueAsBytes(type),
-				AStringType.class
+				StringType.class
 			);
 			return clone;
 		} catch (IOException e) {

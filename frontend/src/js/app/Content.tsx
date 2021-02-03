@@ -1,9 +1,8 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import SplitPane from "react-split-pane";
-import { withRouter } from "react-router";
 
 import Tooltip from "../tooltip/Tooltip";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
@@ -12,6 +11,7 @@ import type { TabT } from "../pane/types";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import DndProvider from "./DndProvider";
+import { StateT } from "app-types";
 
 // ADDING TO react-split-pane STYLES
 // Because otherwise, vertical panes don't expand properly in Safari
@@ -29,12 +29,15 @@ const Root = styled("div")`
   ${reactSplitPaneSafariFix};
 `;
 
-interface PropsT {
-  displayTooltip: boolean;
+export interface ContentPropsT {
   rightTabs: TabT[];
 }
 
-const Content = ({ displayTooltip, rightTabs }: PropsT) => {
+const Content = ({ rightTabs }: ContentPropsT) => {
+  const displayTooltip = useSelector<StateT, boolean>(
+    (state) => state.tooltip.displayTooltip
+  );
+
   return (
     <DndProvider>
       <Root>
@@ -62,11 +65,5 @@ const Content = ({ displayTooltip, rightTabs }: PropsT) => {
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  displayTooltip: state.tooltip.displayTooltip,
-});
-
-const ConnectedContent = connect(mapStateToProps)(Content);
-
 // export default withRouter(DragDropContext(HTML5Backend)(ConnectedContent));
-export default withRouter(ConnectedContent);
+export default Content;

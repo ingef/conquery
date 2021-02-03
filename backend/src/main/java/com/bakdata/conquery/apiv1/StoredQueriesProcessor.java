@@ -56,6 +56,7 @@ public class StoredQueriesProcessor {
 					return Stream.of(
 						mq.buildStatusOverview(
 							storage,
+							uriBuilder,
 							user,
 							datasetRegistry));
 				}

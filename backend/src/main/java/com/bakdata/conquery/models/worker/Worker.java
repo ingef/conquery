@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -33,6 +34,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
@@ -133,7 +135,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
-	
+
+	public ObjectMapper inject(ObjectMapper binaryMapper) {
+		return new SingletonNamespaceCollection(storage.getCentralRegistry()).injectInto(binaryMapper);
+	}
+
 	@Override
 	public void close() {
 		// We do not close the executorService here because it does not belong to this class
@@ -171,6 +177,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public void removeImport(ImportId importId) {
+		final Import imp = storage.getImport(importId);
+
+		for (DictionaryId dictionaryId : imp.getDictionaries()) {
+			storage.removeDictionary(dictionaryId);
+		}
+
 		storage.removeImport(importId);
 		bucketManager.removeImport(importId);
 	}
