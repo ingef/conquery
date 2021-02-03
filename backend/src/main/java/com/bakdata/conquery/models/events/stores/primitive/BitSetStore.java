@@ -46,11 +46,6 @@ public class BitSetStore implements BooleanStore {
 	}
 
 	@Override
-	public void setNull(int event) {
-		setBoolean(event, false);
-	}
-
-	@Override
 	public void setBoolean(int event, boolean value) {
 		values.set(event, value);
 	}
