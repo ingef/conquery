@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,11 +18,11 @@ import lombok.Setter;
 @Setter
 public class DateRangeTypeDateRange implements DateRangeStore {
 
-	private final IntegerDateStore minStore;
-	private final IntegerDateStore maxStore;
+	private final DateStore minStore;
+	private final DateStore maxStore;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(IntegerDateStore minStore, IntegerDateStore maxStore) {
+	public DateRangeTypeDateRange(DateStore minStore, DateStore maxStore) {
 		this.minStore = minStore;
 		this.maxStore = maxStore;
 	}
