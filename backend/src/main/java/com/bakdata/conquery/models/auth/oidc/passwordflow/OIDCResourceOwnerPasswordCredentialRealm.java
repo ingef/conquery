@@ -226,7 +226,7 @@ public class OIDCResourceOwnerPasswordCredentialRealm<C extends OIDCAuthenticati
 
 		private void synchGroupMappings(User user, Set<Group> mappedGroupsToDo) {
 			for(Group group : storage.getAllGroups()) {
-				if(group.containsMember(user)) {
+				if(group.containsMember(user.getId())) {
 					if(mappedGroupsToDo.contains(group)) {
 						// Mapping is still valid, remove from ToDo-List
 						mappedGroupsToDo.remove(group);

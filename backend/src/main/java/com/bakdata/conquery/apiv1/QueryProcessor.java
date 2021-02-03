@@ -63,7 +63,7 @@ public class QueryProcessor {
 		visitors.putInstance(QueryUtils.SingleReusedChecker.class, new QueryUtils.SingleReusedChecker());
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user.getId(), storage).map(Group::getName).orElse("none");
 
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
 
@@ -122,14 +122,14 @@ public class QueryProcessor {
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
 			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
-				|| targetNamespace.getDataset().equals(dataset)) {
+					|| targetNamespace.getDataset().equals(dataset)) {
 				continue;
 			}
 
 			// Ensure that user is allowed to read all sub-queries of the actual query.
 
 			if (!translateable.collectRequiredQueries().stream()
-							  .allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
+					.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
 				continue;
 			}
 
