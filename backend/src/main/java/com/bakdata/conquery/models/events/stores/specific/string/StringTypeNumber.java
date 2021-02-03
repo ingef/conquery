@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
@@ -57,7 +58,7 @@ public class StringTypeNumber implements StringStore {
 
 	@Override
 	public Object createScriptValue(int event) {
-		return delegate.createScriptValue(event);
+		return Objects.toString(delegate.createScriptValue(event));
 	}
 
 	@Override
