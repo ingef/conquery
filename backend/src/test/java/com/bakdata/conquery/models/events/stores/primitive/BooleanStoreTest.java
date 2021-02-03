@@ -16,7 +16,7 @@ class BooleanStoreTest {
 		values.set(0, 9);
 		values.set(7, false);
 
-		final BitSetStore booleanStore = new BitSetStore(values);
+		final BitSetStore booleanStore = new BitSetStore(values, new BitSet(10));
 
 		assertThat(booleanStore.select(new int[]{0}, new int[]{10}).getValues())
 				.isEqualTo(values);
@@ -49,7 +49,7 @@ class BooleanStoreTest {
 		bitSet.set(100);
 		bitSet.set(128, false);
 
-		final BitSetStore booleanStore = new BitSetStore(bitSet);
+		final BitSetStore booleanStore = new BitSetStore(bitSet, new BitSet(128));
 
 		final BitSetStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BitSetStore.class);
 

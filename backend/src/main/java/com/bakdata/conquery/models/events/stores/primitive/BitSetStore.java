@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * Stores boolean values as bits. Can therefore not store null.
+ * Stores boolean values as bits and an auxiliary null-bit.
  */
 @CPSType(id = "BOOLEANS", base = ColumnStore.class)
 @Getter
@@ -26,13 +26,18 @@ public class BitSetStore implements BooleanStore {
 	@JsonDeserialize(using = BitSetDeserializer.class)
 	private final BitSet values;
 
+	@JsonSerialize(using = BitSetSerializer.class)
+	@JsonDeserialize(using = BitSetDeserializer.class)
+	private final BitSet nullBits;
+
 	@JsonCreator
-	public BitSetStore(BitSet values) {
+	public BitSetStore(BitSet values, BitSet nullBits) {
 		this.values = values;
+		this.nullBits = nullBits;
 	}
 
 	public static BitSetStore create(int size) {
-		return new BitSetStore(new BitSet(size));
+		return new BitSetStore(new BitSet(size), new BitSet(size));
 	}
 
 	@Override
@@ -42,7 +47,7 @@ public class BitSetStore implements BooleanStore {
 
 	@Override
 	public long estimateEventBits() {
-		return 1;
+		return 2;
 	}
 
 	@Override
@@ -54,23 +59,30 @@ public class BitSetStore implements BooleanStore {
 		int length = Arrays.stream(lengths).sum();
 
 		final BitSet out = new BitSet(length);
+		final BitSet outNulls = new BitSet(length);
 
 		int pos = 0;
 
 		for (int index = 0; index < starts.length; index++) {
 			for (int bit = 0; bit < lengths[index]; bit++) {
 				out.set(pos + bit, getValues().get(starts[index] + bit));
+				outNulls.set(pos + bit, getNullBits().get(starts[index] + bit));
 			}
 			pos += lengths[index];
 		}
 
-		return new BitSetStore(out);
+		return new BitSetStore(out, outNulls);
 	}
 
 
 	@Override
 	public boolean has(int event) {
-		return true;
+		return nullBits.get(event);
+	}
+
+	@Override
+	public void setNull(int event) {
+		nullBits.set(event);
 	}
 
 	@Override
