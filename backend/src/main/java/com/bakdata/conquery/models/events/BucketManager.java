@@ -51,7 +51,7 @@ public class BucketManager {
 
 	/**
 	 * The final Map is the way the APIs expect the data to be delivered.
-	 *
+	 * <p>
 	 * Connector -> Bucket -> [BucketId -> CBlock]
 	 */
 	private final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorToCblocks;
@@ -70,7 +70,7 @@ public class BucketManager {
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 
 		for (Bucket bucket : storage.getAllBuckets()) {
-			if(!assignedBucketNumbers.contains(bucket.getBucket())) {
+			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
 			registerBucket(bucket, entities, storage, tableBuckets);
@@ -87,8 +87,7 @@ public class BucketManager {
 	 * register entities, and create query specific indices for bucket
 	 */
 	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets) {
-		for (int entity : bucket) {
-
+		for (int entity : bucket.entities()) {
 			entities.computeIfAbsent(entity, Entity::new);
 		}
 
@@ -221,7 +220,7 @@ public class BucketManager {
 	}
 
 	private void deregisterBucket(Bucket bucket) {
-		for (int entityId : bucket) {
+		for (int entityId : bucket.entities()) {
 			final Entity entity = entities.get(entityId);
 
 			if (entity == null) {
@@ -306,7 +305,7 @@ public class BucketManager {
 						  .values()
 						  .removeIf(cblock -> cblock.getId().equals(cBlockId));
 
-		for (int entityId : bucket) {
+		for (int entityId : bucket.entities()) {
 			final Entity entity = entities.get(entityId);
 
 			if (entity == null) {

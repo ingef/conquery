@@ -20,6 +20,6 @@ public class IsPresentCondition implements CTCondition {
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {
-		return rowMap.getValue().get(column) != null;
+		return rowMap.getValue().containsKey(column);
 	}
 }

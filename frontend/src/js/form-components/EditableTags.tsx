@@ -1,20 +1,19 @@
-import * as React from "react";
+import React, { ReactNode, FC } from "react";
 import styled from "@emotion/styled";
 
-import Tags from "../tags/Tags";
 import EditableTagsForm from "./EditableTagsForm";
 import IconButton from "../button/IconButton";
 
-type PropsType = {
+interface PropsT {
   className?: string;
   tags?: string[];
   editing: boolean;
   loading: boolean;
-  tagComponent?: React.ReactNode;
+  tagComponent?: ReactNode;
   onSubmit: (value: string[]) => void;
   onToggleEdit: () => void;
   availableTags: string[];
-};
+}
 
 const EditableTagsDisplay = styled("div")`
   display: flex;
@@ -24,11 +23,7 @@ const StyledIconButton = styled(IconButton)`
   margin-right: 5px;
 `;
 
-const StyledTags = styled(Tags)`
-  display: inline-block;
-`;
-
-const EditableTags = (props: PropsType) => {
+const EditableTags: FC<PropsT> = (props) => {
   if (props.editing) {
     return (
       <EditableTagsForm
@@ -46,7 +41,7 @@ const EditableTags = (props: PropsType) => {
     return (
       <EditableTagsDisplay className={props.className}>
         <StyledIconButton bare icon="edit" onClick={props.onToggleEdit} />
-        {props.tagComponent || <StyledTags tags={props.tags} />}
+        {props.tagComponent}
       </EditableTagsDisplay>
     );
   }

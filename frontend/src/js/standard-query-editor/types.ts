@@ -20,13 +20,6 @@ export interface ConceptType {
   matchingEntries?: number;
 }
 
-export interface SelectOptionType {
-  label: string;
-  value: number | string;
-}
-
-export type SelectOptionsType = SelectOptionType[];
-
 export interface InfoType {
   key: string;
   value: string;
@@ -84,6 +77,8 @@ export interface DraggedQueryType {
 
   files?: void;
   isPreviousQuery: boolean; // true
+
+  canExpand?: boolean;
 }
 
 // A Query Node that is being dragged from the tree or within the standard editor.
@@ -139,6 +134,7 @@ export interface PreviousQueryQueryNodeType {
   // eslint-disable-next-line no-use-before-define
   query?: PreviousQueryType;
   isPreviousQuery: true;
+  canExpand?: boolean;
 }
 
 export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;

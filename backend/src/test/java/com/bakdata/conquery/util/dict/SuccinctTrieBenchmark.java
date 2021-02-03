@@ -7,12 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.github.powerlibraries.io.In;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.params.provider.Arguments;
-
-import com.github.powerlibraries.io.In;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SuccinctTrieBenchmark {
@@ -30,7 +29,7 @@ public class SuccinctTrieBenchmark {
 			
 			Arguments.of(
 				"succinct",
-				new SuccinctTrie(),
+				new SuccinctTrie(new DatasetId("dataset"), "name"),
 				list
 			)/*,
 			Arguments.of(

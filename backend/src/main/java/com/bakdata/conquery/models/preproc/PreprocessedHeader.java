@@ -1,9 +1,13 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +18,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @implSpec The Columns and their order must directly match the layout in the data.
  */
-@Data @NoArgsConstructor @AllArgsConstructor @Slf4j
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Slf4j
 public class PreprocessedHeader {
 	/**
 	 * The name/tag of an import.
@@ -26,33 +33,13 @@ public class PreprocessedHeader {
 	 */
 	private String table;
 
-	// TODO: 14.07.2020 FK: Is this actually used? It doesn't seem so.
-	private String suffix;
-
 	/**
 	 * Number of rows in the Preprocessed file.
 	 */
 	private long rows;
 
 	/**
-	 * Number of entities in the file.
-	 */
-	private long groups;
-
-	/**
-	 * Range spanning all data over all date based columns.
-	 */
-	private CDateRange eventRange;
-
-	/**
-	 * Name of the primary column.
-	 *
-	 * @implNote this is just used as a placeholder for dictionaries etc. about the Entities' primary columns.
-	 */
-	private PPColumn primaryColumn;
-
-	/**
-	 * The specific columns and their associated transformations+data.
+	 * The specific columns and their associated MajorType for validation.
 	 */
 	private PPColumn[] columns;
 
@@ -68,23 +55,31 @@ public class PreprocessedHeader {
 	public void assertMatch(Table table) {
 		StringJoiner errors = new StringJoiner("\n");
 
-		if (!table.getPrimaryColumn().matches(getPrimaryColumn())) {
-			errors.add(String.format("PrimaryColumn[%s] does not match table PrimaryColumn[%s]", getPrimaryColumn(), table.getPrimaryColumn()));
-		}
-
 		if (table.getColumns().length != getColumns().length) {
 			errors.add(String.format("Length=`%d` does not match table Length=`%d`", getColumns().length, table.getColumns().length));
 		}
 
+		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns())
+													   .collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
+
 		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
-			if (!table.getColumns()[i].matches(getColumns()[i])) {
-				errors.add(String.format("Column[%s] does not match table Column[%s]`", getColumns()[i], table.getColumns()[i]));
+			final Column column = table.getColumns()[i];
+
+			if(!typesByName.containsKey(column.getName())){
+				errors.add(String.format("Column[%s] is missing in Import.", column.getName()));
+			}
+			else if (!typesByName.get(column.getName()).equals(column.getType())) {
+				errors.add(String.format("Column[%s] Types do not match %s != %s"
+						, column.getName(),  typesByName.get(column.getName()), column.getType())
+				);
 			}
 		}
 
 		if (errors.length() != 0) {
 			log.error(errors.toString());
-			throw new IllegalArgumentException(String.format("Headers[%s.%s.%s] do not match Table[%s]", getTable(), getName(), getSuffix(), table.getId()));
+			throw new IllegalArgumentException(String.format("Headers[%s.%s] do not match Table[%s]. More Info in Logs.", getTable(), getName(), table.getId()));
 		}
 	}
+
+
 }

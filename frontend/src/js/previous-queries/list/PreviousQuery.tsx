@@ -16,8 +16,6 @@ import WithTooltip from "../../tooltip/WithTooltip";
 
 import EditableTags from "../../form-components/EditableTags";
 
-import { canDownloadResult } from "../../user/selectors";
-
 import {
   renamePreviousQuery,
   retagPreviousQuery,
@@ -109,9 +107,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const availableTags = useSelector<StateT, string[]>(
       (state) => state.previousQueries.tags
     );
-    const userCanDownloadResults = useSelector<StateT, boolean>((state) =>
-      canDownloadResult(state)
-    );
 
     const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
       (state) => state.conceptTrees.secondaryIds
@@ -147,8 +142,9 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       new Date(),
       true
     );
+    const isShared = query.shared || (query.groups && query.groups.length > 0);
     const label = query.label || query.id.toString();
-    const mayEditQuery = query.own || query.shared;
+    const mayEditQuery = query.own || isShared;
 
     const secondaryId = query.secondaryId
       ? loadedSecondaryIds.find((secId) => query.secondaryId === secId.id)
@@ -158,12 +154,11 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       <Root
         ref={ref}
         own={!!query.own}
-        shared={!!query.shared}
-        system={!!query.system || (!query.own && !query.shared)}
+        system={!!query.system || (!query.own && !isShared)}
       >
         <TopInfos>
           <div>
-            {!!query.resultUrl && userCanDownloadResults ? (
+            {!!query.resultUrl ? (
               <WithTooltip text={T.translate("previousQuery.downloadResults")}>
                 <DownloadButton tight bare url={query.resultUrl}>
                   {peopleFound}
@@ -172,7 +167,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             ) : (
               peopleFound
             )}
-            {query.own && query.shared && (
+            {query.own && isShared && (
               <SharedIndicator onClick={onIndicateShare}>
                 {T.translate("common.shared")}
               </SharedIndicator>
@@ -199,7 +194,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                   <IconButton icon="microscope" bare onClick={() => {}} />
                 </StyledWithTooltip>
               )}
-              {query.own && !query.shared && (
+              {query.own && !isShared && (
                 <StyledWithTooltip text={T.translate("common.share")}>
                   <IconButton icon="upload" bare onClick={onIndicateShare} />
                 </StyledWithTooltip>
