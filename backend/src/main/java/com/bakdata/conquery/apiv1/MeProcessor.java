@@ -22,7 +22,7 @@ import lombok.*;
 public class MeProcessor {
 
 	private final MetaStorage storage;
-	
+
 	/**
 	 * Generates a summary of a user. It contains its name, the groups it belongs to and its permissions on a dataset.
 	 * @param user The user object to gather informations about
@@ -30,15 +30,15 @@ public class MeProcessor {
 	 */
 	public FEMeInformation getUserInformation(@NonNull User user){
 		return FEMeInformation.builder()
-			.userName(user.getLabel())
-			.hideLogoutButton(!user.isDisplayLogout())
-			.groups(
-					AuthorizationHelper.getGroupsOf(user, storage)
-							.stream()
-							.map(g -> new IdLabel<GroupId>(g.getId(),g.getLabel()))
-							.collect(Collectors.toList()))
-			.permissions( FEPermission.from(AuthorizationHelper.getEffectiveUserPermissions(user.getId(), List.of(DatasetPermission.DOMAIN), storage).values()))
-			.build();
+				.userName(user.getLabel())
+				.hideLogoutButton(!user.isDisplayLogout())
+				.groups(
+						AuthorizationHelper.getGroupsOf(user.getId(), storage)
+								.stream()
+								.map(g -> new IdLabel<GroupId>(g.getId(),g.getLabel()))
+								.collect(Collectors.toList()))
+				.permissions( FEPermission.from(AuthorizationHelper.getEffectiveUserPermissions(user.getId(), List.of(DatasetPermission.DOMAIN), storage).values()))
+				.build();
 	}
 
 	/**
