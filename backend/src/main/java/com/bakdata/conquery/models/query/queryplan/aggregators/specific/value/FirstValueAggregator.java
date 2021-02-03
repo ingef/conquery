@@ -39,7 +39,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		if (!bucket.has(event, getColumn())) {
 			return;
 		}
-		
+
 		if (validityDateColumn == null) {
 			// If there is no validity date, take the first possible value
 			if(selectedBucket == null) {
@@ -48,9 +48,9 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			} else {
 				log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 			}
-			return;			
+			return;
 		}
-		
+
 		if(! bucket.has(event, validityDateColumn)) {
 			// TODO this might be an IllegalState
 			return;
@@ -73,7 +73,8 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		if (selectedBucket == null && selectedEvent.isEmpty()) {
 			return null;
 		}
-		return (VALUE) getColumn().getTypeFor(selectedBucket).createPrintValue(selectedBucket.getRaw(selectedEvent.getAsInt(), getColumn()));
+
+		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
 	@Override

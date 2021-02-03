@@ -7,11 +7,11 @@
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "test_tree.a1"
+        "concept.a1"
       ],
       "tables": [
         {
-          "id": "test_tree.test_column",
+          "id": "concept.column",
           "filters": []
         }
       ]
@@ -19,7 +19,7 @@
   },
   "concepts": [
     {
-      "label": "test_tree",
+      "label": "concept",
       "type": "TREE",
       "connectors": {
         "condition": {
@@ -27,12 +27,11 @@
           "column": "include",
           "values": "1"
         },
-        "label": "tree_label",
-        "name": "test_column",
-        "column": "test_table.test_column",
+        "name": "column",
+        "column": "table.column",
         "validityDates": {
           "label": "datum",
-          "column": "test_table.datum"
+          "column": "table.datum"
         }
       },
       "children": {
@@ -48,7 +47,7 @@
     "tables": [
       {
         "csv": "tests/query/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_WITH_CHILDREN_QUERY/content.csv",
-        "name": "test_table",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -59,7 +58,7 @@
             "type": "DATE"
           },
           {
-            "name": "test_column",
+            "name": "column",
             "type": "STRING"
           },
           {

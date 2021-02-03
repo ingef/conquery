@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.stores.specific.string.StringType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -103,16 +104,18 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
-			int localEntity = bucket.toLocal(entity.getId());
+			int entityId = entity.getId();
+
+			StringType secondaryIdType = (StringType) secondaryIdColumn.getTypeFor(bucket);
 
 			nextBlock(bucket);
 
-			if (!bucket.containsLocalEntity(localEntity) || !isOfInterest(bucket)) {
+			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
 				continue;
 			}
 
-			int start = bucket.getFirstEventOfLocal(localEntity);
-			int end = bucket.getLastEventOfLocal(localEntity);
+			int start = bucket.getEntityStart(entityId);
+			int end = bucket.getEntityEnd(entityId);
 
 			for (int event = start; event < end; event++) {
 				//we ignore events with no value in the secondaryIdColumn
@@ -133,14 +136,14 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
-			int localEntity = bucket.toLocal(entity.getId());
+			int entityId = entity.getId();
 			nextBlock(bucket);
-			if (!bucket.containsLocalEntity(localEntity) || !isOfInterest(bucket)) {
+			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
 				continue;
 			}
 
-			int start = bucket.getFirstEventOfLocal(localEntity);
-			int end = bucket.getLastEventOfLocal(localEntity);
+			int start = bucket.getEntityStart(entityId);
+			int end = bucket.getEntityEnd(entityId);
 
 			for (int event = start; event < end; event++) {
 				for (ConceptQueryPlan child : childPerKey.values()) {

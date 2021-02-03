@@ -73,7 +73,6 @@ public class QueryToCSVRenderer {
 			.flatMap(res -> createCSVLine(writer, cfg, infos, res));
 	}
 
-
 	
 	private static Stream<String> createCSVLine(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, Pair<ExternalEntityId, ContainedEntityResult> idResult) {
 		return idResult

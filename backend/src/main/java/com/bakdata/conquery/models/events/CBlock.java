@@ -1,15 +1,12 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.Arrays;
+import java.util.Map;
 
-import javax.annotation.Nullable;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -17,68 +14,64 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2LongArrayMap;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
  * Metadata for connection of {@link Bucket} and {@link Concept}
- *
+ * <p>
  * Pre-computed assignment of {@link TreeConcept}.
  */
-@Getter @Setter @NoArgsConstructor
+// TODO move to Bucket
+@Getter
+@Setter
+@NoArgsConstructor
 @JsonDeserialize(using = CBlockDeserializer.class)
 public class CBlock extends IdentifiableImpl<CBlockId> {
-	
-	@Valid
+
 	private BucketId bucket;
-	@NotNull @Valid
+	@NotNull
 	private ConnectorId connector;
-	
+
 	/**
 	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
-	 *
-	 * Per Entity.
 	 */
-	private long[] includedConcepts;
+	private Int2LongArrayMap includedConcepts = new Int2LongArrayMap();
 
-	// TODO: 02.09.2020 FK: Make chop this onto a per-column basis
 	/**
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
-	 *
-	 * Per Entity.
 	 */
-	private int[] minDate, maxDate;
-	
+	private Map<Integer, Integer> minDate = new Int2IntArrayMap();
+	private Map<Integer, Integer> maxDate = new Int2IntArrayMap();
+
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
-	 *
-	 * Per Event.
 	 */
-	@Nullable
-	private int[][] mostSpecificChildren = null;
-	
+	// todo, can this be implemented using a store or at least with bytes only?
+	private int[][] mostSpecificChildren;
+
 	public CBlock(BucketId bucket, ConnectorId connector) {
 		this.bucket = bucket;
 		this.connector = connector;
 	}
-	
-	@Override @JsonIgnore
+
+	@Override
+	@JsonIgnore
 	public CBlockId createId() {
 		return new CBlockId(bucket, connector);
 	}
 
 	public void initIndizes(int bucketSize) {
-		includedConcepts = new long[bucketSize];
-		minDate = new int[bucketSize];
-		maxDate = new int[bucketSize];
-		Arrays.fill(minDate, Integer.MAX_VALUE);
-		Arrays.fill(maxDate, Integer.MIN_VALUE);
-	}
+		includedConcepts = new Int2LongArrayMap();
+		includedConcepts.defaultReturnValue(0);
 
-	public void addEntityIncludedConcept(int localEntity, ConceptTreeNode<?> node) {
-		getIncludedConcepts()[localEntity] |= node.calculateBitMask();
+		minDate = new Int2IntArrayMap();
+
+		maxDate = new Int2IntArrayMap();
 	}
 }

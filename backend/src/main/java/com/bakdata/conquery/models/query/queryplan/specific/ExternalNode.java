@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -13,7 +15,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.NonNull;
-import javax.validation.constraints.NotEmpty;
 
 public class ExternalNode extends QPNode {
 

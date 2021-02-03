@@ -1,27 +1,15 @@
 package com.bakdata.conquery.util;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.*;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import lombok.Getter;
 
 import javax.validation.Validator;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class NonPersistentWorkerStorage extends NonPersistentNamespacedCentralRegisteredStorage implements WorkerStorage {
 
@@ -56,6 +44,7 @@ public class NonPersistentWorkerStorage extends NonPersistentNamespacedCentralRe
     @Override
     public void addBucket(Bucket bucket) {
         buckets.add(bucket);
+        bucket.loadDictionaries(this);
     }
 
     @Override

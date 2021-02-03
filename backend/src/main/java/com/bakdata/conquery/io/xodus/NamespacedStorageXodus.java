@@ -21,8 +21,8 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -134,16 +134,23 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 						  .onAdd(imp -> {
 							  imp.loadExternalInfos(this);
 
-							  if (registerImports) {
-								  for (Concept<?> c : getAllConcepts()) {
-									  for (Connector con : c.getConnectors()) {
-										  if (con.getTable().getId().equals(imp.getTable())) {
-											  con.addImport(imp);
-										  }
-									  }
-								  }
-							  }
-						  });
+				if (registerImports) {
+					for (Concept<?> c : getAllConcepts()) {
+						for (Connector con : c.getConnectors()) {
+							if (con.getTable().getId().equals(imp.getTable())) {
+								con.addImport(imp);
+							}
+						}
+					}
+				}
+
+				centralRegistry.register(imp);
+
+			})
+			.onRemove(imp -> {
+				centralRegistry.remove(imp);
+
+			});
 
 		// Order is important here
 		environmentToStores.putAll(environment, List.of(
@@ -166,6 +173,7 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 		return concepts.getAll();
 	}
 
+
 	@Override
 	public String getStorageOrigin() {
 		return environment.getLocation();
@@ -184,8 +192,11 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	}
 
 	@Override
-	public DirectDictionary getPrimaryDictionary() {
-		return new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())));
+	public EncodedDictionary getPrimaryDictionary() {
+		return new EncodedDictionary(
+				dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()))
+				, StringTypeEncoded.Encoding.UTF8
+		);
 	}
 
 	@Override
@@ -198,15 +209,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 		dictionaries.remove(id);
 	}
 
-	@Override
-	public Dictionary computeDictionary(DictionaryId id) {
-		Dictionary e = getDictionary(id);
-		if (e == null) {
-			e = new MapDictionary(id);
-			updateDictionary(e);
-		}
-		return e;
-	}
 
 	@Override
 	public Dictionary getDictionary(DictionaryId id) {

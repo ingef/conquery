@@ -7,8 +7,8 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
@@ -37,12 +37,6 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
 
     public NonPersistentNamespacedCentralRegisteredStorage(Validator validator) {
         this.validator = validator;
-    }
-
-
-    @Override
-    public CentralRegistry getCentralRegistry() {
-        return centralRegistry;
     }
 
     @Override
@@ -90,18 +84,8 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
     }
 
     @Override
-    public Dictionary computeDictionary(DictionaryId id) {
-        Dictionary e = getDictionary(id);
-        if (e == null) {
-            e = new MapDictionary(id);
-            updateDictionary(e);
-        }
-        return e;
-    }
-
-    @Override
-    public DirectDictionary getPrimaryDictionary() {
-        return new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())));
+    public EncodedDictionary getPrimaryDictionary() {
+        return new EncodedDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())), StringTypeEncoded.Encoding.UTF8);
     }
 
     @Override
@@ -116,6 +100,7 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
                 }
             }
         }
+        centralRegistry.register(imp);
     }
 
     @Override
@@ -130,11 +115,13 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
 
     @Override
     public void updateImport(Import imp) {
-        imports.update(imp);
+        removeImport(imp.getId());
+        addImport(imp);
     }
 
     @Override
     public void removeImport(ImportId id) {
+        centralRegistry.remove(id);
         imports.remove(id);
     }
 

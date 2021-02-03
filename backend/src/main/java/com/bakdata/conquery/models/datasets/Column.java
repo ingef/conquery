@@ -2,15 +2,15 @@ package com.bakdata.conquery.models.datasets;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.preproc.PPColumn;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,7 +21,6 @@ import lombok.ToString;
 public class Column extends Labeled<ColumnId> {
 
 	public static final int UNKNOWN_POSITION = -1;
-	public static final int PRIMARY_POSITION = -2;
 
 	@JsonBackReference
 	@NotNull
@@ -29,7 +28,8 @@ public class Column extends Labeled<ColumnId> {
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
-	@JsonIgnore
+
+	@InternalOnly
 	private int position = UNKNOWN_POSITION;
 	/**
 	 * if set this column should use the given dictionary
@@ -52,44 +52,25 @@ public class Column extends Labeled<ColumnId> {
 		if (!this.getName().equals(column.getName())) {
 			return false;
 		}
-		return this.getType().equals(column.getType().getTypeId());
+		return this.getType().equals(column.getType());
 	}
 
-	public CType getTypeFor(Bucket bucket) {
-		return getTypeFor(bucket.getImp());
+	public ColumnStore getTypeFor(Bucket bucket) {
+		return bucket.getStores()[getPosition()];
 	}
 
-	public CType getTypeFor(Import imp) {
+
+	//TODO try to remove this method methods, they are quite leaky
+	public ColumnStore getTypeFor(Import imp) {
 		if (!imp.getTable().equals(getTable().getId())) {
 			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable(), getTable().getId()));
 		}
 
-		return imp.getColumns()[getPosition()].getType();
-	}
-
-	public int getPosition() {
-		if (position == UNKNOWN_POSITION) {
-			if (table.getPrimaryColumn() == this) {
-				position = PRIMARY_POSITION;
-			}
-			else {
-				for (int i = 0; i < table.getColumns().length; i++) {
-					if (table.getColumns()[i] == this) {
-						position = i;
-						break;
-					}
-				}
-			}
-
-			if (position == UNKNOWN_POSITION) {
-				throw new IllegalStateException("Could not find the position of column" + this.getId() + " in its table");
-			}
-		}
-		return position;
+		return imp.getColumns()[getPosition()].getTypeDescription();
 	}
 
 	@Override
 	public String toString() {
-		return String.format("Column[%s](type = %s)",getId(), getType());
+		return String.format("Column[%s](type = %s)", getId(), getType());
 	}
 }

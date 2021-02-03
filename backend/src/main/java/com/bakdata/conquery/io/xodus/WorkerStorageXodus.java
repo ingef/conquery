@@ -57,7 +57,12 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 		super.createStores(environmentToStores);
 
 		worker = StoreInfo.WORKER.singleton(getConfig(), environment, getValidator());
-		blocks = StoreInfo.BUCKETS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
+
+		blocks = StoreInfo.BUCKETS.<Bucket>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+						 .onAdd((Bucket bucket) -> {
+							 bucket.loadDictionaries(this);
+						 });
+
 		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
 		
 		environmentToStores.putAll(environment, List.of(

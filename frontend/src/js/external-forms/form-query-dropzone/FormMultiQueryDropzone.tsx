@@ -35,7 +35,6 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
       acceptedDropTypes={[PREVIOUS_QUERY]}
       label={label}
       dropzoneChildren={dropzoneChildren}
-      allowFile={false}
       items={input.value.map((query: PreviousQueryT, i: number) => (
         <FormQueryResult key={i} queryResult={query} />
       ))}
