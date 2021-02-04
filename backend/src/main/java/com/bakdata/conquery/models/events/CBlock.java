@@ -33,7 +33,7 @@ import lombok.Setter;
 public class CBlock extends IdentifiableImpl<CBlockId> {
 
 	public static long estimateMemoryBytes(long entities, long entries, long depthEstimate){
-		return entities * (Long.BYTES + Integer.BYTES + Integer.BYTES) + entries * depthEstimate * Integer.BYTES;
+		return entities * (Long.BYTES + 2 * Integer.BYTES + 2 * Integer.BYTES) + entries * depthEstimate * Integer.BYTES;
 	}
 
 	private BucketId bucket;
@@ -71,11 +71,10 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	}
 
 	public void initIndizes(int bucketSize) {
-		includedConcepts = new Int2LongArrayMap();
+		includedConcepts = new Int2LongArrayMap(bucketSize);
 		includedConcepts.defaultReturnValue(0);
 
-		minDate = new Int2IntArrayMap();
-
-		maxDate = new Int2IntArrayMap();
+		minDate = new Int2IntArrayMap(bucketSize);
+		maxDate = new Int2IntArrayMap(bucketSize);
 	}
 }
