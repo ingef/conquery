@@ -43,6 +43,9 @@ public interface StringStore extends Iterable<String>, ColumnStore {
 	@JsonIgnore
 	Dictionary getUnderlyingDictionary();
 
+	@JsonIgnore
+	boolean isDictionaryHolding();
+
 	/**
 	 * Loads all dictionaries.
 	 *

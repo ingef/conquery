@@ -360,17 +360,17 @@ public class ImportJob extends Job {
 
 	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values, Column[] columns) {
 		for (Column column : columns) {
-			if (!(values.get(column.getName()) instanceof StringStore) || column.getSharedDictionary() == null) {
+			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
 				continue;
 			}
 
-			// apply mapping
 			final DictionaryMapping mapping = mappings.get(column.getName());
 
 			final StringStore stringStore = (StringStore) values.get(column.getName());
 
+
 			if(mapping == null){
-				if(stringStore.getUnderlyingDictionary() != null) {
+				if(stringStore.isDictionaryHolding()) {
 					throw new IllegalStateException(String.format("Missing mapping for %s", column));
 				}
 
@@ -433,7 +433,7 @@ public class ImportJob extends Job {
 			}
 
 			// Some StringStores don't have Dictionaries.
-			if(((StringStore) stores.get(column.getName())).getUnderlyingDictionary() == null){
+			if(!((StringStore) stores.get(column.getName())).isDictionaryHolding()){
 				continue;
 			}
 

@@ -143,6 +143,11 @@ public enum EmptyStore implements
 	}
 
 	@Override
+	public boolean isDictionaryHolding() {
+		return false;
+	}
+
+	@Override
 	public void setUnderlyingDictionary(DictionaryId newDict) {
 
 	}

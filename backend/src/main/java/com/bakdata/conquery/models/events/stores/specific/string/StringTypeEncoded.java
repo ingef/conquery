@@ -113,6 +113,11 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
+	public boolean isDictionaryHolding() {
+		return true;
+	}
+
+	@Override
 	public void setUnderlyingDictionary(DictionaryId newDict) {
 		subType.setUnderlyingDictionary(newDict);
 	}
