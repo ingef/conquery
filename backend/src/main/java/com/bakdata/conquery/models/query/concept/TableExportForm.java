@@ -56,7 +56,7 @@ public class TableExportForm implements Form {
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
-		return query.collectRequiredQueries();
+		return Set.of(queryGroup);
 	}
 
 	@Override
