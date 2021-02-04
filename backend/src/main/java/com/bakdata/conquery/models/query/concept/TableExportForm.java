@@ -103,6 +103,11 @@ public class TableExportForm implements Form {
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
-		query.visit(visitor);
+		concepts.forEach(visitor::accept);
+
+		// is only set after resolve
+		if(query != null) {
+			query.visit(visitor);
+		}
 	}
 }
