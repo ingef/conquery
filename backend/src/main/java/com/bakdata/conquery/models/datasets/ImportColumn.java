@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -23,10 +24,8 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 
 	private final long lines;
 
-	public long estimateMemorySizeBytes() {
-		long bits = typeDescription.estimateEventBits();
-		return Math.floorDiv(getLines() * bits, Byte.SIZE);
-	}
+	@Min(0)
+	private final long memorySizeBytes;
 
 
 	@Override

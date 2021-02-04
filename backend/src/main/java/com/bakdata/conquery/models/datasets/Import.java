@@ -58,7 +58,7 @@ public class Import extends NamedImpl<ImportId> {
 	public long estimateMemoryConsumption() {
 		long mem = 0;
 		for (ImportColumn col : columns) {
-			mem += col.estimateMemorySizeBytes();
+			mem += col.getMemorySizeBytes();
 		}
 		return mem;
 	}

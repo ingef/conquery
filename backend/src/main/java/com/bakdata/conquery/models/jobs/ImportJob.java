@@ -410,7 +410,7 @@ public class ImportJob extends Job {
 		for (int i = 0; i < columns.length; i++) {
 			final ColumnStore store = stores.get(columns[i].getName());
 
-			ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines());
+			ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), store.estimateMemoryConsumptionBytes());
 
 			col.setName(columns[i].getName());
 
