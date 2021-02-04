@@ -32,6 +32,10 @@ import lombok.Setter;
 @JsonDeserialize(using = CBlockDeserializer.class)
 public class CBlock extends IdentifiableImpl<CBlockId> {
 
+	public static long estimateMemoryBytes(long entities, long entries, long depthEstimate){
+		return entities * (Long.BYTES + Integer.BYTES + Integer.BYTES) + entries * depthEstimate * Integer.BYTES;
+	}
+
 	private BucketId bucket;
 	@NotNull
 	private ConnectorId connector;
