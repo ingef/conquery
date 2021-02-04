@@ -45,10 +45,9 @@
         <input class="btn btn-primary" type="submit"/>
     </form>
 	<h3>Add Table</h3>
-	<form action="/admin/datasets/${c.ds.id}/tables" method="post" enctype="multipart/form-data">
+	<form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/tables');">
 		<div class="form-group">
-			<label for="table_schema">Add Table</label>
-			<input class="form-control-file" type="file" name="table_schema" title="Schema of the table" accept="*.table.json" multiple required>
+			<input type="file" class="restparam" name="table_schema" title="Schema of the Table" accept="*.table.json" multiple required>
 		</div>
 		<input class="btn btn-primary" type="submit"/>
 	</form>
