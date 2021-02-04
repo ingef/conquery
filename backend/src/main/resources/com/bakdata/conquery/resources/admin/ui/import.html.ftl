@@ -9,7 +9,7 @@
 		<#list c.columns as column>
 			<li>
 			<@layout.kid k="ID" v=column.id/>
-			<@layout.kv k="Size" v=layout.si(column.typeDescription.estimateMemoryConsumption())+"B"/>
+			<@layout.kv k="Size" v=layout.si(column.estimateMemorySizeBytes())+"B"/>
 			<@layout.kc k="type">${column.typeDescription}</@layout.kc>
 			</li>
 		</#list>

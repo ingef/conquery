@@ -21,6 +21,14 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 	@NotNull @Valid
 	private final ColumnStore typeDescription;
 
+	private final long lines;
+
+	public long estimateMemorySizeBytes() {
+		long bits = typeDescription.estimateEventBits();
+		return Math.floorDiv(getLines() * bits, Byte.SIZE);
+	}
+
+
 	@Override
 	public ImportColumnId createId() {
 		return new ImportColumnId(parent.getId(), getName());
