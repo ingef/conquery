@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -64,12 +66,7 @@ public class TablesUIResource extends HAdmin {
 
 	@GET
 	public View getTableView() {
-		List<Import> imports = namespace
-									   .getStorage()
-									   .getAllImports()
-									   .stream()
-									   .filter(imp -> imp.getTable().equals(table.getId()))
-									   .collect(Collectors.toList());
+		List<Import> imports = table.findImports(namespace.getStorage());
 
 		return new UIView<>(
 				"table.html.ftl",
@@ -80,14 +77,10 @@ public class TablesUIResource extends HAdmin {
 						//total size of dictionaries
 						imports
 								.stream()
-								.flatMap(i -> Arrays.stream(i.getColumns()))
-								.filter(c -> c.getTypeDescription() instanceof StringStore)
-								.map(c -> (StringStore) c.getTypeDescription())
-								.filter(c -> c.getUnderlyingDictionary() != null)
-								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
-								.values()
-								.stream()
-								.mapToLong(l -> l.get(0).estimateTypeSizeBytes())
+								.flatMap(imp -> imp.getDictionaries().stream())
+								.filter(Objects::nonNull)
+								.map(namespace.getStorage()::getDictionary)
+								.mapToLong(Dictionary::estimateMemoryConsumption)
 								.sum(),
 						//total size of entries
 						imports

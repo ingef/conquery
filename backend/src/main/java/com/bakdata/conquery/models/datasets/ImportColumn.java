@@ -33,5 +33,8 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 		return new ImportColumnId(parent.getId(), getName());
 	}
 
-
+	@Override
+	public String toString() {
+		return "ImportColumn(id=" + getId() + ", typeDescription=" + getTypeDescription() + ")";
+	}
 }

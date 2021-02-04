@@ -423,8 +423,17 @@ public class ImportJob extends Job {
 
 		for (Column column : columns) {
 			// only non-shared dictionaries need to be registered here
+			if (column.getType() != MajorTypeId.STRING) {
+				continue;
+			}
+
 			// shared dictionaries are not related to a specific import.
-			if (column.getType() != MajorTypeId.STRING && column.getSharedDictionary() != null) {
+			if(column.getSharedDictionary() != null){
+				continue;
+			}
+
+			// Some StringStores don't have Dictionaries.
+			if(((StringStore) stores.get(column.getName())).getUnderlyingDictionary() == null){
 				continue;
 			}
 
