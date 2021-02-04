@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import c10n.C10N;
@@ -48,10 +47,9 @@ public class TableExportForm implements Form {
 	@NotNull
 	private final Range<LocalDate> dateRange;
 
-	@NotEmpty
 	@Valid
 	@JsonProperty("tables")
-	private final IQuery concepts;
+	private final List<CQElement> concepts;
 
 	@JsonIgnore
 	private IQuery query;
@@ -77,15 +75,17 @@ public class TableExportForm implements Form {
 		final List<CQUnfilteredTable> tables = new ArrayList<>();
 
 		// Make no assumption on shape of Query
-		concepts.visit(qe -> {
-			if (!(qe instanceof CQConcept)) {
-				return;
-			}
+		for (CQElement con : concepts) {
+			con.visit(qe -> {
+				if (!(qe instanceof CQConcept)) {
+					return;
+				}
 
-			for (CQTable table : ((CQConcept) qe).getTables()) {
-				tables.add(new CQUnfilteredTable(table.getId(), table.getDateColumn()));
-			}
-		});
+				for (CQTable table : ((CQConcept) qe).getTables()) {
+					tables.add(new CQUnfilteredTable(table.getId(), table.getDateColumn()));
+				}
+			});
+		}
 
 
 		final TableExportQuery exportQuery = new TableExportQuery(query);
