@@ -26,7 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "AND", base = CQElement.class)
-public class CQAnd extends CQElement {
+public class CQAnd extends CQElement implements ForcedExists{
 	@Getter
 	@Setter
 	@NotEmpty

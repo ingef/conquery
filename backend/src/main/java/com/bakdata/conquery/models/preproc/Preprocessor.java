@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -18,26 +17,21 @@ import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
-import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 @Slf4j
 @UtilityClass
@@ -97,7 +91,7 @@ public class Preprocessor {
 	/**
 	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
 	 *
-	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link CType}.
+	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
 	 */
 	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
 
@@ -189,7 +183,7 @@ public class Preprocessor {
 						}
 
 						try {
-							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn().getParser(), lineId), "primaryId may not be null");
+							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
 							final int primary = result.addPrimary(primaryId);
 							final PPColumn[] columns = result.getColumns();
@@ -249,52 +243,7 @@ public class Preprocessor {
 				exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 			}
 
-			//find the optimal subtypes
-			{
-				log.info("finding optimal column types");
 
-				StringParser parser = (StringParser) result.getPrimaryColumn().getParser();
-				parser.setEncoding(Encoding.UTF8);
-				result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
-
-				log.info(
-						"\t{}.{}: {} -> {}",
-						result.getName(),
-						result.getPrimaryColumn().getName(),
-						result.getPrimaryColumn().getParser(),
-						result.getPrimaryColumn().getType()
-				);
-
-				for (PPColumn c : result.getColumns()) {
-					log.trace("Compute best Subtype for  Column[{}] with {}", c.getName(), c.getParser());
-					c.findBestType();
-					log.trace("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
-				}
-
-				//estimate memory weight
-				log.trace(
-						"estimated total memory consumption: {} + n*{}",
-						BinaryByteUnit.format(
-								Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateMemoryConsumption).sum()
-								+ result.getPrimaryColumn().getType().estimateMemoryConsumption()
-						),
-						BinaryByteUnit.format(
-								Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateTypeSize).sum()
-								+ result.getPrimaryColumn().getType().estimateTypeSize()
-						)
-				);
-
-				for (PPColumn c : ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
-					long typeConsumption = c.getType().estimateTypeSize();
-					log.trace(
-							"\t{}.{}: {}{}",
-							result.getName(),
-							c.getName(),
-							BinaryByteUnit.format(c.getType().estimateMemoryConsumption()),
-							typeConsumption == 0 ? "" : (" + n*" + BinaryByteUnit.format(typeConsumption))
-					);
-				}
-			}
 
 			result.write(outFile);
 		}
@@ -324,7 +273,7 @@ public class Preprocessor {
 			final OutputDescription.Output out = outputs.get(index);
 
 			try {
-				final Parser<?> parser = columns[index].getParser();
+				final Parser parser = columns[index].getParser();
 
 				final Object result = out.createOutput(row, parser, lineId);
 

@@ -42,7 +42,7 @@ public class ExecutionManager {
 		execution.start();
 
 		final MetaStorage storage = datasets.getMetaStorage();
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()).getId(), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		for (Namespace namespace : execution.getRequiredDatasets()) {
@@ -94,7 +94,7 @@ public class ExecutionManager {
 		query.addResult(storage, result);
 
 		if (query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(query.getOwner()), storage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(query.getOwner()).getId(), storage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();

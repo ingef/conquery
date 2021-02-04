@@ -1,4 +1,5 @@
 package com.bakdata.conquery.models;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -34,7 +36,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.util.NonPersistentMetaStorage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -138,8 +139,7 @@ public class SerializationTests {
 		table.setDataset(dataset);
 		table.setLabel("tableLabel");
 		table.setName("tableName");
-		table.setPrimaryColumn(column);
-		
+
 		column.setTable(table);
 		
 		ConceptTreeConnector connector = new ConceptTreeConnector();

@@ -153,6 +153,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	protected ConqueryConfig getConfig() throws Exception {
 		ConqueryConfig config = new ConqueryConfig();
 
+		config.setFailOnError(true);
+
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		config.getStorage().setDirectory(tmpDir);
 		config.getStandalone().setNumberOfShardNodes(2);

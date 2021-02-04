@@ -6,22 +6,21 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.mina.core.buffer.IoBuffer;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.AbstractIterator;
-
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.mina.core.buffer.IoBuffer;
 
 @CPSType(id="SUCCINCT_TRIE", base=Dictionary.class)
 public class SuccinctTrie extends Dictionary {
@@ -51,7 +50,8 @@ public class SuccinctTrie extends Dictionary {
 	@Getter
 	private boolean compressed;
 
-	public SuccinctTrie() {
+	public SuccinctTrie(DatasetId dataset, String name) {
+		super(dataset, name);
 		this.root = new HelpNode(null, (byte) 0);
 		this.root.setPositionInArray(0);
 		this.nodeCount = 2;
@@ -60,9 +60,7 @@ public class SuccinctTrie extends Dictionary {
 
 	@JsonCreator
 	public static SuccinctTrie fromSerialized(SerializedSuccinctTrie serialized) {
-		SuccinctTrie trie = new SuccinctTrie();
-		trie.setName(serialized.getName());
-		trie.setDataset(serialized.getDataset());
+		SuccinctTrie trie = new SuccinctTrie(serialized.getDataset(), serialized.getName());
 		trie.nodeCount = serialized.getNodeCount();
 		trie.entryCount = serialized.getEntryCount();
 		trie.reverseLookup = serialized.getReverseLookup();
@@ -266,7 +264,7 @@ public class SuccinctTrie extends Dictionary {
 		checkCompressed("use compress before performing getReverse on the trie");
 
 		if (intValue >= reverseLookup.length) {
-			throw new IllegalArgumentException("intValue " + intValue + " to high, no such key in the trie");
+			throw new IllegalArgumentException(String.format("intValue %d too high, no such key in the trie (Have only %d values)", intValue, reverseLookup.length));
 		}
 		int nodeIndex = reverseLookup[intValue];
 		while (parentIndex[nodeIndex] != -1) {
@@ -367,7 +365,7 @@ public class SuccinctTrie extends Dictionary {
 	public SuccinctTrie uncompress() {
 		checkCompressed("Constructor only works for compressed tries");
 
-		SuccinctTrie trie = new SuccinctTrie();
+		SuccinctTrie trie = new SuccinctTrie(getDataset(), getName());
 		for (byte[] value : getValuesBytes()) {
 			trie.put(value);
 		}

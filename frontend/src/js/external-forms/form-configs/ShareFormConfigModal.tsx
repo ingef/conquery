@@ -140,6 +140,7 @@ const ShareFormConfigModal = ({
         input={{ value: userGroupsValue, onChange: onSetUserGroupsValue }}
         label={T.translate("sharePreviousQueryModal.groupsLabel")}
         options={userGroupOptions}
+        closeMenuOnSelect
       />
       <Buttons>
         <Btn onClick={onClose}>{T.translate("common.cancel")}</Btn>

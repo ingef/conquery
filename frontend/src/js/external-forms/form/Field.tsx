@@ -9,6 +9,7 @@ import InputSelect from "../../form-components/InputSelect";
 import InputText from "../../form-components/InputText";
 import InputDateRange from "../../form-components/InputDateRange";
 import InputCheckbox from "../../form-components/InputCheckbox";
+import ToggleButton from "../../form-components/ToggleButton";
 
 import type { DatasetIdT, SelectOptionT } from "../../api/types";
 
@@ -24,15 +25,8 @@ import FormField from "../common/FormField";
 import { isFormField } from "../helper";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 
-const Headline = styled("h3")`
-  font-size: 14px;
-  margin: 10px 0 0;
-`;
-
-const Description = styled("p")`
-  font-size: 14px;
-  margin: 0 0 10px;
-`;
+import { Headline } from "../form-components/Headline";
+import { Description } from "../form-components/Description";
 
 const TabsField = styled("div")``;
 
@@ -47,10 +41,8 @@ const Select = FormField(InputSelect);
 const Checkbox = FormField(InputCheckbox);
 const Tabs = FormField(TabsField);
 
-const SxInputSelect = styled(InputSelect)`
-  margin-right: 5px;
-  flex-grow: 1;
-  max-width: 125px;
+const SxToggleButton = styled(ToggleButton)`
+  margin-bottom: 5px;
 `;
 
 const NestedFields = styled("div")`
@@ -58,16 +50,16 @@ const NestedFields = styled("div")`
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 `;
 
-type PropsType = {
+interface PropsT {
   formType: string;
   field: GeneralField;
   getFieldValue: (fieldName: string) => any;
   locale: "de" | "en";
   availableDatasets: SelectOptionT;
   selectedDatasetId: DatasetIdT;
-};
+}
 
-const Field = ({ field, ...commonProps }: PropsType) => {
+const Field = ({ field, ...commonProps }: PropsT) => {
   const {
     formType,
     locale,
@@ -247,15 +239,16 @@ const Field = ({ field, ...commonProps }: PropsType) => {
             newValue: field.rowPrefixField
               ? {
                   concepts: [],
+                  connector: "OR",
                   type: field.rowPrefixField.apiType,
                   [field.rowPrefixField.name]:
                     field.rowPrefixField.defaultValue,
                 }
-              : { concepts: [] },
+              : { concepts: [], connector: "OR" },
             renderRowPrefix:
               field.rowPrefixField &&
               ((input, feature, i) => (
-                <SxInputSelect
+                <SxToggleButton
                   options={field.rowPrefixField.options.map((option) => ({
                     label: option.label[locale],
                     value: option.value,
@@ -271,11 +264,6 @@ const Field = ({ field, ...commonProps }: PropsType) => {
                         },
                         ...input.value.slice(i + 1),
                       ]),
-                  }}
-                  selectProps={{
-                    clearable: false,
-                    autosize: true,
-                    searchable: false,
                   }}
                 />
               )),

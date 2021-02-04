@@ -1,13 +1,12 @@
 package com.bakdata.conquery.tasks;
 
-import com.bakdata.conquery.models.messages.namespaces.specific.RequestConsistency;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import io.dropwizard.servlets.tasks.Task;
-import lombok.RequiredArgsConstructor;
-
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+
+import com.bakdata.conquery.models.messages.namespaces.specific.RequestConsistency;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import io.dropwizard.servlets.tasks.Task;
 
 public class ReportConsistencyTask extends Task {
 
