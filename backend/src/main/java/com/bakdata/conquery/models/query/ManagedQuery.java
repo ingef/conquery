@@ -51,6 +51,7 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
@@ -84,6 +85,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient int executingThreads;
 	@JsonIgnore
+	private transient ConqueryConfig config;
+	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
@@ -94,7 +97,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void doInitExecutable(@NonNull DatasetRegistry namespaces) {
+	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
+		this.config = config;
 		this.namespace = namespaces.get(getDataset());
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces));
@@ -175,9 +179,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
 	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
+		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 		// First add the id columns to the descriptor list. The are the first columns
-		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
+		for (String header : config.getIdMapping().getPrintIdFields()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 				.label(header)
 				.type(ConqueryConstants.ID_TYPE)

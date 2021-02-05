@@ -32,7 +32,10 @@ public class Import extends NamedImpl<ImportId> {
 	@NotNull
 	private final TableId table; // todo migrate to NsIdRef
 
+	private long numberOfEntities;
+
 	private long numberOfEntries;
+
 
 	@JsonManagedReference
 	@NotNull
@@ -58,7 +61,7 @@ public class Import extends NamedImpl<ImportId> {
 	public long estimateMemoryConsumption() {
 		long mem = 0;
 		for (ImportColumn col : columns) {
-			mem += col.getTypeDescription().estimateMemoryConsumptionBytes();
+			mem += col.getMemorySizeBytes();
 		}
 		return mem;
 	}

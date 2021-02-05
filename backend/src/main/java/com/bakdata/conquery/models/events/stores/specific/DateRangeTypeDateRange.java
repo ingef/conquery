@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Stores {@link CDateRange} as pair of two {@link IntegerDateStore}s.
@@ -16,6 +17,7 @@ import lombok.Setter;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
+@ToString(of = {"minStore", "maxStore"})
 public class DateRangeTypeDateRange implements DateRangeStore {
 
 	private final DateStore minStore;

@@ -128,6 +128,11 @@ public class StringTypePrefixSuffix implements StringStore {
 	}
 
 	@Override
+	public boolean isDictionaryHolding() {
+		return subType.isDictionaryHolding();
+	}
+
+	@Override
 	public void setUnderlyingDictionary(DictionaryId newDict) {
 		subType.setUnderlyingDictionary(newDict);
 	}

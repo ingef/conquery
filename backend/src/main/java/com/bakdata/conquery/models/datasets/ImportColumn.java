@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -21,10 +22,19 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 	@NotNull @Valid
 	private final ColumnStore typeDescription;
 
+	private final long lines;
+
+	@Min(0)
+	private final long memorySizeBytes;
+
+
 	@Override
 	public ImportColumnId createId() {
 		return new ImportColumnId(parent.getId(), getName());
 	}
 
-
+	@Override
+	public String toString() {
+		return "ImportColumn(id=" + getId() + ", typeDescription=" + getTypeDescription() + ")";
+	}
 }

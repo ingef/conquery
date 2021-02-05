@@ -16,6 +16,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 public class StoredQueriesProcessorTest {
 	private static final MetaStorage STRORAGE = mock(MetaStorage.class);
-	private static final StoredQueriesProcessor processor = new StoredQueriesProcessor(mock(DatasetRegistry.class), STRORAGE);
+	private static final StoredQueriesProcessor processor = new StoredQueriesProcessor(mock(DatasetRegistry.class), STRORAGE, new ConqueryConfig());
 
 	private static final Dataset DATASET_0 = new Dataset() {{setName("dataset0");}};
 	private static final Dataset DATASET_1 = new Dataset() {{setName("dataset1");}};

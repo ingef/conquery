@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -55,6 +56,7 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -107,6 +109,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
 	private transient ConqueryErrorInfo error;
+	@JsonIgnore
+	private boolean initialized = false;
 
 	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
 		this.owner = owner;
@@ -116,16 +120,21 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Executed right before execution submission.
 	 */
-	public void initExecutable(DatasetRegistry datasetRegistry) {
+	public void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		synchronized (getExecution()) {
+			if(initialized) {
+				log.trace("Execution {} was already initialized", getId());
+				return;
+			}
 			if(label == null) {
 				label = makeAutoLabel(datasetRegistry);
 			}
-			doInitExecutable(datasetRegistry);
+			doInitExecutable(datasetRegistry, config);
+			initialized = true;
 		}
 	}
 
-	protected abstract void doInitExecutable(DatasetRegistry namespaces);
+	protected abstract void doInitExecutable(DatasetRegistry namespaces, ConqueryConfig config);
 
 	/**
 	 * Returns the set of namespaces, this execution needs to be executed on.
@@ -160,6 +169,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	public void start() {
+		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		startTime = LocalDateTime.now();
 		state = ExecutionState.RUNNING;
 	}
@@ -259,6 +269,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
 	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		ExecutionStatus.Full status = new ExecutionStatus.Full();
 		setStatusBase(storage, user, status, url);
 
