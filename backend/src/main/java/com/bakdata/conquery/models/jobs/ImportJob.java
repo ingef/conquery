@@ -121,7 +121,7 @@ public class ImportJob extends Job {
 
 		//create data import and store/send it
 
-		Import imp = createImport(header, container.getStores(), table.getColumns());
+		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
 
 		namespace.getStorage().updateImport(imp);
 		namespace.sendToAll(new AddImport(imp));
@@ -360,17 +360,17 @@ public class ImportJob extends Job {
 
 	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values, Column[] columns) {
 		for (Column column : columns) {
-			if (!(values.get(column.getName()) instanceof StringStore) || column.getSharedDictionary() == null) {
+			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
 				continue;
 			}
 
-			// apply mapping
 			final DictionaryMapping mapping = mappings.get(column.getName());
 
 			final StringStore stringStore = (StringStore) values.get(column.getName());
 
+
 			if(mapping == null){
-				if(stringStore.getUnderlyingDictionary() != null) {
+				if(stringStore.isDictionaryHolding()) {
 					throw new IllegalStateException(String.format("Missing mapping for %s", column));
 				}
 
@@ -399,18 +399,20 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns) {
+	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
 		Import imp = new Import(table.getId());
 
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
+		imp.setNumberOfEntities(size);
+
 
 		final ImportColumn[] importColumns = new ImportColumn[columns.length];
 
 		for (int i = 0; i < columns.length; i++) {
 			final ColumnStore store = stores.get(columns[i].getName());
 
-			ImportColumn col = new ImportColumn(imp, store.createDescription());
+			ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), store.estimateMemoryConsumptionBytes());
 
 			col.setName(columns[i].getName());
 
@@ -423,8 +425,17 @@ public class ImportJob extends Job {
 
 		for (Column column : columns) {
 			// only non-shared dictionaries need to be registered here
+			if (column.getType() != MajorTypeId.STRING) {
+				continue;
+			}
+
 			// shared dictionaries are not related to a specific import.
-			if (column.getType() != MajorTypeId.STRING && column.getSharedDictionary() != null) {
+			if(column.getSharedDictionary() != null){
+				continue;
+			}
+
+			// Some StringStores don't have Dictionaries.
+			if(!((StringStore) stores.get(column.getName())).isDictionaryHolding()){
 				continue;
 			}
 

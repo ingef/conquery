@@ -8,12 +8,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter @RequiredArgsConstructor
-public class TableStatistics {
+public class ImportStatistics {
 		
-	private final Table table;
-	private final long numberOfEntries;
-	private final long dictionariesSize;
-	private final long size;
-	private final long cBlocksSize;
-	private final List<Import> imports;
+	private final Import imp;
+	private final long cBlocksMemoryBytes;
 }

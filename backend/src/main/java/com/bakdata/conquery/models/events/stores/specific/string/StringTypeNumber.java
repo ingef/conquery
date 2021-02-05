@@ -104,6 +104,11 @@ public class StringTypeNumber implements StringStore {
 	}
 
 	@Override
+	public boolean isDictionaryHolding() {
+		return false;
+	}
+
+	@Override
 	public void setUnderlyingDictionary(DictionaryId newDict) {
 
 	}
