@@ -186,8 +186,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
 				new QueryCleanupTask(storage, Duration.of(
-						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getQuantity(),
-						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getUnit().toChronoUnit()
+						config.getQueries().getOldQueriesTime().getQuantity(),
+						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
 		environment.admin().addTask(new ClearFilterSourceSearch());
 		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
