@@ -69,12 +69,13 @@ public class TablesUIResource extends HAdmin {
 	public View getTableView() {
 		List<Import> imports = table.findImports(namespace.getStorage());
 
+		final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
 		return new UIView<>(
 				"table.html.ftl",
 				processor.getUIContext(),
 				new TableStatistics(
 						table,
-						imports.stream().mapToLong(Import::getNumberOfEntries).sum(),
+						entries,
 						//total size of dictionaries
 						imports.stream()
 							   .flatMap(imp -> imp.getDictionaries().stream())
@@ -82,6 +83,7 @@ public class TablesUIResource extends HAdmin {
 							   .map(namespace.getStorage()::getDictionary)
 							   .mapToLong(Dictionary::estimateMemoryConsumption)
 							   .sum(),
+						calculateCBlocksSizeBytes(entries),
 						//total size of entries
 						imports.stream()
 							   .mapToLong(Import::estimateMemoryConsumption)
@@ -99,13 +101,24 @@ public class TablesUIResource extends HAdmin {
 
 		final long entries = imp.getNumberOfEntries();
 
+		final long cBlockSize = calculateCBlocksSizeBytes(entries);
+
+
+		return new UIView<>(
+				"import.html.ftl",
+				processor.getUIContext(),
+				new ImportStatistics(imp, cBlockSize)
+		);
+	}
+
+	private long calculateCBlocksSizeBytes(long entries) {
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple.
-		final long cBlockSize = namespace.getStorage().getAllConcepts().stream()
-										 .filter(TreeConcept.class::isInstance)
-										 .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-										 .filter(con -> con.getTable().equals(table))
-										 .mapToLong(con -> {
+		return namespace.getStorage().getAllConcepts().stream()
+						.filter(TreeConcept.class::isInstance)
+						.flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
+						.filter(con -> con.getTable().equals(table))
+						.mapToLong(con -> {
 											 // Per event an int array is stored marking the path to the concept child.
 											 final double avgDepth = con.getConcept()
 																		.getAllChildren().stream()
@@ -115,13 +128,6 @@ public class TablesUIResource extends HAdmin {
 
 											 return CBlock.estimateMemoryBytes(1000L, entries, avgDepth);
 										 })
-										 .sum();
-
-
-		return new UIView<>(
-				"import.html.ftl",
-				processor.getUIContext(),
-				new ImportStatistics(imp, cBlockSize)
-		);
+						.sum();
 	}
 }

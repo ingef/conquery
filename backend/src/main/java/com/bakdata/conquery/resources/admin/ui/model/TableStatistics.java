@@ -14,5 +14,6 @@ public class TableStatistics {
 	private final long numberOfEntries;
 	private final long dictionariesSize;
 	private final long size;
+	private final long cBlocksSize;
 	private final List<Import> imports;
 }
