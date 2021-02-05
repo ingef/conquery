@@ -1,28 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -32,11 +9,7 @@ import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.RoleOwner;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.*;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
@@ -44,48 +17,24 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
+import com.bakdata.conquery.models.messages.namespaces.specific.*;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
+import com.bakdata.conquery.resources.admin.ui.model.*;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
-import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
-import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
-import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
-import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
-import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Multimap;
@@ -97,6 +46,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.shiro.authz.Permission;
+
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -203,7 +164,7 @@ public class AdminProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv()
+		CsvParser parser = new CsvParser(config.getCsv()
 				.withSkipHeader(false)
 				.withParseHeaders(false)
 				.createCsvParserSettings());
@@ -498,14 +459,14 @@ public class AdminProcessor {
 	public String getPermissionOverviewAsCSV(Collection<User> users) {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = CsvIo.createWriter(sWriter);
-		List<String> scope = ConqueryConfig.getInstance()
+		List<String> scope = config
 				.getAuthorization()
 				.getOverviewScope();
 		// Header
 		writeAuthOverviewHeader(writer, scope);
 		// Body
 		for (User user : users) {
-			writeAuthOverviewUser(writer, scope, user, storage);
+			writeAuthOverviewUser(writer, scope, user, storage, config);
 		}
 		return sWriter.toString();
 	}
@@ -523,7 +484,7 @@ public class AdminProcessor {
 	/**
 	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer.
 	 */
-	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MetaStorage storage) {
+	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MetaStorage storage, ConqueryConfig config) {
 		// Print the user in the first column
 		writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 
@@ -532,7 +493,7 @@ public class AdminProcessor {
 		for(String domain : scope) {
 			writer.addValue(permissions.get(domain).stream()
 					.map(Object::toString)
-					.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
+					.collect(Collectors.joining(config.getCsv().getLineSeparator())));
 		}
 		writer.writeValuesToRow();
 	}
