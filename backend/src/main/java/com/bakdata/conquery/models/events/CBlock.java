@@ -116,7 +116,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 				maxDate.put(entity, maxValue);
 			}
 			else {
-				int min = Math.min(maxDate.get(entity), maxValue);
+				int min = Math.max(maxDate.get(entity), maxValue);
 				maxDate.put(entity, min);
 			}
 		}
