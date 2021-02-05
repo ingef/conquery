@@ -2,6 +2,7 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,7 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Import;
@@ -71,7 +72,6 @@ public class TablesUIResource extends HAdmin {
 		List<Import> imports = table.findImports(namespace.getStorage());
 
 		final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
-		final long entities = imports.stream().mapToLong(Import::getNumberOfEntities).sum();
 
 		return new UIView<>(
 				"table.html.ftl",
@@ -86,7 +86,10 @@ public class TablesUIResource extends HAdmin {
 							   .map(namespace.getStorage()::getDictionary)
 							   .mapToLong(Dictionary::estimateMemoryConsumption)
 							   .sum(),
-						calculateCBlocksSizeBytes(entities, entries, namespace.getStorage(), table),
+						imports.stream()
+							   .mapToLong(imp -> calculateCBlocksSizeBytes(imp, namespace.getStorage().getAllConcepts()))
+							   .sum()
+						,
 						//total size of entries
 						imports.stream()
 							   .mapToLong(Import::estimateMemoryConsumption)
@@ -102,8 +105,7 @@ public class TablesUIResource extends HAdmin {
 		Import imp = namespace.getStorage()
 							  .getImport(importId);
 
-		final long cBlockSize = calculateCBlocksSizeBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), namespace.getStorage(), table);
-
+		final long cBlockSize = calculateCBlocksSizeBytes(imp, namespace.getStorage().getAllConcepts());
 
 		return new UIView<>(
 				"import.html.ftl",
@@ -112,14 +114,15 @@ public class TablesUIResource extends HAdmin {
 		);
 	}
 
-	public static long calculateCBlocksSizeBytes(long entities, long entries, NamespaceStorage storage, Table table) {
+	public static long calculateCBlocksSizeBytes(Import imp, Collection<? extends Concept<?>> concepts) {
+
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple.
-		return storage.getAllConcepts().stream()
-					  .filter(TreeConcept.class::isInstance)
-					  .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-					  .filter(con -> con.getTable().equals(table))
-					  .mapToLong(con -> {
+		return concepts.stream()
+					   .filter(TreeConcept.class::isInstance)
+					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
+					   .filter(con -> con.getTable().getId().equals(imp.getTable()))
+					   .mapToLong(con -> {
 											 // Per event an int array is stored marking the path to the concept child.
 											 final double avgDepth = con.getConcept()
 																		.getAllChildren().stream()
@@ -127,8 +130,8 @@ public class TablesUIResource extends HAdmin {
 																		.average()
 																		.orElse(1d);
 
-											 return CBlock.estimateMemoryBytes(entities, entries, avgDepth);
+											 return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
 										 })
-					  .sum();
+					   .sum();
 	}
 }

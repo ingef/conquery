@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -106,10 +105,7 @@ public class DatasetsUIResource extends HAdmin {
 									final long entries = imp.getNumberOfEntries();
 
 									return TablesUIResource.calculateCBlocksSizeBytes(
-											imp.getNumberOfEntities(),
-											entries,
-											getNamespace().getStorage(),
-											namespace.getStorage().getTable(imp.getTable())
+											imp, getNamespace().getStorage().getAllConcepts()
 									);
 								})
 								.sum(),
