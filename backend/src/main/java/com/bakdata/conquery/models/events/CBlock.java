@@ -70,6 +70,15 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		return mask;
 	}
 
+
+	public int[] getEventMostSpecificChild(int event) {
+		if(mostSpecificChildren == null){
+			return null;
+		}
+
+		return mostSpecificChildren[event];
+	}
+
 	public CDateRange getEntityDateRange(int entity) {
 		return CDateRange.of(getEntityMinDate(entity), getEntityMaxDate(entity));
 	}

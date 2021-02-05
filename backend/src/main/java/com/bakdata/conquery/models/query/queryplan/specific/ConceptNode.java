@@ -89,21 +89,22 @@ public class ConceptNode extends QPChainNode {
 		}
 
 		//check concepts
-		int[] mostSpecificChildren;
-		if (currentRow.getMostSpecificChildren() != null
-			&& ((mostSpecificChildren = currentRow.getMostSpecificChildren()[event]) != null)) {
-
-			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
-				if (ce.matchesPrefix(mostSpecificChildren)) {
-					getChild().acceptEvent(bucket, event);
-				}
-			}
-		}
-		else {
-			for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
+		int[] mostSpecificChildren = currentRow.getEventMostSpecificChild(event);
+		if (mostSpecificChildren == null) {
+			for (ConceptElement ce : concepts) {
+				// having no specific child set maps directly to root.
+				// This means we likely have a VirtualConcept
 				if (ce.getConcept() == ce) {
 					getChild().acceptEvent(bucket, event);
 				}
+			}
+			return;
+		}
+
+		for (ConceptElement<?> ce : concepts) {
+			//see #177  we could improve this by building a a prefix tree over concepts.prefix
+			if (ce.matchesPrefix(mostSpecificChildren)) {
+				getChild().acceptEvent(bucket, event);
 			}
 		}
 	}
