@@ -121,7 +121,7 @@ public class ImportJob extends Job {
 
 		//create data import and store/send it
 
-		Import imp = createImport(header, container.getStores(), table.getColumns());
+		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
 
 		namespace.getStorage().updateImport(imp);
 		namespace.sendToAll(new AddImport(imp));
@@ -399,11 +399,13 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns) {
+	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
 		Import imp = new Import(table.getId());
 
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());
+		imp.setNumberOfEntities(size);
+
 
 		final ImportColumn[] importColumns = new ImportColumn[columns.length];
 

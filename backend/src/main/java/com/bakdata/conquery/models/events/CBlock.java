@@ -32,9 +32,19 @@ import lombok.Setter;
 @JsonDeserialize(using = CBlockDeserializer.class)
 public class CBlock extends IdentifiableImpl<CBlockId> {
 
-
+	/**
+	 * Estimate the memory usage of CBlocks.
+	 * @param depthEstimate estimate of depth of mostSpecificChildren
+	 */
 	public static long estimateMemoryBytes(long entities, long entries, double depthEstimate){
-		return Math.round(entities * (Long.BYTES + 2 * Integer.BYTES + 2 * Integer.BYTES) + entries * depthEstimate * Integer.BYTES);
+		return Math.round(entities *
+						  (
+						  		Integer.BYTES + Long.BYTES // includedConcepts
+								+ 2 * Integer.BYTES // minDate
+								+ 2 * Integer.BYTES // maxDate
+						  )
+						  + entries * depthEstimate * Integer.BYTES // mostSpecificChildren (rough estimate, not resident on ManagerNode)
+		);
 	}
 
 	private BucketId bucket;

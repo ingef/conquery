@@ -71,6 +71,8 @@ public class TablesUIResource extends HAdmin {
 		List<Import> imports = table.findImports(namespace.getStorage());
 
 		final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
+		final long entities = imports.stream().mapToLong(Import::getNumberOfEntities).sum();
+
 		return new UIView<>(
 				"table.html.ftl",
 				processor.getUIContext(),
@@ -84,7 +86,7 @@ public class TablesUIResource extends HAdmin {
 							   .map(namespace.getStorage()::getDictionary)
 							   .mapToLong(Dictionary::estimateMemoryConsumption)
 							   .sum(),
-						calculateCBlocksSizeBytes(entries, namespace.getStorage(), table),
+						calculateCBlocksSizeBytes(entities, entries, namespace.getStorage(), table),
 						//total size of entries
 						imports.stream()
 							   .mapToLong(Import::estimateMemoryConsumption)
@@ -100,9 +102,7 @@ public class TablesUIResource extends HAdmin {
 		Import imp = namespace.getStorage()
 							  .getImport(importId);
 
-		final long entries = imp.getNumberOfEntries();
-
-		final long cBlockSize = calculateCBlocksSizeBytes(entries, namespace.getStorage(), table);
+		final long cBlockSize = calculateCBlocksSizeBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), namespace.getStorage(), table);
 
 
 		return new UIView<>(
@@ -112,7 +112,7 @@ public class TablesUIResource extends HAdmin {
 		);
 	}
 
-	public static long calculateCBlocksSizeBytes(long entries, NamespaceStorage storage, Table table) {
+	public static long calculateCBlocksSizeBytes(long entities, long entries, NamespaceStorage storage, Table table) {
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple.
 		return storage.getAllConcepts().stream()
@@ -127,7 +127,7 @@ public class TablesUIResource extends HAdmin {
 																		.average()
 																		.orElse(1d);
 
-											 return CBlock.estimateMemoryBytes(1000L, entries, avgDepth);
+											 return CBlock.estimateMemoryBytes(entities, entries, avgDepth);
 										 })
 					  .sum();
 	}

@@ -100,11 +100,17 @@ public class DatasetsUIResource extends HAdmin {
 						namespace
 								.getStorage().getTables()
 								.stream()
-								.mapToLong(table -> {
-									List<Import> imports = table.findImports(namespace.getStorage());
-									final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
+								.flatMap(table -> table.findImports(namespace.getStorage()).stream())
+								.mapToLong(imp -> {
 
-									return TablesUIResource.calculateCBlocksSizeBytes(entries, getNamespace().getStorage(), table);
+									final long entries = imp.getNumberOfEntries();
+
+									return TablesUIResource.calculateCBlocksSizeBytes(
+											imp.getNumberOfEntities(),
+											entries,
+											getNamespace().getStorage(),
+											namespace.getStorage().getTable(imp.getTable())
+									);
 								})
 								.sum(),
 						// total size of entries

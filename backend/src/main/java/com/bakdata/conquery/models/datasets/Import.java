@@ -32,7 +32,10 @@ public class Import extends NamedImpl<ImportId> {
 	@NotNull
 	private final TableId table; // todo migrate to NsIdRef
 
+	private long numberOfEntities;
+
 	private long numberOfEntries;
+
 
 	@JsonManagedReference
 	@NotNull
