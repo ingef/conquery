@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -47,7 +48,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 */
 	private Map<Integer, Integer> minDate = new Int2IntArrayMap();
 	private Map<Integer, Integer> maxDate = new Int2IntArrayMap();
-
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
@@ -60,6 +60,21 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		this.connector = connector;
 	}
 
+	public CDateRange getEntityDateRange(int entity) {
+		return CDateRange.of(
+				getEntityMinDate(entity),
+				getEntityMaxDate(entity)
+		);
+	}
+
+	public int getEntityMinDate(int entity) {
+		return minDate.getOrDefault(entity, Integer.MIN_VALUE);
+	}
+
+	public int getEntityMaxDate(int entity) {
+		return maxDate.getOrDefault(entity, Integer.MAX_VALUE);
+	}
+
 	@Override
 	@JsonIgnore
 	public CBlockId createId() {
@@ -67,11 +82,36 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	}
 
 	public void initIndizes(int bucketSize) {
-		includedConcepts = new Int2LongArrayMap();
+		includedConcepts = new Int2LongArrayMap(bucketSize);
 		includedConcepts.defaultReturnValue(0);
 
-		minDate = new Int2IntArrayMap();
+		minDate = new Int2IntArrayMap(bucketSize);
+		maxDate = new Int2IntArrayMap(bucketSize);
+	}
 
-		maxDate = new Int2IntArrayMap();
+	public void addEntityDateRange(int entity, CDateRange range) {
+		if (range.hasLowerBound()) {
+			final int minValue = range.getMinValue();
+
+			if (!minDate.containsKey(entity)) {
+				minDate.put(entity, minValue);
+			}
+			else {
+				int min = Math.min(minDate.get(entity), minValue);
+				minDate.put(entity, min);
+			}
+		}
+
+		if (range.hasUpperBound()) {
+			final int maxValue = range.getMaxValue();
+
+			if (!maxDate.containsKey(entity)) {
+				maxDate.put(entity, maxValue);
+			}
+			else {
+				int min = Math.min(maxDate.get(entity), maxValue);
+				maxDate.put(entity, min);
+			}
+		}
 	}
 }
