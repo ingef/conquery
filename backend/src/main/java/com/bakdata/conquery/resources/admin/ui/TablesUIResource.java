@@ -86,17 +86,38 @@ public class TablesUIResource extends HAdmin {
 							   .map(namespace.getStorage()::getDictionary)
 							   .mapToLong(Dictionary::estimateMemoryConsumption)
 							   .sum(),
-						imports.stream()
-							   .mapToLong(imp -> calculateCBlocksSizeBytes(imp, namespace.getStorage().getAllConcepts()))
-							   .sum()
-						,
 						//total size of entries
 						imports.stream()
 							   .mapToLong(Import::estimateMemoryConsumption)
 							   .sum(),
+						// Total size of CBlocks
+						imports.stream()
+							   .mapToLong(imp -> calculateCBlocksSizeBytes(imp, namespace.getStorage().getAllConcepts()))
+							   .sum(),
 						imports
 				)
 		);
+	}
+
+	public static long calculateCBlocksSizeBytes(Import imp, Collection<? extends Concept<?>> concepts) {
+
+		// CBlocks are created per (per Bucket) Import per Connector targeting this table
+		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple and assume it is only a single very large one.
+		return concepts.stream()
+					   .filter(TreeConcept.class::isInstance)
+					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
+					   .filter(con -> con.getTable().getId().equals(imp.getTable()))
+					   .mapToLong(con -> {
+						   // Per event an int array is stored marking the path to the concept child.
+						   final double avgDepth = con.getConcept()
+													  .getAllChildren().stream()
+													  .mapToInt(ConceptTreeNode::getDepth)
+													  .average()
+													  .orElse(1d);
+
+						   return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
+					   })
+					   .sum();
 	}
 
 	@GET
@@ -112,26 +133,5 @@ public class TablesUIResource extends HAdmin {
 				processor.getUIContext(),
 				new ImportStatistics(imp, cBlockSize)
 		);
-	}
-
-	public static long calculateCBlocksSizeBytes(Import imp, Collection<? extends Concept<?>> concepts) {
-
-		// CBlocks are created per (per Bucket) Import per Connector targeting this table
-		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple.
-		return concepts.stream()
-					   .filter(TreeConcept.class::isInstance)
-					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-					   .filter(con -> con.getTable().getId().equals(imp.getTable()))
-					   .mapToLong(con -> {
-											 // Per event an int array is stored marking the path to the concept child.
-											 final double avgDepth = con.getConcept()
-																		.getAllChildren().stream()
-																		.mapToInt(ConceptTreeNode::getDepth)
-																		.average()
-																		.orElse(1d);
-
-											 return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
-										 })
-					   .sum();
 	}
 }
