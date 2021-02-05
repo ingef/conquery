@@ -25,10 +25,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import io.dropwizard.util.DataSize;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
@@ -69,12 +69,6 @@ public class TablesUIResource extends HAdmin {
 	public View getTableView() {
 		List<Import> imports = table.findImports(namespace.getStorage());
 
-		// Estimate CBlock usage
-		{
-			// We now have all Connectors for this Table
-		}
-
-
 		return new UIView<>(
 				"table.html.ftl",
 				processor.getUIContext(),
@@ -82,18 +76,16 @@ public class TablesUIResource extends HAdmin {
 						table,
 						imports.stream().mapToLong(Import::getNumberOfEntries).sum(),
 						//total size of dictionaries
-						imports
-								.stream()
-								.flatMap(imp -> imp.getDictionaries().stream())
-								.filter(Objects::nonNull)
-								.map(namespace.getStorage()::getDictionary)
-								.mapToLong(Dictionary::estimateMemoryConsumption)
-								.sum(),
+						imports.stream()
+							   .flatMap(imp -> imp.getDictionaries().stream())
+							   .filter(Objects::nonNull)
+							   .map(namespace.getStorage()::getDictionary)
+							   .mapToLong(Dictionary::estimateMemoryConsumption)
+							   .sum(),
 						//total size of entries
-						imports
-								.stream()
-								.mapToLong(Import::estimateMemoryConsumption)
-								.sum(),
+						imports.stream()
+							   .mapToLong(Import::estimateMemoryConsumption)
+							   .sum(),
 						imports
 				)
 		);
@@ -107,34 +99,29 @@ public class TablesUIResource extends HAdmin {
 
 		final long entries = imp.getNumberOfEntries();
 
-		{
-			/* long  + long + int + int
-			 *
-			 */
+		// CBlocks are created per (per Bucket) Import per Connector targeting this table
+		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple.
+		final long cBlockSize = namespace.getStorage().getAllConcepts().stream()
+										 .filter(TreeConcept.class::isInstance)
+										 .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
+										 .filter(con -> con.getTable().equals(table))
+										 .mapToLong(con -> {
+											 // Per event an int array is stored marking the path to the concept child.
+											 final double avgDepth = con.getConcept()
+																		.getAllChildren().stream()
+																		.mapToInt(ConceptTreeNode::getDepth)
+																		.average()
+																		.orElse(1d);
 
-			final long cblockSize = namespace.getStorage().getAllConcepts().stream()
-											 .filter(TreeConcept.class::isInstance)
-											 .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-											 .filter(con -> con.getTable().equals(table))
-											 .mapToLong(con -> {
-												 final double avgDepth = con.getConcept()
-																			.getAllChildren().stream()
-																			.mapToInt(ConceptTreeNode::getDepth)
-																			.average()
-																			.orElse(1d);
+											 return CBlock.estimateMemoryBytes(1000L, entries, avgDepth);
+										 })
+										 .sum();
 
-												 return CBlock.estimateMemoryBytes(1000L, entries, Math.round(avgDepth));
-											 })
-											 .sum();
-			;
-
-			log.info("CBlocks = {}", DataSize.bytes(cblockSize));
-		}
 
 		return new UIView<>(
 				"import.html.ftl",
 				processor.getUIContext(),
-				imp
+				new ImportStatistics(imp, cBlockSize)
 		);
 	}
 }

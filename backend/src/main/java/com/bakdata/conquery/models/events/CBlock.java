@@ -32,8 +32,9 @@ import lombok.Setter;
 @JsonDeserialize(using = CBlockDeserializer.class)
 public class CBlock extends IdentifiableImpl<CBlockId> {
 
-	public static long estimateMemoryBytes(long entities, long entries, long depthEstimate){
-		return entities * (Long.BYTES + 2 * Integer.BYTES + 2 * Integer.BYTES) + entries * depthEstimate * Integer.BYTES;
+
+	public static long estimateMemoryBytes(long entities, long entries, double depthEstimate){
+		return Math.round(entities * (Long.BYTES + 2 * Integer.BYTES + 2 * Integer.BYTES) + entries * depthEstimate * Integer.BYTES);
 	}
 
 	private BucketId bucket;
@@ -49,6 +50,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
 	 */
+	//TODO wrap access in private methods and change to a more appropriate class
 	private Map<Integer, Integer> minDate = new Int2IntArrayMap();
 	private Map<Integer, Integer> maxDate = new Int2IntArrayMap();
 
