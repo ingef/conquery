@@ -151,6 +151,7 @@ public class QueryProcessor {
 	}
 
 	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
+		query.initExecutable(datasetRegistry, config);
 		return query.buildStatusFull(storage, urlb, user, datasetRegistry);
 	}
 

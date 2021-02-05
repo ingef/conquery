@@ -56,6 +56,7 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -108,6 +109,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
 	private transient ConqueryErrorInfo error;
+	@JsonIgnore
+	private boolean initialized = false;
 
 	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
 		this.owner = owner;
@@ -119,6 +122,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	public void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		synchronized (getExecution()) {
+			if(initialized) {
+				log.trace("Execution {} was already initialized", getId());
+				return;
+			}
 			if(label == null) {
 				label = makeAutoLabel(datasetRegistry);
 			}
@@ -161,6 +168,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	public void start() {
+		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		startTime = LocalDateTime.now();
 		state = ExecutionState.RUNNING;
 	}
@@ -260,6 +268,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
 	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		ExecutionStatus.Full status = new ExecutionStatus.Full();
 		setStatusBase(storage, user, status, url);
 
