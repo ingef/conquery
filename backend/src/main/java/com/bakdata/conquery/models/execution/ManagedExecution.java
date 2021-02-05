@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -116,16 +117,16 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Executed right before execution submission.
 	 */
-	public void initExecutable(DatasetRegistry datasetRegistry) {
+	public void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		synchronized (getExecution()) {
 			if(label == null) {
 				label = makeAutoLabel(datasetRegistry);
 			}
-			doInitExecutable(datasetRegistry);
+			doInitExecutable(datasetRegistry, config);
 		}
 	}
 
-	protected abstract void doInitExecutable(DatasetRegistry namespaces);
+	protected abstract void doInitExecutable(DatasetRegistry namespaces, ConqueryConfig config);
 
 	/**
 	 * Returns the set of namespaces, this execution needs to be executed on.

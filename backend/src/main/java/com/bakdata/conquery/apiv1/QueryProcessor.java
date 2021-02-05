@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -45,6 +46,7 @@ public class QueryProcessor {
 	@Getter
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
+	private final ConqueryConfig config;
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -96,7 +98,7 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, storage.getExecution(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, storage.getExecution(executionId), config);
 
 				return getStatus(mq, urlb, user);
 			}
@@ -104,7 +106,7 @@ public class QueryProcessor {
 		}
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId());
+		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId(), config);
 
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
