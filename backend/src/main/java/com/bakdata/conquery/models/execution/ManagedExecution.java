@@ -130,6 +130,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				label = makeAutoLabel(datasetRegistry);
 			}
 			doInitExecutable(datasetRegistry, config);
+			initialized = true;
 		}
 	}
 
