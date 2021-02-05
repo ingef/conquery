@@ -74,11 +74,9 @@ public class ConceptNode extends QPChainNode {
 			return false;
 		}
 
-		CBlock row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 
-		long bits = row.getIncludedConcepts().get(entity.getId());
-
-		if((bits & requiredBits) != 0L || requiredBits == 0L) {
+		if(cBlock.isConceptIncluded(entity.getId(), requiredBits)) {
 			return super.isOfInterest(bucket);
 		}
 		return false;

@@ -7,7 +7,9 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -60,11 +62,16 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		this.connector = connector;
 	}
 
+	public static long calculateBitMask(ConceptElement<?>[] concepts) {
+		long mask = 0;
+		for (ConceptElement<?> concept : concepts) {
+			mask |= concept.calculateBitMask();
+		}
+		return mask;
+	}
+
 	public CDateRange getEntityDateRange(int entity) {
-		return CDateRange.of(
-				getEntityMinDate(entity),
-				getEntityMaxDate(entity)
-		);
+		return CDateRange.of(getEntityMinDate(entity), getEntityMaxDate(entity));
 	}
 
 	public int getEntityMinDate(int entity) {
@@ -113,5 +120,21 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 				maxDate.put(entity, min);
 			}
 		}
+	}
+
+	public void addIncludedConcept(int entity, ConceptTreeNode<?> node) {
+		final long mask = node.calculateBitMask();
+		final long original = includedConcepts.getOrDefault(entity, 0);
+		includedConcepts.put(entity, original | mask);
+	}
+
+	public boolean isConceptIncluded(int entity, long requiredBits) {
+		if (requiredBits == 0L) {
+			return true;
+		}
+
+		long bits = includedConcepts.get(entity);
+
+		return (bits & requiredBits) != 0L;
 	}
 }
