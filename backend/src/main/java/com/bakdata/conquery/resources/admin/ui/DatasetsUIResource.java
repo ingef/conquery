@@ -2,8 +2,8 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -97,6 +96,17 @@ public class DatasetsUIResource extends HAdmin {
 								.distinct()
 								.mapToLong(Dictionary::estimateMemoryConsumption)
 								.sum(),
+						// Total size of CBlocks
+						namespace
+								.getStorage().getTables()
+								.stream()
+								.mapToLong(table -> {
+									List<Import> imports = table.findImports(namespace.getStorage());
+									final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
+
+									return TablesUIResource.calculateCBlocksSizeBytes(entries, getNamespace().getStorage(), table);
+								})
+								.sum(),
 						// total size of entries
 						namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
 				)
@@ -131,6 +141,7 @@ public class DatasetsUIResource extends HAdmin {
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;
+		private long cBlocksSize;
 		private long size;
 	}
 }
