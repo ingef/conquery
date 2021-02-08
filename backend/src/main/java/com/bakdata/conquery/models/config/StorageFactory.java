@@ -19,9 +19,9 @@ public interface StorageFactory {
 
 	MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets);
 
-	NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting);
+	NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName);
 
-	WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting);
+	WorkerStorage createWorkerStorage(Validator validator, List<String> pathName);
 
 	Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName);
 

@@ -59,20 +59,20 @@ public class XodusStorageFactory implements StorageFactory {
 	}
 
 	@Override
-	public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
+	public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName) {
 		File storageDir = getStorageDir(pathName);
-		if (returnNullOnExisting && storageDir.exists()) {
-			return null;
+		if (storageDir.exists()) {
+			throw new IllegalStateException("Cannot create a new storage at " + pathName + ". It seems that the store already exists.");
 		}
 		return new NamespaceStorageXodus(validator, storageDir, this);
 	}
 
 	@Override
-	public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
+	public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName) {
 		File storageDir = getStorageDir(pathName);
 
-		if (returnNullOnExisting && storageDir.exists()) {
-			return null;
+		if (storageDir.exists()) {
+			throw new IllegalStateException("Cannot create a new storage at " + pathName + ". It seems that the store already exists.");
 		}
 		return new WorkerStorageXodus(validator, storageDir, this);
 	}

@@ -16,11 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 public class XodusStore {
 	private final Store store;
 	private final Environment environment;
-	private final long timeoutHalfNs; // nanoseconds
+	private final long timeoutHalfMillis; // milliseconds
 	
 	public XodusStore(Environment env, IStoreInfo storeId) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
-		this.timeoutHalfNs = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
+		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.environment = env;
 		this.store = env.computeInTransaction(
 			t->env.openStore(storeId.getXodusName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
@@ -53,7 +53,7 @@ public class XodusStore {
 					if(lastKey.get() != null) {
 						c.getSearchKey(lastKey.get());
 					}
-					while(System.nanoTime()-start < timeoutHalfNs) {
+					while(System.nanoTime()-start < timeoutHalfMillis) {
 						if(!c.getNext()) {
 							done.set(true);
 							return;

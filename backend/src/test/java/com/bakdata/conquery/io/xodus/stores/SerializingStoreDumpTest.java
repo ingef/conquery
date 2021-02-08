@@ -49,8 +49,8 @@ public class SerializingStoreDumpTest {
 	@BeforeEach
 	public void init() {
 		tmpDir = Files.createTempDir();
-		env = Environments.newInstance(tmpDir);
 		config = new XodusStorageFactory();
+		env = Environments.newInstance(tmpDir, config.getXodus().createConfig());
 	}
 
 	@AfterEach

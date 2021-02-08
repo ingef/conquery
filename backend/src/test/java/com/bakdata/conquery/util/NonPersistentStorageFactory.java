@@ -24,12 +24,12 @@ public class NonPersistentStorageFactory implements StorageFactory {
     }
 
     @Override
-    public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
+    public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName) {
         return new NonPersistentNamespaceStorage(validator);
     }
 
     @Override
-    public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
+    public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName) {
         return new NonPersistentWorkerStorage(validator);
     }
 

@@ -116,7 +116,7 @@ public class AdminProcessor {
 		dataset.setName(name);
 
 		// store dataset in own storage
-		NamespaceStorage datasetStorage = config.getStorage().createNamespaceStorage(storage.getValidator(), List.of(storagePrefix, "dataset_" + name), true);
+		NamespaceStorage datasetStorage = config.getStorage().createNamespaceStorage(storage.getValidator(), List.of(storagePrefix, "dataset_" + name));
 		if (datasetStorage == null ) {
 			throw new IllegalStateException("There is already a NamespaceStorage for the dataset " + dataset.getName());
 		}
