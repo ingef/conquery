@@ -35,12 +35,10 @@ public interface IntegrationTest {
 	@Slf4j
 	@RequiredArgsConstructor
 	final class Wrapper implements Executable {
-	//	private static final Int2ObjectArrayMap<TestConquery> configuredInstances = new Int2ObjectArrayMap<>();
 
 		private final String name;
 		private final TestConquery testConquery;
 		private final IntegrationTest test;
-	//	private final ConqueryConfig config;
 		
 		@Override
 		public void execute() throws Throwable {

@@ -20,11 +20,9 @@ import com.bakdata.conquery.io.xodus.*;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -62,7 +60,7 @@ public class XodusStorageFactory implements StorageFactory {
 
 	@Override
 	public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
-		File storageDir = getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
+		File storageDir = getStorageDir(pathName);
 		if (returnNullOnExisting && storageDir.exists()) {
 			return null;
 		}
@@ -71,7 +69,7 @@ public class XodusStorageFactory implements StorageFactory {
 
 	@Override
 	public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting) {
-		File storageDir = getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
+		File storageDir = getStorageDir(pathName);
 
 		if (returnNullOnExisting && storageDir.exists()) {
 			return null;
@@ -81,10 +79,10 @@ public class XodusStorageFactory implements StorageFactory {
 
 	@Override
 	@SneakyThrows
-	public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode) {
-		Path baseDir = getDirectory().resolve(managerNode.isUseNameForStoragePrefix() ? managerNode.getName() : "");
+	public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
+		@NonNull File baseDir =  getStorageDir(pathName);
 
-		if(baseDir.toFile().mkdirs()){
+		if(baseDir.mkdirs()){
 			log.warn("Had to create Storage Dir at `{}`", getDirectory());
 		}
 
@@ -93,7 +91,7 @@ public class XodusStorageFactory implements StorageFactory {
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
-		for (File directory : baseDir.toFile().listFiles((file, name) -> name.startsWith("dataset_"))) {
+		for (File directory : baseDir.listFiles((file, name) -> name.startsWith("dataset_"))) {
 			loaders.submit(() -> {
 				NamespaceStorage datasetStorage = NamespaceStorageXodus.tryLoad(managerNode.getValidator(), this, directory);
 
@@ -108,19 +106,19 @@ public class XodusStorageFactory implements StorageFactory {
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)){
-			log.debug("Still waiting for Datasets to load. {} already finished.", managerNode.getDatasetRegistry().getDatasets());
+			log.debug("Still waiting for Datasets to load. {} already finished.", storages);
 		}
 
-		log.info("All stores loaded: {}",  managerNode.getDatasetRegistry().getDatasets());
+		log.info("All stores loaded: {}",  storages);
 		return storages;
 	}
 
 	@Override
 	@SneakyThrows
-	public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode) {
-		Path baseDir = getDirectory().resolve(shardNode.isUseNameForStoragePrefix() ? shardNode.getName() : "");
+	public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
+		@NonNull File baseDir = getStorageDir(pathName);
 
-		if(baseDir.toFile().mkdirs()){
+		if(baseDir.mkdirs()){
 			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
@@ -129,7 +127,7 @@ public class XodusStorageFactory implements StorageFactory {
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
-		for (File directory : baseDir.toFile().listFiles((file, name) -> name.startsWith("worker_"))) {
+		for (File directory : baseDir.listFiles((file, name) -> name.startsWith("worker_"))) {
 
 			loaders.submit(() -> {
 				ConqueryMDC.setLocation(directory.toString());
@@ -151,5 +149,14 @@ public class XodusStorageFactory implements StorageFactory {
 			log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
 		}
 		return storages;
+	}
+
+	@NonNull
+	@JsonIgnore
+	/**
+	 * Returns this.directory if the list is empty.
+	 */
+	private File getStorageDir(List<String> pathName) {
+		return getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
 	}
 }

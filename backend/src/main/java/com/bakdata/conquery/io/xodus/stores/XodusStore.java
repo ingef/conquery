@@ -4,8 +4,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
@@ -18,10 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 public class XodusStore {
 	private final Store store;
 	private final Environment environment;
-	private final long timeout;
+	private final long timeoutHalfNs; // nanoseconds
 	
-	public XodusStore(Environment env, IStoreInfo storeId, long envMonitorTxnsTimeoutNanoSec) {
-		this.timeout = envMonitorTxnsTimeoutNanoSec/2;
+	public XodusStore(Environment env, IStoreInfo storeId) {
+		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
+		this.timeoutHalfNs = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.environment = env;
 		this.store = env.computeInTransaction(
 			t->env.openStore(storeId.getXodusName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
@@ -54,7 +53,7 @@ public class XodusStore {
 					if(lastKey.get() != null) {
 						c.getSearchKey(lastKey.get());
 					}
-					while(System.nanoTime()-start < timeout) {
+					while(System.nanoTime()-start < timeoutHalfNs) {
 						if(!c.getNext()) {
 							done.set(true);
 							return;

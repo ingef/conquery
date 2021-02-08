@@ -26,6 +26,9 @@ import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collections;
+import java.util.List;
+
 @Slf4j
 public class RestartTest implements ProgrammaticIntegrationTest {
 
@@ -120,7 +123,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		testConquery.getDropwizard().after();
 		//restart
 		testConquery.beforeAll();
-		testConquery.getStandaloneCommand().getManager().getConfig().getStorage().loadNamespaceStorages(testConquery.getStandaloneCommand().getManager());
+		testConquery.getStandaloneCommand().getManager().getConfig().getStorage().loadNamespaceStorages(
+				manager,
+				manager.isUseNameForStoragePrefix()? List.of(manager.getName()) : Collections.emptyList());
 
 		final StandaloneSupport support = testConquery.openDataset(dataset);
 

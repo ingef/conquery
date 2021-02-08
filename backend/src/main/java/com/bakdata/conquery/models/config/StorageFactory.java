@@ -23,7 +23,7 @@ public interface StorageFactory {
 
 	WorkerStorage createWorkerStorage(Validator validator, List<String> pathName, boolean returnNullOnExisting);
 
-	Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode);
+	Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName);
 
-	Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode);
+	Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName);
 }

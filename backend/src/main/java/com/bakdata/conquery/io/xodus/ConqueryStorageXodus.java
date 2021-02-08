@@ -98,7 +98,7 @@ public abstract class ConqueryStorageXodus implements ConqueryStorage {
 	public void remove() {
 		for (Environment environment : environmentToStores.keySet()) {
 			if(environment.isOpen()) {
-				throw new IllegalStateException("The environment to be removed is still open: "+ environment);
+				environment.close();
 			}
 			log.info("Removing {}", environment.getLocation());
 			Files.walkFileTree(Path.of(environment.getLocation()),

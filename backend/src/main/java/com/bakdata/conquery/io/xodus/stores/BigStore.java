@@ -66,7 +66,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		metaStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, metaStoreInfo, config.getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()), validator,
+				new XodusStore(env, metaStoreInfo), validator,
 				metaStoreInfo
 		);
 
@@ -78,7 +78,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		dataStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, dataStoreInfo, config.getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()), validator,
+				new XodusStore(env, dataStoreInfo), validator,
 				dataStoreInfo
 		);
 

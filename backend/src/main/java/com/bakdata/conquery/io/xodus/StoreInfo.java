@@ -114,7 +114,7 @@ public enum StoreInfo implements IStoreInfo {
 		return new CachedStore<>(
 				new SerializingStore<>(
 						config,
-						new XodusStore(environment, this, config.getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()),
+						new XodusStore(environment, this),
 						validator,
 						this
 				)

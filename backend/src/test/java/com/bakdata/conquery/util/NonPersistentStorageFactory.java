@@ -34,13 +34,13 @@ public class NonPersistentStorageFactory implements StorageFactory {
     }
 
     @Override
-    public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode) {
+    public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
 
         return UnmodifiableQueue.unmodifiableQueue(new ArrayDeque<>());
     }
 
     @Override
-    public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode) {
+    public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
 
         return UnmodifiableQueue.unmodifiableQueue(new ArrayDeque<>());
     }

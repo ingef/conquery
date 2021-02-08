@@ -62,7 +62,7 @@ public class Workers extends IdResolveContext {
 		return worker;
 	}
 
-	public Worker createWorker(Dataset dataset, StorageFactory storageConfig, @NonNull String storagePrefix, @NonNull String name, Validator validator) {
+	public Worker createWorker(Dataset dataset, StorageFactory storageConfig, @NonNull String storagePrefix, @NonNull String name, Validator validator, boolean failOnError) {
 		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, storagePrefix, name, validator, failOnError, entityBucketSize);
 
 		addWorker(worker);

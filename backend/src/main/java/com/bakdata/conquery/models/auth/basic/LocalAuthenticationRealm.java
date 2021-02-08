@@ -109,7 +109,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		// Open/create the database/store
 		File passwordStoreFile = new File(STORE_DIR, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"),passwordStoreConfig.getEnvMonitorTxnsTimeout().toNanoseconds());
+		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"));
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
