@@ -158,6 +158,8 @@ public class TestConquery {
 	@SneakyThrows
 	public static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
 
+		config.setFailOnError(true);
+
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		XodusStorageFactory storageConfig = new XodusStorageFactory();
 		storageConfig.setDirectory(tmpDir.toPath());

@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
@@ -79,6 +80,8 @@ public class ConqueryConfig extends Configuration {
 	 */
 	private Boolean debugMode = null;
 
+	private boolean failOnError = false;
+
 	//this is needed to force start the REST backend on /api/
 	public ConqueryConfig() {
 		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
@@ -91,11 +94,15 @@ public class ConqueryConfig extends Configuration {
 		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
 	}
 
+	public void initializePlugins(ManagerNode node) {
+		plugins.forEach(config -> config.initialize((node)));
+	}
+
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
 		return plugins.stream()
-					  .filter(c -> type.isAssignableFrom(c.getClass()))
-					  .map(type::cast)
-					  .collect(MoreCollectors.toOptional());
+				.filter(c -> type.isAssignableFrom(c.getClass()))
+				.map(type::cast)
+				.collect(MoreCollectors.toOptional());
 	}
 
 }

@@ -1,7 +1,8 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
@@ -15,19 +16,24 @@ import lombok.ToString;
 @CPSType(id = "BYTES", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class ByteStore extends ColumnStore<Long> {
+public class ByteArrayStore implements IntegerStore {
 
 	private final byte nullValue;
 	private final byte[] values;
 
 	@JsonCreator
-	public ByteStore(byte[] values, byte nullValue) {
+	public ByteArrayStore(byte[] values, byte nullValue) {
 		this.nullValue = nullValue;
 		this.values = values;
 	}
 
-	public static ByteStore create(int size) {
-		return new ByteStore(new byte[size], Byte.MAX_VALUE);
+	public static ByteArrayStore create(int size) {
+		return new ByteArrayStore(new byte[size], Byte.MAX_VALUE);
+	}
+
+	@Override
+	public int getLines() {
+		return values.length;
 	}
 
 	@Override
@@ -35,22 +41,13 @@ public class ByteStore extends ColumnStore<Long> {
 		return Byte.SIZE;
 	}
 
-	public ByteStore doSelect(int[] starts, int[] ends) {
-		return new ByteStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
+	public ByteArrayStore select(int[] starts, int[] ends) {
+		return new ByteArrayStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
 	}
 
 	@Override
-	public void set(int event, Long value) {
-		if (value == null) {
-			values[event] = nullValue;
-			return;
-		}
-
-		if (!(value >= Byte.MIN_VALUE && value < Byte.MAX_VALUE)) {
-			throw new IllegalArgumentException(String.format("%d not in ByteRange", value));
-		}
-
-		values[event] = value.byteValue();
+	public void setInteger(int event, long value) {
+		values[event] = (byte) value;
 	}
 
 	@Override
@@ -59,8 +56,8 @@ public class ByteStore extends ColumnStore<Long> {
 	}
 
 	@Override
-	public Long get(int event) {
-		return getInteger(event);
+	public void setNull(int event) {
+		values[event] = nullValue;
 	}
 
 	@Override

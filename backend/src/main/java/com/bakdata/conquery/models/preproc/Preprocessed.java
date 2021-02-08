@@ -16,10 +16,10 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
-import com.bakdata.conquery.models.events.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -41,7 +41,7 @@ public class Preprocessed {
 	private final InputFile file;
 	private final String name;
 	/**
-	 * @implSpec this is ALWAYS {@link StringType}.
+	 * @implSpec this is ALWAYS {@link StringStore}.
 	 */
 	private final StringParser primaryColumn;
 
@@ -93,7 +93,7 @@ public class Preprocessed {
 
 		calculateEntitySpans(entityStart, entityLength);
 
-		Map<String, ColumnStore<?>> columnStores = combineStores();
+		Map<String, ColumnStore> columnStores = combineStores();
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
@@ -125,8 +125,8 @@ public class Preprocessed {
 	 * Combine raw by-Entity data into column stores, appropriately formatted.
 	 */
 	@SuppressWarnings("rawtypes")
-	private Map<String, ColumnStore<?>> combineStores() {
-		Map<String, ColumnStore<?>> columnStores = new HashMap<>(this.columns.length);
+	private Map<String, ColumnStore> combineStores() {
+		Map<String, ColumnStore> columnStores = new HashMap<>(this.columns.length);
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
@@ -141,7 +141,15 @@ public class Preprocessed {
 				int length = values.get(entity).size();
 
 				for (int event = 0; event < length; event++) {
-					store.set(start + event, entityValues.get(event));
+					final Object raw = entityValues.get(event);
+					final int offset = start + event;
+
+					if (raw == null) {
+						store.setNull(offset);
+						continue;
+					}
+
+					ppColumn.getParser().setValue(store, offset, raw);
 				}
 
 				start += length;
@@ -162,14 +170,14 @@ public class Preprocessed {
 		return primaryDictionary;
 	}
 
-	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore<?>> columnStores) {
+	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore> columnStores) {
 		final Map<String, Dictionary> collect = new HashMap<>();
-		for (Map.Entry<String, ColumnStore<?>> entry : columnStores.entrySet()) {
-			if (!(entry.getValue() instanceof StringType)) {
+		for (Map.Entry<String, ColumnStore> entry : columnStores.entrySet()) {
+			if (!(entry.getValue() instanceof StringStore)) {
 				continue;
 			}
 
-			final Dictionary dictionary = ((StringType) entry.getValue()).getUnderlyingDictionary();
+			final Dictionary dictionary = ((StringStore) entry.getValue()).getUnderlyingDictionary();
 
 			if (dictionary == null) {
 				continue;
@@ -201,7 +209,7 @@ public class Preprocessed {
 		}
 	}
 
-	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore<?>> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
+	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
 			throws IOException {
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(out1))) {
 			CONTAINER_WRITER.writeValue(out, new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts));

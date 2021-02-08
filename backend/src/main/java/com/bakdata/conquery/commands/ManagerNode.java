@@ -104,10 +104,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				.add(IdResolveContext.class, datasetRegistry);
 
 
-		this.jobManager = new JobManager("ManagerNode");
+		this.jobManager = new JobManager("ManagerNode", config.isFailOnError());
 		this.environment = environment;
 		this.validator = environment.getValidator();
 		this.config = config;
+		config.initializePlugins(this);
 
 		// Initialization of internationalization
 		I18n.init();
@@ -117,10 +118,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		this.maintenanceService = environment
-			.lifecycle()
-			.scheduledExecutorService("Maintenance Service")
-			.build();
-		
+				.lifecycle()
+				.scheduledExecutorService("Maintenance Service")
+				.build();
+
 		environment.lifecycle().manage(this);
 
 		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this)) {
@@ -143,7 +144,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			sn.getStorage().setMetaStorage(storage);
 		}
 
-		
+
 		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();
 		environment.lifecycle().manage(authController);
@@ -179,8 +180,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
 				new QueryCleanupTask(storage, Duration.of(
-						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getQuantity(),
-						ConqueryConfig.getInstance().getQueries().getOldQueriesTime().getUnit().toChronoUnit()
+						config.getQueries().getOldQueriesTime().getQuantity(),
+						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
 		environment.admin().addTask(new ClearFilterSourceSearch());
 		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
@@ -215,9 +216,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			MessageToManagerNode mrm = (MessageToManagerNode) message;
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
-				jobManager,
-				new NetworkSession(session),
-				datasetRegistry
+					jobManager,
+					new NetworkSession(session),
+					datasetRegistry
 			));
 
 			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
@@ -250,13 +251,13 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		jobManager.close();
 
 		datasetRegistry.close();
-		
+
 		try {
 			acceptor.dispose();
 		} catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
-		
+
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();

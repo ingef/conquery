@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.events.parser.specific.string;
 
 import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.parser.specific.StringParser;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 
 	@Override
 	public Guess createGuess() {
-		ColumnStore<Long> indexType = p.decideIndexType();
+		IntegerStore indexType = p.decideIndexType();
 
 		final MapDictionary dictionaryEntries = new MapDictionary(null, "");
 
@@ -28,10 +29,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 		);
 
 
-		p.copyLineCounts(type);
 		StringTypeEncoded result = new StringTypeEncoded(type, p.getEncoding());
-		p.copyLineCounts(result);
-		p.copyLineCounts(indexType);
 
 		return new Guess(
 				result,
@@ -39,7 +37,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 				mapSize
 		) {
 			@Override
-			public StringType getType() {
+			public StringStore getType() {
 				MapDictionary map = new MapDictionary(null, "");
 				for (byte[] v : p.getDecoded()) {
 					map.add(v);

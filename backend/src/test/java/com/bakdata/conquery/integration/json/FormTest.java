@@ -120,7 +120,7 @@ public class FormTest extends ConqueryTestSpec {
 		log.info("{} FORM INIT", getLabel());
 		form.resolve(new QueryResolveContext(dataset, namespaces));
 		
-		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset);
+		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset, support.getConfig());
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {

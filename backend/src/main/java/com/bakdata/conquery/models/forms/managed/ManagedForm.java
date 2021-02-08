@@ -23,6 +23,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -84,7 +85,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 */
 	@InternalOnly
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
-	
+
 
 	public ManagedForm(Form submittedForm , UserId owner, DatasetId submittedDataset) {
 		super(owner, submittedDataset);
@@ -94,11 +95,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry) {
+	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		// init all subqueries
 		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
-		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry));
+		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}
 	
 	@Override
@@ -229,8 +230,8 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {
-			// If subqueries was not set the Execution was not initialized
-			this.doInitExecutable(storage.getDatasetRegistry());
+			// If subqueries was not set the Execution was not initialized, do it manually
+			subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
 		}
 		if(subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported

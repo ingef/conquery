@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -63,10 +64,10 @@ public class Namespace implements Closeable {
 	@JsonIgnore
 	private transient DatasetRegistry namespaces;
 
-	public Namespace(NamespaceStorage storage) {
+	public Namespace(NamespaceStorage storage, boolean failOnError) {
 		this.storage = storage;
 		this.queryManager = new ExecutionManager(this);
-		this.jobManager = new JobManager(storage.getDataset().getName());
+		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
 	}
 
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {
@@ -207,5 +208,9 @@ public class Namespace implements Closeable {
 			map.removeBucketsOfImport(importId);
 			storage.setWorkerToBucketsMap(map);
 		}
+	}
+
+	public int getNumberOfEntities() {
+		return getStorage().getPrimaryDictionary().getSize();
 	}
 }

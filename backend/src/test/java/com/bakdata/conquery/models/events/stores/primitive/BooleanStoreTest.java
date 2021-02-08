@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,9 +16,9 @@ class BooleanStoreTest {
 		values.set(0, 9);
 		values.set(7, false);
 
-		final BooleanStore booleanStore = new BooleanStore(values);
+		final BitSetStore booleanStore = new BitSetStore(values, new BitSet(10));
 
-		assertThat(booleanStore.doSelect(new int[]{0}, new int[]{10}).getValues())
+		assertThat(booleanStore.select(new int[]{0}, new int[]{10}).getValues())
 				.isEqualTo(values);
 
 		{
@@ -27,7 +27,7 @@ class BooleanStoreTest {
 			expected.set(1);
 			expected.set(2, false);
 
-			assertThat(booleanStore.doSelect(new int[]{0, 6}, new int[]{1, 2}).getValues())
+			assertThat(booleanStore.select(new int[]{0, 6}, new int[]{1, 2}).getValues())
 					.isEqualTo(expected);
 		}
 
@@ -35,7 +35,7 @@ class BooleanStoreTest {
 			final BitSet expected = new BitSet();
 			expected.set(0);
 
-			assertThat(booleanStore.doSelect(new int[]{0}, new int[]{1}).getValues())
+			assertThat(booleanStore.select(new int[]{0}, new int[]{1}).getValues())
 					.isEqualTo(expected);
 		}
 
@@ -49,9 +49,9 @@ class BooleanStoreTest {
 		bitSet.set(100);
 		bitSet.set(128, false);
 
-		final BooleanStore booleanStore = new BooleanStore(bitSet);
+		final BitSetStore booleanStore = new BitSetStore(bitSet, new BitSet(128));
 
-		final BooleanStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BooleanStore.class);
+		final BitSetStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BitSetStore.class);
 
 		assertThat(booleanStore1.getValues().get(128)).isEqualTo(false);
 

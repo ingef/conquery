@@ -13,6 +13,7 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -22,9 +23,12 @@ public class JobExecutor extends Thread {
 	private final AtomicReference<Job> currentJob = new AtomicReference<>();
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final AtomicBoolean busy = new AtomicBoolean(false);
+	private final boolean failOnError;
 
-	public JobExecutor(String name) {
+	public JobExecutor(String name, boolean failOnError) {
 		super(name);
+
+		this.failOnError = failOnError;
 		JobMetrics.createJobQueueGauge(name, jobs);
 	}
 
@@ -89,6 +93,7 @@ public class JobExecutor extends Thread {
 	}
 
 	@Override
+	@SneakyThrows // If failOnError is true
 	public void run() {
 		ConqueryMDC.setLocation(this.getName());
 
@@ -119,7 +124,11 @@ public class JobExecutor extends Thread {
 						ConqueryMDC.setLocation(this.getName());
 
 						log.error("Job "+job+" failed", e);
-					}finally {
+						if (failOnError) {
+							log.error("Propagating Error inner loop");
+							throw e;
+						}
+					} finally {
 						ConqueryMDC.setLocation(this.getName());
 
 						log.trace("Finished job {} within {}", job, timer.stop());
@@ -130,6 +139,11 @@ public class JobExecutor extends Thread {
 				currentJob.set(null);
 			} catch (InterruptedException e) {
 				log.warn("Interrupted JobManager polling", e);
+
+				if (failOnError) {
+					log.error("Propagating Error outer loop");
+					throw e.getCause();
+				}
 			}
 		}
 	}

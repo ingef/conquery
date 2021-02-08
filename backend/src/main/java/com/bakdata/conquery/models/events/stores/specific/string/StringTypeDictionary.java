@@ -9,7 +9,9 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,41 +24,39 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Strings are stored in a Dictionary, ids are handles into the Dictionary.
  *
- * @implNote this is NOT a {@link StringType}, but is the base class of it. This enables some shenanigans with encodings.
+ * @implNote this is NOT a {@link StringStore}, but is the base class of it. This enables some shenanigans with encodings.
  */
 @Getter
 @Setter
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends ColumnStore<Integer> {
+public class StringTypeDictionary implements ColumnStore {
 
-	protected ColumnStore<Long> numberType;
+	protected IntegerStore numberType;
 
 	@JsonIgnore
 	private transient Dictionary dictionary;
-
 	// todo use NsIdRef
 	private String name;
-
 	@InternalOnly
 	private DatasetId dataset;
 
-	public StringTypeDictionary(ColumnStore<Long> numberType, Dictionary dictionary, String name) {
+	public StringTypeDictionary(IntegerStore numberType, Dictionary dictionary, String name) {
 		this.numberType = numberType;
 		this.dictionary = dictionary;
 		this.name = name;
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(ColumnStore<Long> numberType, DatasetId dataset, String name) {
+	public StringTypeDictionary(IntegerStore numberType, DatasetId dataset, String name) {
 		this.numberType = numberType;
 		this.name = name;
 		this.dataset = dataset;
 	}
 
 	@Override
-	public Object createScriptValue(Integer value) {
-		return getElement(value);
+	public int getLines() {
+		return numberType.getLines();
 	}
 
 	public byte[] getElement(int value) {
@@ -64,8 +64,8 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	@Override
-	public Object createPrintValue(Integer value) {
-		return getElement(value);
+	public Object createScriptValue(int event) {
+		return getElement(getString(event));
 	}
 
 
@@ -85,7 +85,7 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	public Iterator<byte[]> iterator() {
-		if(dictionary == null){
+		if (dictionary == null) {
 			return Collections.emptyIterator();
 		}
 
@@ -109,18 +109,12 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 	}
 
 	@Override
-	public StringTypeDictionary doSelect(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.doSelect(starts, length), getDataset(), getName());
+	public StringTypeDictionary select(int[] starts, int[] length) {
+		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
 	}
 
-	@Override
 	public int getString(int event) {
 		return (int) getNumberType().getInteger(event);
-	}
-
-	@Override
-	public Integer get(int event) {
-		return getString(event);
 	}
 
 	@Override
@@ -128,14 +122,13 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 		return numberType.estimateEventBits();
 	}
 
+	public void set(int event, int value) {
+		numberType.setInteger(event, value);
+	}
+
 	@Override
-	public void set(int event, Integer value) {
-		if (value == null) {
-			numberType.set(event, null);
-		}
-		else {
-			numberType.set(event, value.longValue());
-		}
+	public void setNull(int event) {
+		numberType.setNull(event);
 	}
 
 	@Override
@@ -143,7 +136,7 @@ public class StringTypeDictionary extends ColumnStore<Integer> {
 		return numberType.has(event);
 	}
 
-	public void setIndexStore(ColumnStore<Long> newType) {
+	public void setIndexStore(IntegerStore newType) {
 		numberType = newType;
 	}
 }
