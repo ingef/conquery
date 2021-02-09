@@ -180,35 +180,37 @@ export function postPrefixForSuggestions(
   });
 }
 
-export function postConceptsListToResolve(
-  datasetId: DatasetIdT,
-  conceptId: string,
-  concepts: string[]
-): Promise<PostConceptResolveResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(
-      `/datasets/${datasetId}/concepts/${conceptId}/resolve`
-    ),
-    method: "POST",
-    data: { concepts },
-  });
-}
+export const usePostConceptsListToResolve = () => {
+  const api = useApi<PostConceptResolveResponseT>();
 
-export function postFilterValuesResolve(
-  datasetId: DatasetIdT,
-  conceptId: string,
-  tableId: string,
-  filterId: string,
-  values: string[]
-): Promise<PostFilterResolveResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(
-      `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`
-    ),
-    method: "POST",
-    data: { values },
-  });
-}
+  return (datasetId: DatasetIdT, conceptId: string, concepts: string[]) =>
+    api({
+      url: getProtectedUrl(
+        `/datasets/${datasetId}/concepts/${conceptId}/resolve`
+      ),
+      method: "POST",
+      data: { concepts },
+    });
+};
+
+export const usePostFilterValuesResolve = () => {
+  const api = useApi<PostFilterResolveResponseT>();
+
+  return (
+    datasetId: DatasetIdT,
+    conceptId: string,
+    tableId: string,
+    filterId: string,
+    values: string[]
+  ) =>
+    api({
+      url: getProtectedUrl(
+        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`
+      ),
+      method: "POST",
+      data: { values },
+    });
+};
 
 export const useGetMe = () => {
   return useApi<GetMeResponseT>({ url: getProtectedUrl(`/me`) });
