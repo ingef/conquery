@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Only one string.
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
+@ToString(of = "singleValue")
 public class StringTypeSingleton implements StringStore {
 
 	private final String singleValue;

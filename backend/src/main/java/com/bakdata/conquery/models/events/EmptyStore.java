@@ -27,6 +27,11 @@ public enum EmptyStore implements
 	INSTANCE;
 
 	@Override
+	public String toString() {
+		return "EmptyStore()";
+	}
+
+	@Override
 	public int getLines() {
 		return 0;
 	}
