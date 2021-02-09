@@ -54,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.compression.CompressionFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 /**
@@ -245,10 +246,21 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		acceptor = new NioSocketAcceptor();
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+
+		acceptor.getFilterChain()
+				.addFirst("compress",new CompressionFilter());
+
+		acceptor.getFilterChain()
+				.addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+
+
+
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
+
+
+
 		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
 	}
 

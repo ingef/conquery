@@ -2,7 +2,11 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -41,6 +45,7 @@ import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
+import org.apache.mina.filter.compression.CompressionFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 /**
@@ -214,6 +219,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		}
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
+		connector.getFilterChain().addFirst("compress",new CompressionFilter());
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
