@@ -39,7 +39,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @Slf4j
 public class IntegrationTests {
 	private static final ObjectWriter CONFIG_WRITER = Jackson.MAPPER.writerFor(ConqueryConfig.class);
-	private static final Int2ObjectArrayMap<TestConquery> reusedInstances = new Int2ObjectArrayMap<>();
+	private static final Map<String, TestConquery> reusedInstances = new HashMap<>();
 	
 	private final String defaultTestRoot;
 	private final String defaultTestRootPackage;
@@ -173,17 +173,17 @@ public class IntegrationTests {
 	@SneakyThrows
 	private static synchronized TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf) {
 		// This should be fast enough and a stable comparison
-		int confStringHash = CONFIG_WRITER.writeValueAsString(conf).hashCode();
-		if(!reusedInstances.containsKey(confStringHash)){
+		String confString = CONFIG_WRITER.writeValueAsString(conf);
+		if(!reusedInstances.containsKey(confString)){
 			// For the overriden config we must override the ports so there are no clashes
 			// We do it here so the config "hash" is not influenced by the port settings
 			TestConquery.configureRandomPorts(conf);
 			log.trace("Creating a new test conquery instance for test {}", conf);
 			TestConquery conquery = new TestConquery(workDir, conf);
-			reusedInstances.put(confStringHash, conquery);
+			reusedInstances.put(confString, conquery);
 			conquery.beforeAll();
 		}
-		TestConquery conquery = reusedInstances.get(confStringHash);
+		TestConquery conquery = reusedInstances.get(confString);
 		return conquery;
 	}
 
