@@ -63,11 +63,15 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	protected abstract STORE_TYPE decideType();
 	
 	public final STORE_TYPE findBestType() {
-		if (getLines() == 0 || getLines() == getNullLines()) {
+		if (isEmpty()) {
 			return (STORE_TYPE) EmptyStore.INSTANCE; // This implements all root ColumnStores.
 		}
 
 		return decideType();
+	}
+
+	public boolean isEmpty() {
+		return getLines() == 0 || getLines() == getNullLines();
 	}
 
 	/**
