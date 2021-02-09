@@ -48,7 +48,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends KeyI
 		try {
 			if(value != null) {
 				final IId<VALUE> key = extractKey(value);
-				centralRegistry.registerCacheable(key, ()->this.get(key));
+				centralRegistry.registerCacheable(key, this::get);
 			}
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to add "+value, e);
@@ -59,7 +59,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends KeyI
 	public void loadData() {
 		store.fillCache();
 		for(IId<VALUE> key : getAllKeys()) {
-			centralRegistry.registerCacheable(key, ()->this.get(key));
+			centralRegistry.registerCacheable(key, this::get);
 		}
 	}
 }

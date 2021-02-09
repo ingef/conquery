@@ -87,7 +87,7 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 						 });
 
 		if (useWeakDictionaryCaching) {
-			dictionaries = StoreInfo.DICTIONARIES.identifiable(getConfig().createBigWeakStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
+			dictionaries = StoreInfo.DICTIONARIES.identifiableCachedStore(getConfig().createBigWeakStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
 		}
 		else {
 			dictionaries = StoreInfo.DICTIONARIES.identifiable(getConfig().createBigStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());

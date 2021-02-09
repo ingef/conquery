@@ -105,6 +105,13 @@ public enum StoreInfo implements IStoreInfo {
     }
 
     /**
+     * Identifiable store, that lazy registers items in the central registry.
+     */
+    public <T extends Identifiable<?>>  IdentifiableCachedStore<T> identifiableCachedStore(Store baseStore, CentralRegistry centralRegistry) {
+        return new IdentifiableCachedStore<T>(centralRegistry, baseStore);
+    }
+
+    /**
      * General Key-Value store with weak caching.
      */
     public <KEY, VALUE> WeakCachedStore<KEY, VALUE> weakCached(Store<KEY, VALUE> baseStore, Duration cacheDuration) {
