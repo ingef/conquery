@@ -19,8 +19,11 @@ const AppRouter = (props: PropsT) => {
     <ReactKeycloakProvider
       authClient={keycloak}
       initOptions={{
-        onLoad: "check-sso",
         pkceMethod: "S256",
+        // onLoad: "check-sso",
+        onLoad: "login-required",
+        // silentCheckSsoRedirectUri:
+        //   window.location.origin + '/silent-check-sso.html',
       }}
     >
       <Router basename={basename()}>
