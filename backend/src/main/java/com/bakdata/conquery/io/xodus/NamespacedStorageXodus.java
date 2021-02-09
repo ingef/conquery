@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.validation.Validator;
 
@@ -11,6 +12,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.xodus.stores.Store;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -24,6 +26,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigProvider;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -67,24 +70,13 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?, ?>> environmentToStores) {
 
+		Function<StoreInfo, Store> normalStoreCreator = (storeInfo) -> getConfig().createStore(environment, validator, storeInfo);
 
-		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig().createStore(environment,validator,StoreInfo.DATASET))
-				.onAdd(centralRegistry::register)
-				.onRemove(centralRegistry::remove);
+		dataset = createDatasetStore(normalStoreCreator);
 
-		secondaryIds = StoreInfo.SECONDARY_IDS.<SecondaryIdDescription>identifiable(getConfig().createStore(environment,validator,StoreInfo.SECONDARY_IDS), getCentralRegistry());
+		secondaryIds = createSecondaryIdDescriptionStore(normalStoreCreator);
 
-		tables = StoreInfo.TABLES.<Table>identifiable(getConfig().createStore(environment,validator,StoreInfo.TABLES), getCentralRegistry())
-						 .onAdd(table -> {
-							 for (Column c : table.getColumns()) {
-								 centralRegistry.register(c);
-							 }
-						 })
-						 .onRemove(table -> {
-							 for (Column c : table.getColumns()) {
-								 centralRegistry.remove(c);
-							 }
-						 });
+		tables = createTableStore(normalStoreCreator);
 
 		if (useWeakDictionaryCaching) {
 			dictionaries = StoreInfo.DICTIONARIES.identifiableCachedStore(getConfig().createBigWeakStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
@@ -93,64 +85,9 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 			dictionaries = StoreInfo.DICTIONARIES.identifiable(getConfig().createBigStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
 		}
 
-		concepts = StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig().createStore(environment,validator,StoreInfo.CONCEPTS), getCentralRegistry())
-						   .onAdd(concept -> {
-							   Dataset ds = centralRegistry.resolve(
-									   concept.getDataset() == null
-									   ? concept.getId().getDataset()
-									   : concept.getDataset()
-							   );
-							   concept.setDataset(ds.getId());
+		concepts = createConceptStore(normalStoreCreator);
 
-							   concept.initElements(validator);
-
-							   concept.getSelects().forEach(centralRegistry::register);
-							   for (Connector c : concept.getConnectors()) {
-								   centralRegistry.register(c);
-								   c.collectAllFilters().forEach(centralRegistry::register);
-								   c.getSelects().forEach(centralRegistry::register);
-							   }
-							   //add imports of table
-							   if (registerImports) {
-								   for (Import imp : getAllImports()) {
-									   for (Connector con : concept.getConnectors()) {
-										   if (con.getTable().getId().equals(imp.getTable())) {
-											   con.addImport(imp);
-										   }
-									   }
-								   }
-							   }
-						   })
-						   .onRemove(concept -> {
-							   concept.getSelects().forEach(centralRegistry::remove);
-							   //see #146  remove from Dataset.concepts
-							   for (Connector c : concept.getConnectors()) {
-								   c.getSelects().forEach(centralRegistry::remove);
-								   c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
-								   centralRegistry.remove(c.getId());
-							   }
-						   });
-		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig().createStore(environment,validator,StoreInfo.IMPORTS), getCentralRegistry())
-						  .onAdd(imp -> {
-							  imp.loadExternalInfos(this);
-
-				if (registerImports) {
-					for (Concept<?> c : getAllConcepts()) {
-						for (Connector con : c.getConnectors()) {
-							if (con.getTable().getId().equals(imp.getTable())) {
-								con.addImport(imp);
-							}
-						}
-					}
-				}
-
-				centralRegistry.register(imp);
-
-			})
-			.onRemove(imp -> {
-				centralRegistry.remove(imp);
-
-			});
+		imports = createImportStore(normalStoreCreator);
 
 		// Order is important here
 		environmentToStores.putAll(environment, List.of(
