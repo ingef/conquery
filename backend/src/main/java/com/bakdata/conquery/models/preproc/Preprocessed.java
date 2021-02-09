@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
-import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -23,11 +23,14 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
@@ -48,9 +51,12 @@ public class Preprocessed {
 	private final PPColumn[] columns;
 	private final TableImportDescriptor descriptor;
 	// by-column by-entity
-	private final transient Table<Integer, Integer, List> entries;
-	private long rows = 0;
+	private final ColumnValues[] values;
+	private final Int2ObjectMap<BitSet>[] entries;
+	private final IntSet entities = new IntAVLTreeSet();
 
+
+	private long rows = 0;
 
 	public Preprocessed(TableImportDescriptor descriptor, ParserConfig parserConfig) throws IOException {
 		this.file = descriptor.getInputFile();
@@ -63,12 +69,16 @@ public class Preprocessed {
 		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(parserConfig);
 
 		// pid and columns
-		entries = HashBasedTable.create();
+		entries = new Int2ObjectMap[columns.length];
+		values = new ColumnValues[columns.length];
 
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
+
+			entries[index] = new Int2ObjectAVLTreeMap<>();
+			values[index] = new ColumnValues(null);
 		}
 	}
 
@@ -84,9 +94,10 @@ public class Preprocessed {
 			throw new IllegalArgumentException("outfile was opened in read-only mode.");
 		}
 
-		final IntSummaryStatistics statistics = entries.row(0).values().stream().mapToInt(List::size).summaryStatistics();
-
-		log.info("Statistics = {}", statistics);
+		// TODO implement statistics
+		//		final IntSummaryStatistics statistics = entries.row(0).values().stream().mapToInt(List::size).summaryStatistics();
+		//
+		//		log.info("Statistics = {}", statistics);
 
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
@@ -108,14 +119,15 @@ public class Preprocessed {
 	 * Calculate beginning and end of
 	 */
 	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
-		Map<Integer, List> values = entries.row(0);
+		Int2ObjectMap<BitSet> values = entries[0];
 		int start = 0;
 
-		for (Integer entity : entries.columnKeySet()) {
-			int length = values.get(entity).size();
+		for (int entity : entities) {
+			final BitSet events = values.get(entity);
+			final int length = events.cardinality();
 
-			entityStart.put(entity.intValue(), start);
-			entityLength.put(entity.intValue(), length);
+			entityStart.put(entity, start);
+			entityLength.put(entity, length);
 
 			start += length;
 		}
@@ -133,26 +145,29 @@ public class Preprocessed {
 
 			final ColumnStore store = ppColumn.findBestType();
 
-			Map<Integer, List> values = entries.row(colIdx);
+			Int2ObjectMap<BitSet> indices = entries[colIdx];
+			final ColumnValues columnValues = values[colIdx];
+
 			int start = 0;
 
-			for (int entity : entries.columnKeySet()) {
-				List entityValues = values.get(entity);
-				int length = values.get(entity).size();
+			for (int entity : entities) {
 
-				for (int event = 0; event < length; event++) {
-					final Object raw = entityValues.get(event);
-					final int offset = start + event;
+				final BitSet entityIndices = indices.get(entity);
+				int inIndex = entityIndices.nextSetBit(0);
 
-					if (raw == null) {
-						store.setNull(offset);
-						continue;
+				while (inIndex >= 0) {
+
+					if (columnValues.isNull(inIndex)) {
+						store.setNull(start);
+					}
+					else {
+						final Object raw = columnValues.get(inIndex);
+						ppColumn.getParser().setValue(store, start, raw);
 					}
 
-					ppColumn.getParser().setValue(store, offset, raw);
+					start++;
+					inIndex = entityIndices.nextSetBit(inIndex + 1);
 				}
-
-				start += length;
 			}
 
 			columnStores.put(ppColumn.getName(), store);
@@ -218,13 +233,15 @@ public class Preprocessed {
 
 	public synchronized int addPrimary(int primary) {
 		primaryColumn.addLine(primary);
+		entities.add(primary);
 		return primary;
 	}
 
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
 		for (int col = 0; col < outRow.length; col++) {
-			entries.row(col).computeIfAbsent(primaryId, (id) -> new ArrayList<>())
-				   .add(outRow[col]);
+			final int idx = values[col].add(outRow[col]);
+			entries[col].computeIfAbsent(primaryId, (id) -> new BitSet()).set(idx);
+
 
 			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
@@ -232,6 +249,37 @@ public class Preprocessed {
 
 		//update stats
 		rows++;
+	}
+
+	@SuppressWarnings("Unchecked")
+	@RequiredArgsConstructor
+	private class ColumnValues {
+		private final Object nullValue;
+		private final BitSet nulls = new BitSet();
+		private final List values = new ArrayList();
+
+		public boolean isNull(int event) {
+			return nulls.get(event);
+		}
+
+		public Object get(int event) {
+			return values.get(event);
+		}
+
+		public int add(Object value) {
+			int event = values.size();
+
+
+			if (value == null) {
+				nulls.set(event);
+				values.add(nullValue);
+			}
+			else {
+				values.add(value);
+			}
+
+			return event;
+		}
 	}
 
 
