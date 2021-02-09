@@ -23,11 +23,14 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntIterable;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -50,11 +53,13 @@ public class Preprocessed {
 
 	private final PPColumn[] columns;
 	private final TableImportDescriptor descriptor;
-	// by-column by-entity
-	private final ColumnValues[] values;
-	private final Int2ObjectMap<BitSet>[] entries;
-	private final IntSet entities = new IntAVLTreeSet();
 
+	// by-column
+	private final ColumnValues[] values;
+
+	// by-column by-entity
+	private final Int2ObjectMap<EntityPositions>[] entries;
+	private final IntSet entities = new IntAVLTreeSet();
 
 	private long rows = 0;
 
@@ -119,12 +124,12 @@ public class Preprocessed {
 	 * Calculate beginning and end of
 	 */
 	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
-		Int2ObjectMap<BitSet> values = entries[0];
+		Int2ObjectMap<EntityPositions> values = entries[0];
 		int start = 0;
 
 		for (int entity : entities) {
-			final BitSet events = values.get(entity);
-			final int length = events.cardinality();
+			final EntityPositions events = values.get(entity);
+			final int length = events.length();
 
 			entityStart.put(entity, start);
 			entityLength.put(entity, length);
@@ -145,17 +150,16 @@ public class Preprocessed {
 
 			final ColumnStore store = ppColumn.findBestType();
 
-			Int2ObjectMap<BitSet> indices = entries[colIdx];
+			Int2ObjectMap<EntityPositions> indices = entries[colIdx];
 			final ColumnValues columnValues = values[colIdx];
 
 			int start = 0;
 
 			for (int entity : entities) {
 
-				final BitSet entityIndices = indices.get(entity);
-				int inIndex = entityIndices.nextSetBit(0);
+				final EntityPositions entityIndices = indices.get(entity);
 
-				while (inIndex >= 0) {
+				for (int inIndex : entityIndices) {
 
 					if (columnValues.isNull(inIndex)) {
 						store.setNull(start);
@@ -166,7 +170,6 @@ public class Preprocessed {
 					}
 
 					start++;
-					inIndex = entityIndices.nextSetBit(inIndex + 1);
 				}
 			}
 
@@ -240,8 +243,7 @@ public class Preprocessed {
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
 		for (int col = 0; col < outRow.length; col++) {
 			final int idx = values[col].add(outRow[col]);
-			entries[col].computeIfAbsent(primaryId, (id) -> new BitSet()).set(idx);
-
+			entries[col].computeIfAbsent(primaryId, (id) -> new EntityPositions(idx)).add(idx);
 
 			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
@@ -251,9 +253,49 @@ public class Preprocessed {
 		rows++;
 	}
 
+	/**
+	 * Offset encoded positions, in the assumption that entity values are stored close to each other.
+	 */
+	@RequiredArgsConstructor
+	private static class EntityPositions implements IntIterable {
+		private final int start;
+		private final BitSet offsets = new BitSet();
+
+		public void add(int event){
+			Preconditions.checkArgument(event >= start, "Events must be added in order");
+			offsets.set(event - start);
+		}
+
+		public int length() {
+			return offsets.cardinality();
+		}
+
+
+		@Override
+		public IntIterator iterator() {
+			return new IntIterator() {
+				int current = -1;
+
+				@Override
+				public int nextInt() {
+					current = offsets.nextSetBit(current + 1);
+					return start + current;
+				}
+
+				@Override
+				public boolean hasNext() {
+					return offsets.nextSetBit(current + 1) >= 0;
+				}
+			};
+		}
+	}
+
+	/**
+	 * per Column Store to encode null in auxiliary bitset, allowing primitive storage.
+	 */
 	@SuppressWarnings("Unchecked")
 	@RequiredArgsConstructor
-	private class ColumnValues {
+	private static class ColumnValues {
 		private final Object nullValue;
 		private final BitSet nulls = new BitSet();
 		private final List values = new ArrayList();
