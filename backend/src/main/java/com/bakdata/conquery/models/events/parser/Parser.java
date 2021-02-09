@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.parser;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
@@ -92,4 +94,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	 */
 	public abstract void setValue(STORE_TYPE store, int event, MAJOR_JAVA_TYPE value);
 
+	public abstract List<MAJOR_JAVA_TYPE> createPrimitiveList();
+
+	public abstract MAJOR_JAVA_TYPE getNullValue();
 }

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -97,6 +100,16 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	@Override
 	public void setValue(IntegerStore store, int event, Long value) {
 		store.setInteger(event, value);
+	}
+
+	@Override
+	public List<Long> createPrimitiveList() {
+		return new LongArrayList();
+	}
+
+	@Override
+	public Long getNullValue() {
+		return 0L;
 	}
 
 }

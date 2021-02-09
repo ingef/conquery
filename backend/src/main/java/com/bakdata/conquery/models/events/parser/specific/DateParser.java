@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.DateFormats;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.ToString;
 
 @ToString(callSuper = true)
@@ -54,5 +57,15 @@ public class DateParser extends Parser<Integer, DateStore> {
 	@Override
 	public void setValue(DateStore store, int event, Integer value) {
 		store.setDate(event, value);
+	}
+
+	@Override
+	public List<Integer> createPrimitiveList() {
+		return new IntArrayList();
+	}
+
+	@Override
+	public Integer getNullValue() {
+		return 0;
 	}
 }

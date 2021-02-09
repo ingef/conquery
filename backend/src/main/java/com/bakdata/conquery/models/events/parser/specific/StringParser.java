@@ -29,6 +29,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.jakewharton.byteunits.BinaryByteUnit;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -135,6 +136,16 @@ public class StringParser extends Parser<Integer, StringStore> {
 	@Override
 	public void setValue(StringStore store, int event, Integer value) {
 		store.setString(event, value);
+	}
+
+	@Override
+	public List<Integer> createPrimitiveList() {
+		return new IntArrayList();
+	}
+
+	@Override
+	public Integer getNullValue() {
+		return 0;
 	}
 
 	/**

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
@@ -7,6 +9,7 @@ import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,5 +60,15 @@ public class RealParser extends Parser<Double, RealStore> {
 	@Override
 	public void setValue(RealStore store, int event, Double value) {
 		store.setReal(event, value);
+	}
+
+	@Override
+	public List<Double> createPrimitiveList() {
+		return new DoubleArrayList();
+	}
+
+	@Override
+	public Double getNullValue() {
+		return 0d;
 	}
 }

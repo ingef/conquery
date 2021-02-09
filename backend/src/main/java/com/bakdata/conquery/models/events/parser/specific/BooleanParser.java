@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
@@ -7,6 +9,7 @@ import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.ToString;
 
 @ToString(callSuper = true)
@@ -40,5 +43,15 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 	@Override
 	public void setValue(BooleanStore store, int event, Boolean value) {
 		store.setBoolean(event, value);
+	}
+
+	@Override
+	public List<Boolean> createPrimitiveList() {
+		return new BooleanArrayList();
+	}
+
+	@Override
+	public Boolean getNullValue() {
+		return false;
 	}
 }

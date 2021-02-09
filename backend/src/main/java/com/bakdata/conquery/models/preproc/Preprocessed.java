@@ -4,7 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +15,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -83,7 +83,8 @@ public class Preprocessed {
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 
 			entries[index] = new Int2ObjectAVLTreeMap<>();
-			values[index] = new ColumnValues(null);
+			final Parser parser = columns[index].getParser();
+			values[index] = new ColumnValues(parser.getNullValue(), parser.createPrimitiveList());
 		}
 	}
 
@@ -297,8 +298,9 @@ public class Preprocessed {
 	@RequiredArgsConstructor
 	private static class ColumnValues {
 		private final Object nullValue;
+		private final List values;
+
 		private final BitSet nulls = new BitSet();
-		private final List values = new ArrayList();
 
 		public boolean isNull(int event) {
 			return nulls.get(event);
