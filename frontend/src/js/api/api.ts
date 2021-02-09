@@ -164,21 +164,24 @@ export function patchStoredQuery(
   });
 }
 
-export function postPrefixForSuggestions(
-  datasetId: DatasetIdT,
-  conceptId: string,
-  tableId: string,
-  filterId: string,
-  text: string
-): Promise<PostFilterSuggestionsResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(
-      `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`
-    ),
-    method: "POST",
-    data: { text },
-  });
-}
+export const usePostPrefixForSuggestions = () => {
+  const api = useApi<PostFilterSuggestionsResponseT>();
+
+  return (
+    datasetId: DatasetIdT,
+    conceptId: string,
+    tableId: string,
+    filterId: string,
+    text: string
+  ) =>
+    api({
+      url: getProtectedUrl(
+        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`
+      ),
+      method: "POST",
+      data: { text },
+    });
+};
 
 export const usePostConceptsListToResolve = () => {
   const api = useApi<PostConceptResolveResponseT>();

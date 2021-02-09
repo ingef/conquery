@@ -32,7 +32,10 @@ import uploadConceptListModal, {
   UploadConceptListModalStateT,
 } from "../upload-concept-list-modal/reducer";
 
-import { createQueryNodeEditorReducer } from "../query-node-editor/reducer";
+import {
+  createQueryNodeEditorReducer,
+  QueryNodeEditorStateT,
+} from "../query-node-editor/reducer";
 
 import type { StandardQueryEditorStateT } from "../standard-query-editor";
 import formConfigs, {
@@ -55,6 +58,7 @@ export type StateT = {
   uploadConceptListModal: UploadConceptListModalStateT;
   user: UserStateT;
   queryEditor: StandardQueryEditorStateT;
+  queryNodeEditor: QueryNodeEditorStateT;
   startup: StartupStateT;
   previousQueries: PreviousQueriesStateT;
   previousQueriesSearch: PreviousQueriesSearchStateT;

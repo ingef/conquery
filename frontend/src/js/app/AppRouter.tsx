@@ -22,8 +22,8 @@ const AppRouter = (props: PropsT) => {
         pkceMethod: "S256",
         // onLoad: "check-sso",
         onLoad: "login-required",
-        // silentCheckSsoRedirectUri:
-        //   window.location.origin + '/silent-check-sso.html',
+        silentCheckSsoRedirectUri:
+          window.location.origin + "/silent-check-sso.html",
       }}
     >
       <Router basename={basename()}>
