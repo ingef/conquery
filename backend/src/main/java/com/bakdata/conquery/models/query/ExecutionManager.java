@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -28,13 +29,13 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset) {
-		return execute(datasets, createExecution(datasets, query, userId, submittedDataset));
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset, ConqueryConfig config) {
+		return execute(datasets, createExecution(datasets, query, userId, submittedDataset), config);
 	}
 
-	public static ManagedExecution<?> execute(DatasetRegistry datasets, ManagedExecution<?> execution) {
+	public static ManagedExecution<?> execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
 		// Initialize the query / create subqueries
-		execution.initExecutable(datasets);
+		execution.initExecutable(datasets, config);
 
 		log.info("Executing Query[{}] in Datasets[{}]", execution.getQueryId(), execution.getRequiredDatasets());
 
@@ -42,7 +43,7 @@ public class ExecutionManager {
 		execution.start();
 
 		final MetaStorage storage = datasets.getMetaStorage();
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()).getId(), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		for (Namespace namespace : execution.getRequiredDatasets()) {
@@ -78,8 +79,8 @@ public class ExecutionManager {
 		return managed;
 	}
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
-		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset));
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset, ConqueryConfig config) {
+		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset), config);
 	}
 
 	/**
@@ -94,7 +95,7 @@ public class ExecutionManager {
 		query.addResult(storage, result);
 
 		if (query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(query.getOwner()), storage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(query.getOwner()).getId(), storage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();

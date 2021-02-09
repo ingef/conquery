@@ -2,7 +2,7 @@ import React from "react";
 import T from "i18n-react";
 
 import DeleteModal from "../../modal/DeleteModal";
-import { deleteFormConfig } from "../../api/api";
+import { useDeleteFormConfig } from "../../api/api";
 import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
 import type { DatasetIdT } from "../../api/types";
@@ -23,6 +23,7 @@ const DeleteFormConfigModal = ({
     (state) => state.datasets.selectedDatasetId
   );
   const dispatch = useDispatch();
+  const deleteFormConfig = useDeleteFormConfig();
 
   async function onDeleteFormConfig() {
     if (!datasetId) return;

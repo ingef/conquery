@@ -1,20 +1,10 @@
 import React from "react";
-import type { FieldPropsType } from "redux-form";
+import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
 
-import type { SelectOptionsT } from "../api/types";
-import InputMultiSelect from "./InputMultiSelect";
-
-type PropsType = FieldPropsType & {
-  label: string,
-  isLoading: boolean,
-  options: SelectOptionsT,
-  disabled?: boolean | null,
-  startLoadingThreshold: number,
-  tooltip?: string,
-  onLoad: Function,
-  onDropFile: Function,
-  allowDropFile?: boolean | null
-};
+interface PropsType extends InputMultiSelectProps {
+  startLoadingThreshold: number;
+  onLoad: Function;
+}
 
 const AsyncInputMultiSelect = ({
   startLoadingThreshold,
@@ -23,7 +13,7 @@ const AsyncInputMultiSelect = ({
 }: PropsType) => (
   <InputMultiSelect
     {...props}
-    onInputChange={value => {
+    onInputChange={(value) => {
       if (value.length >= startLoadingThreshold) onLoad(value);
 
       return value;

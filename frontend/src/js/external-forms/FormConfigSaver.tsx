@@ -9,7 +9,11 @@ import {
   selectActiveFormName,
   selectActiveFormType,
 } from "./stateSelectors";
-import { postFormConfig, patchFormConfig, getFormConfig } from "../api/api";
+import {
+  usePatchFormConfig,
+  useGetFormConfig,
+  usePostFormConfig,
+} from "../api/api";
 import Label from "../form-components/Label";
 import { setMessage } from "../snack-message/actions";
 import IconButton from "../button/IconButton";
@@ -94,6 +98,10 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   );
 
   const { loadFormConfigs } = useLoadFormConfigs();
+
+  const postFormConfig = usePostFormConfig();
+  const getFormConfig = useGetFormConfig();
+  const patchFormConfig = usePatchFormConfig();
 
   function getUntitledName(name: string) {
     return `${name} ${new Date().toISOString().split("T")[0]}`;

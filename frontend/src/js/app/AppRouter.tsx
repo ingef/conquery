@@ -1,20 +1,20 @@
 import React from "react";
-import { Route, Switch, Router } from "react-router";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak from "../../keycloak";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import type { TabT } from "../pane/types";
 
 import LoginPage from "../authorization/LoginPage";
 import WithAuthToken from "../authorization/WithAuthToken";
 
 import App from "./App";
+import { basename } from "../environment";
 
-type PropsType = {
-  history: Object;
+interface PropsT {
   rightTabs: TabT[];
-};
+}
 
-const AppRouter = ({ history, ...rest }: PropsType) => {
+const AppRouter = (props: PropsT) => {
   return (
     <ReactKeycloakProvider
       authClient={keycloak}
@@ -23,14 +23,14 @@ const AppRouter = ({ history, ...rest }: PropsType) => {
         pkceMethod: "S256",
       }}
     >
-      <Router history={history}>
+      <Router basename={basename()}>
         <Switch>
           <Route path="/login" component={LoginPage} />
           <Route
             path="/*"
             render={(routeProps) => (
               <WithAuthToken {...routeProps}>
-                <App {...rest} />
+                <App {...props} />
               </WithAuthToken>
             )}
           />

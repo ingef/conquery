@@ -4,6 +4,7 @@
 	<@layout.kv k="Label" v=c.table.label/>
 	<@layout.kv k="Entries" v=c.numberOfEntries?string.number/>
 	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
+	<@layout.kv k="CBlocks" v=layout.si(c.getCBlocksSize())+"B"/>
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="Tags">
 		<ul>

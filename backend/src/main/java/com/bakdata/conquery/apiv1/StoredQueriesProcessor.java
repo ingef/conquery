@@ -14,11 +14,11 @@ import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ExecutionStatus.CreationFlag;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -37,6 +37,7 @@ public class StoredQueriesProcessor {
 	@Getter
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
+	private final ConqueryConfig config;
 
 	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
@@ -55,7 +56,7 @@ public class StoredQueriesProcessor {
 			.flatMap(mq -> {
 				try {
 					return Stream.of(
-						mq.buildStatus(
+						mq.buildStatusOverview(
 							storage,
 							uriBuilder,
 							user,
@@ -88,12 +89,13 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(queryId);
 	}
 	
-	public ExecutionStatus getQueryWithSource(ManagedExecutionId queryId, User user, UriBuilder url) {
+	public ExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatus(storage, url, user, datasetRegistry, EnumSet.of(CreationFlag.WITH_COLUMN_DESCIPTION, CreationFlag.WITH_SOURCE, CreationFlag.WITH_GROUPS));
+		query.initExecutable(datasetRegistry, config);
+		return query.buildStatusFull(storage, url, user, datasetRegistry);
 	}
 
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {

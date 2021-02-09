@@ -33,9 +33,9 @@ export interface FiltersContextT {
 }
 
 interface PropsT {
+  className?: string;
   context: FiltersContextT;
   filters: FilterWithValueType[] | null;
-  className?: string;
   excludeTable: boolean;
   onSwitchFilterMode: Function;
   onSetFilterValue: Function;
@@ -79,7 +79,7 @@ const TableFilters = (props: PropsT) => {
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
-                    onChange: (value) =>
+                    onChange: (value: string[]) =>
                       props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
@@ -102,8 +102,10 @@ const TableFilters = (props: PropsT) => {
                   options={
                     filter.options ||
                     (props.suggestions &&
-                      props.suggestions[filterIdx] &&
-                      props.suggestions[filterIdx].options)
+                    props.suggestions[filterIdx] &&
+                    props.suggestions[filterIdx].options
+                      ? props.suggestions[filterIdx].options
+                      : [])
                   }
                   disabled={!!props.excludeTable}
                   allowDropFile={!!filter.allowDropFile}
@@ -167,7 +169,7 @@ const TableFilters = (props: PropsT) => {
             case MONEY_RANGE:
               return (
                 <InputRange
-                  inputType="text"
+                  inputType="number"
                   valueType={MONEY_RANGE}
                   input={{
                     value: filter.value,

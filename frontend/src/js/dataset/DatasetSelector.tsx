@@ -1,13 +1,13 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 
 import { DatasetT } from "./reducer";
-import { selectDataset } from "./actions";
+import { useSelectDataset } from "./actions";
 import { StateT } from "app-types";
 import { StandardQueryType } from "../standard-query-editor/types";
 
@@ -31,9 +31,10 @@ const DatasetSelector: FC = () => {
     (state) => state.queryEditor.query
   );
 
-  const dispatch = useDispatch();
+  const selectDataset = useSelectDataset();
+
   const onSelectDataset = (datasetId: string | null) =>
-    dispatch(selectDataset(datasets, datasetId, selectedDatasetId, query));
+    selectDataset(datasets, datasetId, selectedDatasetId, query);
 
   const options =
     datasets && datasets.map((db) => ({ value: db.id, label: db.label }));

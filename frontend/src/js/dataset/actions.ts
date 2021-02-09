@@ -1,11 +1,9 @@
-import type { Dispatch, getState } from "redux-thunk";
 import { reset } from "redux-form";
 
-import api from "../api";
 import type { DatasetIdT } from "../api/types";
 
 import { defaultError, defaultSuccess } from "../common/actions";
-import { loadTrees } from "../concept-trees/actions";
+import { useLoadTrees } from "../concept-trees/actions";
 import { loadPreviousQueries } from "../previous-queries/list/actions";
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import { setMessage } from "../snack-message/actions";
@@ -24,6 +22,9 @@ import {
 
 import type { DatasetT } from "./reducer";
 import { exists } from "../common/helpers/exists";
+import { useDispatch, useSelector } from "react-redux";
+import { useGetDatasets } from "../api/api";
+import { StateT } from "app-types";
 
 export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
 export const loadDatasetsError = (err: any) =>
@@ -32,12 +33,16 @@ export const loadDatasetsSuccess = (res: any) =>
   defaultSuccess(LOAD_DATASETS_SUCCESS, res);
 
 // Done at the very beginning on loading the site
-export const loadDatasets = () => {
-  return async (dispatch: Dispatch) => {
+export const useLoadDatasets = () => {
+  const dispatch = useDispatch();
+  const getDatasets = useGetDatasets();
+  const loadTrees = useLoadTrees();
+
+  return async () => {
     dispatch(loadDatasetsStart());
 
     try {
-      const datasets = await api.getDatasets();
+      const datasets = await getDatasets();
 
       if (!datasets || datasets.length === 0 || !datasets[0].id) {
         throw new Error("No valid dataset found");
@@ -49,7 +54,7 @@ export const loadDatasets = () => {
 
       setDatasetId(defaultId);
 
-      return dispatch(loadTrees(defaultId));
+      return loadTrees(defaultId);
     } catch (e) {
       dispatch(setMessage("datasetSelector.error"));
       dispatch(loadDatasetsError(e));
@@ -71,13 +76,21 @@ export const saveQuery = (
   return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
 };
 
-export const selectDataset = (
-  datasets: DatasetT[],
-  datasetId: DatasetIdT | null,
-  previouslySelectedDatasetId: DatasetIdT | null,
-  query: StandardQueryType
-) => {
-  return (dispatch: Dispatch, state: getState) => {
+const selectActiveForm = (state: StateT) => {
+  return state.externalForms && state.externalForms.activeForm;
+};
+
+export const useSelectDataset = () => {
+  const dispatch = useDispatch();
+  const loadTrees = useLoadTrees();
+  const activeForm = useSelector<StateT, string | null>(selectActiveForm);
+
+  return (
+    datasets: DatasetT[],
+    datasetId: DatasetIdT | null,
+    previouslySelectedDatasetId: DatasetIdT | null,
+    query: StandardQueryType
+  ) => {
     if (previouslySelectedDatasetId) {
       dispatch(saveQuery(query, previouslySelectedDatasetId));
     }
@@ -93,21 +106,20 @@ export const selectDataset = (
     } else {
       const nextDataset = datasets.find((db) => db.id === datasetId);
 
-      if (!nextDataset || !nextDataset.query) dispatch(clearQuery());
-      else dispatch(loadQuery(nextDataset.query));
+      if (!nextDataset || !nextDataset.query) {
+        dispatch(clearQuery());
+      } else {
+        dispatch(loadQuery(nextDataset.query));
+      }
 
       dispatch(loadTrees(datasetId));
 
       // CLEAR Redux Form
-      dispatch(reset(selectActiveForm(state)));
+      if (activeForm) {
+        dispatch(reset(activeForm));
+      }
 
       return dispatch(loadPreviousQueries(datasetId));
     }
   };
-};
-
-const selectActiveForm = (getStateFn) => {
-  const state = getStateFn();
-
-  return state.externalForms && state.externalForms.activeForm;
 };
