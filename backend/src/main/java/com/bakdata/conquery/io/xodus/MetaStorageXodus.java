@@ -83,15 +83,14 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 
-		executions = StoreInfo.EXECUTIONS
-			.<ManagedExecution<?>>identifiable(getConfig(), getExecutionsEnvironment(), getValidator(), getCentralRegistry(), datasetRegistry);
-		authRole = StoreInfo.AUTH_ROLE.identifiable(getConfig(), getRolesEnvironment(), getValidator(), getCentralRegistry());
+		executions = StoreInfo.EXECUTIONS.<ManagedExecution<?>>identifiable(getConfig().createStore(getExecutionsEnvironment(), getValidator(), StoreInfo.EXECUTIONS), getCentralRegistry(), datasetRegistry);
+		authRole = StoreInfo.AUTH_ROLE.identifiable(getConfig().createStore(getRolesEnvironment(), getValidator(), StoreInfo.AUTH_ROLE), getCentralRegistry());
 
-		authUser = StoreInfo.AUTH_USER.identifiable(getConfig(), getUsersEnvironment(), getValidator(), getCentralRegistry());
+		authUser = StoreInfo.AUTH_USER.identifiable(getConfig().createStore(getUsersEnvironment(), getValidator(), StoreInfo.AUTH_USER), getCentralRegistry());
 
-		authGroup = StoreInfo.AUTH_GROUP.identifiable(getConfig(), getGroupsEnvironment(), getValidator(), getCentralRegistry());
+		authGroup = StoreInfo.AUTH_GROUP.identifiable(getConfig().createStore(getGroupsEnvironment(), getValidator(), StoreInfo.AUTH_GROUP), getCentralRegistry());
 		
-		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getConfig(), getFormConfigEnvironment(), getValidator(), getCentralRegistry());
+		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getConfig().createStore(getFormConfigEnvironment(), getValidator(), StoreInfo.FORM_CONFIG), getCentralRegistry());
 
 		environmentToStores.put(rolesEnvironment, authRole);
 			// load users before queries

@@ -68,13 +68,13 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?, ?>> environmentToStores) {
 
 
-		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig(), environment, getValidator())
-						  .onAdd(centralRegistry::register)
-						  .onRemove(centralRegistry::remove);
+		dataset = StoreInfo.DATASET.<Dataset>singleton(getConfig().createStore(environment,validator,StoreInfo.DATASET))
+				.onAdd(centralRegistry::register)
+				.onRemove(centralRegistry::remove);
 
-		secondaryIds = StoreInfo.SECONDARY_IDS.<SecondaryIdDescription>identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
+		secondaryIds = StoreInfo.SECONDARY_IDS.<SecondaryIdDescription>identifiable(getConfig().createStore(environment,validator,StoreInfo.SECONDARY_IDS), getCentralRegistry());
 
-		tables = StoreInfo.TABLES.<Table>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+		tables = StoreInfo.TABLES.<Table>identifiable(getConfig().createStore(environment,validator,StoreInfo.TABLES), getCentralRegistry())
 						 .onAdd(table -> {
 							 for (Column c : table.getColumns()) {
 								 centralRegistry.register(c);
@@ -87,13 +87,13 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 						 });
 
 		if (useWeakDictionaryCaching) {
-			dictionaries = StoreInfo.DICTIONARIES.weakBig(getConfig(), environment, getValidator(), getCentralRegistry());
+			dictionaries = StoreInfo.DICTIONARIES.identifiable(getConfig().createBigWeakStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
 		}
 		else {
-			dictionaries = StoreInfo.DICTIONARIES.big(getConfig(), environment, getValidator(), getCentralRegistry());
+			dictionaries = StoreInfo.DICTIONARIES.identifiable(getConfig().createBigStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
 		}
 
-		concepts = StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+		concepts = StoreInfo.CONCEPTS.<Concept<?>>identifiable(getConfig().createStore(environment,validator,StoreInfo.CONCEPTS), getCentralRegistry())
 						   .onAdd(concept -> {
 							   Dataset ds = centralRegistry.resolve(
 									   concept.getDataset() == null
@@ -130,7 +130,7 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 								   centralRegistry.remove(c.getId());
 							   }
 						   });
-		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+		imports = StoreInfo.IMPORTS.<Import>identifiable(getConfig().createStore(environment,validator,StoreInfo.IMPORTS), getCentralRegistry())
 						  .onAdd(imp -> {
 							  imp.loadExternalInfos(this);
 

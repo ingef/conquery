@@ -6,7 +6,7 @@ import lombok.Data;
 @Data @AllArgsConstructor
 public class SimpleStoreInfo implements IStoreInfo {
 
-	private final String xodusName;
+	private final String name;
 	private final Class<?> keyType;
 	private final Class<?> valueType;
 }

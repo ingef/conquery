@@ -2,7 +2,7 @@ package com.bakdata.conquery.io.xodus.stores;
 
 public interface IStoreInfo {
 
-	String getXodusName();
+	String getName();
 	Class<?> getValueType();
 	Class<?> getKeyType();
 }

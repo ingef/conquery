@@ -84,7 +84,7 @@ public class SerializingStoreDumpTest {
 				config,
 				env,
 				Validators.newValidator(),
-				new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class));
+				new CorruptableStoreInfo(StoreInfo.AUTH_USER.getName(), UserId.class, QueryDescription.class));
 			store.add(new UserId("testU2"), cQuery);
 		}
 
@@ -137,7 +137,7 @@ public class SerializingStoreDumpTest {
 				config,
 				env,
 				Validators.newValidator(),
-				new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class));
+				new CorruptableStoreInfo(StoreInfo.AUTH_USER.getName(), String.class, QueryDescription.class));
 			store.add("not a valid conquery Id", cQuery);
 		}
 
@@ -188,7 +188,7 @@ public class SerializingStoreDumpTest {
 					config,
 					env,
 					Validators.newValidator(),
-					new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), String.class, QueryDescription.class));
+					new CorruptableStoreInfo(StoreInfo.AUTH_USER.getName(), String.class, QueryDescription.class));
 				store.add("not a valid conquery Id", cQuery);
 			}
 
@@ -197,7 +197,7 @@ public class SerializingStoreDumpTest {
 					config,
 					env,
 					Validators.newValidator(),
-					new CorruptableStoreInfo(StoreInfo.AUTH_USER.getXodusName(), UserId.class, QueryDescription.class));
+					new CorruptableStoreInfo(StoreInfo.AUTH_USER.getName(), UserId.class, QueryDescription.class));
 				store.add(new UserId("testU2"), cQuery);
 			}
 		}
@@ -234,7 +234,7 @@ public class SerializingStoreDumpTest {
 	@Getter
 	private static class CorruptableStoreInfo implements IStoreInfo {
 
-		private final String xodusName;
+		private final String name;
 		private final Class<?> keyType;
 		private final Class<?> valueType;
 	}

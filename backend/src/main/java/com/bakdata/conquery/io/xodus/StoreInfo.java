@@ -3,15 +3,7 @@ package com.bakdata.conquery.io.xodus;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.xodus.stores.BigStore;
-import com.bakdata.conquery.io.xodus.stores.CachedStore;
-import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
-import com.bakdata.conquery.io.xodus.stores.IdentifiableCachedStore;
-import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
-import com.bakdata.conquery.io.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.xodus.stores.SingletonStore;
-import com.bakdata.conquery.io.xodus.stores.WeakCachedStore;
-import com.bakdata.conquery.io.xodus.stores.XodusStore;
+import com.bakdata.conquery.io.xodus.stores.*;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -48,113 +40,86 @@ import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Enums and helper methods to create stores of a certain kind.
- *
+ * <p>
  * Boolean is used as a placeholder value/class for singleton stores.
  */
 @RequiredArgsConstructor
 @Getter
 public enum StoreInfo implements IStoreInfo {
-	DATASET(Dataset.class, Boolean.class),
-	ID_MAPPING(PersistentIdMap.class, Boolean.class),
-	NAMESPACES(DatasetRegistry.class, Boolean.class),
-	SLAVE(ShardNodeInformation.class, Boolean.class),
-	DICTIONARIES(Dictionary.class, DictionaryId.class),
-	IMPORTS(Import.class, ImportId.class),
-	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
-	TABLES(Table.class, TableId.class),
-	CONCEPTS(Concept.class, ConceptId.class),
-	BUCKETS(Bucket.class, BucketId.class),
-	C_BLOCKS(CBlock.class, CBlockId.class),
-	WORKER(WorkerInformation.class, Boolean.class),
-	EXECUTIONS(ManagedExecution.class, ManagedExecutionId.class),
-	AUTH_ROLE(Role.class, RoleId.class),
-	AUTH_USER(User.class, UserId.class),
-	AUTH_GROUP(Group.class, GroupId.class),
-	STRUCTURE(StructureNode[].class, Boolean.class),
-	FORM_CONFIG(FormConfig.class, FormConfigId.class),
-	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class)
-	;
+    DATASET(Dataset.class, Boolean.class),
+    ID_MAPPING(PersistentIdMap.class, Boolean.class),
+    NAMESPACES(DatasetRegistry.class, Boolean.class),
+    SLAVE(ShardNodeInformation.class, Boolean.class),
+    DICTIONARIES(Dictionary.class, DictionaryId.class),
+    IMPORTS(Import.class, ImportId.class),
+    SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
+    TABLES(Table.class, TableId.class),
+    CONCEPTS(Concept.class, ConceptId.class),
+    BUCKETS(Bucket.class, BucketId.class),
+    C_BLOCKS(CBlock.class, CBlockId.class),
+    WORKER(WorkerInformation.class, Boolean.class),
+    EXECUTIONS(ManagedExecution.class, ManagedExecutionId.class),
+    AUTH_ROLE(Role.class, RoleId.class),
+    AUTH_USER(User.class, UserId.class),
+    AUTH_GROUP(Group.class, GroupId.class),
+    STRUCTURE(StructureNode[].class, Boolean.class),
+    FORM_CONFIG(FormConfig.class, FormConfigId.class),
+    WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class);
 
     private final Class<?> valueType;
-	private final Class<?> keyType;
+    private final Class<?> keyType;
 
-	/**
-	 * Store for identifiable values, with injectors. Store is also cached.
-	 */
-	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry, Injectable... injectables) {
+    /**
+     * Store for identifiable values, with injectors. Store is also cached.
+     */
+    public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
 
-		final CachedStore<IId<T>, T> store = cached(config, environment, validator);
+        for (Injectable injectable : injectables) {
+            baseStore.inject(injectable);
+        }
 
-		for (Injectable injectable : injectables) {
-			store.inject(injectable);
-		}
+        baseStore.inject(centralRegistry);
 
-		store.inject(centralRegistry);
+        return new IdentifiableStore<>(centralRegistry, baseStore);
+    }
 
-		return new IdentifiableStore<>(centralRegistry, store);
-	}
+    /**
+     * Store for identifiable values, without injectors. Store is also cached.
+     */
+    public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store baseStore, CentralRegistry centralRegistry) {
+        return identifiable(baseStore, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
+    }
 
-	/**
-	 * Store for identifiable values, without injectors. Store is also cached.
-	 */
-	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
-		return identifiable(config, environment, validator, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
-	}
+    /**
+     * General Key-Value store with caching.
+     */
+    public <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
+        return new CachedStore<>(baseStore);
+    }
 
-	/**
-	 * General Key-Value store with caching.
-	 */
-	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(XodusStorageFactory config, Environment environment, Validator validator) {
-		return new CachedStore<>(
-				new SerializingStore<>(
-						config,
-						new XodusStore(environment, this),
-						validator,
-						this
-				)
-		);
-	}
+    /**
+     * General Key-Value store with weak caching.
+     */
+    public <KEY, VALUE> WeakCachedStore<KEY, VALUE> weakCached(Store<KEY, VALUE> baseStore, Duration cacheDuration) {
+        return new WeakCachedStore<>(baseStore, cacheDuration);
+    }
 
-	/**
-	 * Store holding a single value.
-	 */
-	public <VALUE> SingletonStore<VALUE> singleton(XodusStorageFactory config, Environment environment, Validator validator, Injectable... injectables) {
-		return new SingletonStore<>(cached(config, environment, validator), injectables);
-	}
+    /**
+     * Store holding a single value.
+     */
+    public <VALUE> SingletonStore<VALUE> singleton(Store baseStore, Injectable... injectables) {
+        return new SingletonStore<>(baseStore, injectables);
+    }
 
-	/**
-	 * Identifiable store with split Data and Metadata.
-	 */
-	public <T extends Identifiable<?>> IdentifiableStore<T> big(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
-		return new IdentifiableStore<>(
-				centralRegistry,
-				new CachedStore<>(
-						new BigStore<>(config, validator, environment, this)
-				)
-		);
-	}
-
-	/**
-	 * Big-Store with weakly held cache.
-	 */
-	public <T extends Identifiable<?>> IdentifiableCachedStore<T> weakBig(XodusStorageFactory config, Environment environment, Validator validator, CentralRegistry centralRegistry) {
-		return new IdentifiableCachedStore<>(
-				centralRegistry,
-				new WeakCachedStore<>(
-						new BigStore<>(config, validator, environment, this),
-						config.getWeakCacheDuration()
-				)
-		);
-	}
-
-	@Override
-	public String getXodusName() {
-		return name();
-	}
+    @Override
+    public String getName() {
+        return name();
+    }
 }

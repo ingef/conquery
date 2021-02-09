@@ -34,7 +34,7 @@ public class NamespaceStorageXodus extends NamespacedStorageXodus implements Nam
 
 	public static NamespaceStorageXodus tryLoad(Validator validator, XodusStorageFactory config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
+		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getName(), t));
 		env.close();
 
 		if(!exists) {
@@ -75,9 +75,9 @@ public class NamespaceStorageXodus extends NamespacedStorageXodus implements Nam
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 		super.createStores(environmentToStores);
-		structure = StoreInfo.STRUCTURE.singleton(getConfig(), environment, getValidator(), new SingletonNamespaceCollection(centralRegistry));
-		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig(), environment, getValidator());
-		workerToBuckets = StoreInfo.WORKER_TO_BUCKETS.singleton(getConfig(), environment, getValidator());
+		structure = StoreInfo.STRUCTURE.singleton(getConfig().createStore(environment, getValidator(), StoreInfo.STRUCTURE), new SingletonNamespaceCollection(centralRegistry));
+		idMapping = StoreInfo.ID_MAPPING.singleton(getConfig().createStore(environment, getValidator(), StoreInfo.ID_MAPPING));
+		workerToBuckets = StoreInfo.WORKER_TO_BUCKETS.singleton(getConfig().createStore(environment, getValidator(), StoreInfo.WORKER_TO_BUCKETS));
 
 		environmentToStores.putAll(environment, List.of(
 			structure,

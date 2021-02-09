@@ -159,7 +159,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return readValue(binValue);			
 		} catch (Exception e) {
 			if(unreadableValuesDumpDir != null) {
-				dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, storeInfo.getXodusName());
+				dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, storeInfo.getName());
 			}
 			if(removeUnreadablesFromUnderlyingStore) {
 				remove(key);
@@ -223,7 +223,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		log.debug(
 			String.format(
 				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
-				this.storeInfo.getXodusName(),
+				this.storeInfo.getName(),
 				total,
 				result.getFailedKeys(),
 				total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
@@ -232,7 +232,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		// Remove corrupted entries from the store if configured so
 		if (removeUnreadablesFromUnderlyingStore) {
-			log.warn("Removing {} unreadable elements from the store {}.", unreadables.size(), storeInfo.getXodusName());
+			log.warn("Removing {} unreadable elements from the store {}.", unreadables.size(), storeInfo.getName());
 			unreadables.forEach(store::remove);
 		}
 		return result;
@@ -253,7 +253,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return deserializer.apply(serial);			
 		} catch (Exception e) {
 			if(unreadableValuesDumpDir != null) {
-				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, storeInfo.getXodusName());
+				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, storeInfo.getName());
 			}
 			if(log.isTraceEnabled()){
 				// With trace also print the stacktrace
@@ -280,7 +280,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void remove(KEY key) {
-		log.trace("Removing value to key {} from Store[{}]", key, storeInfo.getXodusName());
+		log.trace("Removing value to key {} from Store[{}]", key, storeInfo.getName());
 		store.remove(writeKey(key));
 	}
 
@@ -402,7 +402,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public String toString() {
-		return storeInfo.getXodusName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
+		return storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
 	}
 
 	@Override

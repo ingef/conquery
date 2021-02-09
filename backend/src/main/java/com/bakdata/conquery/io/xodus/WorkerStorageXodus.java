@@ -36,7 +36,7 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 
 	public static WorkerStorageXodus tryLoad(Validator validator, XodusStorageFactory config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
+		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getName(), t));
 		env.close();
 
 		if(!exists) {
@@ -56,14 +56,14 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 		super.createStores(environmentToStores);
 
-		worker = StoreInfo.WORKER.singleton(getConfig(), environment, getValidator());
+		worker = StoreInfo.WORKER.singleton(getConfig().createStore(environment,validator,StoreInfo.WORKER));
 
-		blocks = StoreInfo.BUCKETS.<Bucket>identifiable(getConfig(), environment, getValidator(), getCentralRegistry())
+		blocks = StoreInfo.BUCKETS.<Bucket>identifiable(getConfig().createStore(environment,validator,StoreInfo.BUCKETS), getCentralRegistry())
 						 .onAdd((Bucket bucket) -> {
 							 bucket.loadDictionaries(this);
 						 });
 
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig(), environment, getValidator(), getCentralRegistry());
+		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig().createStore(environment,validator,StoreInfo.C_BLOCKS), getCentralRegistry());
 		
 		environmentToStores.putAll(environment, List.of(
 			worker, 

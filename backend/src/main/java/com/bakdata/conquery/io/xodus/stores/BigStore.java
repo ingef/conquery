@@ -59,7 +59,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		this.chunkByteSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
-				storeInfo.getXodusName() + "_META",
+				storeInfo.getName() + "_META",
 				storeInfo.getKeyType(),
 				BigStoreMetaKeys.class
 		);
@@ -71,7 +71,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		);
 
 		final SimpleStoreInfo dataStoreInfo = new SimpleStoreInfo(
-				storeInfo.getXodusName() + "_DATA",
+				storeInfo.getName() + "_DATA",
 				UUID.class,
 				byte[].class
 		);
@@ -216,6 +216,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public String toString() {
-		return "big " + storeInfo.getXodusName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
+		return "big " + storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
 	}
 }

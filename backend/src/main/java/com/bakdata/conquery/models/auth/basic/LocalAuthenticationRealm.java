@@ -84,7 +84,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	@Getter
 	private static class StoreInfo implements IStoreInfo {
 
-		private final String xodusName;
+		private final String name;
 		// Not used
 		private final Class<?> keyType = String.class;
 		// Not used
