@@ -240,7 +240,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               ? {
                   concepts: [],
                   connector: "OR",
-                  type: field.rowPrefixField.apiType,
                   [field.rowPrefixField.name]:
                     field.rowPrefixField.defaultValue,
                 }

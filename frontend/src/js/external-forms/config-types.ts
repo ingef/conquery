@@ -179,7 +179,7 @@ type ConceptListField = CommonField & {
   type: "CONCEPT_LIST";
   conceptDropzoneLabel?: TranslatableString;
   conceptColumnDropzoneLabel?: TranslatableString;
-  rowPrefixField?: SelectField & { apiType: string }; // Used for PSM with "MATCHES"
+  rowPrefixField?: SelectField;
   isTwoDimensional?: boolean; // Default: False
   isSingle?: boolean; // Default: False
   defaults?: ConceptListDefaults;
