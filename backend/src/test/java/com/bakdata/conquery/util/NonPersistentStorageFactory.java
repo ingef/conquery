@@ -12,6 +12,7 @@ import org.apache.commons.collections4.queue.UnmodifiableQueue;
 
 import javax.validation.Validator;
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 
@@ -34,13 +35,13 @@ public class NonPersistentStorageFactory implements StorageFactory {
     }
 
     @Override
-    public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
+    public Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
 
         return UnmodifiableQueue.unmodifiableQueue(new ArrayDeque<>());
     }
 
     @Override
-    public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
+    public Collection<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
 
         return UnmodifiableQueue.unmodifiableQueue(new ArrayDeque<>());
     }

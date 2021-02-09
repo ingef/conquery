@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
@@ -79,7 +80,7 @@ public class XodusStorageFactory implements StorageFactory {
 
 	@Override
 	@SneakyThrows
-	public Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
+	public Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
 		@NonNull File baseDir =  getStorageDir(pathName);
 
 		if(baseDir.mkdirs()){
@@ -115,7 +116,7 @@ public class XodusStorageFactory implements StorageFactory {
 
 	@Override
 	@SneakyThrows
-	public Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
+	public Collection<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
 		@NonNull File baseDir = getStorageDir(pathName);
 
 		if(baseDir.mkdirs()){

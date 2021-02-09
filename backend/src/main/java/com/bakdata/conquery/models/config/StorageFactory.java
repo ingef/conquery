@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import javax.validation.Validator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 
@@ -23,7 +24,7 @@ public interface StorageFactory {
 
 	WorkerStorage createWorkerStorage(Validator validator, List<String> pathName);
 
-	Queue<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName);
+	Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName);
 
-	Queue<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName);
+	Collection<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName);
 }
