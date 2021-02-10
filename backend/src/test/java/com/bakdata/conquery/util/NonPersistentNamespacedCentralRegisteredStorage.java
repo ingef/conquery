@@ -1,7 +1,12 @@
 package com.bakdata.conquery.util;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.io.xodus.StoreInfo;
+import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
+import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
+import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -11,9 +16,11 @@ import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.bouncycastle.asn1.esf.OtherHash;
 
 import javax.validation.Validator;
 import java.io.IOException;
@@ -28,12 +35,12 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
     @Getter
     private final CentralRegistry centralRegistry = new CentralRegistry();
 
-    private IdMap<DictionaryId, Dictionary> dictionaries = new IdMap<>();
-    private IdMap<ImportId, Import> imports = new IdMap<>();
-    private Dataset dataset;
-    private IdMap<TableId, Table> tables = new IdMap<>();
-    private IdMap<SecondaryIdDescriptionId, SecondaryIdDescription> secondaryIds = new IdMap<>();
-    private IdMap<ConceptId, Concept<?>> concepts = new IdMap<>();
+    protected SingletonStore<Dataset> dataset = createDatasetStore((storeId) -> new NonPersistentStore());
+    protected IdentifiableStore<SecondaryIdDescription> secondaryIds = createSecondaryIdDescriptionStore((storeId) -> new NonPersistentStore());
+    protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries = StoreInfo.DICTIONARIES.identifiable(new NonPersistentStore(), centralRegistry);
+    protected IdentifiableStore<Import> imports = createImportStore((storeId) -> new NonPersistentStore());
+    protected IdentifiableStore<Table> tables = createTableStore((storeId) -> new NonPersistentStore());
+    protected IdentifiableStore<Concept<?>> concepts = createConceptStore((storeId) -> new NonPersistentStore());
 
     public NonPersistentNamespacedCentralRegisteredStorage(Validator validator) {
         this.validator = validator;
@@ -62,7 +69,6 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
     @Override
     public void addDictionary(Dictionary dict) {
         dictionaries.add(dict);
-        centralRegistry.register(dict);
     }
 
     @Override
@@ -72,14 +78,11 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
 
     @Override
     public void updateDictionary(Dictionary dict) {
-        centralRegistry.remove(dict);
         dictionaries.update(dict);
-        centralRegistry.register(dict);
     }
 
     @Override
     public void removeDictionary(DictionaryId id) {
-        centralRegistry.remove(id);
         dictionaries.remove(id);
     }
 
@@ -91,16 +94,6 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
     @Override
     public void addImport(Import imp) {
         imports.add(imp);
-        imp.loadExternalInfos(this);
-
-        for (Concept<?> c : getAllConcepts()) {
-            for (Connector con : c.getConnectors()) {
-                if (con.getTable().getId().equals(imp.getTable())) {
-                    con.addImport(imp);
-                }
-            }
-        }
-        centralRegistry.register(imp);
     }
 
     @Override
@@ -110,36 +103,32 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
 
     @Override
     public Collection<Import> getAllImports() {
-        return imports.values();
+        return imports.getAll();
     }
 
     @Override
     public void updateImport(Import imp) {
-        removeImport(imp.getId());
-        addImport(imp);
+        imports.update(imp);
     }
 
     @Override
     public void removeImport(ImportId id) {
-        centralRegistry.remove(id);
         imports.remove(id);
     }
 
     @Override
     public Dataset getDataset() {
-        return dataset;
+        return dataset.get();
     }
 
     @Override
     public void updateDataset(Dataset dataset) {
-        centralRegistry.remove(dataset);
-        this.dataset = dataset;
-        centralRegistry.register(dataset);
+        this.dataset.update(dataset);
     }
 
     @Override
     public List<Table> getTables() {
-        return new ArrayList<>(tables.values());
+        return new ArrayList<>(tables.getAll());
     }
 
     @Override
@@ -150,26 +139,16 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
     @Override
     public void addTable(Table table) {
         tables.add(table);
-        centralRegistry.register(table);
-
-        for (Column c : table.getColumns()) {
-            centralRegistry.register(c);
-        }
     }
 
     @Override
     public void removeTable(TableId table) {
-        for (Column c : tables.get(table).getColumns()) {
-            centralRegistry.remove(c);
-        }
-        centralRegistry.remove(table);
-
         tables.remove(table);
     }
 
     @Override
     public List<SecondaryIdDescription> getSecondaryIds() {
-        return new ArrayList<>(secondaryIds.values());
+        return new ArrayList<>(secondaryIds.getAll());
     }
 
     @Override
@@ -180,12 +159,10 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
     @Override
     public void addSecondaryId(SecondaryIdDescription secondaryIdDescription) {
         secondaryIds.add(secondaryIdDescription);
-        centralRegistry.register(secondaryIdDescription);
     }
 
     @Override
     public void removeSecondaryId(SecondaryIdDescriptionId secondaryIdDescriptionId) {
-        centralRegistry.remove(secondaryIdDescriptionId);
         secondaryIds.remove(secondaryIdDescriptionId);
     }
 
@@ -196,50 +173,23 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
 
     @Override
     public boolean hasConcept(ConceptId id) {
-        return concepts.containsKey(id);
+        return concepts.get(id) != null;
     }
 
     @Override
     @SneakyThrows
     public void updateConcept(Concept<?> concept) {
-        centralRegistry.remove(concept);
-
-        concept.initElements(validator);
         concepts.update(concept);
-        centralRegistry.register(concept);
-        concept.getSelects().forEach(centralRegistry::register);
-        for (Connector c : concept.getConnectors()) {
-            centralRegistry.register(c);
-            c.collectAllFilters().forEach(centralRegistry::register);
-            c.getSelects().forEach(centralRegistry::register);
-        }
-        //add imports of table
-        for (Import imp : getAllImports()) {
-            for (Connector con : concept.getConnectors()) {
-                if (con.getTable().getId().equals(imp.getTable())) {
-                    con.addImport(imp);
-                }
-            }
-        }
     }
 
     @Override
     public void removeConcept(ConceptId id) {
-        centralRegistry.remove(id);
-        Concept<?> concept = concepts.get(id);
-        concept.getSelects().forEach(centralRegistry::remove);
-        //see #146  remove from Dataset.concepts
-        for (Connector c : concept.getConnectors()) {
-            c.getSelects().forEach(centralRegistry::remove);
-            c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
-            centralRegistry.remove(c.getId());
-        }
         concepts.remove(id);
     }
 
     @Override
     public Collection<? extends Concept<?>> getAllConcepts() {
-        return concepts.values();
+        return concepts.getAll();
     }
 
     @Override

@@ -30,5 +30,9 @@ public interface WorkerStorage extends NamespacedStorage {
 	void updateCBlock(CBlock cBlock);
 	void removeCBlock(CBlockId id);
 	Collection<CBlock> getAllCBlocks();
+
+	default boolean isRegisterImports() {
+		return false;
+	}
 	
 }

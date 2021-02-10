@@ -15,11 +15,7 @@ import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 
 public interface NamespacedStorage extends ConqueryStorage {
 	
@@ -56,20 +52,24 @@ public interface NamespacedStorage extends ConqueryStorage {
 	void removeConcept(ConceptId id);
 	Collection<? extends Concept<?>> getAllConcepts();
 
+
+	/**
+	 * true if imports need to be registered with {@link Connector#addImport(Import)}.
+	 */
 	boolean isRegisterImports();
 
 
-	default SingletonStore<Dataset> createDatasetStore(Function<StoreInfo,Store> baseStoreCreator) {
+	default SingletonStore<Dataset> createDatasetStore(Function<StoreInfo,Store<DatasetId,Dataset>> baseStoreCreator) {
 		return StoreInfo.DATASET.<Dataset>singleton(baseStoreCreator.apply(StoreInfo.DATASET))
 				.onAdd(getCentralRegistry()::register)
 				.onRemove(getCentralRegistry()::remove);
 	}
 
-	default IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(Function<StoreInfo,Store> baseStoreCreator) {
+	default IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(Function<StoreInfo,Store<SecondaryIdDescriptionId,SecondaryIdDescription>> baseStoreCreator) {
 		return StoreInfo.SECONDARY_IDS.<SecondaryIdDescription>identifiable(baseStoreCreator.apply(StoreInfo.SECONDARY_IDS), getCentralRegistry());
 	}
 
-	default IdentifiableStore<Table> createTableStore(Function<StoreInfo,Store> baseStoreCreator) {
+	default IdentifiableStore<Table> createTableStore(Function<StoreInfo,Store<TableId,Table>> baseStoreCreator) {
 		return StoreInfo.TABLES.<Table>identifiable(baseStoreCreator.apply(StoreInfo.TABLES), getCentralRegistry())
 				.onAdd(table -> {
 					for (Column c : table.getColumns()) {
@@ -83,7 +83,7 @@ public interface NamespacedStorage extends ConqueryStorage {
 				});
 	}
 
-	default IdentifiableStore<Concept<?>> createConceptStore(Function<StoreInfo,Store> baseStoreCreator) {
+	default IdentifiableStore<Concept<?>> createConceptStore(Function<StoreInfo,Store<ConceptId,Concept<?>>> baseStoreCreator) {
 		CentralRegistry centralRegistry = getCentralRegistry();
 		return StoreInfo.CONCEPTS.<Concept<?>>identifiable(baseStoreCreator.apply(StoreInfo.CONCEPTS), getCentralRegistry())
 				.onAdd(concept -> {
@@ -124,7 +124,7 @@ public interface NamespacedStorage extends ConqueryStorage {
 				});
 	}
 
-	default IdentifiableStore<Import> createImportStore(Function<StoreInfo,Store> baseStoreCreator) {
+	default IdentifiableStore<Import> createImportStore(Function<StoreInfo,Store<Import,ImportId>> baseStoreCreator) {
 		return StoreInfo.IMPORTS.<Import>identifiable(baseStoreCreator.apply(StoreInfo.IMPORTS), getCentralRegistry())
 				.onAdd(imp -> {
 					imp.loadExternalInfos(this);

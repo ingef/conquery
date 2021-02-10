@@ -19,4 +19,9 @@ public interface NamespaceStorage extends NamespacedStorage {
 
 	void setWorkerToBucketsMap(WorkerToBucketsMap map);
 	WorkerToBucketsMap getWorkerBuckets();
+
+
+	default boolean isRegisterImports() {
+		return true;
+	}
 }

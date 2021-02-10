@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +50,7 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 	}
 	
 	public WorkerStorageXodus(Validator validator, File directory, XodusStorageFactory config) {
-		super(validator, config, directory, false);
+		super(validator, config, directory);
 	}
 
 	@Override

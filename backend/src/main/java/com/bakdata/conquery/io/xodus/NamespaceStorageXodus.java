@@ -23,7 +23,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 public class NamespaceStorageXodus extends NamespacedStorageXodus implements NamespaceStorage {
-	
+
 	@Getter @Setter @NonNull
 	private MetaStorage metaStorage;
 	protected SingletonStore<PersistentIdMap> idMapping;
@@ -47,7 +47,7 @@ public class NamespaceStorageXodus extends NamespacedStorageXodus implements Nam
 	}
 
 	public NamespaceStorageXodus(Validator validator, File directory, XodusStorageFactory config) {
-		super(validator, config, directory, true);
+		super(validator, config, directory);
 	}
 
 

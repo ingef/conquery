@@ -15,7 +15,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> {
 	
 	protected abstract KEY extractKey(VALUE value);
 	
-	public void add(VALUE value) throws JSONException {
+	public void add(VALUE value) {
 		store.add(extractKey(value), value);
 		added(value);
 	}
@@ -28,7 +28,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> {
 		store.forEach((key, value, size) -> consumer.accept(value));
 	}
 
-	public void update(VALUE value) throws JSONException {
+	public void update(VALUE value) {
 		VALUE old = get(extractKey(value));
 		if(old != null)
 			removed(old);

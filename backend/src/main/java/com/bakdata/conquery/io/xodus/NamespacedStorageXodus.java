@@ -43,10 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implements NamespacedStorage {
 
 	protected final Environment environment;
-	/**
-	 * true if imports need to be registered with {@link Connector#addImport(Import)}.
-	 */
-	private final boolean registerImports;
 
 	/**
 	 * Use weak caching for dictonaries.
@@ -59,9 +55,8 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorageXodus(Validator validator, XodusStorageFactory config, File directory, boolean registerImports) {
+	public NamespacedStorageXodus(Validator validator, XodusStorageFactory config, File directory) {
 		super(validator, config);
-		this.registerImports = registerImports;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
 		this.useWeakDictionaryCaching = config.isUseWeakDictionaryCaching();
 
@@ -70,13 +65,11 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?, ?>> environmentToStores) {
 
-		Function<StoreInfo, Store> normalStoreCreator = (storeInfo) -> getConfig().createStore(environment, validator, storeInfo);
+		dataset = createDatasetStore((storeInfo) -> getConfig().createStore(environment, validator, storeInfo));
 
-		dataset = createDatasetStore(normalStoreCreator);
+		secondaryIds = createSecondaryIdDescriptionStore((storeInfo) -> getConfig().createStore(environment, validator, storeInfo));
 
-		secondaryIds = createSecondaryIdDescriptionStore(normalStoreCreator);
-
-		tables = createTableStore(normalStoreCreator);
+		tables = createTableStore((storeInfo) -> getConfig().createStore(environment, validator, storeInfo));
 
 		if (useWeakDictionaryCaching) {
 			dictionaries = StoreInfo.DICTIONARIES.identifiableCachedStore(getConfig().createBigWeakStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
@@ -85,9 +78,9 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 			dictionaries = StoreInfo.DICTIONARIES.identifiable(getConfig().createBigStore(environment,validator,StoreInfo.DICTIONARIES),getCentralRegistry());
 		}
 
-		concepts = createConceptStore(normalStoreCreator);
+		concepts = createConceptStore((storeInfo) -> getConfig().createStore(environment, validator, storeInfo));
 
-		imports = createImportStore(normalStoreCreator);
+		imports = createImportStore((storeInfo) -> getConfig().createStore(environment, validator, storeInfo));
 
 		// Order is important here
 		environmentToStores.putAll(environment, List.of(

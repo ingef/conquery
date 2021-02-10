@@ -8,14 +8,14 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 
 public interface Store<KEY, VALUE> {
 
-	public void add(KEY key, VALUE value) throws JSONException;
+	public void add(KEY key, VALUE value);
 
 	public VALUE get(KEY key);
 
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer);
 
 	// TODO: 08.01.2020 fk: Is this still necessary? The implementation in XodusStore uses different methods that in our context don't act differently.
-	public void update(KEY key, VALUE value) throws JSONException;
+	public void update(KEY key, VALUE value);
 	
 	public void remove(KEY key);
 
