@@ -43,7 +43,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 
 	@Override
-	public void add(KEY key, VALUE value) throws JSONException {
+	public void add(KEY key, VALUE value) {
 		try {
 			Optional<VALUE> old = cache.get(key);
 			if(old.isPresent()) {
@@ -73,7 +73,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) throws JSONException {
+	public void update(KEY key, VALUE value) {
 		cache.put(key, Optional.of(value));
 		store.update(key, value);
 	}

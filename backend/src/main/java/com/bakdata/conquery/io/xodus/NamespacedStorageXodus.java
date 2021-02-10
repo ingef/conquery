@@ -110,13 +110,11 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addDictionary(Dictionary dict) {
 		dictionaries.add(dict);
 	}
@@ -146,7 +144,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateDictionary(Dictionary dict) {
 		dictionaries.update(dict);
 		for (Import imp : getAllImports()) {
@@ -155,7 +152,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addImport(Import imp) {
 		imports.add(imp);
 	}
@@ -166,7 +162,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateImport(Import imp) {
 		imports.update(imp);
 	}
@@ -187,7 +182,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateConcept(Concept<?> concept) {
 		concepts.update(concept);
 	}
@@ -207,7 +201,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 		return tables.get(tableId);
 	}
 
-	@SneakyThrows({JSONException.class})
 	@Override
 	public void addTable(Table table) {
 		tables.add(table);
@@ -228,7 +221,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 		return secondaryIds.get(descriptionId);
 	}
 
-	@SneakyThrows({JSONException.class})
 	@Override
 	public void addSecondaryId(SecondaryIdDescription secondaryIdDescription) {
 		secondaryIds.add(secondaryIdDescription);

@@ -14,7 +14,7 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     private final HashMap<KEY,VALUE> map = new HashMap<>();
 
     @Override
-    public void add(KEY key, VALUE value) throws JSONException {
+    public void add(KEY key, VALUE value) {
         map.put(key, value);
     }
 
@@ -38,7 +38,7 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     }
 
     @Override
-    public void update(KEY key, VALUE value) throws JSONException {
+    public void update(KEY key, VALUE value) {
         map.put(key,value);
     }
 

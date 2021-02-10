@@ -23,7 +23,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final Store<KEY, VALUE> store;
 	
 	@Override
-	public void add(KEY key, VALUE value) throws JSONException {
+	public void add(KEY key, VALUE value) {
 		if(cache.putIfAbsent(key, value)!=null) {
 			throw new IllegalStateException("The id "+key+" is alread part of this store");
 		}
@@ -42,7 +42,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) throws JSONException {
+	public void update(KEY key, VALUE value) {
 		cache.put(key, value);
 		store.update(key, value);
 	}

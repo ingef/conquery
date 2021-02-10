@@ -87,7 +87,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void add(KEY key, VALUE value) throws JSONException {
+	public void add(KEY key, VALUE value) {
 		if (metaStore.get(key) != null) {
 			throw new IllegalArgumentException("There is already a value associated with " + key);
 		}
@@ -112,7 +112,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) throws JSONException {
+	public void update(KEY key, VALUE value) {
 		remove(key);
 		add(key, value);
 	}

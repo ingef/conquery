@@ -63,7 +63,6 @@ public class NamespaceStorageXodus extends NamespacedStorageXodus implements Nam
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void setWorkerToBucketsMap(WorkerToBucketsMap map) {
 		workerToBuckets.update(map);
 	}

@@ -57,14 +57,11 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 		super.createStores(environmentToStores);
 
-		worker = StoreInfo.WORKER.singleton(getConfig().createStore(environment,validator,StoreInfo.WORKER));
+		worker = createWorkerStore((storeId) -> getConfig().createStore(environment,validator,storeId));
 
-		blocks = StoreInfo.BUCKETS.<Bucket>identifiable(getConfig().createStore(environment,validator,StoreInfo.BUCKETS), getCentralRegistry())
-						 .onAdd((Bucket bucket) -> {
-							 bucket.loadDictionaries(this);
-						 });
+		blocks = createBucketStore((storeId) -> getConfig().createStore(environment,validator,storeId));
 
-		cBlocks = StoreInfo.C_BLOCKS.identifiable(getConfig().createStore(environment,validator,StoreInfo.C_BLOCKS), getCentralRegistry());
+		cBlocks = createCBlockStore((storeId) -> getConfig().createStore(environment,validator,storeId));
 		
 		environmentToStores.putAll(environment, List.of(
 			worker, 
@@ -74,7 +71,6 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 	}
 	
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addCBlock(CBlock cBlock) {
 		log.debug("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
@@ -87,7 +83,6 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 
 	// TODO method is unused, delete it.
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateCBlock(CBlock cBlock) {
 		cBlocks.update(cBlock);
 	}
@@ -113,7 +108,6 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 	}
 	
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addBucket(Bucket bucket) {
 		log.debug("Adding Bucket[{}]", bucket.getId());
 		blocks.add(bucket);
@@ -142,20 +136,17 @@ public class WorkerStorageXodus extends NamespacedStorageXodus implements Worker
 
 	//TODO remove duplication
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void setWorker(WorkerInformation worker) {
 		this.worker.add(worker);
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
 	}
 	
 	//block manager overrides
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateConcept(Concept<?> concept) {
 		log.debug("Updating Concept[{}]", concept.getId());
 		concepts.update(concept);

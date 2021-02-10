@@ -1,6 +1,8 @@
 package com.bakdata.conquery.util;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
+import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -13,9 +15,9 @@ import java.util.Collection;
 
 public class NonPersistentWorkerStorage extends NonPersistentNamespacedCentralRegisteredStorage implements WorkerStorage {
 
-    private IdMap<BucketId, Bucket> buckets = new IdMap<>();
-    private IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
-    private WorkerInformation workerInformation;
+    private SingletonStore<WorkerInformation> worker = createWorkerStore(storeInfo -> new NonPersistentStore<>());
+    private IdentifiableStore<Bucket> buckets = createBucketStore(storeInfo -> new NonPersistentStore<>());
+    private IdentifiableStore<CBlock> cBlocks = createCBlockStore(storeInfo -> new NonPersistentStore<>());
 
     public NonPersistentWorkerStorage(Validator validator) {
         super(validator);
@@ -23,28 +25,27 @@ public class NonPersistentWorkerStorage extends NonPersistentNamespacedCentralRe
 
     @Override
     public String getStorageOrigin() {
-        return null;
+        return "Non persistent storage for testing";
     }
 
     @Override
     public WorkerInformation getWorker() {
-        return workerInformation;
+        return worker.get();
     }
 
     @Override
     public void setWorker(WorkerInformation worker) {
-        this.workerInformation = worker;
+        this.worker.add(worker);
     }
 
     @Override
     public void updateWorker(WorkerInformation worker) {
-        this.workerInformation = worker;
+        this.worker.update(worker);
     }
 
     @Override
     public void addBucket(Bucket bucket) {
         buckets.add(bucket);
-        bucket.loadDictionaries(this);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class NonPersistentWorkerStorage extends NonPersistentNamespacedCentralRe
 
     @Override
     public Collection<Bucket> getAllBuckets() {
-        return buckets.values();
+        return buckets.getAll();
     }
 
     @Override
@@ -84,6 +85,6 @@ public class NonPersistentWorkerStorage extends NonPersistentNamespacedCentralRe
 
     @Override
     public Collection<CBlock> getAllCBlocks() {
-        return cBlocks.values();
+        return cBlocks.getAll();
     }
 }

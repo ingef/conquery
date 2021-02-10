@@ -141,7 +141,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void add(KEY key, VALUE value) throws JSONException {
+	public void add(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
 		}
@@ -266,7 +266,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void update(KEY key, VALUE value) throws JSONException {
+	public void update(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
 		}

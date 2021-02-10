@@ -14,8 +14,12 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.models.worker.WorkerInformation;
 
 public interface NamespacedStorage extends ConqueryStorage {
 	
@@ -146,6 +150,21 @@ public interface NamespacedStorage extends ConqueryStorage {
 					getCentralRegistry().remove(imp);
 
 				});
+	}
+
+	default SingletonStore<WorkerInformation> createWorkerStore(Function<StoreInfo,Store<Boolean,WorkerInformation>> baseStoreCreator) {
+		return StoreInfo.WORKER.singleton(baseStoreCreator.apply(StoreInfo.WORKER));
+	}
+
+	default IdentifiableStore<Bucket> createBucketStore(Function<StoreInfo,Store<BucketId,Bucket>> baseStoreCreator) {
+		return StoreInfo.BUCKETS.<Bucket>identifiable(baseStoreCreator.apply(StoreInfo.BUCKETS), getCentralRegistry())
+				.onAdd((bucket) -> {
+					bucket.loadDictionaries(this);
+				});
+	}
+
+	default IdentifiableStore<CBlock> createCBlockStore(Function<StoreInfo,Store<CBlockId,CBlock>> baseStoreCreator) {
+		return StoreInfo.C_BLOCKS.identifiable(baseStoreCreator.apply(StoreInfo.C_BLOCKS), getCentralRegistry());
 	}
 
 }

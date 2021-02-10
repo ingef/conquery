@@ -101,7 +101,6 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addExecution(ManagedExecution<?> query) {
 		executions.add(query);
 	}
@@ -117,7 +116,6 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateExecution(ManagedExecution<?> query) {
 		executions.update(query);
 	}
@@ -128,7 +126,6 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addUser(User user) {
 		authUser.add(user);
 	}
@@ -149,7 +146,6 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addRole(Role role) {
 		authRole.add(role);
 	}
@@ -170,19 +166,16 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateUser(User user) {
 		authUser.update(user);
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateRole(Role role) {
 		authRole.update(role);
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void addGroup(Group group) {
 		authGroup.add(group);
 	}
@@ -203,7 +196,6 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	}
 
 	@Override
-	@SneakyThrows(JSONException.class)
 	public void updateGroup(Group group) {
 		authGroup.update(group);
 	}
