@@ -53,6 +53,7 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to 
@@ -74,8 +75,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private ConqueryConfig config;
 	private AdminServlet admin;
 	private AuthorizationController authController;
-	private AuthServlet authServletApp;
-	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
 	private DatasetRegistry datasetRegistry;
 	private Environment environment;
@@ -125,18 +124,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		environment.lifecycle().manage(this);
 
-		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this, useNameForStoragePrefix? List.of(getName()) : Collections.emptyList())) {
+		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
 
 			datasetRegistry.add(ns);
 		}
 
-
-
-
 		log.info("Started meta storage");
-		
-		this.storage = config.getStorage().createMetaStorage(validator, List.of(useNameForStoragePrefix? getName() : ""), datasetRegistry);
+		this.storage = config.getStorage().createMetaStorage(validator, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 
