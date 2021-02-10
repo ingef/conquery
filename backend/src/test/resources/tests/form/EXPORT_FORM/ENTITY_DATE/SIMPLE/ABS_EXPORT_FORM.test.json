@@ -1,0 +1,39 @@
+{
+    "type": "FORM_TEST",
+    "label": "ABS-EXPORT-FORM ADD DEFAULT SELECT Test",
+    "expectedCsv": {
+        "results": "tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/expected.csv"
+    },
+    "form": {
+        "type": "EXPORT_FORM",
+        "queryGroup": "${dataset}.00000000-0000-0000-0000-000000000001",
+        "resolution": "QUARTERS",
+        "timeMode": {
+            "value": "ENTITY_DATE",
+            "features": [
+                {
+                    "ids": [
+                        "${dataset}.alter"
+                    ],
+                    "type": "CONCEPT",
+                    "label": "Alter",
+                    "tables": [
+                        {
+                            "id": "${dataset}.alter.alter",
+                            "filters": []
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "concepts": [
+        "/tests/form/shared/alter.concept.json"
+    ],
+    "content": {
+        "tables": [
+            "/tests/form/shared/vers_stamm.table.json"
+        ],
+        "previousQueryResults": ["tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/query_results_1.csv"]
+    }
+}
