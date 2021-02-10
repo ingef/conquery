@@ -64,7 +64,7 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
     @Override
     public void inject(Injectable injectable) {
-        throw new UnsupportedOperationException("There is nothing to inject here.");
+        // Don't inject here since there is no serdes when non persistent
     }
 
     @Override
