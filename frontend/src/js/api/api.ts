@@ -142,27 +142,26 @@ export function getStoredQuery(
   });
 }
 
-export function deleteStoredQuery(
-  datasetId: DatasetIdT,
-  queryId: QueryIdT
-): Promise<null> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
-    method: "DELETE",
-  });
-}
+export const useDeleteStoredQuery = () => {
+  const api = useApi<null>();
 
-export function patchStoredQuery(
-  datasetId: DatasetIdT,
-  queryId: QueryIdT,
-  attributes: Object
-): Promise<null> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
-    method: "PATCH",
-    data: attributes,
-  });
-}
+  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
+      method: "DELETE",
+    });
+};
+
+export const usePatchStoredQuery = () => {
+  const api = useApi<null>();
+
+  return (datasetId: DatasetIdT, queryId: QueryIdT, attributes: Object) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
+      method: "PATCH",
+      data: attributes,
+    });
+};
 
 export const usePostPrefixForSuggestions = () => {
   const api = useApi<PostFilterSuggestionsResponseT>();

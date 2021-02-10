@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
 
 import Modal from "../../modal/Modal";
-import { patchStoredQuery } from "../../api/api";
+import { usePatchStoredQuery } from "../../api/api";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 import TransparentButton from "../../button/TransparentButton";
@@ -87,6 +87,8 @@ const SharePreviousQueryModal = ({
   );
 
   const previousPreviousQueryId = usePrevious(previousQueryId);
+
+  const patchStoredQuery = usePatchStoredQuery();
 
   const dispatch = useDispatch();
 

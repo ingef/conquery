@@ -1,6 +1,9 @@
 import T from "i18n-react";
+import { useDispatch } from "react-redux";
 import { DatasetIdT } from "../../api/types";
+
 import api from "../../api";
+import { usePatchStoredQuery } from "../../api/api";
 
 import { defaultSuccess, defaultError } from "../../common/actions";
 
@@ -92,11 +95,14 @@ export const renamePreviousQuerySuccess = (queryId, label, res) =>
 export const renamePreviousQueryError = (queryId, err) =>
   defaultError(RENAME_PREVIOUS_QUERY_ERROR, err, { queryId });
 
-export const renamePreviousQuery = (datasetId, queryId, label) => {
-  return (dispatch) => {
+export const useRenamePreviousQuery = () => {
+  const dispatch = useDispatch();
+  const patchStoredQuery = usePatchStoredQuery();
+
+  return (datasetId: DatasetIdT, queryId: PreviousQueryIdT, label: string) => {
     dispatch(renamePreviousQueryStart(queryId));
 
-    return api.patchStoredQuery(datasetId, queryId, { label }).then(
+    return patchStoredQuery(datasetId, queryId, { label }).then(
       (r) => {
         dispatch(renamePreviousQuerySuccess(queryId, label, r));
         dispatch(toggleEditPreviousQueryLabel(queryId));
@@ -125,11 +131,14 @@ export const retagPreviousQuerySuccess = (queryId, tags, res) =>
 export const retagPreviousQueryError = (queryId, err) =>
   defaultError(RETAG_PREVIOUS_QUERY_ERROR, err, { queryId });
 
-export const retagPreviousQuery = (datasetId, queryId, tags) => {
-  return (dispatch) => {
+export const useRetagPreviousQuery = () => {
+  const dispatch = useDispatch();
+  const patchStoredQuery = usePatchStoredQuery();
+
+  return (datasetId: DatasetIdT, queryId: PreviousQueryIdT, tags: string[]) => {
     dispatch(retagPreviousQueryStart(queryId));
 
-    return api.patchStoredQuery(datasetId, queryId, { tags }).then(
+    return patchStoredQuery(datasetId, queryId, { tags }).then(
       (r) => {
         dispatch(retagPreviousQuerySuccess(queryId, tags, r));
         dispatch(toggleEditPreviousQueryTags(queryId));
