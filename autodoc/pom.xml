@@ -35,6 +35,12 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <!-- This is only used to silence mina-compression missing the mina-core:bundle -->
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
 		</plugins>
 	</build>
 
