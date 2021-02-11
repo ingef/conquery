@@ -164,7 +164,7 @@ public class ImportJob extends Job {
 			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
 								.add(bucket.getId());
 
-			log.info("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
+			log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
 			responsibleWorker.send(ImportBucket.forBucket(bucket));
 		}
 

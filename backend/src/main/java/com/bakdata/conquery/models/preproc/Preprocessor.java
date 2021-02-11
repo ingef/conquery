@@ -249,7 +249,7 @@ public class Preprocessor {
 		}
 
 		if(errors > 0){
-			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%f.2", 100d * (double) errors / (double) lineId), errors, lineId);
+			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);
 		}
 
 		if((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()){

@@ -28,7 +28,7 @@ public class PPColumn {
 		ColumnStore decision = parser.findBestType();
 		// this only creates the headers
 
-		log.info("\t{}: {} -> {}", getName(), getParser(), decision);
+		log.debug("\t{}: {} -> {}", getName(), getParser(), decision);
 
 		return decision;
 	}
