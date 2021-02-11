@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.xodus.stores;
 
 import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -19,7 +18,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-public class InternalMetaStore implements MetaStorage {
+public class InternalMetaStorage implements MetaStorage {
 
     private IdentifiableStore<ManagedExecution<?>> executions;
     private IdentifiableStore<FormConfig> formConfigs;
@@ -35,7 +34,7 @@ public class InternalMetaStore implements MetaStorage {
     @Getter
     protected final Validator validator;
 
-    public InternalMetaStore(Validator validator, StorageFactory storageFactory, List<String> pathName, DatasetRegistry datasetRegistry) {
+    public InternalMetaStorage(Validator validator, StorageFactory storageFactory, List<String> pathName, DatasetRegistry datasetRegistry) {
         this.datasetRegistry = datasetRegistry;
         this.validator = validator;
 
@@ -66,11 +65,11 @@ public class InternalMetaStore implements MetaStorage {
 
     @Override
     public void remove() {
-        executions.remove();
-        formConfigs.remove();
-        authUser.remove();
-        authRole.remove();
-        authGroup.remove();
+        executions.removeStore();
+        formConfigs.removeStore();
+        authUser.removeStore();
+        authRole.removeStore();
+        authGroup.removeStore();
     }
 
     @Override
@@ -202,6 +201,10 @@ public class InternalMetaStore implements MetaStorage {
 
     @Override
     public void close() throws IOException {
-
+        executions.close();
+        formConfigs.close();
+        authUser.close();
+        authRole.close();
+        authGroup.close();
     }
 }

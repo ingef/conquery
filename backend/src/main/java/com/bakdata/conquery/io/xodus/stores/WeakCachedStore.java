@@ -7,8 +7,6 @@ import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -121,9 +119,9 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void remove() {
+	public void removeStore() {
 		cache.invalidateAll();
-		store.remove();
+		store.removeStore();
 	}
 
 	@Override

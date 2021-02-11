@@ -3,7 +3,6 @@ package com.bakdata.conquery.commands;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -20,8 +19,7 @@ import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.io.xodus.stores.InternalMetaStore;
-import com.bakdata.conquery.io.xodus.stores.InternalNamespaceStorage;
+import com.bakdata.conquery.io.xodus.stores.InternalMetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -55,7 +53,6 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to 
@@ -126,14 +123,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		environment.lifecycle().manage(this);
 
-		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
-			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
-
-			datasetRegistry.add(ns);
-		}
+		loadNamespaces();
 
 		log.info("Started meta storage");
-		this.storage = new InternalMetaStore(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
+		this.storage = new InternalMetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 
@@ -187,6 +180,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+	}
+
+	public void loadNamespaces() {
+		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
+			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
+
+			datasetRegistry.add(ns);
+		}
 	}
 
 	@Override

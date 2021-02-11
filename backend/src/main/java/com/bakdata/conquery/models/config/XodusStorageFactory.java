@@ -26,8 +26,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -84,10 +83,10 @@ public class XodusStorageFactory implements StorageFactory {
     private transient Validator validator;
 
     @JsonIgnore
-    private Map<File,Environment> activeEnvironments = new HashMap<>();
+    private BiMap<File, Environment> activeEnvironments = HashBiMap.create();
 
     @JsonIgnore
-    private transient Multimap<Environment, jetbrains.exodus.env.Store> openStoresInEnv = ArrayListMultimap.create();
+    private transient Multimap<Environment, jetbrains.exodus.env.Store> openStoresInEnv = MultimapBuilder.hashKeys().hashSetValues().build();
 
     @Override
     public void init(ManagerNode managerNode) {
@@ -118,12 +117,13 @@ public class XodusStorageFactory implements StorageFactory {
                 List<String> pathElems = getPathElements(directory.toPath());
                 ConqueryMDC.setLocation(directory.toString());
 
-                if (environmentHasStores(pathElems)) {
-                    log.warn("No valid WorkerStorage found.");
+                if (!environmentHasStores(directory)) {
+                    log.warn("No valid NamespaceStorage found.");
                     return;
                 }
 
                 NamespaceStorage namespaceStorage = new InternalNamespaceStorage(validator, this, pathElems);
+                namespaceStorage.loadData();
 
                 storages.add(namespaceStorage);
 
@@ -160,13 +160,14 @@ public class XodusStorageFactory implements StorageFactory {
             loaders.submit(() -> {
                 List<String> pathElems = getPathElements(directory.toPath());
                 ConqueryMDC.setLocation(directory.toString());
-                
-                if (environmentHasStores(pathElems)) {
+
+                if (!environmentHasStores(directory)) {
                     log.warn("No valid WorkerStorage found.");
                     return;
                 }
 
                 WorkerStorage workerStorage = new InternalWorkerStorage(validator, this, pathElems);
+                workerStorage.loadData();
 
                 storages.add(workerStorage);
 
@@ -183,18 +184,18 @@ public class XodusStorageFactory implements StorageFactory {
 
     private List<String> getPathElements(Path path) {
         ArrayList<String> list = new ArrayList<>();
-        for( int i = 0; i < path.getNameCount(); i++) {
+        for (int i = 0; i < path.getNameCount(); i++) {
             list.add(path.getName(i).toString());
         }
         return list;
     }
 
-    private boolean environmentHasStores(List<String> pathName){
+    private boolean environmentHasStores(File pathName) {
         Environment env = findEnvironment(pathName);
-        boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getName(), t));
-
-        if(!exists) {
-            removeEnvironment(pathName);
+        boolean exists = env.computeInTransaction(t -> env.storeExists(StoreInfo.DATASET.getName(), t));
+        env.computeInTransaction(t -> env.getAllStoreNames(t));
+        if (!exists) {
+            removeEnvironment(env);
         }
         return exists;
     }
@@ -217,10 +218,9 @@ public class XodusStorageFactory implements StorageFactory {
     @Override
     public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, List<String> pathName) {
         if (useWeakDictionaryCaching) {
-            return StoreInfo.DICTIONARIES.identifiableCachedStore(createBigWeakStore(findEnvironment(pathName),validator,StoreInfo.DICTIONARIES),centralRegistry);
-        }
-        else {
-            return StoreInfo.DICTIONARIES.identifiable(createBigStore(findEnvironment(pathName),validator,StoreInfo.DICTIONARIES),centralRegistry);
+            return StoreInfo.DICTIONARIES.identifiableCachedStore(createBigWeakStore(findEnvironment(pathName), validator, StoreInfo.DICTIONARIES), centralRegistry);
+        } else {
+            return StoreInfo.DICTIONARIES.identifiable(createBigStore(findEnvironment(pathName), validator, StoreInfo.DICTIONARIES), centralRegistry);
         }
     }
 
@@ -287,7 +287,7 @@ public class XodusStorageFactory implements StorageFactory {
 
     @Override
     public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_GROUP.identifiable(AUTH_GROUP.cached(createStore(findEnvironment(appendToNewPath(pathName, "roles")), validator, AUTH_GROUP)), centralRegistry);
+        return AUTH_GROUP.identifiable(AUTH_GROUP.cached(createStore(findEnvironment(appendToNewPath(pathName, "groups")), validator, AUTH_GROUP)), centralRegistry);
     }
 
     private List<String> appendToNewPath(List<String> pathName, String users) {
@@ -306,48 +306,57 @@ public class XodusStorageFactory implements StorageFactory {
         return getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
     }
 
-
-    private Environment findEnvironment(List<String> pathName) {
-        synchronized (activeEnvironments){
-            @NonNull File path = getStorageDir(pathName);
-            return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(getStorageDir(pathName), getXodus().createConfig()));
+    private Environment findEnvironment(@NonNull File path) {
+        synchronized (activeEnvironments) {
+            return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(path, getXodus().createConfig()));
         }
     }
 
-    private void removeEnvironment(List<String> pathName) {
-        synchronized (activeEnvironments){
+    private Environment findEnvironment(List<String> pathName) {
+        synchronized (activeEnvironments) {
             @NonNull File path = getStorageDir(pathName);
-            Environment env = activeEnvironments.get(path);
-            if(env == null) {
+            return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(p, getXodus().createConfig()));
+        }
+    }
+
+    private void removeEnvironment(Environment env) {
+        synchronized (activeEnvironments) {
+            if (env == null) {
                 return;
             }
             env.close();
-            activeEnvironments.remove(pathName);
+            activeEnvironments.remove(activeEnvironments.inverse().get(env));
         }
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId) {
-        openStoresInEnv.put(environment,null);
-        return new SerializingStore<KEY, VALUE>(
-                this,
-                new XodusStore(environment, storeId, openStoresInEnv.get(environment)),
-                validator,
-                storeId
-        );
+        synchronized (openStoresInEnv) {
+
+            return new SerializingStore<KEY, VALUE>(
+                    this,
+                    new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::removeEnvironment),
+                    validator,
+                    storeId
+            );
+        }
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createBigStore(Environment environment, Validator validator, StoreInfo storeId) {
-        openStoresInEnv.put(environment,null);
-        return storeId.cached(
-                new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment))
-        );
+        synchronized (openStoresInEnv) {
+
+            return storeId.cached(
+                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::removeEnvironment)
+            );
+        }
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createBigWeakStore(Environment environment, Validator validator, StoreInfo storeId) {
-        openStoresInEnv.put(environment,null);
-        return new WeakCachedStore<>(
-                new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment)),
-                getWeakCacheDuration()
-        );
+        synchronized (openStoresInEnv) {
+
+            return new WeakCachedStore<>(
+                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::removeEnvironment),
+                    getWeakCacheDuration()
+            );
+        }
     }
 }

@@ -108,7 +108,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		// Open/create the database/store
 		File passwordStoreFile = new File(STORE_DIR, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"), new ArrayList<>());
+		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"), new ArrayList<>(), (e) -> e.close());
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
@@ -244,7 +244,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {			
 			try {
 				log.info("Closing the password environment.");
-				passwordEnvironment.close();
+				passwordStore.close();
 				return;
 			}
 			catch (EnvironmentClosedException e) {

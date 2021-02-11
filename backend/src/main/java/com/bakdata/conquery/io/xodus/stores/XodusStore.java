@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
@@ -20,12 +21,14 @@ public class XodusStore {
 	private final Environment environment;
 	private final long timeoutHalfMillis; // milliseconds
 	private final Collection<Store>  openStores;
+	private final Consumer<Environment> envCloseHook;
 	
-	public XodusStore(Environment env, IStoreInfo storeId, Collection<Store> openStoresInEnv) {
+	public XodusStore(Environment env, IStoreInfo storeId, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.environment = env;
 		this.openStores = openStoresInEnv;
+		this.envCloseHook = envCloseHook;
 		this.store = env.computeInTransaction(
 			t->env.openStore(storeId.getName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
@@ -53,12 +56,12 @@ public class XodusStore {
 				try(Cursor c = store.openCursor(t)) {
 					//try to load everything in the same transaction
 					//but keep within half of the timeout time
-					long start = System.nanoTime();
+					long start = System.currentTimeMillis();
 					//search where we left of
 					if(lastKey.get() != null) {
 						c.getSearchKey(lastKey.get());
 					}
-					while(System.nanoTime()-start < timeoutHalfMillis) {
+					while(System.currentTimeMillis()-start < timeoutHalfMillis) {
 						if(!c.getNext()) {
 							done.set(true);
 							return;
@@ -88,21 +91,21 @@ public class XodusStore {
 		return store.getName();
 	}
 
-	void clear() {
+	public void clear() {
 		// TODO implement, unused at the moment
 	}
 
-	void remove() {
+	public void remove() {
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 	}
 
-	void close() {
-		log.info("Closing XodusStore ", this);
+	public void close() {
+		log.info("Closing XodusStore: {}", this);
 		openStores.remove(store);
 		if (openStores.isEmpty()){
 			// Last Store closes the Environment
-			log.info("Closed last XodusStore in Environment. Closing Environment as well", environment);
-			environment.executeInTransaction(txn -> environment.close());
+			log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", environment.getLocation());
+			envCloseHook.accept(environment);
 		}
 	}
 }

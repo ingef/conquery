@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
+import com.bakdata.conquery.integration.tests.RestartTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -88,6 +89,7 @@ public class IntegrationTests {
 			.SCAN_RESULT
 			.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 			.filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+				.filter(info -> info.getName().equals(RestartTest.class.getName()))
 			.loadClasses();
 
 		return programmatic

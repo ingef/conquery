@@ -12,6 +12,7 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import javax.validation.Validator;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -75,14 +76,21 @@ public class InternalNamespaceStorage extends InternalNamespacedStorage implemen
     }
 
 
-
     @Override
     public StructureNode[] getStructure() {
-        return Objects.requireNonNullElseGet(structure.get(), ()->new StructureNode[0]);
+        return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
     }
 
     @Override
     public void updateStructure(StructureNode[] structure) throws JSONException {
         this.structure.update(structure);
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        idMapping.close();
+        structure.close();
+        workerToBuckets.close();
     }
 }

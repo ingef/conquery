@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Validator;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -122,5 +123,14 @@ public class InternalWorkerStorage extends InternalNamespacedStorage implements 
     public void removeConcept(ConceptId id) {
         log.debug("Removing Concept[{}]", id);
         concepts.remove(id);
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+
+        worker.close();
+        bluckets.close();
+        cBlocks.close();
     }
 }

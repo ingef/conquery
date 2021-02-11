@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
@@ -46,7 +47,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private int chunkByteSize;
 
 
-	public BigStore(XodusStorageFactory config, Validator validator, Environment env, StoreInfo storeInfo, Collection<jetbrains.exodus.env.Store> openStores) {
+	public BigStore(XodusStorageFactory config, Validator validator, Environment env, StoreInfo storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
@@ -60,7 +61,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		metaStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, metaStoreInfo, openStores), validator,
+				new XodusStore(env, metaStoreInfo, openStores, envCloseHook), validator,
 				metaStoreInfo
 		);
 
@@ -72,7 +73,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		dataStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, dataStoreInfo, openStores), validator,
+				new XodusStore(env, dataStoreInfo, openStores, envCloseHook), validator,
 				dataStoreInfo
 		);
 
@@ -227,8 +228,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public void remove() {
-		metaStore.remove();
-		dataStore.remove();
+	public void removeStore() {
+		metaStore.removeStore();
+		dataStore.removeStore();
 	}
 }

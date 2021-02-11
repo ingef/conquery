@@ -7,7 +7,6 @@ import java.util.List;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.xodus.stores.DirectIdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;

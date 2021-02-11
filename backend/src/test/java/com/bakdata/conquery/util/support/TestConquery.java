@@ -143,16 +143,23 @@ public class TestConquery {
 	}
 
 
+	@SneakyThrows
 	public synchronized void shutdown(StandaloneSupport support) {
 		log.info("Tearing down dataset");
 
 
 		DatasetId dataset = support.getDataset().getId();
 
-		standaloneCommand.getManager().getDatasetRegistry().get(dataset).sendToAll(new ShutdownWorkerStorage());
-		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
+		//standaloneCommand.getManager().getDatasetRegistry().get(dataset).sendToAll(new ShutdownWorkerStorage());
+		//standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
+
+		standaloneCommand.getManager().getStorage().close();
 
 		openSupports.remove(support);
+	}
+
+	public synchronized void restart() {
+		standaloneCommand.getManager().loadNamespaces();
 	}
 
 	@SneakyThrows

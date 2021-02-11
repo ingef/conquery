@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -24,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
 public abstract class InternalNamespacedStorage implements NamespacedStorage {
 
@@ -81,12 +79,12 @@ public abstract class InternalNamespacedStorage implements NamespacedStorage {
 
     @Override
     public void remove() {
-        dataset.remove();
-        secondaryIds.remove();
-        tables.remove();
-        dictionaries.remove();
-        imports.remove();
-        concepts.remove();
+        dataset.removeStore();
+        secondaryIds.removeStore();
+        tables.removeStore();
+        dictionaries.removeStore();
+        imports.removeStore();
+        concepts.removeStore();
 
     }
 
@@ -325,6 +323,11 @@ public abstract class InternalNamespacedStorage implements NamespacedStorage {
 
     @Override
     public void close() throws IOException {
-
+        dataset.close();
+        secondaryIds.close();
+        tables.close();
+        dictionaries.close();
+        imports.close();
+        concepts.close();
     }
 }

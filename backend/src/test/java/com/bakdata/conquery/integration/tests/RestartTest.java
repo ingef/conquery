@@ -123,9 +123,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		testConquery.getDropwizard().after();
 		//restart
 		testConquery.beforeAll();
-		testConquery.getStandaloneCommand().getManager().getConfig().getStorage().loadNamespaceStorages(
-				manager,
-				manager.isUseNameForStoragePrefix()? List.of(manager.getName()) : Collections.emptyList());
+		//testConquery.restart();
 
 		final StandaloneSupport support = testConquery.openDataset(dataset);
 

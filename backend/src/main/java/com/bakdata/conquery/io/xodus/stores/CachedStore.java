@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
 import com.jakewharton.byteunits.BinaryByteUnit;
@@ -138,8 +137,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void remove() {
-		store.remove();
+	public void removeStore() {
+		store.removeStore();
 	}
 
 	@Override
