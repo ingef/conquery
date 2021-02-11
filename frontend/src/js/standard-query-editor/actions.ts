@@ -2,7 +2,7 @@ import { useDispatch } from "react-redux";
 import type { ConceptIdT, DatasetIdT, FilterIdT, TableIdT } from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
-import { loadPreviousQuery } from "../previous-queries/list/actions";
+import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import type { TreesT } from "../concept-trees/reducer";
 import { usePostPrefixForSuggestions } from "../api/api";
 
@@ -97,26 +97,30 @@ const findPreviousQueryIds = (node, queries = []) => {
   1) Expands previous query in the editor
   2) Triggers a load for all nested queries
 */
-export const expandPreviousQuery = (
-  datasetId: DatasetIdT,
-  rootConcepts: TreesT,
-  query: PreviousQueryQueryNodeType
-) => {
-  if (!query.root || query.root.type !== "AND") {
-    throw new Error("Cant expand query, because root is not AND");
-  }
+export const useExpandPreviousQuery = () => {
+  const loadPreviousQuery = useLoadPreviousQuery();
 
-  const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+  return (
+    datasetId: DatasetIdT,
+    rootConcepts: TreesT,
+    query: PreviousQueryQueryNodeType
+  ) => {
+    if (!query.root || query.root.type !== "AND") {
+      throw new Error("Cant expand query, because root is not AND");
+    }
 
-  return [
-    {
-      type: EXPAND_PREVIOUS_QUERY,
-      payload: { rootConcepts, query },
-    },
-    ...nestedPreviousQueryIds.map((queryId) =>
-      loadPreviousQuery(datasetId, queryId)
-    ),
-  ];
+    const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+
+    return [
+      {
+        type: EXPAND_PREVIOUS_QUERY,
+        payload: { rootConcepts, query },
+      },
+      ...nestedPreviousQueryIds.map((queryId) =>
+        loadPreviousQuery(datasetId, queryId)
+      ),
+    ];
+  };
 };
 
 export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({

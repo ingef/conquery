@@ -1,7 +1,7 @@
 import { ConceptIdT, DatasetIdT, FilterIdT, TableIdT } from "../../api/types";
 import { useDispatch } from "react-redux";
 import { usePostPrefixForSuggestions } from "../../api/api";
-import { toUpperCaseUnderscore } from "js/common/helpers";
+import { toUpperCaseUnderscore } from "../../common/helpers";
 
 const loadFormFilterSuggestionsStart = (
   formName,

@@ -2,8 +2,11 @@ import T from "i18n-react";
 import { useDispatch } from "react-redux";
 import { DatasetIdT } from "../../api/types";
 
-import api from "../../api";
-import { usePatchStoredQuery } from "../../api/api";
+import {
+  useGetStoredQueries,
+  usePatchStoredQuery,
+  useGetStoredQuery,
+} from "../../api/api";
 
 import { defaultSuccess, defaultError } from "../../common/actions";
 
@@ -37,12 +40,15 @@ export const loadPreviousQueriesSuccess = (res) =>
 export const loadPreviousQueriesError = (err) =>
   defaultError(LOAD_PREVIOUS_QUERIES_ERROR, err);
 
-export const loadPreviousQueries = (datasetId) => {
-  return async (dispatch) => {
+export const useLoadPreviousQueries = () => {
+  const dispatch = useDispatch();
+  const getStoredQueries = useGetStoredQueries();
+
+  return async (datasetId: DatasetIdT) => {
     dispatch(loadPreviousQueriesStart());
 
     try {
-      const result = await api.getStoredQueries(datasetId);
+      const result = await getStoredQueries(datasetId);
 
       return dispatch(loadPreviousQueriesSuccess(result));
     } catch (e) {
@@ -62,14 +68,14 @@ export const loadPreviousQuerySuccess = (queryId, res) =>
 export const loadPreviousQueryError = (queryId, err) =>
   defaultError(LOAD_PREVIOUS_QUERY_ERROR, err, { queryId });
 
-export const loadPreviousQuery = (
-  datasetId: DatasetIdT,
-  queryId: PreviousQueryIdT
-) => {
-  return (dispatch) => {
+export const useLoadPreviousQuery = () => {
+  const dispatch = useDispatch();
+  const getStoredQuery = useGetStoredQuery();
+
+  return (datasetId: DatasetIdT, queryId: PreviousQueryIdT) => {
     dispatch(loadPreviousQueryStart(queryId));
 
-    return api.getStoredQuery(datasetId, queryId).then(
+    return getStoredQuery(datasetId, queryId).then(
       (r) => dispatch(loadPreviousQuerySuccess(queryId, r)),
       (e) =>
         dispatch(

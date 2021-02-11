@@ -23,7 +23,7 @@ import type {
   GetDatasetsResponseT,
 } from "./types";
 
-import fetchJson, { useApi, useApiUnauthorized } from "./useApi";
+import { useApi, useApiUnauthorized } from "./useApi";
 import { transformQueryToApi } from "./apiHelper";
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 import type {
@@ -66,55 +66,55 @@ export const useGetConcept = () => {
 };
 
 // Same signature as postFormQueries
-export function postQueries(
-  datasetId: DatasetIdT,
-  query: Object,
-  options: { queryType: string; selectedSecondaryId?: string | null }
-): Promise<PostQueriesResponseT> {
-  // Transform into backend-compatible format
-  const data = transformQueryToApi(query, options);
+export const usePostQueries = () => {
+  const api = useApi<PostQueriesResponseT>();
 
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/queries`),
-    method: "POST",
-    data,
-  });
-}
+  return (
+    datasetId: DatasetIdT,
+    query: Object,
+    options: { queryType: string; selectedSecondaryId?: string | null }
+  ) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/queries`),
+      method: "POST",
+      data: transformQueryToApi(query, options), // Into backend-compatible format
+    });
+};
 
 // Same signature as postQueries, plus a form query transformator
-export function postFormQueries(
-  datasetId: DatasetIdT,
-  query: { form: string; formName: string },
-  { formQueryTransformation }: { formQueryTransformation: Function }
-): Promise<PostQueriesResponseT> {
-  // Transform into backend-compatible format
-  const data = transformFormQueryToApi(query, formQueryTransformation);
+export const usePostFormQueries = () => {
+  const api = useApi<PostQueriesResponseT>();
 
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/queries`),
-    method: "POST",
-    data,
-  });
-}
+  return (
+    datasetId: DatasetIdT,
+    query: { form: any; formName: string },
+    { formQueryTransformation }: { formQueryTransformation: Function }
+  ) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/queries`),
+      method: "POST",
+      data: transformFormQueryToApi(query, formQueryTransformation), // Into backend-compatible format
+    });
+};
 
-export function deleteQuery(
-  datasetId: DatasetIdT,
-  queryId: QueryIdT
-): Promise<null> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
-    method: "DELETE",
-  });
-}
+export const useDeleteQuery = () => {
+  const api = useApi<null>();
 
-export function getQuery(
-  datasetId: DatasetIdT,
-  queryId: QueryIdT
-): Promise<GetQueryResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
-  });
-}
+  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+      method: "DELETE",
+    });
+};
+
+export const useGetQuery = () => {
+  const api = useApi<GetQueryResponseT>();
+
+  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+    });
+};
 
 export const useGetForms = () => {
   const api = useApi<GetFormQueriesResponseT>();
@@ -125,22 +125,23 @@ export const useGetForms = () => {
     });
 };
 
-export function getStoredQueries(
-  datasetId: DatasetIdT
-): Promise<GetStoredQueriesResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries`),
-  });
-}
+export const useGetStoredQueries = () => {
+  const api = useApi<GetStoredQueriesResponseT>();
 
-export function getStoredQuery(
-  datasetId: DatasetIdT,
-  queryId: QueryIdT
-): Promise<GetStoredQueryResponseT> {
-  return fetchJson({
-    url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
-  });
-}
+  return (datasetId: DatasetIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries`),
+    });
+};
+
+export const useGetStoredQuery = () => {
+  const api = useApi<GetStoredQueryResponseT>();
+
+  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
+    });
+};
 
 export const useDeleteStoredQuery = () => {
   const api = useApi<null>();
@@ -218,7 +219,7 @@ export const useGetMe = () => {
   return useApi<GetMeResponseT>({ url: getProtectedUrl(`/me`) });
 };
 
-export function usePostLogin() {
+export const usePostLogin = () => {
   const api = useApiUnauthorized<PostLoginResponseT>({
     url: apiUrl() + "/auth",
     method: "POST",
@@ -231,7 +232,7 @@ export function usePostLogin() {
         password,
       },
     });
-}
+};
 
 export const usePostFormConfig = () => {
   const api = useApi<PostFormConfigsResponseT>();

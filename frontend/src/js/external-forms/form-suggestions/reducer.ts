@@ -1,4 +1,4 @@
-import { toUpperCaseUnderscore } from "js/common/helpers";
+import { toUpperCaseUnderscore } from "../../common/helpers";
 
 const updateFormFilterProperty = (
   state: any,

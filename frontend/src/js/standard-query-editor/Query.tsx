@@ -7,7 +7,7 @@ import T from "i18n-react";
 import type { DatasetIdT } from "../api/types";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
-import { loadPreviousQuery } from "../previous-queries/list/actions";
+import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import {
@@ -16,7 +16,7 @@ import {
   deleteNode,
   deleteGroup,
   toggleExcludeGroup,
-  expandPreviousQuery,
+  useExpandPreviousQuery,
   selectNodeForEditing,
   toggleTimestamps,
   toggleSecondaryIdExclude,
@@ -74,7 +74,10 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
   const rootConcepts = useSelector<StateT, TreesT>(
     (state) => state.conceptTrees.trees
   );
+
   const dispatch = useDispatch();
+  const loadPreviousQuery = useLoadPreviousQuery();
+  const expandPreviousQuery = useExpandPreviousQuery();
 
   const onDropAndNode = (item: DraggedNodeType | DraggedQueryType) =>
     dispatch(dropAndNode(item));
@@ -99,7 +102,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
     dispatch(queryGroupModalSetNode(andIdx));
 
   const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) =>
-    dispatch(expandPreviousQuery(selectedDatasetId, rootConcepts, q));
+    expandPreviousQuery(selectedDatasetId, rootConcepts, q);
   const onLoadPreviousQuery = (queryId: PreviousQueryIdT) =>
     dispatch(loadPreviousQuery(selectedDatasetId, queryId));
 

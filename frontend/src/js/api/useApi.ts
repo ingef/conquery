@@ -97,5 +97,3 @@ function fetchJson(request?: Partial<AxiosRequestConfig>) {
 
   return fetchJsonUnauthorized(finalRequest);
 }
-
-export default fetchJson;

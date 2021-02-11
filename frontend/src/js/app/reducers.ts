@@ -24,7 +24,9 @@ import previousQueriesSearch, {
 import previousQueriesFilter, {
   PreviousQueriesFilterStateT,
 } from "../previous-queries/filter/reducer";
-import uploadQueryResults from "../previous-queries/upload/reducer";
+import uploadQueryResults, {
+  UploadQueryResultsStateT,
+} from "../previous-queries/upload/reducer";
 import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
 import preview, { PreviewStateT } from "../preview/reducer";
 import queryUploadConceptListModal from "../query-upload-concept-list-modal/reducer";
@@ -56,6 +58,7 @@ export type StateT = {
   tooltip: TooltipStateT;
   panes: PanesStateT;
   uploadConceptListModal: UploadConceptListModalStateT;
+  uploadQueryResults: UploadQueryResultsStateT;
   user: UserStateT;
   queryEditor: StandardQueryEditorStateT;
   queryNodeEditor: QueryNodeEditorStateT;
