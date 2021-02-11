@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
@@ -23,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
 public enum EmptyStore implements
-		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore {
+		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore, DateStore {
 	INSTANCE;
 
 	@Override
@@ -41,6 +42,16 @@ public enum EmptyStore implements
 		return 0;
 	}
 
+
+	@Override
+	public int getDate(int event) {
+		return 0;
+	}
+
+	@Override
+	public void setDate(int event, int value) {
+
+	}
 
 	@Override
 	public Object createScriptValue(int event) {
@@ -148,13 +159,13 @@ public enum EmptyStore implements
 	}
 
 	@Override
-	public boolean isDictionaryHolding() {
-		return false;
+	public void setUnderlyingDictionary(DictionaryId newDict) {
+
 	}
 
 	@Override
-	public void setUnderlyingDictionary(DictionaryId newDict) {
-
+	public boolean isDictionaryHolding() {
+		return false;
 	}
 
 	@Override

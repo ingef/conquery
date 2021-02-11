@@ -81,7 +81,9 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 			return new DateRangeTypeQuarter(quarterParser.findBestType());
 		}
 
-		// If they are non-empty, they need to be aligned.
+
+		// They need to be aligned if they are non-empty.
+
 		if(!minParser.isEmpty()) {
 			minParser.setLines(getLines());
 		}
