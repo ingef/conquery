@@ -98,6 +98,7 @@ const findPreviousQueryIds = (node, queries = []) => {
   2) Triggers a load for all nested queries
 */
 export const useExpandPreviousQuery = () => {
+  const dispatch = useDispatch();
   const loadPreviousQuery = useLoadPreviousQuery();
 
   return (
@@ -111,15 +112,14 @@ export const useExpandPreviousQuery = () => {
 
     const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
 
-    return [
-      {
-        type: EXPAND_PREVIOUS_QUERY,
-        payload: { rootConcepts, query },
-      },
-      ...nestedPreviousQueryIds.map((queryId) =>
-        loadPreviousQuery(datasetId, queryId)
-      ),
-    ];
+    dispatch({
+      type: EXPAND_PREVIOUS_QUERY,
+      payload: { rootConcepts, query },
+    });
+
+    for (const queryId of nestedPreviousQueryIds) {
+      loadPreviousQuery(datasetId, queryId);
+    }
   };
 };
 

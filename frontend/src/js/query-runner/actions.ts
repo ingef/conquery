@@ -44,7 +44,11 @@ import { useDispatch } from "react-redux";
   by sending a DELETE request for that query ID
 */
 
-export type QueryTypeT = "standard" | "external" | "timebased" | "externalForm";
+export type QueryTypeT =
+  | "standard"
+  | "external"
+  | "timebased"
+  | "externalForms";
 
 const startQueryStart = (queryType: QueryTypeT) => ({
   type: START_QUERY_START,

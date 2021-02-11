@@ -56,6 +56,7 @@ const TimebasedQueryRunner: FC<PropsT> = ({ datasetId }) => {
 
   return (
     <QueryRunner
+      queryRunner={queryRunner}
       isButtonEnabled={isButtonEnabled}
       isQueryRunning={isQueryRunning}
       startQuery={startQuery}

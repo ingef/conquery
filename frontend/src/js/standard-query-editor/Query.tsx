@@ -104,7 +104,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
   const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) =>
     expandPreviousQuery(selectedDatasetId, rootConcepts, q);
   const onLoadPreviousQuery = (queryId: PreviousQueryIdT) =>
-    dispatch(loadPreviousQuery(selectedDatasetId, queryId));
+    loadPreviousQuery(selectedDatasetId, queryId);
 
   return (
     <Container>

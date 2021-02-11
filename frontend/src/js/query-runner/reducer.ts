@@ -88,7 +88,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
     state: QueryRunnerStateT = initialState,
     action: Object
   ): QueryRunnerStateT => {
-    if (action.queryType !== type) {
+    if (!action.payload || action.payload.queryType !== type) {
       return state;
     }
 

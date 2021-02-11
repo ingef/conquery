@@ -76,8 +76,8 @@ const FormQueryRunner: FC<PropsT> = ({ datasetId }) => {
     ? transformQueryToApi(formConfig)
     : () => {};
 
-  const startExternalFormsQuery = useStartQuery("externalForm");
-  const stopExternalFormsQuery = useStopQuery("externalForm");
+  const startExternalFormsQuery = useStartQuery("externalForms");
+  const stopExternalFormsQuery = useStopQuery("externalForms");
 
   const startQuery = () =>
     startExternalFormsQuery(datasetId, query, {
