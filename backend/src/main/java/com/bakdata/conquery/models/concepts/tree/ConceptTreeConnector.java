@@ -150,8 +150,7 @@ public class ConceptTreeConnector extends Connector {
 				// also add concepts into bloom filter of entity cblock.
 				ConceptTreeNode<?> it = child;
 				while (it != null) {
-					cBlock.getIncludedConcepts()
-						  .put(entry.getEntity(), cBlock.getIncludedConcepts().getOrDefault(entry.getEntity(), 0) | it.calculateBitMask());
+					cBlock.addIncludedConcept(entry.getEntity(), it);
 					it = it.getParent();
 				}
 			}
