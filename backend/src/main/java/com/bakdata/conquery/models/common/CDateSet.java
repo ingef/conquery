@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.events.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -282,7 +282,73 @@ public class CDateSet {
 	private void putRange(CDateRange range) {
 		rangesByLowerBound.put(range.getMinValue(), range);
 	}
-	
+
+
+	public void maskedAdd(CDateRange toAdd, CDateSet mask){
+		if(mask.isEmpty()){
+			return;
+		}
+
+		if(mask.isAll()){
+			add(toAdd);
+			return;
+		}
+
+		if(toAdd.isAll()){
+			addAll(mask);
+			return;
+		}
+
+		if(toAdd.isExactly() && mask.contains(toAdd.getMinValue())){
+			add(toAdd);
+			return;
+		}
+
+		// Look for start and end of iteration.
+		Integer search = null;
+
+		if (toAdd.hasLowerBound()) {
+			search = mask.rangesByLowerBound.floorKey(toAdd.getMinValue());
+		}
+
+		if(search == null) {
+			search = mask.rangesByLowerBound.firstKey();
+		}
+
+		Integer searchEnd = null;
+
+		if(toAdd.hasUpperBound()){
+			searchEnd = mask.rangesByLowerBound.floorKey(toAdd.getMaxValue());
+		}
+
+		if(searchEnd == null){
+			searchEnd = mask.rangesByLowerBound.lastKey();
+		}
+
+		while(search != null && search <= searchEnd) {
+			final CDateRange range = mask.rangesByLowerBound.get(search);
+
+			search = mask.rangesByLowerBound.higherKey(search);
+
+			int min = range.getMinValue();
+			int max = range.getMaxValue();
+
+			if(max < toAdd.getMinValue()){
+				continue;
+			}
+
+			if(min < toAdd.getMinValue()){
+				min = toAdd.getMinValue();
+			}
+
+			if(max > toAdd.getMaxValue()){
+				max = toAdd.getMaxValue();
+			}
+
+			add(CDateRange.of(min, max));
+		}
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

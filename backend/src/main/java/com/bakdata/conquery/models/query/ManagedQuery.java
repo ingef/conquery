@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -27,16 +26,16 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
@@ -52,6 +51,8 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -84,6 +85,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient int executingThreads;
 	@JsonIgnore
+	private transient ConqueryConfig config;
+	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
@@ -94,12 +97,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void doInitExecutable(@NonNull DatasetRegistry namespaces) {
+	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
+		this.config = config;
 		this.namespace = namespaces.get(getDataset());
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces));
 		if(label == null) {
-			label = makeAutoLabel();
+			label = makeAutoLabel(namespaces);
 		}
 	}
 	
@@ -136,7 +140,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
+		lastResultCount = query.countResults(results);
 
 		super.finish(storage, executionState);
 	}
@@ -151,13 +155,19 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MetaStorage storage, UriBuilder url, @NonNull User user, @NonNull ExecutionStatus status) {
-		super.setStatusBase(storage, url, user, status);
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
+		super.setStatusBase(storage, user, status, url);
 		status.setNumberOfResults(lastResultCount);
+
+		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
+
+		if (query instanceof SecondaryIdQuery) {
+			status.setSecondaryId(((SecondaryIdQuery) query).getSecondaryId().getId());
+		}
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions(datasetRegistry);
@@ -169,9 +179,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
 	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
+		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 		// First add the id columns to the descriptor list. The are the first columns
-		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
+		for (String header : config.getIdMapping().getPrintIdFields()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 				.label(header)
 				.type(ConqueryConstants.ID_TYPE)
@@ -232,7 +243,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			.toURL();
 	}
 
-	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 20;
+	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
 	
 	/**
 	 * Creates a default label based on the submitted {@link QueryDescription}.
@@ -243,7 +254,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	 * All further labels are dropped.
 	 */
 	@Override
-	protected void makeDefaultLabel(final StringBuilder sb) {
+	protected void makeDefaultLabel(final StringBuilder sb, DatasetRegistry datasetRegistry) {
 		final Map<Class<? extends Visitable>,List<Visitable>> sortedContents = new HashMap<>();
 		
 		int sbStartSize = sb.length();
@@ -278,20 +289,47 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		final AtomicInteger length = new AtomicInteger();
 		String usedConcepts = sortedContents.computeIfAbsent(CQConcept.class, (clazz)-> List.of()).stream()
 			.map((CQConcept.class::cast))
-			.map(CQConcept::getLabel)
+			.map(c -> makeLabelWithRootAndChild(datasetRegistry, c))
 			.distinct()
-			.filter(Objects::nonNull)
+			.filter((s) -> !Strings.isNullOrEmpty(s))
 			.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
-			.collect(Collectors.joining("-"));
+			.collect(Collectors.joining(" "));
 		
 		if (sb.length() > 0 && usedConcepts.length() > 0) {
 			sb.append(" ");
 		}
 		sb.append(usedConcepts);
+
+		// If not all Concept could be included in the name, point that out
+		if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {
+			sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
+		}
 		
 		// Fallback to id if nothing could be extracted from the query description
 		if(sbStartSize == sb.length()) {
 			sb.append(getId().getExecution());
 		}
+	}
+
+	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept){
+		String cqConceptLabel = cqConcept.getLabel();
+		if (cqConceptLabel == null){
+			return "";
+		}
+
+		if(cqConcept.getIds().isEmpty()){
+			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
+		}
+
+		ConceptElementId<?> id = cqConcept.getIds().iterator().next();
+
+		Concept<?> concept = datasetRegistry.resolve(id.findConcept());
+		String conceptLabel = concept.getLabel();
+		if(cqConceptLabel.equalsIgnoreCase(conceptLabel)){
+			return cqConceptLabel.replace(" ", "-");
+		}
+
+		// Concat everything with dashes
+		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
 	}
 }

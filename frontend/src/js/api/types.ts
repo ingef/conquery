@@ -2,7 +2,7 @@
 // - response type provided by the backend API
 // - partial types that the reponses are built from
 
-import type { Forms } from "./form-types";
+import { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
 import { SupportedErrorCodesT } from "./errorCodes";
 
@@ -16,8 +16,6 @@ export interface SelectOptionT {
   label: string;
   value: number | string;
 }
-
-export type SelectOptionsT = SelectOptionT[];
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
 export interface DateRangeT {
@@ -58,7 +56,7 @@ export interface RangeFilterT extends FilterBaseT {
 export type MultiSelectFilterValueT = (string | number)[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: MultiSelectFilterValueT | null;
 }
 
@@ -83,7 +81,7 @@ export type SelectFilterValueT = string | number;
 export interface SelectFilterT extends FilterBaseT {
   type: "SELECT";
   unit?: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: SelectFilterValueT | null;
 }
 
@@ -93,7 +91,7 @@ export interface StringFilterT extends FilterBaseT {
 }
 
 export interface DateColumnT {
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: string | null;
   value?: string;
 }
@@ -230,7 +228,14 @@ export interface GetFrontendConfigResponseT {
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
 
+export interface SecondaryId {
+  id: string;
+  label: string;
+  description?: string;
+}
+
 export interface GetConceptsResponseT {
+  secondaryIds: SecondaryId[];
   concepts: {
     [conceptId: string]: ConceptStructT | ConceptElementT;
   };
@@ -266,6 +271,7 @@ export interface GetQueryResponseDoneT {
   numberOfResults: number;
   resultUrl: string;
   columnDescriptions: ColumnDescription[];
+  queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
@@ -296,9 +302,12 @@ export interface GetStoredQueryResponseT {
   requiredTime: number; // TODO: Not used
   tags?: string[];
   query: QueryT;
+  queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  secondaryId: string | null;
   owner: string; // TODO: Remove. Not used. And it's actually an ID
   status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
+  canExpand?: boolean;
 }
 
 // TODO: This actually returns a lot of unused fields, see above
@@ -321,10 +330,10 @@ export interface PostFilterResolveResponseT {
   };
 }
 
-interface FilterSuggestion {
+export interface FilterSuggestion {
   label: string;
   value: string;
-  optionValue: string | null;
+  optionValue: string;
   templateValues: string[]; // unclear whether that's correct
 }
 export type PostFilterSuggestionsResponseT = FilterSuggestion[];
@@ -339,7 +348,7 @@ export interface PermissionT {
 
 export type UserGroupIdT = string;
 export interface UserGroupT {
-  groupId: UserGroupIdT;
+  id: UserGroupIdT;
   label: string;
 }
 

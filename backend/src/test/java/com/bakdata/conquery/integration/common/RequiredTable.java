@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -34,10 +35,10 @@ public class RequiredTable {
 	@Valid
 	private RequiredColumn[] columns;
 
-	public Table toTable() {
+	public Table toTable(Dataset dataset) {
 		Table table = new Table();
+		table.setDataset(dataset);
 		table.setName(name);
-		table.setPrimaryColumn(primaryColumn.toColumn(table));
 		table.setColumns(Arrays.stream(columns).map(col -> col.toColumn(table)).toArray(Column[]::new));
 		return table;
 	}

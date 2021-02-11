@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import type { FieldPropsType } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 
 import type { CurrencyConfigT } from "../api/types";
 
@@ -25,7 +25,7 @@ const StyledInputText = styled(InputText)`
   }
 `;
 
-type PropsType = FieldPropsType & {
+interface PropsType extends WrappedFieldProps {
   inputType: string;
   valueType?: string;
   label: string;
@@ -49,7 +49,7 @@ type PropsType = FieldPropsType & {
     } | null;
   };
   currencyConfig?: CurrencyConfigT;
-};
+}
 
 function getMinMaxExact(value) {
   if (!value) return { min: "", max: "", exact: "" };

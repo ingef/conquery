@@ -14,17 +14,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
-import com.bakdata.conquery.models.preproc.PreprocessedHeader;
-import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
-import com.fasterxml.jackson.core.JsonParser;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
 import io.dropwizard.setup.Environment;
@@ -114,26 +110,26 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 		
 		@Override
 		public void execute() throws Exception {
-			try (HCFile hcFile = new HCFile(file, false)) {
-				PreprocessedHeader header;
-				try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(hcFile.readHeader())) {
-					header = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class).readValue(in);
-
-					log.info("Reading {}", header.getName());
-
-					log.debug("\tparsing dictionaries");
-					header.getPrimaryColumn().getType().readHeader(in);
-					AStringType<Number> primType = (AStringType<Number>) header.getPrimaryColumn().getType();
-					
-					add(primType, new File(file.getParentFile(), "all_entities.csv"));
-					if(verbose) {
-						add(primType, new File(file.getParentFile(), file.getName()+".entities.csv"));
-					}
-				}
-			}
+//			try (HCFile hcFile = new HCFile(file, false)) {
+//				PreprocessedHeader header;
+//				try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(hcFile.readHeader())) {
+//					header = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class).readValue(in);
+//
+//					log.info("Reading {}", header.getName());
+//
+//					log.debug("\tparsing dictionaries");
+//					header.getPrimaryColumn().getType().readHeader(in);
+//					StringType primType = (StringType) header.getPrimaryColumn().getType();
+//
+//					add(primType, new File(file.getParentFile(), "all_entities.csv"));
+//					if(verbose) {
+//						add(primType, new File(file.getParentFile(), file.getName()+".entities.csv"));
+//					}
+//				}
+//			}
 		}
 
-		private void add(AStringType<Number> primType, File file) {
+		private void add(StringStore primType, File file) {
 			Set<String> list = entities.computeIfAbsent(file, f->Sets.newConcurrentHashSet());
 			primType.forEach(list::add);
 		}

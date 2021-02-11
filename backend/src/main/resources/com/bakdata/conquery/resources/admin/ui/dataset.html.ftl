@@ -10,8 +10,16 @@
 		</form>
 	</@layout.kc>
 	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
+	<@layout.kv k="CBlocks" v=layout.si(c.getCBlocksSize())+"B"/>
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="IdMapping"><a href="/admin/datasets/${c.ds.id}/mapping">Here</a></@layout.kc>
+	<@layout.kc k="SecondaryIds">
+	    <ul>
+        <#list c.secondaryIds as secondaryId>
+            <li>${secondaryId}</li>
+        </#list>
+	    </ul>
+	</@layout.kc>
 	<@layout.kc k="Tables">
 		<ul>
 			<#list c.tables?sort_by("label") as table>

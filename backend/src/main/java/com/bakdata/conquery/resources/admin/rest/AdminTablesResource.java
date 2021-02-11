@@ -46,7 +46,7 @@ public class AdminTablesResource extends HAdmin {
 	public void init() {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(datasetId);
-		this.table = namespace.getDataset().getTables().getOrFail(tableId);
+		this.table = namespace.getStorage().getTable(tableId);
 		if (this.table == null) {
 			throw new WebApplicationException("Could not find table " + tableId, Status.NOT_FOUND);
 		}

@@ -8,7 +8,7 @@ import InputSelect from "../form-components/InputSelect";
 import { T, getLocale } from "../localization";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
 import type { StateT } from "app-types";
-import type { Form } from "../api/form-types";
+import { Form } from "./config-types";
 
 const Root = styled("div")`
   flex-shrink: 0;

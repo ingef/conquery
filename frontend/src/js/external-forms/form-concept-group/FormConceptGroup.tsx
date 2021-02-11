@@ -1,7 +1,7 @@
 import * as React from "react";
 import styled from "@emotion/styled";
 import { useDispatch } from "react-redux";
-import type { FieldProps } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 import T from "i18n-react";
 
 import { resetAllFiltersInTables } from "../../model/table";
@@ -28,6 +28,10 @@ import {
   resetUploadConceptListModal,
 } from "../../upload-concept-list-modal/actions";
 
+import TransparentButton from "../../button/TransparentButton";
+import ToggleButton from "../../form-components/ToggleButton";
+import { exists } from "../../common/helpers/exists";
+
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import DropzoneList from "../form-components/DropzoneList";
 
@@ -43,9 +47,9 @@ import { FormQueryNodeEditor } from "../form-query-node-editor";
 import FormConceptNode from "./FormConceptNode";
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import { useAllowExtendedCopying } from "../stateSelectors";
-import TransparentButton from "../../button/TransparentButton";
+import { Description } from "../form-components/Description";
 
-type PropsType = FieldProps & {
+interface PropsType extends WrappedFieldProps {
   fieldName: string;
   label: string;
   datasetId: string;
@@ -57,12 +61,99 @@ type PropsType = FieldProps & {
   whitelistedTables?: string[];
   defaults: ConceptListDefaultsType;
   isValidConcept?: Function;
-};
+}
 
 const addValue = (value, newValue) => [...value, newValue];
 
-const removeValue = (value, valueIdx) => {
+const removeValue = (value, valueIdx: number) => {
   return [...value.slice(0, valueIdx), ...value.slice(valueIdx + 1)];
+};
+
+const setValueProperties = (value, valueIdx: number, props) => {
+  return [
+    ...value.slice(0, valueIdx),
+    {
+      ...value[valueIdx],
+      ...props,
+    },
+    ...value.slice(valueIdx + 1),
+  ];
+};
+
+const addConcept = (value, valueIdx, item) =>
+  setValueProperties(value, valueIdx, {
+    concepts: [...value[valueIdx].concepts, item],
+  });
+
+const removeConcept = (value, valueIdx: number, conceptIdx: number) =>
+  setValueProperties(value, valueIdx, {
+    concepts: [
+      ...value[valueIdx].concepts.slice(0, conceptIdx),
+      ...value[valueIdx].concepts.slice(conceptIdx + 1),
+    ],
+  });
+
+const setConcept = (value, valueIdx: number, conceptIdx: number, item) =>
+  setValueProperties(value, valueIdx, {
+    concepts: [
+      ...value[valueIdx].concepts.slice(0, conceptIdx),
+      item,
+      ...value[valueIdx].concepts.slice(conceptIdx + 1),
+    ],
+  });
+
+const setConceptProperties = (
+  value,
+  valueIdx: number,
+  conceptIdx: number,
+  props
+) =>
+  setConcept(value, valueIdx, conceptIdx, {
+    ...value[valueIdx].concepts[conceptIdx],
+    ...props,
+  });
+
+const setTableProperties = (
+  value,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  props
+) => {
+  const tables = value[valueIdx].concepts[conceptIdx].tables;
+
+  return setConceptProperties(value, valueIdx, conceptIdx, {
+    tables: [
+      ...tables.slice(0, tableIdx),
+      {
+        ...tables[tableIdx],
+        ...props,
+      },
+      ...tables.slice(tableIdx + 1),
+    ],
+  });
+};
+
+const setFilterProperties = (
+  value,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  filterIdx: number,
+  props
+) => {
+  const filters = value[valueIdx].concepts[conceptIdx].tables[tableIdx].filters;
+
+  return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
+    filters: [
+      ...filters.slice(0, filterIdx),
+      {
+        ...filters[filterIdx],
+        ...props,
+      },
+      ...filters.slice(filterIdx + 1),
+    ],
+  });
 };
 
 const onToggleIncludeSubnodes = (
@@ -84,6 +175,7 @@ const onToggleIncludeSubnodes = (
 
     return {
       ...newValue,
+      ...element,
       concepts: [
         {
           ids: [childId],
@@ -105,7 +197,7 @@ const onToggleIncludeSubnodes = (
         ...value.slice(valueIdx + 1),
       ]
     : value.filter((val) =>
-        val.concepts.some((cpt) => {
+        val.concepts.filter(exists).some((cpt) => {
           return childIds.every((childId) => !includes(cpt.ids, childId));
         })
       );
@@ -185,72 +277,16 @@ const initializeConcept = (item, defaults) => {
   });
 };
 
-const addConcept = (value, valueIdx, item) => [
-  ...value.slice(0, valueIdx),
-  {
-    ...value[valueIdx],
-    concepts: [...value[valueIdx].concepts, item],
-  },
-  ...value.slice(valueIdx + 1),
-];
-
-const removeConcept = (value, valueIdx, conceptIdx) => [
-  ...value.slice(0, valueIdx),
-  {
-    ...value[valueIdx],
-    concepts: [
-      ...value[valueIdx].concepts.slice(0, conceptIdx),
-      ...value[valueIdx].concepts.slice(conceptIdx + 1),
-    ],
-  },
-  ...value.slice(valueIdx + 1),
-];
-
-const setConcept = (value, valueIdx, conceptIdx, item) => [
-  ...value.slice(0, valueIdx),
-  {
-    ...value[valueIdx],
-    concepts: [
-      ...value[valueIdx].concepts.slice(0, conceptIdx),
-      item,
-      ...value[valueIdx].concepts.slice(conceptIdx + 1),
-    ],
-  },
-  ...value.slice(valueIdx + 1),
-];
-
-const setConceptProperties = (value, valueIdx, conceptIdx, props) =>
-  setConcept(value, valueIdx, conceptIdx, {
-    ...value[valueIdx].concepts[conceptIdx],
-    ...props,
+const toggleTable = (
+  value,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  isExcluded: boolean
+) => {
+  return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
+    exclude: isExcluded,
   });
-
-const toggleTable = (value, valueIdx, conceptIdx, tableIdx, isExcluded) => {
-  const concepts = value[valueIdx].concepts;
-  const tables = concepts[conceptIdx].tables;
-
-  return [
-    ...value.slice(0, valueIdx),
-    {
-      ...value[valueIdx],
-      concepts: [
-        ...concepts.slice(0, conceptIdx),
-        {
-          ...concepts[conceptIdx],
-          tables: [
-            ...tables.slice(0, tableIdx),
-            {
-              ...tables[tableIdx],
-              exclude: isExcluded,
-            },
-            ...tables.slice(tableIdx + 1),
-          ],
-        },
-        ...concepts.slice(conceptIdx + 1),
-      ],
-    },
-    ...value.slice(valueIdx + 1),
-  ];
 };
 
 const setDateColumn = (
@@ -260,58 +296,35 @@ const setDateColumn = (
   tableIdx,
   dateColumnValue
 ) => {
-  const concepts = value[valueIdx].concepts;
-  const tables = concepts[conceptIdx].tables;
-
-  return setConceptProperties(value, valueIdx, conceptIdx, {
-    tables: [
-      ...tables.slice(0, tableIdx),
-      {
-        ...tables[tableIdx],
-        dateColumn: {
-          ...tables[tableIdx].dateColumn,
-          value: dateColumnValue,
-        },
-      },
-      ...tables.slice(tableIdx + 1),
-    ],
+  return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
+    dateColumn: {
+      ...value[valueIdx].concepts[conceptIdx].tables[tableIdx].dateColumn,
+      value: dateColumnValue,
+    },
   });
 };
 
 const setFilterValue = (
   value,
-  valueIdx,
-  conceptIdx,
-  tableIdx,
-  filterIdx,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  filterIdx: number,
   filterValue,
   formattedFilterValue
 ) => {
-  const concepts = value[valueIdx].concepts;
-  const tables = concepts[conceptIdx].tables;
-  const filters = tables[tableIdx].filters;
-
-  return setConceptProperties(value, valueIdx, conceptIdx, {
-    tables: [
-      ...tables.slice(0, tableIdx),
-      {
-        ...tables[tableIdx],
-        filters: [
-          ...filters.slice(0, filterIdx),
-          {
-            ...filters[filterIdx],
-            value: filterValue,
-            formattedValue: formattedFilterValue,
-          },
-          ...filters.slice(filterIdx + 1),
-        ],
-      },
-      ...tables.slice(tableIdx + 1),
-    ],
+  return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
+    value: filterValue,
+    formattedValue: formattedFilterValue,
   });
 };
 
-const setSelects = (value, valueIdx, conceptIdx, selectedSelects) => {
+const setSelects = (
+  value,
+  valueIdx: number,
+  conceptIdx: number,
+  selectedSelects
+) => {
   const concepts = value[valueIdx].concepts;
   const selects = concepts[conceptIdx].selects;
 
@@ -330,32 +343,25 @@ const setSelects = (value, valueIdx, conceptIdx, selectedSelects) => {
 
 const setTableSelects = (
   value,
-  valueIdx,
-  conceptIdx,
-  tableIdx,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
   selectedSelects
 ) => {
   const concepts = value[valueIdx].concepts;
   const tables = concepts[conceptIdx].tables;
   const selects = tables[tableIdx].selects;
 
-  return setConceptProperties(value, valueIdx, conceptIdx, {
-    tables: [
-      ...tables.slice(0, tableIdx),
-      {
-        ...tables[tableIdx],
-        // value contains the selects that have now been selected
-        selects: selects.map((select) => ({
-          ...select,
-          selected: !selectedSelects
-            ? false
-            : !!selectedSelects.find(
-                (selectedValue) => selectedValue.value === select.id
-              ),
-        })),
-      },
-      ...tables.slice(tableIdx + 1),
-    ],
+  return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
+    // value contains the selects that have now been selected
+    selects: selects.map((select) => ({
+      ...select,
+      selected: !selectedSelects
+        ? false
+        : !!selectedSelects.find(
+            (selectedValue) => selectedValue.value === select.id
+          ),
+    })),
   });
 };
 
@@ -376,55 +382,31 @@ const switchFilterMode = (
   filterIdx,
   mode
 ) => {
-  const concepts = value[valueIdx].concepts;
-  const tables = concepts[conceptIdx].tables;
-  const filters = tables[tableIdx].filters;
-
-  return [
-    ...value.slice(0, valueIdx),
-    {
-      ...value[valueIdx],
-      concepts: [
-        ...concepts.slice(0, conceptIdx),
-        {
-          ...concepts[conceptIdx],
-          tables: [
-            ...tables.slice(0, tableIdx),
-            {
-              ...tables[tableIdx],
-              filters: [
-                ...filters.slice(0, filterIdx),
-                {
-                  ...filters[filterIdx],
-                  mode: mode,
-                  value: null,
-                  formattedValue: null,
-                },
-                ...filters.slice(filterIdx + 1),
-              ],
-            },
-            ...tables.slice(tableIdx + 1),
-          ],
-        },
-        ...concepts.slice(conceptIdx + 1),
-      ],
-    },
-    ...value.slice(valueIdx + 1),
-  ];
+  return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
+    mode: mode,
+    value: null,
+    formattedValue: null,
+  });
 };
 
 const copyConcept = (item) => {
   return JSON.parse(JSON.stringify(item));
 };
 
-const DropzoneListItem = styled("div")`
+const DropzoneListItem = styled("div")``;
+const Row = styled("div")`
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  margin-bottom: 5px;
 `;
 
 const SxTransparentButton = styled(TransparentButton)`
   margin-left: 10px;
+`;
+
+const SxDescription = styled(Description)`
+  margin: 0 5px 0 0;
+  font-size: ${({ theme }) => theme.font.xs};
 `;
 
 const FormConceptGroup = (props: PropsType) => {
@@ -522,7 +504,6 @@ const FormConceptGroup = (props: PropsType) => {
             : props.attributeDropzoneText
         }
         acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
-        allowFile={true}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={(i) =>
           props.input.onChange(removeValue(props.input.value, i))
@@ -562,6 +543,31 @@ const FormConceptGroup = (props: PropsType) => {
             {props.renderRowPrefix
               ? props.renderRowPrefix(props.input, row, i)
               : null}
+            {false && // TODO: TEMPORARILY DISABLED, UNTIL FEATURE IS COORDINATED
+              !props.renderRowPrefix &&
+              row.concepts.length > 1 && (
+                <Row>
+                  <SxDescription>
+                    {T.translate("externalForms.common.connectedWith")}:
+                  </SxDescription>
+                  <ToggleButton
+                    input={{
+                      value: props.input.value[i].connector,
+                      onChange: (value) => {
+                        props.input.onChange(
+                          setValueProperties(props.input.value, i, {
+                            connector: value,
+                          })
+                        );
+                      },
+                    }}
+                    options={[
+                      { value: "OR", label: T.translate("common.or") },
+                      { value: "AND", label: T.translate("common.and") },
+                    ]}
+                  />
+                </Row>
+              )}
             <DynamicInputGroup
               key={i}
               limit={props.isSingle ? 1 : 0}

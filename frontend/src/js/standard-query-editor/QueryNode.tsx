@@ -2,6 +2,8 @@ import React, { useRef, FC } from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { useDrag } from "react-dnd";
+import { useSelector } from "react-redux";
+import { StateT } from "app-types";
 
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import { QUERY_NODE } from "../common/constants/dndTypes";
@@ -13,9 +15,16 @@ import { getWidthAndHeight } from "../app/DndProvider";
 import QueryNodeActions from "./QueryNodeActions";
 
 import { getRootNodeLabel } from "./helper";
-import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
+import type {
+  QueryNodeType,
+  DraggedNodeType,
+  DraggedQueryType,
+  PreviousQueryQueryNodeType,
+} from "./types";
 
-const Root = styled("div")<{ hasActiveFilters: boolean }>`
+const Root = styled("div")<{
+  hasActiveFilters?: boolean;
+}>`
   position: relative;
   width: 100%;
   margin: 0 auto;
@@ -85,12 +94,13 @@ const RootNode = styled("p")`
 
 interface PropsT {
   node: QueryNodeType;
-  onDeleteNode: Function;
-  onEditClick: Function;
-  onToggleTimestamps: Function;
-  onExpandClick: Function;
   andIdx: number;
   orIdx: number;
+  onDeleteNode: () => void;
+  onEditClick: () => void;
+  onToggleTimestamps: () => void;
+  onToggleSecondaryIdExclude: () => void;
+  onExpandClick: (q: PreviousQueryQueryNodeType) => void;
 }
 
 const QueryNode: FC<PropsT> = ({
@@ -101,10 +111,25 @@ const QueryNode: FC<PropsT> = ({
   onEditClick,
   onDeleteNode,
   onToggleTimestamps,
+  onToggleSecondaryIdExclude,
 }) => {
   const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
+
+  const activeSecondaryId = useSelector<StateT, string | null>(
+    (state) => state.queryEditor.selectedSecondaryId
+  );
+
+  const hasActiveSecondaryId =
+    !!activeSecondaryId &&
+    !!node.tables &&
+    node.tables.some(
+      (table) =>
+        !table.exclude &&
+        table.supportedSecondaryIds &&
+        table.supportedSecondaryIds.includes(activeSecondaryId)
+    );
 
   const item = {
     // Return the data describing the dragged item
@@ -139,6 +164,7 @@ const QueryNode: FC<PropsT> = ({
           tree: node.tree,
           tables: node.tables,
           selects: node.selects,
+          excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
         }),
   };
   const [, drag] = useDrag({
@@ -156,7 +182,7 @@ const QueryNode: FC<PropsT> = ({
         drag(instance);
       }}
       hasActiveFilters={hasActiveFilters}
-      onClick={!!node.error ? () => null : onEditClick}
+      onClick={!!node.error ? () => {} : onEditClick}
     >
       <Node>
         {node.isPreviousQuery && (
@@ -178,10 +204,12 @@ const QueryNode: FC<PropsT> = ({
       </Node>
       <QueryNodeActions
         excludeTimestamps={node.excludeTimestamps}
-        onEditClick={onEditClick}
         onDeleteNode={onDeleteNode}
         onToggleTimestamps={onToggleTimestamps}
         isExpandable={isQueryExpandable(node)}
+        hasActiveSecondaryId={hasActiveSecondaryId}
+        excludeFromSecondaryIdQuery={node.excludeFromSecondaryIdQuery}
+        onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
         onExpandClick={() => {
           if (!node.query) return;
 

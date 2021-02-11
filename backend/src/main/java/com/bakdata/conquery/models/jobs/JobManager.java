@@ -3,18 +3,27 @@ package com.bakdata.conquery.models.jobs;
 import java.io.Closeable;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class JobManager implements Closeable{
+
+
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
 
-	public JobManager(String name) {
-		slowExecutor = new JobExecutor("Job Manager slow " + name);
-		fastExecutor = new JobExecutor("Job Manager fast " + name);
+	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> { System.exit(1);};
+
+	public JobManager(String name, boolean failOnError) {
+
+		slowExecutor = new JobExecutor("Job Manager slow " + name, failOnError);
+		fastExecutor = new JobExecutor("Job Manager fast " + name, failOnError);
+
+		slowExecutor.setUncaughtExceptionHandler(notifyExecutorDied);
+		fastExecutor.setUncaughtExceptionHandler(notifyExecutorDied);
 
 		slowExecutor.start();
 		fastExecutor.start();
@@ -34,6 +43,7 @@ public class JobManager implements Closeable{
 	}
 
 	public JobManagerStatus reportStatus() {
+
 		return new JobManagerStatus(
 				getSlowJobs()
 						.stream()

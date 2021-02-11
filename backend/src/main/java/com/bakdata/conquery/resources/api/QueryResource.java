@@ -57,13 +57,14 @@ public class QueryResource {
 		log.info("Query posted on dataset {} by user {} ({}).", datasetId, user.getId(), user.getName());
 
 		return Response.ok(
-			processor.postQuery(
-			dsUtil.getDataset(datasetId),
-			query,
-			RequestAwareUriBuilder.fromRequest(req),
-			user))
-			.status(Status.CREATED)
-			.build();
+				processor.postQuery(
+						dsUtil.getDataset(datasetId),
+						query,
+						RequestAwareUriBuilder.fromRequest(req),
+						user
+				))
+					   .status(Status.CREATED)
+					   .build();
 	}
 
 	@DELETE

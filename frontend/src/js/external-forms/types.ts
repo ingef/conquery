@@ -1,5 +1,5 @@
 import type { DatasetIdT } from "../api/types";
 
-export type ExternalFormPropsType = {
+export interface ExternalFormPropsType {
   selectedDatasetId: DatasetIdT;
-};
+}

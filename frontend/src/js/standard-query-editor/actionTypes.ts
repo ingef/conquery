@@ -20,6 +20,8 @@ export const SET_TABLE_SELECTS = "query-editor/SET_TABLE_SELECTS";
 export const RESET_ALL_FILTERS = "query-editor/RESET_ALL_FILTERS";
 export const SWITCH_FILTER_MODE = "query-editor/SWITCH_FILTER_MODE";
 export const TOGGLE_TIMESTAMPS = "query-editor/TOGGLE_TIMESTAMPS";
+export const TOGGLE_SECONDARY_ID_EXCLUDE =
+  "query-editor/TOGGLE_SECONDARY_ID_EXCLUDE";
 export const LOAD_FILTER_SUGGESTIONS_START =
   "query-editor/LOAD_FILTER_SUGGESTIONS_START";
 export const LOAD_FILTER_SUGGESTIONS_SUCCESS =
@@ -27,3 +29,6 @@ export const LOAD_FILTER_SUGGESTIONS_SUCCESS =
 export const LOAD_FILTER_SUGGESTIONS_ERROR =
   "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR";
 export const SET_DATE_COLUMN = "query-editor/SET_DATE_COLUMN";
+
+export const SET_SELECTED_SECONDARY_ID =
+  "query-editor/SET_SELECTED_SECONDARY_ID";

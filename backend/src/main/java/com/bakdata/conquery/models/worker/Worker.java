@@ -17,11 +17,16 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -29,6 +34,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
@@ -58,9 +64,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private Worker(
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull WorkerStorage storage,
-		@NonNull ExecutorService executorService
+		@NonNull ExecutorService executorService,
+		boolean failOnError
 		) {
-		this.jobManager = new JobManager(storage.getWorker().getName());
+		this.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		this.storage = storage;
 		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		this.executorService = executorService;
@@ -72,9 +79,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService executorService,
 			@NonNull WorkerStorage storage,
+			boolean failOnError,
 			int entityBucketSize) {
 
-		return new Worker(queryThreadPoolDefinition, storage, executorService);
+		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError);
 	}
 
 	public static Worker newWorker(
@@ -84,6 +92,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		@NonNull StorageConfig config,
 		@NonNull File directory,
 		@NonNull Validator validator,
+		boolean failOnError,
 		int entityBucketSize) {
 
 		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
@@ -102,7 +111,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, executorService);
+		return new Worker(queryThreadPoolDefinition, workerStorage, executorService, failOnError);
 	}
 	
 	public ModificationShieldedWorkerStorage getStorage() {
@@ -126,7 +135,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
 	}
-	
+
+	public ObjectMapper inject(ObjectMapper binaryMapper) {
+		return new SingletonNamespaceCollection(storage.getCentralRegistry()).injectInto(binaryMapper);
+	}
+
 	@Override
 	public void close() {
 		// We do not close the executorService here because it does not belong to this class
@@ -164,6 +177,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public void removeImport(ImportId importId) {
+		final Import imp = storage.getImport(importId);
+
+		for (DictionaryId dictionaryId : imp.getDictionaries()) {
+			storage.removeDictionary(dictionaryId);
+		}
+
 		storage.removeImport(importId);
 		bucketManager.removeImport(importId);
 	}
@@ -198,4 +217,19 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		close();
 	}
 
+	public void addTable(Table table) {
+		storage.addTable(table);
+	}
+
+	public void removeTable(TableId table) {
+		storage.removeTable(table);
+	}
+
+	public void addSecondaryId(SecondaryIdDescription secondaryId) {
+		storage.addSecondaryId(secondaryId);
+	}
+
+	public void removeSecondaryId(SecondaryIdDescriptionId secondaryId) {
+		storage.removeSecondaryId(secondaryId);
+	}
 }

@@ -2,10 +2,7 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import javax.validation.Validator;
 
@@ -79,7 +76,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		connector = new NioSocketConnector();
 
-		jobManager = new JobManager(getName());
+		jobManager = new JobManager(getName(), config.isFailOnError());
 		synchronized (environment) {
 			environment.lifecycle().manage(this);
 			validator = environment.getValidator();
@@ -90,10 +87,9 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 								.build();
 		}
 
-		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
-
 		this.config = config;
 
+		ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
 		if (config.getStorage().getDirectory().mkdirs()) {
@@ -117,7 +113,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				}
 
 				workers.createWorker(
-						workerStorage
+						workerStorage,
+						config.isFailOnError()
 				);
 
 				ConqueryMDC.clearLocation();
@@ -269,6 +266,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			return;
 		}
 
+
 		// Collect the ShardNode and all its workers jobs into a single queue
 		final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
 
@@ -276,11 +274,16 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
 		}
 
+
 		try {
 			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
 		}
 		catch (Exception e) {
 			log.warn("Failed to report job manager status", e);
+
+			if (config.isFailOnError()) {
+				System.exit(1);
+			}
 		}
 	}
 

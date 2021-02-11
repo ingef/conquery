@@ -1,0 +1,100 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SECONDARY_ID_EXCLUDED Test",
+  "expectedCsv": "tests/query/SECONDARY_ID_EXCLUDED/expected.csv",
+  "query": {
+    "type": "SECONDARY_ID_QUERY",
+    "secondaryId": "${dataset}.secondary",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "${dataset}.concept"
+          ],
+          "type": "CONCEPT",
+          "label": "vs",
+          "tables": [
+            {
+              "id": "${dataset}.concept.connector1"
+            }
+          ]
+        },
+        {
+          "ids": [
+            "${dataset}.concept"
+          ],
+          "excludeFromSecondaryIdQuery": true,
+          "type": "CONCEPT",
+          "tables": [
+            {
+              "id": "${dataset}.concept.connector1",
+              "filters": [
+                {
+                  "filter": "${dataset}.concept.connector1.value",
+                  "type": "INTEGER_RANGE",
+                  "value": {
+                    "min": 2
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "VIRTUAL",
+      "connectors": [
+        {
+          "name": "connector1",
+          "table": "table1",
+          "validityDates": {
+            "name": "datum",
+            "column": "table1.datum"
+          },
+          "filter": {
+            "name": "value",
+            "column": "table1.value",
+            "type": "COUNT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "secondaryIds": [
+      {
+        "name": "secondary"
+      }
+    ],
+    "tables": [
+      {
+        "csv": "tests/query/SECONDARY_ID_EXCLUDED/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "secondary"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

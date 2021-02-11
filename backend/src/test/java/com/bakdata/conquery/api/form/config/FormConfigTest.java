@@ -87,7 +87,6 @@ public class FormConfigTest {
 	
 	@BeforeAll
 	public void setupTestClass() throws Exception{
-		SharedMetricRegistries.setDefault(FormConfigTest.class.getName());
 		storageMock = Mockito.mock(MetaStorage.class);
 
 		dataset.setName("test");
@@ -395,7 +394,6 @@ public class FormConfigTest {
 			 FormConfigPatch.builder()
 				 .label("newTestLabel")
 				 .tags(new String[] {"tag1", "tag2"})
-				 .shared(true)
 				 .groups(List.of(group1.getId()))
 				 .values(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))))
 			 	.build()
@@ -426,8 +424,7 @@ public class FormConfigTest {
 			 datasetId,
 			 formId, 
 			 FormConfigPatch.builder()
-				 .shared(false)
-				 .groups(List.of(group1.getId()))
+				 .groups(List.of())
 			 	.build()
 			 );
 		

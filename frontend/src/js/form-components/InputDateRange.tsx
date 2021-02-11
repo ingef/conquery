@@ -1,9 +1,9 @@
-import * as React from "react";
+import React, { FC, ReactNode } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
 import T from "i18n-react";
-import type { FieldPropsType } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 
 import {
   formatDateFromState,
@@ -17,16 +17,16 @@ import Label from "./Label";
 import Labeled from "./Labeled";
 import BaseInput from "./BaseInput";
 
-const Root = styled("div")`
+const Root = styled("div")<{ center?: boolean }>`
   text-align: ${({ center }) => (center ? "center" : "left")};
 `;
-const Pickers = styled("div")`
+const Pickers = styled("div")<{ inline?: boolean; center?: boolean }>`
   display: flex;
   flex-direction: ${({ inline }) => (inline ? "row" : "column")};
   justify-content: ${({ center }) => (center ? "center" : "flex-start")};
 `;
 
-const StyledLabel = styled(Label)`
+const StyledLabel = styled(Label)<{ large?: boolean }>`
   ${({ theme, large }) =>
     large &&
     css`
@@ -42,14 +42,14 @@ const StyledLabeled = styled(Labeled)`
   }
 `;
 
-type PropsType = FieldPropsType & {
-  label?: React.Node;
-  labelSuffix?: React.Node;
+interface PropsT extends WrappedFieldProps {
+  label?: ReactNode;
+  labelSuffix?: ReactNode;
   className?: string;
   inline?: boolean;
   large?: boolean;
   center?: boolean;
-};
+}
 
 function getDisplayDate(what, value, displayDateFormat) {
   if (!value || !value[what]) return "";
@@ -57,7 +57,7 @@ function getDisplayDate(what, value, displayDateFormat) {
   return formatDateFromState(value[what], displayDateFormat);
 }
 
-const InputDateRange = (props: PropsType) => {
+const InputDateRange: FC<PropsT> = (props) => {
   const onSetDate = (date) => {
     props.input.onChange(date);
   };

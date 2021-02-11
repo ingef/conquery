@@ -29,9 +29,11 @@ const NodeDetailsView = (props: PropsType) => {
     node,
     onSelectSelects,
     isExcludeTimestampsPossible,
+    isExcludeFromSecondaryIdQueryPossible,
     onToggleTimestamps,
+    onToggleSecondaryIdExclude,
     onDropConcept,
-    onRemoveConcept
+    onRemoveConcept,
   } = props;
 
   const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
@@ -44,7 +46,18 @@ const NodeDetailsView = (props: PropsType) => {
             label={T.translate("queryNodeEditor.excludeTimestamps")}
             input={{
               value: node.excludeTimestamps,
-              onChange: () => onToggleTimestamps()
+              onChange: () => onToggleTimestamps(),
+            }}
+          />
+        </Row>
+      )}
+      {isExcludeFromSecondaryIdQueryPossible && (
+        <Row>
+          <InputCheckbox
+            label={T.translate("queryNodeEditor.excludeFromSecondaryIdQuery")}
+            input={{
+              value: node.excludeFromSecondaryIdQuery,
+              onChange: () => onToggleSecondaryIdExclude(),
             }}
           />
         </Row>
@@ -57,11 +70,11 @@ const NodeDetailsView = (props: PropsType) => {
               onChange: onSelectSelects,
               value: node.selects
                 .filter(({ selected }) => !!selected)
-                .map(({ id, label }) => ({ value: id, label: label }))
+                .map(({ id, label }) => ({ value: id, label: label })),
             }}
-            options={sortSelects(node.selects).map(select => ({
+            options={sortSelects(node.selects).map((select) => ({
               value: select.id,
-              label: select.label
+              label: select.label,
             }))}
           />
         </Row>
@@ -73,7 +86,7 @@ const NodeDetailsView = (props: PropsType) => {
             <ConceptDropzone node={node} onDropConcept={onDropConcept} />
           </div>
           <div>
-            {node.ids.map(conceptId => (
+            {node.ids.map((conceptId) => (
               <ConceptEntry
                 key={conceptId}
                 node={getConceptById(conceptId)}
