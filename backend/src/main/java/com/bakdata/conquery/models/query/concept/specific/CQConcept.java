@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -144,15 +145,15 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			tableNodes.add(
 				new ConceptNode(
-					concepts,
-					calculateBitMask(concepts),
-					table,
-					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-					new ValidityDateNode(
+						concepts,
+						CBlock.calculateBitMask(concepts),
+						table,
+						// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
+						new ValidityDateNode(
 						selectValidityDateColumn(table),
 						filtersNode
 					),
-					// if the node is excluded, don't pass it into the Node.
+						// if the node is excluded, don't pass it into the Node.
 					excludeFromSecondaryIdQuery ? null : selectedSecondaryId
 				)
 			);
@@ -175,20 +176,10 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return outNode;
 	}
 
-	private long calculateBitMask(ConceptElement<?>[] concepts) {
-		long mask = 0;
-		for(ConceptElement<?> concept : concepts) {
-			mask |= concept.calculateBitMask();
-		}
-		return mask;
-	}
-
 	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return
-				ids
-					.stream()
-					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-					.toArray(ConceptElement[]::new);
+		return ids.stream()
+				  .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+				  .toArray(ConceptElement[]::new);
 	}
 
 	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
