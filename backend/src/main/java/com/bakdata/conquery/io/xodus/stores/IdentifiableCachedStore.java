@@ -10,22 +10,21 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 @Accessors(fluent=true) @Setter @Getter
-public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<IId<VALUE>, VALUE> {
+public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 
-	private final CentralRegistry centralRegistry;
-	
 	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
-		this(centralRegistry, store, new SingletonNamespaceCollection(centralRegistry));
+		super(store, centralRegistry);
+//		this(centralRegistry, store, new SingletonNamespaceCollection(centralRegistry));
 	}
 	
-	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
-		super(store);
-		for(Injectable injectable : injectables) {
-			store.inject(injectable);
-		}
-		store.inject(centralRegistry);
-		this.centralRegistry = centralRegistry;
-	}
+//	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
+//		super(store);
+//		for(Injectable injectable : injectables) {
+//			store.inject(injectable);
+//		}
+//		store.inject(centralRegistry);
+//		this.centralRegistry = centralRegistry;
+//	}
 
 	@Override
 	protected IId<VALUE> extractKey(VALUE value) {

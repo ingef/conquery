@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
 import javax.validation.Validator;
 
@@ -12,12 +11,8 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
-import com.bakdata.conquery.io.xodus.stores.Store;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.config.XodusStorageFactory;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -25,8 +20,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigProvider;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -36,7 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.google.common.collect.Multimap;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -45,7 +37,7 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	protected final Environment environment;
 
 	/**
-	 * Use weak caching for dictonaries.
+	 * Use weak caching for dictionaries.
 	 */
 	private final boolean useWeakDictionaryCaching;
 	protected SingletonStore<Dataset> dataset;
@@ -101,12 +93,6 @@ public abstract class NamespacedStorageXodus extends ConqueryStorageXodus implem
 	@Override
 	public Collection<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
-	}
-
-
-	@Override
-	public String getStorageOrigin() {
-		return environment.getLocation();
 	}
 
 	@Override

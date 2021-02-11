@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.xodus.stores.InternalWorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -96,11 +97,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		boolean failOnError,
 		int entityBucketSize) {
 
-		WorkerStorage workerStorage = config.createWorkerStorage(validator, List.of(storagePrefix,directory));
-		if (workerStorage == null) {
-			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
-		}
-
+		WorkerStorage workerStorage = new InternalWorkerStorage(validator, config, List.of(storagePrefix,directory));
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());

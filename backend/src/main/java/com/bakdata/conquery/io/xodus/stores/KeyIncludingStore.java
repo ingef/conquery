@@ -66,4 +66,12 @@ public abstract class KeyIncludingStore <KEY, VALUE> {
 	protected abstract void removed(VALUE value);
 
 	protected abstract void added(VALUE value);
+
+	public void clear() {
+		store.clear();
+	}
+
+	public void remove() {
+		store.remove();
+	}
 }

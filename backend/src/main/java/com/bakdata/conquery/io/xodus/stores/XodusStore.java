@@ -82,4 +82,12 @@ public class XodusStore {
 	public String toString() {
 		return store.getName();
 	}
+
+	void clear() {
+		// TODO implement, unused at the moment
+	}
+
+	void remove() {
+		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
+	}
 }

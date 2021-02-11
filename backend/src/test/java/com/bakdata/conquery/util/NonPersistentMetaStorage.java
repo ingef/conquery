@@ -75,11 +75,6 @@ public class NonPersistentMetaStorage implements MetaStorage {
 	}
 
 	@Override
-	public String getStorageOrigin() {
-		return "Non-persistent storage just for testing.";
-	}
-
-	@Override
 	public void close() throws IOException {
 		// Nothing to do
 	}

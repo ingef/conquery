@@ -71,4 +71,14 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     public Collection<KEY> getAllKeys() {
         return map.keySet();
     }
+
+    @Override
+    public void clear() {
+        map.clear();
+    }
+
+    @Override
+    public void remove() {
+        clear();
+    }
 }

@@ -111,4 +111,17 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public String toString() {
 		return "weakcached "+store.toString();
 	}
+
+
+	@Override
+	public void clear() {
+		cache.invalidateAll();
+		store.clear();
+	}
+
+	@Override
+	public void remove() {
+		cache.invalidateAll();
+		store.remove();
+	}
 }

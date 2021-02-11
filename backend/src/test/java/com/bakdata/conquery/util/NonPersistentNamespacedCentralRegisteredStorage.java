@@ -1,26 +1,24 @@
 package com.bakdata.conquery.util;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.*;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.bouncycastle.asn1.esf.OtherHash;
 
 import javax.validation.Validator;
 import java.io.IOException;
@@ -59,11 +57,6 @@ public abstract class NonPersistentNamespacedCentralRegisteredStorage implements
     @Override
     public void remove() {
 
-    }
-
-    @Override
-    public String getStorageOrigin() {
-        return null;
     }
 
     @Override

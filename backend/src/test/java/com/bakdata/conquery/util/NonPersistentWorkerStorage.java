@@ -5,7 +5,6 @@ import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -21,11 +20,6 @@ public class NonPersistentWorkerStorage extends NonPersistentNamespacedCentralRe
 
     public NonPersistentWorkerStorage(Validator validator) {
         super(validator);
-    }
-
-    @Override
-    public String getStorageOrigin() {
-        return "Non persistent storage for testing";
     }
 
     @Override

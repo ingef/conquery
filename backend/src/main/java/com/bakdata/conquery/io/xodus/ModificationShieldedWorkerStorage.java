@@ -38,10 +38,6 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getCentralRegistry();
 	}
 
-	public String getStorageOrigin() {
-		return delegate.getStorageOrigin();
-	}
-
 
 	public EncodedDictionary getPrimaryDictionary() {
 		return delegate.getPrimaryDictionary();

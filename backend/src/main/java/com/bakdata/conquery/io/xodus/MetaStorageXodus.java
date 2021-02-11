@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
+import com.bakdata.conquery.io.xodus.stores.DirectIdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -39,11 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorage, ConqueryStorage {
 
-	private IdentifiableStore<ManagedExecution<?>> executions;
-	private IdentifiableStore<FormConfig> formConfigs;
-	private IdentifiableStore<User> authUser;
-	private IdentifiableStore<Role> authRole;
-	private IdentifiableStore<Group> authGroup;
+	private DirectIdentifiableStore<ManagedExecution<?>> executions;
+	private DirectIdentifiableStore<FormConfig> formConfigs;
+	private DirectIdentifiableStore<User> authUser;
+	private DirectIdentifiableStore<Role> authRole;
+	private DirectIdentifiableStore<Group> authGroup;
 
 	@Getter
 	private DatasetRegistry datasetRegistry;
@@ -83,14 +83,14 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	@Override
 	protected void createStores(Multimap<Environment, KeyIncludingStore<?,?>> environmentToStores) {
 
-		executions = StoreInfo.EXECUTIONS.<ManagedExecution<?>>identifiable(getConfig().createStore(getExecutionsEnvironment(), getValidator(), StoreInfo.EXECUTIONS), getCentralRegistry(), datasetRegistry);
-		authRole = StoreInfo.AUTH_ROLE.identifiable(getConfig().createStore(getRolesEnvironment(), getValidator(), StoreInfo.AUTH_ROLE), getCentralRegistry());
+		executions = StoreInfo.EXECUTIONS.<ManagedExecution<?>>identifiable(StoreInfo.EXECUTIONS.cached(getConfig().createStore(getExecutionsEnvironment(), getValidator(), StoreInfo.EXECUTIONS)), getCentralRegistry(), datasetRegistry);
+		authRole = StoreInfo.AUTH_ROLE.identifiable(StoreInfo.AUTH_GROUP.cached(getConfig().createStore(getRolesEnvironment(), getValidator(), StoreInfo.AUTH_ROLE)), getCentralRegistry());
 
-		authUser = StoreInfo.AUTH_USER.identifiable(getConfig().createStore(getUsersEnvironment(), getValidator(), StoreInfo.AUTH_USER), getCentralRegistry());
+		authUser = StoreInfo.AUTH_USER.identifiable(StoreInfo.AUTH_USER.cached(getConfig().createStore(getUsersEnvironment(), getValidator(), StoreInfo.AUTH_USER)), getCentralRegistry());
 
-		authGroup = StoreInfo.AUTH_GROUP.identifiable(getConfig().createStore(getGroupsEnvironment(), getValidator(), StoreInfo.AUTH_GROUP), getCentralRegistry());
+		authGroup = StoreInfo.AUTH_GROUP.identifiable(StoreInfo.AUTH_GROUP.cached(getConfig().createStore(getGroupsEnvironment(), getValidator(), StoreInfo.AUTH_GROUP)), getCentralRegistry());
 		
-		formConfigs = StoreInfo.FORM_CONFIG.identifiable(getConfig().createStore(getFormConfigEnvironment(), getValidator(), StoreInfo.FORM_CONFIG), getCentralRegistry());
+		formConfigs = StoreInfo.FORM_CONFIG.identifiable(StoreInfo.FORM_CONFIG.cached(getConfig().createStore(getFormConfigEnvironment(), getValidator(), StoreInfo.FORM_CONFIG)), getCentralRegistry());
 
 		environmentToStores.put(rolesEnvironment, authRole);
 			// load users before queries
@@ -225,10 +225,5 @@ public class MetaStorageXodus extends ConqueryStorageXodus implements MetaStorag
 	@SneakyThrows
 	public void addFormConfig(FormConfig formConfig) {
 		formConfigs.add(formConfig);
-	}
-
-	@Override
-	public String getStorageOrigin() {
-		return config.getDirectory().toString();
 	}
 }

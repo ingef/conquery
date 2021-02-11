@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
-import com.bakdata.conquery.models.exceptions.JSONException;
 
 public interface Store<KEY, VALUE> {
 
@@ -29,11 +28,15 @@ public interface Store<KEY, VALUE> {
 
 	public Collection<KEY> getAllKeys();
 
-	/**
+    /**
 	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.
 	 */
 	@FunctionalInterface
 	public interface StoreEntryConsumer<KEY, VALUE> {
 		public void accept(KEY key, VALUE value, long size);
 	}
+
+	void clear();
+
+	void remove();
 }

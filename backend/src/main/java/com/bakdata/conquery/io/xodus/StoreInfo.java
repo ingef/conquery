@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.xodus;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.*;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -9,7 +7,6 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
-import com.bakdata.conquery.models.config.XodusStorageFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -21,7 +18,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -41,7 +37,6 @@ import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import io.dropwizard.util.Duration;
-import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -79,7 +74,7 @@ public enum StoreInfo implements IStoreInfo {
     /**
      * Store for identifiable values, with injectors. Store is also cached.
      */
-    public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
+    public <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
 
         for (Injectable injectable : injectables) {
             baseStore.inject(injectable);
@@ -87,13 +82,13 @@ public enum StoreInfo implements IStoreInfo {
 
         baseStore.inject(centralRegistry);
 
-        return new IdentifiableStore<>(centralRegistry, baseStore);
+        return new DirectIdentifiableStore<>(centralRegistry, baseStore);
     }
 
     /**
      * Store for identifiable values, without injectors. Store is also cached.
      */
-    public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store baseStore, CentralRegistry centralRegistry) {
+    public <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store baseStore, CentralRegistry centralRegistry) {
         return identifiable(baseStore, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
     }
 

@@ -24,11 +24,6 @@ public class NonPersistentNamespaceStorage extends NonPersistentNamespacedCentra
     }
 
     @Override
-    public String getStorageOrigin() {
-        return null;
-    }
-
-    @Override
     public StructureNode[] getStructure() {
         return structureNodes;
     }

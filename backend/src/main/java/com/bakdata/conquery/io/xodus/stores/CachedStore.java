@@ -130,4 +130,14 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<KEY> getAllKeys() {
 		return cache.keySet();
 	}
+
+	@Override
+	public void clear() {
+		store.clear();
+	}
+
+	@Override
+	public void remove() {
+		store.remove();
+	}
 }

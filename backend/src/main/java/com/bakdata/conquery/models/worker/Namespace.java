@@ -167,7 +167,7 @@ public class Namespace implements Closeable {
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + '[' + storage.getStorageOrigin() + ']';
+		return this.getClass().getSimpleName() + '[' + storage.getDataset().getId() + ']';
 	}
 
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {

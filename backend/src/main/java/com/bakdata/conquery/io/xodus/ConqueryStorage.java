@@ -22,11 +22,4 @@ public interface ConqueryStorage extends Closeable {
 	 * Remove the storage.
 	 */
 	void remove();
-	
-	/**
-	 * Gives a human readable information about the origin of this store,
-	 * i.e. a place where the stored data comes from (a folder or database).
-	 * @return String presenting the origin for this store.
-	 */
-	String getStorageOrigin();
 }

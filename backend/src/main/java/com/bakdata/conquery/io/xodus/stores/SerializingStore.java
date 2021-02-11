@@ -409,7 +409,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<KEY> getAllKeys() {
 		throw new UnsupportedOperationException();
 	}
-	
+
+	@Override
+	public void clear() {
+		store.clear();
+	}
+
+	@Override
+	public void remove() {
+		store.remove();
+	}
+
 	@Data
 	public static class IterationStatistic {
 		private int totalProcessed = 0;

@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.config;
 
+import static com.bakdata.conquery.io.xodus.StoreInfo.*;
+
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
@@ -19,11 +19,25 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.*;
 import com.bakdata.conquery.io.xodus.stores.*;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.env.Environments;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,6 +71,14 @@ public class XodusStorageFactory implements StorageFactory {
      * When set, all values that could not be deserialized from the persistent store, are dump into individual files.
      */
     private Optional<File> unreadableDataDumpDirectory = Optional.empty();
+
+    @JsonIgnore
+    private transient Validator validator;
+
+    @Override
+    public void init(ManagerNode managerNode) {
+        validator = managerNode.getValidator();
+    }
 
     @Override
     public MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets) {
@@ -98,13 +120,19 @@ public class XodusStorageFactory implements StorageFactory {
 
         for (File directory : baseDir.listFiles((file, name) -> name.startsWith("dataset_"))) {
             loaders.submit(() -> {
-                NamespaceStorage datasetStorage = NamespaceStorageXodus.tryLoad(managerNode.getValidator(), this, directory);
+                List<String> pathElems = getPathElements(directory.toPath());
+                ConqueryMDC.setLocation(directory.toString());
 
-                if (datasetStorage == null) {
-                    log.warn("Unable to load a dataset at `{}`", directory);
+                if (environmentHasStores(pathElems)) {
+                    log.warn("No valid WorkerStorage found.");
                     return;
                 }
-                storages.add(datasetStorage);
+
+                NamespaceStorage namespaceStorage = new InternalNamespaceStorage(validator, this, pathElems);
+
+                storages.add(namespaceStorage);
+
+                ConqueryMDC.clearLocation();
             });
         }
 
@@ -135,13 +163,15 @@ public class XodusStorageFactory implements StorageFactory {
         for (File directory : baseDir.listFiles((file, name) -> name.startsWith("worker_"))) {
 
             loaders.submit(() -> {
+                List<String> pathElems = getPathElements(directory.toPath());
                 ConqueryMDC.setLocation(directory.toString());
-
-                WorkerStorage workerStorage = WorkerStorageXodus.tryLoad(shardNode.getValidator(), this, directory);
-                if (workerStorage == null) {
+                
+                if (environmentHasStores(pathElems)) {
                     log.warn("No valid WorkerStorage found.");
                     return;
                 }
+
+                WorkerStorage workerStorage = new InternalWorkerStorage(validator, this, pathElems);
 
                 storages.add(workerStorage);
 
@@ -156,6 +186,89 @@ public class XodusStorageFactory implements StorageFactory {
         return storages;
     }
 
+    private List<String> getPathElements(Path path) {
+        ArrayList<String> list = new ArrayList<>();
+        for( int i = 0; i < path.getNameCount(); i++) {
+            list.add(path.getName(i).toString());
+        }
+        return list;
+    }
+
+    private boolean environmentHasStores(List<String> pathName){
+        Environment env = findEnvironment(pathName);
+        boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getName(), t));
+
+        if(!exists) {
+            removeEnvironment(pathName);
+        }
+        return exists;
+    }
+
+    @Override
+    public SingletonStore<Dataset> createDatasetStore(List<String> pathName) {
+        return DATASET.singleton(DATASET.cached(createStore(findEnvironment(pathName), validator, DATASET)));
+    }
+
+    @Override
+    public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return SECONDARY_IDS.identifiable(SECONDARY_IDS.cached(createStore(findEnvironment(pathName), validator, SECONDARY_IDS)), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return TABLES.identifiable(TABLES.cached(createStore(findEnvironment(pathName), validator, TABLES)), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, List<String> pathName) {
+        if (useWeakDictionaryCaching) {
+            return StoreInfo.DICTIONARIES.identifiableCachedStore(createBigWeakStore(findEnvironment(pathName),validator,StoreInfo.DICTIONARIES),centralRegistry);
+        }
+        else {
+            return StoreInfo.DICTIONARIES.identifiable(createBigStore(findEnvironment(pathName),validator,StoreInfo.DICTIONARIES),centralRegistry);
+        }
+    }
+
+    @Override
+    public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return CONCEPTS.identifiable(CONCEPTS.cached(createStore(findEnvironment(pathName), validator, CONCEPTS)), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return IMPORTS.identifiable(IMPORTS.cached(createStore(findEnvironment(pathName), validator, IMPORTS)), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return C_BLOCKS.identifiable(C_BLOCKS.cached(createStore(findEnvironment(pathName), validator, C_BLOCKS)), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return BUCKETS.identifiable(BUCKETS.cached(createStore(findEnvironment(pathName), validator, BUCKETS)), centralRegistry);
+    }
+
+    @Override
+    public SingletonStore<WorkerInformation> createWorkerInformationStore(List<String> pathName) {
+        return WORKER.singleton(WORKER.cached(createStore(findEnvironment(pathName), validator, WORKER)));
+    }
+
+    @Override
+    public SingletonStore<PersistentIdMap> createIdMappingStore(List<String> pathName) {
+        return ID_MAPPING.singleton(ID_MAPPING.cached(createStore(findEnvironment(pathName), validator, ID_MAPPING)));
+    }
+
+    @Override
+    public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(List<String> pathName) {
+        return WORKER_TO_BUCKETS.singleton(WORKER_TO_BUCKETS.cached(createStore(findEnvironment(pathName), validator, WORKER_TO_BUCKETS)));
+    }
+
+    @Override
+    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName) {
+        return STRUCTURE.singleton(STRUCTURE.cached(createStore(findEnvironment(pathName), validator, STRUCTURE)));
+    }
+
     @NonNull
     @JsonIgnore
     /**
@@ -165,13 +278,35 @@ public class XodusStorageFactory implements StorageFactory {
         return getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
     }
 
+
+    Map<File,Environment> activeEnvironments = new HashMap<>();
+
+    private Environment findEnvironment(List<String> pathName) {
+        synchronized (activeEnvironments){
+            @NonNull File path = getStorageDir(pathName);
+            return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(getStorageDir(pathName), getXodus().createConfig()));
+        }
+    }
+
+    private void removeEnvironment(List<String> pathName) {
+        synchronized (activeEnvironments){
+            @NonNull File path = getStorageDir(pathName);
+            Environment env = activeEnvironments.get(path);
+            if(env == null) {
+                return;
+            }
+            env.close();
+            activeEnvironments.remove(pathName);
+        }
+    }
+
     public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId) {
-        return storeId.cached(new SerializingStore<KEY, VALUE>(
+        return new SerializingStore<KEY, VALUE>(
                 this,
                 new XodusStore(environment, storeId),
                 validator,
                 storeId
-        ));
+        );
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createBigStore(Environment environment, Validator validator, StoreInfo storeId) {

@@ -218,4 +218,17 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public String toString() {
 		return "big " + storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
 	}
+
+
+	@Override
+	public void clear() {
+		metaStore.clear();
+		dataStore.clear();
+	}
+
+	@Override
+	public void remove() {
+		metaStore.remove();
+		dataStore.remove();
+	}
 }
