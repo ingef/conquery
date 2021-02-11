@@ -19,6 +19,7 @@ import { Environment } from "./js/environment";
 
 const isProduction = process.env.NODE_ENV === "production";
 const disableLogin = !!process.env.REACT_APP_DISABLE_LOGIN;
+const enableIDP = process.env.REACT_APP_IDP_ENABLE === "true";
 const LANG = process.env.REACT_APP_LANG;
 
 if (!LANG || LANG === "de") {
@@ -40,6 +41,7 @@ const environment: Environment = {
     ? ""
     : MOCK_API_URL,
   disableLogin,
+  enableIDP,
 };
 
 const tabs: TabT[] = [

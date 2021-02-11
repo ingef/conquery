@@ -8,7 +8,7 @@ import LoginPage from "../authorization/LoginPage";
 import WithAuthToken from "../authorization/WithAuthToken";
 
 import App from "./App";
-import { basename } from "../environment";
+import { basename, isIDPEnabled } from "../environment";
 
 interface PropsT {
   rightTabs: TabT[];
@@ -18,12 +18,19 @@ const AppRouter = (props: PropsT) => {
   return (
     <ReactKeycloakProvider
       authClient={keycloak}
+      onEvent={(event: unknown, error: unknown) => {
+        // USEFUL FOR DEBUGGING
+        // console.log("onKeycloakEvent", event, error);
+      }}
+      onTokens={(tokens) => {
+        // USEFUL FOR DEBUGGING
+        // console.log("TOKENS ", tokens);
+      }}
       initOptions={{
         pkceMethod: "S256",
-        // onLoad: "check-sso",
-        onLoad: "login-required",
-        silentCheckSsoRedirectUri:
-          window.location.origin + "/silent-check-sso.html",
+        onLoad: isIDPEnabled() ? "login-required" : "check-sso",
+        // silentCheckSsoRedirectUri:
+        //   window.location.origin + "/silent-check-sso.html",
       }}
     >
       <Router basename={basename()}>
