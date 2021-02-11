@@ -1,11 +1,6 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.SequenceInputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,7 +19,6 @@ import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStorageFactory;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -39,7 +33,7 @@ import org.apache.commons.collections4.IteratorUtils;
  * Store for big files. Files are stored in chunks of 100MB, it therefore requires two stores: one for metadata maintained in {@link BigStoreMetaKeys} the other for the data. BigStoreMeta contains a list of {@link UUID} which describe a single value in the store, to be read in order.
  */
 @Getter
-public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
+public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	private final SerializingStore<KEY, BigStoreMetaKeys> metaStore;
 	private final SerializingStore<UUID, byte[]> dataStore;
@@ -52,7 +46,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private int chunkByteSize;
 
 
-	public BigStore(XodusStorageFactory config, Validator validator, Environment env, StoreInfo storeInfo) {
+	public BigStore(XodusStorageFactory config, Validator validator, Environment env, StoreInfo storeInfo, Collection<jetbrains.exodus.env.Store> openStores) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
@@ -66,7 +60,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		metaStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, metaStoreInfo), validator,
+				new XodusStore(env, metaStoreInfo, openStores), validator,
 				metaStoreInfo
 		);
 
@@ -78,7 +72,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		dataStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, dataStoreInfo), validator,
+				new XodusStore(env, dataStoreInfo, openStores), validator,
 				dataStoreInfo
 		);
 
@@ -195,6 +189,12 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read " + key, e);
 		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		metaStore.close();
+		dataStore.close();
 	}
 
 	@Getter

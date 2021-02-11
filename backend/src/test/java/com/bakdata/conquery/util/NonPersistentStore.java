@@ -5,6 +5,7 @@ import com.bakdata.conquery.io.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.xodus.stores.Store;
 import com.bakdata.conquery.models.exceptions.JSONException;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
@@ -80,5 +81,10 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     @Override
     public void remove() {
         clear();
+    }
+
+    @Override
+    public void close() throws IOException {
+        // Nothing to close
     }
 }

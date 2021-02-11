@@ -1,24 +1,13 @@
 package com.bakdata.conquery.models.config;
 
-import static com.bakdata.conquery.io.xodus.StoreInfo.*;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.*;
 import com.bakdata.conquery.io.xodus.stores.*;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -28,6 +17,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -35,11 +26,28 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static com.bakdata.conquery.io.xodus.StoreInfo.*;
 
 @Slf4j
 @Getter
@@ -75,6 +83,12 @@ public class XodusStorageFactory implements StorageFactory {
     @JsonIgnore
     private transient Validator validator;
 
+    @JsonIgnore
+    private Map<File,Environment> activeEnvironments = new HashMap<>();
+
+    @JsonIgnore
+    private transient Multimap<Environment, jetbrains.exodus.env.Store> openStoresInEnv = ArrayListMultimap.create();
+
     @Override
     public void init(ManagerNode managerNode) {
         validator = managerNode.getValidator();
@@ -83,25 +97,6 @@ public class XodusStorageFactory implements StorageFactory {
     @Override
     public MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets) {
         return new MetaStorageXodus(datasets, validator, this, pathName);
-    }
-
-    @Override
-    public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName) {
-        File storageDir = getStorageDir(pathName);
-        if (storageDir.exists()) {
-            throw new IllegalStateException("Cannot create a new storage at " + pathName + ". It seems that the store already exists.");
-        }
-        return new NamespaceStorageXodus(validator, storageDir, this);
-    }
-
-    @Override
-    public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName) {
-        File storageDir = getStorageDir(pathName);
-
-        if (storageDir.exists()) {
-            throw new IllegalStateException("Cannot create a new storage at " + pathName + ". It seems that the store already exists.");
-        }
-        return new WorkerStorageXodus(validator, storageDir, this);
     }
 
     @Override
@@ -269,6 +264,39 @@ public class XodusStorageFactory implements StorageFactory {
         return STRUCTURE.singleton(STRUCTURE.cached(createStore(findEnvironment(pathName), validator, STRUCTURE)));
     }
 
+    @Override
+    public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
+        return EXECUTIONS.identifiable(EXECUTIONS.cached(createStore(findEnvironment(appendToNewPath(pathName, "executions")), validator, EXECUTIONS)), centralRegistry, datasetRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return FORM_CONFIG.identifiable(FORM_CONFIG.cached(createStore(findEnvironment(appendToNewPath(pathName, "formConfigs")), validator, FORM_CONFIG)), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return AUTH_USER.identifiable(AUTH_USER.cached(createStore(findEnvironment(appendToNewPath(pathName, "users")), validator, AUTH_USER)), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return AUTH_ROLE.identifiable(AUTH_ROLE.cached(createStore(findEnvironment(appendToNewPath(pathName, "roles")), validator, AUTH_ROLE)), centralRegistry);
+    }
+
+
+    @Override
+    public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return AUTH_GROUP.identifiable(AUTH_GROUP.cached(createStore(findEnvironment(appendToNewPath(pathName, "roles")), validator, AUTH_GROUP)), centralRegistry);
+    }
+
+    private List<String> appendToNewPath(List<String> pathName, String users) {
+        ArrayList<String> path = new ArrayList<>();
+        path.addAll(pathName);
+        path.add(users);
+        return path;
+    }
+
     @NonNull
     @JsonIgnore
     /**
@@ -278,8 +306,6 @@ public class XodusStorageFactory implements StorageFactory {
         return getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
     }
 
-
-    Map<File,Environment> activeEnvironments = new HashMap<>();
 
     private Environment findEnvironment(List<String> pathName) {
         synchronized (activeEnvironments){
@@ -301,23 +327,26 @@ public class XodusStorageFactory implements StorageFactory {
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId) {
+        openStoresInEnv.put(environment,null);
         return new SerializingStore<KEY, VALUE>(
                 this,
-                new XodusStore(environment, storeId),
+                new XodusStore(environment, storeId, openStoresInEnv.get(environment)),
                 validator,
                 storeId
         );
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createBigStore(Environment environment, Validator validator, StoreInfo storeId) {
+        openStoresInEnv.put(environment,null);
         return storeId.cached(
-                new BigStore<>(this, validator, environment, storeId)
+                new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment))
         );
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createBigWeakStore(Environment environment, Validator validator, StoreInfo storeId) {
+        openStoresInEnv.put(environment,null);
         return new WeakCachedStore<>(
-                new BigStore<>(this, validator, environment, storeId),
+                new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment)),
                 getWeakCacheDuration()
         );
     }

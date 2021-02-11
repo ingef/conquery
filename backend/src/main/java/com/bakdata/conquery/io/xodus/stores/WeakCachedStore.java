@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -123,5 +124,10 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void remove() {
 		cache.invalidateAll();
 		store.remove();
+	}
+
+	@Override
+	public void close() throws IOException {
+		store.close();
 	}
 }

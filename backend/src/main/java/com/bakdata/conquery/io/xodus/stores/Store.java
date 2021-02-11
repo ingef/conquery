@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -39,4 +40,6 @@ public interface Store<KEY, VALUE> {
 	void clear();
 
 	void remove();
+
+	void close() throws IOException;
 }

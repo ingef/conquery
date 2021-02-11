@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -139,5 +140,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void remove() {
 		store.remove();
+	}
+
+	@Override
+	public void close() throws IOException {
+		store.close();
 	}
 }

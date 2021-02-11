@@ -420,6 +420,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		store.remove();
 	}
 
+	@Override
+	public void close() {
+		store.close();
+	}
+
 	@Data
 	public static class IterationStatistic {
 		private int totalProcessed = 0;

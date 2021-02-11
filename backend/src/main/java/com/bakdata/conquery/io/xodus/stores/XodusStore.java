@@ -1,9 +1,11 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
+import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
@@ -17,14 +19,17 @@ public class XodusStore {
 	private final Store store;
 	private final Environment environment;
 	private final long timeoutHalfMillis; // milliseconds
+	private final Collection<Store>  openStores;
 	
-	public XodusStore(Environment env, IStoreInfo storeId) {
+	public XodusStore(Environment env, IStoreInfo storeId, Collection<Store> openStoresInEnv) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.environment = env;
+		this.openStores = openStoresInEnv;
 		this.store = env.computeInTransaction(
 			t->env.openStore(storeId.getName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
+		openStoresInEnv.add(store);
 	}
 	
 	public boolean add(ByteIterable key, ByteIterable value) {
@@ -89,5 +94,15 @@ public class XodusStore {
 
 	void remove() {
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
+	}
+
+	void close() {
+		log.info("Closing XodusStore ", this);
+		openStores.remove(store);
+		if (openStores.isEmpty()){
+			// Last Store closes the Environment
+			log.info("Closed last XodusStore in Environment. Closing Environment as well", environment);
+			environment.executeInTransaction(txn -> environment.close());
+		}
 	}
 }

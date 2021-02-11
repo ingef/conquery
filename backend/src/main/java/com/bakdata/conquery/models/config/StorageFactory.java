@@ -9,6 +9,9 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.io.xodus.stores.DirectIdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -18,6 +21,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -36,10 +41,6 @@ public interface StorageFactory {
 	default void init(ManagerNode managerNode) {};
 
 	MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets);
-
-	NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName);
-
-	WorkerStorage createWorkerStorage(Validator validator, List<String> pathName);
 
 	Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName);
 
@@ -63,4 +64,10 @@ public interface StorageFactory {
 	SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(List<String> pathName);
 	SingletonStore<StructureNode[]> createStructureStore(List<String> pathName);
 
+	// MetaStorage
+    IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName);
+	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName);
+	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, List<String> pathName);
+	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, List<String> pathName);
+	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName);
 }

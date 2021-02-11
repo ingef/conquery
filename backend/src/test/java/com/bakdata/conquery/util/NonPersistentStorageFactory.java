@@ -1,7 +1,5 @@
 package com.bakdata.conquery.util;
 
-import static com.bakdata.conquery.io.xodus.StoreInfo.*;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -10,6 +8,9 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageFactory;
@@ -20,15 +21,20 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import org.apache.commons.collections4.queue.UnmodifiableQueue;
 
 import javax.validation.Validator;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static com.bakdata.conquery.io.xodus.StoreInfo.*;
 
 @CPSType(id = "NON_PERSISTENT", base = StorageFactory.class)
 public class NonPersistentStorageFactory implements StorageFactory {
@@ -36,16 +42,6 @@ public class NonPersistentStorageFactory implements StorageFactory {
     @Override
     public MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets) {
         return new NonPersistentMetaStorage(datasets, validator);
-    }
-
-    @Override
-    public NamespaceStorage createNamespaceStorage(Validator validator, List<String> pathName) {
-        return new NonPersistentNamespaceStorage(validator);
-    }
-
-    @Override
-    public WorkerStorage createWorkerStorage(Validator validator, List<String> pathName) {
-        return new NonPersistentWorkerStorage(validator);
     }
 
     @Override
@@ -118,5 +114,30 @@ public class NonPersistentStorageFactory implements StorageFactory {
     @Override
     public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName) {
         return STRUCTURE.singleton(new NonPersistentStore());
+    }
+
+    @Override
+    public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
+        return EXECUTIONS.identifiable(new NonPersistentStore(), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return FORM_CONFIG.identifiable(new NonPersistentStore(), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return AUTH_USER.identifiable(new NonPersistentStore(), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return AUTH_ROLE.identifiable(new NonPersistentStore(), centralRegistry);
+    }
+
+    @Override
+    public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName) {
+        return AUTH_GROUP.identifiable(new NonPersistentStore(), centralRegistry);
     }
 }
