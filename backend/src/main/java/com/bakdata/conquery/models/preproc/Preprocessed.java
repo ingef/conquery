@@ -265,6 +265,10 @@ public class Preprocessed {
 		public void add(int event){
 			Preconditions.checkArgument(event >= start, "Events must be added in order");
 			offsets.set(event - start);
+
+			if (event - start > 500) {
+				log.debug("Bitset is going to be big >  {}", event - start);
+			}
 		}
 
 		public int length() {
