@@ -39,6 +39,10 @@ public class CalculateCBlocksJob extends Job {
 	private final Connector connector;
 	private final Table table;
 
+	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
+		return new CBlock(info.getBucket().getId(), connector.getId());
+	}
+
 	@Override
 	public String getLabel() {
 		return "Calculate " + infos.size() + " CBlocks for " + connector.getId();
@@ -61,15 +65,21 @@ public class CalculateCBlocksJob extends Job {
 				}
 
 				CBlock cBlock = new CBlock(info.getBucket().getId(), connector.getId());
-				cBlock.initIndizes(info.getBucket().getBucketSize());
 
 				final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(worker.getExecutorService());
 
+				cBlock.initIndizes(info.getBucket().getBucketSize());
+				
 				connector.calculateCBlock(cBlock, info.getBucket(), executorService);
-				executorService.submit(() -> calculateEntityDateIndices(cBlock, info.getBucket()));
+				executorService.submit(() -> {
+					calculateEntityDateIndices(cBlock, info.getBucket());
+				})
+							   .addListener(() -> {
+								   bucketManager.addCalculatedCBlock(cBlock);
+								   storage.addCBlock(cBlock);
+							   }, MoreExecutors.directExecutor());
 
-				bucketManager.addCalculatedCBlock(cBlock);
-				storage.addCBlock(cBlock);
+
 			}
 			catch (Exception e) {
 				throw new Exception(
@@ -87,10 +97,6 @@ public class CalculateCBlocksJob extends Job {
 			}
 		}
 		getProgressReporter().done();
-	}
-
-	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBucket().getId(), connector.getId());
 	}
 
 	/**
