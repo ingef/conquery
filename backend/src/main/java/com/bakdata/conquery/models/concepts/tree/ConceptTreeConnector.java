@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -90,8 +89,7 @@ public class ConceptTreeConnector extends Connector {
 		for (int entity : bucket.entities()) {
 			subJobs.add(executorService.submit(() -> {
 				for (int event = bucket.getEntityStart(entity); event < bucket.getEntityEnd(entity); event++) {
-					final BucketEntry entry = new BucketEntry(bucket, entity, event);
-					calculateEvent(entry, cBlock, stringStore, cache, mostSpecificChildren, event, bucket);
+					calculateEvent(bucket, entity, event, cBlock, stringStore, cache, mostSpecificChildren);
 				}
 			}));
 		}
@@ -141,7 +139,7 @@ public class ConceptTreeConnector extends Connector {
 		return (TreeConcept) super.getConcept();
 	}
 
-	private void calculateEvent(BucketEntry entry, CBlock cBlock, @CheckForNull StringStore stringStore, ConceptTreeCache cache, int[][] mostSpecificChildren, int event, Bucket bucket) {
+	private void calculateEvent(Bucket bucket, int entity, int event, CBlock cBlock, @CheckForNull StringStore stringStore, ConceptTreeCache cache, int[][] mostSpecificChildren) {
 
 
 		// Events without values are omitted
@@ -178,7 +176,7 @@ public class ConceptTreeConnector extends Connector {
 			}
 		}
 		catch (ConceptConfigurationException ex) {
-			log.error("Failed to resolve Bucket[{}](event = {}) against Concept[{}]", bucket.getId(), entry.getEvent(), this.getConcept().getId(), ex);
+			log.error("Failed to resolve Bucket[{}](event = {}) against Concept[{}]", bucket.getId(), event, this.getConcept().getId(), ex);
 		}
 
 
@@ -194,7 +192,7 @@ public class ConceptTreeConnector extends Connector {
 		// also add concepts into bloom filter of entity cblock.
 		ConceptTreeNode<?> it = child;
 		while (it != null) {
-			cBlock.addIncludedConcept(entry.getEntity(), it);
+			cBlock.addIncludedConcept(entity, it);
 			it = it.getParent();
 		}
 	}
