@@ -39,6 +39,7 @@ import java.util.List;
 public interface StorageFactory {
 
 	default void init(ManagerNode managerNode) {};
+	default void init(ShardNode shardNode) {};
 
 	MetaStorage createMetaStorage(Validator validator, List<String> pathName, DatasetRegistry datasets);
 

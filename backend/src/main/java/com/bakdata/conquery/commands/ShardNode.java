@@ -97,6 +97,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		}
 
 		this.config = config;
+		config.initialize(this);
 
 		ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 

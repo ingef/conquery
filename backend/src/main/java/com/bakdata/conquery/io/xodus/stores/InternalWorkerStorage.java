@@ -22,20 +22,27 @@ import java.util.List;
 public class InternalWorkerStorage extends InternalNamespacedStorage implements WorkerStorage {
 
     private SingletonStore<WorkerInformation> worker;
-    private IdentifiableStore<Bucket> bluckets;
+    private IdentifiableStore<Bucket> buckets;
     private IdentifiableStore<CBlock> cBlocks;
 
     public InternalWorkerStorage(Validator validator, StorageFactory storageFactory, List<String> pathName) {
         super(validator, storageFactory, pathName);
 
         worker = storageFactory.createWorkerInformationStore(pathName);
-        bluckets = storageFactory.createBucketStore(centralRegistry, pathName);
+        buckets = storageFactory.createBucketStore(centralRegistry, pathName);
         cBlocks = storageFactory.createCBlockStore(centralRegistry, pathName);
 
-        decorateBucketStore(bluckets);
+        decorateBucketStore(buckets);
         decorateCBlockStore(cBlocks);
     }
 
+    @Override
+    public void loadData() {
+        super.loadData();
+        worker.loadData();
+        buckets.loadData();
+        cBlocks.loadData();
+    }
 
     @Override
     public void addCBlock(CBlock cBlock) {
@@ -77,23 +84,23 @@ public class InternalWorkerStorage extends InternalNamespacedStorage implements 
     @Override
     public void addBucket(Bucket bucket) {
         log.debug("Adding Bucket[{}]", bucket.getId());
-        bluckets.add(bucket);
+        buckets.add(bucket);
     }
 
     @Override
     public Bucket getBucket(BucketId id) {
-        return bluckets.get(id);
+        return buckets.get(id);
     }
 
     @Override
     public void removeBucket(BucketId id) {
         log.debug("Removing Bucket[{}]", id);
-        bluckets.remove(id);
+        buckets.remove(id);
     }
 
     @Override
     public Collection<Bucket> getAllBuckets() {
-        return bluckets.getAll();
+        return buckets.getAll();
     }
 
     @Override
@@ -130,7 +137,7 @@ public class InternalWorkerStorage extends InternalNamespacedStorage implements 
         super.close();
 
         worker.close();
-        bluckets.close();
+        buckets.close();
         cBlocks.close();
     }
 }

@@ -8,6 +8,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
@@ -94,8 +95,13 @@ public class ConqueryConfig extends Configuration {
 		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
 	}
 
-	public void initializePlugins(ManagerNode node) {
+	public void initialize(ManagerNode node) {
+		storage.init(node);
 		plugins.forEach(config -> config.initialize((node)));
+	}
+
+	public void initialize(ShardNode node) {
+		storage.init(node);
 	}
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
