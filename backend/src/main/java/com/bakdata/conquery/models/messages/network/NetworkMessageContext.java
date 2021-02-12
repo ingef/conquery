@@ -12,8 +12,8 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Workers;
 import lombok.Getter;
 
+@Getter
 public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> extends MessageSender.Simple<MESSAGE> {
-	@Getter
 	private final JobManager jobManager;
 	private final int backpressure;
 	
@@ -54,6 +54,7 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	public static class ManagerNodeNetworkContext extends NetworkMessageContext<MessageToShardNode> {
 
 		private final DatasetRegistry namespaces;
+
 
 		public ManagerNodeNetworkContext(JobManager jobManager, NetworkSession session, DatasetRegistry namespaces, int backpressure) {
 			super(jobManager, session, backpressure);
