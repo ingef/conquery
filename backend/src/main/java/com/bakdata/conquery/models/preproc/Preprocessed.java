@@ -29,8 +29,10 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterable;
 import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -57,8 +59,8 @@ public class Preprocessed {
 	// by-column
 	private final ColumnValues[] values;
 
-	// by-column by-entity
-	private final Int2ObjectMap<EntityPositions>[] entries;
+	// by-entity
+	private final Int2ObjectMap<EntityPositions> entries;
 	private final IntSet entities = new IntAVLTreeSet();
 
 	private long rows = 0;
@@ -74,7 +76,7 @@ public class Preprocessed {
 		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(parserConfig);
 
 		// pid and columns
-		entries = new Int2ObjectMap[columns.length];
+		entries = new Int2ObjectAVLTreeMap<>();
 		values = new ColumnValues[columns.length];
 
 		for (int index = 0; index < input.getWidth(); index++) {
@@ -82,7 +84,6 @@ public class Preprocessed {
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 
-			entries[index] = new Int2ObjectAVLTreeMap<>();
 			final Parser parser = columns[index].getParser();
 			values[index] = new ColumnValues(parser.getNullValue(), parser.createPrimitiveList());
 		}
@@ -125,11 +126,16 @@ public class Preprocessed {
 	 * Calculate beginning and end of
 	 */
 	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
-		Int2ObjectMap<EntityPositions> values = entries[0];
+		Int2ObjectMap<EntityPositions> values = entries;
 		int start = 0;
 
 		for (int entity : entities) {
 			final EntityPositions events = values.get(entity);
+
+			if(events == null){
+				continue; //TODO is this no data or just no data for column?
+			}
+
 			final int length = events.length();
 
 			entityStart.put(entity, start);
@@ -150,8 +156,8 @@ public class Preprocessed {
 			final PPColumn ppColumn = this.columns[colIdx];
 
 			final ColumnStore store = ppColumn.findBestType();
+			Int2ObjectMap<EntityPositions> indices = entries;
 
-			Int2ObjectMap<EntityPositions> indices = entries[colIdx];
 			final ColumnValues columnValues = values[colIdx];
 
 			int start = 0;
@@ -242,13 +248,27 @@ public class Preprocessed {
 	}
 
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
+		int event = -1;
+
 		for (int col = 0; col < outRow.length; col++) {
 			final int idx = values[col].add(outRow[col]);
-			entries[col].computeIfAbsent(primaryId, (id) -> new EntityPositions(idx)).add(idx);
+
+			if(event == -1){
+				event = idx;
+			}
+
+			if(idx != event){
+				log.error("Columns are not aligned");
+			}
 
 			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
 		}
+
+		final int _event = event;
+
+		entries.computeIfAbsent(primaryId, (id) -> new EntityPositions(_event)).add(event);
+
 
 		//update stats
 		rows++;
@@ -260,38 +280,21 @@ public class Preprocessed {
 	@RequiredArgsConstructor
 	private static class EntityPositions implements IntIterable {
 		private final int start;
-		private final BitSet offsets = new BitSet();
+		private final IntList offsets = new IntArrayList();
 
 		public void add(int event){
 			Preconditions.checkArgument(event >= start, "Events must be added in order");
-			offsets.set(event - start);
-
-			if (event - start > 500) {
-				log.debug("Bitset is going to be big >  {}", event - start);
-			}
+			offsets.add(event);
 		}
 
 		public int length() {
-			return offsets.cardinality();
+			return offsets.size();
 		}
 
 
 		@Override
 		public IntIterator iterator() {
-			return new IntIterator() {
-				int current = -1;
-
-				@Override
-				public int nextInt() {
-					current = offsets.nextSetBit(current + 1);
-					return start + current;
-				}
-
-				@Override
-				public boolean hasNext() {
-					return offsets.nextSetBit(current + 1) >= 0;
-				}
-			};
+			return offsets.iterator();
 		}
 	}
 
