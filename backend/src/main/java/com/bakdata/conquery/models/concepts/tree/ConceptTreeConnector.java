@@ -3,8 +3,7 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.stream.StreamSupport;
+import java.util.concurrent.Executors;
 
 import javax.annotation.CheckForNull;
 import javax.validation.Valid;
@@ -23,10 +22,14 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.google.common.util.concurrent.Striped;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -72,6 +75,7 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override
+	@SneakyThrows
 	public void calculateCBlock(CBlock cBlock, Bucket bucket) {
 
 		final StringStore stringStore = findStringType(getColumn(), getConcept(), bucket);
@@ -80,15 +84,22 @@ public class ConceptTreeConnector extends Connector {
 
 		final ConceptTreeCache cache = getConcept().getCache(bucket.getImp().getId());
 
-		final Striped<Lock> entityLock = Striped.lock(bucket.getBucketSize());
 
-		StreamSupport.stream(bucket.entries().spliterator(), true)
-					 .unordered()
-					 .parallel()
-					 .forEach(entry -> calculateEvent(entry, cBlock, stringStore, cache, entityLock, mostSpecificChildren));
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+
+		List<ListenableFuture<?>> subJobs = new ArrayList<>();
+
+		for (int entity : bucket.entities()) {
+			subJobs.add(executorService.submit(() -> {
+				for (int event = bucket.getEntityStart(entity); event < bucket.getEntityEnd(entity); event++) {
+					calculateEvent(new BucketEntry(bucket, entity, event), cBlock, stringStore, cache, mostSpecificChildren);
+				}
+			}));
+		}
+
+		Futures.allAsList(subJobs).get();
 
 		cBlock.setMostSpecificChildren(mostSpecificChildren);
-
 
 
 		if (cache != null) {
@@ -117,7 +128,7 @@ public class ConceptTreeConnector extends Connector {
 			return stringStore;
 		}
 		// No column only possible if we have just one tree element!
-		else if(treeConcept.countElements() == 1){
+		else if (treeConcept.countElements() == 1) {
 			return null;
 		}
 		else {
@@ -130,7 +141,7 @@ public class ConceptTreeConnector extends Connector {
 		return (TreeConcept) super.getConcept();
 	}
 
-	private void calculateEvent(BucketEntry entry, CBlock cBlock, @CheckForNull StringStore stringStore, ConceptTreeCache cache, Striped<Lock> entityLock, int[][] mostSpecificChildren) {
+	private void calculateEvent(BucketEntry entry, CBlock cBlock, @CheckForNull StringStore stringStore, ConceptTreeCache cache, int[][] mostSpecificChildren) {
 
 		final Bucket bucket = entry.getBucket();
 		final int event = entry.getEvent();
@@ -163,7 +174,7 @@ public class ConceptTreeConnector extends Connector {
 				return;
 			}
 
-			if(cache != null){
+			if (cache != null) {
 				child = cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 			}
 			else {
@@ -184,22 +195,12 @@ public class ConceptTreeConnector extends Connector {
 		// put path into event
 		mostSpecificChildren[event] = child.getPrefix();
 
-		final Lock lock = entityLock.get(entity);
-
-		try {
-			lock.lock();
-
-			// also add concepts into bloom filter of entity cblock.
-			ConceptTreeNode<?> it = child;
-			while (it != null) {
-				cBlock.addIncludedConcept(entry.getEntity(), it);
-				it = it.getParent();
-			}
+		// also add concepts into bloom filter of entity cblock.
+		ConceptTreeNode<?> it = child;
+		while (it != null) {
+			cBlock.addIncludedConcept(entry.getEntity(), it);
+			it = it.getParent();
 		}
-		finally {
-			lock.unlock();
-		}
-
 	}
 
 }
