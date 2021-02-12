@@ -3,7 +3,8 @@ package com.bakdata.conquery.models.events.stores.specific;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.Nullable;
@@ -14,19 +15,25 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(base = ColumnStore.class, id = "REBASE")
 @Getter
 @ToString(of = {"min", "store"})
-public class RebasingStore extends ColumnStore<Long> {
+public class RebasingStore implements IntegerStore {
 
 	private final long min;
 
 	private final long root;
 
-	private final ColumnStore<Long> store;
+	private final IntegerStore store;
 
-	public RebasingStore(long min, long root, ColumnStore<Long> store) {
+	public RebasingStore(long min, long root, IntegerStore store) {
 		this.min = min;
 		this.root = root;
 		this.store = store;
 	}
+
+	@Override
+	public int getLines() {
+		return store.getLines();
+	}
+
 
 	@Override
 	public long estimateEventBits() {
@@ -34,32 +41,27 @@ public class RebasingStore extends ColumnStore<Long> {
 	}
 
 	@Override
-	public RebasingStore doSelect(int[] starts, int[] length) {
+	public RebasingStore select(int[] starts, int[] length) {
 		return new RebasingStore(min, root, store.select(starts, length));
 	}
 
 	@Override
-	public void set(int event, @Nullable Long value) {
-		if (value == null) {
-			store.set(event, null);
-			return;
-		}
-
-		store.set(event, value - min + root);
-	}
-
-	@Override
-	public Long get(int event) {
-		return getInteger(event);
+	public void setInteger(int event, @Nullable long value) {
+		store.setInteger(event, value - min + root);
 	}
 
 	@Override
 	public @NotNull long getInteger(int event) {
-		return - root + min + store.getInteger(event);
+		return -root + min + store.getInteger(event);
 	}
 
 	@Override
 	public boolean has(int event) {
 		return store.has(event);
+	}
+
+	@Override
+	public void setNull(int event) {
+		store.setNull(event);
 	}
 }

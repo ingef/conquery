@@ -58,20 +58,10 @@ public class DateRestrictingNode extends QPChainNode {
 
 		if (validityDateColumn == null) {
 			// If there is no validity date set for a concept there is nothing to restrict
-			return true;
-		}
-
-		int entityId = entity.getId();
-
-		// Entity has no date-columns.
-		if(!cBlock.getMinDate().containsKey(entityId) && !cBlock.getMaxDate().containsKey(entityId)){
 			return super.isOfInterest(bucket);
 		}
 
-		final int min = cBlock.getMinDate().getOrDefault(entityId, Integer.MIN_VALUE);
-		final int max = cBlock.getMaxDate().getOrDefault(entityId, Integer.MAX_VALUE);
-
-		CDateRange range = CDateRange.of(min, max);
+		CDateRange range = cBlock.getEntityDateRange(entity.getId());
 
 		return restriction.intersects(range) && super.isOfInterest(bucket);
 	}

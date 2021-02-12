@@ -6,7 +6,9 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
@@ -15,12 +17,12 @@ import lombok.Getter;
  **/
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
 @Getter
-public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
+public class DateRangeTypeQuarter implements DateRangeStore {
 
-	private final ColumnStore<Long> store;
+	private final IntegerStore store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeQuarter(ColumnStore<Long> store) {
+	public DateRangeTypeQuarter(IntegerStore store) {
 		this.store = store;
 	}
 
@@ -30,21 +32,24 @@ public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
 	}
 
 	@Override
-	public CDateRange createScriptValue(CDateRange value) {
-		return value;
+	public int getLines() {
+		return store.getLines();
 	}
 
-	public DateRangeTypeQuarter doSelect(int[] starts, int[] ends) {
+
+	public DateRangeTypeQuarter select(int[] starts, int[] ends) {
 		return new DateRangeTypeQuarter(store.select(starts, ends));
 	}
 
 	@Override
-	public void set(int event, CDateRange value) {
-		if (value == null) {
-			store.set(event, null);
-		}
-		else if (value.hasLowerBound()) {
-			store.set(event, (long) value.getMinValue());
+	public void setNull(int event) {
+		store.setNull(event);
+	}
+
+	@Override
+	public void setDateRange(int event, CDateRange raw) {
+		if (raw.hasLowerBound()) {
+			store.setInteger(event, raw.getMinValue());
 		}
 		else {
 			throw new IllegalArgumentException("Cannot store open dates in QuarterStore");
@@ -54,11 +59,6 @@ public class DateRangeTypeQuarter extends ColumnStore<CDateRange> {
 	@Override
 	public boolean has(int event) {
 		return store.has(event);
-	}
-
-	@Override
-	public CDateRange get(int event) {
-		return getDateRange(event);
 	}
 
 	@Override

@@ -50,12 +50,12 @@ public abstract class OutputDescription implements Serializable {
 		 * @return a value or null
 		 * @throws ParsingException
 		 */
-		protected abstract Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException;
+		protected abstract Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException;
 
 		/**
 		 * Parse row and test for NULL values, throwing an exception when Required but missing.
 		 */
-		public Object createOutput(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+		public Object createOutput(String[] row, Parser type, long sourceLine) throws ParsingException {
 			final Object parsed = parseLine(row, type, sourceLine);
 
 			if(OutputDescription.this.isRequired() && parsed == null) {

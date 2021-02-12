@@ -42,7 +42,7 @@ public class DateRangeOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 
 				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
 					return null;

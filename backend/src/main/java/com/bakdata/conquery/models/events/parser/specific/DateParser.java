@@ -5,14 +5,15 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.DateStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.DateFormats;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class DateParser extends Parser<Integer> {
+public class DateParser extends Parser<Integer, DateStore> {
 
 	private IntegerParser subType;
 
@@ -46,10 +47,12 @@ public class DateParser extends Parser<Integer> {
 
 	@Override
 	protected DateStore decideType() {
-		ColumnStore<Long> subDecision = subType.findBestType();
-		subDecision.setLines(getLines());
-		final DateStore dateStore = new DateStore(subDecision);
-		dateStore.setLines(getLines());
-		return dateStore;
+		IntegerStore subDecision = subType.findBestType();
+		return new IntegerDateStore(subDecision);
+	}
+
+	@Override
+	public void setValue(DateStore store, int event, Integer value) {
+		store.setDate(event, value);
 	}
 }

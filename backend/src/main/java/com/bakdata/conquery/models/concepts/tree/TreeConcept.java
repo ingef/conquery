@@ -16,7 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -200,7 +200,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 
-	public void initializeIdCache(StringType type, ImportId importId) {
+	public void initializeIdCache(StringStore type, ImportId importId) {
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
 	}
 

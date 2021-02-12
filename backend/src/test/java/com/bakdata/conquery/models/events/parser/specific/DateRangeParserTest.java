@@ -7,8 +7,9 @@ import java.util.List;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.ByteStore;
+import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
@@ -22,12 +23,12 @@ class DateRangeParserTest {
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10))
 			.forEach(parser::addLine);
 
-		final ColumnStore<CDateRange> actual = parser.decideType();
+		final ColumnStore actual = parser.decideType();
 
 		assertThat(actual).isInstanceOf(DateRangeTypeDateRange.class);
 
-		assertThat(((DateRangeTypeDateRange) actual).getMinStore().getStore())
-				.isInstanceOfAny(ByteStore.class, RebasingStore.class);
+		assertThat(((IntegerDateStore) ((DateRangeTypeDateRange) actual).getMinStore()).getStore())
+				.isInstanceOfAny(ByteArrayStore.class, RebasingStore.class);
 	}
 
 
@@ -36,7 +37,7 @@ class DateRangeParserTest {
 		final DateRangeParser parser = new DateRangeParser(new ParserConfig());
 
 		List.of(CDateRange.of(10,11), CDateRange.exactly(10), CDateRange.atMost(10))
-			.forEach(parser::registerValue);
+			.forEach(parser::addLine);
 
 		assertThat(parser.decideType()).isInstanceOf(DateRangeTypeDateRange.class);
 	}
@@ -46,7 +47,7 @@ class DateRangeParserTest {
 		final DateRangeParser parser = new DateRangeParser(new ParserConfig());
 
 		List.of(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(2011,1), QuarterUtils.getLastDayOfQuarter(2011,1)))
-			.forEach(parser::registerValue);
+			.forEach(parser::addLine);
 
 		assertThat(parser.decideType()).isInstanceOf(DateRangeTypeQuarter.class);
 	}

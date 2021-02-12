@@ -30,7 +30,7 @@ public class NullOutput extends OutputDescription {
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 				return null;
 			}
 		};

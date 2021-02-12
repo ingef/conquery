@@ -17,8 +17,15 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.stores.root.BooleanStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.MoneyStore;
+import com.bakdata.conquery.models.events.stores.root.RealStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -47,7 +54,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	private final int bucket;
 	@Min(0)
 	private final int numberOfEvents;
-	private final ColumnStore<?>[] stores;
+	private final ColumnStore[] stores;
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
@@ -98,56 +105,62 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	}
 
 	public final boolean has(int event, Column column) {
-		return stores[column.getPosition()].has(event);
+		return getStore(column).has(event);
 	}
 
 	public int getString(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getString(event);
+		return ((StringStore) getStore(column)).getString(event);
+	}
+
+	public ColumnStore getStore(@NotNull Column column) {
+		return stores[column.getPosition()];
 	}
 
 	public long getInteger(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getInteger(event);
+		return ((IntegerStore) getStore(column)).getInteger(event);
 	}
 
 	public boolean getBoolean(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getBoolean(event);
+		return ((BooleanStore) getStore(column)).getBoolean(event);
 	}
 
 	public double getReal(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getReal(event);
+		return ((RealStore) getStore(column)).getReal(event);
 	}
 
 	public BigDecimal getDecimal(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getDecimal(event);
+		return ((DecimalStore) getStore(column)).getDecimal(event);
 	}
 
 	public long getMoney(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getMoney(event);
+		return ((MoneyStore) getStore(column)).getMoney(event);
 	}
 
 	public int getDate(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getDate(event);
-	}
-
-	public CDateRange getAsDateRange(int event, Column currentColumn) {
-		return getDateRange(event, currentColumn);
+		return ((DateStore) getStore(column)).getDate(event);
 	}
 
 	public CDateRange getDateRange(int event, Column column) {
-		return stores[column.getPosition()].getDateRange(event);
-	}
-
-	public Object getAsObject(int event, @NotNull Column column) {
-		return stores[column.getPosition()].get(event);
+		return ((DateRangeStore) getStore(column)).getDateRange(event);
 	}
 
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
+		return dateRanges.intersects(getAsDateRange(event, column));
+	}
+
+	public CDateRange getAsDateRange(int event, Column column) {
+		switch (column.getType()) {
+			case DATE:
+				return CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
+			case DATE_RANGE:
+				return getDateRange(event, column);
+			default:
+				throw new IllegalStateException("Column is not of DateCompatible type.");
+		}
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
-		final ColumnStore<?> store = stores[column.getPosition()];
-		return ((ColumnStore) store).createScriptValue(store.get(event));
+		return getStore(column).createScriptValue(event);
 	}
 
 	public Map<String, Object> calculateMap(int event) {
@@ -159,17 +172,21 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 				continue;
 			}
 			// todo rework this to use table directly
-			out.put(imp.getColumns()[i].getName(), store.createScriptValue(store.get(event)));
+			out.put(imp.getColumns()[i].getName(), store.createScriptValue(event));
 		}
 
 		return out;
 	}
 
 	public void loadDictionaries(NamespacedStorage storage) {
-		for (ColumnStore<?> store : getStores()) {
-			if (store instanceof StringType) {
-				((StringType) store).loadDictionaries(storage);
+		for (ColumnStore store : getStores()) {
+			if (store instanceof StringStore) {
+				((StringStore) store).loadDictionaries(storage);
 			}
 		}
+	}
+
+	public Object createPrintValue(int event, Column column) {
+		return getStore(column).createPrintValue(event);
 	}
 }

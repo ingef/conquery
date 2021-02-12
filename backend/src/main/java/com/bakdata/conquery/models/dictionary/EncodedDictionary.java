@@ -24,4 +24,8 @@ public class EncodedDictionary {
 	public int getId(String value) {
 		return dict.getId(encoding.decode(value));
 	}
+
+	public int getSize() {
+		return dict.size();
+	}
 }

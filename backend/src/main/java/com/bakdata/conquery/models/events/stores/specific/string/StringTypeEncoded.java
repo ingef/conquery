@@ -8,7 +8,9 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.io.BaseEncoding;
@@ -23,7 +25,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
-public class StringTypeEncoded extends StringType {
+public class StringTypeEncoded implements StringStore {
 
 	@Nonnull
 	protected StringTypeDictionary subType;
@@ -43,8 +45,13 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public String createScriptValue(Integer value) {
-		return getElement(value);
+	public int getLines() {
+		return subType.getLines();
+	}
+
+	@Override
+	public String createScriptValue(int event) {
+		return getElement(getString(event));
 	}
 
 	@Override
@@ -99,9 +106,15 @@ public class StringTypeEncoded extends StringType {
 		return subType.estimateTypeSizeBytes();
 	}
 
+
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return subType.getDictionary();
+	}
+
+	@Override
+	public boolean isDictionaryHolding() {
+		return true;
 	}
 
 	@Override
@@ -110,23 +123,23 @@ public class StringTypeEncoded extends StringType {
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> newType) {
+	public void setIndexStore(IntegerStore newType) {
 		subType.setIndexStore(newType);
 	}
 
 	@Override
-	public StringTypeEncoded doSelect(int[] starts, int[] length) {
-		return new StringTypeEncoded(subType.doSelect(starts, length), getEncoding());
+	public StringTypeEncoded select(int[] starts, int[] length) {
+		return new StringTypeEncoded(subType.select(starts, length), getEncoding());
 	}
 
 	@Override
-	public void set(int event, Integer value) {
+	public void setString(int event, int value) {
 		subType.set(event, value);
 	}
 
 	@Override
-	public Integer get(int event) {
-		return getString(event);
+	public void setNull(int event) {
+		subType.setNull(event);
 	}
 
 	@Override

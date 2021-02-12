@@ -56,16 +56,16 @@ public class Workers extends IdResolveContext {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, entityBucketSize);
+	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError, entityBucketSize);
 
 		addWorker(worker);
 
 		return worker;
 	}
 
-	public Worker createWorker(Dataset dataset, StorageConfig storageConfig, @NonNull File directory, Validator validator) {
-		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, directory, validator, entityBucketSize);
+	public Worker createWorker(Dataset dataset, StorageConfig storageConfig, @NonNull File directory, Validator validator, boolean failOnError) {
+		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, directory, validator, failOnError, entityBucketSize);
 
 		addWorker(worker);
 

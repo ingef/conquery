@@ -2,9 +2,9 @@ package com.bakdata.conquery.models.events.parser.specific;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.DoubleStore;
-import com.bakdata.conquery.models.events.stores.base.FloatStore;
+import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
+import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ToString(callSuper = true)
-public class RealParser extends Parser<Double> {
+public class RealParser extends Parser<Double, RealStore> {
 
 	private final double requiredPrecision;
 
@@ -43,14 +43,19 @@ public class RealParser extends Parser<Double> {
 	 * If values are within a margin of precision, we store them as floats.
 	 */
 	@Override
-	protected ColumnStore<Double> decideType() {
+	protected RealStore decideType() {
 		log.debug("Max ULP = {}", floatULP);
 
 		if (floatULP < requiredPrecision) {
-			return FloatStore.create(getLines());
+			return FloatArrayStore.create(getLines());
 		}
 		else {
-			return DoubleStore.create(getLines());
+			return DoubleArrayStore.create(getLines());
 		}
+	}
+
+	@Override
+	public void setValue(RealStore store, int event, Double value) {
+		store.setReal(event, value);
 	}
 }

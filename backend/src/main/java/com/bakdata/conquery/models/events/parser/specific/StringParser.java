@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.parser.specific.string;
+package com.bakdata.conquery.models.events.parser.specific;
 
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -13,11 +13,14 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
+import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
+import com.bakdata.conquery.models.events.parser.specific.string.NumberTypeGuesser;
+import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser;
 import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser.Guess;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.BooleanStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.events.parser.specific.string.TrieTypeGuesser;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
@@ -39,14 +42,14 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 @Getter
 @ToString(callSuper = true, of = {"encoding", "prefix","suffix"})
-public class StringParser extends Parser<Integer> {
+public class StringParser extends Parser<Integer, StringStore> {
 
 	private BiMap<String, Integer> strings = HashBiMap.create();
 
 	private List<byte[]> decoded;
 	private Encoding encoding;
-	private String prefix = null;
-	private String suffix = null;
+	private String prefix;
+	private String suffix;
 
 	public StringParser(ParserConfig config) {
 		super(config);
@@ -68,19 +71,18 @@ public class StringParser extends Parser<Integer> {
 	}
 
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	protected ColumnStore<Integer> decideType() {
+	protected StringStore decideType() {
 
 		//check if a singleton type is enough
 		if (strings.isEmpty()) {
-			return new EmptyStore<>();
+			return EmptyStore.INSTANCE;
 		}
 
 		// Is this a singleton?
 		if (strings.size() == 1) {
-			StringTypeSingleton type = new StringTypeSingleton(strings.keySet().iterator().next(), BooleanStore.create(getLines()));
-			copyLineCounts(type);
+			StringTypeSingleton type = new StringTypeSingleton(strings.keySet().iterator().next(), BitSetStore.create(getLines()));
+
 			return type;
 		}
 
@@ -120,14 +122,19 @@ public class StringParser extends Parser<Integer> {
 				BinaryByteUnit.format(guess.estimate())
 		);
 
-		StringType result = guess.getType();
+		StringStore result = guess.getType();
 		//wrap in prefix suffix
 		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
 			result = new StringTypePrefixSuffix(result, prefix, suffix);
-			copyLineCounts(result);
+
 		}
 
 		return result;
+	}
+
+	@Override
+	public void setValue(StringStore store, int event, Integer value) {
+		store.setString(event, value);
 	}
 
 	/**
@@ -170,7 +177,7 @@ public class StringParser extends Parser<Integer> {
 						  .collect(Collectors.toList());
 	}
 
-	public ColumnStore<Long> decideIndexType() {
+	public IntegerStore decideIndexType() {
 		final IntegerParser indexParser = new IntegerParser(getConfig());
 
 		final IntSummaryStatistics indexStatistics = getStrings().values().stream()
