@@ -345,6 +345,11 @@ public class CDateSet {
 				max = toAdd.getMaxValue();
 			}
 
+			// value was not contained
+			if(min > max){
+				continue;
+			}
+
 			add(CDateRange.of(min, max));
 		}
 	}
