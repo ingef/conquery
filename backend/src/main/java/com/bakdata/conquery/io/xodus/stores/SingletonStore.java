@@ -36,7 +36,7 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 		return get();
 	}
 	
-	public synchronized VALUE get() {
+	public VALUE get() {
 		return super.get(Boolean.TRUE);
 	}
 	
@@ -45,7 +45,7 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 		remove();
 	}
 	
-	public synchronized void remove() {
+	public void remove() {
 		super.remove(Boolean.TRUE);
 	}
 	
