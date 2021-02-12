@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 import javax.annotation.CheckForNull;
 import javax.validation.Valid;
@@ -76,7 +75,7 @@ public class ConceptTreeConnector extends Connector {
 
 	@Override
 	@SneakyThrows
-	public void calculateCBlock(CBlock cBlock, Bucket bucket) {
+	public void calculateCBlock(CBlock cBlock, Bucket bucket, ListeningExecutorService executorService) {
 
 		final StringStore stringStore = findStringType(getColumn(), getConcept(), bucket);
 
@@ -84,33 +83,34 @@ public class ConceptTreeConnector extends Connector {
 
 		final ConceptTreeCache cache = getConcept().getCache(bucket.getImp().getId());
 
-
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+		// final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 
 		List<ListenableFuture<?>> subJobs = new ArrayList<>();
 
 		for (int entity : bucket.entities()) {
 			subJobs.add(executorService.submit(() -> {
 				for (int event = bucket.getEntityStart(entity); event < bucket.getEntityEnd(entity); event++) {
-					calculateEvent(new BucketEntry(bucket, entity, event), cBlock, stringStore, cache, mostSpecificChildren);
+					final BucketEntry entry = new BucketEntry(bucket, entity, event);
+					calculateEvent(entry, cBlock, stringStore, cache, mostSpecificChildren, event, bucket);
 				}
 			}));
 		}
 
-		Futures.allAsList(subJobs).get();
+		Futures.allAsList(subJobs)
+			   .addListener(() -> {
+			cBlock.setMostSpecificChildren(mostSpecificChildren);
+			if (cache != null) {
+				log.trace(
+						"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+						cache.getHits(),
+						cache.getMisses(),
+						(double) cache.getHits() / cache.getMisses(),
+						(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+				);
+			}
+		}, MoreExecutors.directExecutor());
 
-		cBlock.setMostSpecificChildren(mostSpecificChildren);
 
-
-		if (cache != null) {
-			log.trace(
-					"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-					cache.getHits(),
-					cache.getMisses(),
-					(double) cache.getHits() / cache.getMisses(),
-					(double) cache.getHits() / (cache.getHits() + cache.getMisses())
-			);
-		}
 	}
 
 	private StringStore findStringType(Column column, TreeConcept treeConcept, Bucket bucket) {
@@ -141,11 +141,7 @@ public class ConceptTreeConnector extends Connector {
 		return (TreeConcept) super.getConcept();
 	}
 
-	private void calculateEvent(BucketEntry entry, CBlock cBlock, @CheckForNull StringStore stringStore, ConceptTreeCache cache, int[][] mostSpecificChildren) {
-
-		final Bucket bucket = entry.getBucket();
-		final int event = entry.getEvent();
-		final int entity = entry.getEntity();
+	private void calculateEvent(BucketEntry entry, CBlock cBlock, @CheckForNull StringStore stringStore, ConceptTreeCache cache, int[][] mostSpecificChildren, int event, Bucket bucket) {
 
 
 		// Events without values are omitted

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -181,7 +182,8 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	/**
 	 * @param cBlock
 	 * @param bucket
+	 * @param executorService
 	 * @param imp
 	 */
-	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket);
+	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket, ListeningExecutorService executorService);
 }

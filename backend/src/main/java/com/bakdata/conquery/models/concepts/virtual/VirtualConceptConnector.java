@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,7 +36,7 @@ public class VirtualConceptConnector extends Connector {
 	}
 
 	@Override
-	public void calculateCBlock(CBlock cBlock, Bucket bucket) {
+	public void calculateCBlock(CBlock cBlock, Bucket bucket, ListeningExecutorService executorService) {
 		// This does nothing.
 	}
 }
