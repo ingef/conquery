@@ -9,7 +9,9 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -28,16 +30,22 @@ public class EntityDateQueryPlan implements QueryPlan {
         if (preResult.isFailed() || !preResult.isContained()) {
             return preResult;
         }
-        final List<DateContext> dateContexts = new ArrayList<>();
-        int rangeIndex = 0;
+        final List<Object[]> resultLines = new ArrayList<>();
         for( Object[] line : preResult.asContained().listResultLines()) {
-            for(CDateRange range : CDateSet.parse((String)line[0]).asRanges() ) {
-                DateContext dateContext = new DateContext(range, FeatureGroup.SINGLE_GROUP, ++rangeIndex, null, DateContext.Resolution.COMPLETE);
-                dateContexts.add(dateContext);
+
+            // We assume the date set to be in the first column, this might be wrong
+            EntityResult result = features.execute(ctx.withDateRestriction(CDateSet.parse((String) line[0])), entity);
+
+            if (result.isFailed() || !result.isContained()) {
+                continue;
             }
+
+            ContainedEntityResult contained = result.asContained();
+
+            resultLines.addAll(contained.listResultLines());
+
         }
-        FormQueryPlan subPlan = new FormQueryPlan(dateContexts, features);
-        return subPlan.execute(ctx, entity);
+        return new MultilineContainedEntityResult(entity.getId(), resultLines);
     }
 
     @Override

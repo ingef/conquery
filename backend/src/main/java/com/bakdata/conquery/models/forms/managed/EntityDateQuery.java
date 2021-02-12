@@ -34,7 +34,7 @@ public class EntityDateQuery extends IQuery {
     public EntityDateQueryPlan createQueryPlan(QueryPlanContext context) {
         return new EntityDateQueryPlan(
                 query.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
-                features.createQueryPlan(context.withGenerateSpecialDateUnion(false))
+                features.createQueryPlan(context.withGenerateSpecialDateUnion(true))
         );
     }
 
@@ -53,13 +53,6 @@ public class EntityDateQuery extends IQuery {
     @Override
     public void collectResultInfos(ResultInfoCollector collector) {
         features.collectResultInfos(collector);
-        //remove SpecialDateUnion
-        collector.getInfos().remove(0);
-
-        collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
-        collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
-        collector.getInfos().add(2, ConqueryConstants.DATE_RANGE_INFO);
-
     }
 
     @Override
