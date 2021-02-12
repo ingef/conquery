@@ -85,7 +85,7 @@ public class ConceptTreeConnector extends Connector {
 		StreamSupport.stream(bucket.entries().spliterator(), true)
 					 .unordered()
 					 .parallel()
-					 .forEach(entry -> calculateEvent(entry, cBlock, stringType, cache, entityLock, mostSpecificChildren));
+					 .forEach(entry -> calculateEvent(entry, cBlock, stringStore, cache, entityLock, mostSpecificChildren));
 
 		cBlock.setMostSpecificChildren(mostSpecificChildren);
 
@@ -130,7 +130,7 @@ public class ConceptTreeConnector extends Connector {
 		return (TreeConcept) super.getConcept();
 	}
 
-	private void calculateEvent(BucketEntry entry, CBlock cBlock, StringStore stringStore, ConceptTreeCache cache, Striped<Lock> entityLock, int[][] mostSpecificChildren) {
+	private void calculateEvent(BucketEntry entry, CBlock cBlock, @CheckForNull StringStore stringStore, ConceptTreeCache cache, Striped<Lock> entityLock, int[][] mostSpecificChildren) {
 
 		final Bucket bucket = entry.getBucket();
 		final int event = entry.getEvent();
