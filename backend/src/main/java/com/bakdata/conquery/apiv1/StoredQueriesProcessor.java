@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.xodus.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -36,6 +37,7 @@ public class StoredQueriesProcessor {
 	@Getter
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
+	private final ConqueryConfig config;
 
 	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
@@ -56,6 +58,7 @@ public class StoredQueriesProcessor {
 					return Stream.of(
 						mq.buildStatusOverview(
 							storage,
+							uriBuilder,
 							user,
 							datasetRegistry));
 				}
@@ -91,6 +94,7 @@ public class StoredQueriesProcessor {
 		if (query == null) {
 			return null;
 		}
+		query.initExecutable(datasetRegistry, config);
 		return query.buildStatusFull(storage, url, user, datasetRegistry);
 	}
 

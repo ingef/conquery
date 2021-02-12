@@ -4,9 +4,9 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.parser.Parser;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
@@ -39,7 +39,7 @@ public class EpochDateRangeOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 				final boolean startNull = Strings.isNullOrEmpty(row[startIndex]);
 				final boolean endNull = Strings.isNullOrEmpty(row[endIndex]);
 

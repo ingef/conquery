@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.OptionalInt;
+
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -22,11 +27,6 @@ import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.OptionalInt;
 
 @Slf4j
 @Getter @RequiredArgsConstructor
@@ -59,8 +59,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		int size = calculateCompleteLength();
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
 		CDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
-			final OptionalInt sampled = indexSelector.sample(dateSet);
-		
+		final OptionalInt sampled = indexSelector.sample(dateSet);
+
 		// dateset is empty or sampling failed.
 		if (sampled.isEmpty()) {
 			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
@@ -68,7 +68,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			results.add(new Object[size]);
 			return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(getFirstAggregatorPosition())));
 		}
-		
+
 		int sample = sampled.getAsInt();
 		List<DateContext> contexts = DateContext
 			.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
@@ -171,7 +171,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]...
 		 * The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
 		 */
-		
+
 		return getFirstAggregatorPosition() + featurePlan.getAggregatorSize() + outcomePlan.getAggregatorSize();
 		//return featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 	}
@@ -233,7 +233,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		result[getOutcomeDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
 		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS+1, result, getFirstAggregatorPosition() + featurePlan.getAggregatorSize(), outcomePlan.getAggregatorSize());
 	}
-	
+
 	public List<Aggregator<?>> getAggregators() {
 		return ImmutableList.copyOf(Iterables.concat(featurePlan.getAggregators(),outcomePlan.getAggregators()));
 	}

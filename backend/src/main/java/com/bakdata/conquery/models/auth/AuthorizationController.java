@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
@@ -15,6 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.authz.Permission;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
@@ -123,6 +124,45 @@ public final class AuthorizationController implements Managed{
 				}
 			}
 		}
+	}
+
+	/**
+	 * Creates a copy of an existing user. The copied user has the same effective permissions as the original user
+	 * at the time of copying, but these are flatted. This means that the original user might hold certain permissions
+	 * through inheritance from roles or groups, the copy will hold the permissions directly.
+	 * @param originUserId The id of the user to make a flat copy from
+	 * @param namePrefix The prefix for the id of the new copied user
+	 * @return A flat copy of the referenced user
+	 */
+	public static User flatCopyUser(@NonNull UserId originUserId, String namePrefix, @NonNull MetaStorage storage) {
+		if(Strings.isNullOrEmpty(namePrefix)) {
+			throw new IllegalArgumentException("There must be a prefix");
+		}
+
+		// Find a new user id that is not used yet
+		String name = null;
+		do {
+			name = namePrefix + UUID.randomUUID() + originUserId.getEmail();
+			User prev = storage.getUser(new UserId(name));
+		} while (name == null || storage.getUser(new UserId(name)) != null);
+
+		// Retrieve original user and its effective permissions
+		User origin = Objects.requireNonNull(storage.getUser(originUserId), "User to copy cannot be found");
+		Set<Permission> effectivePermissions = AuthorizationHelper.getEffectiveUserPermissions(originUserId, storage);
+
+		// Create copied user
+		User copy = new User(name, origin.getLabel());
+		storage.addUser(copy);
+		copy.setPermissions(storage, new HashSet(effectivePermissions));
+
+		return copy;
+	}
+
+	/**
+	 * @see AuthorizationController#flatCopyUser(UserId, String, MetaStorage)
+	 */
+	public User flatCopyUser(@NonNull UserId originUserId, String namePrefix) {
+		return flatCopyUser(originUserId, namePrefix, storage);
 	}
 
 }

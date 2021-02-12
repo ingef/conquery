@@ -48,6 +48,7 @@ public class CalculateCBlocksJob extends Job {
 	public void execute() throws Exception {
 		getProgressReporter().setMax(infos.size());
 
+		// todo compute in parallel.
 		for (CalculationInformation info : infos) {
 			try {
 				if (bucketManager.hasCBlock(info.getCBlockId())) {
@@ -82,6 +83,10 @@ public class CalculateCBlocksJob extends Job {
 		getProgressReporter().done();
 	}
 
+	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
+		return new CBlock(info.getBucket().getId(), connector.getId());
+	}
+
 	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 */
@@ -99,17 +104,10 @@ public class CalculateCBlocksJob extends Job {
 
 				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
 
-				cBlock.getMinDate()[entry.getLocalEntity()] = Math.min(cBlock.getMinDate()[entry.getLocalEntity()], range.getMinValue());
-
-				cBlock.getMaxDate()[entry.getLocalEntity()] = Math.max(cBlock.getMaxDate()[entry.getLocalEntity()], range.getMaxValue());
+				cBlock.addEntityDateRange(entry.getEntity(), range);
 			}
 		}
 	}
-
-	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBucket().getId(), connector.getId());
-	}
-
 
 	public boolean isEmpty() {
 		return infos.isEmpty();

@@ -248,6 +248,7 @@
       "accept": "Copy"
     },
     "common": {
+      "connectedWith": "Connected by",
       "relativeToIndex": "Relative to index date",
       "timespan": "Time span",
       "dateMinLabel": "From",

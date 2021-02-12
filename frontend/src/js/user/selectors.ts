@@ -63,20 +63,21 @@ function canDo(
   return canDoWithPermissions(permissions, datasetId);
 }
 
-export function canDownloadResult(state: StateT, datasetId?: string) {
-  return canDo(
-    state,
-    (permissions, finalDatasetId) => {
-      return permissions.some(
-        (permission) =>
-          permissionHasDataset(permission) &&
-          permissionFitsTarget(permission, finalDatasetId) &&
-          permission.abilities.includes("download")
-      );
-    },
-    { datasetId }
-  );
-}
+// Example of another possible permission, including a "context"
+// export function canDownloadResult(state: StateT, datasetId?: string) {
+//   return canDo(
+//     state,
+//     (permissions, finalDatasetId) => {
+//       return permissions.some(
+//         (permission) =>
+//           permissionHasDataset(permission) &&
+//           permissionFitsTarget(permission, finalDatasetId) &&
+//           permission.abilities.includes("download")
+//       );
+//     },
+//     { datasetId }
+//   );
+// }
 
 export function canUploadResult(state: StateT) {
   return canDo(state, (permissions, datasetId) => {

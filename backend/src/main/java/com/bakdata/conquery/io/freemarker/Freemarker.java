@@ -5,12 +5,9 @@ import static freemarker.template.Configuration.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import com.bakdata.conquery.models.events.generation.ClassGenerator;
 import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
-import freemarker.template.TemplateException;
 import freemarker.template.Version;
 import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.extern.slf4j.Slf4j;
@@ -22,20 +19,7 @@ public class Freemarker {
 	
 	public static final FreemarkerViewRenderer HTML_RENDERER = rendererForHtml();
 
-	public static Configuration createForJavaTemplates() {
-		Configuration cfg = new Configuration(VERSION);
-		cfg.setClassForTemplateLoading(ClassGenerator.class, "/");
-		for (Entry<String, String> e : asMap().entrySet()) {
-			try {
-				cfg.setSetting(e.getKey(), e.getValue());
-			}
-			catch (TemplateException e1) {
-				log.error("Could not configure freemarker with {}", e);
-			}
-		}
-		return cfg;
-	}
-	
+
 	private static FreemarkerViewRenderer rendererForHtml() {
 		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer(VERSION);
 		freemarker.configure(Freemarker.asMap());

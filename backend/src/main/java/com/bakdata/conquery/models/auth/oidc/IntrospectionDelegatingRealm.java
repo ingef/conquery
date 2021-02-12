@@ -157,9 +157,9 @@ public class IntrospectionDelegatingRealm<C extends OIDCAuthenticationConfig> ex
 
 
 		private void synchGroupMappings(User user, Set<Group> mappedGroupsToDo) {
-			for (Group group : storage.getAllGroups()) {
-				if (group.containsMember(user)) {
-					if (mappedGroupsToDo.contains(group)) {
+			for(Group group : storage.getAllGroups()) {
+				if(group.containsMember(user.getId())) {
+					if(mappedGroupsToDo.contains(group)) {
 						// Mapping is still valid, remove from ToDo-List
 						mappedGroupsToDo.remove(group);
 					} else {

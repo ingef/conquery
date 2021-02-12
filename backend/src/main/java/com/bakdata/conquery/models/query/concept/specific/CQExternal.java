@@ -16,8 +16,9 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.events.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
@@ -31,7 +32,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
@@ -67,7 +67,7 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		DirectDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
+		EncodedDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream()
 												.map(FormatColumn::getDateFormat)
 												.filter(Objects::nonNull)

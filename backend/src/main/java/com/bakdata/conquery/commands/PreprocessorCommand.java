@@ -138,7 +138,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool.submit(() -> {
 				ConqueryMDC.setLocation(descriptor.toString());
 				try {
-					Preprocessor.preprocess(descriptor, totalProgress, ConqueryConfig.getInstance());
+					Preprocessor.preprocess(descriptor, totalProgress, config);
 					success.add(descriptor.toString());
 				}
 				catch (FileNotFoundException e) {

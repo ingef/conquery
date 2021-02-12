@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -45,6 +46,7 @@ public class QueryProcessor {
 	@Getter
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
+	private final ConqueryConfig config;
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -63,7 +65,7 @@ public class QueryProcessor {
 		visitors.putInstance(QueryUtils.SingleReusedChecker.class, new QueryUtils.SingleReusedChecker());
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user.getId(), storage).map(Group::getName).orElse("none");
 
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
 
@@ -96,7 +98,7 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, storage.getExecution(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, storage.getExecution(executionId), config);
 
 				return getStatus(mq, urlb, user);
 			}
@@ -104,7 +106,7 @@ public class QueryProcessor {
 		}
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId());
+		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId(), config);
 
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
@@ -122,14 +124,14 @@ public class QueryProcessor {
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
 			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
-				|| targetNamespace.getDataset().equals(dataset)) {
+					|| targetNamespace.getDataset().equals(dataset)) {
 				continue;
 			}
 
 			// Ensure that user is allowed to read all sub-queries of the actual query.
 
 			if (!translateable.collectRequiredQueries().stream()
-							  .allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
+					.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
 				continue;
 			}
 
@@ -149,6 +151,7 @@ public class QueryProcessor {
 	}
 
 	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
+		query.initExecutable(datasetRegistry, config);
 		return query.buildStatusFull(storage, urlb, user, datasetRegistry);
 	}
 

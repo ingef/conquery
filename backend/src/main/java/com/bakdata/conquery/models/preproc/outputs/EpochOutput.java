@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.ToString;
@@ -30,7 +30,7 @@ public class EpochOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 				if (row[columnIndex] == null) {
 					return null;
 				}

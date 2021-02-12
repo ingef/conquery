@@ -6,17 +6,17 @@ import { sortSelects } from "../model/select";
 
 import InputMultiSelect from "../form-components/InputMultiSelect";
 
-type PropsType = {
+interface PropsT {
   selects: SelectedSelectorType[];
   onSelectTableSelects: () => void;
   excludeTable: boolean;
-};
+}
 
 const TableSelects = ({
   selects,
   onSelectTableSelects,
-  excludeTable
-}: PropsType) => {
+  excludeTable,
+}: PropsT) => {
   if (!selects || selects.length === 0) return null;
 
   return (
@@ -26,11 +26,11 @@ const TableSelects = ({
           onChange: onSelectTableSelects,
           value: selects
             .filter(({ selected }) => !!selected)
-            .map(({ id, label }) => ({ value: id, label: label }))
+            .map(({ id, label }) => ({ value: id, label: label })),
         }}
-        options={sortSelects(selects).map(select => ({
+        options={sortSelects(selects).map((select) => ({
           value: select.id,
-          label: select.label
+          label: select.label,
         }))}
         disabled={excludeTable}
       />

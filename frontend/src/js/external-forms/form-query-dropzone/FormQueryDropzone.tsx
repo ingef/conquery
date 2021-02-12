@@ -1,6 +1,6 @@
-import React from "react";
+import React, { FC } from "react";
 
-import type { FieldPropsType } from "redux-form";
+import type { WrappedFieldProps } from "redux-form";
 
 import FormQueryResult from "./FormQueryResult";
 
@@ -9,13 +9,13 @@ import { PREVIOUS_QUERY } from "../../common/constants/dndTypes";
 import Dropzone from "../../form-components/Dropzone";
 import Label from "../../form-components/Label";
 
-type PropsT = FieldPropsType & {
-  label: string,
-  dropzoneText: string,
-  className?: string
-};
+interface PropsT extends WrappedFieldProps {
+  label: string;
+  dropzoneText: string;
+  className?: string;
+}
 
-export default (props: PropsT) => {
+const FormQueryDropzone: FC<PropsT> = (props) => {
   const onDrop = (dropzoneProps, monitor) => {
     const item = monitor.getItem();
 
@@ -38,3 +38,5 @@ export default (props: PropsT) => {
     </div>
   );
 };
+
+export default FormQueryDropzone;

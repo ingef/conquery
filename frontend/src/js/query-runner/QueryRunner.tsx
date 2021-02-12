@@ -91,7 +91,6 @@ const QueryRunner: FC<PropsT> = ({
           !queryRunner.queryResult.loading &&
           !isQueryRunning && (
             <QueryResults
-              datasetId={queryRunner.queryResult.datasetId}
               resultCount={queryRunner.queryResult.resultCount}
               resultUrl={queryRunner.queryResult.resultUrl}
               resultColumns={queryRunner.queryResult.resultColumns}

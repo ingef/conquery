@@ -146,12 +146,10 @@ export const retagPreviousQuery = (datasetId, queryId, tags) => {
 
 export const sharePreviousQuerySuccess = (
   queryId: string,
-  shared: boolean,
   groups: PreviousQueryIdT[]
 ) =>
   defaultSuccess(TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS, null, {
     queryId,
-    shared,
     groups,
   });
 

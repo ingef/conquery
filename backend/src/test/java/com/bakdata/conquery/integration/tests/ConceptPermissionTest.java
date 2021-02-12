@@ -42,7 +42,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset.getId(), testJson);
 		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
-		final QueryProcessor processor = new QueryProcessor(storage.getDatasetRegistry(), storage);
+		final QueryProcessor processor = new QueryProcessor(storage.getDatasetRegistry(), storage, conquery.getConfig());
 		final User user  = new User("testUser", "testUserLabel");
 
 		// Manually import data, so we can do our own work.

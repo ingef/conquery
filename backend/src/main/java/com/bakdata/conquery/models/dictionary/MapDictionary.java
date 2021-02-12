@@ -7,46 +7,39 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.math.DoubleMath;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import lombok.AllArgsConstructor;
 
 @CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
-@AllArgsConstructor
 public class MapDictionary extends Dictionary {
 
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
 	private List<ByteArrayList> id2Value;
 
-	public MapDictionary() {
+	public MapDictionary(DatasetId dataset, @NotNull String name) {
+		super(dataset, name);
 		value2Id = new Object2IntOpenHashMap<>();
 		value2Id.defaultReturnValue(-1);
 		id2Value = new ArrayList<>();
 	}
 
-	public MapDictionary(DictionaryId dictionaryId) {
-		this();
-		this.setName(dictionaryId.getDictionary());
-		this.setDataset(dictionaryId.getDataset());
-	}
-
 	@JsonCreator
 	public MapDictionary(DatasetId datasetId, String name, byte[][] id2Value) {
+		super(datasetId, name);
 		if (id2Value == null) {
 			id2Value = new byte[0][];
 		}
 		this.id2Value = new ArrayList<>(id2Value.length);
 		value2Id = new Object2IntOpenHashMap<>(id2Value.length);
 		value2Id.defaultReturnValue(-1);
-		this.setName(name);
-		this.setDataset(datasetId);
 
 		for (int i = 0; i < id2Value.length; i++) {
 			ByteArrayList v = new ByteArrayList(id2Value[i]);

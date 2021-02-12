@@ -17,8 +17,6 @@ export interface SelectOptionT {
   value: number | string;
 }
 
-export type SelectOptionsT = SelectOptionT[];
-
 // Example: { min: "2019-01-01", max: "2019-12-31" }
 export interface DateRangeT {
   min?: string;
@@ -58,7 +56,7 @@ export interface RangeFilterT extends FilterBaseT {
 export type MultiSelectFilterValueT = (string | number)[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: MultiSelectFilterValueT | null;
 }
 
@@ -83,7 +81,7 @@ export type SelectFilterValueT = string | number;
 export interface SelectFilterT extends FilterBaseT {
   type: "SELECT";
   unit?: string;
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: SelectFilterValueT | null;
 }
 
@@ -93,7 +91,7 @@ export interface StringFilterT extends FilterBaseT {
 }
 
 export interface DateColumnT {
-  options: SelectOptionsT;
+  options: SelectOptionT[];
   defaultValue: string | null;
   value?: string;
 }
@@ -309,6 +307,7 @@ export interface GetStoredQueryResponseT {
   owner: string; // TODO: Remove. Not used. And it's actually an ID
   status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
+  canExpand?: boolean;
 }
 
 // TODO: This actually returns a lot of unused fields, see above
@@ -331,10 +330,10 @@ export interface PostFilterResolveResponseT {
   };
 }
 
-interface FilterSuggestion {
+export interface FilterSuggestion {
   label: string;
   value: string;
-  optionValue: string | null;
+  optionValue: string;
   templateValues: string[]; // unclear whether that's correct
 }
 export type PostFilterSuggestionsResponseT = FilterSuggestion[];
@@ -349,7 +348,7 @@ export interface PermissionT {
 
 export type UserGroupIdT = string;
 export interface UserGroupT {
-  groupId: UserGroupIdT;
+  id: UserGroupIdT;
   label: string;
 }
 

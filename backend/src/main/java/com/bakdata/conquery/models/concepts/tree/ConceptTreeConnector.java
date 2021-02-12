@@ -17,10 +17,9 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -81,23 +80,21 @@ public class ConceptTreeConnector extends Connector {
 		final Import imp = bucket.getImp();
 		final ImportId importId = imp.getId();
 
-		final AStringType<?> stringType;
+		final StringStore stringStore;
 
 		// If we have a column and it is of string-type, we create indices and caches.
-		if (column != null && imp.getColumns()[column.getPosition()].getType() instanceof AStringType) {
+		if (column != null && bucket.getStores()[column.getPosition()] instanceof StringStore) {
 
-			CType<?, ?> cType = imp.getColumns()[column.getPosition()].getType();
-
-			stringType = (AStringType<?>) cType;
+			stringStore = (StringStore) bucket.getStores()[column.getPosition()];
 
 			// Create index and insert into Tree.
 			TreeChildPrefixIndex.putIndexInto(treeConcept);
 
-			treeConcept.initializeIdCache(stringType, importId);
+			treeConcept.initializeIdCache(stringStore, importId);
 		}
 		// No column only possible if we have just one tree element!
 		else if(treeConcept.countElements() == 1){
-			stringType = null;
+			stringStore = null;
 		}
 		else {
 			throw new IllegalStateException(String.format("Cannot build tree over Connector[%s] without Column", getId()));
@@ -123,13 +120,13 @@ public class ConceptTreeConnector extends Connector {
 				String stringValue = "";
 				int valueIndex = -1;
 
-				if (stringType != null) {
+				if (stringStore != null) {
 					valueIndex = bucket.getString(event, column);
-					stringValue = stringType.getElement(valueIndex);
+					stringValue = stringStore.getElement(valueIndex);
 				}
 
 				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, imp));
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event));
 
 
 				if ((getCondition() != null && !getCondition().matches(stringValue, rowMap))) {
@@ -153,7 +150,7 @@ public class ConceptTreeConnector extends Connector {
 				// also add concepts into bloom filter of entity cblock.
 				ConceptTreeNode<?> it = child;
 				while (it != null) {
-					cBlock.addEntityIncludedConcept(entry.getLocalEntity(), it);
+					cBlock.addIncludedConcept(entry.getEntity(), it);
 					it = it.getParent();
 				}
 			}
