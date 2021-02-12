@@ -23,11 +23,11 @@ public class CentralRegistry implements Injectable {
 	private final IdMap map = new IdMap<>();
 	private final ConcurrentMap<IId<?>, Supplier<Identifiable<?>>> cacheables = new ConcurrentHashMap<>();
 	
-	public synchronized void register(Identifiable<?> ident) {
+	public void register(Identifiable<?> ident) {
 		map.add(ident);
 	}
 	
-	public synchronized void registerCacheable(IId<?> id, Supplier<Identifiable<?>> supplier) {
+	public void registerCacheable(IId<?> id, Supplier<Identifiable<?>> supplier) {
 		cacheables.put(id, supplier);
 	}
 	
@@ -55,7 +55,7 @@ public class CentralRegistry implements Injectable {
 		return Optional.of((T) supplier.get());
 	}
 
-	public synchronized void remove(IId<?> id) {
+	public void remove(IId<?> id) {
 		map.remove(id);
 		cacheables.remove(id);
 	}

@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.Worker;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -62,9 +63,11 @@ public class CalculateCBlocksJob extends Job {
 				CBlock cBlock = new CBlock(info.getBucket().getId(), connector.getId());
 				cBlock.initIndizes(info.getBucket().getBucketSize());
 
-				connector.calculateCBlock(cBlock, info.getBucket(), MoreExecutors.listeningDecorator(worker.getExecutorService()));
+				final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(worker.getExecutorService());
 
-				calculateEntityDateIndices(cBlock, info.getBucket());
+				connector.calculateCBlock(cBlock, info.getBucket(), executorService);
+				executorService.submit(() -> calculateEntityDateIndices(cBlock, info.getBucket()));
+
 				bucketManager.addCalculatedCBlock(cBlock);
 				storage.addCBlock(cBlock);
 			}
