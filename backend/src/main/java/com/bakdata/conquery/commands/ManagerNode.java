@@ -224,7 +224,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
 					jobManager,
 					new NetworkSession(session),
-					datasetRegistry
+					datasetRegistry, config.getCluster().getBackpressure()
 			));
 
 			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)

@@ -21,4 +21,6 @@ public class ClusterConfig extends Configuration {
 	private MinaConfig mina = new MinaConfig();
 	@Min(1)
 	private int entityBucketSize = 1000;
+
+	private int backpressure = 100;
 }
