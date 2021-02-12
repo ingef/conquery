@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> {
-	private final int backpressure; //TODO FK: theres a name for that..
+	private final int backpressure;
 	@JsonIgnore @Getter
 	private transient JobManagerStatus jobManagerStatus = new JobManagerStatus();
 	@JsonIgnore
