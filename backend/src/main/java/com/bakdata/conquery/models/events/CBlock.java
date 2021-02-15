@@ -5,8 +5,11 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -63,7 +66,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	//TODO wrap access in private methods and change to a more appropriate class
 	private Map<Integer, Integer> minDate = new Int2IntArrayMap();
 	private Map<Integer, Integer> maxDate = new Int2IntArrayMap();
-
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
@@ -74,6 +76,35 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	public CBlock(BucketId bucket, ConnectorId connector) {
 		this.bucket = bucket;
 		this.connector = connector;
+	}
+
+	public static long calculateBitMask(ConceptElement<?>[] concepts) {
+		long mask = 0;
+		for (ConceptElement<?> concept : concepts) {
+			mask |= concept.calculateBitMask();
+		}
+		return mask;
+	}
+
+
+	public int[] getEventMostSpecificChild(int event) {
+		if(mostSpecificChildren == null){
+			return null;
+		}
+
+		return mostSpecificChildren[event];
+	}
+
+	public CDateRange getEntityDateRange(int entity) {
+		return CDateRange.of(getEntityMinDate(entity), getEntityMaxDate(entity));
+	}
+
+	public int getEntityMinDate(int entity) {
+		return minDate.getOrDefault(entity, Integer.MIN_VALUE);
+	}
+
+	public int getEntityMaxDate(int entity) {
+		return maxDate.getOrDefault(entity, Integer.MAX_VALUE);
 	}
 
 	@Override
@@ -88,5 +119,47 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 
 		minDate = new Int2IntArrayMap(bucketSize);
 		maxDate = new Int2IntArrayMap(bucketSize);
+	}
+
+	public void addEntityDateRange(int entity, CDateRange range) {
+		if (range.hasLowerBound()) {
+			final int minValue = range.getMinValue();
+
+			if (!minDate.containsKey(entity)) {
+				minDate.put(entity, minValue);
+			}
+			else {
+				int min = Math.min(minDate.get(entity), minValue);
+				minDate.put(entity, min);
+			}
+		}
+
+		if (range.hasUpperBound()) {
+			final int maxValue = range.getMaxValue();
+
+			if (!maxDate.containsKey(entity)) {
+				maxDate.put(entity, maxValue);
+			}
+			else {
+				int min = Math.max(maxDate.get(entity), maxValue);
+				maxDate.put(entity, min);
+			}
+		}
+	}
+
+	public void addIncludedConcept(int entity, ConceptTreeNode<?> node) {
+		final long mask = node.calculateBitMask();
+		final long original = includedConcepts.getOrDefault(entity, 0);
+		includedConcepts.put(entity, original | mask);
+	}
+
+	public boolean isConceptIncluded(int entity, long requiredBits) {
+		if (requiredBits == 0L) {
+			return true;
+		}
+
+		long bits = includedConcepts.get(entity);
+
+		return (bits & requiredBits) != 0L;
 	}
 }
