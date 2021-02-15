@@ -47,6 +47,10 @@ public class QueryUtils {
 		return Objects.requireNonNull(visitors.getInstance(clazz),String.format("Among the visitor that traversed the query no %s could be found", clazz));
 	}
 
+	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter) {
+		return elements.stream().map(CQElement::getLabel).collect(Collectors.joining(" " + delimiter + " "));
+	}
+
 	/**
 	 * Checks if the query requires to resolve external ids.
 	 *

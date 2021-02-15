@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
+import c10n.C10N;
+import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -22,6 +24,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAg
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -79,9 +82,14 @@ public class CQOr extends CQElement implements ForcedExists {
 		}
 
 		if (createExists) {
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "OR"), ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), QueryUtils.createDefaultMultiLabel(children, getGetC10nName())), ResultType.BOOLEAN));
 		}
 	}
+
+	private static String getGetC10nName() {
+		return C10N.get(CQElementC10n.class).or();
+	}
+
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
