@@ -65,7 +65,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
 	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the ManagerNode)
 	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
-	private static final File STORE_DIR = new File("storage"); // TODO add this to the configuration
+	private final File storageDir;
 
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
@@ -98,6 +98,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
 		this.storage = controller.getStorage();
 		this.storeName = config.getStoreName();
+		this.storageDir = config.getDirectory();
 		this.centralTokenRealm = controller.getCentralTokenRealm();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
 	}
@@ -106,7 +107,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	protected void onInit() {
 		super.onInit();
 		// Open/create the database/store
-		File passwordStoreFile = new File(STORE_DIR, storeName);
+		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
 		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"), new ArrayList<>(), (e) -> e.close());
 	}
