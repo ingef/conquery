@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -51,80 +51,87 @@ public class ArrowResultGenerationTest {
 
 	private static final int BATCH_SIZE = 1;
 	final IdMappingConfig idMapping = new IdMappingConfig() {
-		
+
 		@Getter
-		String[] printIdFields = new String[] { "id1", "id2" };
-		
+		String[] printIdFields = new String[]{"id1", "id2"};
+
 		@Override
 		public IdMappingAccessor[] getIdAccessors() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		@Override
 		public String[] getHeader() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 	};
 
 	@Test
 	void generateFieldsIdMapping() {
 
 		List<Field> fields = generateFieldsFromIdMapping(idMapping.getPrintIdFields());
-		
+
 		assertThat(fields).containsExactlyElementsOf(
-			List.of(
-				new Field("id1", FieldType.nullable(new ArrowType.Utf8()), null),
-				new Field("id2", FieldType.nullable(new ArrowType.Utf8()), null)));
+				List.of(
+						new Field("id1", FieldType.nullable(new ArrowType.Utf8()), null),
+						new Field("id2", FieldType.nullable(new ArrowType.Utf8()), null)
+				));
 
 	}
-	
+
 	@Test
 	void generateFieldsValue() {
 		List<ResultInfo> resultInfos = Arrays.stream(ResultType.values()).map(TypedSelectDummy::new)
-			.map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
+											 .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
 
 		List<Field> fields = generateFieldsFromResultType(
-			resultInfos,
-			// Custom column namer so we don't require a dataset registry
-			new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel()));
+				resultInfos,
+				// Custom column namer so we don't require a dataset registry
+				new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel())
+		);
 
 		assertThat(fields).containsExactlyElementsOf(
-			List.of(
-				new Field("BOOLEAN", FieldType.nullable(ArrowType.Bool.INSTANCE), null),
-				new Field("INTEGER", FieldType.nullable(new ArrowType.Int(32, true)), null),
-				new Field("NUMERIC", FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null),
-				new Field("CATEGORICAL", FieldType.nullable(new ArrowType.Utf8()), null),
-				new Field("RESOLUTION", FieldType.nullable(new ArrowType.Utf8()), null),
-				new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
-				new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
-				new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null)));
+				List.of(
+						new Field("BOOLEAN", FieldType.nullable(ArrowType.Bool.INSTANCE), null),
+						new Field("INTEGER", FieldType.nullable(new ArrowType.Int(32, true)), null),
+						new Field("NUMERIC", FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null),
+						new Field("CATEGORICAL", FieldType.nullable(new ArrowType.Utf8()), null),
+						new Field("RESOLUTION", FieldType.nullable(new ArrowType.Utf8()), null),
+						new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
+						new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
+						new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
+						new Field("IDENTIFIER", FieldType.nullable(new ArrowType.Utf8()), null)
+				));
 
 	}
 
 	@Test
 	void writeAndRead() throws IOException {
 		// Prepare every input data
-		PrintSettings printSettings  = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
+		PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
 		List<EntityResult> results = List.of(
-			new SinglelineContainedEntityResult(1,new Object[] { Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, "test_string", 4521 }),
-			new SinglelineContainedEntityResult(2, new Object[] { Boolean.FALSE, null, null, null, null, null, null, null }),
-			new MultilineContainedEntityResult(3, List.of(
-				new Object[] { Boolean.TRUE, null, null, null, null, null, null, null },
-				new Object[] { Boolean.TRUE, null, null, null, null, null, null, 4 }
+				new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, "test_string", 4521, "a"}),
+				new SinglelineContainedEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null}),
+				new MultilineContainedEntityResult(3, List.of(
+						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, "a"},
+						new Object[]{Boolean.TRUE, null, null, null, null, null, null, 4, "b"}
 				)),
-			EntityResult.notContained());
-		
+				EntityResult.notContained()
+		);
+
 		ManagedQuery mquery = new ManagedQuery(null, null, null) {
 			public ResultInfoCollector collectResultInfos() {
 				ResultInfoCollector coll = new ResultInfoCollector();
 				coll.addAll(Arrays.stream(ResultType.values())
-					.map(TypedSelectDummy::new)
-					.map(select -> new SelectResultInfo(select, new CQConcept()))
-					.collect(Collectors.toList()));
+								  .map(TypedSelectDummy::new)
+								  .map(select -> new SelectResultInfo(select, new CQConcept()))
+								  .collect(Collectors.toList()));
 				return coll;
-			};
-			
+			}
+
+			;
+
 			public List<EntityResult> getResults() {
 				return new ArrayList<>(results);
 			}
@@ -132,18 +139,20 @@ public class ArrowResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		
-		renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-			printSettings, 
-			mquery, 
-			(cer) -> new String[]{Integer.toString(cer.getEntityId()),Integer.toString(cer.getEntityId())},
-			idMapping.getPrintIdFields(),
-			BATCH_SIZE);
+
+		renderToStream(
+				(root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+				printSettings,
+				mquery,
+				(cer) -> new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())},
+				idMapping.getPrintIdFields(),
+				BATCH_SIZE
+		);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
-		
+
 		String computed = readTSV(inputStream);
-		
+
 		assertThat(computed).isNotBlank();
 		assertThat(computed).isEqualTo(generateExpectedTSV(results));
 
@@ -161,9 +170,9 @@ public class ArrowResultGenerationTest {
 				for (int rowI = 0; rowI < readRoot.getRowCount(); rowI++) {
 					final int currentRow = rowI;
 					sb.append(
-						vectors.stream().map(vec -> vec.getObject(currentRow)).map(o -> o == null ? "null" : o).map(Object::toString)
-							.collect(Collectors.joining("\t")))
-						.append("\n");
+							vectors.stream().map(vec -> vec.getObject(currentRow)).map(o -> o == null ? "null" : o).map(Object::toString)
+								   .collect(Collectors.joining("\t")))
+					  .append("\n");
 				}
 			}
 		}
@@ -172,18 +181,19 @@ public class ArrowResultGenerationTest {
 
 	private String generateExpectedTSV(List<EntityResult> results) {
 		String expected = results.stream()
-			.filter(EntityResult::isContained)
-			.map(ContainedEntityResult.class::cast)
-			.map(
-			(res) -> res.listResultLines().stream().map(
-				line -> res.getEntityId() + "\t" + res.getEntityId() + "\t" + Arrays.stream(line).map(o -> o == null ? "null" : o)
-					.map(Object::toString)
-					.collect(Collectors.joining("\t")))
-				.collect(Collectors.joining("\n")))
-			.collect(Collectors.joining("\n"));
+								 .filter(EntityResult::isContained)
+								 .map(ContainedEntityResult.class::cast)
+								 .map(
+										 (res) -> res.listResultLines().stream().map(
+												 line -> res.getEntityId() + "\t" + res.getEntityId() + "\t" + Arrays.stream(line)
+																													 .map(o -> o == null ? "null" : o)
+																													 .map(Object::toString)
+																													 .collect(Collectors.joining("\t")))
+													 .collect(Collectors.joining("\n")))
+								 .collect(Collectors.joining("\n"));
 
 		return Arrays.stream(idMapping.getPrintIdFields()).collect(Collectors.joining("\t")) + "\t" +
-			Arrays.stream(ResultType.values()).map(Enum::toString).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
+			   Arrays.stream(ResultType.values()).map(Enum::toString).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
 	}
 
 	private static class TypedSelectDummy extends Select {
