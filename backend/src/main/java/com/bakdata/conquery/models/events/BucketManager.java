@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;

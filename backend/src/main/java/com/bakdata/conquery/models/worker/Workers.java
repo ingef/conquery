@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,9 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.config.StorageFactory;
-import com.bakdata.conquery.models.config.XodusStorageFactory;
+import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -62,7 +60,7 @@ public class Workers extends IdResolveContext {
 		return worker;
 	}
 
-	public Worker createWorker(Dataset dataset, StorageFactory storageConfig, @NonNull String storagePrefix, @NonNull String name, Validator validator, boolean failOnError) {
+	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String storagePrefix, @NonNull String name, Validator validator, boolean failOnError) {
 		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, storagePrefix, name, validator, failOnError, entityBucketSize);
 
 		addWorker(worker);

@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.jobs;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;

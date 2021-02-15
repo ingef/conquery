@@ -39,7 +39,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.NonPersistentStorageFactory;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -82,7 +82,7 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void overrideConfig(ConqueryConfig config) {
-		config.setStorage(new NonPersistentStorageFactory());
+		config.setStorage(new NonPersistentStoreFactory());
 	}
 
 	@Override

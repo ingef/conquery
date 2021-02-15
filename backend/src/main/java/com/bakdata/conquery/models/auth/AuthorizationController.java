@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;

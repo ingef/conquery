@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.common;
 import java.io.IOException;
 
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;

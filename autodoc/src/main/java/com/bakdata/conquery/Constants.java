@@ -53,7 +53,7 @@ import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.config.QueryConfig;
 import com.bakdata.conquery.models.config.StandaloneConfig;
-import com.bakdata.conquery.models.config.XodusStorageFactory;
+import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -127,7 +127,7 @@ public class Constants {
 			.otherClass(PreprocessingConfig.class)
 			.otherClass(QueryConfig.class)
 			.otherClass(StandaloneConfig.class)
-			.otherClass(XodusStorageFactory.class)
+			.otherClass(XodusStoreFactory.class)
 			.otherClass(MinaConfig.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(XodusConfig.class)

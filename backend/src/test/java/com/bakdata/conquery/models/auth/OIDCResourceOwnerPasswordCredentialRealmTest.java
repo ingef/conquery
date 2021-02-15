@@ -1,26 +1,8 @@
 package com.bakdata.conquery.models.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.fail;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-import static org.mockserver.model.Header.header;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.Parameter.param;
-import static org.mockserver.model.ParameterBody.params;
-
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.Validator;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.TokenHandler;
 import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -30,7 +12,7 @@ import com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPassw
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.util.NonPersistentMetaStorage;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import io.dropwizard.validation.BaseValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
@@ -48,10 +30,28 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
 
+import javax.validation.Validator;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.fail;
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.Header.header;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+import static org.mockserver.model.Parameter.param;
+import static org.mockserver.model.ParameterBody.params;
+
 @Slf4j
 public class OIDCResourceOwnerPasswordCredentialRealmTest {
 
-	private static final MetaStorage STORAGE = new NonPersistentMetaStorage();
+	private static final MetaStorage STORAGE = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), null);
 	private static final OIDCResourceOwnerPasswordCredentialRealmFactory CONFIG = new OIDCResourceOwnerPasswordCredentialRealmFactory();
 	private static final Validator VALIDATOR = BaseValidator.newValidator();
 	private static final TestRealm REALM = new TestRealm(STORAGE, CONFIG);

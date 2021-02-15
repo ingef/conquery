@@ -459,7 +459,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.config.XodusStorageFactory`
+Java Type: `com.bakdata.conquery.models.config.XodusStoreFactory`
 
 Supported Fields:
 

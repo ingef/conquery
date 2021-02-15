@@ -7,8 +7,8 @@ import javax.validation.Validator;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -25,9 +25,6 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Collections;
-import java.util.List;
 
 @Slf4j
 public class RestartTest implements ProgrammaticIntegrationTest {

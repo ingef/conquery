@@ -10,7 +10,7 @@ import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;

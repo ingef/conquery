@@ -17,9 +17,8 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.io.xodus.stores.InternalMetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -126,7 +125,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		loadNamespaces();
 
 		log.info("Started meta storage");
-		this.storage = new InternalMetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
+		this.storage = new MetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 

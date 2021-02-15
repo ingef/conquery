@@ -1,9 +1,8 @@
 package com.bakdata.conquery.util;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.xodus.stores.Store;
-import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
+import com.bakdata.conquery.io.storage.Store;
 
 import java.io.IOException;
 import java.util.Collection;

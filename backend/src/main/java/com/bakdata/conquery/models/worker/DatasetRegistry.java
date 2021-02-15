@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;

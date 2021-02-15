@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;

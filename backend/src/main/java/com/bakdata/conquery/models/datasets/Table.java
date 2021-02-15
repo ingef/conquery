@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;

@@ -47,7 +47,7 @@ public class ConqueryConfig extends Configuration {
 	private StandaloneConfig standalone = new StandaloneConfig();
 	@Valid
 	@NotNull
-	private StorageFactory storage = new XodusStorageFactory();
+	private StoreFactory storage = new XodusStoreFactory();
 	@Valid
 	@NotNull
 	private QueryConfig queries = new QueryConfig();

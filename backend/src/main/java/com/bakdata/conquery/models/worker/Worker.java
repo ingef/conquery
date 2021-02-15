@@ -9,11 +9,10 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.io.xodus.stores.InternalWorkerStorage;
+import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.config.StorageFactory;
+import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -90,14 +89,14 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		@NonNull Dataset dataset,
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull ExecutorService executorService,
-		@NonNull StorageFactory config,
+		@NonNull StoreFactory config,
 		@NonNull String storagePrefix,
 		@NonNull String directory,
 		@NonNull Validator validator,
 		boolean failOnError,
 		int entityBucketSize) {
 
-		WorkerStorage workerStorage = new InternalWorkerStorage(validator, config, List.of(storagePrefix,directory));
+		WorkerStorage workerStorage = new WorkerStorage(validator, config, List.of(storagePrefix,directory));
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());

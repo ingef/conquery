@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.NonPersistentStorageFactory;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -37,7 +37,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	@Override
 	public void overrideConfig(ConqueryConfig config) {
-		config.setStorage(new NonPersistentStorageFactory());
+		config.setStorage(new NonPersistentStoreFactory());
 	}
 
 	@Override
