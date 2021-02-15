@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Enums and helper methods to create stores of a certain kind.
@@ -47,6 +48,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @Getter
+@ToString(of={"name", "keyType", "valueType" })
 public enum StoreInfo implements IStoreInfo {
     DATASET(Dataset.class, Boolean.class),
     ID_MAPPING(PersistentIdMap.class, Boolean.class),

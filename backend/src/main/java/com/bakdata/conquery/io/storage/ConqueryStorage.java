@@ -21,5 +21,5 @@ public interface ConqueryStorage extends Closeable {
 	/**
 	 * Remove the storage.
 	 */
-	void remove();
+	void removeStorage();
 }

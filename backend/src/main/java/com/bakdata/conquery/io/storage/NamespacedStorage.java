@@ -24,7 +24,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class NamespacedStorage implements ConqueryStorage{
+/**
+ * Overlapping storage structure for {@link WorkerStorage} and {@link NamespaceStorage}.
+ * The reason for the overlap ist primarily that all this stored members are necessary in the
+ * SerDes communication between the manager and the shards/worker for the resolving of ids included in
+ * messages (see also {@link com.bakdata.conquery.io.jackson.serializer.NsIdRef}).
+ */
+public abstract class NamespacedStorage implements ConqueryStorage {
 
     @Getter
     protected final CentralRegistry centralRegistry = new CentralRegistry();
@@ -78,7 +84,7 @@ public abstract class NamespacedStorage implements ConqueryStorage{
     }
 
     @Override
-    public void remove() {
+    public void removeStorage() {
         dataset.removeStore();
         secondaryIds.removeStore();
         tables.removeStore();
@@ -90,21 +96,21 @@ public abstract class NamespacedStorage implements ConqueryStorage{
 
     protected abstract boolean isRegisterImports();
 
-    void decorateDatasetStore(SingletonStore<Dataset> store) {
+    private void decorateDatasetStore(SingletonStore<Dataset> store) {
         store
                 .onAdd(getCentralRegistry()::register)
                 .onRemove(getCentralRegistry()::remove);
     }
 
-    void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
+    private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
         // Nothing to decorate
     }
 
-    void decorateDictionaryStore(IdentifiableStore<Dictionary> store) {
+    private void decorateDictionaryStore(IdentifiableStore<Dictionary> store) {
         // Nothing to decorate
     }
 
-    void decorateTableStore(IdentifiableStore<Table> store) {
+    private void decorateTableStore(IdentifiableStore<Table> store) {
         store
                 .onAdd(table -> {
                     for (Column c : table.getColumns()) {
@@ -118,7 +124,7 @@ public abstract class NamespacedStorage implements ConqueryStorage{
                 });
     }
 
-    void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
+    private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
         store
                 .onAdd(concept -> {
                     Dataset ds = centralRegistry.resolve(
@@ -158,7 +164,7 @@ public abstract class NamespacedStorage implements ConqueryStorage{
                 });
     }
 
-    void decorateImportStore(IdentifiableStore<Import> store) {
+    private void decorateImportStore(IdentifiableStore<Import> store) {
         store
                 .onAdd(imp -> {
                     imp.loadExternalInfos(this);
@@ -180,21 +186,6 @@ public abstract class NamespacedStorage implements ConqueryStorage{
                     getCentralRegistry().remove(imp);
 
                 });
-    }
-
-    void decorateWorkerStore(SingletonStore<WorkerInformation> store) {
-        // Nothing to decorate
-    }
-
-    void decorateBucketStore(IdentifiableStore<Bucket> store) {
-        store
-                .onAdd((bucket) -> {
-                    bucket.loadDictionaries(this);
-                });
-    }
-
-    void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
-        // Nothing to decorate
     }
 
     public void addDictionary(Dictionary dict) {

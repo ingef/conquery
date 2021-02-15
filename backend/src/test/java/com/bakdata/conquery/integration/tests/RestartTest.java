@@ -120,7 +120,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		testConquery.getDropwizard().after();
 		//restart
 		testConquery.beforeAll();
-		//testConquery.restart();
 
 		final StandaloneSupport support = testConquery.openDataset(dataset);
 

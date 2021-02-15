@@ -63,7 +63,7 @@ public class MetaStorage implements ConqueryStorage{
     }
 
     @Override
-    public void remove() {
+    public void removeStorage() {
         executions.removeStore();
         formConfigs.removeStore();
         authUser.removeStore();

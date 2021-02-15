@@ -13,9 +13,11 @@ import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ToString(of = "store")
 public class XodusStore {
 	private final Store store;
 	private final Environment environment;
@@ -85,11 +87,7 @@ public class XodusStore {
 	public int count() {
 		return Ints.checkedCast(environment.computeInReadonlyTransaction(store::count));
 	}
-	
-	@Override
-	public String toString() {
-		return store.getName();
-	}
+
 
 	public void clear() {
 		// TODO implement, unused at the moment

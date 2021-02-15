@@ -210,7 +210,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	@SneakyThrows
 	public void remove() {
-		storage.remove();
+		storage.removeStorage();
 		close();
 	}
 

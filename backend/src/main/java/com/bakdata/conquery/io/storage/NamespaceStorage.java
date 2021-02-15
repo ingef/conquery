@@ -53,8 +53,8 @@ public class NamespaceStorage extends NamespacedStorage {
     }
 
     @Override
-    public void remove() {
-        super.remove();
+    public void removeStorage() {
+        super.removeStorage();
         idMapping.remove();
         structure.remove();
         workerToBuckets.remove();

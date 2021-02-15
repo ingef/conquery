@@ -68,7 +68,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 			workers.keySet().removeIf(w->w.getDataset().equals(id));
 			try {
 				// remove all associated data.
-				removed.getStorage().remove();
+				removed.getStorage().removeStorage();
 			}
 			catch(Exception e) {
 				log.error("Failed to delete storage "+removed, e);

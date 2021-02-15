@@ -22,10 +22,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -37,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Getter
 @NoArgsConstructor
+@ToString(of = "storage")
 public class Namespace implements Closeable {
 
 	@JsonIgnore
@@ -162,11 +160,6 @@ public class Namespace implements Closeable {
 		catch (IOException e) {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
-	}
-	
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName() + '[' + storage.getDataset().getId() + ']';
 	}
 
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {

@@ -36,6 +36,7 @@ public class WorkerStorage extends NamespacedStorage {
         buckets = storageFactory.createBucketStore(centralRegistry, pathName);
         cBlocks = storageFactory.createCBlockStore(centralRegistry, pathName);
 
+        decorateWorkerStore(worker);
         decorateBucketStore(buckets);
         decorateCBlockStore(cBlocks);
     }
@@ -45,6 +46,40 @@ public class WorkerStorage extends NamespacedStorage {
         worker.loadData();
         buckets.loadData();
         cBlocks.loadData();
+    }
+
+    @Override
+    public void removeStorage() {
+        super.removeStorage();
+
+        worker.removeStore();
+        buckets.removeStore();
+        cBlocks.removeStore();
+    }
+
+    public void close() throws IOException {
+        super.close();
+
+        worker.close();
+        buckets.close();
+        cBlocks.close();
+    }
+
+
+
+    private void decorateWorkerStore(SingletonStore<WorkerInformation> store) {
+        // Nothing to decorate
+    }
+
+    private void decorateBucketStore(IdentifiableStore<Bucket> store) {
+        store
+                .onAdd((bucket) -> {
+                    bucket.loadDictionaries(this);
+                });
+    }
+
+    private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
+        // Nothing to decorate
     }
 
 
@@ -119,13 +154,5 @@ public class WorkerStorage extends NamespacedStorage {
     public void removeConcept(ConceptId id) {
         log.debug("Removing Concept[{}]", id);
         concepts.remove(id);
-    }
-
-    public void close() throws IOException {
-        super.close();
-
-        worker.close();
-        buckets.close();
-        cBlocks.close();
     }
 }
