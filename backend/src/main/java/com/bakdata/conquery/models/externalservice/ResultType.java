@@ -66,7 +66,7 @@ public enum ResultType {
 			return INTEGER.print(cfg, f);
 		}
 	},
-	IDENTIFIER;
+	ID;
 
 
 	private static final int CURRENCY_DIGITS = ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits();

@@ -127,7 +127,7 @@ public class SecondaryIdQuery extends IQuery {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IDENTIFIER));
+		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.ID));
 		query.collectResultInfos(collector);
 	}
 

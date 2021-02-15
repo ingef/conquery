@@ -291,7 +291,7 @@ public class ArrowRenderer {
 				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
 			case STRING:
 				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-			case IDENTIFIER:
+			case ID:
 				return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
 			default:
 				throw new IllegalStateException("Unknown column type " + info.getType());

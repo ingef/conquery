@@ -101,7 +101,7 @@ public class ArrowResultGenerationTest {
 						new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
 						new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
 						new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-						new Field("IDENTIFIER", FieldType.nullable(new ArrowType.Utf8()), null)
+						new Field("ID", FieldType.nullable(new ArrowType.Utf8()), null)
 				));
 
 	}
