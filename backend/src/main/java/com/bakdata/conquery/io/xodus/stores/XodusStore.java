@@ -96,7 +96,9 @@ public class XodusStore {
 	}
 
 	public void remove() {
+		log.debug("Removing store {} from environment {}", store, environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
+		close();
 	}
 
 	public void close() {

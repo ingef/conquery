@@ -211,8 +211,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	@SneakyThrows
 	public void remove() {
-		close();
 		storage.remove();
+		close();
 	}
 
 	public void addTable(Table table) {
