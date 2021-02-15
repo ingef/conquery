@@ -6,9 +6,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
 /**
- * Store for Identifiable values. Directly delegates all changes to the supplied {@link CentralRegistry}.
- *
- * The {@link ThrowingConsumer}s can be used to reflect/model dependencies of the identifiable values inside the store. For example {@link com.bakdata.conquery.models.concepts.Concept} holds multiple {@link com.bakdata.conquery.models.concepts.Connector}s where a deletion of a concept requires the deletion of the Conncetors as well. {@link NamespacedStorage} is the main user of those two methods and should be looked at if desired.
+ * Registered items are directly referenced. Compare to {@link IdentifiableCachedStore}
  */
 public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 

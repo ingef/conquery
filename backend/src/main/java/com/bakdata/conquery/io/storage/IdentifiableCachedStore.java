@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -7,22 +8,19 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * Registers accessors of values instead of the value itself to the central registry.
+ * Might be useful if the object are very large and should only be loaded on demand.
+ */
 @Accessors(fluent=true) @Setter @Getter
 public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 
-	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
+	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
 		super(store, centralRegistry);
-//		this(centralRegistry, store, new SingletonNamespaceCollection(centralRegistry));
+		for(Injectable injectable : injectables) {
+			store.inject(injectable);
+		}
 	}
-	
-//	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
-//		super(store);
-//		for(Injectable injectable : injectables) {
-//			store.inject(injectable);
-//		}
-//		store.inject(centralRegistry);
-//		this.centralRegistry = centralRegistry;
-//	}
 
 	@Override
 	protected IId<VALUE> extractKey(VALUE value) {
