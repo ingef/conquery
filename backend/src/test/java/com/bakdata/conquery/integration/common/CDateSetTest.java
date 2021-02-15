@@ -132,17 +132,31 @@ public class CDateSetTest {
 	}
 
 	@Test
-	public void testMaskedAddClosedMaskAtMost() {
+	public void testMaskedTEST() {
 		CDateSet set = CDateSet.create();
-		CDateSet mask = CDateSet.create(CDateRange.atMost(4));
+		CDateSet mask = CDateSet.create(CDateRange.of(-10, 10));
 
 		set.maskedAdd(CDateRange.of(-5, 5), mask);
 
-		assertThat(set.asRanges()).containsExactly(CDateRange.of(-5, 4));
+		assertThat(set.asRanges()).containsExactly(CDateRange.of(-5, 5));
 	}
 
 	@Test
-	public void testMaskedAddClosedMaskAtLeast() {
+	public void testMaskedAddClosedMaskAtMost() {
+		CDateSet set = CDateSet.create();
+
+		CDateSet mask1 = CDateSet.create(CDateRange.of(10, 19));
+
+		CDateSet mask2 = CDateSet.create(CDateRange.of(20, 30));
+
+		set.maskedAdd(CDateRange.of(0, 5), mask1);
+		set.maskedAdd(CDateRange.of(35, 36), mask2);
+
+		assertThat(set.asRanges()).isEmpty();
+	}
+
+	@Test
+	public void testMaskedAddNoIntersection() {
 		CDateSet set = CDateSet.create();
 		CDateSet mask = CDateSet.create(CDateRange.atLeast(4));
 
