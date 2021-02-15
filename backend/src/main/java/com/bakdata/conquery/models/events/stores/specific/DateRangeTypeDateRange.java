@@ -31,7 +31,8 @@ public class DateRangeTypeDateRange implements DateRangeStore {
 
 	@Override
 	public int getLines() {
-		return minStore.getLines();
+		// they can be unaligned, if one of them is empty.
+		return Math.max(minStore.getLines(), maxStore.getLines());
 	}
 
 	@Override
