@@ -62,7 +62,7 @@ public class SerializingStoreDumpTest {
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, IStoreInfo storeId) {
-		return new SerializingStore<>(config, new XodusStore(environment, storeId, new ArrayList<>(), (e) -> {}), validator, storeId);
+		return new SerializingStore<>(config, new XodusStore(environment, storeId, new ArrayList<>(), (e) -> {}, (e) -> {}), validator, storeId);
 	}
 
 	/**

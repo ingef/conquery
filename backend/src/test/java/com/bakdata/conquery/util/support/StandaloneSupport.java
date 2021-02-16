@@ -58,6 +58,7 @@ public class StandaloneSupport implements Closeable {
 	public void close() {
 		testConquery.removeSupportDataset(this);
 		testConquery.removeSupport(this);
+		testConquery.waitUntilWorkDone();
 	}
 
 	public Validator getValidator() {

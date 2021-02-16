@@ -17,20 +17,21 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@ToString(of = "store")
 public class XodusStore {
 	private final Store store;
 	private final Environment environment;
 	private final long timeoutHalfMillis; // milliseconds
 	private final Collection<Store>  openStores;
 	private final Consumer<Environment> envCloseHook;
-	
-	public XodusStore(Environment env, IStoreInfo storeId, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook) {
+	private final Consumer<Environment> envRemoveHook;
+
+	public XodusStore(Environment env, IStoreInfo storeId, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.environment = env;
 		this.openStores = openStoresInEnv;
 		this.envCloseHook = envCloseHook;
+		this.envRemoveHook = envRemoveHook;
 		this.store = env.computeInTransaction(
 			t->env.openStore(storeId.getName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
@@ -97,15 +98,27 @@ public class XodusStore {
 		log.debug("Removing store {} from environment {}", store, environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 		close();
+		if (openStores.isEmpty()){
+			// Last Store closes the Environment
+			log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", environment.getLocation());
+			envRemoveHook.accept(environment);
+		}
 	}
 
 	public void close() {
 		log.info("Closing XodusStore: {}", this);
-		openStores.remove(store);
+		if (!openStores.remove(store)) {
+			return;
+		}
 		if (openStores.isEmpty()){
 			// Last Store closes the Environment
 			log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", environment.getLocation());
 			envCloseHook.accept(environment);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "XodusStore[" + environment.getLocation() + ":" +store.getName() +"}";
 	}
 }

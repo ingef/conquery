@@ -31,6 +31,7 @@ import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  * @param <VALUE> type of values.
  */
 @Slf4j
+@ToString(of = "store")
 public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public static final String DUMP_FILE_EXTENTION = "json";
@@ -399,11 +401,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void inject(Injectable injectable) {
 		valueReader = injectable.injectInto(valueReader);
-	}
-
-	@Override
-	public String toString() {
-		return storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
 	}
 
 	@Override

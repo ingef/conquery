@@ -259,8 +259,6 @@ public class TestConquery {
 	@SneakyThrows
 	public void removeSupportDataset(StandaloneSupport support) {
 		DatasetId datasetId = support.getDataset().getId();
-		standaloneCommand.getManager().getDatasetRegistry().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(datasetId)));
-		standaloneCommand.getManager().getDatasetRegistry().get(datasetId).close();
 		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(datasetId);
 	}
 }

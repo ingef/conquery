@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.*;
 import io.dropwizard.util.Duration;
@@ -38,6 +39,7 @@ import javax.validation.Validator;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -86,7 +88,7 @@ public class XodusStoreFactory implements StoreFactory {
     private BiMap<File, Environment> activeEnvironments = HashBiMap.create();
 
     @JsonIgnore
-    private transient Multimap<Environment, jetbrains.exodus.env.Store> openStoresInEnv = MultimapBuilder.hashKeys().hashSetValues().build();
+    private transient Multimap<Environment, jetbrains.exodus.env.Store> openStoresInEnv = Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
     @Override
     public void init(ManagerNode managerNode) {
@@ -198,7 +200,7 @@ public class XodusStoreFactory implements StoreFactory {
         boolean exists = env.computeInTransaction(t -> env.storeExists(StoreInfo.DATASET.getName(), t));
         env.computeInTransaction(t -> env.getAllStoreNames(t));
         if (!exists) {
-            removeEnvironment(env);
+            closeEnvironment(env);
         }
         return exists;
     }
@@ -322,13 +324,25 @@ public class XodusStoreFactory implements StoreFactory {
         }
     }
 
-    private void removeEnvironment(Environment env) {
+    private void closeEnvironment(Environment env) {
         synchronized (activeEnvironments) {
             if (env == null) {
                 return;
             }
+
+            if(activeEnvironments.remove(activeEnvironments.inverse().get(env)) == null){
+                return;
+            }
             env.close();
-            activeEnvironments.remove(activeEnvironments.inverse().get(env));
+        }
+    }
+
+    private void removeEnvironment(Environment env) {
+        log.info("Deleting environment: {}", env.getLocation());
+        try {
+            FileUtil.deleteRecursive(Path.of(env.getLocation()));
+        }catch (IOException e) {
+            log.error("Cannot delete directory of removed environment: {}", env.getLocation(), log.isDebugEnabled()? e : null);
         }
     }
 
@@ -337,7 +351,7 @@ public class XodusStoreFactory implements StoreFactory {
             return new CachedStore<KEY, VALUE>(
                     new SerializingStore<KEY, VALUE>(
                             this,
-                            new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::removeEnvironment),
+                            new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
                             validator,
                             storeId
                     ));
@@ -348,7 +362,7 @@ public class XodusStoreFactory implements StoreFactory {
         synchronized (openStoresInEnv) {
 
             return storeId.cached(
-                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::removeEnvironment)
+                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment)
             );
         }
     }
@@ -357,7 +371,7 @@ public class XodusStoreFactory implements StoreFactory {
         synchronized (openStoresInEnv) {
 
             return new WeakCachedStore<>(
-                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::removeEnvironment),
+                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
                     getWeakCacheDuration()
             );
         }
