@@ -11,7 +11,13 @@ const path = require("path");
 
 const PORT = process.env.PORT || 4242;
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      reportOnly: true,
+    },
+  })
+);
 app.disable("x-powered-by");
 app.use(compression());
 app.use(cors());
