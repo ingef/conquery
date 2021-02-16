@@ -6,17 +6,17 @@
         "type": "CONCEPT_QUERY",
         "root": {
             "ids": [
-                "${dataset}.con"
+                "con"
             ],
             "type": "CONCEPT",
             "label": "Geschlecht SELECT",
             "tables": [
                 {
-                    "id": "${dataset}.con.geschlecht_connector",
-                    "selects": "${dataset}.con.geschlecht_connector.event-date"
+                    "id": "con.geschlecht_connector",
+                    "selects": "con.geschlecht_connector.event-date"
                 }
             ],
-            "selects": "${dataset}.con.geschlecht_connector.event-date"
+            "selects": "con.geschlecht_connector.event-date"
         }
     },
     "concepts": [

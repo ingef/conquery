@@ -21,8 +21,8 @@ import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 export type PropsType = {
   formType: string;
   fieldName: string;
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
   datasetId: number;
   onCloseModal: Function;
   onUpdateLabel: Function;
@@ -49,8 +49,8 @@ export const FormQueryNodeEditor = (props: PropsType) => {
         props.formType,
         props.fieldName,
         conceptPosition,
-        props.blacklistedTables,
-        props.whitelistedTables
+        props.blocklistedTables,
+        props.allowlistedTables
       )
     : null;
 
@@ -115,8 +115,8 @@ export const FormQueryNodeEditor = (props: PropsType) => {
       orIdx={orIdx}
       editorState={editorState}
       showTables={showTables}
-      blacklistedTables={props.blacklistedTables}
-      whitelistedTables={props.whitelistedTables}
+      blocklistedTables={props.blocklistedTables}
+      allowlistedTables={props.allowlistedTables}
       suggestions={suggestions}
       currencyConfig={currencyConfig}
       isExcludeTimestampsPossible={false}

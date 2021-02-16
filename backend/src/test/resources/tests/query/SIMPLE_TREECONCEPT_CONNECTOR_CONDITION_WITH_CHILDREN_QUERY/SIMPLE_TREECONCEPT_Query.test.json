@@ -7,11 +7,11 @@
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "${dataset}.concept.a1"
+        "concept.a1"
       ],
       "tables": [
         {
-          "id": "${dataset}.concept.column",
+          "id": "concept.column",
           "filters": []
         }
       ]

@@ -11,16 +11,16 @@
         "sampler": "LATEST",
         "child": {
           "ids": [
-            "${dataset}.geschlecht_select"
+            "geschlecht_select"
           ],
           "type": "CONCEPT",
           "label": "geschlecht_select",
           "tables": [
             {
-              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "id": "geschlecht_select.geschlecht_connector",
               "filters": [
                 {
-                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "filter": "geschlecht_select.geschlecht_connector.geschlecht",
                   "type": "SELECT",
                   "value": "1"
                 }
@@ -33,16 +33,16 @@
         "sampler": "LATEST",
         "child": {
           "ids": [
-            "${dataset}.geschlecht_select"
+            "geschlecht_select"
           ],
           "type": "CONCEPT",
           "label": "geschlecht_select",
           "tables": [
             {
-              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "id": "geschlecht_select.geschlecht_connector",
               "filters": [
                 {
-                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "filter": "geschlecht_select.geschlecht_connector.geschlecht",
                   "type": "SELECT",
                   "value": "2"
                 }

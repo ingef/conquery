@@ -10,8 +10,8 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -56,7 +56,9 @@ public class StandaloneSupport implements Closeable {
 
 	@Override
 	public void close() {
-		testConquery.closeNamespace(getDataset().getId());
+		testConquery.removeSupportDataset(this);
+		testConquery.removeSupport(this);
+		testConquery.waitUntilWorkDone();
 	}
 
 	public Validator getValidator() {

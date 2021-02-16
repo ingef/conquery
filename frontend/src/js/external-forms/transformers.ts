@@ -17,11 +17,11 @@ function setDefaultSelects(selects: SelectorT[], defaultSelects: string[]) {
 }
 
 export const initTables = ({
-  blacklistedTables,
-  whitelistedTables,
+  blocklistedTables,
+  allowlistedTables,
 }: {
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
 }) => (node: ConceptQueryNodeType) => {
   return !node.tables
     ? node
@@ -30,8 +30,8 @@ export const initTables = ({
         tables: node.tables.map((table) => {
           const isDisabled = tableIsDisabled(
             table,
-            blacklistedTables,
-            whitelistedTables
+            blocklistedTables,
+            allowlistedTables
           );
 
           return isDisabled ? { ...table, exclude: true } : table;
