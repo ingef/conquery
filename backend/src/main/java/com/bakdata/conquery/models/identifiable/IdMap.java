@@ -63,7 +63,8 @@ public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends I
 	}
 
 	private void addToMap(V entry) {
-		V old = map.put(entry.getId(), entry);
+		// The following cast should be unnecessary, but intellij is complaining without it. Please leave it here for now
+		V old = (V) map.put(entry.getId(), entry);
 		if(old != null && !old.equals(entry)) {
 			throw new IllegalStateException("The element "+entry.getId()+" is present twice in this map.");
 		}

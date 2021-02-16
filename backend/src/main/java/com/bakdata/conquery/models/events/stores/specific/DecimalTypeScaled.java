@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
@@ -13,20 +15,20 @@ import lombok.Getter;
  */
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
-public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
+public class DecimalTypeScaled implements DecimalStore {
 
 	private final int scale;
-	private final ColumnStore<Long> subType;
+	private final IntegerStore subType;
 
 	@JsonCreator
-	public DecimalTypeScaled(int scale, ColumnStore<Long> subType) {
+	public DecimalTypeScaled(int scale, IntegerStore subType) {
 		this.scale = scale;
 		this.subType = subType;
 	}
 
-		@Override
-	public BigDecimal createScriptValue(BigDecimal value) {
-		return null;
+	@Override
+	public int getLines() {
+		return subType.getLines();
 	}
 
 	@Override
@@ -40,27 +42,22 @@ public class DecimalTypeScaled extends ColumnStore<BigDecimal> {
 	}
 
 	@Override
-	public DecimalTypeScaled doSelect(int[] starts, int[] length) {
+	public DecimalTypeScaled select(int[] starts, int[] length) {
 		return new DecimalTypeScaled(scale, subType.select(starts, length));
 	}
 
 	@Override
-	public void set(int event, BigDecimal value) {
-		if (value == null) {
-			subType.set(event, null);
-		}
-		else {
-			subType.set(event, unscale(scale, value).longValue());
-		}
+	public void setDecimal(int event, BigDecimal raw) {
+		subType.setInteger(event, unscale(scale, raw).longValue());
+	}
+
+	@Override
+	public void setNull(int event) {
+		subType.setNull(event);
 	}
 
 	public static BigInteger unscale(int scale, BigDecimal value) {
 		return value.movePointRight(scale).toBigIntegerExact();
-	}
-
-	@Override
-	public BigDecimal get(int event) {
-		return getDecimal(event);
 	}
 
 	@Override

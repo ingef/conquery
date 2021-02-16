@@ -2,8 +2,8 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -33,6 +33,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Produces(MediaType.TEXT_HTML)
@@ -40,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @Setter
 @Path("datasets/{" + DATASET + "}")
+@Slf4j
 public class DatasetsUIResource extends HAdmin {
 
 
@@ -87,14 +89,20 @@ public class DatasetsUIResource extends HAdmin {
 								.getStorage()
 								.getAllImports()
 								.stream()
-								.flatMap(i -> Arrays.stream(i.getColumns()))
-								.filter(c -> c.getTypeDescription() instanceof StringType)
-								.map(c -> (StringType) c.getTypeDescription())
-								.filter(c -> c.getUnderlyingDictionary() != null)
-								.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
-								.values()
+								.flatMap(i -> i.getDictionaries().stream())
+								.filter(Objects::nonNull)
+								.map(namespace.getStorage()::getDictionary)
+								.distinct()
+								.mapToLong(Dictionary::estimateMemoryConsumption)
+								.sum(),
+						// Total size of CBlocks
+						namespace
+								.getStorage().getTables()
 								.stream()
-								.mapToLong(l -> l.get(0).estimateTypeSizeBytes())
+								.flatMap(table -> table.findImports(namespace.getStorage()).stream())
+								.mapToLong(imp -> TablesUIResource.calculateCBlocksSizeBytes(
+										imp, getNamespace().getStorage().getAllConcepts()
+								))
 								.sum(),
 						// total size of entries
 						namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
@@ -130,6 +138,7 @@ public class DatasetsUIResource extends HAdmin {
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;
+		private long cBlocksSize;
 		private long size;
 	}
 }

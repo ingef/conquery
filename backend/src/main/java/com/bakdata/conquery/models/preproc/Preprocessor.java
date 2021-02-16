@@ -18,10 +18,9 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -274,7 +273,7 @@ public class Preprocessor {
 			final OutputDescription.Output out = outputs.get(index);
 
 			try {
-				final Parser<?> parser = columns[index].getParser();
+				final Parser parser = columns[index].getParser();
 
 				final Object result = out.createOutput(row, parser, lineId);
 

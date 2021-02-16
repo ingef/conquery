@@ -39,7 +39,7 @@ public class EpochDateRangeOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 				final boolean startNull = Strings.isNullOrEmpty(row[startIndex]);
 				final boolean endNull = Strings.isNullOrEmpty(row[endIndex]);
 

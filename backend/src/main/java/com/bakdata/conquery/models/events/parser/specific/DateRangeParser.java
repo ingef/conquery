@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @ToString(callSuper = true)
-public class DateRangeParser extends Parser<CDateRange> {
+public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	private final DateParser minParser;
 	private final DateParser maxParser;
@@ -69,7 +69,7 @@ public class DateRangeParser extends Parser<CDateRange> {
 	}
 
 	@Override
-	protected ColumnStore<CDateRange> decideType() {
+	protected DateRangeStore decideType() {
 
 		// Quarters cannot encode open ranges.
 		if (!anyOpen && onlyQuarters) {
@@ -78,13 +78,25 @@ public class DateRangeParser extends Parser<CDateRange> {
 			quarterParser.setMaxValue(maxValue);
 			quarterParser.setMinValue(minValue);
 
-			return new DateRangeTypeQuarter(quarterParser.decideType());
+			return new DateRangeTypeQuarter(quarterParser.findBestType());
 		}
 
-		// They need to be aligned.
-		minParser.setLines(getLines());
-		maxParser.setLines(getLines());
+		// They need to be aligned if they are non-empty.
 
-		return new DateRangeTypeDateRange(minParser.decideType(), maxParser.decideType());
+		if(!minParser.isEmpty()) {
+			minParser.setLines(getLines());
+		}
+
+		if(!maxParser.isEmpty()){
+			maxParser.setLines(getLines());
+		}
+
+
+		return new DateRangeTypeDateRange(minParser.findBestType(), maxParser.findBestType());
+	}
+
+	@Override
+	public void setValue(DateRangeStore store, int event, CDateRange value) {
+		store.setDateRange(event, value);
 	}
 }

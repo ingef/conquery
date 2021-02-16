@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -83,11 +82,9 @@ public class TableExportQueryPlan implements QueryPlan {
 							continue;
 						}
 
-						ColumnStore type = column.getTypeFor(bucket);
-
 						// depending on context use pretty printing or script value
 						entry[exportDescription.getColumnOffset() + col] = ctx.isPrettyPrint()
-																		   ? type.createPrintValue(bucket.getAsObject(event, column))
+																		   ? bucket.createPrintValue(event, column)
 																		   : bucket.createScriptValue(event, column);
 					}
 

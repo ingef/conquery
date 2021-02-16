@@ -69,3 +69,4 @@
 		<input class="btn btn-primary" type="submit"/>
 	</form>
 </@layout.layout>
+

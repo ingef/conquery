@@ -5,8 +5,10 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.BooleanStore;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
@@ -19,20 +21,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
-public class StringTypeSingleton extends StringType {
+public class StringTypeSingleton implements StringStore {
 
 	private final String singleValue;
-	private final BooleanStore delegate;
+	private final BitSetStore delegate;
 
 	@JsonCreator
-	public StringTypeSingleton(String singleValue, BooleanStore delegate) {
+	public StringTypeSingleton(String singleValue, BitSetStore delegate) {
 		super();
 		this.singleValue = singleValue;
 		this.delegate = delegate;
 	}
 
 	@Override
-	public void setIndexStore(ColumnStore<Long> indexStore) {
+	public void setIndexStore(IntegerStore indexStore) {
 
 	}
 
@@ -42,8 +44,8 @@ public class StringTypeSingleton extends StringType {
 	}
 
 	@Override
-	public StringTypeSingleton doSelect(int[] starts, int[] length) {
-		return new StringTypeSingleton(singleValue, delegate.doSelect(starts, length));
+	public StringTypeSingleton select(int[] starts, int[] length) {
+		return new StringTypeSingleton(singleValue, delegate.select(starts, length));
 	}
 
 	@Override
@@ -52,7 +54,12 @@ public class StringTypeSingleton extends StringType {
 	}
 
 	@Override
-	public String createScriptValue(Integer value) {
+	public int getLines() {
+		return delegate.getLines();
+	}
+
+	@Override
+	public String createScriptValue(int event) {
 		return singleValue;
 	}
 
@@ -77,9 +84,15 @@ public class StringTypeSingleton extends StringType {
 		return Byte.SIZE;
 	}
 
+
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return null;
+	}
+
+	@Override
+	public boolean isDictionaryHolding() {
+		return false;
 	}
 
 	@Override
@@ -88,8 +101,13 @@ public class StringTypeSingleton extends StringType {
 	}
 
 	@Override
-	public void set(int event, Integer value) {
-		getDelegate().set(event, value != null && value == 0);
+	public void setString(int event, int value) {
+		getDelegate().setBoolean(event, true);
+	}
+
+	@Override
+	public void setNull(int event) {
+		getDelegate().setBoolean(event, false);
 	}
 
 	@Override
@@ -97,10 +115,6 @@ public class StringTypeSingleton extends StringType {
 		return getDelegate().getBoolean(event);
 	}
 
-	@Override
-	public Integer get(int event) {
-		return getString(event);
-	}
 
 	@Override
 	public int getString(int event) {

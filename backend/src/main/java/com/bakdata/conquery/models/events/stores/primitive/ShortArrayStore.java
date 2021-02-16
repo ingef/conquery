@@ -1,27 +1,38 @@
-package com.bakdata.conquery.models.events.stores.base;
+package com.bakdata.conquery.models.events.stores.primitive;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.ToString;
 
 /**
  * Stores values as Shorts. Can only store 2^16-1 values as MAX is used as NULL value.
+ *
  * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.events.parser.specific.IntegerParser}
  */
 @CPSType(id = "SHORTS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-public class ShortStore extends ColumnStore<Long> {
+public class ShortArrayStore implements IntegerStore {
 
 	private final short nullValue;
 	private final short[] values;
 
 	@JsonCreator
-	public ShortStore(short[] values, short nullValue) {
+	public ShortArrayStore(short[] values, short nullValue) {
 		this.nullValue = nullValue;
 		this.values = values;
+	}
+
+	public static ShortArrayStore create(int size) {
+		return new ShortArrayStore(new short[size], Short.MAX_VALUE);
+	}
+
+	@Override
+	public int getLines() {
+		return values.length;
 	}
 
 	@Override
@@ -29,32 +40,23 @@ public class ShortStore extends ColumnStore<Long> {
 		return Short.SIZE;
 	}
 
-	public ShortStore doSelect(int[] starts, int[] ends) {
-		return new ShortStore(ColumnStore.selectArray(starts, ends, values, short[]::new), nullValue);
-	}
-
-	public static ShortStore create(int size) {
-		return new ShortStore(new short[size], Short.MAX_VALUE);
+	public ShortArrayStore select(int[] starts, int[] ends) {
+		return new ShortArrayStore(ColumnStore.selectArray(starts, ends, values, short[]::new), nullValue);
 	}
 
 	@Override
-	public void set(int event, Long value) {
-		if (value == null) {
-			values[event] = nullValue;
-			return;
-		}
+	public void setNull(int event) {
+		values[event] = nullValue;
+	}
 
-		values[event] = value.shortValue();
+	@Override
+	public void setInteger(int event, long value) {
+		values[event] = (short) value;
 	}
 
 	@Override
 	public boolean has(int event) {
 		return values[event] != nullValue;
-	}
-
-	@Override
-	public Long get(int event) {
-		return getInteger(event);
 	}
 
 	@Override

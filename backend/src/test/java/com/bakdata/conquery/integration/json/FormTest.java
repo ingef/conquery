@@ -24,6 +24,7 @@ import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -113,7 +114,7 @@ public class FormTest extends ConqueryTestSpec {
 		log.info("{} FORM INIT", getLabel());
 		form.resolve(new QueryResolveContext(dataset, namespaces));
 		
-		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset);
+		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset, support.getConfig());
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {

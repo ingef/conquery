@@ -14,20 +14,20 @@ import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.EmptyStore;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.base.BooleanStore;
-import com.bakdata.conquery.models.events.stores.base.ByteStore;
-import com.bakdata.conquery.models.events.stores.base.DateStore;
-import com.bakdata.conquery.models.events.stores.base.DecimalStore;
-import com.bakdata.conquery.models.events.stores.base.DoubleStore;
-import com.bakdata.conquery.models.events.stores.base.FloatStore;
-import com.bakdata.conquery.models.events.stores.base.IntegerStore;
-import com.bakdata.conquery.models.events.stores.base.LongStore;
-import com.bakdata.conquery.models.events.stores.base.ShortStore;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
+import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
+import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
-import com.bakdata.conquery.models.events.stores.specific.MoneyTypeInteger;
+import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
@@ -60,31 +60,31 @@ public class SerializationTest {
 				);
 	}
 
-	public static List<ColumnStore<?>> createCTypes() {
+	public static List<ColumnStore> createCTypes() {
 		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
 		return Arrays.asList(
-				new DecimalTypeScaled(13, IntegerStore.create(10)),
-				new MoneyTypeInteger(IntegerStore.create(10)),
-				new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"),
-				new StringTypeEncoded(new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase),
-				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntegerStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase), "a", "b"),
+				new DecimalTypeScaled(13, IntArrayStore.create(10)),
+				new MoneyIntStore(IntArrayStore.create(10)),
+				new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"),
+				new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase),
+				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase), "a", "b"),
 
-				new StringTypeNumber(new IntegerRange(0, 7), ByteStore.create(10)),
-				new StringTypeSingleton("a", BooleanStore.create(10)),
-				new DateRangeTypeDateRange(DateStore.create(10), DateStore.create(10)),
-				new DateRangeTypeQuarter(LongStore.create(10)),
-				new DateStore(LongStore.create(10)),
+				new StringTypeNumber(new IntegerRange(0, 7), ByteArrayStore.create(10)),
+				new StringTypeSingleton("a", BitSetStore.create(10)),
+				new DateRangeTypeDateRange(IntegerDateStore.create(10), IntegerDateStore.create(10)),
+				new DateRangeTypeQuarter(LongArrayStore.create(10)),
+				new IntegerDateStore(LongArrayStore.create(10)),
 
-				DecimalStore.create(10),
-				LongStore.create(10),
-				IntegerStore.create(10),
-				ByteStore.create(10),
-				ShortStore.create(10),
-				FloatStore.create(10),
-				DoubleStore.create(10),
-				BooleanStore.create(10),
-				new EmptyStore<>(),
-				new RebasingStore(10,10,IntegerStore.create(10))
+				DecimalArrayStore.create(10),
+				LongArrayStore.create(10),
+				IntArrayStore.create(10),
+				ByteArrayStore.create(10),
+				ShortArrayStore.create(10),
+				FloatArrayStore.create(10),
+				DoubleArrayStore.create(10),
+				BitSetStore.create(10),
+				EmptyStore.INSTANCE,
+				new RebasingStore(10, 10, IntArrayStore.create(10))
 		);
 	}
 

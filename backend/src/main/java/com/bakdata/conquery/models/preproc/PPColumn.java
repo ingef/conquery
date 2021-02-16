@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.preproc;
 
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -23,9 +23,9 @@ public class PPColumn {
 	@JsonIgnore
 	private transient Parser parser = null;
 
-	public ColumnStore<?> findBestType() {
+	public ColumnStore findBestType() {
 		log.info("Compute best Subtype for  Column[{}] with {}", getName(), getParser());
-		ColumnStore<?> decision = parser.findBestType();
+		ColumnStore decision = parser.findBestType();
 		// this only creates the headers
 
 		log.info("\t{}: {} -> {}", getName(), getParser(), decision);
