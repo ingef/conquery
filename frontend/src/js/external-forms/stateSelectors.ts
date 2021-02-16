@@ -39,13 +39,13 @@ export const selectEditedConcept = (
   formName,
   fieldName,
   { andIdx, orIdx },
-  blacklistedTables: string[],
-  whitelistedTables: string[]
+  blocklistedTables: string[],
+  allowlistedTables: string[]
 ) => {
   const formField = selectFormField(state, formName, fieldName);
   const concept = formField[andIdx].concepts[orIdx];
 
-  return initTables(blacklistedTables, whitelistedTables)(concept);
+  return initTables(blocklistedTables, allowlistedTables)(concept);
 };
 
 export const selectSuggestions = (

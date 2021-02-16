@@ -57,8 +57,8 @@ interface PropsType extends WrappedFieldProps {
   newValue?: Object;
   isSingle?: boolean;
   disallowMultipleColumns?: boolean;
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
   defaults: ConceptListDefaultsType;
   isValidConcept?: Function;
 }
@@ -681,8 +681,8 @@ const FormConceptGroup = (props: PropsType) => {
         formType={props.formType}
         fieldName={props.input.name}
         datasetId={props.datasetId}
-        blacklistedTables={props.blacklistedTables}
-        whitelistedTables={props.whitelistedTables}
+        blocklistedTables={props.blocklistedTables}
+        allowlistedTables={props.allowlistedTables}
         onCloseModal={(valueIdx, conceptIdx) =>
           props.input.onChange(
             setConceptProperties(props.input.value, valueIdx, conceptIdx, {

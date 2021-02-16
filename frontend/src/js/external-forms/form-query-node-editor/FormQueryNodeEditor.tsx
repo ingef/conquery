@@ -16,8 +16,8 @@ import { tableIsEditable } from "../../model/table";
 export type PropsType = {
   formType: string;
   fieldName: string;
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
   datasetId: number;
   onCloseModal: Function;
   onUpdateLabel: Function;
@@ -42,8 +42,8 @@ const mapStateToProps = (state, ownProps) => {
         ownProps.formType,
         ownProps.fieldName,
         conceptPosition,
-        ownProps.blacklistedTables,
-        ownProps.whitelistedTables
+        ownProps.blocklistedTables,
+        ownProps.allowlistedTables
       )
     : null;
 
@@ -68,8 +68,8 @@ const mapStateToProps = (state, ownProps) => {
     isExcludeTimestampsPossible: false,
     isExcludeFromSecondaryIdQueryPossible: false,
     showTables,
-    blacklistedTables: ownProps.blacklistedTables,
-    whitelistedTables: ownProps.whitelistedTables,
+    blocklistedTables: ownProps.blocklistedTables,
+    allowlistedTables: ownProps.allowlistedTables,
     suggestions,
     currencyConfig: state.startup.config.currency,
 
