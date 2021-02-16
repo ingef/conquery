@@ -184,12 +184,12 @@ type ConceptListField = CommonField & {
   isSingle?: boolean; // Default: False
   defaults?: ConceptListDefaults;
   validations?: ConceptListFieldValidation[];
-  // EITHER USE BLACKLISTING OR WHITELISTING OR NONE OF THE TWO:
-  blacklistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
-  whitelistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
-  // EITHER USE BLACKLISTING OR WHITELISTING OR NONE OF THE TWO:
-  blacklistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
-  whitelistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
+  // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
+  blocklistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
+  allowlistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
+  // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
+  blocklistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
+  allowlistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
 };
 
 /* ------------------------------ */

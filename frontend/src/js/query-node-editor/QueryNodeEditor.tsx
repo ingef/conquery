@@ -70,8 +70,8 @@ export interface PropsType {
   isExcludeFromSecondaryIdQueryPossible: boolean;
   datasetId: DatasetIdT;
   suggestions: Object | null;
-  whitelistedTables?: string[];
-  blacklistedTables?: string[];
+  allowlistedTables?: string[];
+  blocklistedTables?: string[];
 
   onCloseModal: Function;
   onUpdateLabel: Function;

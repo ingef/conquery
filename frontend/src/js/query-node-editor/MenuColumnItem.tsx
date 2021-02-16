@@ -33,8 +33,8 @@ type PropsT = {
   table: TableWithFilterValueType;
   isActive: boolean;
   isOnlyOneTableIncluded: boolean;
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
 };
@@ -43,15 +43,15 @@ export default ({
   table,
   isActive,
   isOnlyOneTableIncluded,
-  blacklistedTables,
-  whitelistedTables,
+  blocklistedTables,
+  allowlistedTables,
   onClick,
-  onToggleTable
+  onToggleTable,
 }: PropsT) => {
   const isDisabled = tableIsDisabled(
     table,
-    blacklistedTables,
-    whitelistedTables
+    blocklistedTables,
+    allowlistedTables
   );
 
   // TODO: This creates an invalid DOM nesting, a <button> inside a <button>
@@ -63,7 +63,7 @@ export default ({
         regular
         icon={table.exclude ? "square" : "check-square"}
         disabled={isDisabled || (!table.exclude && isOnlyOneTableIncluded)}
-        onClick={event => {
+        onClick={(event) => {
           // To prevent selecting the table as well, see above
           event.stopPropagation();
 
