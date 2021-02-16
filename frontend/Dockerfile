@@ -7,8 +7,8 @@ COPY ./package.json ./yarn.lock ./
 RUN yarn --no-progress --frozen-lockfile
 
 COPY . .
-RUN yarn run build
+RUN PUBLIC_URL=/ yarn build
 
-CMD NODE_ENV=production node app/server
+CMD PORT=8000 NODE_ENV=production node server
 
 EXPOSE 8000

@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "INLINE_RUNTIME_CHUNK=false react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "heroku-postbuild": "yarn run build",
@@ -31,7 +31,9 @@
     "axios": "^0.21.1",
     "classlist-polyfill": "^1.2.0",
     "classnames": "^2.2.5",
+    "compression": "^1.7.4",
     "date-fns": "^2.0.0-beta.2",
+    "helmet": "^4.4.1",
     "i18n-react": "^0.7.0",
     "lodash.difference": "^4.5.0",
     "mustache": "^4.1.0",
