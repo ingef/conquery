@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
-import com.bakdata.conquery.models.query.concept.specific.ForcedExists;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -88,13 +87,6 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	public void resolve(QueryResolveContext context) {
 		timeMode.resolve(context);
 		prerequisite = Form.resolvePrerequisite(context, queryGroup);
-
-		// createExists is always true in ExportForm.
-		this.visit(visitable -> {
-			if(visitable instanceof ForcedExists){
-				((ForcedExists) visitable).setCreateExists(true);
-			}
-		});
 	}
 
 	@Override
