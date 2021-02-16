@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.api.description;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,7 +20,8 @@ public class FEFilter {
 	private FEFilterType type;
 	private String unit;
 	private String description;
-	private List<FEValue> options;
+	@Builder.Default
+	private List<FEValue> options = Collections.emptyList();
 	private Integer min;
 	private Integer max;
 	private FilterTemplate template;
