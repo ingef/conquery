@@ -2,7 +2,7 @@ package com.bakdata.conquery.metrics;
 
 import java.util.concurrent.LinkedBlockingDeque;
 
-import com.bakdata.conquery.io.xodus.ConqueryStorage;
+import com.bakdata.conquery.io.storage.ConqueryStorage;
 import com.bakdata.conquery.models.jobs.Job;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
