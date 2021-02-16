@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.externalservice.SimpleResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,7 +14,7 @@ import lombok.ToString;
 public class SimpleResultInfo extends ResultInfo {
 
 	private final String name;
-	private final ResultType type;
+	private final SimpleResultType type;
 
 	@Override
 	public String getName(PrintSettings settings) {

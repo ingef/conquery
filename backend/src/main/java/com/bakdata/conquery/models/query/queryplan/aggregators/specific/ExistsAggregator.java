@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import java.util.Set;
 
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.externalservice.SimpleResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -49,7 +49,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	}
 	
 	@Override
-	public ResultType getResultType() {
-		return ResultType.BOOLEAN;
+	public SimpleResultType getResultType() {
+		return SimpleResultType.BOOLEAN;
 	}
 }

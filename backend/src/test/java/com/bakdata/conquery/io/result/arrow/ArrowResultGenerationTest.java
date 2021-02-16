@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.externalservice.SimpleResultType;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -81,7 +81,7 @@ public class ArrowResultGenerationTest {
 	
 	@Test
 	void generateFieldsValue() {
-		List<ResultInfo> resultInfos = Arrays.stream(ResultType.values()).map(TypedSelectDummy::new)
+		List<ResultInfo> resultInfos = Arrays.stream(SimpleResultType.values()).map(TypedSelectDummy::new)
 			.map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
 
 		List<Field> fields = generateFieldsFromResultType(
@@ -118,7 +118,7 @@ public class ArrowResultGenerationTest {
 		ManagedQuery mquery = new ManagedQuery(null, null, null) {
 			public ResultInfoCollector collectResultInfos() {
 				ResultInfoCollector coll = new ResultInfoCollector();
-				coll.addAll(Arrays.stream(ResultType.values())
+				coll.addAll(Arrays.stream(SimpleResultType.values())
 					.map(TypedSelectDummy::new)
 					.map(select -> new SelectResultInfo(select, new CQConcept()))
 					.collect(Collectors.toList()));
@@ -183,14 +183,14 @@ public class ArrowResultGenerationTest {
 			.collect(Collectors.joining("\n"));
 
 		return Arrays.stream(idMapping.getPrintIdFields()).collect(Collectors.joining("\t")) + "\t" +
-			Arrays.stream(ResultType.values()).map(Enum::toString).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
+			Arrays.stream(SimpleResultType.values()).map(Enum::toString).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
 	}
 
 	private static class TypedSelectDummy extends Select {
 
-		private final ResultType resultType;
+		private final SimpleResultType resultType;
 
-		public TypedSelectDummy(ResultType resultType) {
+		public TypedSelectDummy(SimpleResultType resultType) {
 			this.setLabel(resultType.toString());
 			this.resultType = resultType;
 		}
@@ -215,7 +215,7 @@ public class ArrowResultGenerationTest {
 				}
 
 				@Override
-				public ResultType getResultType() {
+				public SimpleResultType getResultType() {
 					return resultType;
 				}
 

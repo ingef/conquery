@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.externalservice.SimpleResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -79,7 +79,7 @@ public class CQOr extends CQElement implements ForcedExists {
 		}
 
 		if (createExists) {
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "OR"), ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "OR"), SimpleResultType.BOOLEAN));
 		}
 	}
 

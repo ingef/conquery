@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import com.bakdata.conquery.models.concepts.select.Select;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.externalservice.SimpleResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -22,7 +22,7 @@ public class SelectResultInfo extends ResultInfo {
 	private final CQConcept cqConcept;
 
 	@Override
-	public ResultType getType() {
+	public SimpleResultType getType() {
 		return select.getResultType();
 	}
 

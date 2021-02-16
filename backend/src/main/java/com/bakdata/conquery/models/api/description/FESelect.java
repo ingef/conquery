@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.api.description;
 
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.externalservice.SimpleResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import lombok.Builder;
 import lombok.Data;
@@ -13,5 +13,5 @@ public class FESelect {
 	private SelectId id;
 	private String label;
 	private String description;
-	private ResultType resultType;
+	private SimpleResultType resultType;
 }

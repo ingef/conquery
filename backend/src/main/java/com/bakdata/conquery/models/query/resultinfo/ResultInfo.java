@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.HashMap;
 
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.externalservice.SimpleResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -62,7 +62,7 @@ public abstract class ResultInfo {
 	protected abstract String getName(PrintSettings settings);
 
 	@ToString.Include
-	public abstract ResultType getType();
+	public abstract SimpleResultType getType();
 
 	public <T> void addAppendix(Class<T> cl, T obj) {
 		appendices.putInstance(cl, obj);
