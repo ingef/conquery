@@ -13,9 +13,7 @@ const PORT = process.env.PORT || 4242;
 
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      reportOnly: true,
-    },
+    contentSecurityPolicy: false,
   })
 );
 app.disable("x-powered-by");
