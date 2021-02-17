@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedSimpleResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -20,7 +19,6 @@ public class ConqueryConstants {
 	public static final String EXTENSION_PREPROCESSED = ".cqpp";
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
 	public static final String INPUT_FILE_EXTENSION = ".csv.gz";
-	public static final String ID_TYPE = "ID";
 
 	public static final ResultInfo DATES_INFO = new LocalizedSimpleResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), ResultType.STRING);
 	
