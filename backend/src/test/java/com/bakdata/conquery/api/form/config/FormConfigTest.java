@@ -21,7 +21,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -42,7 +42,7 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.NonPersistentMetaStorage;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -109,7 +109,7 @@ public class FormConfigTest {
 		when(namespacesMock.injectInto(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		storage = new NonPersistentMetaStorage(namespacesMock);
+		storage = new NonPersistentStoreFactory().createMetaStorage();
 
 
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())

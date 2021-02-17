@@ -1,6 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.concurrent.*;
 
@@ -11,7 +10,7 @@ import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -52,17 +51,27 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 @Getter
 public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
+	public static final String DEFAULT_NAME = "shard-node";
+
 	private NioSocketConnector connector;
 	private JobManager jobManager;
 	private Validator validator;
 	private ConqueryConfig config;
 	private ShardNodeNetworkContext context;
+	@Setter
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
 
+	/**
+	 * Flags if the instance name should be a prefix for the instances storage.
+	 */
+	@Getter
+	@Setter
+	private boolean useNameForStoragePrefix = false;
+
 	public ShardNode() {
-		this("shard-node");
+		this(DEFAULT_NAME);
 	}
 
 	public ShardNode(String name) {
@@ -88,42 +97,17 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		}
 
 		this.config = config;
+		config.initialize(this);
 
 		ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
+		workers = new Workers(
+				getConfig().getQueries().getExecutionPool(),
+				getConfig().getQueries().getExecutionPool().getMaxThreads(),
+				getConfig().getCluster().getEntityBucketSize());
 
-		if (config.getStorage().getDirectory().mkdirs()) {
-			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
-		}
-
-		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads(), config.getCluster().getEntityBucketSize());
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
-
-
-		File storageDir = config.getStorage().getDirectory();
-		for (File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
-
-			loaders.submit(() -> {
-				ConqueryMDC.setLocation(directory.toString());
-
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if (workerStorage == null) {
-					log.warn("No valid WorkerStorage found.");
-					return;
-				}
-
-				workers.createWorker(
-						workerStorage,
-						config.isFailOnError()
-				);
-
-				ConqueryMDC.clearLocation();
-			});
-		}
-
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
+		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName())) ) {
+			workers.createWorker(workerStorage, config.isFailOnError());
 		}
 
 		log.info("All Worker Storages loaded: {}", workers.getWorkers().size());
@@ -162,7 +146,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
+		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator, useNameForStoragePrefix ? getName() : "");
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode

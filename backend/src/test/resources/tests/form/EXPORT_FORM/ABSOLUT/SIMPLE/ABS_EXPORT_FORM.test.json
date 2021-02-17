@@ -6,20 +6,20 @@
     },
     "form": {
         "type": "EXPORT_FORM",
-        "queryGroup": "${dataset}.00000000-0000-0000-0000-000000000001",
+        "queryGroup": "00000000-0000-0000-0000-000000000001",
         "resolution": "QUARTERS",
         "timeMode": {
             "value": "ABSOLUTE",
             "features": [
                 {
                     "ids": [
-                        "${dataset}.alter"
+                        "alter"
                     ],
                     "type": "CONCEPT",
                     "label": "Alter",
                     "tables": [
                         {
-                            "id": "${dataset}.alter.alter",
+                            "id": "alter.alter",
                             "filters": []
                         }
                     ]

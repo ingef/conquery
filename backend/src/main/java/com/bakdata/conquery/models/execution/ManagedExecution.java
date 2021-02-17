@@ -27,7 +27,7 @@ import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -192,12 +192,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 					log.warn("Not saving successful execution {} because no storage was provided", getId());
 					return;
 				}
-				try {
-					storage.updateExecution(this);
-				}
-				catch (JSONException e) {
-					log.error("Failed to store execution {} after finishing: {}", getClass().getSimpleName(), this, e);
-				}
+				storage.updateExecution(this);
 			}
 		}
 

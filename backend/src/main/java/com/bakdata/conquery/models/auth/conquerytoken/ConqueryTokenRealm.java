@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth.conquerytoken;
 
+import javax.ws.rs.container.ContainerRequestContext;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -8,7 +10,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
@@ -21,8 +23,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
-
-import javax.ws.rs.container.ContainerRequestContext;
 
 @Slf4j
 public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
@@ -112,5 +112,8 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 			}
 			return tokenVerifier;
 		}
+		
+
 	}
+
 }

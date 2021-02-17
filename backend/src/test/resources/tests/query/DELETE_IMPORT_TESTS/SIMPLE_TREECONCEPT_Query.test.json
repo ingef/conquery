@@ -7,15 +7,15 @@
         "root": {
             "type": "CONCEPT",
             "ids": [
-              "${dataset}.test_tree.test_child1"
+              "test_tree.test_child1"
             ],
             "tables": [
               {
-                "id": "${dataset}.test_tree.test_column",
+                "id": "test_tree.test_column",
                 "filters": []
               },
               {
-                "id": "${dataset}.test_tree.test_column2",
+                "id": "test_tree.test_column2",
                 "filters": []
               }
             ]

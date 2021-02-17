@@ -1,23 +1,11 @@
 package com.bakdata.conquery.models.auth.web;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Priority;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.SecurityContext;
-
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.AccessLevel;
@@ -27,7 +15,16 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.realm.Realm;
+
+import javax.annotation.Priority;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.core.SecurityContext;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process

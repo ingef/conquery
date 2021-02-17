@@ -2,15 +2,13 @@ package com.bakdata.conquery.models.auth;
 
 import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.util.NonPersistentMetaStorage;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.BearerToken;
@@ -41,14 +39,13 @@ public class LocalAuthRealmTest {
 
 	@BeforeAll
 	public void setupAll() throws Exception {
-		storage = new NonPersistentMetaStorage();
+		storage =  new NonPersistentStoreFactory().createMetaStorage();
 		tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
 		assert tmpDir.mkdir();
-		ConqueryConfig.getInstance().getStorage().setDirectory(tmpDir);
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
-		realm = new LocalAuthenticationRealm(storage, conqueryTokenRealm, "localtestRealm", new XodusConfig());
+		realm = new LocalAuthenticationRealm(storage, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig());
 		LifecycleUtils.init(realm);
 	}
 

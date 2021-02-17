@@ -12,6 +12,8 @@ import com.bakdata.conquery.models.config.XodusConfig;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.File;
+
 @CPSType(base = AuthenticationConfig.class, id = "LOCAL_AUTHENTICATION")
 @Getter
 @Setter
@@ -31,11 +33,15 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	 */
 	@NotEmpty
 	private String storeName = "authenticationStore";
+
+	
+	@NotNull
+	private File directory = new File("storage");
 	
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
 
-		return new LocalAuthenticationRealm(managerNode.getStorage(), managerNode.getAuthController().getCentralTokenRealm(), storeName, passwordStoreConfig);
+		return new LocalAuthenticationRealm(managerNode.getStorage(), managerNode.getAuthController().getCentralTokenRealm(), storeName, directory, passwordStoreConfig);
 	}
 }

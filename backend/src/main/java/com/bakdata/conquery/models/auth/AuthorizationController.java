@@ -1,17 +1,13 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Strings;
@@ -20,7 +16,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.authz.Permission;
@@ -28,6 +23,9 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.LifecycleUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The central class for the initialization of authorization and authentication.
@@ -60,6 +58,8 @@ public final class AuthorizationController implements Managed{
 	private DefaultAuthFilter authenticationFilter;
 	@Getter
 	private List<Realm> realms = new ArrayList<>();
+
+	private DefaultSecurityManager securityManager;
 	
 	public void init(ManagerNode manager) {
 		// Create Jersey filter for authentication this is just referenced here and can be graped and registered by
@@ -81,8 +81,14 @@ public final class AuthorizationController implements Managed{
 			authenticationRealms.add(realm);
 			realms.add(realm);
 		}
+
+		// Register all realms in Shiro
+		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
+		securityManager = new DefaultSecurityManager(realms);
+		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
+		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
 		
-		registerShiro(realms);
+		registerShiro();
 	}
 	
 	@Override
@@ -97,13 +103,14 @@ public final class AuthorizationController implements Managed{
 	public void stop() throws Exception {
 		LifecycleUtils.destroy(authenticationRealms);
 	}
-	
-	private static void registerShiro(List<Realm> realms) {
-		// Register all realms in Shiro
-		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
-		DefaultSecurityManager securityManager = new DefaultSecurityManager(realms);
-		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
-		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
+
+	/**
+	 * @implNote public for test purposes only
+	 */
+	public void registerShiro() {
+		if (securityManager == null) {
+			throw new IllegalStateException("The AuthorizationController was not initialized. Call init() instead");
+		}
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
 	}

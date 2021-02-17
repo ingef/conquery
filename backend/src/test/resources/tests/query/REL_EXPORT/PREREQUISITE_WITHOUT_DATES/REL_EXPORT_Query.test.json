@@ -20,11 +20,11 @@
             "root": {
                 "type": "CONCEPT",
                 "ids": [
-                    "${dataset}.test_tree_dateless.test_child1"
+                    "test_tree_dateless.test_child1"
                 ],
                 "tables": [
                     {
-                        "id": "${dataset}.test_tree.test_column",
+                        "id": "test_tree.test_column",
                         "filters": []
                     }
                 ]
@@ -37,14 +37,14 @@
                 "root": {
                     "type": "CONCEPT",
                     "ids": [
-                        "${dataset}.test_tree.test_child1"
+                        "test_tree.test_child1"
                     ],
                     "selects": [
-                        "${dataset}.test_tree.exists"
+                        "test_tree.exists"
                     ],
                     "tables": [
                         {
-                            "id": "${dataset}.test_tree.test_column",
+                            "id": "test_tree.test_column",
                             "filters": []
                         }
                     ]
@@ -58,14 +58,14 @@
                 "root": {
                     "type": "CONCEPT",
                     "ids": [
-                        "${dataset}.test_tree.test_child1"
+                        "test_tree.test_child1"
                     ],
                     "selects": [
-                        "${dataset}.test_tree.exists"
+                        "test_tree.exists"
                     ],
                     "tables": [
                         {
-                            "id": "${dataset}.test_tree.test_column",
+                            "id": "test_tree.test_column",
                             "filters": []
                         }
                     ]
