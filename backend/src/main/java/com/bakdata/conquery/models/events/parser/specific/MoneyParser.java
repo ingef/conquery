@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
@@ -65,13 +64,8 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 	}
 
 	@Override
-	public List<Long> createPrimitiveList() {
-		return new LongArrayList();
-	}
-
-	@Override
-	public Long getNullValue() {
-		return 0L;
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new LongArrayList(), 0);
 	}
 
 }

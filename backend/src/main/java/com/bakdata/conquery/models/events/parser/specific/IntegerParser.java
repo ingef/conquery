@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
-import java.util.List;
-
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
@@ -103,13 +101,8 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	}
 
 	@Override
-	public List<Long> createPrimitiveList() {
-		return new LongArrayList();
-	}
-
-	@Override
-	public Long getNullValue() {
-		return 0L;
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new LongArrayList(), 0);
 	}
 
 }

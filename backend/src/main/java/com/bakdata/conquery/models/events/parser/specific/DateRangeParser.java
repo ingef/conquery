@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -97,12 +96,8 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	}
 
 	@Override
-	public List<CDateRange> createPrimitiveList() {
-		return new ArrayList();
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new ArrayList<CDateRange>(), null);
 	}
 
-	@Override
-	public CDateRange getNullValue() {
-		return null;
-	}
 }

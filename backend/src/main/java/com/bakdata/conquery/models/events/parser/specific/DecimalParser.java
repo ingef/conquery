@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.events.parser.specific;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
@@ -69,13 +68,8 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 	}
 
 	@Override
-	public List<BigDecimal> createPrimitiveList() {
-		return new ArrayList<>();
-	}
-
-	@Override
-	public BigDecimal getNullValue() {
-		return BigDecimal.ZERO;
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new ArrayList(), BigDecimal.ZERO);
 	}
 
 }

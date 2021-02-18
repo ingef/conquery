@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
@@ -60,12 +58,8 @@ public class DateParser extends Parser<Integer, DateStore> {
 	}
 
 	@Override
-	public List<Integer> createPrimitiveList() {
-		return new IntArrayList();
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new IntArrayList(), 0);
 	}
 
-	@Override
-	public Integer getNullValue() {
-		return 0;
-	}
 }

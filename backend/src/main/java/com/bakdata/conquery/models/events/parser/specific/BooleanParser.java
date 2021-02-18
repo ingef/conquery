@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
@@ -46,12 +44,8 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 	}
 
 	@Override
-	public List<Boolean> createPrimitiveList() {
-		return new BooleanArrayList();
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new BooleanArrayList(), false);
 	}
 
-	@Override
-	public Boolean getNullValue() {
-		return false;
-	}
 }

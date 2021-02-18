@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
-import java.util.List;
-
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
@@ -63,12 +61,8 @@ public class RealParser extends Parser<Double, RealStore> {
 	}
 
 	@Override
-	public List<Double> createPrimitiveList() {
-		return new DoubleArrayList();
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new DoubleArrayList(), 0d);
 	}
 
-	@Override
-	public Double getNullValue() {
-		return 0d;
-	}
 }

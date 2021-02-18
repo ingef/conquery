@@ -95,9 +95,8 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	 */
 	public abstract void setValue(STORE_TYPE store, int event, MAJOR_JAVA_TYPE value);
 
-	public abstract List<MAJOR_JAVA_TYPE> createPrimitiveList();
 
-	public abstract MAJOR_JAVA_TYPE getNullValue();
+	public abstract ColumnValues createColumnValues();
 
 	/**
 	 * per Column Store to encode null in auxiliary bitset, allowing primitive storage.
@@ -105,8 +104,8 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	@SuppressWarnings("Unchecked")
 	@RequiredArgsConstructor
 	public static class ColumnValues {
-		private final Object nullValue;
 		private final List values;
+		private final Object nullValue;
 
 		private final BitSet nulls = new BitSet();
 

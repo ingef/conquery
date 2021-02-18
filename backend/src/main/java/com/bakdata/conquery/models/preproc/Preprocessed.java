@@ -83,7 +83,7 @@ public class Preprocessed {
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 
 			final Parser parser = columns[index].getParser();
-			values[index] = new Parser.ColumnValues(parser.getNullValue(), parser.createPrimitiveList());
+			values[index] = parser.createColumnValues();
 		}
 	}
 

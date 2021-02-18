@@ -139,13 +139,8 @@ public class StringParser extends Parser<Integer, StringStore> {
 	}
 
 	@Override
-	public List<Integer> createPrimitiveList() {
-		return new IntArrayList();
-	}
-
-	@Override
-	public Integer getNullValue() {
-		return 0;
+	public ColumnValues createColumnValues() {
+		return new ColumnValues(new IntArrayList(), 0);
 	}
 
 	/**
