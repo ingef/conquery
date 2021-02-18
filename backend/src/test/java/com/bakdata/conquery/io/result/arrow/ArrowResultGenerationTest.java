@@ -184,7 +184,10 @@ public class ArrowResultGenerationTest {
                 for (int rowI = 0; rowI < readRoot.getRowCount(); rowI++) {
                     final int currentRow = rowI;
                     sb.append(
-                            vectors.stream().map(vec -> vec.getObject(currentRow)).map(o -> o == null ? "null" : o).map(Object::toString)
+                            vectors.stream()
+                                    .map(vec -> vec.getObject(currentRow))
+                                    .map(o -> o == null ? "null" : o)
+                                    .map(Object::toString)
                                     .collect(Collectors.joining("\t")))
                             .append("\n");
                 }

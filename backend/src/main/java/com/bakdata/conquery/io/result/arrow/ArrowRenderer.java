@@ -14,10 +14,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableList;
@@ -27,6 +29,7 @@ import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.StructVector;
+import org.apache.arrow.vector.complex.impl.UnionListWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
@@ -143,7 +146,7 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.set(rowNumber, value);
+            vector.setSafe(rowNumber, value);
         };
     }
 
@@ -154,7 +157,7 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.set(rowNumber, value ? 1 : 0);
+            vector.setSafe(rowNumber, value ? 1 : 0);
         };
     }
 
@@ -165,7 +168,7 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.set(rowNumber, value.doubleValue());
+            vector.setSafe(rowNumber, value.doubleValue());
         };
     }
 
@@ -176,7 +179,7 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.set(rowNumber, value.floatValue());
+            vector.setSafe(rowNumber, value.floatValue());
         };
     }
 
@@ -187,7 +190,7 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.set(rowNumber, new Text(value));
+            vector.setSafe(rowNumber, new Text(value));
         };
     }
 
@@ -198,7 +201,7 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.set(rowNumber, value.intValue());
+            vector.setSafe(rowNumber, value.intValue());
         };
     }
 
@@ -216,6 +219,9 @@ public class ArrowRenderer {
             for (int i = 0; i < nestedConsumers.length; i++) {
                 nestedConsumers[i].accept(rowNumber, values);
             }
+
+            // Finally mark that we populated the nested vectors
+            vector.setIndexDefined(rowNumber);
         };
     }
     private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], Object[]> resultExtractor){
@@ -227,11 +233,21 @@ public class ArrowRenderer {
                 return;
             }
 
+
+//            UnionListWriter writer = vector.getWriter();
+//            writer.startList();
+//            writer.setPosition(rowNumber);
+
+            vector.startNewValue(rowNumber);
             for (int i = 0; i < values.length; i++) {
                 // These short lived one value arrays are a workaround at the moment
-                nestedConsumer.accept(rowNumber, new Object[] {values[i]});
+                nestedConsumer.accept(i, new Object[] {values[i]});
+//                writer.writeBit((boolean) values[i] ? 1 :0);
             }
-        };
+//            writer.setValueCount(values.length);
+//            writer.endList();
+            vector.endValue(rowNumber,values.length);
+       };
     }
 
 

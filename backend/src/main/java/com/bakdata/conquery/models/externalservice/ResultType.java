@@ -215,6 +215,17 @@ public interface ResultType {
         }
     }
 
+    @CPSType(id = "ID", base = ResultType.class)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class IdT extends PrimitiveResultType {
+        public final static IdT INSTANCE = new IdT();
+
+        @Override
+        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
+            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
+        }
+    }
+
     @CPSType(id = "MONEY", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class MoneyT extends PrimitiveResultType {
