@@ -41,7 +41,12 @@ public class PrintSettings implements SelectNameExtractor {
 	
 	@NonNull
 	private final BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer;
-	
+
+	private final String listElementDelimiter = ", ";
+	private final String listElementEscaper = "\\";
+	private final String listPrefix = "{";
+	private final String listPostfix = "}";
+
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer) {		
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
@@ -109,4 +114,5 @@ public class PrintSettings implements SelectNameExtractor {
 		}
 		return concept.getLabel();
 	}
+
 }

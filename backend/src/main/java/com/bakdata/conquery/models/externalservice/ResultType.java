@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.externalservice;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
@@ -20,6 +22,8 @@ import org.apache.arrow.vector.types.pojo.FieldType;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
 
@@ -182,6 +186,14 @@ public interface ResultType {
         public final static DateT INSTANCE = new DateT();
 
         @Override
+        public String print(PrintSettings cfg, @NonNull Object f) {
+            if(!(f instanceof Integer)) {
+                throw new IllegalStateException("Expected an Integer but got an '" + (f != null ? f.getClass().getName() : "no type") + "' with the value: " + f );
+            }
+            return CDate.toLocalDate((Integer)f).toString();
+        }
+
+        @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
         }
@@ -191,6 +203,18 @@ public interface ResultType {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class DateRangeT extends PrimitiveResultType {
         public final static DateRangeT INSTANCE = new DateRangeT();
+
+        @Override
+        public String print(PrintSettings cfg, @NonNull Object f) {
+            if(!(f instanceof List)) {
+                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f != null ? f.getClass().getName() : "no type", Objects.toString(f)));
+            }
+            List list = (List) f;
+            if(list.size() != 2) {
+                throw new IllegalStateException("Expected a list with 2 elements, one min, one max. The list was: " + list);
+            }
+            return CDateRange.of((Integer) list.get(0), (Integer) list.get(1)).toString();
+        }
 
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
@@ -259,6 +283,21 @@ public interface ResultType {
         private final ResultType elementType;
 
         @Override
+        public String print(PrintSettings cfg, @NonNull Object f) {
+            // Jackson deserializes collections as lists instead of an array, if the type is not given
+            if(!(f instanceof List)) {
+                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f != null ? f.getClass().getName() : "no type", Objects.toString(f)));
+            }
+            // Not sure if this escaping is enough
+            String listDelimEscape = cfg.getListElementEscaper() + cfg.getListElementDelimiter();
+            StringJoiner joiner = new StringJoiner(cfg.getListElementDelimiter(), cfg.getListPrefix(), cfg.getListPostfix());
+            for(Object obj : (List) f) {
+                joiner.add(elementType.print(cfg,obj).replace(cfg.getListElementDelimiter(), listDelimEscape));
+            }
+            return joiner.toString();
+        }
+
+        @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
 
             return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field ("elem", elementType.getArrowFieldType(info, settings).getFieldType(),null)));
@@ -273,5 +312,9 @@ public interface ResultType {
         public String toString() {
             return typeInfo();
         }
+    }
+    public static boolean isArray(Object obj)
+    {
+        return obj!=null && obj.getClass().isArray();
     }
 }

@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 @Getter
-@ToString
 @EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 public class SelectResultInfo extends ResultInfo {
@@ -39,5 +38,10 @@ public class SelectResultInfo extends ResultInfo {
 			.type(getType())
 			.selectId(select.getId())
 			.build();
+	}
+
+	@Override
+	public String toString(){
+		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";
 	}
 }

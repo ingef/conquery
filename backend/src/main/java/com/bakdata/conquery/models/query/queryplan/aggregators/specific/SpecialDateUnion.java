@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
  * Special Aggregator, used to calculate the times an entity has events after filtering.
  */
 @RequiredArgsConstructor
-public class SpecialDateUnion implements Aggregator<String> {
+public class SpecialDateUnion implements Aggregator<Object[]> {
 
 	private CDateSet set = CDateSet.create();
 
@@ -49,13 +49,13 @@ public class SpecialDateUnion implements Aggregator<String> {
 	}
 
 	@Override
-	public SpecialDateUnion doClone(CloneContext ctx) {
+	public Aggregator<Object[]> doClone(CloneContext ctx) {
 		return new SpecialDateUnion();
 	}
 
 	@Override
-	public String getAggregationResult() {
-		return set.toString();
+	public Object[] getAggregationResult() {
+		return set.asRanges().toArray();
 	}
 	
 	public CDateSet getResultSet() {

@@ -9,6 +9,7 @@ import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
@@ -58,7 +59,10 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		int size = calculateCompleteLength();
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
-		CDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
+		CDateSet dateSet = CDateSet.create();
+		for(Object dateRange : (Object[]) contained.getValues()[0]) {
+			dateSet.add((CDateRange) dateRange);
+		}
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
 		// dateset is empty or sampling failed.

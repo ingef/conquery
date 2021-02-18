@@ -213,7 +213,7 @@ public class ArrowResultGenerationTest {
     }
 
     private static String getPrintValue(Object obj) {
-        if(ArrowRenderer.isArray(obj)) {
+        if(ResultType.isArray(obj)) {
             StringJoiner joiner = new StringJoiner(",", "[", "]");
             for(Object nested : (Object [])obj){
                 joiner.add(getPrintValue(nested));

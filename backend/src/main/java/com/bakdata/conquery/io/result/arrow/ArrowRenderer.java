@@ -340,8 +340,4 @@ public class ArrowRenderer {
 
     }
 
-    public static boolean isArray(Object obj)
-    {
-        return obj!=null && obj.getClass().isArray();
-    }
 }
