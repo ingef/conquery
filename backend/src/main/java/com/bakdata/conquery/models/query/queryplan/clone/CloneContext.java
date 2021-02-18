@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.clone;
 
 import java.util.IdentityHashMap;
 
-import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

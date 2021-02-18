@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.Int2IntArrayMapDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.Int2IntMapSerializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;

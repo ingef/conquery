@@ -41,7 +41,7 @@ public class ApiV1 implements ResourcesProvider {
 			@Override
 			protected void configure() {
 				bind(new ConceptsProcessor(manager.getDatasetRegistry())).to(ConceptsProcessor.class);
-				bind(new MeProcessor(manager.getStorage())).to(MeProcessor.class);
+				bind(new MeProcessor(manager.getStorage(), datasets)).to(MeProcessor.class);
 				bind(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig())).to(QueryProcessor.class);
 				bind(new FormConfigProcessor(manager.getValidator(),manager.getStorage())).to(FormConfigProcessor.class);
 				bind(new StoredQueriesProcessor(manager.getDatasetRegistry(), manager.getStorage(), manager.getConfig())).to(StoredQueriesProcessor.class);

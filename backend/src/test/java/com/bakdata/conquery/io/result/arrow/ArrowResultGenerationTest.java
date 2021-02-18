@@ -12,10 +12,10 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.ManagedQuery;

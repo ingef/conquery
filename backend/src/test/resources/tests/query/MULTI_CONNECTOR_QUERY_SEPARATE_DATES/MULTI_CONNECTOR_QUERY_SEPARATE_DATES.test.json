@@ -7,18 +7,18 @@
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "${dataset}.test_tree.test_child1"
+        "test_tree.test_child1"
       ],
       "tables": [
         {
-          "id": "${dataset}.test_tree.test_column",
+          "id": "test_tree.test_column",
           "filters": [],
           "selects": [
-            "${dataset}.test_tree.test_column.event-dates"
+            "test_tree.test_column.event-dates"
           ]
         },
         {
-          "id": "${dataset}.test_tree.test_column2",
+          "id": "test_tree.test_column2",
           "filters": []
         }
       ]

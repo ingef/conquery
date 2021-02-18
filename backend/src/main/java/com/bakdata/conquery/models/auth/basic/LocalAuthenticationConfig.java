@@ -13,6 +13,8 @@ import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.File;
+
 @CPSType(base = AuthenticationConfig.class, id = "LOCAL_AUTHENTICATION")
 @Getter
 @Setter
@@ -32,6 +34,10 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	 */
 	@NotEmpty
 	private String storeName = "authenticationStore";
+
+
+	@NotNull
+	private File directory = new File("storage");
 	
 	@Override
 	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController controller) {

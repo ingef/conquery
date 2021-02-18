@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query;
 
 import java.util.List;
 
-import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
