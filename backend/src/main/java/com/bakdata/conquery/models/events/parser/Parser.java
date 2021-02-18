@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.events.parser;
 
+import java.util.BitSet;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -97,4 +98,39 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	public abstract List<MAJOR_JAVA_TYPE> createPrimitiveList();
 
 	public abstract MAJOR_JAVA_TYPE getNullValue();
+
+	/**
+	 * per Column Store to encode null in auxiliary bitset, allowing primitive storage.
+	 */
+	@SuppressWarnings("Unchecked")
+	@RequiredArgsConstructor
+	public static class ColumnValues {
+		private final Object nullValue;
+		private final List values;
+
+		private final BitSet nulls = new BitSet();
+
+		public boolean isNull(int event) {
+			return nulls.get(event);
+		}
+
+		public Object get(int event) {
+			return values.get(event);
+		}
+
+		public int add(Object value) {
+			int event = values.size();
+
+
+			if (value == null) {
+				nulls.set(event);
+				values.add(nullValue);
+			}
+			else {
+				values.add(value);
+			}
+
+			return event;
+		}
+	}
 }

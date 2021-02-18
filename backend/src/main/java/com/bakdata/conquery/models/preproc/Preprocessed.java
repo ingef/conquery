@@ -4,9 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.BitSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
@@ -57,7 +55,7 @@ public class Preprocessed {
 	private final TableImportDescriptor descriptor;
 
 	// by-column
-	private final ColumnValues[] values;
+	private final Parser.ColumnValues[] values;
 
 	// by-entity
 	private final Int2ObjectMap<EntityPositions> entries;
@@ -77,7 +75,7 @@ public class Preprocessed {
 
 		// pid and columns
 		entries = new Int2ObjectAVLTreeMap<>();
-		values = new ColumnValues[columns.length];
+		values = new Parser.ColumnValues[columns.length];
 
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
@@ -85,7 +83,7 @@ public class Preprocessed {
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 
 			final Parser parser = columns[index].getParser();
-			values[index] = new ColumnValues(parser.getNullValue(), parser.createPrimitiveList());
+			values[index] = new Parser.ColumnValues(parser.getNullValue(), parser.createPrimitiveList());
 		}
 	}
 
@@ -158,7 +156,7 @@ public class Preprocessed {
 			final ColumnStore store = ppColumn.findBestType();
 			Int2ObjectMap<EntityPositions> indices = entries;
 
-			final ColumnValues columnValues = values[colIdx];
+			final Parser.ColumnValues columnValues = values[colIdx];
 
 			int start = 0;
 
@@ -295,41 +293,6 @@ public class Preprocessed {
 		@Override
 		public IntIterator iterator() {
 			return offsets.iterator();
-		}
-	}
-
-	/**
-	 * per Column Store to encode null in auxiliary bitset, allowing primitive storage.
-	 */
-	@SuppressWarnings("Unchecked")
-	@RequiredArgsConstructor
-	private static class ColumnValues {
-		private final Object nullValue;
-		private final List values;
-
-		private final BitSet nulls = new BitSet();
-
-		public boolean isNull(int event) {
-			return nulls.get(event);
-		}
-
-		public Object get(int event) {
-			return values.get(event);
-		}
-
-		public int add(Object value) {
-			int event = values.size();
-
-
-			if (value == null) {
-				nulls.set(event);
-				values.add(nullValue);
-			}
-			else {
-				values.add(value);
-			}
-
-			return event;
 		}
 	}
 
