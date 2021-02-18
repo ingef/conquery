@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.concepts.select;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.SelectHolder;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
@@ -30,7 +30,7 @@ public abstract class Select extends Labeled<SelectId> {
 	private boolean isDefault = false;
 	
 	@JsonIgnore @Getter(lazy=true)
-	private final SimpleResultType resultType = createAggregator().getResultType();
+	private final ResultType resultType = createAggregator().getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 

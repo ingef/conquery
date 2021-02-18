@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -31,9 +31,9 @@ public abstract class SingleColumnSelect extends Select {
 	private boolean categorical = false;
 	
 	@Override
-	public SimpleResultType getResultType() {
+	public ResultType getResultType() {
 		if(categorical) {
-			return SimpleResultType.CATEGORICAL;
+			return ResultType.CategoricalT.INSTANCE;
 		}
 		
 		return super.getResultType();

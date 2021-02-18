@@ -14,7 +14,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -126,7 +126,7 @@ public class SecondaryIdQuery extends IQuery {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		collector.add(new SimpleResultInfo(secondaryId.getName(), SimpleResultType.STRING));
+		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.StringT.INSTANCE));
 		query.collectResultInfos(collector);
 	}
 

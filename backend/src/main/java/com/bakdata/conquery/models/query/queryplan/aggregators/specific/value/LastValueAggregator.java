@@ -4,7 +4,7 @@ import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
@@ -84,7 +84,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 	
 	@Override
-	public SimpleResultType getResultType() {
-		return SimpleResultType.resolveResultType(getColumn().getType());
+	public ResultType getResultType() {
+		return ResultType.resolveResultType(getColumn().getType());
 	}
 }

@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
@@ -61,7 +61,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	}
 	
 	@Override
-	public SimpleResultType getResultType() {
-		return SimpleResultType.NUMERIC;
+	public ResultType getResultType() {
+		return ResultType.NumericT.INSTANCE;
 	}
 }

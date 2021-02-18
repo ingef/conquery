@@ -6,7 +6,7 @@ import java.util.Map;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -71,8 +71,8 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 	
 	@Override
-	public SimpleResultType getResultType() {
-		return SimpleResultType.STRING;
+	public ResultType getResultType() {
+		return ResultType.StringT.INSTANCE;
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import java.util.Locale;
 import java.util.function.Function;
 
 import c10n.C10N;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class LocalizedSimpleResultInfo extends ResultInfo {
 	
 	private final Function<Locale, String> localizedNameProvider;
 	@Getter
-	private final SimpleResultType type;
+	private final ResultType type;
 
 	@Override
 	protected String getName(PrintSettings settings) {

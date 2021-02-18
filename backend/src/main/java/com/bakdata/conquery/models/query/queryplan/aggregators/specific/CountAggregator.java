@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -35,7 +35,7 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 	}
 	
 	@Override
-	public SimpleResultType getResultType() {
-		return SimpleResultType.INTEGER;
+	public ResultType getResultType() {
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

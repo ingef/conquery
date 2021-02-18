@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -17,7 +18,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -35,7 +36,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 
 
 /**
@@ -140,7 +140,7 @@ public class TableExportQuery extends IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		for (Column col : resolvedHeader) {
-			collector.add(new SimpleResultInfo(col.getId().toStringWithoutDataset(), SimpleResultType.resolveResultType(col.getType())));
+			collector.add(new SimpleResultInfo(col.getId().toStringWithoutDataset(), ResultType.resolveResultType(col.getType())));
 		}
 	}
 

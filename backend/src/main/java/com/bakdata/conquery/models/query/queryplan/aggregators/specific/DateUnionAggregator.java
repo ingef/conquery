@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.SimpleResultType;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
@@ -53,7 +53,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 	}
 
 	@Override
-	public SimpleResultType getResultType() {
-		return SimpleResultType.STRING;
+	public ResultType getResultType() {
+		return ResultType.StringT.INSTANCE;
 	}
 }
