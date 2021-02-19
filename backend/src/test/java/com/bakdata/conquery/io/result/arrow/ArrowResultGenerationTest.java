@@ -130,6 +130,7 @@ public class ArrowResultGenerationTest {
     void writeAndRead() throws IOException {
         // Prepare every input data
         PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
+        // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
                 new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534,345), "test_string", 4521, List.of(true,false)}),
                 new SinglelineContainedEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
@@ -227,6 +228,7 @@ public class ArrowResultGenerationTest {
 
     private static String getPrintValue(Object obj, ResultInfo info) {
         if (obj != null && info.getType().equals(ResultType.DateRangeT.INSTANCE)) {
+            // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List dr = (List) obj;
             return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
         }
