@@ -4,8 +4,10 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.io.HCFile;
@@ -157,14 +159,15 @@ public class Preprocessed {
 	 */
 	@SuppressWarnings("rawtypes")
 	private Map<String, ColumnStore> combineStores(Int2IntMap entityStart) {
-		Map<String, ColumnStore> columnStores = new HashMap<>(this.columns.length);
+		Map<String, ColumnStore> columnStores = Arrays.stream(columns)
+													  .parallel()
+													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
-
-			final ColumnStore store = ppColumn.findBestType();
-
 			final ColumnValues columnValues = values[colIdx];
+
+			final ColumnStore store = columnStores.get(ppColumn.getName());
 
 			entities.intParallelStream()
 					.forEach((int entity) -> {
@@ -174,23 +177,21 @@ public class Preprocessed {
 							return;
 						}
 
-						int start = entityStart.get(entity);
+						int pos = entityStart.get(entity);
 
 						for (int inIndex : entityIndices) {
 
 							if (columnValues.isNull(inIndex)) {
-								store.setNull(start);
+								store.setNull(pos);
 							}
 							else {
 								final Object raw = columnValues.get(inIndex);
-								ppColumn.getParser().setValue(store, start, raw);
+								ppColumn.getParser().setValue(store, pos, raw);
 							}
 
-							start++;
+							pos++;
 						}
 					});
-
-			columnStores.put(ppColumn.getName(), store);
 		}
 		return columnStores;
 	}
