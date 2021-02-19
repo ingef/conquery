@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
@@ -110,7 +109,7 @@ public class Preprocessed {
 
 		calculateEntitySpans(entityStart, entityLength);
 
-		Map<String, ColumnStore> columnStores = combineStores();
+		Map<String, ColumnStore> columnStores = combineStores(entityStart);
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
@@ -133,13 +132,12 @@ public class Preprocessed {
 	 * Calculate beginning and end of
 	 */
 	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
-		Int2ObjectMap<EntityPositions> values = entries;
 		int start = 0;
 
 		for (int entity : entities) {
-			final EntityPositions events = values.get(entity);
+			final EntityPositions events = entries.get(entity);
 
-			if(events == null){
+			if (events == null) {
 				continue; //TODO is this no data or just no data for column?
 			}
 
@@ -154,43 +152,43 @@ public class Preprocessed {
 
 	/**
 	 * Combine raw by-Entity data into column stores, appropriately formatted.
+	 *
+	 * @param entityStart
 	 */
 	@SuppressWarnings("rawtypes")
-	private Map<String, ColumnStore> combineStores() {
+	private Map<String, ColumnStore> combineStores(Int2IntMap entityStart) {
 		Map<String, ColumnStore> columnStores = new HashMap<>(this.columns.length);
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = this.columns[colIdx];
 
 			final ColumnStore store = ppColumn.findBestType();
-			Int2ObjectMap<EntityPositions> indices = entries;
 
 			final ColumnValues columnValues = values[colIdx];
 
-			int start = 0;
+			entities.intParallelStream()
+					.forEach((int entity) -> {
+						int start = entityStart.get(entity);
 
-			for (int entity : entities) {
+						final EntityPositions entityIndices = entries.get(entity);
 
-				final EntityPositions entityIndices = indices.get(entity);
+						if (entityIndices == null) {
+							return;
+						}
 
-				// TODO is that right?
-				if(entityIndices == null){
-					continue;
-				}
+						for (int inIndex : entityIndices) {
 
-				for (int inIndex : entityIndices) {
+							if (columnValues.isNull(inIndex)) {
+								store.setNull(start);
+							}
+							else {
+								final Object raw = columnValues.get(inIndex);
+								ppColumn.getParser().setValue(store, start, raw);
+							}
 
-					if (columnValues.isNull(inIndex)) {
-						store.setNull(start);
-					}
-					else {
-						final Object raw = columnValues.get(inIndex);
-						ppColumn.getParser().setValue(store, start, raw);
-					}
-
-					start++;
-				}
-			}
+							start++;
+						}
+					});
 
 			columnStores.put(ppColumn.getName(), store);
 		}
@@ -265,22 +263,19 @@ public class Preprocessed {
 		for (int col = 0; col < outRow.length; col++) {
 			final int idx = values[col].add(outRow[col]);
 
-			if(event == -1){
+			// We assert that all columns are aligned.
+			if (event == -1) {
 				event = idx;
 			}
-
-			if(idx != event){
-				log.error("Columns are not aligned");
+			else if (idx != event) {
+				throw new IllegalStateException("Columns are not aligned");
 			}
 
 			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
 		}
 
-		final int _event = event;
-
-		entries.computeIfAbsent(primaryId, (id) -> new EntityPositions(_event)).add(event);
-
+		entries.computeIfAbsent(primaryId, (id) -> new EntityPositions()).add(event);
 
 		//update stats
 		rows++;
@@ -291,11 +286,9 @@ public class Preprocessed {
 	 */
 	@RequiredArgsConstructor
 	private static class EntityPositions implements IntIterable {
-		private final int start;
 		private final IntList offsets = new IntArrayList();
 
-		public void add(int event){
-			Preconditions.checkArgument(event >= start, "Events must be added in order");
+		public void add(int event) {
 			offsets.add(event);
 		}
 
