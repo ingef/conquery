@@ -116,7 +116,11 @@ public class Preprocessed {
 
 		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
 
+		log.debug("Writing Headers");
+
 		writeHeader(outFile.writeHeader());
+
+		log.debug("Writing data");
 
 		writeData(outFile.writeContent(), entityStart, entityLength, columnStores, primaryDictionary, dicts);
 
@@ -168,6 +172,11 @@ public class Preprocessed {
 			for (int entity : entities) {
 
 				final EntityPositions entityIndices = indices.get(entity);
+
+				// TODO is that right?
+				if(entityIndices == null){
+					continue;
+				}
 
 				for (int inIndex : entityIndices) {
 
