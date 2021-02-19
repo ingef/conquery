@@ -5,6 +5,7 @@ import java.util.BitSet;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.parser.ColumnValues;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
@@ -57,6 +58,11 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 			@Override
 			protected void write(int event, Boolean obj) {
 				values.set(event, obj ? (byte) 1 : (byte) 0);
+			}
+
+			@Override
+			public void close() {
+				values.clear();
 			}
 		};
 	}

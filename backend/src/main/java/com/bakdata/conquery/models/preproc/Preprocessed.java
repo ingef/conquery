@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.parser.ColumnValues;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.parser.specific.StringParser;
@@ -55,7 +56,7 @@ public class Preprocessed {
 	private final TableImportDescriptor descriptor;
 
 	// by-column
-	private final Parser.ColumnValues[] values;
+	private final ColumnValues[] values;
 
 	// by-entity
 	private final Int2ObjectMap<EntityPositions> entries;
@@ -75,7 +76,7 @@ public class Preprocessed {
 
 		// pid and columns
 		entries = new Int2ObjectAVLTreeMap<>();
-		values = new Parser.ColumnValues[columns.length];
+		values = new ColumnValues[columns.length];
 
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
@@ -156,7 +157,7 @@ public class Preprocessed {
 			final ColumnStore store = ppColumn.findBestType();
 			Int2ObjectMap<EntityPositions> indices = entries;
 
-			final Parser.ColumnValues columnValues = values[colIdx];
+			final ColumnValues columnValues = values[colIdx];
 
 			int start = 0;
 

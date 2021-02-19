@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
+import com.bakdata.conquery.models.events.parser.ColumnValues;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
 import com.bakdata.conquery.models.events.parser.specific.string.NumberTypeGuesser;

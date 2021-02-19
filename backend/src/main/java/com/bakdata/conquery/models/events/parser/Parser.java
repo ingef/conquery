@@ -1,23 +1,14 @@
 package com.bakdata.conquery.models.events.parser;
 
-import java.io.File;
-import java.io.RandomAccessFile;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.util.BitSet;
-
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -104,51 +95,4 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 
 	public abstract ColumnValues createColumnValues();
 
-	/**
-	 * per Column Store to encode null in auxiliary bitset, allowing primitive storage.
-	 */
-	@SuppressWarnings("Unchecked")
-	@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-	public static abstract class ColumnValues<T> {
-
-		private final T nullValue;
-		private final BitSet nulls = new BitSet();
-		private int size = 0;
-
-		@SneakyThrows
-		public static MappedByteBuffer allocateBuffer() {
-			final File file = Files.createTempFile("columnvalues", "conquery").toFile();
-			file.deleteOnExit();
-
-			final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
-
-			final MappedByteBuffer byteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, 5000000);
-			byteBuffer.mark();
-			byteBuffer.reset();
-
-			return byteBuffer;
-		}
-
-		public boolean isNull(int event) {
-			return nulls.get(event);
-		}
-
-		public abstract T get(int event);
-
-		public int add(T value) {
-			int event = size++;
-
-			if (value == null) {
-				nulls.set(event);
-				write(event, nullValue);
-			}
-			else {
-				write(event, value);
-			}
-
-			return event;
-		}
-
-		protected abstract void write(int position, T obj);
-	}
 }

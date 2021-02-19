@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.events.parser.ColumnValues;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
@@ -73,6 +74,11 @@ public class DateParser extends Parser<Integer, DateStore> {
 			@Override
 			protected void write(int event, Integer obj) {
 				buffer.put(obj);
+			}
+
+			@Override
+			public void close() {
+
 			}
 		};
 	}
