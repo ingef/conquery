@@ -47,17 +47,23 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	@Override
 	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new ColumnValues<Boolean>(Boolean.FALSE) {
+		return new ColumnValues<Boolean>(false) {
 			private final BitSet values = new BitSet();
 
 			@Override
-			public Boolean get(int event) {
+			public Boolean read(int event) {
 				return values.get(event);
 			}
 
+
 			@Override
-			protected void write(int event, Boolean obj) {
-				values.set(event, obj ? (byte) 1 : (byte) 0);
+			protected int countValues() {
+				return values.cardinality();
+			}
+
+			@Override
+			protected void write(Boolean obj) {
+				values.set(countValues(), obj ? (byte) 1 : (byte) 0);
 			}
 
 			@Override

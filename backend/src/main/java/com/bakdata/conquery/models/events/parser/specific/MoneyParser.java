@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
 import java.math.BigDecimal;
-import java.nio.LongBuffer;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
@@ -66,20 +65,7 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 
 	@Override
 	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new BufferBackedColumnValues<Long>(0L, parserConfig.getPreallocateBufferBytes()) {
-			private final LongBuffer buffer = getBuffer().asLongBuffer();
-
-
-			@Override
-			public Long get(int event) {
-				return buffer.get(event);
-			}
-
-			@Override
-			protected void write(int event, Long obj) {
-				buffer.put(obj);
-			}
-		};
+		return new LongColumnValues();
 	}
 
 }

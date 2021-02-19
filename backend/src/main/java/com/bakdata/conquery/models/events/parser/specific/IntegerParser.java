@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
-import java.nio.LongBuffer;
-
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.ColumnValues;
 import com.bakdata.conquery.models.events.parser.Parser;
@@ -104,19 +102,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 
 	@Override
 	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new BufferBackedColumnValues<Long>(0L, parserConfig.getPreallocateBufferBytes()) {
-			private final LongBuffer buffer = getBuffer().asLongBuffer();
-
-			@Override
-			public Long get(int event) {
-				return buffer.get(event);
-			}
-
-			@Override
-			protected void write(int event, Long obj) {
-				buffer.put(obj);
-			}
-		};
+		return new LongColumnValues();
 	}
 
 }

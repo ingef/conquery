@@ -71,17 +71,22 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 
 	@Override
 	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new ColumnValues<BigDecimal>(BigDecimal.ZERO) {
+		return new ColumnValues<BigDecimal>(null) {
 			final List<BigDecimal> decimals = new ArrayList<>();
 
 			@Override
-			public BigDecimal get(int event) {
+			public BigDecimal read(int event) {
 				return decimals.get(event);
 			}
 
 			@Override
-			protected void write(int event, BigDecimal obj) {
+			protected void write(BigDecimal obj) {
 				decimals.add(obj);
+			}
+
+			@Override
+			protected int countValues() {
+				return decimals.size();
 			}
 		};
 	}

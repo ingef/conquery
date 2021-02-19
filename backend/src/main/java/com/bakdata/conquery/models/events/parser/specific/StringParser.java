@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
-import java.nio.IntBuffer;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
@@ -181,20 +180,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	@SneakyThrows
 	@Override
 	public ColumnValues<Integer> createColumnValues(ParserConfig parserConfig) {
-		return new BufferBackedColumnValues<Integer>(0, parserConfig.getPreallocateBufferBytes()){
-
-			private final IntBuffer buffer = getBuffer().asIntBuffer();
-
-			@Override
-			public Integer get(int event) {
-				return buffer.get(event);
-			}
-
-			@Override
-			protected void write(int event, Integer obj) {
-				buffer.put(obj);
-			}
-		};
+		return new IntegerColumnValues();
 	}
 
 	public IntegerStore decideIndexType() {
