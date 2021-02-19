@@ -132,11 +132,11 @@ public class ArrowResultGenerationTest {
         PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
-                new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534,345), "test_string", 4521, List.of(true,false)}),
+                new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
                 new SinglelineContainedEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
                 new MultilineContainedEntityResult(3, List.of(
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null,null, 4, null}
+                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, null}
                 )),
                 EntityResult.notContained());
 
@@ -207,11 +207,11 @@ public class ArrowResultGenerationTest {
                 .map(res -> {
                     StringJoiner lineJoiner = new StringJoiner("\n");
 
-                    for(Object[] line : res.listResultLines()) {
+                    for (Object[] line : res.listResultLines()) {
                         StringJoiner valueJoiner = new StringJoiner("\t");
                         valueJoiner.add(String.valueOf(res.getEntityId()));
                         valueJoiner.add(String.valueOf(res.getEntityId()));
-                        for(int lIdx = 0; lIdx < line.length; lIdx++) {
+                        for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
                             valueJoiner.add(getPrintValue(val, info));
@@ -232,13 +232,13 @@ public class ArrowResultGenerationTest {
             List dr = (List) obj;
             return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
         }
-        return  getPrintValue(obj);
+        return getPrintValue(obj);
     }
 
     private static String getPrintValue(Object obj) {
-        if(ResultType.isArray(obj)) {
+        if (ResultType.isArray(obj)) {
             StringJoiner joiner = new StringJoiner(",", "[", "]");
-            for(Object nested : (Object [])obj){
+            for (Object nested : (Object[]) obj) {
                 joiner.add(getPrintValue(nested));
             }
             return joiner.toString();
