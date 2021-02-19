@@ -168,13 +168,13 @@ public class Preprocessed {
 
 			entities.intParallelStream()
 					.forEach((int entity) -> {
-						int start = entityStart.get(entity);
-
 						final EntityPositions entityIndices = entries.get(entity);
 
 						if (entityIndices == null) {
 							return;
 						}
+
+						int start = entityStart.get(entity);
 
 						for (int inIndex : entityIndices) {
 
