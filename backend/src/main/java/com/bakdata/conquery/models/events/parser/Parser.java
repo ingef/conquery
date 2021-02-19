@@ -51,11 +51,15 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	protected abstract MAJOR_JAVA_TYPE parseValue(@Nonnull String value) throws ParsingException;
 
 	public final STORE_TYPE findBestType() {
-		if (getLines() == 0 || getLines() == getNullLines()) {
+		if (isEmpty()) {
 			return (STORE_TYPE) EmptyStore.INSTANCE; // This implements all root ColumnStores.
 		}
 
 		return decideType();
+	}
+
+	public boolean isEmpty() {
+		return getLines() == 0 || getLines() == getNullLines();
 	}
 
 	/**

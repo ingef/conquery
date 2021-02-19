@@ -7,7 +7,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
@@ -82,7 +81,7 @@ public class PrintSettings implements SelectNameExtractor {
 			sb.append(cqLabel);
 			sb.append(" - ");
 		}
-		else if(columnInfo.getCqConcept().getIds().size() > 0) {
+		else if(!columnInfo.getCqConcept().getIds().isEmpty()) {
 			// When no Label was set within the query, get the labels of all ids that are in the CQConcept
 			String concatElementLabels = columnInfo.getCqConcept().getIds().stream()
 			.map(id -> getLabelFromChildId(datasetRegistry, id))

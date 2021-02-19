@@ -1,19 +1,18 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
+import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -39,6 +38,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -89,24 +89,20 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		@NonNull Dataset dataset,
 		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 		@NonNull ExecutorService executorService,
-		@NonNull StorageConfig config,
-		@NonNull File directory,
+		@NonNull StoreFactory config,
+		@NonNull String storagePrefix,
+		@NonNull String directory,
 		@NonNull Validator validator,
 		boolean failOnError,
 		int entityBucketSize) {
 
-		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
-		if (workerStorage != null) {
-			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
-		}
-
+		WorkerStorage workerStorage = new WorkerStorage(validator, config, List.of(storagePrefix,directory));
 
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setName(directory.getName());
+		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
 
-		workerStorage = new WorkerStorageImpl(validator, config, directory);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
@@ -212,8 +208,9 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.updateWorker(info);
 	}
 
+	@SneakyThrows
 	public void remove() {
-		storage.clear();
+		storage.removeStorage();
 		close();
 	}
 

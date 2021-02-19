@@ -1,46 +1,31 @@
-import type { StateT } from "../app/reducers";
-import type { PermissionT, GetMeResponseT } from "../api/types";
 import { useSelector } from "react-redux";
+
+import type { StateT } from "../app/reducers";
+import type { PermissionsT, GetMeResponseT, DatasetIdT } from "../api/types";
 
 interface ContextT {
   datasetId?: string;
 }
 
-export function selectPermissions(state: StateT): PermissionT[] | null {
-  return !!state.user.me && !!state.user.me.permissions
-    ? state.user.me.permissions
+export function selectPermissions(
+  state: StateT
+): Record<DatasetIdT, PermissionsT> | null {
+  return !!state.user.me && !!state.user.me.datasetAbilities
+    ? state.user.me.datasetAbilities
     : null;
 }
 
-const permissionHasDataset = (permission: PermissionT) =>
-  permission.domains.includes("datasets") || permission.domains.includes("*");
-const permissionFitsTarget = (permission: PermissionT, datasetId: string) =>
-  permission.targets.includes(datasetId) || permission.targets.includes("*");
-
-function canDoNothing(permissions: PermissionT[], datasetId: string) {
-  return permissions.every((permission) => {
-    const hasDataset = permissionHasDataset(permission);
-    const fitsTarget = permissionFitsTarget(permission, datasetId);
-
-    return !hasDataset || !fitsTarget;
-  });
-}
-
-function canDoEverything(permissions: PermissionT[], datasetId: string) {
-  return permissions.some((permission) => {
-    const hasDataset = permissionHasDataset(permission);
-    const fitsTarget = permissionFitsTarget(permission, datasetId);
-
-    const hasAllAbilities = permission.abilities.includes("*");
-
-    return hasAllAbilities && fitsTarget && hasDataset;
-  });
+function canDoNothing(
+  permissions: Record<DatasetIdT, PermissionsT>,
+  datasetId: string
+) {
+  return !permissions[datasetId];
 }
 
 function canDo(
   state: StateT,
   canDoWithPermissions: (
-    permissions: PermissionT[],
+    permissions: Record<DatasetIdT, PermissionsT>,
     datasetId: string
   ) => boolean,
   context?: ContextT
@@ -58,7 +43,6 @@ function canDo(
   }
 
   if (canDoNothing(permissions, datasetId)) return false;
-  if (canDoEverything(permissions, datasetId)) return true;
 
   return canDoWithPermissions(permissions, datasetId);
 }
@@ -68,12 +52,7 @@ function canDo(
 //   return canDo(
 //     state,
 //     (permissions, finalDatasetId) => {
-//       return permissions.some(
-//         (permission) =>
-//           permissionHasDataset(permission) &&
-//           permissionFitsTarget(permission, finalDatasetId) &&
-//           permission.abilities.includes("download")
-//       );
+//       return permissions...
 //     },
 //     { datasetId }
 //   );
@@ -81,12 +60,7 @@ function canDo(
 
 export function canUploadResult(state: StateT) {
   return canDo(state, (permissions, datasetId) => {
-    return permissions.some(
-      (permission) =>
-        permissionHasDataset(permission) &&
-        permissionFitsTarget(permission, datasetId) &&
-        permission.abilities.includes("preserve_id")
-    );
+    return permissions[datasetId].canUpload === true;
   });
 }
 

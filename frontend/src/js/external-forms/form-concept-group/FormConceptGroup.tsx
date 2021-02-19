@@ -57,8 +57,8 @@ interface PropsType extends WrappedFieldProps {
   newValue?: Object;
   isSingle?: boolean;
   disallowMultipleColumns?: boolean;
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
   defaults: ConceptListDefaultsType;
   isValidConcept?: Function;
 }
@@ -543,29 +543,31 @@ const FormConceptGroup = (props: PropsType) => {
             {props.renderRowPrefix
               ? props.renderRowPrefix(props.input, row, i)
               : null}
-            {!props.renderRowPrefix && row.concepts.length > 1 && (
-              <Row>
-                <SxDescription>
-                  {T.translate("externalForms.common.connectedWith")}:
-                </SxDescription>
-                <ToggleButton
-                  input={{
-                    value: props.input.value[i].connector,
-                    onChange: (value) => {
-                      props.input.onChange(
-                        setValueProperties(props.input.value, i, {
-                          connector: value,
-                        })
-                      );
-                    },
-                  }}
-                  options={[
-                    { value: "OR", label: T.translate("common.or") },
-                    { value: "AND", label: T.translate("common.and") },
-                  ]}
-                />
-              </Row>
-            )}
+            {false && // TODO: TEMPORARILY DISABLED, UNTIL FEATURE IS COORDINATED
+              !props.renderRowPrefix &&
+              row.concepts.length > 1 && (
+                <Row>
+                  <SxDescription>
+                    {T.translate("externalForms.common.connectedWith")}:
+                  </SxDescription>
+                  <ToggleButton
+                    input={{
+                      value: props.input.value[i].connector,
+                      onChange: (value) => {
+                        props.input.onChange(
+                          setValueProperties(props.input.value, i, {
+                            connector: value,
+                          })
+                        );
+                      },
+                    }}
+                    options={[
+                      { value: "OR", label: T.translate("common.or") },
+                      { value: "AND", label: T.translate("common.and") },
+                    ]}
+                  />
+                </Row>
+              )}
             <DynamicInputGroup
               key={i}
               limit={props.isSingle ? 1 : 0}
@@ -679,8 +681,8 @@ const FormConceptGroup = (props: PropsType) => {
         formType={props.formType}
         fieldName={props.input.name}
         datasetId={props.datasetId}
-        blacklistedTables={props.blacklistedTables}
-        whitelistedTables={props.whitelistedTables}
+        blocklistedTables={props.blocklistedTables}
+        allowlistedTables={props.allowlistedTables}
         onCloseModal={(valueIdx, conceptIdx) =>
           props.input.onChange(
             setConceptProperties(props.input.value, valueIdx, conceptIdx, {

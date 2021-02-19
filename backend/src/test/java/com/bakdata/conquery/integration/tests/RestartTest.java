@@ -7,8 +7,8 @@ import javax.validation.Validator;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -47,14 +47,14 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
 		AdminProcessor adminProcessor = new AdminProcessor(
-
 				manager.getConfig(),
 				manager.getStorage(),
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
 				manager.getValidator(),
-				ConqueryConfig.getInstance().getCluster().getEntityBucketSize()
+				ConqueryConfig.getInstance().getCluster().getEntityBucketSize(),
+				manager.isUseNameForStoragePrefix() ? manager.getName() : ""
 		);
 
 
@@ -119,7 +119,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();
 		//restart
-		testConquery.beforeAll(testConquery.getBeforeAllContext());
+		testConquery.beforeAll();
 
 		final StandaloneSupport support = testConquery.openDataset(dataset);
 

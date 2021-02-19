@@ -13,15 +13,15 @@
       "child": {
         "type": "CONCEPT",
         "ids": [
-          "${dataset}.icd.f00$2df99.f20$2df29.f20"
+          "icd.f00$2df99.f20$2df29.f20"
         ],
         "tables": [
           {
-            "id": "${dataset}.icd.kh_diagnose_icd_code",
+            "id": "icd.kh_diagnose_icd_code",
             "filters": []
           },
           {
-            "id": "${dataset}.icd.au_fall",
+            "id": "icd.au_fall",
             "filters": []
           }
         ]

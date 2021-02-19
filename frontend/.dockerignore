@@ -1,8 +1,10 @@
 node_modules
 dist
+build
 .coverage
 .nyc_output
 node
+mock-api
 
 *.log
 pom.xml
