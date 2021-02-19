@@ -118,7 +118,10 @@ public class ArrowResultGenerationTest {
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null))))
+                        // We represent a list as a flat string at the moment. See ResultType.ListT::getArrowFieldType
+                        new Field("LIST[BOOLEAN]", FieldType.nullable(new ArrowType.Utf8()), null)
+                        // new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
+                )
         );
 
     }
@@ -128,7 +131,7 @@ public class ArrowResultGenerationTest {
         // Prepare every input data
         PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
         List<EntityResult> results = List.of(
-                new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, new Object[]{534,345}, "test_string", 4521, new Object[]{true,false}}),
+                new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534,345), "test_string", 4521, List.of(true,false)}),
                 new SinglelineContainedEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
                 new MultilineContainedEntityResult(3, List.of(
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
@@ -168,7 +171,7 @@ public class ArrowResultGenerationTest {
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.collectResultInfos().getInfos()));
 
     }
 
@@ -187,7 +190,7 @@ public class ArrowResultGenerationTest {
                             vectors.stream()
                                     .map(vec -> vec.getObject(currentRow))
                                     .map(o -> o == null ? "null" : o)
-                                    .map(Object::toString)
+                                    .map(ArrowResultGenerationTest::getPrintValue)
                                     .collect(Collectors.joining("\t")))
                             .append("\n");
                 }
@@ -196,20 +199,38 @@ public class ArrowResultGenerationTest {
         return sb.toString();
     }
 
-    private String generateExpectedTSV(List<EntityResult> results) {
+    private String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
         String expected = results.stream()
                 .filter(EntityResult::isContained)
                 .map(ContainedEntityResult.class::cast)
-                .map(
-                        (res) -> res.listResultLines().stream().map(
-                                line -> res.getEntityId() + "\t" + res.getEntityId() + "\t" + Arrays.stream(line).map(o -> o == null ? "null" : o)
-                                        .map(ArrowResultGenerationTest::getPrintValue)
-                                        .collect(Collectors.joining("\t")))
-                                .collect(Collectors.joining("\n")))
+                .map(res -> {
+                    StringJoiner lineJoiner = new StringJoiner("\n");
+
+                    for(Object[] line : res.listResultLines()) {
+                        StringJoiner valueJoiner = new StringJoiner("\t");
+                        valueJoiner.add(String.valueOf(res.getEntityId()));
+                        valueJoiner.add(String.valueOf(res.getEntityId()));
+                        for(int lIdx = 0; lIdx < line.length; lIdx++) {
+                            Object val = line[lIdx];
+                            ResultInfo info = resultInfos.get(lIdx);
+                            valueJoiner.add(getPrintValue(val, info));
+                        }
+                        lineJoiner.add(valueJoiner.toString());
+                    }
+                    return lineJoiner.toString();
+                })
                 .collect(Collectors.joining("\n"));
 
         return Arrays.stream(idMapping.getPrintIdFields()).collect(Collectors.joining("\t")) + "\t" +
                 getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
+    }
+
+    private static String getPrintValue(Object obj, ResultInfo info) {
+        if (obj != null && info.getType().equals(ResultType.DateRangeT.INSTANCE)) {
+            List dr = (List) obj;
+            return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
+        }
+        return  getPrintValue(obj);
     }
 
     private static String getPrintValue(Object obj) {

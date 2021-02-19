@@ -205,19 +205,19 @@ public class ArrowRenderer {
         };
     }
 
-    private static RowConsumer structVectorFiller(StructVector vector, RowConsumer [] nestedConsumers,  Function<Object[], Object[]> resultExtractor) {
+    private static RowConsumer structVectorFiller(StructVector vector, RowConsumer [] nestedConsumers,  Function<Object[], List> resultExtractor) {
         return (rowNumber, line) -> {
             // Values is a horizontal list
-            Object[] values = resultExtractor.apply(line);
+            List values = resultExtractor.apply(line);
             if (values == null) {
                 vector.setNull(rowNumber);
                 return;
             }
-            if(values.length != nestedConsumers.length) {
+            if(values.size() != nestedConsumers.length) {
                 throw new IllegalStateException("The number of the provided nested value differs from the number of consumer for the generated vectors. Provided values: " + values + "\t Availible consumers: " + nestedConsumers.length);
             }
             for (int i = 0; i < nestedConsumers.length; i++) {
-                nestedConsumers[i].accept(rowNumber, values);
+                nestedConsumers[i].accept(rowNumber, values.toArray());
             }
 
             // Finally mark that we populated the nested vectors
@@ -225,6 +225,7 @@ public class ArrowRenderer {
         };
     }
     private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], Object[]> resultExtractor){
+        // This is not used at the moment see ResultType.ListT::getArrowFieldType
         return (rowNumber, line) -> {
             // Values is a vertical list
             Object[] values = resultExtractor.apply(line);
@@ -233,19 +234,12 @@ public class ArrowRenderer {
                 return;
             }
 
-
-//            UnionListWriter writer = vector.getWriter();
-//            writer.startList();
-//            writer.setPosition(rowNumber);
-
             vector.startNewValue(rowNumber);
             for (int i = 0; i < values.length; i++) {
                 // These short lived one value arrays are a workaround at the moment
                 nestedConsumer.accept(i, new Object[] {values[i]});
-//                writer.writeBit((boolean) values[i] ? 1 :0);
             }
-//            writer.setValueCount(values.length);
-//            writer.endList();
+
             vector.endValue(rowNumber,values.length);
        };
     }
@@ -279,7 +273,7 @@ public class ArrowRenderer {
         }
 
         if (vector instanceof VarCharVector) {
-            return varCharVectorFiller((VarCharVector) vector, (line) -> (String) line[pos]);
+            return varCharVectorFiller((VarCharVector) vector, (line) -> (line[pos] instanceof String) ? (String) line[pos] : (line[pos] != null ? Objects.toString(line[pos]) : null));
         }
 
         if (vector instanceof BitVector) {
@@ -306,10 +300,11 @@ public class ArrowRenderer {
             for (int i = 0; i < nestedVectors.size(); i++) {
                 nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i));
             }
-            return structVectorFiller(structVector, nestedConsumers, (line) -> (Object[]) line[pos]);
+            return structVectorFiller(structVector, nestedConsumers, (line) -> (List) line[pos]);
         }
 
         if (vector instanceof ListVector) {
+            // This is not used at the moment see ResultType.ListT::getArrowFieldType
             ListVector listVector = (ListVector) vector;
 
             ValueVector nestedVector = listVector.getDataVector();
