@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import java.nio.IntBuffer;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
@@ -29,20 +30,20 @@ import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.jakewharton.byteunits.BinaryByteUnit;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * Analyze all strings for common suffix/prefix, or if they are singleton.
- *
+ * <p>
  * Values are stored DictionaryEncoded(Integer->String), Integers are stored using {@link IntegerParser}.
  */
 @Slf4j
 @Getter
-@ToString(callSuper = true, of = {"encoding", "prefix","suffix"})
+@ToString(callSuper = true, of = {"encoding", "prefix", "suffix"})
 public class StringParser extends Parser<Integer, StringStore> {
 
 	private BiMap<String, Integer> strings = HashBiMap.create();
@@ -56,6 +57,10 @@ public class StringParser extends Parser<Integer, StringStore> {
 		super(config);
 	}
 
+	@Override
+	protected Integer parseValue(String value) throws ParsingException {
+		return strings.computeIfAbsent(value, this::processSingleValue);
+	}
 
 	public int processSingleValue(String value) {
 		//set longest common prefix and suffix
@@ -65,12 +70,6 @@ public class StringParser extends Parser<Integer, StringStore> {
 		//return next id
 		return strings.size();
 	}
-
-	@Override
-	protected Integer parseValue(String value) throws ParsingException {
-		return strings.computeIfAbsent(value, this::processSingleValue);
-	}
-
 
 	@Override
 	protected StringStore decideType() {
@@ -133,16 +132,6 @@ public class StringParser extends Parser<Integer, StringStore> {
 		return result;
 	}
 
-	@Override
-	public void setValue(StringStore store, int event, Integer value) {
-		store.setString(event, value);
-	}
-
-	@Override
-	public ColumnValues createColumnValues() {
-		return new ColumnValues(new IntArrayList(), 0);
-	}
-
 	/**
 	 * Select the least memory intensive encoding and decode all values using it.
 	 */
@@ -163,7 +152,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 				return bases.iterator().next();
 			}
 
-			if(bases.isEmpty()){
+			if (bases.isEmpty()) {
 				throw new IllegalStateException("No Encoding can encode the values.");
 			}
 		}
@@ -181,6 +170,30 @@ public class StringParser extends Parser<Integer, StringStore> {
 						  .stream()
 						  .map(encoding::decode)
 						  .collect(Collectors.toList());
+	}
+
+	@Override
+	public void setValue(StringStore store, int event, Integer value) {
+		store.setString(event, value);
+	}
+
+	@SneakyThrows
+	@Override
+	public ColumnValues<Integer> createColumnValues() {
+		return new ColumnValues<Integer>( 0) {
+			private final IntBuffer buffer = ColumnValues.allocateBuffer().asIntBuffer();
+
+
+			@Override
+			public Integer get(int event) {
+				return buffer.get(event);
+			}
+
+			@Override
+			protected void write(int event, Integer obj) {
+				buffer.put(obj);
+			}
+		};
 	}
 
 	public IntegerStore decideIndexType() {

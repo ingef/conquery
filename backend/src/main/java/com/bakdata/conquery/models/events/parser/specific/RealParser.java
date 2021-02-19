@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import java.nio.DoubleBuffer;
+
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
@@ -7,7 +9,6 @@ import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,7 +63,21 @@ public class RealParser extends Parser<Double, RealStore> {
 
 	@Override
 	public ColumnValues createColumnValues() {
-		return new ColumnValues(new DoubleArrayList(), 0d);
+		return new ColumnValues<Double>(0d) {
+
+			private final DoubleBuffer buffer = ColumnValues.allocateBuffer().asDoubleBuffer();
+
+
+			@Override
+			public Double get(int event) {
+				return buffer.get(event);
+			}
+
+			@Override
+			protected void write(int event, Double obj) {
+				buffer.put(obj);
+			}
+		};
 	}
 
 }

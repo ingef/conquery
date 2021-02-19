@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -12,6 +13,7 @@ import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.DateFormats;
+import com.google.common.base.Preconditions;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -97,7 +99,20 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	@Override
 	public ColumnValues createColumnValues() {
-		return new ColumnValues(new ArrayList<CDateRange>(), null);
+		return new ColumnValues<CDateRange>( null) {
+			final List<CDateRange> decimals = new ArrayList<>();
+
+			@Override
+			public CDateRange get(int event) {
+				return decimals.get(event);
+			}
+
+			@Override
+			protected void write(int event, CDateRange obj) {
+				Preconditions.checkArgument(event == decimals.size());
+				decimals.add(obj);
+			}
+		};
 	}
 
 }

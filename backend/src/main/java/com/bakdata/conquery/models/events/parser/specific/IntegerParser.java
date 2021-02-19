@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.parser.specific;
 
+import java.nio.LongBuffer;
+
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
@@ -10,7 +12,6 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.NumberParsing;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -102,7 +103,19 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 
 	@Override
 	public ColumnValues createColumnValues() {
-		return new ColumnValues(new LongArrayList(), 0);
+		return new ColumnValues<Long>(0L) {
+			private final LongBuffer buffer = ColumnValues.allocateBuffer().asLongBuffer();
+
+			@Override
+			public Long get(int event) {
+				return buffer.get(event);
+			}
+
+			@Override
+			protected void write(int event, Long obj) {
+				buffer.put(obj);
+			}
+		};
 	}
 
 }
