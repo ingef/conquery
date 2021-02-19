@@ -46,7 +46,7 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues() {
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
 		return new ColumnValues<Boolean>(Boolean.FALSE) {
 			private final BitSet values = new BitSet();
 

@@ -93,6 +93,6 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 	public abstract void setValue(STORE_TYPE store, int event, MAJOR_JAVA_TYPE value);
 
 
-	public abstract ColumnValues createColumnValues();
+	public abstract ColumnValues createColumnValues(ParserConfig parserConfig);
 
 }

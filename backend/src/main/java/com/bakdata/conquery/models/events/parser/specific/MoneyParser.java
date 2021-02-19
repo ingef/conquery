@@ -65,9 +65,9 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues() {
-		return new ColumnValues<Long>(0L) {
-			private final LongBuffer buffer = ColumnValues.allocateBuffer().asLongBuffer();
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+		return new BufferBackedColumnValues<Long>(0L, parserConfig.getPreallocateBufferBytes()) {
+			private final LongBuffer buffer = getBuffer().asLongBuffer();
 
 
 			@Override

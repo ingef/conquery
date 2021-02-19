@@ -63,11 +63,10 @@ public class RealParser extends Parser<Double, RealStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues() {
-		return new ColumnValues<Double>(0d) {
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+		return new BufferBackedColumnValues<Double>(0d, parserConfig.getPreallocateBufferBytes()) {
 
-			private final DoubleBuffer buffer = ColumnValues.allocateBuffer().asDoubleBuffer();
-
+			private final DoubleBuffer buffer = getBuffer().asDoubleBuffer();
 
 			@Override
 			public Double get(int event) {

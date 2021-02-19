@@ -84,7 +84,7 @@ public class Preprocessed {
 			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
 
 			final Parser parser = columns[index].getParser();
-			values[index] = parser.createColumnValues();
+			values[index] = parser.createColumnValues(parserConfig);
 		}
 	}
 
@@ -119,6 +119,10 @@ public class Preprocessed {
 		writeHeader(outFile.writeHeader());
 
 		writeData(outFile.writeContent(), entityStart, entityLength, columnStores, primaryDictionary, dicts);
+
+		for (ColumnValues columnValues : values) {
+			columnValues.close();
+		}
 	}
 
 	/**

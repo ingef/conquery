@@ -99,7 +99,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues() {
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
 		return new ColumnValues<CDateRange>( null) {
 			final List<CDateRange> decimals = new ArrayList<>();
 

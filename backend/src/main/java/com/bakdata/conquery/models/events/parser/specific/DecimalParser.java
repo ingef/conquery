@@ -70,7 +70,7 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues() {
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
 		return new ColumnValues<BigDecimal>(BigDecimal.ZERO) {
 			final List<BigDecimal> decimals = new ArrayList<>();
 

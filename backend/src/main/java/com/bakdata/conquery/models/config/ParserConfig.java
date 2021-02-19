@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.config;
 
+import javax.validation.constraints.Max;
+
 import lombok.Data;
 import lombok.Setter;
 
@@ -13,4 +15,7 @@ public class ParserConfig {
 	 * @see Math#ulp(float)
 	 */
 	private double minPrecision = Double.MIN_VALUE;
+
+	@Max(Integer.MAX_VALUE)
+	private int preallocateBufferBytes = 5_000_000;
 }

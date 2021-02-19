@@ -180,10 +180,10 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	@SneakyThrows
 	@Override
-	public ColumnValues<Integer> createColumnValues() {
-		return new ColumnValues<Integer>( 0) {
-			private final IntBuffer buffer = ColumnValues.allocateBuffer().asIntBuffer();
+	public ColumnValues<Integer> createColumnValues(ParserConfig parserConfig) {
+		return new BufferBackedColumnValues<Integer>(0, parserConfig.getPreallocateBufferBytes()){
 
+			private final IntBuffer buffer = getBuffer().asIntBuffer();
 
 			@Override
 			public Integer get(int event) {

@@ -62,9 +62,9 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@SneakyThrows
 	@Override
-	public ColumnValues createColumnValues() {
-		return new ColumnValues<Integer>(0) {
-			private final IntBuffer buffer = ColumnValues.allocateBuffer().asIntBuffer();
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+		return new BufferBackedColumnValues<Integer>(0, parserConfig.getPreallocateBufferBytes()) {
+			private final IntBuffer buffer = getBuffer().asIntBuffer();
 
 			@Override
 			public Integer get(int event) {
@@ -76,10 +76,6 @@ public class DateParser extends Parser<Integer, DateStore> {
 				buffer.put(obj);
 			}
 
-			@Override
-			public void close() {
-
-			}
 		};
 	}
 
