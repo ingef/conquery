@@ -187,10 +187,10 @@ public interface ResultType {
 
         @Override
         public String print(PrintSettings cfg, @NonNull Object f) {
-            if(!(f instanceof Integer)) {
-                throw new IllegalStateException("Expected an Integer but got an '" + (f != null ? f.getClass().getName() : "no type") + "' with the value: " + f );
+            if(!(f instanceof Number)) {
+                throw new IllegalStateException("Expected an Number but got an '" + (f != null ? f.getClass().getName() : "no type") + "' with the value: " + f );
             }
-            return CDate.toLocalDate((Integer)f).toString();
+            return CDate.toLocalDate(((Number)f).intValue()).toString();
         }
 
         @Override
