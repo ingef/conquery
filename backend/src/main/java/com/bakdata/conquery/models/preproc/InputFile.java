@@ -10,7 +10,6 @@ import java.io.Serializable;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.github.powerlibraries.io.In;
@@ -47,20 +46,11 @@ public class InputFile implements Serializable {
 		}
 	}
 
-	public static InputFile fromDescriptionFile(File descriptionFile, PreprocessingDirectories dirs, String tag) throws IOException {
-		descriptionFile = descriptionFile.getAbsoluteFile();
-		return fromName(
-				dirs,
-				descriptionFile.getName().substring(0, descriptionFile.getName().length() - EXTENSION_DESCRIPTION.length()),
-				tag
-		);
-	}
-
-	public static InputFile fromName(PreprocessingDirectories dirs, String extensionlessName, String tag) {
+	public static InputFile fromName(String extensionlessName, String tag, File descriptionsDir, File outputDir,  File csvDir) {
 		return builder()
-				.descriptionFile(new File(dirs.getDescriptionsDir(), extensionlessName + EXTENSION_DESCRIPTION))
-				.preprocessedFile(Preprocessor.getTaggedVersion(new File(dirs.getPreprocessedOutputDir(), extensionlessName + EXTENSION_PREPROCESSED), tag, EXTENSION_PREPROCESSED))
-				.csvDirectory(dirs.getCsvDir().getAbsoluteFile())
+				.descriptionFile(new File(descriptionsDir, extensionlessName + EXTENSION_DESCRIPTION))
+				.preprocessedFile(Preprocessor.getTaggedVersion(new File(outputDir, extensionlessName + EXTENSION_PREPROCESSED), tag, EXTENSION_PREPROCESSED))
+				.csvDirectory(csvDir.getAbsoluteFile())
 				.build();
 	}
 }

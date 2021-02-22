@@ -1,5 +1,7 @@
 package com.bakdata.conquery.commands;
 
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_DESCRIPTION;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,7 +19,6 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
@@ -112,9 +113,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		for (String tag : tags) {
 			for (File desc : namespace.<File>getList("desc")) {
-				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(),
-						new PreprocessingDirectories(namespace.get("in"), desc, namespace.get("out"))
-				, tag));
+				final List<TableImportDescriptor>
+						descriptions = findPreprocessingDescriptions(namespace.get("in"), desc, namespace.get("out"), tag, environment.getValidator());
+				descriptors.addAll(descriptions);
 			}
 		}
 
@@ -170,18 +171,16 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories description, String tag)
+	public List<TableImportDescriptor> findPreprocessingDescriptions(File inDir, File descriptionsDir, File outputDir, String tag, Validator validator)
 			throws IOException {
 		List<TableImportDescriptor> out = new ArrayList<>();
 
-		File inDir = description.getDescriptionsDir().getAbsoluteFile();
 		final File[] files = inDir.isFile() ?
 							 new File[]{inDir} :
 							 inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
 
 		for (File descriptionFile : files) {
-
-			tryExtractDescriptor(validator, tag, description, descriptionFile).ifPresent(out::add);
+			tryExtractDescriptor(validator, tag, descriptionFile, descriptionsDir, outputDir, inDir).ifPresent(out::add);
 		}
 		return out;
 	}
@@ -190,9 +189,12 @@ public class PreprocessorCommand extends ConqueryCommand {
 		return !failed.isEmpty();
 	}
 
-	private Optional<TableImportDescriptor> tryExtractDescriptor(Validator validator, String tag, PreprocessingDirectories description, File descriptionFile)
+	private Optional<TableImportDescriptor> tryExtractDescriptor(Validator validator, String tag, File descriptionFile, File descriptionsDir, File outputDir, File csvDir)
 			throws IOException {
-		InputFile file = InputFile.fromDescriptionFile(descriptionFile, description, tag);
+		InputFile file = InputFile.fromName(
+				descriptionFile.getName().substring(0, descriptionFile.getName().length() - EXTENSION_DESCRIPTION.length()),
+				tag, descriptionsDir, outputDir, csvDir
+		);
 		try {
 			TableImportDescriptor descr = file.readDescriptor(validator, tag);
 			// Test if all Inputs exist
