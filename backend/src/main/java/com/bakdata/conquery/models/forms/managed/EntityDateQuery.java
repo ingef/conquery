@@ -2,7 +2,11 @@ package com.bakdata.conquery.models.forms.managed;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -14,13 +18,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 @CPSType(id = "ENTITY_DATE_QUERY", base = QueryDescription.class)
-@RequiredArgsConstructor
 @Getter
+@RequiredArgsConstructor
 public class EntityDateQuery extends IQuery {
 
     @NotNull
@@ -29,12 +36,21 @@ public class EntityDateQuery extends IQuery {
     @NotNull @Valid
     private final ArrayConceptQuery features;
 
+    @NotNull @NotEmpty
+    private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
+
+    @NotNull @Valid
+    private final CDateRange dateRange;
+
+
 
     @Override
     public EntityDateQueryPlan createQueryPlan(QueryPlanContext context) {
         return new EntityDateQueryPlan(
                 query.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
-                features.createQueryPlan(context.withGenerateSpecialDateUnion(true))
+                features.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
+                resolutionsAndAlignments,
+                dateRange
         );
     }
 
@@ -53,6 +69,12 @@ public class EntityDateQuery extends IQuery {
     @Override
     public void collectResultInfos(ResultInfoCollector collector) {
         features.collectResultInfos(collector);
+        //remove SpecialDateUnion
+        //collector.getInfos().remove(0);
+
+        collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
+        collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
+        collector.getInfos().add(2, ConqueryConstants.DATE_RANGE_INFO);
     }
 
     @Override
