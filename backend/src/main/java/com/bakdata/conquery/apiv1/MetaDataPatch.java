@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.execution.Labelable;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Shareable.ShareInformation;
 import com.bakdata.conquery.models.execution.Taggable;
@@ -44,7 +45,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	 * @param permissionCreator	A function that produces a {@link Permission} that targets the given instance (e.g QueryPermission, FormConfigPermission).
 	 * @param <INST>	Type of the instance that is patched
 	 */
-	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID>> void applyTo(INST instance, MetaStorage storage, User user, PermissionCreator<ID> permissionCreator){
+	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned> void applyTo(INST instance, MetaStorage storage, User user, PermissionCreator<ID> permissionCreator){
 		buildChain(
 			QueryUtils.getNoOpEntryPoint(),
 			storage,
@@ -54,14 +55,15 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 			.accept(this);
 	}
 	
-	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID>> Consumer<T> buildChain(Consumer<T> patchConsumerChain,MetaStorage storage, User user, INST instance, PermissionCreator<ID> permissionCreator){
-		if(getTags() != null && user.isPermitted(permissionCreator.apply(Ability.TAG.asSet(), instance.getId()))) {
+	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID>& Owned> Consumer<T> buildChain(Consumer<T> patchConsumerChain,MetaStorage storage, User user, INST instance, PermissionCreator<ID> permissionCreator){
+		boolean owned = instance.getOwner().equals(user.getId());
+		if(getTags() != null && (owned || user.isPermitted(permissionCreator.apply(Ability.TAG.asSet(), instance.getId())))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
-		if(getLabel() != null && user.isPermitted(permissionCreator.apply(Ability.LABEL.asSet(), instance.getId()))) {
+		if(getLabel() != null && (owned || user.isPermitted(permissionCreator.apply(Ability.LABEL.asSet(), instance.getId())))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
 		}
-		if(getGroups() != null && user.isPermitted(permissionCreator.apply(Ability.SHARE.asSet(), instance.getId()))) {
+		if(getGroups() != null && (owned || user.isPermitted(permissionCreator.apply(Ability.SHARE.asSet(), instance.getId())))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user, permissionCreator));
 		}
 		return patchConsumerChain;

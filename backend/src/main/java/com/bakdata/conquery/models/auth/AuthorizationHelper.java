@@ -73,38 +73,21 @@ public class AuthorizationHelper {
 	 * @param query The id of the object that needs to be checked.
 	 * @param ability The kind of ability that is checked.
 	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecutionId query, @NonNull Ability ability) {
+	public static void authorize(@NonNull User user, @NonNull ManagedExecution query, @NonNull Ability ability) {
 		authorize(user, query, EnumSet.of(ability));
 	}
 
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
-	 * @param query The id of the object that needs to be checked.
+	 * @param execution The id of the object that needs to be checked.
 	 * @param abilities The kind of ability that is checked.
 	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecutionId query, @NonNull EnumSet<Ability> abilities) {
-		user.checkPermission(QueryPermission.onInstance(abilities, query));
-	}
+	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> execution, @NonNull EnumSet<Ability> abilities) {
 
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param query The object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedQuery query, @NonNull Ability ability) {
-		authorize(user, query.getId(), EnumSet.of(ability));
-	}
-
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param query The object that needs to be checked.
-	 * @param abilities The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedQuery query, @NonNull EnumSet<Ability> abilities) {
-		user.checkPermission(QueryPermission.onInstance(abilities, query.getId()));
+		if(!execution.getOwner().equals(user.getId())) {
+			user.checkPermission(QueryPermission.onInstance(abilities, execution.getId());
+		}
 	}
 
 	/**

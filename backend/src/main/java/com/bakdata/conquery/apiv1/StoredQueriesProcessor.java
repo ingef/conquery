@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +21,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -51,7 +54,9 @@ public class StoredQueriesProcessor {
 			.filter(StoredQueriesProcessor::canFrontendRender)
 			.filter(q -> q.getDataset().equals(datasetId))
 			.filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
-			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
+				// We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
+				// However, for other executions we check because those are probably shared.
+			.filter(q -> q.getOwner().equals(user.getId()) || user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
 			.flatMap(mq -> {
 				try {
 					return Stream.of(
@@ -84,12 +89,20 @@ public class StoredQueriesProcessor {
 		return false;
 	}
 
-	public void deleteQuery(Namespace namespace, ManagedExecutionId queryId) {
-		storage.removeExecution(queryId);
+	public void deleteQuery(ManagedExecutionId executionId, User user) {
+		ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId));
+
+		storage.removeExecution(executionId);
 	}
 	
 	public ExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
+
+		authorize(user, query, Ability.READ);
+		if(!query.getOwner().equals(user.getId())) {
+			user.checkPermission(QueryPermission.onInstance(Ability.READ, queryId));
+		}
+
 		if (query == null) {
 			return null;
 		}

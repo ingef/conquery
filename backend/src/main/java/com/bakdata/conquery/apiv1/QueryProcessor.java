@@ -108,9 +108,6 @@ public class QueryProcessor {
 		// Run the query on behalf of the user
 		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId(), config);
 
-		// Set abilities for submitted query
-		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
-
 		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
 		}
