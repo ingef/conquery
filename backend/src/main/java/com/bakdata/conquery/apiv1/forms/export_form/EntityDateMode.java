@@ -57,7 +57,7 @@ public class EntityDateMode extends Mode {
         return new EntityDateQuery(
                 getForm().getPrerequisite(),
                 AbsExportGenerator.createSubQuery(features),
-                ExportForm.getResolutionAlignmentMap(getForm().getResolution(), getAlignmentHint()),
+                ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
                 CDateRange.of(dateRange)
         );
     }
