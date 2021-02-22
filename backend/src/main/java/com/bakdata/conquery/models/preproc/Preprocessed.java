@@ -46,6 +46,7 @@ public class Preprocessed {
 
 	private static final ObjectReader CONTAINER_READER = Jackson.BINARY_MAPPER.readerFor(PreprocessedData.class);
 	private static final ObjectWriter CONTAINER_WRITER = Jackson.BINARY_MAPPER.writerFor(PreprocessedData.class);
+
 	private final InputFile file;
 	private final String name;
 	/**
@@ -56,11 +57,15 @@ public class Preprocessed {
 	private final PPColumn[] columns;
 	private final TableImportDescriptor descriptor;
 
-	// by-column
 	private final ColumnValues[] values;
-
-
+	/**
+	 * Per row store, entity.
+	 */
 	private final IntBigList rowEntities = new IntBigArrayBigList();
+
+	/**
+	 * Global Set of all processed entities (not necessarily all output entities, as they may have null values)
+	 */
 	private final IntSet entities = new IntAVLTreeSet();
 
 	private long rows = 0;
@@ -130,23 +135,25 @@ public class Preprocessed {
 	}
 
 	/**
-	 * Calculate beginning and end of
+	 * Calculate beginning and length of entities in output data.
 	 */
 	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntBigList rowEntities) {
-		int pos = 0;
+		int outIndex = 0;
 
 		for (int entity : entities) {
 
 			int length = 0;
 
+			// TODO this can be very detrimental to Performance, test this!
 			for (int inIndex = 0; inIndex < rowEntities.size64(); inIndex++) {
 				if (rowEntities.getInt(inIndex) != entity) {
 					continue;
 				}
 
-				entityStart.putIfAbsent(entity, pos);
+				// Since we're iterating the events from zero, we know this to be the start.
+				entityStart.putIfAbsent(entity, outIndex);
 
-				pos++;
+				outIndex++;
 				length++;
 			}
 
