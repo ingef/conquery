@@ -67,7 +67,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 											 .description("Optional arguments to do a single import step by hand. Overrides json configuration.");
 
 		group.addArgument("--in")
-			 .required(false)
+			 .required(true)
 			 .type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
 			 .help("Directory containing the input files (in csv or gzipped csv format).");
 
@@ -77,7 +77,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			 .help("Directory to write the output cqpp files to.");
 
 		group.addArgument("--desc")
-			 .required(false)
+			 .required(true)
 			 .type(new FileArgumentType().verifyCanRead())
 			 .nargs("*")
 			 .help("Directory containing the import description files (*.import.json).");
@@ -108,25 +108,15 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.singletonList("");
 
-		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
-			log.info("Preprocessing from command line config.");
+		log.info("Preprocessing from command line config.");
 
-			for (String tag : tags) {
-				for (File desc : namespace.<File>getList("desc")) {
-					descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
-							new PreprocessingDirectories(namespace.get("in"), desc, namespace.get("out"))
-					}, tag));
-				}
-			}
-
-		}
-		else {
-			for (String tag : tags) {
-				log.info("Preprocessing from config.json");
-				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag));
+		for (String tag : tags) {
+			for (File desc : namespace.<File>getList("desc")) {
+				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(),
+						new PreprocessingDirectories(namespace.get("in"), desc, namespace.get("out"))
+				, tag));
 			}
 		}
-
 
 		descriptors.removeIf(Predicate.not(Preprocessor::requiresProcessing));
 
@@ -180,20 +170,18 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag)
+	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories description, String tag)
 			throws IOException {
 		List<TableImportDescriptor> out = new ArrayList<>();
-		for (PreprocessingDirectories description : directories) {
 
-			File inDir = description.getDescriptionsDir().getAbsoluteFile();
-			final File[] files = inDir.isFile() ?
-								 new File[]{inDir} :
-								 inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
+		File inDir = description.getDescriptionsDir().getAbsoluteFile();
+		final File[] files = inDir.isFile() ?
+							 new File[]{inDir} :
+							 inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
 
-			for (File descriptionFile : files) {
+		for (File descriptionFile : files) {
 
-				tryExtractDescriptor(validator, tag, description, descriptionFile).ifPresent(out::add);
-			}
+			tryExtractDescriptor(validator, tag, description, descriptionFile).ifPresent(out::add);
 		}
 		return out;
 	}
