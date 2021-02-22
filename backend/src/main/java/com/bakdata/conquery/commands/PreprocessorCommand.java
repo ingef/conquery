@@ -41,11 +41,10 @@ import net.sourceforge.argparse4j.inf.Subparser;
 @FieldNameConstants
 public class PreprocessorCommand extends ConqueryCommand {
 
-	private ExecutorService pool;
 	private final List<String> failed = Collections.synchronizedList(new ArrayList<>());
 	private final List<String> success = Collections.synchronizedList(new ArrayList<>());
 	private final List<String> missing = Collections.synchronizedList(new ArrayList<>());
-	private final List<String> skipped = Collections.synchronizedList(new ArrayList<>());
+	private ExecutorService pool;
 	private boolean isFailFast = false;
 
 	public PreprocessorCommand() {
@@ -64,34 +63,35 @@ public class PreprocessorCommand extends ConqueryCommand {
 	public void configure(Subparser subparser) {
 		super.configure(subparser);
 
-		final ArgumentGroup	group =	subparser.addArgumentGroup("Preprocessing CLI Config")
-												.description("Optional arguments to do a single import step by hand. Overrides json configuration.");
+		final ArgumentGroup group = subparser.addArgumentGroup("Preprocessing CLI Config")
+											 .description("Optional arguments to do a single import step by hand. Overrides json configuration.");
 
 		group.addArgument("--in")
-				.required(false)
-				.type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
-				.help("Directory containing the input files (in csv or gzipped csv format).");
+			 .required(false)
+			 .type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
+			 .help("Directory containing the input files (in csv or gzipped csv format).");
 
 		group.addArgument("--out")
-				.required(false)
-				.type(new FileArgumentType().verifyIsDirectory().verifyCanCreate().verifyCanWrite())
-				.help("Directory to write the output cqpp files to.");
+			 .required(false)
+			 .type(new FileArgumentType().verifyIsDirectory().verifyCanCreate().verifyCanWrite())
+			 .help("Directory to write the output cqpp files to.");
 
 		group.addArgument("--desc")
-				.required(false)
-				.type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
-				.help("Directory containing the import description files (*.import.json).");
+			 .required(false)
+			 .type(new FileArgumentType().verifyCanRead())
+			 .nargs('*')
+			 .help("Directory containing the import description files (*.import.json).");
 
 		group.addArgument("--tag")
-				.required(false)
-				.type(new StringArgumentType())
-				.nargs("*")
-				.help("Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
+			 .required(false)
+			 .type(new StringArgumentType())
+			 .nargs("*")
+			 .help("Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
 
 		group.addArgument("--fast-fail")
-	        	.action(Arguments.storeTrue())
-	        	.help("Stop preprocessing and exit with failure if an error occures that prevents the generation of a cqpp.");
-		
+			 .action(Arguments.storeTrue())
+			 .help("Stop preprocessing and exit with failure if an error occures that prevents the generation of a cqpp.");
+
 	}
 
 	@Override
@@ -104,9 +104,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
-		isFailFast = namespace.get("fast-fail") == null ? false : namespace.get("fast-fail");
+		isFailFast = namespace.get("fast-fail") != null && namespace.<Boolean>get("fast-fail");
 
-		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.singletonList(null);
+		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.emptyList();
 
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
@@ -118,11 +118,14 @@ public class PreprocessorCommand extends ConqueryCommand {
 			}
 
 		}
-		else {
+		else if(!tags.isEmpty()) {
 			for (String tag : tags) {
 				log.info("Preprocessing from config.json");
 				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag));
 			}
+		}
+		else {
+			descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), ""));
 		}
 
 
@@ -143,7 +146,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 				}
 				catch (FileNotFoundException e) {
 					log.warn("Did not find file `{}` for preprocessing.", e.getMessage());
-					missing.add(descriptor.toString());
+					failed.add(descriptor.toString());
 				}
 				catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
@@ -159,27 +162,27 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 
 		ConqueryMDC.clearLocation();
-		
-		if(!skipped.isEmpty()) {			
-			log.info("Skipped {} Imports because not all source files existed for a tag", skipped.size());
-			skipped.forEach(desc -> log.trace("\tSkipped Preprocessing for {}", desc));
-		}
 
-		if(!success.isEmpty()){
+
+		if (!success.isEmpty()) {
 			log.info("Successfully Preprocess {} Jobs:", success.size());
 			success.forEach(desc -> log.info("\tSucceeded Preprocessing for {}", desc));
 		}
-		
-		if(!missing.isEmpty()){
-			log.warn("Did not find {} Files",missing.size());
+
+		if (!missing.isEmpty()) {
+			log.warn("Did not find {} Files", missing.size());
 			missing.forEach(desc -> log.warn("\tDid not find file for {}", desc));
 		}
 
-		if (!failed.isEmpty()) {
+		if (isFailed()) {
 			log.error("Failed {} Preprocessing Jobs:", failed.size());
 			failed.forEach(desc -> log.error("\tFailed Preprocessing for {}", desc));
-			System.exit(1); 
+			System.exit(1);
 		}
+	}
+
+	private boolean isFailed() {
+		return !failed.isEmpty();
 	}
 
 	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag)
@@ -200,19 +203,20 @@ public class PreprocessorCommand extends ConqueryCommand {
 		return out;
 	}
 
-	private Optional<TableImportDescriptor> tryExtractDescriptor(Validator validator, String tag, PreprocessingDirectories description, File descriptionFile) throws IOException {
+	private Optional<TableImportDescriptor> tryExtractDescriptor(Validator validator, String tag, PreprocessingDirectories description, File descriptionFile)
+			throws IOException {
 		InputFile file = InputFile.fromDescriptionFile(descriptionFile, description, tag);
 		try {
 			TableImportDescriptor descr = file.readDescriptor(validator, tag);
 			// Test if all Inputs exist
-			for(TableInputDescriptor inputs : descr.getInputs()) {
-				if(!inputs.getSourceFile().exists()) {
+			for (TableInputDescriptor inputs : descr.getInputs()) {
+				if (!inputs.getSourceFile().exists()) {
 					log.trace("Skipping import {} because source file {} does not exists.", descriptionFile, inputs.getSourceFile());
-					skipped.add(new StringBuilder().append(descriptionFile).append(" with tag ").append(tag).toString());
+					failed.add(new StringBuilder().append(descriptionFile).append(" with tag ").append(tag).toString());
 					return Optional.empty();
 				}
 			}
-			
+
 			descr.setInputFile(file);
 
 			// Override name to tag if present
@@ -224,7 +228,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 		catch (Exception e) {
 			log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
-			if(isFailFast) {
+			if (isFailFast) {
 				System.exit(1);
 			}
 			failed.add(file.getDescriptionFile().toString());
