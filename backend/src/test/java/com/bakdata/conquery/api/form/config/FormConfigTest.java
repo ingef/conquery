@@ -335,7 +335,7 @@ public class FormConfigTest {
 		FormConfigId formId2 = processor.addConfig(user, datasetId, formConfig2);
 		
 		// EXECUTE
-		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptyList());
+		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptySet());
 		
 		// CHECK
 		assertThat(response).containsExactlyInAnyOrder(
