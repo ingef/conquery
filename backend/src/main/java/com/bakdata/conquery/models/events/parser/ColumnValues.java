@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.events.parser;
 
+import java.util.BitSet;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.roaringbitmap.RoaringBitmap;
 
 /**
  * per Column Store to encode null in auxiliary bitset, allowing primitive storage.
@@ -12,10 +13,10 @@ import org.roaringbitmap.RoaringBitmap;
 public abstract class ColumnValues<T> {
 
 	private final T nullValue;
-	private final RoaringBitmap nulls = new RoaringBitmap();
+	private final BitSet nulls = new BitSet();
 
 	public boolean isNull(int event) {
-		return nulls.contains(event);
+		return nulls.get(event);
 	}
 
 	public final T get(int event) {
@@ -28,7 +29,7 @@ public abstract class ColumnValues<T> {
 		int event = size();
 
 		if (value == null) {
-			nulls.add(event);
+			nulls.set(event);
 			write(nullValue);
 		}
 		else {
@@ -45,7 +46,7 @@ public abstract class ColumnValues<T> {
 	protected abstract void write(T obj);
 
 	protected int countNulls() {
-		return nulls.getCardinality();
+		return nulls.cardinality();
 	}
 
 	protected abstract int countValues();

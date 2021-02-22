@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntBigArrayBigList;
@@ -160,6 +161,13 @@ public class Preprocessed {
 													  .parallel()
 													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
 
+		Int2IntMap entityInStarts = new Int2IntOpenHashMap(entities.size());
+
+		for (long pos = 0, size = rowEntities.size64(); pos < size; pos++) {
+			int entity = rowEntities.getInt(pos);
+			entityInStarts.putIfAbsent(entity, (int) pos);
+		}
+
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = columns[colIdx];
 			final ColumnValues columnValues = values[colIdx];
@@ -171,14 +179,13 @@ public class Preprocessed {
 						final int start = entityStart.get(entity);
 						final int length = entityLength.get(entity);
 
-						int offset = 0;
+						int inBegin = entityInStarts.get(entity);
 
-						for (int inIndex = 0; inIndex < rowEntities.size64(); inIndex++) {
+						for (int offset = 0; offset < length; offset++) {
+
+							int inIndex = inBegin + offset;
+
 							// Early exit
-							if (offset >= length) {
-								break;
-							}
-
 							if (rowEntities.getInt(inIndex) != entity) {
 								continue;
 							}
