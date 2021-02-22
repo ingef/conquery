@@ -1,8 +1,12 @@
 package com.bakdata.conquery.util.support;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.Closeable;
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -18,7 +22,9 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.dropwizard.testing.DropwizardTestSupport;
+import io.dropwizard.cli.Cli;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.util.JarLocation;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,14 +50,19 @@ public class StandaloneSupport implements Closeable {
 		testConquery.waitUntilWorkDone();
 	}
 
-	public void preprocessTmp() throws Exception {
-		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
-			Conquery.class,
-			config,
-			app ->  new PreprocessorCommand(MoreExecutors.newDirectExecutorService())
-		);
-		prepro.before();
-		prepro.after();
+	public void preprocessTmp(File tmpDir) throws Exception {
+		// Setup necessary mock
+		final JarLocation location = mock(JarLocation.class);
+		when(location.getVersion()).thenReturn(Optional.of("1.0.0"));
+
+		// Add commands you want to test
+		final Bootstrap<ConqueryConfig> bootstrap = new Bootstrap<>(new Conquery());
+
+		bootstrap.addCommand(new PreprocessorCommand(MoreExecutors.newDirectExecutorService()));
+
+		final Cli cli = new Cli(location, bootstrap, System.out, System.err);
+
+		cli.run("preprocess", "--in", tmpDir.toString(), "--desc", tmpDir.toString(), "--out", tmpDir.toString());
 	}
 
 	@Override

@@ -79,7 +79,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		group.addArgument("--desc")
 			 .required(false)
 			 .type(new FileArgumentType().verifyCanRead())
-			 .nargs('*')
+			 .nargs("*")
 			 .help("Directory containing the import description files (*.import.json).");
 
 		group.addArgument("--tag")
@@ -106,26 +106,25 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		isFailFast = namespace.get("fast-fail") != null && namespace.<Boolean>get("fast-fail");
 
-		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.emptyList();
+		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.singletonList("");
 
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
 
 			for (String tag : tags) {
-				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
-						new PreprocessingDirectories(namespace.get("in"), namespace.get("desc"), namespace.get("out"))
-				}, tag));
+				for (File desc : namespace.<File>getList("desc")) {
+					descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
+							new PreprocessingDirectories(namespace.get("in"), desc, namespace.get("out"))
+					}, tag));
+				}
 			}
 
 		}
-		else if(!tags.isEmpty()) {
+		else {
 			for (String tag : tags) {
 				log.info("Preprocessing from config.json");
 				descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag));
 			}
-		}
-		else {
-			descriptors.addAll(findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), ""));
 		}
 
 
@@ -181,10 +180,6 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	private boolean isFailed() {
-		return !failed.isEmpty();
-	}
-
 	public List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag)
 			throws IOException {
 		List<TableImportDescriptor> out = new ArrayList<>();
@@ -201,6 +196,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 			}
 		}
 		return out;
+	}
+
+	private boolean isFailed() {
+		return !failed.isEmpty();
 	}
 
 	private Optional<TableImportDescriptor> tryExtractDescriptor(Validator validator, String tag, PreprocessingDirectories description, File descriptionFile)

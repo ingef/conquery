@@ -209,7 +209,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 
 			//preprocess
-			conquery.preprocessTmp();
+			conquery.preprocessTmp(conquery.getConfig().getPreprocessor().getDirectories()[0].getCsvDir());
 
 			//import preprocessedFiles
 			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), inputFile.getPreprocessedFile());

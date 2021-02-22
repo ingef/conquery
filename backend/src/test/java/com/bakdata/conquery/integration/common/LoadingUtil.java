@@ -118,7 +118,7 @@ public class LoadingUtil {
 			preprocessedFiles.add(inputFile.getPreprocessedFile());
 		}
 		// preprocess
-		support.preprocessTmp();
+		support.preprocessTmp(support.getConfig().getPreprocessor().getDirectories()[0].getCsvDir());
 		//clear the MDC location from the preprocessor
 		ConqueryMDC.clearLocation();
 
