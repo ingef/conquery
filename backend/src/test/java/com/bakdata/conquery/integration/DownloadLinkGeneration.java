@@ -46,7 +46,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{			
 			// Try to generate a download link: should not be possible, because the execution isn't run yet
-			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), user);
+			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), user, datasetAbilities);
 			assertThat(url).isEmpty();
 		}
 
@@ -54,7 +54,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 			// Thinker the state of the execution and try again: still not possible because of missing permissions
 			exec.setState(ExecutionState.DONE);
 			
-			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), user);
+			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), user, datasetAbilities);
 			assertThat(url).isEmpty();
 		}
 
@@ -64,7 +64,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 				conquery.getMetaStorage(),
 				DatasetPermission.onInstance(Set.of(Ability.READ, Ability.DOWNLOAD), conquery.getDataset().getId()));
 			
-			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), user);
+			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), user, datasetAbilities);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
 			assertThat(url).contains(new URL(String.format("%s/datasets/%s/result/%s.csv", BASE, conquery.getDataset().getId(), exec.getId())));
 		}

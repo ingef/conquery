@@ -1,12 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -30,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -290,5 +285,34 @@ public class AuthorizationHelper {
 				.map(Permission.class::cast)
 				.collect(Collectors.toList());
 		user.checkPermissions(perms);
+	}
+
+
+	/**
+	 * Calculates the abilities on all datasets a user has based on its permissions.
+	 */
+	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(User user, DatasetRegistry datasetRegistry) {
+		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
+		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
+			boolean[] abilitiesCheck = user.isPermitted(List.of(
+					DatasetPermission.onInstance(Ability.READ, dataset.getId()),
+					DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()),
+					DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId())
+			));
+			Set<Ability> abilities = datasetAbilities.computeIfAbsent(dataset.getId(), (k) -> new HashSet<>());
+			if(abilitiesCheck[0]) {
+				// READ
+				abilities.add(Ability.READ);
+			}
+			if (abilitiesCheck[1]){
+				// DOWNLOAD
+				abilities.add(Ability.DOWNLOAD);
+			}
+			if (abilitiesCheck[2]) {
+				// PRESERVE_ID
+				abilities.add(Ability.PRESERVE_ID);
+			}
+		}
+		return datasetAbilities;
 	}
 }

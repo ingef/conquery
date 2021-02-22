@@ -72,7 +72,7 @@ public class StoredQuerySingleInfo {
 			false, // there is no mechanism/definition yet for system queries
 			query.getLabel() == null,
 			Optional.ofNullable(query.getOwner()).map(owner -> metaStorage.getUser(owner)).map(User::getLabel).orElse(null),
-			query.getDownloadURL(url, user).orElse(null),
+			query.getDownloadURL(url, user, datasetAbilities).orElse(null),
 			permittedGroups,
 			query.getQuery(),
 			query.getTags(),
