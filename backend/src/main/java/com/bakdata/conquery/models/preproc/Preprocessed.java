@@ -26,10 +26,10 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntBigArrayBigList;
+import it.unimi.dsi.fastutil.ints.IntBigList;
 import it.unimi.dsi.fastutil.ints.IntIterable;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -59,8 +59,8 @@ public class Preprocessed {
 	// by-column
 	private final ColumnValues[] values;
 
-	// by-entity
-	private final Int2ObjectMap<EntityPositions> entries;
+
+	private final IntBigList rowEntities = new IntBigArrayBigList();
 	private final IntSet entities = new IntAVLTreeSet();
 
 	private long rows = 0;
@@ -76,7 +76,6 @@ public class Preprocessed {
 		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(parserConfig);
 
 		// pid and columns
-		entries = new Int2ObjectAVLTreeMap<>();
 		values = new ColumnValues[columns.length];
 
 		for (int index = 0; index < input.getWidth(); index++) {
@@ -109,9 +108,9 @@ public class Preprocessed {
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
-		calculateEntitySpans(entityStart, entityLength);
+		calculateEntitySpans(entityStart, entityLength, entities, rowEntities);
 
-		Map<String, ColumnStore> columnStores = combineStores(entityStart);
+		Map<String, ColumnStore> columnStores = combineStores(entityStart, entityLength);
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
@@ -133,176 +132,191 @@ public class Preprocessed {
 	/**
 	 * Calculate beginning and end of
 	 */
-	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
-		int start = 0;
+	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntBigList rowEntities) {
+		int pos = 0;
 
 		for (int entity : entities) {
-			final EntityPositions events = entries.get(entity);
 
-			if (events == null) {
-				continue; //TODO is this no data or just no data for column?
+			int length = 0;
+
+			for (int inIndex = 0; inIndex < rowEntities.size64(); inIndex++) {
+				if (rowEntities.getInt(inIndex) != entity) {
+					continue;
+				}
+
+				entityStart.putIfAbsent(entity, pos);
+
+				pos++;
+				length++;
 			}
 
-			final int length = events.length();
-
-			entityStart.put(entity, start);
-			entityLength.put(entity, length);
-
-			start += length;
+			entityLength.put(entity,length);
 		}
 	}
 
-	/**
-	 * Combine raw by-Entity data into column stores, appropriately formatted.
-	 *
-	 * @param entityStart
-	 */
-	@SuppressWarnings("rawtypes")
-	private Map<String, ColumnStore> combineStores(Int2IntMap entityStart) {
-		Map<String, ColumnStore> columnStores = Arrays.stream(columns)
-													  .parallel()
-													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
+			/**
+			 * Combine raw by-Entity data into column stores, appropriately formatted.
+			 *
+			 */
+			@SuppressWarnings("rawtypes")
+			private Map<String, ColumnStore> combineStores(Int2IntMap entityStart, Int2IntMap entityLength){
+				Map<String, ColumnStore> columnStores = Arrays.stream(columns)
+															  .parallel()
+															  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
 
-		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
-			final PPColumn ppColumn = this.columns[colIdx];
-			final ColumnValues columnValues = values[colIdx];
+				for (int colIdx = 0; colIdx < columns.length; colIdx++) {
+					final PPColumn ppColumn = columns[colIdx];
+					final ColumnValues columnValues = values[colIdx];
 
-			final ColumnStore store = columnStores.get(ppColumn.getName());
+					final ColumnStore store = columnStores.get(ppColumn.getName());
 
-			entities.intParallelStream()
-					.forEach((int entity) -> {
-						final EntityPositions entityIndices = entries.get(entity);
+					entities.intParallelStream()
+							.forEach((int entity) -> {
+								final int start = entityStart.get(entity);
+								final int length =  entityLength.get(entity);
 
-						if (entityIndices == null) {
-							return;
-						}
+								int offset = 0;
 
-						int pos = entityStart.get(entity);
+								for (int inIndex = 0; inIndex < rowEntities.size64(); inIndex++) {
+									// Early exit
+									if(offset >= length) {
+										break;
+									}
 
-						for (int inIndex : entityIndices) {
+									if (rowEntities.getInt(inIndex) != entity) {
+										continue;
+									}
 
-							if (columnValues.isNull(inIndex)) {
-								store.setNull(pos);
-							}
-							else {
-								final Object raw = columnValues.get(inIndex);
-								ppColumn.getParser().setValue(store, pos, raw);
-							}
+									int pos = start + offset;
 
-							pos++;
-						}
-					});
-		}
-		return columnStores;
-	}
+									if (columnValues.isNull(inIndex)) {
+										store.setNull(pos);
+									}
+									else {
+										final Object raw = columnValues.get(inIndex);
+										ppColumn.getParser().setValue(store, pos, raw);
+									}
 
-	private Dictionary encodePrimaryDictionary() {
-		log.info("finding optimal column types");
-
-		primaryColumn.applyEncoding(StringTypeEncoded.Encoding.UTF8);
-
-		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
-		log.info("\tPrimaryColumn -> {}", primaryDictionary);
-		return primaryDictionary;
-	}
-
-	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore> columnStores) {
-		final Map<String, Dictionary> collect = new HashMap<>();
-		for (Map.Entry<String, ColumnStore> entry : columnStores.entrySet()) {
-			if (!(entry.getValue() instanceof StringStore)) {
-				continue;
+									offset++;
+								}
+							});
+				}
+				return columnStores;
 			}
 
-			final Dictionary dictionary = ((StringStore) entry.getValue()).getUnderlyingDictionary();
 
-			if (dictionary == null) {
-				continue;
+			private Dictionary encodePrimaryDictionary () {
+				log.info("finding optimal column types");
+
+				primaryColumn.applyEncoding(StringTypeEncoded.Encoding.UTF8);
+
+				final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
+				log.info("\tPrimaryColumn -> {}", primaryDictionary);
+				return primaryDictionary;
 			}
 
-			collect.put(entry.getKey(), dictionary);
-		}
+			private static Map<String, Dictionary> collectDictionaries (Map < String, ColumnStore > columnStores){
+				final Map<String, Dictionary> collect = new HashMap<>();
+				for (Map.Entry<String, ColumnStore> entry : columnStores.entrySet()) {
+					if (!(entry.getValue() instanceof StringStore)) {
+						continue;
+					}
 
-		return collect;
-	}
+					final Dictionary dictionary = ((StringStore) entry.getValue()).getUnderlyingDictionary();
 
-	private void writeHeader(OutputStream out) {
-		int hash = descriptor.calculateValidityHash();
+					if (dictionary == null) {
+						continue;
+					}
 
-		PreprocessedHeader header = new PreprocessedHeader(
-				descriptor.getName(),
-				descriptor.getTable(),
-				rows,
-				this.columns,
-				hash
-		);
+					collect.put(entry.getKey(), dictionary);
+				}
 
-		try {
-			Jackson.BINARY_MAPPER.writeValue(out, header);
-			out.flush();
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to serialize header " + header, e);
-		}
-	}
+				return collect;
+			}
 
-	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
+			private void writeHeader (OutputStream out){
+				int hash = descriptor.calculateValidityHash();
+
+				PreprocessedHeader header = new PreprocessedHeader(
+						descriptor.getName(),
+						descriptor.getTable(),
+						rows,
+						this.columns,
+						hash
+				);
+
+				try {
+					Jackson.BINARY_MAPPER.writeValue(out, header);
+					out.flush();
+				}
+				catch (Exception e) {
+					throw new RuntimeException("Failed to serialize header " + header, e);
+				}
+			}
+
+			public static void writeData (OutputStream out1, Int2IntMap entityStart, Int2IntMap
+			entityLength, Map < String, ColumnStore > columnStores, Dictionary primaryDictionary, Map < String, Dictionary > dicts)
 			throws IOException {
-		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(out1))) {
-			CONTAINER_WRITER.writeValue(out, new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts));
-		}
-	}
-
-	public synchronized int addPrimary(int primary) {
-		primaryColumn.addLine(primary);
-		entities.add(primary);
-		return primary;
-	}
-
-	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
-		int event = -1;
-
-		for (int col = 0; col < outRow.length; col++) {
-			final int idx = values[col].add(outRow[col]);
-
-			// We assert that all columns are aligned.
-			if (event == -1) {
-				event = idx;
-			}
-			else if (idx != event) {
-				throw new IllegalStateException("Columns are not aligned");
+				try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(out1))) {
+					CONTAINER_WRITER.writeValue(out, new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts));
+				}
 			}
 
-			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
-			columns[col].getParser().addLine(outRow[col]);
+			public synchronized int addPrimary ( int primary){
+				primaryColumn.addLine(primary);
+				entities.add(primary);
+				return primary;
+			}
+
+			public synchronized void addRow ( int primaryId, PPColumn[] columns, Object[]outRow){
+				int event = -1;
+
+				for (int col = 0; col < outRow.length; col++) {
+					final int idx = values[col].add(outRow[col]);
+
+					// We assert that all columns are aligned.
+					if (event == -1) {
+						event = idx;
+					}
+					else if (idx != event) {
+						throw new IllegalStateException("Columns are not aligned");
+					}
+
+					log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
+					columns[col].getParser().addLine(outRow[col]);
+				}
+
+				if(event != rowEntities.size64()){
+					throw new IllegalStateException("Entities and Columns are not aligned.");
+				}
+
+				rowEntities.add(primaryId);
+
+				//update stats
+				rows++;
+			}
+
+			/**
+			 * Offset encoded positions, in the assumption that entity values are stored close to each other.
+			 */
+			@RequiredArgsConstructor
+			private static class EntityPositions implements IntIterable {
+				private final IntList offsets = new IntArrayList();
+
+				public void add(int event) {
+					offsets.add(event);
+				}
+
+				public int length() {
+					return offsets.size();
+				}
+
+
+				@Override
+				public IntIterator iterator() {
+					return offsets.iterator();
+				}
+			}
+
+
 		}
-
-		entries.computeIfAbsent(primaryId, (id) -> new EntityPositions()).add(event);
-
-		//update stats
-		rows++;
-	}
-
-	/**
-	 * Offset encoded positions, in the assumption that entity values are stored close to each other.
-	 */
-	@RequiredArgsConstructor
-	private static class EntityPositions implements IntIterable {
-		private final IntList offsets = new IntArrayList();
-
-		public void add(int event) {
-			offsets.add(event);
-		}
-
-		public int length() {
-			return offsets.size();
-		}
-
-
-		@Override
-		public IntIterator iterator() {
-			return offsets.iterator();
-		}
-	}
-
-
-}
