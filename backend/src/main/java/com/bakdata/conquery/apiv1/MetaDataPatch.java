@@ -56,7 +56,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	}
 	
 	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID>& Owned> Consumer<T> buildChain(Consumer<T> patchConsumerChain,MetaStorage storage, User user, INST instance, PermissionCreator<ID> permissionCreator){
-		boolean owned = instance.getOwner().equals(user.getId());
+		boolean owned = user.isOwner(instance);
 		if(getTags() != null && (owned || user.isPermitted(permissionCreator.apply(Ability.TAG.asSet(), instance.getId())))) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}

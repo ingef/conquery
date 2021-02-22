@@ -149,7 +149,7 @@ public class QueryProcessor {
 
 	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
 		query.initExecutable(datasetRegistry, config);
-		return query.buildStatusFull(storage, urlb, user, datasetRegistry);
+		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user,datasetRegistry));
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {

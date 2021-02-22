@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.FORM_CONFIG;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -54,7 +55,7 @@ public class FormConfigResource {
 	}
 	
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth User user, @QueryParam("formType") List<String> formType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth User user, @QueryParam("formType") Set<String> formType) {
 		return processor.getConfigsByFormType(user, dataset, formType);
 	}
 
