@@ -118,7 +118,7 @@ public class ArrowResultGenerationTest {
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-                        // We represent a list as a flat string at the moment. See ResultType.ListT::getArrowFieldType
+                        // TODO: We represent a list as a flat string at the moment. See ResultType.ListT::getArrowFieldType
                         new Field("LIST[BOOLEAN]", FieldType.nullable(new ArrowType.Utf8()), null)
                         // new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
                 )
