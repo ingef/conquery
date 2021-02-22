@@ -199,8 +199,6 @@ public class Preprocessed {
 								final Object raw = columnValues.get(inIndex);
 								ppColumn.getParser().setValue(store, pos, raw);
 							}
-
-							offset++;
 						}
 					});
 		}
