@@ -27,13 +27,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntBigArrayBigList;
-import it.unimi.dsi.fastutil.ints.IntBigList;
 import it.unimi.dsi.fastutil.ints.IntIterable;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -62,12 +60,12 @@ public class Preprocessed {
 	/**
 	 * Per row store, entity.
 	 */
-	private final IntBigList rowEntities = new IntBigArrayBigList();
+	private final IntList rowEntities = new IntArrayList();
 
 	/**
 	 * Global Set of all processed entities (not necessarily all output entities, as they may have null values)
 	 */
-	private final IntSet entities = new IntAVLTreeSet();
+	private final IntSet entities = new IntOpenHashSet();
 
 	private long rows = 0;
 
@@ -138,9 +136,9 @@ public class Preprocessed {
 	/**
 	 * Calculate beginning and length of entities in output data.
 	 */
-	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntBigList rowEntities) {
+	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntList rowEntities) {
 		for (int entity : rowEntities) {
-			entityLength.compute(entity, (ignored, length) -> length == null ? 1 : length + 1);
+			entityLength.mergeInt(entity,0, (ignored, length) -> length + 1);
 		}
 
 		int outIndex = 0;
@@ -163,9 +161,9 @@ public class Preprocessed {
 
 		Int2IntMap entityInStarts = new Int2IntOpenHashMap(entities.size());
 
-		for (long pos = 0, size = rowEntities.size64(); pos < size; pos++) {
+		for (int pos = 0, size = rowEntities.size(); pos < size; pos++) {
 			int entity = rowEntities.getInt(pos);
-			entityInStarts.putIfAbsent(entity, (int) pos);
+			entityInStarts.putIfAbsent(entity, pos);
 		}
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
@@ -287,7 +285,7 @@ public class Preprocessed {
 			columns[col].getParser().addLine(outRow[col]);
 		}
 
-		if (event != rowEntities.size64()) {
+		if (event != rowEntities.size()) {
 			throw new IllegalStateException("Entities and Columns are not aligned.");
 		}
 
