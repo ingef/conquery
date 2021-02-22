@@ -17,11 +17,7 @@ import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.auth.permissions.*;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
@@ -59,14 +55,26 @@ public class FormConfigProcessor {
 	 * The provided overview does not contain the configured values for the form, just the meta data.
 	 * @param user The user vor which the overview is created.
 	 * @param dataset 
-	 * @param formType Optional form type to filter the overview to that specific type.
+	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Optional<String> formType){
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Set<String> requestedFormType){
+		Set<String> allowedFormTypes = new HashSet<>();
+		for(String formType : FormScanner.FRONTEND_FORM_CONFIGS.keySet()) {
+			if(user.isPermitted(FormPermission.onInstance(Ability.CREATE, formType))){
+				allowedFormTypes.add(formType);
+			}
+		}
+
+		if (requestedFormType.isEmpty()) {
+			requestedFormType = allowedFormTypes;
+		}
+
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
 			.filter(c -> dataset.equals(c.getDataset()))
 			.filter(c -> user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
-		if(formType.isPresent()) {
-			stream = stream.filter(c -> c.getFormType().equals(formType.get()));
+		if(!requestedFormType.isEmpty()) {
+
+			stream = stream.filter(c -> requestedFormType.contains(c.getFormType()));
 		}
 		
 		return stream.map(c -> c.overview(storage, user));	
