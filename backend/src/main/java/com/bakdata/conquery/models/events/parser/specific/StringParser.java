@@ -4,8 +4,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,8 +25,9 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefi
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.google.common.base.Strings;
-import com.google.common.collect.HashBiMap;
 import com.jakewharton.byteunits.BinaryByteUnit;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -45,7 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 @ToString(callSuper = true, of = {"encoding", "prefix", "suffix"})
 public class StringParser extends Parser<Integer, StringStore> {
 
-	private Map<String, Integer> strings = HashBiMap.create();
+	private Object2IntMap<String> strings = new Object2IntOpenHashMap<>();
 
 	private List<byte[]> decoded;
 	private Encoding encoding;
@@ -88,15 +87,15 @@ public class StringParser extends Parser<Integer, StringStore> {
 		//remove prefix and suffix
 		if (!StringUtils.isEmpty(prefix) || !StringUtils.isEmpty(suffix)) {
 			log.debug("Reduced strings by the '{}' prefix and '{}' suffix", prefix, suffix);
-			Map<String, Integer> oldStrings = strings;
-			strings = HashBiMap.create(oldStrings.size());
-			for (Entry<String, Integer> e : oldStrings.entrySet()) {
+			Object2IntMap<String> oldStrings = strings;
+			strings = new Object2IntOpenHashMap<>(oldStrings.size());
+			for (Object2IntMap.Entry<String> e : oldStrings.object2IntEntrySet()) {
 				strings.put(
 						e.getKey().substring(
 								prefix.length(),
 								e.getKey().length() - suffix.length()
 						),
-						e.getValue()
+						e.getIntValue()
 				);
 
 			}
