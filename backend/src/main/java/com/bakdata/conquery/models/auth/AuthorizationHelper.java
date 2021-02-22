@@ -86,15 +86,14 @@ public class AuthorizationHelper {
 	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> execution, @NonNull EnumSet<Ability> abilities) {
 
 		if(!execution.getOwner().equals(user.getId())) {
-			user.checkPermission(QueryPermission.onInstance(abilities, execution.getId());
+			user.checkPermission(QueryPermission.onInstance(abilities, execution.getId()));
 		}
 	}
 
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
-	 * @param query The object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
+	 * @param toBeChecked The permission that is checked
 	 */
 	public static void authorize(@NonNull User user, @NonNull ConqueryPermission toBeChecked) {
 		user.checkPermission(toBeChecked);
@@ -265,7 +264,7 @@ public class AuthorizationHelper {
 
 	/**
 	 * Checks if an execution is allowed to be downloaded by a user.
-	 * This checks all used {@link DatasetId}s for the {@link Ability.DOWNLOAD} on the user.
+	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
 	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
 		List<Permission> perms = exec.getUsedNamespacedIds().stream()
@@ -279,7 +278,7 @@ public class AuthorizationHelper {
 
 	/**
 	 * Checks if a {@link Visitable} has only references to {@link Dataset}s a user is allowed to read.
-	 * This checks all used {@link DatasetId}s for the {@link Ability.READ} on the user.
+	 * This checks all used {@link DatasetId}s for the {@link Ability#READ} on the user.
 	 */
 	public static void authorizeReadDatasets(@NonNull User user, @NonNull Visitable visitable) {
 		NamespacedIdCollector collector = new NamespacedIdCollector();
