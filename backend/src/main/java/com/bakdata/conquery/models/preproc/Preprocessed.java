@@ -138,7 +138,7 @@ public class Preprocessed {
 	 */
 	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntList rowEntities) {
 		for (int entity : rowEntities) {
-			entityLength.mergeInt(entity,0, (ignored, length) -> length + 1);
+			entityLength.mergeInt(entity,1, (ignored, length) -> length + 1);
 		}
 
 		int outIndex = 0;
