@@ -9,7 +9,10 @@ import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -51,13 +54,23 @@ public class NumberTypeGuesser extends StringTypeGuesser {
 
 			IntegerStore decision = numberParser.findBestType();
 
-			final StringTypeNumber type = new StringTypeNumber(range, decision, p.getStrings().inverse());
-
+			Range<Integer> finalRange = range;
 			return new Guess(
-					type,
+					null,
 					decision.estimateMemoryConsumptionBytes(),
 					0
-			);
+			){
+				@Override
+				public StringStore getType() {
+
+					Int2ObjectMap<String> inverse = new Int2ObjectOpenHashMap<>(p.getStrings().size());
+					p.getStrings().forEach((key, value) -> inverse.putIfAbsent((int) value,key));
+
+					final StringTypeNumber type = new StringTypeNumber(finalRange, decision, inverse);
+
+					return type;
+				}
+			};
 		}
 		catch (NumberFormatException e) {
 			return null;

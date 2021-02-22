@@ -27,7 +27,6 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefi
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.Getter;
@@ -46,7 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 @ToString(callSuper = true, of = {"encoding", "prefix", "suffix"})
 public class StringParser extends Parser<Integer, StringStore> {
 
-	private BiMap<String, Integer> strings = HashBiMap.create();
+	private Map<String, Integer> strings = HashBiMap.create();
 
 	private List<byte[]> decoded;
 	private Encoding encoding;
