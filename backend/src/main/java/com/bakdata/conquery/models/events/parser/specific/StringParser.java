@@ -26,6 +26,8 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingl
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
@@ -46,6 +48,8 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	private Object2IntMap<String> strings = new Object2IntOpenHashMap<>();
 
+	private IntSet registered = new IntOpenHashSet();
+
 	private List<byte[]> decoded;
 	private Encoding encoding;
 	private String prefix;
@@ -60,6 +64,11 @@ public class StringParser extends Parser<Integer, StringStore> {
 		return strings.computeIfAbsent(value, this::processSingleValue);
 	}
 
+	@Override
+	protected void registerValue(Integer v) {
+		registered.add(v.intValue());
+	}
+
 	public int processSingleValue(String value) {
 		//set longest common prefix and suffix
 		prefix = Strings.commonPrefix(value, Objects.requireNonNullElse(prefix, value));
@@ -71,6 +80,8 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	@Override
 	protected StringStore decideType() {
+
+		strings.values().removeIf(id -> !registered.contains(id));
 
 		//check if a singleton type is enough
 		if (strings.isEmpty()) {

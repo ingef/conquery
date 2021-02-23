@@ -135,7 +135,7 @@ public class Preprocessed {
 	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntList rowEntities) {
 		for (int entity : rowEntities) {
 			final int curr = entityLength.getOrDefault(entity, 0);
-			entityLength.put(entity,curr + 1);
+			entityLength.put(entity, curr + 1);
 		}
 
 		int outIndex = 0;
@@ -180,7 +180,6 @@ public class Preprocessed {
 
 							int inIndex = inBegin + offset;
 
-							// Early exit
 							if (rowEntities.getInt(inIndex) != entity) {
 								continue;
 							}
@@ -265,28 +264,19 @@ public class Preprocessed {
 	}
 
 	public synchronized void addRow(int primaryId, PPColumn[] columns, Object[] outRow) {
-		int event = -1;
+		int event = rowEntities.size();
+		rowEntities.add(primaryId);
 
 		for (int col = 0; col < outRow.length; col++) {
 			final int idx = values[col].add(outRow[col]);
 
-			// We assert that all columns are aligned.
-			if (event == -1) {
-				event = idx;
-			}
-			else if (idx != event) {
+			if(event != idx){
 				throw new IllegalStateException("Columns are not aligned");
 			}
 
 			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
 		}
-
-		if (event != rowEntities.size()) {
-			throw new IllegalStateException("Entities and Columns are not aligned.");
-		}
-
-		rowEntities.add(primaryId);
 
 		//update stats
 		rows++;
