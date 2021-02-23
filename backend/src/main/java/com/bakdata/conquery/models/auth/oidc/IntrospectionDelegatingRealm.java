@@ -30,6 +30,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
+import org.keycloak.authorization.client.Configuration;
 
 import java.io.IOException;
 import java.net.URI;
@@ -47,13 +48,13 @@ import java.util.stream.Stream;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class IntrospectionDelegatingRealm<C extends OIDCAuthenticationConfig> extends ConqueryAuthenticationRealm {
+public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 	private static final String GROUPS_CLAIM = "groups";
 
 	private final MetaStorage storage;
-	private final OIDCAuthenticationConfig authProviderConf;
+	private final IntrospectionDelegatingRealmFactory authProviderConf;
 
 	private ClientAuthentication clientAuthentication;
 

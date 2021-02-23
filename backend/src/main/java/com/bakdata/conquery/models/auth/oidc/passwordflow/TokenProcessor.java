@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import com.bakdata.conquery.models.auth.basic.UsernamePasswordChecker;
+import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.auth.oidc.OIDCAuthenticationConfig;
 import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthAdminUnprotectedResourceProvider;
 import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotectedResourceProvider;
@@ -29,10 +30,10 @@ public class TokenProcessor<C extends OIDCAuthenticationConfig> implements AuthA
 
 	private static final String GROUPS_CLAIM = "groups";
 
-	private final OIDCAuthenticationConfig authProviderConf;
+	private final IntrospectionDelegatingRealmFactory authProviderConf;
 
 
-	public TokenProcessor(OIDCAuthenticationConfig authProviderConf) {
+	public TokenProcessor(IntrospectionDelegatingRealmFactory authProviderConf) {
 		this.authProviderConf = authProviderConf;
 	}
 

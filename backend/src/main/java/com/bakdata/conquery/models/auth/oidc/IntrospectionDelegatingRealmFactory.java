@@ -20,11 +20,10 @@ import java.util.Map;
 
 
 @Slf4j
-public class IntrospectionDelegatingRealmFactory extends Configuration implements OIDCAuthenticationConfig {
+public class IntrospectionDelegatingRealmFactory extends Configuration {
 
 	public static final String CONFIDENTIAL_CREDENTIAL = "secret";
 
-	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
 
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
@@ -39,7 +38,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration implement
 				}
 			});
 		}
-		return new IntrospectionDelegatingRealm<>(managerNode.getStorage(), this);
+		return new IntrospectionDelegatingRealm(managerNode.getStorage(), this);
 	}
 
 
