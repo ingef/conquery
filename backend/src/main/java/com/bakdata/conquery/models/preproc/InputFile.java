@@ -46,7 +46,7 @@ public class InputFile implements Serializable {
 		}
 	}
 
-	public static InputFile fromName(String extensionlessName, String tag, File descriptionsDir, File outputDir,  File csvDir) {
+	public static InputFile fromName(File descriptionsDir, File csvDir, File outputDir, String tag, String extensionlessName) {
 		return builder()
 				.descriptionFile(new File(descriptionsDir, extensionlessName + EXTENSION_DESCRIPTION))
 				.preprocessedFile(Preprocessor.getTaggedVersion(new File(outputDir, extensionlessName + EXTENSION_PREPROCESSED), tag, EXTENSION_PREPROCESSED))

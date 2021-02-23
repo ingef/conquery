@@ -99,10 +99,10 @@ public class LoadingUtil {
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			// create import descriptor
-			InputFile inputFile = InputFile.fromName(name, null, support.getConfig().getPreprocessor().getDirectories()[0]
+			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0]
 																																	.getDescriptionsDir(), support.getConfig().getPreprocessor().getDirectories()[0]
-																																								   .getPreprocessedOutputDir(), support.getConfig().getPreprocessor().getDirectories()[0]
-																																																		.getCsvDir());
+																																										 .getCsvDir(), support.getConfig().getPreprocessor().getDirectories()[0]
+																																	.getPreprocessedOutputDir(), null, name);
 			TableImportDescriptor desc = new TableImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(rTable.getName() + "_import");

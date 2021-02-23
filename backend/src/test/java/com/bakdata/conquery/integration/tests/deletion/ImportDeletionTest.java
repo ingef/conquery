@@ -191,10 +191,10 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 											  .asStream(), new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
 
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(importId.getTag(), null, conquery.getConfig().getPreprocessor().getDirectories()[0]
+			InputFile inputFile = InputFile.fromName(conquery.getConfig().getPreprocessor().getDirectories()[0]
 																																				  .getDescriptionsDir(), conquery.getConfig().getPreprocessor().getDirectories()[0]
-																																												 .getPreprocessedOutputDir(), conquery.getConfig().getPreprocessor().getDirectories()[0]
-																																																					  .getCsvDir());
+																																													   .getCsvDir(), conquery.getConfig().getPreprocessor().getDirectories()[0]
+																																				  .getPreprocessedOutputDir(), null, importId.getTag());
 			TableImportDescriptor desc = new TableImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(import2Table.getName() + "_import");

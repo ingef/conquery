@@ -192,8 +192,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 	private Optional<TableImportDescriptor> tryExtractDescriptor(Validator validator, String tag, File descriptionFile, File descriptionsDir, File outputDir, File csvDir)
 			throws IOException {
 		InputFile file = InputFile.fromName(
-				descriptionFile.getName().substring(0, descriptionFile.getName().length() - EXTENSION_DESCRIPTION.length()),
-				tag, descriptionsDir, outputDir, csvDir
+				descriptionsDir, csvDir, outputDir, tag, descriptionFile.getName().substring(0, descriptionFile.getName().length() - EXTENSION_DESCRIPTION.length())
 		);
 		try {
 			TableImportDescriptor descr = file.readDescriptor(validator, tag);
