@@ -1,20 +1,11 @@
 package com.bakdata.conquery.models.auth.basic;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.container.ContainerRequestContext;
-
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.IStoreInfo;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
@@ -24,15 +15,8 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.resources.admin.AdminServlet.AuthAdminResourceProvider;
-import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
-import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthAdminUnprotectedResourceProvider;
-import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotectedResourceProvider;
-import com.bakdata.conquery.resources.unprotected.LoginResource;
-import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
-import io.dropwizard.jersey.DropwizardResourceConfig;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.ExodusException;
@@ -45,7 +29,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This realm stores credentials in a local database ({@link XodusStore}). Upon
@@ -59,7 +48,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
  * through specific endpoints that are registerd by this realm.
  */
 @Slf4j
-public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, AuthAdminResourceProvider, UsernamePasswordChecker {
+public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, UsernamePasswordChecker {
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
@@ -205,32 +194,6 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		return listId.stream().map(UserId::new).collect(Collectors.toList());
 	}
 
-	//////////////////// RESOURCE REGISTRATION ////////////////////
-
-	@Override
-	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
-		jerseyConfig.register(new TokenResource(this));
-		jerseyConfig.register(LoginResource.class);
-	}
-
-	@Override
-	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
-		jerseyConfig.register(new TokenResource(this));
-	}
-
-	@Override
-	public void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig) {
-		LocalAuthenticationRealm thisRealm = this;
-		jerseyConfig.register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
-				this.bind(new UserAuthenticationManagementProcessor(thisRealm, storage)).to(UserAuthenticationManagementProcessor.class);
-			}
-
-		});
-		jerseyConfig.register(UserAuthenticationManagementResource.class);
-	}
 
 	
 	//////////////////// LIFECYCLE MANAGEMENT ////////////////////

@@ -44,14 +44,6 @@ import org.glassfish.jersey.servlet.ServletContainer;
 @Slf4j
 public class AdminServlet {
 
-	/**
-	 * Marker interface for classes that provide admin UI functionality.
-	 */
-	@CPSBase
-	public interface AuthAdminResourceProvider {
-		void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig);
-	}
-
 	private AdminProcessor adminProcessor;
 	private DropwizardResourceConfig jerseyConfig;
 
@@ -106,13 +98,6 @@ public class AdminServlet {
 			.register(PermissionResource.class)
 			.register(AuthOverviewUIResource.class)
 			.register(AuthOverviewResource.class);
-
-		// Scan classpath for Admin side plugins and register them.
-		for ( Realm realm : manager.getAuthController().getRealms()) {
-			if(realm instanceof AuthAdminResourceProvider) {
-				((AuthAdminResourceProvider)realm).registerAuthenticationAdminResources(jerseyConfig);
-			}
-		}
 
 		// register features
 		jerseyConfig

@@ -141,6 +141,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
 
+
+		admin = new AdminServlet();
+		admin.register(this);
+
 		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init(this);
 		environment.lifecycle().manage(authController);
@@ -155,15 +159,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				log.error("Failed to register Resource {}",resourceProvider, e);
 			}
 		}
-
-		admin = new AdminServlet();
-		admin.register(this);
-
-		// Register an unprotected servlet for logins on the app port
-		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
-
-		// Register an unprotected servlet for logins on the admin port
-		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 
 		Task formScanner = new FormScanner();
 		try {
