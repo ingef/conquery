@@ -76,8 +76,15 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 	@Override
 	@SneakyThrows
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
+			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
+			return null;
+		}
+		log.trace("Token has expected format!");
 
 		TokenIntrospectionSuccessResponse successResponse = tokenCache.get((BearerToken) token);
+
+		log.trace("Got an successful token introspection response.");
 
 		UserId userId = extractId(successResponse);
 
@@ -101,8 +108,9 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 		if (StringUtils.isBlank(identifier)) {
 			throw new IllegalStateException("Unable to retrieve a user identifier from validated token. Dismissing the token.");
 		}
-
-		return new UserId(identifier);
+		UserId userId = new UserId(identifier);
+		log.trace("Extracted UserId {}", userId);
+		return userId;
 	}
 
 	private static String extractDisplayName(TokenIntrospectionSuccessResponse successResponse) {
