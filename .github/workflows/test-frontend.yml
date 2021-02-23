@@ -1,0 +1,13 @@
+on: [pull_request]
+
+jobs:
+  TestFrontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: install dependencies
+        run: yarn
+      - name: setup env variables
+        run: cp .env.example .env
+      - name: test
+        run: yarn test
