@@ -6,13 +6,15 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.conditions.EqualCondition;
@@ -21,10 +23,7 @@ import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -32,12 +31,9 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import javax.validation.Validator;
 
 public class DefaultColumnNameTest {
 	private final static DatasetRegistry DATASET_REGISTRY = mock(DatasetRegistry.class);
@@ -142,8 +138,7 @@ public class DefaultColumnNameTest {
 
 			cqConcept.setIds(
 					concept.getChildren().stream()
-							.map(ConceptTreeChild::getId)
-							.sorted((id1, id2) -> id1.toString().compareTo(id2.toString()))
+							.sorted(Comparator.comparing(ctc -> ctc.getId().toString()))
 							.collect(Collectors.toList())
 			);
 

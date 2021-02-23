@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.execution;
+
 import static com.bakdata.conquery.models.execution.ManagedExecution.AUTO_LABEL_SUFFIX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,13 +11,10 @@ import java.util.Locale;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -29,10 +29,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
 public class DefaultLabelTest {
 	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
@@ -60,7 +56,7 @@ public class DefaultLabelTest {
 	private static CQConcept makeCQConcept(String label) {
 		CQConcept concept = new CQConcept();
 		concept.setLabel(label);
-		concept.setIds(List.of(CONCEPT.getId()));
+		concept.setIds(List.of(CONCEPT));
 		return concept;
 
 	}

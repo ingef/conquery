@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -324,9 +323,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
 		}
 
-		ConceptElementId<?> id = cqConcept.getIds().iterator().next();
-
-		Concept<?> concept = datasetRegistry.resolve(id.findConcept());
+		Concept<?> concept = cqConcept.getIds().get(0).getConcept();
 		String conceptLabel = concept.getLabel();
 		if(cqConceptLabel.equalsIgnoreCase(conceptLabel)){
 			return cqConceptLabel.replace(" ", "-");

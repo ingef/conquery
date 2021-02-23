@@ -64,8 +64,8 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
 
-	@Valid @NotEmpty
-	private List<ConceptElementId<?>> ids = Collections.emptyList();
+	@Valid @NotEmpty @NsIdRefCollection
+	private List<ConceptElement<?>> ids = Collections.emptyList();
 	@Valid @NotEmpty @JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
@@ -78,7 +78,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
+		ConceptElement<?>[] concepts = ids.toArray(ConceptElement[]::new);
 
 		List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
 
@@ -227,7 +227,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		checkNotNull(namespacedIds);
-		namespacedIds.addAll(ids);
+		ids.forEach(ce -> namespacedIds.add(ce.getId()));
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 	}
