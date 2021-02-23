@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.api.MeResource;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.*;
 
 /**
@@ -50,9 +51,9 @@ public class MeProcessor {
 			// User can use the dataset and can possibly upload ids for resolving
 			datasetAblilites.put(
 					dataset.getId(),
-					FEDatasetAbility.builder()
-							.canUpload(result[1] /*PRESERVE_ID*/)
-							.build());
+					new FEDatasetAbility(
+							result[1] /*PRESERVE_ID*/)
+							);
 		}
 
 		// Build user information
@@ -84,9 +85,11 @@ public class MeProcessor {
 	 * Front end container to describe what the user can do on a
 	 * dataset by simple flags.
 	 */
-	@Builder
-	private static class FEDatasetAbility {
-		private final boolean canUpload;
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class FEDatasetAbility {
+		private boolean canUpload;
 	}
 
 }

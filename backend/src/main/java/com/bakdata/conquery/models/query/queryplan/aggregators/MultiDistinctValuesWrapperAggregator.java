@@ -60,6 +60,6 @@ public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregato
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }
