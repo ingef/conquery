@@ -132,7 +132,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 		TokenIntrospectionRequest request = new TokenIntrospectionRequest(URI.create(authProviderConf.getIntrospectionEndpoint()), authProviderConf.getClientAuthentication(), new TypelessAccessToken((String) token.getCredentials()));
 
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
-
+		log.trace("Retrieved token introspection response.");
 		if (!response.indicatesSuccess()) {
 			HTTPResponse httpResponse = response.toHTTPResponse();
 			log.error("Received the following error from the auth server while validating a token: {} {} {}", httpResponse.getStatusCode(), httpResponse.getStatusMessage(), httpResponse.getContent());
@@ -144,6 +144,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 		TokenIntrospectionSuccessResponse successResponse = response.toSuccessResponse();
 		if (!successResponse.isActive()) {
+			log.trace("Token was not active");
 			throw new ExpiredCredentialsException();
 		}
 		return successResponse;
@@ -154,6 +155,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 		@Override
 		public TokenIntrospectionSuccessResponse load(BearerToken key) throws Exception {
+			log.trace("Attempting to validate token");
 			TokenIntrospectionSuccessResponse response = validateToken(key);
 
 			User user = getOrCreateUser(response, extractDisplayName(response), extractId(response));
