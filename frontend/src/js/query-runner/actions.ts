@@ -65,7 +65,7 @@ export default function createQueryRunnerActions(
     }: {
       formQueryTransformation?: Function;
       selectedSecondaryId?: string | null;
-    }
+    } = {}
   ) => {
     return (dispatch) => {
       dispatch(startQueryStart());
