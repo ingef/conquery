@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<Object[]> {
+public class EventDateUnionAggregator implements Aggregator<Collection<CDateRange>> {
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
@@ -45,13 +46,13 @@ public class EventDateUnionAggregator implements Aggregator<Object[]> {
 	}
 
 	@Override
-	public Aggregator<Object[]> doClone(CloneContext ctx) {
+	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
 		return new EventDateUnionAggregator(requiredTables);
 	}
 
 	@Override
-	public Object[] getAggregationResult() {
-		return set.asRanges().toArray();
+	public Collection<CDateRange> getAggregationResult() {
+		return set.asRanges();
 	}
 
 	@Override

@@ -11,10 +11,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+import java.util.Collection;
+
 /**
  * Aggregator, listing all days present.
  */
-public class DateUnionAggregator extends SingleColumnAggregator<Object[]> {
+public class DateUnionAggregator extends SingleColumnAggregator<Collection<CDateRange>> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
@@ -44,13 +46,13 @@ public class DateUnionAggregator extends SingleColumnAggregator<Object[]> {
 	}
 
 	@Override
-	public Aggregator<Object[]> doClone(CloneContext ctx) {
+	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
 		return new DateUnionAggregator(getColumn());
 	}
 
 	@Override
-	public Object[] getAggregationResult() {
-		return set.asRanges().toArray();
+	public Collection<CDateRange> getAggregationResult() {
+		return set.asRanges();
 	}
 
 	@Override
