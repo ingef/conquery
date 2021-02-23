@@ -19,39 +19,24 @@ public abstract class ColumnValues<T> {
 		return nulls.get(event);
 	}
 
-	public final T get(int event) {
-		return read(event);
-	}
+	public abstract T get(int event);
 
-	protected abstract T read(int event);
-
-	public int add(T value) {
+	public final int add(T value) {
 		int event = size();
 
 		if (value == null) {
 			nulls.set(event);
-			write(nullValue);
+			append(nullValue);
 		}
 		else {
-			write(value);
+			append(value);
 		}
 
 		return event;
 	}
 
-	public int size() {
-		return countValues();
-	}
+	protected abstract void append(T obj);
 
-	protected abstract void write(T obj);
+	protected abstract int size();
 
-	protected int countNulls() {
-		return nulls.cardinality();
-	}
-
-	protected abstract int countValues();
-
-	public void close() {
-
-	}
 }

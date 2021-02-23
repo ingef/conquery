@@ -51,25 +51,21 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 			private final BitSet values = new BitSet();
 
 			@Override
-			public Boolean read(int event) {
+			public Boolean get(int event) {
 				return values.get(event);
 			}
 
 
 			@Override
-			protected int countValues() {
+			protected int size() {
 				return values.cardinality();
 			}
 
 			@Override
-			protected void write(Boolean obj) {
-				values.set(countValues(), obj ? (byte) 1 : (byte) 0);
+			protected void append(Boolean obj) {
+				values.set(size(), obj ? (byte) 1 : (byte) 0);
 			}
 
-			@Override
-			public void close() {
-				values.clear();
-			}
 		};
 	}
 

@@ -12,17 +12,17 @@ class LongColumnValues extends ColumnValues<Long> {
 	}
 
 	@Override
-	public Long read(int event) {
+	public Long get(int event) {
 		return values.getLong(event);
 	}
 
 	@Override
-	protected void write(Long obj) {
+	protected void append(Long obj) {
 		values.add(obj.longValue());
 	}
 
 	@Override
-	protected int countValues() {
+	protected int size() {
 		return (int) values.size64();
 	}
 }
