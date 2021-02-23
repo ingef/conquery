@@ -221,8 +221,6 @@ public class FormConfigTest {
 		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
 		
 		assertThat(configs).containsAllEntriesOf(Map.of(formId,FormConfigAPI.intern(formConfig, user.getId(), dataset.getId())));
-		
-		assertThat(users.get(user.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formId));
 	}
 	
 //	TODO integrate translation first see FormConfig
