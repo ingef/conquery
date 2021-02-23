@@ -24,7 +24,6 @@ public class QueryExecutionContext {
 	private Column validityDateColumn;
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
-	private boolean prettyPrint = true;
 	private Connector connector;
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
