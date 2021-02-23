@@ -23,7 +23,6 @@ steps:
         $(Build.SourcesDirectory)/pom.xml
         $(Build.SourcesDirectory)/backend/pom.xml
         $(Build.SourcesDirectory)/executable/pom.xml
-        $(Build.SourcesDirectory)/frontend/yarn.lock
       path: $(CACHE_DIR)
   - task: Maven@3
     displayName: set version
