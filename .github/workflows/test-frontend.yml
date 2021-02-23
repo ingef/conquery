@@ -1,15 +1,15 @@
+name: "Test Frontend"
 on: [pull_request]
-
 jobs:
   TestFrontend:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: go to frontend
-        run: cd frontend
       - name: install dependencies
+        working-directory: ./frontend
         run: yarn
       # - name: setup env variables
       #   run: cp .env.example .env
       - name: test
+        working-directory: ./frontend
         run: yarn test
