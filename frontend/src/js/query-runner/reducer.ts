@@ -4,9 +4,20 @@ import type {
   GetQueryResponseDoneT,
   ErrorResponseT,
 } from "../api/types";
-import { toUpperCaseUnderscore } from "../common/helpers";
 import { getErrorCodeMessageKey } from "../api/errorCodes";
-import * as actionTypes from "./actionTypes";
+import { QueryTypeT } from "./actions";
+import {
+  QUERY_RESULT_ERROR,
+  QUERY_RESULT_RESET,
+  QUERY_RESULT_START,
+  QUERY_RESULT_SUCCESS,
+  START_QUERY_ERROR,
+  START_QUERY_START,
+  START_QUERY_SUCCESS,
+  STOP_QUERY_ERROR,
+  STOP_QUERY_START,
+  STOP_QUERY_SUCCESS,
+} from "./actionTypes";
 
 interface APICallType {
   loading?: boolean;
@@ -16,7 +27,7 @@ interface APICallType {
 }
 
 export interface QueryRunnerStateT {
-  runningQuery: number | string | null;
+  runningQuery: string | null;
   queryRunning: boolean;
   startQuery: APICallType;
   stopQuery: APICallType;
@@ -31,7 +42,7 @@ export interface QueryRunnerStateT {
     | null;
 }
 
-export default function createQueryRunnerReducer(type: string) {
+export default function createQueryRunnerReducer(type: QueryTypeT) {
   const initialState: QueryRunnerStateT = {
     runningQuery: null,
     queryRunning: false,
@@ -39,22 +50,6 @@ export default function createQueryRunnerReducer(type: string) {
     stopQuery: {},
     queryResult: null,
   };
-
-  const capitalType = toUpperCaseUnderscore(type);
-
-  // Example1: START_STANDARD_QUERY_START
-  // Example2: START_TIMEBASED_QUERY_START
-  const START_QUERY_START = actionTypes[`START_${capitalType}_QUERY_START`];
-  const START_QUERY_SUCCESS = actionTypes[`START_${capitalType}_QUERY_SUCCESS`];
-  const START_QUERY_ERROR = actionTypes[`START_${capitalType}_QUERY_ERROR`];
-  const STOP_QUERY_START = actionTypes[`STOP_${capitalType}_QUERY_START`];
-  const STOP_QUERY_SUCCESS = actionTypes[`STOP_${capitalType}_QUERY_SUCCESS`];
-  const STOP_QUERY_ERROR = actionTypes[`STOP_${capitalType}_QUERY_ERROR`];
-  const QUERY_RESULT_START = actionTypes[`QUERY_${capitalType}_RESULT_START`];
-  const QUERY_RESULT_RESET = actionTypes[`QUERY_${capitalType}_RESULT_RESET`];
-  const QUERY_RESULT_SUCCESS =
-    actionTypes[`QUERY_${capitalType}_RESULT_SUCCESS`];
-  const QUERY_RESULT_ERROR = actionTypes[`QUERY_${capitalType}_RESULT_ERROR`];
 
   const getQueryResult = (
     data: GetQueryResponseDoneT,
@@ -93,6 +88,10 @@ export default function createQueryRunnerReducer(type: string) {
     state: QueryRunnerStateT = initialState,
     action: Object
   ): QueryRunnerStateT => {
+    if (!action.payload || action.payload.queryType !== type) {
+      return state;
+    }
+
     switch (action.type) {
       // To start a query
       case START_QUERY_START:

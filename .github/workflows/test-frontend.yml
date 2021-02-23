@@ -1,0 +1,27 @@
+name: "Frontend"
+on:
+  push:
+    paths:
+      - "frontend/**"
+jobs:
+  "Unit tests":
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: install dependencies
+        working-directory: ./frontend
+        run: yarn
+      - name: setup env variables
+        working-directory: ./frontend
+        run: cp .env.example .env
+      - name: test
+        working-directory: ./frontend
+        run: yarn test

@@ -1,7 +1,14 @@
 import { combineReducers } from "redux";
 
 import { OPEN_UPLOAD_MODAL, CLOSE_UPLOAD_MODAL } from "./actionTypes";
-import createQueryRunnerReducer from "../../query-runner/reducer";
+import createQueryRunnerReducer, {
+  QueryRunnerStateT,
+} from "../../query-runner/reducer";
+
+export interface UploadQueryResultsStateT {
+  isModalOpen: boolean;
+  queryRunner: QueryRunnerStateT;
+}
 
 function isModalOpen(state: boolean = false, action: Object): boolean {
   switch (action.type) {
@@ -18,5 +25,5 @@ const queryRunner = createQueryRunnerReducer("external");
 
 export default combineReducers({
   isModalOpen,
-  queryRunner
+  queryRunner,
 });
