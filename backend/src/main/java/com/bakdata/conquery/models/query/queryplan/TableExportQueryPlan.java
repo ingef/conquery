@@ -83,9 +83,7 @@ public class TableExportQueryPlan implements QueryPlan {
 						}
 
 						// depending on context use pretty printing or script value
-						entry[exportDescription.getColumnOffset() + col] = ctx.isPrettyPrint()
-																		   ? bucket.createPrintValue(event, column)
-																		   : bucket.createScriptValue(event, column);
+						entry[exportDescription.getColumnOffset() + col] = bucket.createScriptValue(event, column);
 					}
 
 					results.add(entry);

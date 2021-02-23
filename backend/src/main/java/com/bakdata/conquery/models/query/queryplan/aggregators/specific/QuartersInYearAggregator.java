@@ -71,6 +71,6 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }
