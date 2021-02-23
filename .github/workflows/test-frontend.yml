@@ -5,6 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
+      - name: go to frontend
+        run: cd frontend
       - name: install dependencies
         run: yarn
       # - name: setup env variables
