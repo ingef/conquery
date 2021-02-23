@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -20,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<String> {
+public class EventDateUnionAggregator implements Aggregator<Collection<CDateRange>> {
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
@@ -44,13 +46,13 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 	}
 
 	@Override
-	public Aggregator<String> doClone(CloneContext ctx) {
+	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
 		return new EventDateUnionAggregator(requiredTables);
 	}
 
 	@Override
-	public String getAggregationResult() {
-		return set.toString();
+	public Collection<CDateRange> getAggregationResult() {
+		return set.asRanges();
 	}
 
 	@Override
@@ -63,7 +65,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
 	}
 
 }

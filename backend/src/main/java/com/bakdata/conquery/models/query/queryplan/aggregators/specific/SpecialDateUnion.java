@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -10,11 +11,13 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collection;
+
 /**
  * Special Aggregator, used to calculate the times an entity has events after filtering.
  */
 @RequiredArgsConstructor
-public class SpecialDateUnion implements Aggregator<String> {
+public class SpecialDateUnion implements Aggregator<Collection<CDateRange>> {
 
 	private CDateSet set = CDateSet.create();
 
@@ -54,8 +57,8 @@ public class SpecialDateUnion implements Aggregator<String> {
 	}
 
 	@Override
-	public String getAggregationResult() {
-		return set.toString();
+	public Collection<CDateRange> getAggregationResult() {
+		return set.asRanges();
 	}
 	
 	public CDateSet getResultSet() {
@@ -64,7 +67,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
 	}
 	
 	@Override
