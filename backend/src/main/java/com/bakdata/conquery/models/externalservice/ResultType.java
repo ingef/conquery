@@ -90,7 +90,7 @@ public interface ResultType {
             if (f instanceof java.lang.Boolean) {
                 return (java.lang.Boolean) f ? "t" : "f";
             }
-            return "";
+            throw new IllegalStateException("Expected a Boolean but got an " + f.getClass() + " (" + f + ")");
         }
 
         @Override
