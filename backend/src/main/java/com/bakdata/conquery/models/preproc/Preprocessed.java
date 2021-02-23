@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterable;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntLists;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
@@ -163,7 +164,8 @@ public class Preprocessed {
 
 		for (int pos = 0, size = rowEntities.size(); pos < size; pos++) {
 			int entity = rowEntities.getInt(pos);
-			entityEvents.computeIfAbsent(entity, (ignored) -> new IntArrayList(10)).add(pos);
+			entityEvents.computeIfAbsent(entity, (ignored) -> new IntArrayList(10))
+						.add(pos);
 		}
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
@@ -176,7 +178,7 @@ public class Preprocessed {
 					.forEach((int entity) -> {
 						final int start = entityStart.get(entity);
 
-						final IntList events = entityEvents.get(entity);
+						final IntList events = entityEvents.getOrDefault(entity, IntLists.emptyList());
 
 						int offset = 0;
 						for (int inIndex : events) {
