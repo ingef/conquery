@@ -1,11 +1,19 @@
+import { Action } from "redux";
 import { createActionTypes } from "./actionTypes";
 
+export interface QueryNodeEditorStateT {
+  detailsViewActive: boolean;
+  selectedInputTableIdx: number;
+  selectedInput: number | null; // It's a filter index => TODO: Refactor/rename
+  editingLabel: boolean;
+}
+
 export const createQueryNodeEditorReducer = (type: string) => {
-  const initialState = {
+  const initialState: QueryNodeEditorStateT = {
     detailsViewActive: true,
     selectedInputTableIdx: 0,
     selectedInput: null,
-    editingLabel: false
+    editingLabel: false,
   };
 
   const {
@@ -13,32 +21,35 @@ export const createQueryNodeEditorReducer = (type: string) => {
     SET_INPUT_TABLE_VIEW_ACTIVE,
     SET_FOCUSED_INPUT,
     TOGGLE_EDIT_LABEL,
-    RESET
+    RESET,
   } = createActionTypes(type);
 
-  return (state = initialState, action) => {
+  return (
+    state: QueryNodeEditorStateT = initialState,
+    action: any
+  ): QueryNodeEditorStateT => {
     switch (action.type) {
       case SET_DETAILS_VIEW_ACTIVE:
         return {
           ...state,
-          detailsViewActive: true
+          detailsViewActive: true,
         };
       case SET_INPUT_TABLE_VIEW_ACTIVE:
         return {
           ...state,
           detailsViewActive: false,
           selectedInputTableIdx: action.tableIdx,
-          selectedInput: null
+          selectedInput: null,
         };
       case SET_FOCUSED_INPUT:
         return {
           ...state,
-          selectedInput: action.filterIdx
+          selectedInput: action.filterIdx,
         };
       case TOGGLE_EDIT_LABEL:
         return {
           ...state,
-          editingLabel: !state.editingLabel
+          editingLabel: !state.editingLabel,
         };
       case RESET:
         return initialState;

@@ -1,14 +1,14 @@
 import React, { FC } from "react";
 import { StateT } from "app-types";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { isValid, isPristine, getFormValues, FormStateMap } from "redux-form";
 
 import QueryRunner from "../query-runner/QueryRunner";
 import { DatasetIdT } from "../api/types";
 import { QueryRunnerStateT } from "../query-runner/reducer";
+import { useStartQuery, useStopQuery } from "../query-runner/actions";
 
 import transformQueryToApi from "./transformQueryToApi";
-import * as actions from "./actions";
 import {
   selectReduxFormState,
   selectFormConfig,
@@ -17,8 +17,6 @@ import {
   selectActiveFormType,
 } from "./stateSelectors";
 import { Form } from "./config-types";
-
-const { startExternalFormsQuery, stopExternalFormsQuery } = actions;
 
 const isActiveFormValid = (state: StateT) => {
   const activeForm = selectActiveFormType(state);
@@ -54,9 +52,7 @@ const FormQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const queryRunner = useSelector<StateT, QueryRunnerStateT | null>(
     selectQueryRunner
   );
-  const queryId = useSelector<StateT, string | number | null>(
-    selectRunningQuery
-  );
+  const queryId = useSelector<StateT, string | null>(selectRunningQuery);
   const isQueryRunning = !!queryId;
 
   const isButtonEnabled = useSelector<StateT, boolean>(
@@ -80,14 +76,18 @@ const FormQueryRunner: FC<PropsT> = ({ datasetId }) => {
     ? transformQueryToApi(formConfig)
     : () => {};
 
-  const dispatch = useDispatch();
+  const startExternalFormsQuery = useStartQuery("externalForms");
+  const stopExternalFormsQuery = useStopQuery("externalForms");
+
   const startQuery = () =>
-    dispatch(
-      startExternalFormsQuery(datasetId, query, {
-        formQueryTransformation,
-      })
-    );
-  const stopQuery = () => dispatch(stopExternalFormsQuery(datasetId, queryId));
+    startExternalFormsQuery(datasetId, query, {
+      formQueryTransformation,
+    });
+  const stopQuery = () => {
+    if (queryId) {
+      stopExternalFormsQuery(datasetId, queryId);
+    }
+  };
 
   if (!queryRunner) {
     return null;

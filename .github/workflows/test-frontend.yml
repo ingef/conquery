@@ -1,6 +1,6 @@
 name: "Frontend"
 on:
-  pull_request:
+  push:
     paths:
       - "frontend/**"
 jobs:
@@ -19,8 +19,9 @@ jobs:
       - name: install dependencies
         working-directory: ./frontend
         run: yarn
-        # - name: setup env variables
-        #   run: cp .env.example .env
+      - name: setup env variables
+        working-directory: ./frontend
+        run: cp .env.example .env
       - name: test
         working-directory: ./frontend
         run: yarn test

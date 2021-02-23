@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
 
 import Modal from "../../modal/Modal";
-import { patchStoredQuery } from "../../api/api";
+import { usePatchStoredQuery } from "../../api/api";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 import TransparentButton from "../../button/TransparentButton";
@@ -15,7 +15,7 @@ import { usePrevious } from "../../common/helpers/usePrevious";
 import { exists } from "../../common/helpers/exists";
 
 import { PreviousQueryT } from "./reducer";
-import { loadPreviousQuery, sharePreviousQuerySuccess } from "./actions";
+import { useLoadPreviousQuery, sharePreviousQuerySuccess } from "./actions";
 
 const Buttons = styled("div")`
   text-align: center;
@@ -88,7 +88,10 @@ const SharePreviousQueryModal = ({
 
   const previousPreviousQueryId = usePrevious(previousQueryId);
 
+  const patchStoredQuery = usePatchStoredQuery();
+
   const dispatch = useDispatch();
+  const loadPreviousQuery = useLoadPreviousQuery();
 
   useEffect(() => {
     if (
@@ -96,9 +99,9 @@ const SharePreviousQueryModal = ({
       !exists(previousPreviousQueryId) &&
       exists(previousQueryId)
     ) {
-      dispatch(loadPreviousQuery(datasetId, previousQueryId));
+      loadPreviousQuery(datasetId, previousQueryId);
     }
-  }, [datasetId, previousPreviousQueryId, previousQueryId, dispatch]);
+  }, [datasetId, previousPreviousQueryId, previousQueryId]);
 
   useEffect(() => {
     setUserGroupsValue(getUserGroupsValue(userGroups, previousQuery));

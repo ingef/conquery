@@ -45,7 +45,7 @@ export const selectEditedConcept = (
   const formField = selectFormField(state, formName, fieldName);
   const concept = formField[andIdx].concepts[orIdx];
 
-  return initTables(blocklistedTables, allowlistedTables)(concept);
+  return initTables({ blocklistedTables, allowlistedTables })(concept);
 };
 
 export const selectSuggestions = (

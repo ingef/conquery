@@ -1,10 +1,10 @@
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
 import {
-  deleteQuery,
-  getQuery,
-  postFormQueries,
-  postQueries,
+  useGetQuery,
+  useDeleteQuery,
+  usePostFormQueries,
+  usePostQueries,
 } from "../api/api";
 import type {
   DatasetIdT,
@@ -12,11 +12,22 @@ import type {
   GetQueryResponseDoneT,
   QueryIdT,
 } from "../api/types";
-import { defaultError, defaultSuccess } from "../common/actions";
-import { capitalize, toUpperCaseUnderscore } from "../common/helpers";
-import { loadPreviousQueries } from "../previous-queries/list/actions";
-import * as actionTypes from "./actionTypes";
+import { defaultError, defaultSuccess, ErrorObject } from "../common/actions";
+import { useLoadPreviousQueries } from "../previous-queries/list/actions";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
+import {
+  START_QUERY_START,
+  START_QUERY_SUCCESS,
+  START_QUERY_ERROR,
+  STOP_QUERY_SUCCESS,
+  STOP_QUERY_ERROR,
+  STOP_QUERY_START,
+  QUERY_RESULT_START,
+  QUERY_RESULT_RESET,
+  QUERY_RESULT_ERROR,
+  QUERY_RESULT_SUCCESS,
+} from "./actionTypes";
+import { useDispatch } from "react-redux";
 
 /*
   This implements a polling mechanism,
@@ -33,143 +44,151 @@ import { QUERY_AGAIN_TIMEOUT } from "./constants";
   by sending a DELETE request for that query ID
 */
 
-export default function createQueryRunnerActions(
-  type: string,
-  isExternalForm: boolean = false
-): { [string]: Function } {
-  const uppercaseType = toUpperCaseUnderscore(type);
-  const capitalizedType = capitalize(type);
+export type QueryTypeT =
+  | "standard"
+  | "external"
+  | "timebased"
+  | "externalForms";
 
-  const START_QUERY_START = actionTypes[`START_${uppercaseType}_QUERY_START`];
-  const START_QUERY_SUCCESS =
-    actionTypes[`START_${uppercaseType}_QUERY_SUCCESS`];
-  const START_QUERY_ERROR = actionTypes[`START_${uppercaseType}_QUERY_ERROR`];
-  const STOP_QUERY_START = actionTypes[`STOP_${uppercaseType}_QUERY_START`];
-  const STOP_QUERY_SUCCESS = actionTypes[`STOP_${uppercaseType}_QUERY_SUCCESS`];
-  const STOP_QUERY_ERROR = actionTypes[`STOP_${uppercaseType}_QUERY_ERROR`];
-  const QUERY_RESULT_START = actionTypes[`QUERY_${uppercaseType}_RESULT_START`];
-  const QUERY_RESULT_RESET = actionTypes[`QUERY_${uppercaseType}_RESULT_RESET`];
-  const QUERY_RESULT_SUCCESS =
-    actionTypes[`QUERY_${uppercaseType}_RESULT_SUCCESS`];
-  const QUERY_RESULT_ERROR = actionTypes[`QUERY_${uppercaseType}_RESULT_ERROR`];
+const startQueryStart = (queryType: QueryTypeT) => ({
+  type: START_QUERY_START,
+  payload: { queryType },
+});
+const startQueryError = (queryType: QueryTypeT, err: ErrorObject) =>
+  defaultError(START_QUERY_ERROR, err, { queryType });
+const startQuerySuccess = (queryType: QueryTypeT, res: any) =>
+  defaultSuccess(START_QUERY_SUCCESS, res, { queryType });
 
-  const startQueryStart = () => ({ type: START_QUERY_START });
-  const startQueryError = (err) => defaultError(START_QUERY_ERROR, err);
-  const startQuerySuccess = (res) => defaultSuccess(START_QUERY_SUCCESS, res);
-  const startQuery = (
+export const useStartQuery = (queryType: QueryTypeT) => {
+  const dispatch = useDispatch();
+  const queryResult = useQueryResult(queryType);
+  const postQueries = usePostQueries();
+  const postFormQueries = usePostFormQueries();
+
+  return (
     datasetId: DatasetIdT,
     query: StandardQueryStateT | TimebasedQueryStateT,
     {
-      formQueryTransformation = (form: any) => form,
+      formQueryTransformation,
       selectedSecondaryId,
     }: {
       formQueryTransformation?: Function;
       selectedSecondaryId?: string | null;
     } = {}
   ) => {
-    return (dispatch) => {
-      dispatch(startQueryStart());
+    dispatch(startQueryStart(queryType));
 
-      const apiMethod = isExternalForm
-        ? () => postFormQueries(datasetId, query, { formQueryTransformation })
-        : () =>
-            postQueries(datasetId, query, {
-              queryType: type,
-              selectedSecondaryId,
-            });
+    const apiMethod = formQueryTransformation
+      ? () => postFormQueries(datasetId, query, { formQueryTransformation })
+      : () =>
+          postQueries(datasetId, query, {
+            queryType,
+            selectedSecondaryId,
+          });
 
-      return apiMethod().then(
-        (r) => {
-          dispatch(startQuerySuccess(r));
+    return apiMethod().then(
+      (r) => {
+        dispatch(startQuerySuccess(queryType, r));
 
-          const queryId = r.id;
+        const queryId = r.id;
 
-          return dispatch(queryResult(datasetId, queryId));
-        },
-        (e) => dispatch(startQueryError(e))
-      );
-    };
+        return queryResult(datasetId, queryId);
+      },
+      (e) => dispatch(startQueryError(queryType, e))
+    );
   };
+};
 
-  const stopQueryStart = () => ({ type: STOP_QUERY_START });
-  const stopQueryError = (err) => defaultError(STOP_QUERY_ERROR, err);
-  const stopQuerySuccess = (res) => defaultSuccess(STOP_QUERY_SUCCESS, res);
-  const stopQuery = (datasetId: DatasetIdT, queryId: QueryIdT) => {
-    return (dispatch) => {
-      dispatch(stopQueryStart());
+const stopQueryStart = (queryType: QueryTypeT) => ({
+  type: STOP_QUERY_START,
+  payload: { queryType },
+});
+const stopQueryError = (queryType: QueryTypeT, err: ErrorObject) =>
+  defaultError(STOP_QUERY_ERROR, err, { queryType });
+const stopQuerySuccess = (queryType: QueryTypeT, res: any) =>
+  defaultSuccess(STOP_QUERY_SUCCESS, res, { queryType });
 
-      return deleteQuery(datasetId, queryId).then(
-        (r) => dispatch(stopQuerySuccess(r)),
-        (e) => dispatch(stopQueryError(e))
-      );
-    };
+export const useStopQuery = (queryType: QueryTypeT) => {
+  const dispatch = useDispatch();
+  const deleteQuery = useDeleteQuery();
+
+  return (datasetId: DatasetIdT, queryId: QueryIdT) => {
+    dispatch(stopQueryStart(queryType));
+
+    return deleteQuery(datasetId, queryId).then(
+      (r) => dispatch(stopQuerySuccess(queryType, r)),
+      (e) => dispatch(stopQueryError(queryType, e))
+    );
   };
+};
 
-  const queryResultStart = () => ({ type: QUERY_RESULT_START });
-  const queryResultReset = () => ({ type: QUERY_RESULT_RESET });
-  const queryResultError = (e: GetQueryErrorResponseT | Error) => {
-    if (e instanceof Error) return defaultError(QUERY_RESULT_ERROR, e);
+const queryResultStart = (queryType: QueryTypeT) => ({
+  type: QUERY_RESULT_START,
+  payload: { queryType },
+});
 
-    // TODO: Refactor and get rid of defaultError, it's too generic
-    return defaultError(QUERY_RESULT_ERROR, e, {
-      error: e.error,
-    });
-  };
+export const queryResultReset = (queryType: QueryTypeT) => ({
+  type: QUERY_RESULT_RESET,
+  payload: { queryType },
+});
 
-  const queryResultSuccess = (
-    res: GetQueryResponseDoneT,
-    datasetId: DatasetIdT
-  ) => defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId });
+const queryResultError = (
+  queryType: QueryTypeT,
+  e: GetQueryErrorResponseT | Error
+) => {
+  if (e instanceof Error)
+    return defaultError(QUERY_RESULT_ERROR, e, { queryType });
+
+  // TODO: Refactor and get rid of defaultError, it's too generic
+  return defaultError(QUERY_RESULT_ERROR, e, {
+    error: e.error,
+    queryType,
+  });
+};
+const queryResultSuccess = (
+  queryType: QueryTypeT,
+  res: GetQueryResponseDoneT,
+  datasetId: DatasetIdT
+) => defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId, queryType });
+
+const useQueryResult = (queryType: QueryTypeT) => {
+  const dispatch = useDispatch();
+  const getQuery = useGetQuery();
+  const loadPreviousQueries = useLoadPreviousQueries();
 
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
-    return (dispatch) => {
-      dispatch(queryResultStart());
+    dispatch(queryResultStart(queryType));
 
-      return getQuery(datasetId, queryId).then(
-        (r) => {
-          // Indicate that looking for the result has stopped,
-          // but not necessarily succeeded
-          dispatch(queryResultReset());
+    return getQuery(datasetId, queryId).then(
+      (r) => {
+        // Indicate that looking for the result has stopped,
+        // but not necessarily succeeded
+        dispatch(queryResultReset(queryType));
 
-          if (r.status === "DONE") {
-            dispatch(queryResultSuccess(r, datasetId));
+        if (r.status === "DONE") {
+          dispatch(queryResultSuccess(queryType, r, datasetId));
 
-            // Now there should be a new result that can be queried
-            dispatch(loadPreviousQueries(datasetId));
-          } else if (r.status === "CANCELED") {
-          } else if (r.status === "FAILED") {
-            dispatch(queryResultError(r));
-          } else {
-            // Try again after a short time:
-            //   Use the "long polling" strategy, where we assume that the
-            //   backend blocks the request for a couple of seconds and waits
-            //   for the query comes back.
-            //   If it doesn't come back the request resolves and
-            //   we - the frontend - try again almost instantly.
-            setTimeout(
-              () => dispatch(queryResult(datasetId, queryId)),
-              QUERY_AGAIN_TIMEOUT
-            );
-          }
-        },
-        (e: Error) => dispatch(queryResultError(e))
-      );
-    };
+          // Now there should be a new result that can be queried
+          loadPreviousQueries(datasetId);
+        } else if (r.status === "CANCELED") {
+        } else if (r.status === "FAILED") {
+          dispatch(queryResultError(queryType, r));
+        } else {
+          // Try again after a short time:
+          //   Use the "long polling" strategy, where we assume that the
+          //   backend blocks the request for a couple of seconds and waits
+          //   for the query comes back.
+          //   If it doesn't come back the request resolves and
+          //   we - the frontend - try again almost instantly.
+          setTimeout(
+            () => queryResult(datasetId, queryId),
+            QUERY_AGAIN_TIMEOUT
+          );
+        }
+      },
+      (e: Error) => dispatch(queryResultError(queryType, e))
+    );
   };
 
-  return {
-    [`start${capitalizedType}QueryStart`]: startQueryStart,
-    [`start${capitalizedType}QueryError`]: startQueryError,
-    [`start${capitalizedType}QuerySuccess`]: startQuerySuccess,
-    [`start${capitalizedType}Query`]: startQuery,
-    [`stop${capitalizedType}QueryStart`]: stopQueryStart,
-    [`stop${capitalizedType}QueryError`]: stopQueryError,
-    [`stop${capitalizedType}QuerySuccess`]: stopQuerySuccess,
-    [`stop${capitalizedType}Query`]: stopQuery,
-    [`query${capitalizedType}ResultStart`]: queryResultStart,
-    [`query${capitalizedType}ResultReset`]: queryResultReset,
-    [`query${capitalizedType}ResultError`]: queryResultError,
-    [`query${capitalizedType}ResultSuccess`]: queryResultSuccess,
-    [`query${capitalizedType}Result`]: queryResult,
-  };
-}
+  return queryResult;
+};
