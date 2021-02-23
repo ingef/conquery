@@ -3,6 +3,9 @@ package com.bakdata.conquery.apiv1;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

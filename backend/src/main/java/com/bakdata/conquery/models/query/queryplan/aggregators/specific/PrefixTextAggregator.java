@@ -50,6 +50,6 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return ResultType.StringT.INSTANCE;
 	}
 }

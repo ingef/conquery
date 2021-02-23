@@ -59,7 +59,7 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.NUMERIC;
+		return ResultType.NumericT.INSTANCE;
 	}
 
 	@Override

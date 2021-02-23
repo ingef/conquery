@@ -120,22 +120,24 @@ module.exports = function (app, port) {
   /*
     QUERY RESULT DOWNLOAD
   */
-  app.get("/api/results/:filename", mockAuthMiddleware, function response(
-    req,
-    res
-  ) {
-    res.sendFile(path.join(__dirname, `./results/${req.params.filename}`));
-  });
+  app.get(
+    "/api/results/:filename",
+    mockAuthMiddleware,
+    function response(req, res) {
+      res.sendFile(path.join(__dirname, `./results/${req.params.filename}`));
+    }
+  );
 
   /*
     CONCEPTS
   */
-  app.get("/api/datasets/:id/concepts", mockAuthMiddleware, function response(
-    req,
-    res
-  ) {
-    res.sendFile(path.join(__dirname, "./concepts.json"));
-  });
+  app.get(
+    "/api/datasets/:id/concepts",
+    mockAuthMiddleware,
+    function response(req, res) {
+      res.sendFile(path.join(__dirname, "./concepts.json"));
+    }
+  );
 
   app.get(
     "/api/datasets/:datasetId/concepts/:id",
@@ -389,14 +391,11 @@ module.exports = function (app, port) {
 
     res.send({
       userName: "superUser",
-      permissions: [
-        {
-          domains: ["datasets"],
-          abilities: ["read", "download", "preserve_id"],
-          targets: ["imdb"],
-          creationTime: "2020-01-23T09:52:31.3318485",
+      permissions: {
+        imdb: {
+          canUpload: true,
         },
-      ],
+      },
       groups: [],
     });
   });

@@ -50,6 +50,6 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.BOOLEAN;
+		return ResultType.BooleanT.INSTANCE;
 	}
 }

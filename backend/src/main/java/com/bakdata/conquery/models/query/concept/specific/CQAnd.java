@@ -74,7 +74,7 @@ public class CQAnd extends CQElement implements ForcedExists{
 		}
 
 		if(createExists){
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "AND"), ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "AND"), ResultType.BooleanT.INSTANCE));
 		}
 	}
 

@@ -7,7 +7,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
@@ -42,7 +41,12 @@ public class PrintSettings implements SelectNameExtractor {
 	
 	@NonNull
 	private final BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer;
-	
+
+	private final String listElementDelimiter = ", ";
+	private final String listElementEscaper = "\\";
+	private final String listPrefix = "{";
+	private final String listPostfix = "}";
+
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer) {		
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
@@ -82,7 +86,7 @@ public class PrintSettings implements SelectNameExtractor {
 			sb.append(cqLabel);
 			sb.append(" - ");
 		}
-		else if(columnInfo.getCqConcept().getIds().size() > 0) {
+		else if(!columnInfo.getCqConcept().getIds().isEmpty()) {
 			// When no Label was set within the query, get the labels of all ids that are in the CQConcept
 			String concatElementLabels = columnInfo.getCqConcept().getIds().stream()
 			.map(id -> getLabelFromChildId(datasetRegistry, id))
@@ -110,4 +114,5 @@ public class PrintSettings implements SelectNameExtractor {
 		}
 		return concept.getLabel();
 	}
+
 }

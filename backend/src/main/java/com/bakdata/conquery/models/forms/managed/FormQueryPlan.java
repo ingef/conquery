@@ -109,10 +109,10 @@ public class FormQueryPlan implements QueryPlan {
 		result[1] = dateContext.getIndex();
 		// add event date
 		if(dateContext.getEventDate() != null) {
-			result[2] = dateContext.getEventDate();
+			result[2] = dateContext.getEventDate().toEpochDay();
 		}
 		//add date range at [2] or [3]
-		result[constantCount-1] = dateContext.getDateRange().toString();
+		result[constantCount-1] = dateContext.getDateRange();
 		
 		return result;
 	}

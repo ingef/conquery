@@ -185,8 +185,4 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 			}
 		}
 	}
-
-	public Object createPrintValue(int event, Column column) {
-		return getStore(column).createPrintValue(event);
-	}
 }
