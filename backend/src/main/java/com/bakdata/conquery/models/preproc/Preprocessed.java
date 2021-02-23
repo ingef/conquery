@@ -27,7 +27,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterable;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -157,13 +158,12 @@ public class Preprocessed {
 													  .parallel()
 													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
 
-		// Calculate where the entities start in the input data.
-		// Since we iterate in order, it's always the first event in the data belonging to the entity.
-		Int2IntMap entityInStarts = new Int2IntOpenHashMap(entities.size());
+		// This object can be huge!
+		Int2ObjectMap<IntList>  entityEvents = new Int2ObjectOpenHashMap<>(entities.size());
 
 		for (int pos = 0, size = rowEntities.size(); pos < size; pos++) {
 			int entity = rowEntities.getInt(pos);
-			entityInStarts.putIfAbsent(entity, pos);
+			entityEvents.computeIfAbsent(entity, (ignored) -> new IntArrayList(10)).add(pos);
 		}
 
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
@@ -175,26 +175,21 @@ public class Preprocessed {
 			entities.intParallelStream()
 					.forEach((int entity) -> {
 						final int start = entityStart.get(entity);
-						final int length = entityLength.get(entity);
 
-						// We iterate only over the range of the input values we  know the entity has data, but it can be interspersed so we have to check each rowEntity individually. Until it cannot have anymore data: offset >= length
+						final IntList events = entityEvents.get(entity);
+
 						int offset = 0;
+						for (int inIndex : events) {
 
-						for (int inIndex = entityInStarts.get(entity); offset < length; inIndex++) {
-							// Is this the current entity?
-							if (rowEntities.getInt(inIndex) != entity) {
-								continue;
-							}
-
-							int pos = start + offset;
+							int outIndex = start + offset;
 
 
 							if (columnValues.isNull(inIndex)) {
-								store.setNull(pos);
+								store.setNull(outIndex);
 							}
 							else {
 								final Object raw = columnValues.get(inIndex);
-								ppColumn.getParser().setValue(store, pos, raw);
+								ppColumn.getParser().setValue(store, outIndex, raw);
 							}
 							offset++;
 						}
