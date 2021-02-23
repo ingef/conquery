@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.*;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -120,7 +117,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
 			if (specialDateUnion) {
-				for(Object dateRange : (Object[]) singleLineResult.getValues()[0]) {
+				for(Object dateRange : (Collection<CDateRange>) singleLineResult.getValues()[0]) {
 					dateSet.add((CDateRange) dateRange);
 				}
 				// Skip overwriting the first value: daterange
