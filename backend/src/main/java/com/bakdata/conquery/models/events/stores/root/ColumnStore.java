@@ -41,17 +41,6 @@ public interface ColumnStore {
 	}
 
 	/**
-	 * Get printable representation of event. Objects shall be {@link String} and primitives can remain.
-	 */
-	default Object createPrintValue(int event) {
-		if (!has(event)) {
-			return "";
-		}
-
-		return createScriptValue(event);
-	}
-
-	/**
 	 * Test if the store has the event.
 	 */
 	boolean has(int event);
