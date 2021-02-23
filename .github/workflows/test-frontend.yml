@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: install dependencies
         run: yarn
-      - name: setup env variables
-        run: cp .env.example .env
+      # - name: setup env variables
+      #   run: cp .env.example .env
       - name: test
         run: yarn test
