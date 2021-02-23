@@ -49,10 +49,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.setup.Environment;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.Mockito;
 
@@ -79,7 +76,6 @@ public class FormConfigTest {
 	
 	@BeforeAll
 	public void setupTestClass() throws Exception{
-		//Mockito.mock(MetaStorage.class);
 
 		dataset.setName("test");
 		dataset1.setName("test1");
@@ -109,7 +105,7 @@ public class FormConfigTest {
 		when(namespacesMock.injectInto(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		storage = new NonPersistentStoreFactory().createMetaStorage();
+		storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), namespacesMock);
 
 
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
@@ -130,6 +126,11 @@ public class FormConfigTest {
 		form.setQueryGroup(new ManagedExecutionId(datasetId, UUID.randomUUID()));
 		mode.setForm(form);
 		mode.setFeatures(List.of(new CQConcept()));
+	}
+
+	@AfterEach
+	public void cleanupTest() {
+		storage.clear();
 	}
 	
 	@Test
