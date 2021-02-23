@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
@@ -38,24 +37,19 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRe
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.setup.Environment;
-import org.apache.commons.collections4.map.HashedMap;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.Mockito;
 
@@ -67,13 +61,9 @@ import org.mockito.Mockito;
 @TestInstance(Lifecycle.PER_CLASS)
 public class FormConfigTest {
 	
-	private MetaStorage storageMock;
+	private MetaStorage storage;
 	private DatasetRegistry namespacesMock;
-	
-	private Map<FormConfigId, FormConfig> configs = new ConcurrentHashMap<>();
-	private Map<UserId, User> users = new HashedMap<>();
-	private Map<GroupId, Group> groups = new HashedMap<>();
-	
+
 	private FormConfigProcessor processor;
 	private AuthorizationController controller;
 	private Validator validator = Validators.newValidatorFactory().getValidator();
@@ -86,80 +76,12 @@ public class FormConfigTest {
 	
 	@BeforeAll
 	public void setupTestClass() throws Exception{
-		storageMock = Mockito.mock(MetaStorage.class);
 
 		dataset.setName("test");
 		dataset1.setName("test1");
 		datasetId = dataset.getId();
 		datasetId1 = dataset1.getId();
-		
-		// Mock Configs
-		doAnswer(invocation -> {
-			final FormConfigId id = invocation.getArgument(0);
-			return configs.get(id);
-		}).when(storageMock).getFormConfig(any());
-		doAnswer(invocation -> {
-			final FormConfig elem = invocation.getArgument(0);
-			if(configs.containsKey(elem.getId())) {
-				throw new IllegalStateException("Key already existed");
-			}
-			configs.put(elem.getId(),elem);
-			return null;
-		}).when(storageMock).addFormConfig(any());
-		doAnswer(invocation -> {
-			final FormConfig elem = invocation.getArgument(0);
-			configs.put(elem.getId(),elem);
-			return null;
-		}).when(storageMock).updateFormConfig(any());
-		doAnswer(invocation -> {
-			final FormConfigId id = invocation.getArgument(0);
-			configs.remove(id);
-			return null;
-		}).when(storageMock).removeFormConfig(any());
-		when(storageMock.getAllFormConfigs()).thenReturn(configs.values());
-		
-		// Mock User
-		doAnswer(invocation -> {
-			final UserId id = invocation.getArgument(0);
-			return users.get(id);
-		}).when(storageMock).getUser(any());
-		doAnswer(invocation -> {
-			final User elem = invocation.getArgument(0);
-			users.put(elem.getId(),elem);
-			return null;
-		}).when(storageMock).updateUser(any());
-		doAnswer(invocation -> {
-			final User elem = invocation.getArgument(0);
-			if(users.containsKey(elem.getId())) {
-				throw new IllegalStateException("Key already existed");
-			}
-			users.put(elem.getId(),elem);
-			return null;
-		}).when(storageMock).addUser(any());
-		doAnswer(invocation -> {
-			final UserId id = invocation.getArgument(0);
-			users.remove(id);
-			return null;
-		}).when(storageMock).removeUser(any());
-		when(storageMock.getAllUsers()).thenReturn(users.values());
-		
-		// Mock Groups
-		doAnswer(invocation -> {
-			final GroupId id = invocation.getArgument(0);
-			return groups.get(id);
-		}).when(storageMock).getGroup(any());
-		doAnswer(invocation -> {
-			final Group elem = invocation.getArgument(0);
-			groups.put(elem.getId(),elem);
-			return null;
-		}).when(storageMock).updateGroup(any());
-		doAnswer(invocation -> {
-			final GroupId id = invocation.getArgument(0);
-			groups.remove(id);
-			return null;
-		}).when(storageMock).removeGroup(any());
-		when(storageMock.getAllGroups()).thenReturn(groups.values());
-		
+
 		// Mock DatasetRegistry for translation
 		namespacesMock = Mockito.mock(DatasetRegistry.class);
 		doAnswer(invocation -> {
@@ -169,10 +91,10 @@ public class FormConfigTest {
 			final DatasetId id = invocation.getArgument(0);
 			Namespace namespaceMock = Mockito.mock(Namespace.class);
 			if(id.equals(datasetId)) {
-				when(namespaceMock.getDataset()).thenReturn(dataset);				
+				when(namespaceMock.getDataset()).thenReturn(dataset);
 			}
-			else if (id.equals(datasetId1)) {	
-				when(namespaceMock.getDataset()).thenReturn(dataset1);	
+			else if (id.equals(datasetId1)) {
+				when(namespaceMock.getDataset()).thenReturn(dataset1);
 			}
 			else {
 				throw new IllegalStateException("Unkown dataset id.");
@@ -182,22 +104,20 @@ public class FormConfigTest {
 		when(namespacesMock.getAllDatasets()).thenReturn(List.of(dataset,dataset1));
 		when(namespacesMock.injectInto(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
-		when(storageMock.getDatasetRegistry()).thenReturn(namespacesMock);
-		
+
+		storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), namespacesMock);
+
 
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
 		.add(IdResolveContext.class, namespacesMock);
-		processor = new FormConfigProcessor(validator, storageMock);
-		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(), Collections.emptyList(), storageMock);
+		processor = new FormConfigProcessor(validator, storage);
+		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(), Collections.emptyList(), storage);
 		controller.init();
 		controller.start();
 	}
 	
 	@BeforeEach
 	public void setupTest(){
-		configs.clear();
-		users.clear();
-		groups.clear();
 
 		form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
@@ -206,12 +126,17 @@ public class FormConfigTest {
 		mode.setForm(form);
 		mode.setFeatures(List.of(new CQConcept()));
 	}
+
+	@AfterEach
+	public void cleanupTest() {
+		storage.clear();
+	}
 	
 	@Test
 	public void addConfigWithoutTranslation() {
 		User user = new User("test","test");
-		storageMock.addUser(user);
-		user.addPermission(storageMock, DatasetPermission.onInstance(Ability.READ, datasetId));
+		storage.addUser(user);
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfigAPI formConfig = FormConfigAPI.builder()
@@ -220,71 +145,46 @@ public class FormConfigTest {
 			.build();
 		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
 		
-		assertThat(configs).containsAllEntriesOf(Map.of(formId,FormConfigAPI.intern(formConfig, user.getId(), dataset.getId())));
+		assertThat(storage.getAllFormConfigs()).containsExactly(FormConfigAPI.intern(formConfig, user.getId(), dataset.getId()));
 		
-		assertThat(users.get(user.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formId));
+		assertThat(storage.getUser(user.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formId));
 	}
-	
-//	TODO integrate translation first see FormConfig
-//	@Test
-//	public void addConfigWithTranslation() {
-//		User user = new User("test","test");
-//		storageMock.addUser(user);
-//		user.addPermission(storageMock, DatasetPermission.onInstance(Ability.READ, datasetId));
-//		user.addPermission(storageMock, DatasetPermission.onInstance(Ability.READ, datasetId1));
-//		
-//		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
-//		FormConfigAPI formConfig = FormConfigAPI.builder()
-//			.formType(form.getFormType())
-//			.values(mapper.valueToTree(form))
-//			.build();
-//		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
-//		
-//		FormConfig internTestForm = FormConfigAPI.intern(formConfig, user.getId(), dataset.getId()); 
-//		FormConfig translatedTestForm = internTestForm.tryTranslateToDataset(namespacesMock, datasetId1, mapper).get();
-//		assertThat(configs).containsAllEntriesOf(Map.of(
-//			formId, internTestForm,
-//			translatedTestForm.getId(), translatedTestForm));
-//		
-//		assertThat(users.get(user.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formId));
-//		assertThat(users.get(user.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, translatedTestForm.getId()));
-//	}
-	
+
 	@Test
 	public void deleteConfig() {
 		// PREPARE
 		User user = new User("test","test");
-		storageMock.addUser(user);
-		user.addPermission(storageMock, DatasetPermission.onInstance(Ability.READ, datasetId));
+		storage.addUser(user);
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
 		
-		user.addPermission(storageMock, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
-		configs.put(formConfig.getId(),formConfig);
+		user.addPermission(storage, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
+		storage.addFormConfig(formConfig);
 		
 		// EXECUTE
 		processor.deleteConfig(user, formConfig.getId());
 		
 		// CHECK
-		assertThat(configs).doesNotContainEntry(formConfig.getId(),formConfig);
+		assertThat(storage.getAllFormConfigs()).doesNotContain(formConfig);
 		
-		assertThat(users.get(user.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
+		assertThat(storage.getUser(user.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
 	}
 	
 	@Test
 	public void getConfig() {
 		// PREPARE
 		User user = new User("test","test");
-		storageMock.addUser(user);
-		user.addPermission(storageMock, DatasetPermission.onInstance(Ability.READ, datasetId));
+		storage.addUser(user);
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setOwner(user.getId());
-		user.addPermission(storageMock, FormConfigPermission.onInstance(Ability.READ, formConfig.getId()));
-		configs.put(formConfig.getId(),formConfig);
+		user.addPermission(storage, FormConfigPermission.onInstance(Ability.READ, formConfig.getId()));
+		storage.addFormConfig(formConfig);
 		
 		// EXECUTE
 		 FormConfigFullRepresentation response = processor.getConfig(new DatasetId("testDataset"), user, formConfig.getId());
@@ -311,8 +211,8 @@ public class FormConfigTest {
 	public void getConfigs() {
 		// PREPARE
 		User user = new User("test","test");
-		storageMock.addUser(user);
-		user.addPermission(storageMock, DatasetPermission.onInstance(Ability.READ, datasetId));
+		storage.addUser(user);
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
 		
 		ExportForm form2 = new ExportForm();
 		RelativeMode mode3 = new RelativeMode();
@@ -367,15 +267,15 @@ public class FormConfigTest {
 	public void patchConfig() {
 		// PREPARE
 		User user = new User("test","test");
-		storageMock.addUser(user);
-		user.addPermission(storageMock, DatasetPermission.onInstance(Ability.READ, datasetId));
+		storage.addUser(user);
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
 		Group group1 = new Group("test1","test1");
-		storageMock.addGroup(group1);
+		storage.addGroup(group1);
 		Group group2 = new Group("test2","test2");
-		storageMock.addGroup(group2);
+		storage.addGroup(group2);
 		
-		group1.addMember(storageMock, user);
-		group2.addMember(storageMock, user);
+		group1.addMember(storage, user);
+		group2.addMember(storage, user);
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
@@ -408,12 +308,12 @@ public class FormConfigTest {
 		patchedFormExpected.setOwner(user.getId());
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))));
 		
-		assertThat(storageMock.getFormConfig(formId)).usingRecursiveComparison()
+		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
 				.ignoringFields("cachedId", FormConfig.Fields.creationTime)
 				.isEqualTo(patchedFormExpected);
 
-		assertThat(groups.get(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
-		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(storage.getGroup(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 		
 		
 		
@@ -430,12 +330,12 @@ public class FormConfigTest {
 		// CHECK PART 2
 		patchedFormExpected.setShared(false);
 		
-		assertThat(storageMock.getFormConfig(formId)).usingRecursiveComparison()
+		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
 				.ignoringFields("cachedId", FormConfig.Fields.creationTime)
 				.isEqualTo(patchedFormExpected);
 
-		assertThat(groups.get(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
-		assertThat(groups.get(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(storage.getGroup(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 	}
 
 }
