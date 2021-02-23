@@ -66,6 +66,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@Valid @NotEmpty @NsIdRefCollection
 	private List<ConceptElement<?>> ids = Collections.emptyList();
+
 	@Valid @NotEmpty @JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 

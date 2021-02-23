@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +129,10 @@ public interface IId<TYPE> {
 	
 	static <T extends IId<?>> Class<T> findIdClass(Class<?> cl) {
 		Class<?> result = CLASS_TO_ID_MAP.get(cl);
+
+		if(Modifier.isAbstract(cl.getModifiers()))
+			return null;
+
 		if(result == null) {
 			String methodName = "getId";
 			if(IdentifiableImpl.class.isAssignableFrom(cl)) {
@@ -136,7 +141,7 @@ public interface IId<TYPE> {
 			try {
 				Class<?> returnType = MethodUtils.getAccessibleMethod(cl, methodName).getReturnType();
 				try {
-					if(AId.class.isAssignableFrom(returnType) && !AId.class.equals(returnType)) {
+					if(IId.class.isAssignableFrom(returnType)) {
 						result = returnType;
 						CLASS_TO_ID_MAP.put(cl, result);
 					}

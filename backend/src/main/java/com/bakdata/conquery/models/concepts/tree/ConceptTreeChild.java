@@ -62,13 +62,6 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 			condition.init(this);
 		}
 	}
-	/*
-	@Override
-	public void incMatchingEntries(CDateRange conceptDateRange) {
-		super.incMatchingEntries(conceptDateRange);
-		if(getParent()!=null)
-			getParent().incMatchingEntries(conceptDateRange);
-	}*/
 
 	@Override
 	public ConceptTreeChildId createId() {
