@@ -163,11 +163,10 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	public void applyEncoding(Encoding encoding) {
 		this.encoding = encoding;
-		decoded = strings
-						  .keySet()
-						  .stream()
-						  .map(encoding::decode)
-						  .collect(Collectors.toList());
+		decoded = strings.object2IntEntrySet().stream()
+						 .sorted(Comparator.comparing(Object2IntMap.Entry::getIntValue))
+						 .map(entry -> encoding.decode(entry.getKey()))
+						 .collect(Collectors.toList());
 	}
 
 	@Override
@@ -184,8 +183,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	public IntegerStore decideIndexType() {
 		final IntegerParser indexParser = new IntegerParser(getConfig());
 
-		final IntSummaryStatistics indexStatistics = getStrings().values().stream()
-																 .mapToInt(Integer::intValue)
+		final IntSummaryStatistics indexStatistics = getStrings().values().intStream()
 																 .summaryStatistics();
 
 		indexParser.setMaxValue(indexStatistics.getMax());
