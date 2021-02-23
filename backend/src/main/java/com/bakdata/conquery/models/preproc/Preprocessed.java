@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.IntSummaryStatistics;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -79,7 +80,6 @@ public class Preprocessed {
 
 		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(parserConfig);
 
-		// pid and columns
 		values = new ColumnValues[columns.length];
 
 		for (int index = 0; index < input.getWidth(); index++) {
@@ -104,15 +104,15 @@ public class Preprocessed {
 			throw new IllegalArgumentException("outfile was opened in read-only mode.");
 		}
 
-		// TODO implement statistics
-		//		final IntSummaryStatistics statistics = entries.row(0).values().stream().mapToInt(List::size).summaryStatistics();
-		//
-		//		log.info("Statistics = {}", statistics);
 
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
 		calculateEntitySpans(entityStart, entityLength, entities, rowEntities);
+
+		final IntSummaryStatistics statistics = entityLength.values().intStream().summaryStatistics();
+		log.info("Statistics = {}", statistics);
+
 
 		Map<String, ColumnStore> columnStores = combineStores(entityStart, entityLength);
 
@@ -133,11 +133,13 @@ public class Preprocessed {
 	 * Calculate beginning and length of entities in output data.
 	 */
 	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntList rowEntities) {
+		// Count the number of events for the entity
 		for (int entity : rowEntities) {
 			final int curr = entityLength.getOrDefault(entity, 0);
 			entityLength.put(entity, curr + 1);
 		}
 
+		// Lay out the entities in order, adding their length.
 		int outIndex = 0;
 
 		for (int entity : entities) {
@@ -156,6 +158,8 @@ public class Preprocessed {
 													  .parallel()
 													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
 
+		// Calculate where the entities start in the input data.
+		// Since we iterate in order, it's always the first event in the data belonging to the entity.
 		Int2IntMap entityInStarts = new Int2IntOpenHashMap(entities.size());
 
 		for (int pos = 0, size = rowEntities.size(); pos < size; pos++) {
