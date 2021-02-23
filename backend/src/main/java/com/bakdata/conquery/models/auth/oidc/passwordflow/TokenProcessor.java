@@ -3,21 +3,14 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 import com.bakdata.conquery.models.auth.basic.UsernamePasswordChecker;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.auth.oidc.OIDCAuthenticationConfig;
-import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthAdminUnprotectedResourceProvider;
-import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotectedResourceProvider;
-import com.bakdata.conquery.resources.unprotected.LoginResource;
-import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
-import com.nimbusds.oauth2.sdk.token.AccessToken;
-import io.dropwizard.jersey.DropwizardResourceConfig;
+import com.nimbusds.oauth2.sdk.token.AccessToken	;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.BearerToken;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -26,7 +19,7 @@ import java.net.URI;
 @Slf4j
 @Getter
 @Setter
-public class TokenProcessor<C extends OIDCAuthenticationConfig> implements AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, UsernamePasswordChecker {
+public class TokenProcessor<C extends OIDCAuthenticationConfig> implements UsernamePasswordChecker {
 
 	private static final String GROUPS_CLAIM = "groups";
 
@@ -35,19 +28,6 @@ public class TokenProcessor<C extends OIDCAuthenticationConfig> implements AuthA
 
 	public TokenProcessor(IntrospectionDelegatingRealmFactory authProviderConf) {
 		this.authProviderConf = authProviderConf;
-	}
-
-	
-
-	@Override
-	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
-		jerseyConfig.register(new TokenResource(this));
-		jerseyConfig.register(LoginResource.class);
-	}
-
-	@Override
-	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
-		jerseyConfig.register(new TokenResource(this));
 	}
 
 	@Override
