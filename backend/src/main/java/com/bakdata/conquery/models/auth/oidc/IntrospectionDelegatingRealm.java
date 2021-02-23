@@ -143,6 +143,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 		}
 
 		TokenIntrospectionSuccessResponse successResponse = response.toSuccessResponse();
+		log.trace("Token introspection: {}", successResponse);
 		if (!successResponse.isActive()) {
 			log.trace("Token was not active");
 			throw new ExpiredCredentialsException();
