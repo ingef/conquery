@@ -169,22 +169,22 @@ public class Preprocessed {
 
 			final ColumnStore store = columnStores.get(ppColumn.getName());
 
-			entities.intStream()
+			entities.intParallelStream()
 					.forEach((int entity) -> {
 						final int start = entityStart.get(entity);
 						final int length = entityLength.get(entity);
 
-						int inBegin = entityInStarts.get(entity);
+						// We iterate only over the range of the input values we  know the entity has data, but it can be interspersed so we have to check each rowEntity individually. Until it cannot have anymore data: offset >= length
+						int offset = 0;
 
-						for (int offset = 0; offset < length; offset++) {
-
-							int inIndex = inBegin + offset;
-
+						for (int inIndex = entityInStarts.get(entity); offset < length; inIndex++) {
+							// Is this the current entity?
 							if (rowEntities.getInt(inIndex) != entity) {
 								continue;
 							}
 
 							int pos = start + offset;
+
 
 							if (columnValues.isNull(inIndex)) {
 								store.setNull(pos);
@@ -193,6 +193,7 @@ public class Preprocessed {
 								final Object raw = columnValues.get(inIndex);
 								ppColumn.getParser().setValue(store, pos, raw);
 							}
+							offset++;
 						}
 					});
 		}
