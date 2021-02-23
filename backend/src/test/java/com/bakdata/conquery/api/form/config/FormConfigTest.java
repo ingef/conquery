@@ -111,7 +111,7 @@ public class FormConfigTest {
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
 		.add(IdResolveContext.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storage);
-		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(), Collections.emptyList(), storage);
+		controller = new AuthorizationController(new DevelopmentAuthorizationConfig(), Collections.emptyList(), storage);
 		controller.init(null);
 		controller.start();
 	}

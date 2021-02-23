@@ -39,9 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public final class AuthorizationController implements Managed{
-	
-	@NonNull
-	private final Environment environment;
+
 	@NonNull
 	private final AuthorizationConfig authorizationConfig;
 	@NonNull

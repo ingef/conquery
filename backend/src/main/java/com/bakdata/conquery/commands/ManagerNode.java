@@ -145,7 +145,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		admin = new AdminServlet();
 		admin.register(this);
 
-		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
+		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init(this);
 		environment.lifecycle().manage(authController);
 
