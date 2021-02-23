@@ -57,6 +57,6 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.MONEY;
+		return ResultType.MoneyT.INSTANCE;
 	}
 }

@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -51,7 +52,7 @@ public class SecondaryIdQuery extends IQuery {
 	@JsonIgnore
 	private ConceptQuery query;
 
-
+	@JsonProperty
 	public void setRoot(@NotNull CQElement root){
 		this.root = root;
 		this.query = new ConceptQuery(root);
@@ -126,7 +127,7 @@ public class SecondaryIdQuery extends IQuery {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.STRING));
+		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
 		query.collectResultInfos(collector);
 	}
 

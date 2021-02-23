@@ -6,17 +6,17 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "${dataset}.select"
+        "select"
       ],
       "type": "CONCEPT",
       "label": "select",
       "tables": [
         {
-          "id": "${dataset}.select.connector"
+          "id": "select.connector"
         }
       ],
       "selects": [
-        "${dataset}.select.connector.select"
+        "select.connector.select"
       ]
     }
   },

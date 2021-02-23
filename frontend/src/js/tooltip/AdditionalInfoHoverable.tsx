@@ -7,22 +7,22 @@ import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
 import HoverableBase from "./HoverableBase";
 
 export type AdditionalInfoHoverableNodeType = {
-  label: string,
-  description: string,
-  children?: Array<string>,
-  matchingEntries: number,
-  dateRange: DateRangeT,
-  additionalInfos: InfoT[]
+  label: string;
+  description: string;
+  children?: Array<string>;
+  matchingEntries: number;
+  dateRange: DateRangeT;
+  additionalInfos: InfoT[];
 };
 
-// Whitelist the data we pass (especially: don't pass all children)
+// Allowlist the data we pass (especially: don't pass all children)
 const additionalInfos = (node: AdditionalInfoHoverableNodeType) => ({
   label: node.label,
   description: node.description,
   isFolder: !!node.children && node.children.length > 0,
   matchingEntries: node.matchingEntries,
   dateRange: node.dateRange,
-  infos: node.additionalInfos
+  infos: node.additionalInfos,
 });
 
 // Decorates a component with a hoverable node.
@@ -50,15 +50,12 @@ const AdditionalInfoHoverable = (Component: any) => {
 
       dispatch([
         toggleAdditionalInfos(),
-        displayAdditionalInfos(additionalInfos(node))
+        displayAdditionalInfos(additionalInfos(node)),
       ]);
-    }
+    },
   });
 
-  return connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(HoverableBase(Component));
+  return connect(mapStateToProps, mapDispatchToProps)(HoverableBase(Component));
 };
 
 export default AdditionalInfoHoverable;

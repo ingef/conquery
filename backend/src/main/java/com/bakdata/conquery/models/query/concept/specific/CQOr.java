@@ -82,7 +82,7 @@ public class CQOr extends CQElement implements ForcedExists {
 		}
 
 		if (createExists) {
-			collector.add(new SimpleResultInfo(getLabel(), ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(getLabel(), ResultType.BooleanT.INSTANCE));
 		}
 	}
 

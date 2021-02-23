@@ -4,34 +4,34 @@
   "expectedCsv": "tests/query/SECONDARY_ID_EXCLUDED/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
-    "secondaryId": "${dataset}.secondary",
+    "secondaryId": "secondary",
     "root": {
       "type": "AND",
       "children": [
         {
           "ids": [
-            "${dataset}.concept"
+            "concept"
           ],
           "type": "CONCEPT",
           "label": "vs",
           "tables": [
             {
-              "id": "${dataset}.concept.connector1"
+              "id": "concept.connector1"
             }
           ]
         },
         {
           "ids": [
-            "${dataset}.concept"
+            "concept"
           ],
           "excludeFromSecondaryIdQuery": true,
           "type": "CONCEPT",
           "tables": [
             {
-              "id": "${dataset}.concept.connector1",
+              "id": "concept.connector1",
               "filters": [
                 {
-                  "filter": "${dataset}.concept.connector1.value",
+                  "filter": "concept.connector1.value",
                   "type": "INTEGER_RANGE",
                   "value": {
                     "min": 2

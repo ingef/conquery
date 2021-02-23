@@ -78,7 +78,7 @@ public class CQAnd extends CQElement implements ForcedExists{
 		}
 
 		if(createExists){
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), QueryUtils.createDefaultMultiLabel(children, getGetC10nName())), ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), QueryUtils.createDefaultMultiLabel(children, getGetC10nName())), ResultType.BooleanT.INSTANCE));
 		}
 	}
 
