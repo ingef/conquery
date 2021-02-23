@@ -21,6 +21,7 @@ import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -199,6 +200,10 @@ public interface ResultType {
         }
     }
 
+    /**
+     * A DateRange is provided by in a query result as two ints in a list, both standing for an epochday (see {@link LocalDate#toEpochDay()}).
+     * The first int describes the included lower bound of the range. The second int descibes the included upper bound.
+     */
     @CPSType(id = "DATE_RANGE", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class DateRangeT extends PrimitiveResultType {
