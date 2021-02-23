@@ -104,11 +104,10 @@ public class Preprocessed {
 			throw new IllegalArgumentException("outfile was opened in read-only mode.");
 		}
 
-
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
 
-		calculateEntitySpans(entityStart, entityLength, entities, rowEntities);
+		calculateEntitySpans(entityStart, entityLength);
 
 		final IntSummaryStatistics statistics = entityLength.values().intStream().summaryStatistics();
 		log.info("Statistics = {}", statistics);
@@ -132,7 +131,7 @@ public class Preprocessed {
 	/**
 	 * Calculate beginning and length of entities in output data.
 	 */
-	private static void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength, IntSet entities, IntList rowEntities) {
+	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
 		// Count the number of events for the entity
 		for (int entity : rowEntities) {
 			final int curr = entityLength.getOrDefault(entity, 0);
