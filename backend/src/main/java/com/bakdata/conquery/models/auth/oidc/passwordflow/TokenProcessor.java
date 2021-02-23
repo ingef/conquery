@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.auth.oidc.OIDCAuthenticationConfig;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
-import com.nimbusds.oauth2.sdk.token.AccessToken	;
+import com.nimbusds.oauth2.sdk.token.AccessToken;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;

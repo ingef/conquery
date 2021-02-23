@@ -102,7 +102,6 @@ public class AdminServlet {
 		// register features
 		jerseyConfig
 			.register(new MultiPartFeature())
-			.register(manager.getAuthController().getAuthenticationFilter())
 			.register(IdParamConverter.Provider.INSTANCE)
 			.register(AuthCookieFilter.class);
 	}
