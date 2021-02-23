@@ -5,7 +5,7 @@ import { deleteStoredAuthToken } from "../authorization/helper";
 import WithTooltip from "../tooltip/WithTooltip";
 import { T } from "../localization";
 import { useHistory } from "react-router-dom";
-import { isIDPEnabled } from "js/environment";
+import { isIDPEnabled } from "../environment";
 import { useKeycloak } from "@react-keycloak/web";
 
 const SxIconButton = styled(IconButton)`
