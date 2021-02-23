@@ -127,10 +127,6 @@ public class Preprocessed {
 		log.debug("Writing data");
 
 		writeData(outFile.writeContent(), entityStart, entityLength, columnStores, primaryDictionary, dicts);
-
-		for (ColumnValues columnValues : values) {
-			columnValues.close();
-		}
 	}
 
 	/**
@@ -173,7 +169,7 @@ public class Preprocessed {
 
 			final ColumnStore store = columnStores.get(ppColumn.getName());
 
-			entities.intParallelStream()
+			entities.intStream()
 					.forEach((int entity) -> {
 						final int start = entityStart.get(entity);
 						final int length = entityLength.get(entity);
@@ -241,7 +237,7 @@ public class Preprocessed {
 				descriptor.getName(),
 				descriptor.getTable(),
 				rows,
-				this.columns,
+				columns,
 				hash
 		);
 
@@ -254,11 +250,11 @@ public class Preprocessed {
 		}
 	}
 
-	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap
-																					entityLength, Map<String, ColumnStore> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
+	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
 			throws IOException {
 		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(out1))) {
-			CONTAINER_WRITER.writeValue(out, new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts));
+			final PreprocessedData value = new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts);
+			CONTAINER_WRITER.writeValue(out, value);
 		}
 	}
 
@@ -310,7 +306,6 @@ public class Preprocessed {
 		public int length() {
 			return offsets.size();
 		}
-
 
 		@Override
 		public IntIterator iterator() {

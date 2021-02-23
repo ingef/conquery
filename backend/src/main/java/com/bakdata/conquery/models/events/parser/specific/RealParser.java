@@ -69,17 +69,17 @@ public class RealParser extends Parser<Double, RealStore> {
 			final DoubleBigList values = new DoubleBigArrayBigList();
 
 			@Override
-			public Double read(int event) {
+			public Double get(int event) {
 				return values.getDouble(event);
 			}
 
 			@Override
-			protected void write(Double obj) {
+			protected void append(Double obj) {
 				values.add(obj.doubleValue());
 			}
 
 			@Override
-			protected int countValues() {
+			protected int size() {
 				return (int) values.size64();
 			}
 		};

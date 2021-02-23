@@ -11,17 +11,17 @@ class IntegerColumnValues extends ColumnValues<Integer> {
 	}
 
 	@Override
-	public Integer read(int event) {
+	public Integer get(int event) {
 		return values.getInt(event);
 	}
 
 	@Override
-	protected void write(Integer obj) {
+	protected void append(Integer obj) {
 		values.add(obj.intValue());
 	}
 
 	@Override
-	protected int countValues() {
+	protected int size() {
 		return (int) values.size64();
 	}
 }

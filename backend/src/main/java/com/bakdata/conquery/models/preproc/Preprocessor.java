@@ -186,9 +186,10 @@ public class Preprocessor {
 							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
 							final PPColumn[] columns = result.getColumns();
-							final Object[] outRow = applyOutputs(outputs, columns, row, lineId);
 
 							final int primary = result.addPrimary(primaryId);
+							final Object[] outRow = applyOutputs(outputs, columns, row, lineId);
+
 							result.addRow(primary, columns, outRow);
 
 						}

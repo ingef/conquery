@@ -110,17 +110,17 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 			final List<CDateRange> decimals = new ArrayList<>();
 
 			@Override
-			public CDateRange read(int event) {
+			public CDateRange get(int event) {
 				return decimals.get(event);
 			}
 
 			@Override
-			protected void write(CDateRange obj) {
+			protected void append(CDateRange obj) {
 				decimals.add(obj);
 			}
 
 			@Override
-			protected int countValues() {
+			protected int size() {
 				return decimals.size();
 			}
 		};
