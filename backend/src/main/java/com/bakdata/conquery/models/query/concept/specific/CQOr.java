@@ -82,8 +82,13 @@ public class CQOr extends CQElement implements ForcedExists {
 		}
 
 		if (createExists) {
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), QueryUtils.createDefaultMultiLabel(children, getGetC10nName())), ResultType.BOOLEAN));
+			collector.add(new SimpleResultInfo(getLabel(), ResultType.BOOLEAN));
 		}
+	}
+
+	@Override
+	public String getLabel() {
+		return Objects.requireNonNullElse(super.getLabel(), QueryUtils.createDefaultMultiLabel(children, getGetC10nName()));
 	}
 
 	private static String getGetC10nName() {
