@@ -41,7 +41,8 @@ public class LocalAuthRealmTest {
 	public void setupAll() throws Exception {
 		storage =  new NonPersistentStoreFactory().createMetaStorage();
 		tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
-		assert tmpDir.mkdir();
+
+		assert tmpDir.exists();
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
@@ -58,7 +59,7 @@ public class LocalAuthRealmTest {
 		realm.addUser(user1, List.of(user1Password));
 	}
 
-	@AfterAll
+	@AfterEach
 	public void cleanUpEach() {
 		// Well there is an extra test case for this, but lets do it like this for now.
 		realm.removeUser(user1);
