@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -17,7 +18,6 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Optional;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

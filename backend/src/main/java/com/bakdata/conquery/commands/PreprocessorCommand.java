@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
-import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.setup.Environment;
 import lombok.experimental.FieldNameConstants;
@@ -104,15 +103,26 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		isFailFast = namespace.get("fast-fail") != null && namespace.<Boolean>get("fast-fail");
 
-		final List<String> tags = namespace.getList("tag") != null ? namespace.getList("tag") : Collections.singletonList("");
+		final List<String> tags = namespace.getList("tag");
 
 		log.info("Preprocessing from command line config.");
 
-		for (String tag : tags) {
+		if (tags == null || tags.isEmpty()) {
 			for (File desc : namespace.<File>getList("desc")) {
 				final List<PreprocessingJob>
-						descriptions = findPreprocessingDescriptions(desc, namespace.get("in"), namespace.get("out"), tag, environment.getValidator());
+						descriptions =
+						findPreprocessingDescriptions(desc, namespace.get("in"), namespace.get("out"), Optional.empty(), environment.getValidator());
 				descriptors.addAll(descriptions);
+			}
+		}
+		else {
+			for (String tag : tags) {
+				for (File desc : namespace.<File>getList("desc")) {
+					final List<PreprocessingJob>
+							descriptions =
+							findPreprocessingDescriptions(desc, namespace.get("in"), namespace.get("out"), Optional.of(tag), environment.getValidator());
+					descriptors.addAll(descriptions);
+				}
 			}
 		}
 
@@ -169,7 +179,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	public List<PreprocessingJob> findPreprocessingDescriptions(File descriptionFiles, File inDir, File outputDir, String tag, Validator validator)
+	public List<PreprocessingJob> findPreprocessingDescriptions(File descriptionFiles, File inDir, File outputDir, Optional<String> tag, Validator validator)
 			throws IOException {
 		List<PreprocessingJob> out = new ArrayList<>();
 
@@ -192,7 +202,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		return !failed.isEmpty();
 	}
 
-	private Optional<PreprocessingJob> tryExtractDescriptor(Validator validator, String tag, File descriptionFile, File outputDir, File csvDir)
+	private Optional<PreprocessingJob> tryExtractDescriptor(Validator validator, Optional<String> tag, File descriptionFile, File outputDir, File csvDir)
 			throws IOException {
 		try {
 			final TableImportDescriptor
@@ -205,9 +215,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 
 			// Override name to tag if present
-			if (!Strings.isNullOrEmpty(tag)) {
-				descriptor.setName(tag);
-			}
+			tag.ifPresent(descriptor::setName);
 
 			return Optional.of(preprocessingJob);
 		}

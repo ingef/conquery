@@ -5,8 +5,8 @@ import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
 import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.Optional;
 
-import com.google.common.base.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -29,7 +29,7 @@ public class PreprocessingJob implements Serializable {
 
 
 	public File getPreprocessedFile() {
-		if(!tag.isPresent()){
+		if(tag.isEmpty()){
 			return preprocessedOut.resolve(descriptor.getName() + EXTENSION_PREPROCESSED).toFile();
 		}
 

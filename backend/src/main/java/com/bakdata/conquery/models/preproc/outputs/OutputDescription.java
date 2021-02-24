@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Output's are used for preprocessing to generate cqpp files. Their main function is to selectivley read data from an Input CSV and prepare it for fast reading into a live Conquery instance. An output describes the transformation of an input row into an output row. It can do some transformation but should avoid complex work.
@@ -24,6 +25,7 @@ import lombok.Data;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "operation")
 @CPSBase
+@EqualsAndHashCode
 public abstract class OutputDescription implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -33,8 +35,6 @@ public abstract class OutputDescription implements Serializable {
 
 	private boolean required = false;
 
-	@Override
-	public abstract int hashCode();
 
 	/**
 	 * Describes a transformation of an input row to a single value.

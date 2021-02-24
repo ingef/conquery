@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -25,7 +26,6 @@ import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
@@ -56,7 +56,8 @@ public class Preprocessor {
 
 			log.info("EXISTS ALREADY");
 
-			int currentHash = preprocessingJob.getDescriptor().calculateValidityHash(preprocessingJob.csvDirectory, preprocessingJob.tag);
+			int currentHash = preprocessingJob.getDescriptor()
+											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
 				 InputStream is = outFile.readHeader()) {
@@ -295,7 +296,7 @@ public class Preprocessor {
 	}
 
 	public static File resolveSourceFile(String fileName, Path csvDirectory, Optional<String> tag) {
-		if(!tag.isPresent()){
+		if(tag.isEmpty()){
 			return csvDirectory.resolve(fileName).toFile();
 		}
 
