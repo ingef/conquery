@@ -58,6 +58,20 @@ No fields can be set for this type.
 
 </p></details>
 
+### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L20-L22)</sup></sub></sup>
+A realm that verifies oauth tokens using PKCE.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealmFactory`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L28) | jwk | `JWK` | `null` |  |  | 
+</p></details>
+
 ### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L22)</sup></sub></sup>
 
 
