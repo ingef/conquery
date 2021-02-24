@@ -121,8 +121,8 @@ Supported Fields:
 
 ## Other Types
 
-### Type TableImportDescriptor<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableImportDescriptor.java#L21-L25)</sup></sub></sup>
-Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs. For further detail see {@link TableInputDescriptor}, and {@link Preprocessor}.
+### Type TableImportDescriptor<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableImportDescriptor.java#L24-L30)</sup></sub></sup>
+Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs. For further detail see {@link TableInputDescriptor}, and {@link Preprocessor}. This file describes an `import.json` used as description for the `preprocess` command.
 
 <details><summary>Details</summary><p>
 
@@ -134,11 +134,11 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L20-L23) | label | `String` | `null` | "someLabel" | shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L14) | name | `String` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableImportDescriptor.java#L38-L40) | inputs | list of [TableInputDescriptor](#Type-TableInputDescriptor) | `null` |  | A single source input. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableImportDescriptor.java#L32-L34) | table | `String` | `null` |  | Target table to load the import to. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableImportDescriptor.java#L43-L45) | inputs | list of [TableInputDescriptor](#Type-TableInputDescriptor) | `null` |  | A single source input. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableImportDescriptor.java#L37-L39) | table | `String` | `null` |  | Target table to load the import to. | 
 </p></details>
 
-### Type TableInputDescriptor<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L27-L33)</sup></sub></sup>
+### Type TableInputDescriptor<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L27-L34)</sup></sub></sup>
 An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}. It requires a primary Output and at least one normal output. Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
 
 <details><summary>Details</summary><p>
@@ -149,8 +149,8 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L47) | filter | `String` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L56) | output | list of [@Valid @NotEmpty OutputDescription](#Base-OutputDescription) | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L49-L52) | primary | [@NotNull @Valid OutputDescription](#Base-OutputDescription) |  |  | Output producing the primary column. This should be the primary key across all tables. Default is `COPY("pid", STRING)` | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L44) | sourceFile | `File` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L48) | filter | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L57) | output | list of [@Valid @NotEmpty OutputDescription](#Base-OutputDescription) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L50-L53) | primary | [@NotNull @Valid OutputDescription](#Base-OutputDescription) |  |  | Output producing the primary column. This should be the primary key across all tables. Default is `COPY("pid", STRING)` | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L45) | sourceFile | `File` | `null` |  |  | 
 </p></details>
