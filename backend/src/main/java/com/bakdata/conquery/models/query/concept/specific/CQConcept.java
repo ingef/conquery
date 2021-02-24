@@ -85,6 +85,10 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			return super.getLabel();
 		}
 
+		if(ids.isEmpty()){
+			return null;
+		}
+
 		if(ids.size() == 1){
 			return ids.get(0).getLabel();
 		}
