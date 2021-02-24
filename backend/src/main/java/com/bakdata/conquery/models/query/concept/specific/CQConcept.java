@@ -50,6 +50,7 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -77,6 +78,31 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	private boolean excludeFromTimeAggregation = false;
 	private boolean excludeFromSecondaryIdQuery = false;
+
+	@Override
+	public String getLabel() {
+		if(!Strings.isNullOrEmpty(super.getLabel())) {
+			return super.getLabel();
+		}
+
+		if(ids.size() == 1){
+			return ids.get(0).getLabel();
+		}
+
+		final StringBuilder builder = new StringBuilder();
+
+		builder.append(getConcept().getLabel());
+
+		builder.append(" ( ");
+
+		for (ConceptElement<?> id : ids) {
+			builder.append(id.getLabel());
+		}
+
+		builder.append(" )");
+
+		return builder.toString();
+	}
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
