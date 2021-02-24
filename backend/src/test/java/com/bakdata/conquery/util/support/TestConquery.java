@@ -109,7 +109,7 @@ public class TestConquery {
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 
-		assertThat(localTmpDir.mkdir()).as("Temp Directory for Preprocessing").isTrue();
+		localTmpDir.mkdir();
 
 		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
 
