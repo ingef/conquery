@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
@@ -88,9 +89,8 @@ public class PrintSettings implements SelectNameExtractor {
 		}
 		else if(!columnInfo.getCqConcept().getIds().isEmpty()) {
 			// When no Label was set within the query, get the labels of all ids that are in the CQConcept
-			String concatElementLabels = columnInfo.getCqConcept().getIds().stream()
-			.map(id -> id.getLabel())
-			.collect(Collectors.joining("+"));
+			String concatElementLabels = columnInfo.getCqConcept().getIds().stream().map(Labeled::getLabel)
+												   .collect(Collectors.joining("+"));
 			
 			if(!concatElementLabels.equalsIgnoreCase(conceptLabel)) {
 				// Only add all child labels if they are different from the actual label of the concept

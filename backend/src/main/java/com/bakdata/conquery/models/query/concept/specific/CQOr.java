@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -72,7 +73,7 @@ public class CQOr extends CQElement implements ForcedExists {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		children.forEach(c->c.resolve(context));
+		children.forEach(c -> c.resolve(context));
 	}
 
 	@Override
@@ -88,11 +89,11 @@ public class CQOr extends CQElement implements ForcedExists {
 
 	@Override
 	public String getLabel() {
-		return Objects.requireNonNullElse(super.getLabel(), QueryUtils.createDefaultMultiLabel(children, getGetC10nName()));
+		return Objects.requireNonNullElse(super.getLabel(), QueryUtils.createDefaultMultiLabel(children, " " + getGetC10nName() + " "));
 	}
 
 	private static String getGetC10nName() {
-		return C10N.get(CQElementC10n.class).or();
+		return C10N.get(CQElementC10n.class, Locale.ROOT).or();
 	}
 
 

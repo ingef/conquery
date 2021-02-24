@@ -41,7 +41,7 @@ public class DefaultColumnNameTest {
 	private final static Validator VALIDATOR = Validators.newValidator();
 	
 	private final static Function<TestConcept,Select> FIRST_CONCEPT_SELECT_EXTRACTOR = (concept) -> concept.getSelects().get(0);
-	private final static Function<TestConcept,Select> FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR = (concept) -> concept.getConnectors().get(0).getSelects().get(0);
+	private final static Function<TestConcept,Select> FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR = (concept) -> concept.getConnectors().get(0).getSelects().get(0);
 	
 	private static Stream<Arguments> provideCombinations() {
 		return Stream.of(
@@ -68,43 +68,43 @@ public class DefaultColumnNameTest {
 			
 			// ConnectorSelect, without CQLabel, one Id, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				false,
 				"TestConceptLabel - ID_0 - TestSelectLabel"),
 			// ConnectorSelect without CQLabel, multiple Ids, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				false,
 				"TestConceptLabel - ID_0+ID_1+ID_2 - TestSelectLabel"),
 			// ConnectorSelect with CQLabel, one Id, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				true,
 				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
 			// ConnectorSelect with CQLabel, multiple Ids, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
 				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
 			
 			// ConnectorSelect, without CQLabel, one Id, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				false,
 				"TestConceptLabel - ID_0 - TestConnectorLabel_0 TestSelectLabel"),
 			// ConnectorSelect without CQLabel, multiple Ids, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				false,
 				"TestConceptLabel - ID_0+ID_1+ID_2 - TestConnectorLabel_0 TestSelectLabel"),
 			// ConnectorSelect with CQLabel, one Id, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				true,
 				"TestConceptLabel - TestCQLabel - TestConnectorLabel_0 TestSelectLabel"),
 			// ConnectorSelect with CQLabel, multiple Ids, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
 				"TestConceptLabel - TestCQLabel - TestConnectorLabel_0 TestSelectLabel")
 			);

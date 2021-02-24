@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -78,12 +79,12 @@ public class CQAnd extends CQElement implements ForcedExists{
 		}
 
 		if(createExists){
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), QueryUtils.createDefaultMultiLabel(children, getGetC10nName())), ResultType.BooleanT.INSTANCE));
+			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), QueryUtils.createDefaultMultiLabel(children, " " + getGetC10nName() + " ")), ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	private static String getGetC10nName() {
-		return C10N.get(CQElementC10n.class).and();
+		return C10N.get(CQElementC10n.class, Locale.ROOT).and();
 	}
 
 	@Override

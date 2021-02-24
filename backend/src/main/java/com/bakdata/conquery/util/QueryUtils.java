@@ -48,7 +48,7 @@ public class QueryUtils {
 	}
 
 	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter) {
-		return elements.stream().map(CQElement::getLabel).collect(Collectors.joining(" " + delimiter + " "));
+		return elements.stream().map(CQElement::getLabel).collect(Collectors.joining(delimiter));
 	}
 
 	/**
