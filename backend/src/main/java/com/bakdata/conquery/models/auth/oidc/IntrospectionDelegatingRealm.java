@@ -69,7 +69,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 	@Override
 	protected void onInit() {
 		super.onInit();
-		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
+		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
 	}
 
