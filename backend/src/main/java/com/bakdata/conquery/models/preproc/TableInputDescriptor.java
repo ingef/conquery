@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -43,7 +42,7 @@ public class TableInputDescriptor implements Serializable {
 	).map(Class::getName).toArray(String[]::new);
 
 	@NotNull
-	private File sourceFile;
+	private String sourceFile;
 
 	private String filter;
 

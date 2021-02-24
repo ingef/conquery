@@ -108,7 +108,7 @@ public class LoadingUtil {
 			TableInputDescriptor input = new TableInputDescriptor();
 			{
 				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
-				input.setSourceFile(new File(rTable.getCsv().getName()));
+				input.setSourceFile(rTable.getCsv().getName());
 				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
 					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);

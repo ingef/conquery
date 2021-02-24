@@ -29,6 +29,7 @@ import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -37,22 +38,23 @@ import org.apache.commons.io.FileUtils;
 @UtilityClass
 public class Preprocessor {
 
-	public static long getTotalCsvSize(TableImportDescriptor descriptor) {
+	public static long getTotalCsvSize(PreprocessingJob job,  TableImportDescriptor descriptor) {
 		long totalCsvSize = 0;
 		for (TableInputDescriptor input : descriptor.getInputs()) {
-			totalCsvSize += input.getSourceFile().length();
+			totalCsvSize += job.resolveSourceFile(input.getSourceFile()).length();
 		}
 
 		return totalCsvSize;
 	}
 
-	public static boolean requiresProcessing(PreprocessingJob preprocessingJob) {
+	@SneakyThrows
+	public static boolean requiresProcessing(PreprocessingJob preprocessingJob)  {
 		ConqueryMDC.setLocation(preprocessingJob.toString());
 		if (preprocessingJob.getPreprocessedFile().exists()) {
 
 			log.info("EXISTS ALREADY");
 
-			int currentHash = preprocessingJob.getDescriptor().calculateValidityHash(preprocessingJob.getDescriptionFile());
+			int currentHash = preprocessingJob.calculateValidityHash(preprocessingJob.getDescriptionFile(), preprocessingJob.getDescriptor());
 
 			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
 				 InputStream is = outFile.readHeader()) {

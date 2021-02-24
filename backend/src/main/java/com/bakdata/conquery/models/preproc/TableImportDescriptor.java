@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs.
@@ -73,21 +72,6 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 			types.add(inp);
 		}
 		return true;
-	}
-
-	/**
-	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
-	 */
-	public int calculateValidityHash(File descriptionFile) {
-		HashCodeBuilder validityHashBuilder = new HashCodeBuilder()
-													  .append(descriptionFile.length())
-													  .append(20);
-
-		for (TableInputDescriptor input : this.getInputs()) {
-			validityHashBuilder
-					.append(input.getSourceFile().length());
-		}
-		return validityHashBuilder.toHashCode();
 	}
 
 	@Override

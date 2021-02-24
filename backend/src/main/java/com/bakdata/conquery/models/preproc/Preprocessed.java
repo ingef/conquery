@@ -38,7 +38,7 @@ public class Preprocessed {
 
 	private static final ObjectReader CONTAINER_READER = Jackson.BINARY_MAPPER.readerFor(PreprocessedData.class);
 	private static final ObjectWriter CONTAINER_WRITER = Jackson.BINARY_MAPPER.writerFor(PreprocessedData.class);
-	private final PreprocessingJob file;
+	private final PreprocessingJob job;
 	private final String name;
 	/**
 	 * @implSpec this is ALWAYS {@link StringStore}.
@@ -53,7 +53,7 @@ public class Preprocessed {
 
 
 	public Preprocessed(ParserConfig parserConfig, PreprocessingJob preprocessingJob) throws IOException {
-		this.file = preprocessingJob;
+		this.job = preprocessingJob;
 		this.descriptor = preprocessingJob.getDescriptor();
 		this.name = this.descriptor.getName();
 
@@ -189,8 +189,8 @@ public class Preprocessed {
 		return collect;
 	}
 
-	private void writeHeader(OutputStream out) {
-		int hash = descriptor.calculateValidityHash(file.getDescriptionFile());
+	private void writeHeader(OutputStream out) throws IOException {
+		int hash = job.calculateValidityHash(job.getDescriptionFile(), descriptor);
 
 		PreprocessedHeader header = new PreprocessedHeader(
 				descriptor.getName(),

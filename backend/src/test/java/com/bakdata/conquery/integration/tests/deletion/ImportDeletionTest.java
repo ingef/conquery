@@ -201,7 +201,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			TableInputDescriptor input = new TableInputDescriptor();
 			{
 				input.setPrimary(IntegrationUtils.copyOutput(import2Table.getPrimaryColumn()));
-				input.setSourceFile(new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
+				input.setSourceFile(import2Table.getCsv().getName());
 				input.setOutput(new OutputDescription[import2Table.getColumns().length]);
 				for (int i = 0; i < import2Table.getColumns().length; i++) {
 					input.getOutput()[i] = IntegrationUtils.copyOutput(import2Table.getColumns()[i]);
