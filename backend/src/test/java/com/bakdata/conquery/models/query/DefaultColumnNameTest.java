@@ -59,12 +59,12 @@ public class DefaultColumnNameTest {
 			Arguments.of(
 				TestConcept.create(1, FIRST_CONCEPT_SELECT_EXTRACTOR, 1),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			// ConceptSelect with CQLabel, multiple Ids
 			Arguments.of(
 				TestConcept.create(1, FIRST_CONCEPT_SELECT_EXTRACTOR, 3),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			
 			// ConnectorSelect, without CQLabel, one Id, one Connector
 			Arguments.of(
@@ -80,12 +80,12 @@ public class DefaultColumnNameTest {
 			Arguments.of(
 				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			// ConnectorSelect with CQLabel, multiple Ids, one Connector
 			Arguments.of(
 				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			
 			// ConnectorSelect, without CQLabel, one Id, multiple Connectors
 			Arguments.of(
@@ -101,12 +101,12 @@ public class DefaultColumnNameTest {
 			Arguments.of(
 				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				true,
-				"TestConceptLabel - TestCQLabel - TestConnectorLabel_0 TestSelectLabel"),
+				"TestCQLabel - TestConnectorLabel_0 TestSelectLabel"),
 			// ConnectorSelect with CQLabel, multiple Ids, multiple Connectors
 			Arguments.of(
 				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
-				"TestConceptLabel - TestCQLabel - TestConnectorLabel_0 TestSelectLabel")
+				"TestCQLabel - TestConnectorLabel_0 TestSelectLabel")
 			);
 	}
 	

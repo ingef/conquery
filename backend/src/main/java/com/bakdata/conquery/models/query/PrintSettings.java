@@ -4,13 +4,8 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -80,23 +75,10 @@ public class PrintSettings implements SelectNameExtractor {
 		String cqLabel = columnInfo.getCqConcept().getLabel();
 		String conceptLabel = columnInfo.getSelect().getHolder().findConcept().getLabel();
 		
-		sb.append(conceptLabel);
-		sb.append(" - ");
-		if (cqLabel != null && !cqLabel.equalsIgnoreCase(conceptLabel)) {
+		if (cqLabel != null) {
 			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
 			sb.append(" - ");
-		}
-		else if(!columnInfo.getCqConcept().getIds().isEmpty()) {
-			// When no Label was set within the query, get the labels of all ids that are in the CQConcept
-			String concatElementLabels = columnInfo.getCqConcept().getIds().stream().map(Labeled::getLabel)
-												   .collect(Collectors.joining("+"));
-			
-			if(!concatElementLabels.equalsIgnoreCase(conceptLabel)) {
-				// Only add all child labels if they are different from the actual label of the concept
-				sb.append(concatElementLabels);
-				sb.append(" - ");
-			}
 		}
 		if (columnInfo.getSelect().getHolder() instanceof Connector && columnInfo.getSelect().getHolder().findConcept().getConnectors().size() > 1) {
 			// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
@@ -105,14 +87,6 @@ public class PrintSettings implements SelectNameExtractor {
 		}
 		sb.append(columnInfo.getSelect().getLabel());
 		return sb.toString();
-	}
-
-	private static String getLabelFromChildId(DatasetRegistry datasetRegistry, ConceptElementId id){
-		Concept<?> concept = datasetRegistry.resolve(id.findConcept());
-		if(id instanceof ConceptTreeChildId) {
-			return concept.getChildById((ConceptTreeChildId) id).getLabel();
-		}
-		return concept.getLabel();
 	}
 
 }
