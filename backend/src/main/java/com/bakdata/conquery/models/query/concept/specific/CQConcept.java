@@ -47,6 +47,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.MoreCollectors;
@@ -79,11 +80,10 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		ConceptElement<?>[] concepts = ids.toArray(ConceptElement[]::new);
 
 		List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
 
-		Concept<?> concept = concepts[0].getConcept();
+		Concept<?> concept = getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable table : tables) {
@@ -146,8 +146,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			tableNodes.add(
 				new ConceptNode(
-						concepts,
-						CBlock.calculateBitMask(concepts),
+						ids,
+						CBlock.calculateBitMask(ids),
 						table,
 						// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 						new ValidityDateNode(
@@ -175,6 +175,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		}
 
 		return outNode;
+	}
+
+	@JsonIgnore
+	private Concept<?> getConcept() {
+		return ids.get(0).getConcept();
 	}
 
 	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
