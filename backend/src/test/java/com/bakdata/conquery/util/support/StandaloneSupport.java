@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -59,12 +58,11 @@ public class StandaloneSupport implements Closeable {
 		when(location.getVersion()).thenReturn(Optional.of("1.0.0"));
 
 		// Add commands you want to test
-		final Bootstrap<ConqueryConfig> bootstrap = new Bootstrap<>(new Conquery());
+		final Bootstrap<ConqueryConfig> bootstrap = TestBootstrappingConquery.createTestBootstrapConquery(tmpDir);
 
 		bootstrap.addCommand(new PreprocessorCommand(MoreExecutors.newDirectExecutorService()));
 
 		final Cli cli = new Cli(location, bootstrap, System.out, System.err);
-
 
 		final ImmutableList<String> params =
 				ImmutableList.<String>builder()

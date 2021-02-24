@@ -257,4 +257,5 @@ public class TestConquery {
 		DatasetId datasetId = support.getDataset().getId();
 		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(datasetId);
 	}
+
 }
