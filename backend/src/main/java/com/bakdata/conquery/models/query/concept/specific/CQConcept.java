@@ -100,7 +100,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		builder.append(" ( ");
 
 		for (ConceptElement<?> id : ids) {
-			builder.append(id.getLabel());
+			builder.append(id.getLabel()).append(" ");
 		}
 
 		builder.append(" )");
