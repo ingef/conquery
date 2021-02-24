@@ -20,12 +20,10 @@ import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.Wait;
@@ -110,11 +108,10 @@ public class TestConquery {
 
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
-		localTmpDir.mkdir();
+
+		assertThat(localTmpDir.mkdir()).as("Temp Directory for Preprocessing").isTrue();
+
 		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
-		localCfg
-			.getPreprocessor()
-			.setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir) });
 
 		StandaloneSupport support = new StandaloneSupport(
 			this,
@@ -152,7 +149,6 @@ public class TestConquery {
 
 		config.setFailOnError(true);
 
-		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		XodusStoreFactory storageConfig = new XodusStoreFactory();
 		storageConfig.setDirectory(tmpDir.toPath());
 		config.setStorage(storageConfig);

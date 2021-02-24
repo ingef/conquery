@@ -46,15 +46,15 @@ public class Preprocessor {
 		return totalCsvSize;
 	}
 
-	public static boolean requiresProcessing(TableImportDescriptor descriptor) {
-		ConqueryMDC.setLocation(descriptor.toString());
-		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
+	public static boolean requiresProcessing(PreprocessingJob preprocessingJob) {
+		ConqueryMDC.setLocation(preprocessingJob.toString());
+		if (preprocessingJob.getPreprocessedFile().exists()) {
 
 			log.info("EXISTS ALREADY");
 
-			int currentHash = descriptor.calculateValidityHash();
+			int currentHash = preprocessingJob.getDescriptor().calculateValidityHash(preprocessingJob.getDescriptionFile());
 
-			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false);
+			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
 				 InputStream is = outFile.readHeader()) {
 
 				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
@@ -93,9 +93,10 @@ public class Preprocessor {
 	 *
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
 	 */
-	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
+	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
 
-		final File preprocessedFile = descriptor.getInputFile().getPreprocessedFile();
+		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
+		TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
 
 		// Create temp file that will be moved when finished (we ensure the same file system, to avoid unnecessary copying)
 		File tmp = new File(preprocessedFile.getParentFile(),preprocessedFile.getName() + ".tmp");
@@ -118,11 +119,11 @@ public class Preprocessor {
 			FileUtils.forceDelete(preprocessedFile);
 		}
 
-		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
+		log.info("PREPROCESSING START in {}", preprocessingJob);
 
 		int errors = 0;
 
-		final Preprocessed result = new Preprocessed(descriptor, config.getPreprocessor().getParsers());
+		final Preprocessed result = new Preprocessed(config.getPreprocessor().getParsers(), preprocessingJob);
 
 		long lineId = 0;
 
@@ -134,7 +135,7 @@ public class Preprocessor {
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
 				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
-				final File sourceFile = input.getSourceFile();
+				final File sourceFile = preprocessingJob.resolveSourceFile(input.getSourceFile());
 
 				final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
 				ConqueryMDC.setLocation(name);
@@ -236,7 +237,7 @@ public class Preprocessor {
 			}
 
 			if (errors > 0) {
-				log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errors, lineId);
+				log.warn("File `{}` contained {} faulty lines of ~{} total.", preprocessingJob, errors, lineId);
 			}
 
 			if (log.isWarnEnabled()) {
@@ -259,7 +260,7 @@ public class Preprocessor {
 
 			//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, preprocessedFile);
-		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
+		log.info("PREPROCESSING DONE in {}", preprocessingJob);
 	}
 
 	/**

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import static com.bakdata.conquery.ConqueryConstants.EXTENSION_DESCRIPTION;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,10 +17,9 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.preproc.InputFile;
+import com.bakdata.conquery.models.preproc.PreprocessingJob;
 import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
-import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -101,7 +98,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
 		}
 
-		final Collection<TableImportDescriptor> descriptors = new ArrayList<>();
+		final Collection<PreprocessingJob> descriptors = new ArrayList<>();
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
@@ -113,37 +110,39 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		for (String tag : tags) {
 			for (File desc : namespace.<File>getList("desc")) {
-				final List<TableImportDescriptor>
-						descriptions = findPreprocessingDescriptions(namespace.get("in"), desc, namespace.get("out"), tag, environment.getValidator());
+				final List<PreprocessingJob>
+						descriptions = findPreprocessingDescriptions(desc, namespace.get("in"), namespace.get("out"), tag, environment.getValidator());
 				descriptors.addAll(descriptions);
 			}
 		}
 
 		descriptors.removeIf(Predicate.not(Preprocessor::requiresProcessing));
 
-		long totalSize = descriptors.stream().mapToLong(Preprocessor::getTotalCsvSize).sum();
+		final long totalSize = descriptors.stream()
+										  .map(PreprocessingJob::getDescriptor)
+										  .mapToLong(Preprocessor::getTotalCsvSize).sum();
 
 		log.info("Required to preprocess {} in total", BinaryByteUnit.format(totalSize));
 
 		ProgressBar totalProgress = new ProgressBar(totalSize, System.out);
 
-		for (TableImportDescriptor descriptor : descriptors) {
+		for (PreprocessingJob job : descriptors) {
 			pool.submit(() -> {
-				ConqueryMDC.setLocation(descriptor.toString());
+				ConqueryMDC.setLocation(job.toString());
 				try {
-					Preprocessor.preprocess(descriptor, totalProgress, config);
-					success.add(descriptor.toString());
+					Preprocessor.preprocess(job, totalProgress, config);
+					success.add(job.toString());
 				}
 				catch (FileNotFoundException e) {
 					log.warn("Did not find file `{}` for preprocessing.", e.getMessage());
-					failed.add(descriptor.toString());
+					failed.add(job.toString());
 				}
 				catch (Exception e) {
-					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
+					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptionFile()), e);
 					if (isFailFast) {
 						System.exit(1);
 					}
-					failed.add(descriptor.toString());
+					failed.add(job.toString());
 				}
 			});
 		}
@@ -171,16 +170,21 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 	}
 
-	public List<TableImportDescriptor> findPreprocessingDescriptions(File inDir, File descriptionsDir, File outputDir, String tag, Validator validator)
+	public List<PreprocessingJob> findPreprocessingDescriptions(File descriptionFiles, File inDir, File outputDir, String tag, Validator validator)
 			throws IOException {
-		List<TableImportDescriptor> out = new ArrayList<>();
+		List<PreprocessingJob> out = new ArrayList<>();
 
-		final File[] files = inDir.isFile() ?
-							 new File[]{inDir} :
-							 inDir.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
+		final File[] files = descriptionFiles.isFile()
+							 ? new File[]{descriptionFiles}
+							 : descriptionFiles.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
+
+		if (files == null) {
+			return Collections.emptyList();
+		}
 
 		for (File descriptionFile : files) {
-			tryExtractDescriptor(validator, tag, descriptionFile, descriptionsDir, outputDir, inDir).ifPresent(out::add);
+			tryExtractDescriptor(validator, tag, descriptionFile, outputDir, inDir)
+					.ifPresent(out::add);
 		}
 		return out;
 	}
@@ -189,38 +193,33 @@ public class PreprocessorCommand extends ConqueryCommand {
 		return !failed.isEmpty();
 	}
 
-	private Optional<TableImportDescriptor> tryExtractDescriptor(Validator validator, String tag, File descriptionFile, File descriptionsDir, File outputDir, File csvDir)
+	private Optional<PreprocessingJob> tryExtractDescriptor(Validator validator, String tag, File descriptionFile, File outputDir, File csvDir)
 			throws IOException {
-		InputFile file = InputFile.fromName(
-				descriptionsDir, csvDir, outputDir, tag, descriptionFile.getName().substring(0, descriptionFile.getName().length() - EXTENSION_DESCRIPTION.length())
-		);
 		try {
-			TableImportDescriptor descr = file.readDescriptor(validator, tag);
-			// Test if all Inputs exist
-			for (TableInputDescriptor inputs : descr.getInputs()) {
-				if (!inputs.getSourceFile().exists()) {
-					log.trace("Skipping import {} because source file {} does not exists.", descriptionFile, inputs.getSourceFile());
-					failed.add(new StringBuilder().append(descriptionFile).append(" with tag ").append(tag).toString());
-					return Optional.empty();
-				}
-			}
+			final TableImportDescriptor
+					descriptor =
+					TableImportDescriptor.read(descriptionFile);
 
-			descr.setInputFile(file);
+			validator.validate(validator);
+
+			final PreprocessingJob preprocessingJob = new PreprocessingJob(csvDir.toPath(), descriptionFile, outputDir.toPath(), tag, descriptor);
+
 
 			// Override name to tag if present
 			if (!Strings.isNullOrEmpty(tag)) {
-				descr.setName(tag);
+				descriptor.setName(tag);
 			}
 
-			return Optional.of(descr);
+			return Optional.of(preprocessingJob);
 		}
 		catch (Exception e) {
 			log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
 			if (isFailFast) {
 				System.exit(1);
 			}
-			failed.add(file.getDescriptionFile().toString());
+			failed.add(descriptionFile.toString());
 		}
 		return Optional.empty();
 	}
+
 }

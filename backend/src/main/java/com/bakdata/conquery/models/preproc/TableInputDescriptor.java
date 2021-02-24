@@ -30,6 +30,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  * It requires a primary Output and at least one normal output.
  *
  * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
+ *
  */
 @Data
 @Slf4j

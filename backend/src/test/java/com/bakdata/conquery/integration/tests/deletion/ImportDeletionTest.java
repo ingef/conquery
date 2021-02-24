@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -19,7 +20,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -187,35 +187,34 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			//copy csv to tmp folder
 			// Content 2.2 contains an extra entry of a value that hasn't been seen before.
-			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf("/")) + "/" + "content2.2.csv")
+			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf('/')) + "/" + "content2.2.csv")
 											  .asStream(), new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
 
+			File descriptionFile = new File(conquery.getTmpDir(), name + ConqueryConstants.EXTENSION_DESCRIPTION);
+			File preprocessedFile =  new File(conquery.getTmpDir(), name + ConqueryConstants.EXTENSION_PREPROCESSED);
+
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(conquery.getConfig().getPreprocessor().getDirectories()[0]
-																																				  .getDescriptionsDir(), conquery.getConfig().getPreprocessor().getDirectories()[0]
-																																													   .getCsvDir(), conquery.getConfig().getPreprocessor().getDirectories()[0]
-																																				  .getPreprocessedOutputDir(), null, importId.getTag());
+
 			TableImportDescriptor desc = new TableImportDescriptor();
-			desc.setInputFile(inputFile);
-			desc.setName(import2Table.getName() + "_import");
+			desc.setName(import2Table.getName());
 			desc.setTable(import2Table.getName());
 			TableInputDescriptor input = new TableInputDescriptor();
 			{
 				input.setPrimary(IntegrationUtils.copyOutput(import2Table.getPrimaryColumn()));
-				input.setSourceFile(new File(inputFile.getCsvDirectory(), import2Table.getCsv().getName()));
+				input.setSourceFile(new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
 				input.setOutput(new OutputDescription[import2Table.getColumns().length]);
 				for (int i = 0; i < import2Table.getColumns().length; i++) {
 					input.getOutput()[i] = IntegrationUtils.copyOutput(import2Table.getColumns()[i]);
 				}
 			}
 			desc.setInputs(new TableInputDescriptor[]{input});
-			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
+			Jackson.MAPPER.writeValue(descriptionFile, desc);
 
 			//preprocess
-			conquery.preprocessTmp(conquery.getConfig().getPreprocessor().getDirectories()[0].getCsvDir());
+			conquery.preprocessTmp(conquery.getTmpDir());
 
 			//import preprocessedFiles
-			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), inputFile.getPreprocessedFile());
+			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), preprocessedFile);
 			conquery.waitUntilWorkDone();
 		}
 

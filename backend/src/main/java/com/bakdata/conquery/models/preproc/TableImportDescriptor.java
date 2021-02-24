@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +10,7 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.parser.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
@@ -22,6 +25,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs.
  *
  * For further detail see {@link TableInputDescriptor}, and {@link Preprocessor}.
+ *
+ * This file describes an `import.json` used as description for the `preprocess` command.
  */
 @Getter
 @Setter
@@ -42,8 +47,10 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	@Valid
 	private TableInputDescriptor[] inputs;
 
-	@JsonIgnore
-	private transient InputFile inputFile;
+	public static TableImportDescriptor read(File descriptionFile) throws IOException {
+		return Jackson.MAPPER.readerFor(TableImportDescriptor.class)
+							 .readValue(descriptionFile);
+	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "The output of each input needs the same number of output columns of the same type and name")
@@ -71,9 +78,9 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	/**
 	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
 	 */
-	public int calculateValidityHash() {
+	public int calculateValidityHash(File descriptionFile) {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder()
-													  .append(this.getInputFile().getDescriptionFile().length())
+													  .append(descriptionFile.length())
 													  .append(20);
 
 		for (TableInputDescriptor input : this.getInputs()) {
