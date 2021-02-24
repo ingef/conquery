@@ -8,12 +8,14 @@ import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
  * Parse input column as {@link com.bakdata.conquery.models.common.CDate} based int.
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(of = {"inputColumn"})
 @CPSType(id = "EPOCH", base = OutputDescription.class)
 public class EpochOutput extends OutputDescription {

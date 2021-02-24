@@ -190,7 +190,7 @@ public class Preprocessed {
 	}
 
 	private void writeHeader(OutputStream out) throws IOException {
-		int hash = job.calculateValidityHash(job.getDescriptionFile(), descriptor);
+		int hash = descriptor.calculateValidityHash(job.csvDirectory, job.tag);
 
 		PreprocessedHeader header = new PreprocessedHeader(
 				descriptor.getName(),

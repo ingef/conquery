@@ -13,12 +13,14 @@ import com.bakdata.conquery.util.DateFormats;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
  * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(of = {"startColumn", "endColumn"})
 @CPSType(id = "DATE_RANGE", base = OutputDescription.class)
 public class DateRangeOutput extends OutputDescription {

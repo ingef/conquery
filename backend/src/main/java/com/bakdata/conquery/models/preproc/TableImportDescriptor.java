@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,9 +17,12 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Optional;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs.
@@ -29,6 +33,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@EqualsAndHashCode(of = {"table", "inputs"}, callSuper = false)
 public class TableImportDescriptor extends Labeled<TableImportDescriptorId> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -84,4 +89,20 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 		return "ImportDescriptor [table=" + table + ", name=" + getName() + "]";
 	}
 
+	/**
+	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
+	 * @param csvDirectory
+	 * @param tag
+	 */
+	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
+		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();
+
+		validityHashBuilder.append(this);
+
+		for (TableInputDescriptor input : getInputs()) {
+			validityHashBuilder
+					.append(Preprocessor.resolveSourceFile(input.getSourceFile(), csvDirectory, tag).length());
+		}
+		return validityHashBuilder.toHashCode();
+	}
 }

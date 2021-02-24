@@ -19,6 +19,7 @@ import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -33,6 +34,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  */
 @Data
 @Slf4j
+@EqualsAndHashCode
 public class TableInputDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 1L;

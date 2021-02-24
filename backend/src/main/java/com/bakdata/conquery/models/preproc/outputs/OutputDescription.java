@@ -33,6 +33,9 @@ public abstract class OutputDescription implements Serializable {
 
 	private boolean required = false;
 
+	@Override
+	public abstract int hashCode();
+
 	/**
 	 * Describes a transformation of an input row to a single value.
 	 */

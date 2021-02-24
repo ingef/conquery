@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
@@ -41,7 +43,7 @@ public class Preprocessor {
 	public static long getTotalCsvSize(PreprocessingJob job,  TableImportDescriptor descriptor) {
 		long totalCsvSize = 0;
 		for (TableInputDescriptor input : descriptor.getInputs()) {
-			totalCsvSize += job.resolveSourceFile(input.getSourceFile()).length();
+			totalCsvSize += resolveSourceFile(input.getSourceFile(), job.getCsvDirectory(), job.getTag()).length();
 		}
 
 		return totalCsvSize;
@@ -54,7 +56,7 @@ public class Preprocessor {
 
 			log.info("EXISTS ALREADY");
 
-			int currentHash = preprocessingJob.calculateValidityHash(preprocessingJob.getDescriptionFile(), preprocessingJob.getDescriptor());
+			int currentHash = preprocessingJob.getDescriptor().calculateValidityHash(preprocessingJob.csvDirectory, preprocessingJob.tag);
 
 			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
 				 InputStream is = outFile.readHeader()) {
@@ -137,7 +139,7 @@ public class Preprocessor {
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
 				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
-				final File sourceFile = preprocessingJob.resolveSourceFile(input.getSourceFile());
+				final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 				final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
 				ConqueryMDC.setLocation(name);
@@ -290,5 +292,28 @@ public class Preprocessor {
 			}
 		}
 		return outRow;
+	}
+
+	public static File resolveSourceFile(String fileName, Path csvDirectory, Optional<String> tag) {
+		if(!tag.isPresent()){
+			return csvDirectory.resolve(fileName).toFile();
+		}
+
+		String name = fileName;
+		final String suffix;
+
+		if(name.endsWith(".csv.gz")){
+			name = name.substring(0, name.length() - ".csv.gz".length());
+			suffix = ".csv.gz";
+		}
+		else if(name.endsWith(".csv")){
+			name = name.substring(0, name.length() - ".csv".length());
+			suffix = ".csv";
+		}
+		else {
+			throw new IllegalArgumentException("Unknown suffix for file " + name);
+		}
+
+		return csvDirectory.resolve(name + "." + tag.get() + suffix).toFile();
 	}
 }
