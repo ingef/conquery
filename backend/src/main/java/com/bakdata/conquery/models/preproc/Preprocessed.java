@@ -115,7 +115,7 @@ public class Preprocessed {
 		log.info("Statistics = {}", statistics);
 
 
-		Map<String, ColumnStore> columnStores = combineStores(entityStart, entityLength);
+		Map<String, ColumnStore> columnStores = combineStores(entityStart);
 
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
@@ -154,7 +154,7 @@ public class Preprocessed {
 	 * Combine raw by-Entity data into column stores, appropriately formatted.
 	 */
 	@SuppressWarnings("rawtypes")
-	private Map<String, ColumnStore> combineStores(Int2IntMap entityStart, Int2IntMap entityLength) {
+	private Map<String, ColumnStore> combineStores(Int2IntMap entityStart) {
 		Map<String, ColumnStore> columnStores = Arrays.stream(columns)
 													  .parallel()
 													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
@@ -164,7 +164,7 @@ public class Preprocessed {
 
 		for (int pos = 0, size = rowEntities.size(); pos < size; pos++) {
 			int entity = rowEntities.getInt(pos);
-			entityEvents.computeIfAbsent(entity, (ignored) -> new IntArrayList(10))
+			entityEvents.computeIfAbsent(entity, (ignored) -> new IntArrayList())
 						.add(pos);
 		}
 
@@ -174,18 +174,13 @@ public class Preprocessed {
 
 			final ColumnStore store = columnStores.get(ppColumn.getName());
 
-			entities.intParallelStream()
+			entities.intStream()
 					.forEach((int entity) -> {
-						final int start = entityStart.get(entity);
+						int outIndex = entityStart.get(entity);
 
 						final IntList events = entityEvents.getOrDefault(entity, IntLists.emptyList());
 
-						int offset = 0;
 						for (int inIndex : events) {
-
-							int outIndex = start + offset;
-
-
 							if (columnValues.isNull(inIndex)) {
 								store.setNull(outIndex);
 							}
@@ -193,7 +188,7 @@ public class Preprocessed {
 								final Object raw = columnValues.get(inIndex);
 								ppColumn.getParser().setValue(store, outIndex, raw);
 							}
-							offset++;
+							outIndex++;
 						}
 					});
 		}
