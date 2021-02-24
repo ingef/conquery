@@ -51,7 +51,7 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 	public DefaultInitialUserRealm() {
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
-		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
+		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override

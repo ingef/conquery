@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.AllArgsConstructor;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
@@ -13,26 +14,26 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
+import org.keycloak.jose.jwk.JWK;
+import org.keycloak.jose.jwk.JWKParser;
 import org.keycloak.representations.AccessToken;
 
 import java.security.PublicKey;
 
-public class OfflineTokenVerifyingRealm extends ConqueryAuthenticationRealm {
+
+public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
-    private String publicKeyClass;
-    private String publicKeySerialized;
 
     private PublicKey publicKey;
 
-    @Override
-    protected void onInit() {
-        super.onInit();
+    public JwtPkceVerifyingRealm(PublicKey publicKey) {
+
+        this.publicKey = publicKey;
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
         this.setAuthenticationTokenClass(TOKEN_CLASS);
-
-        this.publicKey = parsePublicKey(publicKeySerialized,publicKeyClass);
     }
+
 
     @Override
     protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
@@ -58,11 +59,4 @@ public class OfflineTokenVerifyingRealm extends ConqueryAuthenticationRealm {
         return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true);
     }
 
-    private PublicKey parsePublicKey(String publicKeySerialized, String publicKeyClass) {
-        try {
-            return (PublicKey) Jackson.MAPPER.readValue(publicKeySerialized,Class.forName(publicKeyClass));
-        } catch (JsonProcessingException | ClassNotFoundException | ClassCastException e) {
-            throw new IllegalArgumentException("Unable to parse public key", e);
-        }
-    }
 }

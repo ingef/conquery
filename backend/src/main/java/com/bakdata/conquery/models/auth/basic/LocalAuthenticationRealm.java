@@ -84,7 +84,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	//////////////////// INITIALIZATION ////////////////////
 
 	public LocalAuthenticationRealm(MetaStorage storage,  ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig) {
-		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
+		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.storage = storage;
 		this.storeName = storeName;
 		this.storageDir = storageDir;

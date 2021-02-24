@@ -38,7 +38,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	public ConqueryTokenRealm(MetaStorage storage) {
 		this.storage = storage;
 		setAuthenticationTokenClass(TOKEN_CLASS);
-		setCredentialsMatcher(new SkippingCredentialsMatcher());
+		setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override
