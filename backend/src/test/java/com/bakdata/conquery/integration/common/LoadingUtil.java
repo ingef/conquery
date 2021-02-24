@@ -1,6 +1,7 @@
 package com.bakdata.conquery.integration.common;
 
 import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
@@ -101,6 +102,8 @@ public class LoadingUtil {
 
 			// create import descriptor
 			final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
+			final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
+
 			TableImportDescriptor desc = new TableImportDescriptor();
 
 			desc.setName(name);
@@ -117,7 +120,8 @@ public class LoadingUtil {
 			desc.setInputs(new TableInputDescriptor[] { input });
 
 			Jackson.MAPPER.writeValue(descriptionFile, desc);
-			preprocessedFiles.add(support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile());
+
+			preprocessedFiles.add(outFile);
 		}
 		// preprocess
 		support.preprocessTmp(support.getTmpDir());
@@ -126,6 +130,8 @@ public class LoadingUtil {
 
 		// import preprocessedFiles
 		for (File file : preprocessedFiles) {
+			assertThat(file).exists();
+
 			support.getDatasetsProcessor().addImport(support.getNamespace(), file);
 		}
 	}

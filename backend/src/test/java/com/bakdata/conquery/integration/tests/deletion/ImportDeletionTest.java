@@ -51,7 +51,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		final Dataset dataset = conquery.getDataset();
 		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 
-		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2_import");
+		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
 
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
@@ -190,8 +190,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf('/')) + "/" + "content2.2.csv")
 											  .asStream(), new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
 
-			File descriptionFile = new File(conquery.getTmpDir(), name + ConqueryConstants.EXTENSION_DESCRIPTION);
-			File preprocessedFile =  new File(conquery.getTmpDir(), name + ConqueryConstants.EXTENSION_PREPROCESSED);
+			File descriptionFile = new File(conquery.getTmpDir(), import2Table.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
+			File preprocessedFile =  new File(conquery.getTmpDir(), import2Table.getName() + ConqueryConstants.EXTENSION_PREPROCESSED);
 
 			//create import descriptor
 
