@@ -7,6 +7,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -21,6 +22,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.cli.Cli;
 import io.dropwizard.setup.Bootstrap;
@@ -29,7 +31,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @RequiredArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 public class StandaloneSupport implements Closeable {
 
 	private final TestConquery testConquery;
@@ -50,7 +53,7 @@ public class StandaloneSupport implements Closeable {
 		testConquery.waitUntilWorkDone();
 	}
 
-	public void preprocessTmp(File tmpDir) throws Exception {
+	public void preprocessTmp(File tmpDir, List<File> descriptions) throws Exception {
 		// Setup necessary mock
 		final JarLocation location = mock(JarLocation.class);
 		when(location.getVersion()).thenReturn(Optional.of("1.0.0"));
@@ -62,7 +65,16 @@ public class StandaloneSupport implements Closeable {
 
 		final Cli cli = new Cli(location, bootstrap, System.out, System.err);
 
-		cli.run("preprocess", "--in", tmpDir.toString(), "--desc", tmpDir.toString(), "--out", tmpDir.toString());
+
+		final ImmutableList<String> params =
+				ImmutableList.<String>builder()
+							 .add("preprocess", "--in", tmpDir.toString(), "--out", tmpDir.toString())
+							 .add("--desc")
+							 .addAll(descriptions.stream().map(File::toString).collect(Collectors.toList()))
+							 .build();
+
+
+		cli.run(params.toArray(String[]::new));
 	}
 
 	@Override
@@ -87,9 +99,10 @@ public class StandaloneSupport implements Closeable {
 	public List<ShardNode> getShardNodes() {
 		return testConquery.getStandaloneCommand().getShardNodes();
 	}
-	
+
 	/**
 	 * Retrieves the port of the admin API.
+	 *
 	 * @return The port.
 	 */
 	public int getAdminPort() {
@@ -102,6 +115,7 @@ public class StandaloneSupport implements Closeable {
 
 	/**
 	 * Retrieves the port of the main API.
+	 *
 	 * @return The port.
 	 */
 	public int getLocalPort() {

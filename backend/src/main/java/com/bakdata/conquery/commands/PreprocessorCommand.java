@@ -97,7 +97,6 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
 		}
 
-		final Collection<PreprocessingJob> descriptors = new ArrayList<>();
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
@@ -105,22 +104,28 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		final List<String> tags = namespace.getList("tag");
 
+		final File inDir = namespace.get("in");
+		final File outDir = namespace.get("out");
+		final List<File> descriptionFiles = namespace.<File>getList("desc");
+
+
 		log.info("Preprocessing from command line config.");
 
+		final Collection<PreprocessingJob> descriptors = new ArrayList<>();
+
 		if (tags == null || tags.isEmpty()) {
-			for (File desc : namespace.<File>getList("desc")) {
-				final List<PreprocessingJob>
-						descriptions =
-						findPreprocessingDescriptions(desc, namespace.get("in"), namespace.get("out"), Optional.empty(), environment.getValidator());
+			for (File desc : descriptionFiles) {
+				final List<PreprocessingJob> descriptions =
+						findPreprocessingDescriptions(desc, inDir, outDir, Optional.empty(), environment.getValidator());
 				descriptors.addAll(descriptions);
 			}
 		}
 		else {
 			for (String tag : tags) {
-				for (File desc : namespace.<File>getList("desc")) {
+				for (File desc : descriptionFiles) {
 					final List<PreprocessingJob>
 							descriptions =
-							findPreprocessingDescriptions(desc, namespace.get("in"), namespace.get("out"), Optional.of(tag), environment.getValidator());
+							findPreprocessingDescriptions(desc, inDir, outDir, Optional.of(tag), environment.getValidator());
 					descriptors.addAll(descriptions);
 				}
 			}

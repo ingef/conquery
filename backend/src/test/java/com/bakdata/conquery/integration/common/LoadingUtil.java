@@ -94,6 +94,7 @@ public class LoadingUtil {
 	
 	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws Exception {
 		List<File> preprocessedFiles = new ArrayList<>();
+		List<File> descriptions = new ArrayList<>();
 
 		for (RequiredTable rTable : tables) {
 			// copy csv to tmp folder
@@ -121,10 +122,11 @@ public class LoadingUtil {
 
 			Jackson.MAPPER.writeValue(descriptionFile, desc);
 
+			descriptions.add(descriptionFile);
 			preprocessedFiles.add(outFile);
 		}
 		// preprocess
-		support.preprocessTmp(support.getTmpDir());
+		support.preprocessTmp(support.getTmpDir(), descriptions);
 		//clear the MDC location from the preprocessor
 		ConqueryMDC.clearLocation();
 
