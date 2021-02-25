@@ -319,11 +319,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			return "";
 		}
 
-		if (cqConcept.getIds().isEmpty()) {
+		if (cqConcept.getElements().isEmpty()) {
 			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
 		}
 
-		Concept<?> concept = cqConcept.getIds().get(0).getConcept();
+		Concept<?> concept = cqConcept.getElements().get(0).getConcept();
 		String conceptLabel = concept.getLabel();
 		if (cqConceptLabel.equalsIgnoreCase(conceptLabel)) {
 			return cqConceptLabel.replace(" ", "-");

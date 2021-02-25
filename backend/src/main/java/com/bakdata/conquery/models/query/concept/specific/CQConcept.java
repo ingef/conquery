@@ -50,6 +50,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
@@ -67,8 +68,9 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
 
+	@JsonProperty("ids")
 	@Valid @NotEmpty @NsIdRefCollection
-	private List<ConceptElement<?>> ids = Collections.emptyList();
+	private List<ConceptElement<?>> elements = Collections.emptyList();
 
 	@Valid @NotEmpty @JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
@@ -87,7 +89,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			return label;
 		}
 
-		if(ids.isEmpty()){
+		if(elements.isEmpty()){
 			return null;
 		}
 
@@ -97,7 +99,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 		builder.append(" - ");
 
-		for (ConceptElement<?> id : ids) {
+		for (ConceptElement<?> id : elements) {
 			builder.append(id.getLabel()).append("+");
 		}
 
@@ -175,8 +177,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			tableNodes.add(
 				new ConceptNode(
-						ids,
-						CBlock.calculateBitMask(ids),
+						elements,
+						CBlock.calculateBitMask(elements),
 						table,
 						// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 						new ValidityDateNode(
@@ -208,7 +210,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@JsonIgnore
 	private Concept<?> getConcept() {
-		return ids.get(0).getConcept();
+		return elements.get(0).getConcept();
 	}
 
 	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
@@ -263,7 +265,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		checkNotNull(namespacedIds);
-		ids.forEach(ce -> namespacedIds.add(ce.getId()));
+		elements.forEach(ce -> namespacedIds.add(ce.getId()));
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 	}

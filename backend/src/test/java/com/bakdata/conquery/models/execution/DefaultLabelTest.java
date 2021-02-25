@@ -77,7 +77,7 @@ public class DefaultLabelTest {
 	private static CQConcept makeCQConcept(String label) {
 		CQConcept concept = new CQConcept();
 		concept.setLabel(label);
-		concept.setIds(List.of(CONCEPT));
+		concept.setElements(List.of(CONCEPT));
 		return concept;
 
 	}

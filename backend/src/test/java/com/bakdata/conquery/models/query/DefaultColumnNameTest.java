@@ -136,7 +136,7 @@ public class DefaultColumnNameTest {
 			}
 
 
-			cqConcept.setIds(
+			cqConcept.setElements(
 					concept.getChildren().stream()
 							.sorted(Comparator.comparing(ctc -> ctc.getId().toString()))
 							.collect(Collectors.toList())
