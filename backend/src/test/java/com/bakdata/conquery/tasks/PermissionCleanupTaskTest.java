@@ -15,6 +15,9 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -29,6 +32,11 @@ class PermissionCleanupTaskTest {
 
 
     private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null, null);
+
+    @AfterEach
+    public void teardownAfterEach() {
+        storage.clear();
+    }
 
     private ManagedQuery createManagedQuery() {
         final CQAnd root = new CQAnd();

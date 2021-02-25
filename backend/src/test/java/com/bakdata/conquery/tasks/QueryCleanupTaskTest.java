@@ -18,6 +18,8 @@ import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -26,6 +28,8 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 class QueryCleanupTaskTest {
 
 	private final Duration queryExpiration = Duration.ofDays(30);
+
+
 
 	private ManagedQuery createManagedQuery() {
 		final CQAnd root = new CQAnd();
@@ -44,6 +48,10 @@ class QueryCleanupTaskTest {
 
 	private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null, null);
 
+	@AfterEach
+	public void teardownAfterEach() {
+		storage.clear();
+	}
 
 	@Test
 	void emptyIsEmpty() {
