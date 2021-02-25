@@ -106,7 +106,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
 		isFailFast = namespace.get("fast-fail") != null && namespace.getBoolean("fast-fail");
-		isStrict  = namespace.get("disable-strict") == null && !namespace.getBoolean("disable-strict");
+		isStrict  = namespace.get("disable-strict") == null || !namespace.getBoolean("disable-strict");
 
 		final List<String> tags = namespace.getList("tag");
 
