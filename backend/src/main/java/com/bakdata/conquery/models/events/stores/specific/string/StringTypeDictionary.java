@@ -94,7 +94,7 @@ public class StringTypeDictionary implements ColumnStore {
 
 	@Override
 	public String toString() {
-		return "StringTypeDictionary[dictionary=" + dictionary + ", numberType=" + numberType + "]";
+		return "StringTypeDictionary(dictionary=" + dictionary + ", numberType=" + numberType + ")";
 	}
 
 	@Override

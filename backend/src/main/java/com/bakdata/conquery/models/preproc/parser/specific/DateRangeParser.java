@@ -82,6 +82,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 			return new DateRangeTypeQuarter(quarterParser.findBestType());
 		}
 
+
 		// They need to be aligned if they are non-empty.
 
 		if(!minParser.isEmpty()) {
@@ -91,7 +92,6 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 		if(!maxParser.isEmpty()){
 			maxParser.setLines(getLines());
 		}
-
 
 		return new DateRangeTypeDateRange(minParser.findBestType(), maxParser.findBestType());
 	}

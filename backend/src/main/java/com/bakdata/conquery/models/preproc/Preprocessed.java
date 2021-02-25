@@ -197,12 +197,13 @@ public class Preprocessed {
 
 
 	private Dictionary encodePrimaryDictionary() {
-		log.info("finding optimal column types");
+		log.debug("Encode primary Dictionary");
 
 		primaryColumn.applyEncoding(StringTypeEncoded.Encoding.UTF8);
 
 		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
-		log.info("\tPrimaryColumn -> {}", primaryDictionary);
+		log.trace("\tPrimaryColumn -> {}", primaryDictionary);
+
 		return primaryDictionary;
 	}
 

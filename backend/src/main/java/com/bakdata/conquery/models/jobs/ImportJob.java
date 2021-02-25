@@ -45,6 +45,7 @@ import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -69,11 +70,14 @@ public class ImportJob extends Job {
 	private final File importFile;
 	private final int bucketSize;
 
+	private static final int NUMBER_OF_STEPS = /* directly in execute = */3;
 
 	@Override
 	public void execute() throws JSONException, InterruptedException, JsonProcessingException {
 		final PreprocessedData container;
 		final PreprocessedHeader header;
+
+		getProgressReporter().setMax(NUMBER_OF_STEPS);
 
 		try (HCFile file = new HCFile(importFile, false)) {
 			if (log.isInfoEnabled()) {
@@ -101,27 +105,38 @@ public class ImportJob extends Job {
 
 		if (container.isEmpty()) {
 			log.warn("Import was empty. Skipping.");
+			getProgressReporter().done();
 			return;
 		}
 
+		getProgressReporter().report(1);
+
 		log.info("Done reading data. Contains {} Entities.", container.size());
+
+		log.info("Updating primary dictionary");
 
 		// Update primary dictionary: load new data, and create mapping.
 		DictionaryMapping primaryMapping = importPrimaryDictionary(container.getPrimaryDictionary());
 
+		getProgressReporter().report(1);
+
 		// Distribute the new IDs among workers
 		distributeWorkerResponsibilities(primaryMapping);
+
+		getProgressReporter().report(1);
 
 		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(container.getDictionaries(), table.getColumns(), header.getName());
 
 		setDictionaryIds(container.getStores(), table.getColumns(), header.getName());
 
+		log.info("Remapping Dictionaries {}", mappings.values());
+
 		applyDictionaryMappings(mappings, container.getStores(), table.getColumns());
 
 
-		//create data import and store/send it
-
 		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
+
+		log.debug("Sending Import Information  {}", imp);
 
 		namespace.getStorage().updateImport(imp);
 		namespace.sendToAll(new AddImport(imp));
@@ -136,11 +151,15 @@ public class ImportJob extends Job {
 												 .toArray(ColumnStore[]::new);
 
 
+		log.info("Start sending {} Buckets", buckets2LocalEntities.size());
+
 		// we use this to track assignment to workers.
 		final Map<WorkerId, Set<BucketId>> workerAssignments =
 				sendBuckets(container.getStarts(), container.getLengths(), primaryMapping, imp, buckets2LocalEntities, storesSorted);
 
 		workerAssignments.forEach(namespace::addBucketsToWorker);
+
+		getProgressReporter().done();
 	}
 
 	/**
@@ -150,6 +169,8 @@ public class ImportJob extends Job {
 			throws JsonProcessingException {
 
 		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
+
+		final ProgressReporter subJob = getProgressReporter().subJob(buckets2LocalEntities.size());
 
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 
@@ -164,9 +185,13 @@ public class ImportJob extends Job {
 			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
 								.add(bucket.getId());
 
-			log.info("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
+			log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
 			responsibleWorker.send(ImportBucket.forBucket(bucket));
+
+			subJob.report(1);
 		}
+
+		subJob.done();
 
 		return newWorkerAssignments;
 	}
@@ -228,7 +253,7 @@ public class ImportJob extends Job {
 	}
 
 	private DictionaryMapping importPrimaryDictionary(Dictionary underlyingDictionary) {
-		log.info("Updating primary dictionary");
+
 
 		final DictionaryId dictionaryId = ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset());
 
@@ -287,14 +312,17 @@ public class ImportJob extends Job {
 			return Collections.emptyMap();
 		}
 
+		final ProgressReporter subJob = getProgressReporter().subJob(dicts.size());
+
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
-		log.debug("Import contains Dictionaries = {}", dicts);
+		log.info("Importing Dictionaries ({})", dicts);
 
 		for (Column column : columns) {
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
 
 			if (column.getType() != MajorTypeId.STRING) {
+				subJob.report(1);
 				continue;
 			}
 
@@ -302,6 +330,7 @@ public class ImportJob extends Job {
 			// but could also be an error :/ Most likely the former
 			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
 				log.trace("No Dictionary for {}", column);
+				subJob.report(1);
 				continue;
 			}
 
@@ -316,9 +345,9 @@ public class ImportJob extends Job {
 
 				out.put(column.getName(), mapping);
 
+				subJob.report(1);
 				continue;
 			}
-
 
 			//store external infos into master and slaves
 			final Dictionary dict = dicts.get(column.getName());
@@ -328,14 +357,18 @@ public class ImportJob extends Job {
 				dict.setDataset(dictionaryId.getDataset());
 				dict.setName(dictionaryId.getDictionary());
 
-				log.info("Sending {} to all Workers", dict);
+				log.debug("Sending {} to all Workers", dict);
 				namespace.getStorage().updateDictionary(dict);
 				namespace.sendToAll(new UpdateDictionary(dict));
 			}
 			catch (Exception e) {
 				throw new RuntimeException("Failed to store dictionary " + dict, e);
 			}
+
+			subJob.report(1);
 		}
+
+		subJob.done();
 
 		return out;
 	}
@@ -359,43 +392,49 @@ public class ImportJob extends Job {
 	}
 
 	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values, Column[] columns) {
+		final ProgressReporter subJob = getProgressReporter().subJob(columns.length);
+
 		for (Column column : columns) {
-			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
-				continue;
-			}
-
-			final DictionaryMapping mapping = mappings.get(column.getName());
-
-			final StringStore stringStore = (StringStore) values.get(column.getName());
-
-
-			if(mapping == null){
-				if(stringStore.isDictionaryHolding()) {
-					throw new IllegalStateException(String.format("Missing mapping for %s", column));
+			try {
+				if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
+					continue;
 				}
 
-				continue;
+				final DictionaryMapping mapping = mappings.get(column.getName());
+
+				final StringStore stringStore = (StringStore) values.get(column.getName());
+
+
+				if (mapping == null) {
+					if (stringStore.isDictionaryHolding()) {
+						throw new IllegalStateException(String.format("Missing mapping for %s", column));
+					}
+
+					continue;
+				}
+
+				log.debug("Remapping Column[{}] = {} with {}", column.getId(), stringStore, mapping);
+
+
+				// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
+				final IntegerParser indexParser = new IntegerParser(new ParserConfig());
+
+				final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
+
+				indexParser.setLines(stringStore.getLines());
+				indexParser.setMinValue(statistics.getMin());
+				indexParser.setMaxValue(statistics.getMax());
+
+				final IntegerStore newType = indexParser.findBestType();
+
+				log.debug("Decided for {}", newType);
+
+				mapping.applyToStore(stringStore, newType, stringStore.getLines());
+
+				stringStore.setIndexStore(newType);
+			}finally {
+				subJob.report(1);
 			}
-
-			log.debug("Remapping Column[{}] = {} with {}", column.getId(), stringStore, mapping);
-
-
-			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
-			final IntegerParser indexParser = new IntegerParser(new ParserConfig());
-
-			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
-
-			indexParser.setLines(stringStore.getLines());
-			indexParser.setMinValue(statistics.getMin());
-			indexParser.setMaxValue(statistics.getMax());
-
-			final IntegerStore newType = indexParser.findBestType();
-
-			log.debug("Decided for {}", newType);
-
-			mapping.applyToStore(stringStore, newType, stringStore.getLines());
-
-			stringStore.setIndexStore(newType);
 		}
 	}
 
