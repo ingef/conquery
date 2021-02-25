@@ -16,6 +16,6 @@ public interface DateRangeStore extends ColumnStore {
 
 	@Override
 	default Object createScriptValue(int event) {
-		return getDateRange(event).toString();
+		return getDateRange(event);
 	}
 }
