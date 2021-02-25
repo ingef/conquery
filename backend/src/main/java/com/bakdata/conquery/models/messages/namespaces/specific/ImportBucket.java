@@ -39,7 +39,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 		final Bucket bucket = objectMapper.readValue(rawBucket, Bucket.class);
 
-		log.debug("Received {}", bucket.getId());
+		log.trace("Received {}", bucket.getId());
 
 		context.addBucket(bucket);
 	}
