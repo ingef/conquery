@@ -40,13 +40,13 @@ public class EntityDateQueryPlan implements QueryPlan {
             return preResult;
         }
         final List<Object[]> resultLines = new ArrayList<>();
-        for( Object[] line : preResult.asContained().listResultLines()) {
+        for (Object[] line : preResult.asContained().listResultLines()) {
 
             CDateSet entityDate = CDateSet.parse((String) line[0]);
             entityDate.retainAll(dateRange);
 
             List<DateContext> contexts = new ArrayList<>();
-            for(CDateRange range: entityDate.asRanges()) {
+            for (CDateRange range : entityDate.asRanges()) {
                 contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
             }
 

@@ -27,6 +27,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * This query uses the date range defined by {@link EntityDateQuery#query} for each entity and applies it as a
+ * date restriction for the following query defined by {@link EntityDateQuery#features}.
+ * The additional {@link EntityDateQuery#dateRange} is applied globally on all entities.
+ */
 @CPSType(id = "ENTITY_DATE_QUERY", base = QueryDescription.class)
 @Getter
 @RequiredArgsConstructor
@@ -79,8 +84,6 @@ public class EntityDateQuery extends IQuery {
     @Override
     public void collectResultInfos(ResultInfoCollector collector) {
         features.collectResultInfos(collector);
-        //remove SpecialDateUnion
-        //collector.getInfos().remove(0);
 
         collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
         collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
