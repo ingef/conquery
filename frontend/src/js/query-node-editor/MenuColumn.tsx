@@ -44,16 +44,16 @@ const MenuColumn = (props: PropsType) => {
     node,
     editorState,
     showTables,
-    blacklistedTables,
-    whitelistedTables,
+    blocklistedTables,
+    allowlistedTables,
     onToggleTable,
     onResetAllFilters,
-    onUpdateLabel
+    onUpdateLabel,
   } = props;
 
   const isOnlyOneTableIncluded =
     !node.isPreviousQuery &&
-    node.tables.filter(table => !table.exclude).length === 1;
+    node.tables.filter((table) => !table.exclude).length === 1;
 
   return (
     <FixedColumn>
@@ -65,7 +65,7 @@ const MenuColumn = (props: PropsType) => {
             text={node.label}
             selectTextOnMount={true}
             editing={editorState.editingLabel}
-            onSubmit={value => {
+            onSubmit={(value) => {
               onUpdateLabel(value);
               editorState.onToggleEditLabel();
             }}
@@ -95,10 +95,10 @@ const MenuColumn = (props: PropsType) => {
                 !editorState.detailsViewActive
               }
               isOnlyOneTableIncluded={isOnlyOneTableIncluded}
-              blacklistedTables={blacklistedTables}
-              whitelistedTables={whitelistedTables}
+              blocklistedTables={blocklistedTables}
+              allowlistedTables={allowlistedTables}
               onClick={() => editorState.onSelectInputTableView(tableIdx)}
-              onToggleTable={value => onToggleTable(tableIdx, value)}
+              onToggleTable={(value) => onToggleTable(tableIdx, value)}
             />
           ))}
           <ResetAllFiltersButton

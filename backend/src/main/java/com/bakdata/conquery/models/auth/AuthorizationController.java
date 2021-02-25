@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
@@ -61,6 +61,8 @@ public final class AuthorizationController implements Managed{
 	private AuthFilter<AuthenticationToken, User> authenticationFilter;
 	@Getter
 	private List<Realm> realms = new ArrayList<>();
+
+	private DefaultSecurityManager securityManager;
 	
 	public void init() {
 		// Add the central authentication realm
@@ -78,8 +80,14 @@ public final class AuthorizationController implements Managed{
 			authenticationRealms.add(realm);
 			realms.add(realm);
 		}
-		
-		registerShiro(realms);
+
+
+		// Register all realms in Shiro
+		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
+		securityManager = new DefaultSecurityManager(realms);
+		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
+		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
+		registerShiro();
 		
 		// Create Jersey filter for authentication
 		this.authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
@@ -99,13 +107,14 @@ public final class AuthorizationController implements Managed{
 	public void stop() throws Exception {
 		LifecycleUtils.destroy(authenticationRealms);
 	}
-	
-	private static void registerShiro(List<Realm> realms) {
-		// Register all realms in Shiro
-		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
-		DefaultSecurityManager securityManager = new DefaultSecurityManager(realms);
-		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
-		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
+
+	/**
+	 * @implNote public for test purposes only
+	 */
+	public void registerShiro() {
+		if (securityManager == null) {
+			throw new IllegalStateException("The AuthorizationController was not initialized. Call init() instead");
+		}
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
 	}

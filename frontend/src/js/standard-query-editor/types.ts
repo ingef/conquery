@@ -135,6 +135,7 @@ export interface PreviousQueryQueryNodeType {
   query?: PreviousQueryType;
   isPreviousQuery: true;
   canExpand?: boolean;
+  isEditing?: boolean;
 }
 
 export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;

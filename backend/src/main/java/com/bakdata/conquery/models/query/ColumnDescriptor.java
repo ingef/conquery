@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import lombok.Builder;
@@ -25,7 +26,7 @@ public class ColumnDescriptor {
 	/**
 	 * The datatype that corresponds to this column.
 	 */
-	private String type;
+	private ResultType type;
 	/**
 	 * Similar to {@link ColumnDescriptor.userConceptLabel} this holds the submitted {@link SelectId}.
 	 */

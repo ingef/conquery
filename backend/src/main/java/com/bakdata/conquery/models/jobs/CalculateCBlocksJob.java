@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.jobs;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
@@ -104,25 +104,7 @@ public class CalculateCBlocksJob extends Job {
 
 				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
 
-				if (range.hasLowerBound()) {
-					int min = Math.min(
-							cBlock.getMinDate().getOrDefault(entry.getEntity(), Integer.MAX_VALUE),
-							range.getMinValue()
-					);
-
-					cBlock.getMinDate()
-						  .put(entry.getEntity(), min);
-				}
-
-				if (range.hasUpperBound()) {
-					int max = Math.max(
-							cBlock.getMaxDate().getOrDefault(entry.getEntity(), Integer.MIN_VALUE),
-							range.getMaxValue()
-					);
-
-					cBlock.getMaxDate()
-						  .put(entry.getEntity(), max);
-				}
+				cBlock.addEntityDateRange(entry.getEntity(), range);
 			}
 		}
 	}

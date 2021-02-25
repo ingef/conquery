@@ -4,15 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -22,16 +21,15 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkerStorage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
-import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
@@ -39,14 +37,12 @@ import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
@@ -54,7 +50,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  */
 @Slf4j
-public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallback, AfterEachCallback {
+@RequiredArgsConstructor
+public class TestConquery {
 
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
 
@@ -62,11 +59,13 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
-	private File tmpDir;
-	private ConqueryConfig config;
+	private final File tmpDir;
+	private final ConqueryConfig config;
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
+
+	private AtomicBoolean started = new AtomicBoolean(false);
 
 	/**
 	 * Returns the extension context used by the beforeAll-callback.
@@ -135,37 +134,44 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 
 
+	@SneakyThrows
 	public synchronized void shutdown(StandaloneSupport support) {
 		log.info("Tearing down dataset");
 
 
 		DatasetId dataset = support.getDataset().getId();
 
-		standaloneCommand.getManager().getDatasetRegistry().get(dataset).sendToAll(new ShutdownWorkerStorage());
+		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
+		standaloneCommand.getManager().getStorage().close();
 
-		try {
-			standaloneCommand.getManager().getStorage().close();
-		} catch (IOException e) {
-			log.error("",e);
-		}
+		openSupports.remove(support);
 	}
 
-	protected ConqueryConfig getConfig() throws Exception {
-		ConqueryConfig config = new ConqueryConfig();
+	@SneakyThrows
+	public static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
 
 		config.setFailOnError(true);
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
-		config.getStorage().setDirectory(tmpDir);
+		XodusStoreFactory storageConfig = new XodusStoreFactory();
+		storageConfig.setDirectory(tmpDir.toPath());
+		config.setStorage(storageConfig);
 		config.getStandalone().setNumberOfShardNodes(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());
 
+		config.getCluster().setEntityBucketSize(3);
+
+	}
+
+	@SneakyThrows
+	public static void configureRandomPorts(ConqueryConfig config) {
+
 		// set random open ports
 		for (ConnectorFactory con : CollectionUtils
-			.union(
-				((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
-				((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors())) {
+				.union(
+						((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
+						((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors())) {
 			try (ServerSocket s = new ServerSocket(0)) {
 				((HttpConnectorFactory) con).setPort(s.getLocalPort());
 			}
@@ -173,29 +179,12 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		try (ServerSocket s = new ServerSocket(0)) {
 			config.getCluster().setPort(s.getLocalPort());
 		}
-
-		// make buckets very small
-		// but not so small that we can't test bucket problems
-		config.getCluster().setEntityBucketSize(3);
-
-		return config;
 	}
 
-	@Override
-	public void beforeAll(ExtensionContext context) throws Exception {
-		this.beforeAllContext = context;
-		// create tmp dir if it was not already created
-		if (tmpDir == null) {
-			tmpDir = Files.createTempDir();
-		}
+	public void beforeAll() throws Exception {
+
 		log.info("Working in temporary directory {}", tmpDir);
 
-		config = getConfig();
-		context
-			.getTestInstance()
-			.filter(ConfigOverride.class::isInstance)
-			.map(ConfigOverride.class::cast)
-			.ifPresent(co -> co.override(config));
 
 		// define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(TestBootstrappingConquery.class, config, app -> {
@@ -212,23 +201,23 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			.build("test client");
 	}
 
-	@Override
-	public void afterAll(ExtensionContext context) throws Exception {
+	public void afterAll() throws Exception {
 		client.close();
 		dropwizard.after();
 		FileUtils.deleteQuietly(tmpDir);
 	}
 
-	@Override
-	public void afterEach(ExtensionContext context) throws Exception {
-		for (Iterator<StandaloneSupport> it = openSupports.iterator(); it.hasNext(); ) {
-			StandaloneSupport openSupport = it.next();
-
+	public void afterEach() throws Exception {
+		for (StandaloneSupport openSupport : openSupports ) {
 			log.info("Tearing down dataset");
 			DatasetId dataset = openSupport.getDataset().getId();
-			closeNamespace(dataset);
-			it.remove();
+			removeSupportDataset(openSupport);
 		}
+		openSupports.clear();
+	}
+
+	public void removeSupport(StandaloneSupport support) {
+		openSupports.remove(support);
 	}
 	
 
@@ -266,9 +255,10 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		}
 		log.info("all jobs finished");
 	}
-	
-	public void closeNamespace(DatasetId dataset) {
-		standaloneCommand.getManager().getDatasetRegistry().getShardNodes().values().forEach(s -> s.send(new RemoveWorker(dataset)));
-		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(dataset);
+
+	@SneakyThrows
+	public void removeSupportDataset(StandaloneSupport support) {
+		DatasetId datasetId = support.getDataset().getId();
+		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(datasetId);
 	}
 }

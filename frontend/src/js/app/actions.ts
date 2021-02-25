@@ -16,18 +16,10 @@ import * as previousQueriesFilterActions from "../previous-queries/filter/action
 import * as timebasedQueryEditorActions from "../timebased-query-editor/actions";
 import * as queryEditorActions from "../standard-query-editor/actions";
 
-import createQueryRunnerActions from "../query-runner/actions";
-
-const standardQueryRunnerActions = createQueryRunnerActions("standard");
-const timebasedQueryRunnerActions = createQueryRunnerActions("timebased");
-const externalQueryRunnerActions = createQueryRunnerActions("external");
-
 export default {
   ...genericActions,
   ...conceptTreeActions,
   ...queryEditorActions,
-  ...standardQueryRunnerActions,
-  ...timebasedQueryRunnerActions,
   ...datasetSelectorActions,
   ...queryGroupModalActions,
   ...additionalInfosActions,
@@ -36,5 +28,4 @@ export default {
   ...previousQueriesSearchActions,
   ...previousQueriesFilterActions,
   ...timebasedQueryEditorActions,
-  ...externalQueryRunnerActions,
 };

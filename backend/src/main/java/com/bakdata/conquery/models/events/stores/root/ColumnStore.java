@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.events.stores.root;
 import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
@@ -14,7 +15,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
  *
  * This class has subclasses per storage-type and cannot get/set itself for type-safety reasons.
  *
- * Every root class must have an associated {@link com.bakdata.conquery.models.events.parser.MajorTypeId} and {@link com.bakdata.conquery.models.events.parser.Parser}.
+ * Every root class must have an associated {@link MajorTypeId} and {@link com.bakdata.conquery.models.preproc.parser.Parser}.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -38,17 +39,6 @@ public interface ColumnStore {
 		}
 
 		return out;
-	}
-
-	/**
-	 * Get printable representation of event. Objects shall be {@link String} and primitives can remain.
-	 */
-	default Object createPrintValue(int event) {
-		if (!has(event)) {
-			return "";
-		}
-
-		return createScriptValue(event);
 	}
 
 	/**

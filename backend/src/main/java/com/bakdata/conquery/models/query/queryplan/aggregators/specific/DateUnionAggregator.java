@@ -7,13 +7,16 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+
+import java.util.Collection;
 
 /**
  * Aggregator, listing all days present.
  */
-public class DateUnionAggregator extends SingleColumnAggregator<String> {
+public class DateUnionAggregator extends SingleColumnAggregator<Collection<CDateRange>> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
@@ -43,17 +46,17 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 	}
 
 	@Override
-	public DateUnionAggregator doClone(CloneContext ctx) {
+	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
 		return new DateUnionAggregator(getColumn());
 	}
 
 	@Override
-	public String getAggregationResult() {
-		return set.toString();
+	public Collection<CDateRange> getAggregationResult() {
+		return set.asRanges();
 	}
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
 	}
 }

@@ -14,11 +14,11 @@
           "child": {
             "type": "CONCEPT",
             "ids": [
-              "${dataset}.tree.a"
+              "tree.a"
             ],
             "tables": [
               {
-                "id": "${dataset}.tree.connector"
+                "id": "tree.connector"
               }
             ]
           }
@@ -26,11 +26,11 @@
         {
           "type": "CONCEPT",
           "ids": [
-            "${dataset}.tree.b"
+            "tree.b"
           ],
           "tables": [
             {
-              "id": "${dataset}.tree.connector"
+              "id": "tree.connector"
             }
           ]
         }

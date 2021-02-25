@@ -1,5 +1,5 @@
 // The query state contains the form values.
-// But small additions are made (properties whitelisted), empty things filtered out
+// But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformFormQueryToApi = (
   query: { form: string; formName: string },

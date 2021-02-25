@@ -43,6 +43,6 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.NUMERIC;
+		return ResultType.NumericT.INSTANCE;
 	}
 }

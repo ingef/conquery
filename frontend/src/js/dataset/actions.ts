@@ -4,7 +4,10 @@ import type { DatasetIdT } from "../api/types";
 
 import { defaultError, defaultSuccess } from "../common/actions";
 import { useLoadTrees } from "../concept-trees/actions";
-import { loadPreviousQueries } from "../previous-queries/list/actions";
+import {
+  loadPreviousQueries,
+  useLoadPreviousQueries,
+} from "../previous-queries/list/actions";
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import { setMessage } from "../snack-message/actions";
 
@@ -84,6 +87,7 @@ export const useSelectDataset = () => {
   const dispatch = useDispatch();
   const loadTrees = useLoadTrees();
   const activeForm = useSelector<StateT, string | null>(selectActiveForm);
+  const loadPreviousQueries = useLoadPreviousQueries();
 
   return (
     datasets: DatasetT[],
@@ -119,7 +123,7 @@ export const useSelectDataset = () => {
         dispatch(reset(activeForm));
       }
 
-      return dispatch(loadPreviousQueries(datasetId));
+      return loadPreviousQueries(datasetId);
     }
   };
 };

@@ -1,73 +1,70 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import type { Dispatch } from "redux-thunk";
-import { connect } from "react-redux";
+import { StateT } from "app-types";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../../api/types";
 import IconButton from "../../button/IconButton";
-import actions from "../../app/actions";
+import { QueryRunnerStateT } from "../../query-runner/reducer";
+import { queryResultReset, useStartQuery } from "../../query-runner/actions";
 
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 import { openUploadModal, closeUploadModal } from "./actions";
 
-const { startExternalQuery, queryExternalResultReset } = actions;
-
-type PropsType = {
+interface PropsT {
   datasetId: DatasetIdT | null;
-  isModalOpen: boolean;
-  loading: boolean;
-  success: Object | null;
-  error: Object | null;
-  onOpenModal: Function;
-  onCloseModal: Function;
-  onUpload: Function;
-};
+}
 
 const Root = styled("div")`
   margin-bottom: 5px;
   padding: 0 10px;
 `;
 
-const UploadQueryResults = (props: PropsType) => {
+const UploadQueryResults = ({ datasetId }: PropsT) => {
+  const queryRunner = useSelector<StateT, QueryRunnerStateT>(
+    (state) => state.uploadQueryResults.queryRunner
+  );
+  const isModalOpen = useSelector<StateT, boolean>(
+    (state) => state.uploadQueryResults.isModalOpen
+  );
+
+  const loading = queryRunner.startQuery.loading || !!queryRunner.runningQuery;
+  const success =
+    !!queryRunner.queryResult && !!queryRunner.queryResult.success;
+  const error =
+    !!queryRunner.startQuery.error ||
+    (!!queryRunner.queryResult && !!queryRunner.queryResult.error);
+
+  const dispatch = useDispatch();
+  const onOpenModal = () => dispatch(openUploadModal());
+
+  const startExternalQuery = useStartQuery("external");
+
+  const onCloseModal = () =>
+    dispatch([closeUploadModal(), queryResultReset("external")]);
+  const onUpload = (query: any) => {
+    if (datasetId) {
+      startExternalQuery(datasetId, query);
+    }
+  };
+
   return (
     <Root>
-      <IconButton frame icon="upload" onClick={props.onOpenModal}>
+      <IconButton frame icon="upload" onClick={onOpenModal}>
         {T.translate("uploadQueryResults.uploadResults")}
       </IconButton>
-      {props.isModalOpen && (
+      {isModalOpen && (
         <UploadQueryResultsModal
-          onClose={props.onCloseModal}
-          onUpload={query => props.onUpload(props.datasetId, query)}
-          loading={props.loading}
-          success={props.success}
-          error={props.error}
+          onClose={onCloseModal}
+          onUpload={onUpload}
+          loading={loading}
+          success={success}
+          error={error}
         />
       )}
     </Root>
   );
 };
 
-const selectQueryRunner = state => state.uploadQueryResults.queryRunner;
-
-const mapStateToProps = state => {
-  const queryRunner = selectQueryRunner(state);
-
-  return {
-    isModalOpen: state.uploadQueryResults.isModalOpen,
-    loading: queryRunner.startQuery.loading || !!queryRunner.runningQuery,
-    success: queryRunner.queryResult && queryRunner.queryResult.success,
-    error:
-      queryRunner.startQuery.error ||
-      (!!queryRunner.queryResult && queryRunner.queryResult.error)
-  };
-};
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onOpenModal: () => dispatch(openUploadModal()),
-  onCloseModal: () =>
-    dispatch([closeUploadModal(), queryExternalResultReset()]),
-  onUpload: (datasetId, query) => dispatch(startExternalQuery(datasetId, query))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(UploadQueryResults);
+export default UploadQueryResults;
