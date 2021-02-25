@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -80,9 +81,10 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	private boolean excludeFromSecondaryIdQuery = false;
 
 	@Override
-	public String getLabel() {
-		if(!Strings.isNullOrEmpty(super.getLabel())) {
-			return super.getLabel();
+	public String getLabel(PrintSettings cfg) {
+		final String label = super.getLabel(cfg);
+		if(!Strings.isNullOrEmpty(label)) {
+			return label;
 		}
 
 		if(ids.isEmpty()){
@@ -188,7 +190,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		}
 
 		if(tableNodes.isEmpty()){
-			throw new IllegalStateException(String.format("Unable to resolve any connector for query `%s`", getLabel()));
+			throw new IllegalStateException(String.format("Unable to resolve any connector for Query[%s]", this));
 		}
 
 		final QPNode outNode = OrNode.of(tableNodes);
@@ -250,10 +252,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
 		selects.forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		for (CQTable table : tables) {
-			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
+			table.getSelects()
+				 .forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		}
 	}
 

@@ -15,6 +15,7 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -77,19 +78,20 @@ public class CQOr extends CQElement implements ForcedExists {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
 		for (CQElement c : children) {
-			c.collectResultInfos(collector);
+			c.collectResultInfos(collector, cfg);
 		}
 
 		if (createExists) {
-			collector.add(new SimpleResultInfo(getLabel(), ResultType.BooleanT.INSTANCE));
+			collector.add(new SimpleResultInfo(getLabel(cfg), ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	@Override
-	public String getLabel() {
-		return Objects.requireNonNullElse(super.getLabel(), QueryUtils.createDefaultMultiLabel(children, " " + getGetC10nName() + " "));
+	public String getLabel(PrintSettings cfg) {
+		//TODO copy from CQAnd
+		return Objects.requireNonNullElse(super.getLabel(cfg), QueryUtils.createDefaultMultiLabel(children, " " + getGetC10nName() + " ", cfg));
 	}
 
 	private static String getGetC10nName() {

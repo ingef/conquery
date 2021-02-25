@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -35,7 +36,6 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -127,7 +127,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				return;
 			}
 			if(label == null) {
-				label = makeAutoLabel(datasetRegistry);
+				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, Locale.ROOT, datasetRegistry)); // TODO wat do?
 			}
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;
@@ -385,11 +385,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry);
+	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg);
 	
-	protected String makeAutoLabel(DatasetRegistry datasetRegistry) {
+	protected String makeAutoLabel(DatasetRegistry datasetRegistry, PrintSettings cfg) {
 		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb, datasetRegistry);
+		makeDefaultLabel(sb, datasetRegistry, cfg);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
 	}
 }

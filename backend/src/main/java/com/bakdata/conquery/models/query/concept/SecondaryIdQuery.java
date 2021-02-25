@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -126,9 +127,9 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
 		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
-		query.collectResultInfos(collector);
+		query.collectResultInfos(collector, cfg);
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -25,28 +26,31 @@ import lombok.ToString;
 /**
  * A wrapper for {@link CQElement}s to provide additional infos to parts of a query.
  */
-@Getter @Setter @ToString
-@NoArgsConstructor @AllArgsConstructor
-@CPSType(id="RESULT_INFO_DECORATOR", base=CQElement.class)
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@CPSType(id = "RESULT_INFO_DECORATOR", base = CQElement.class)
 public class ResultInfoDecorator extends CQElement {
 
 	@NotNull
 	private ClassToInstanceMap<Object> values = MutableClassToInstanceMap.create();
 	@NotNull
 	private CQElement child;
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
 		int index = collector.getInfos().size();
-		child.collectResultInfos(collector);
+		child.collectResultInfos(collector, cfg);
 		collector.getInfos()
-			.listIterator(index)
-			.forEachRemaining(sd -> {
-				for(Class entry : values.keySet()) {
-					sd.addAppendix(entry, values.getInstance(entry));
-				}
-			});
+				 .listIterator(index)
+				 .forEachRemaining(sd -> {
+					 for (Class entry : values.keySet()) {
+						 sd.addAppendix(entry, values.getInstance(entry));
+					 }
+				 });
 	}
 
 	@Override
@@ -59,7 +63,7 @@ public class ResultInfoDecorator extends CQElement {
 		super.visit(visitor);
 		child.visit(visitor);
 	}
-	
+
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		child.collectRequiredQueries(requiredQueries);

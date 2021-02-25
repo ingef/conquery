@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -36,8 +37,8 @@ public class CQNegation extends CQElement {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		child.collectResultInfos(collector);
+	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
+		child.collectResultInfos(collector, cfg);
 	}
 	
 	@Override

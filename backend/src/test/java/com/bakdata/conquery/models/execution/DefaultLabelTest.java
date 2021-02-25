@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -32,7 +33,9 @@ import org.mockito.Mockito;
 
 public class DefaultLabelTest {
 	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
-	private static final Dataset DATASET = new Dataset() {{setName("dataset");}};
+	private static final Dataset DATASET = new Dataset() {{
+		setName("dataset");
+	}};
 
 	private static final TreeConcept CONCEPT = new TreeConcept() {
 		{
@@ -41,7 +44,7 @@ public class DefaultLabelTest {
 			setLabel("Default Concept");
 		}
 	};
-	
+
 	@BeforeAll
 	static void beforeAll() {
 
@@ -53,18 +56,11 @@ public class DefaultLabelTest {
 		})).when(DATASET_REGISTRY).resolve(any(ConceptId.class));
 	}
 
-	private static CQConcept makeCQConcept(String label) {
-		CQConcept concept = new CQConcept();
-		concept.setLabel(label);
-		concept.setIds(List.of(CONCEPT));
-		return concept;
-
-	}
-	
 	@ParameterizedTest
 	@CsvSource({
-		"de,Default-Concept-Concept",
-		"en,Default-Concept-Concept"})
+			"de,Default-Concept-Concept",
+			"en,Default-Concept-Concept"
+	})
 	void autoLabelConceptQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
@@ -72,19 +68,28 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(concept);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
-		
-		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY)));
+
+		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
-	
+
+	private static CQConcept makeCQConcept(String label) {
+		CQConcept concept = new CQConcept();
+		concept.setLabel(label);
+		concept.setIds(List.of(CONCEPT));
+		return concept;
+
+	}
+
 	@ParameterizedTest
 	@CsvSource({
-		"de",
-		"en"})
+			"de",
+			"en"
+	})
 	void autoLabelConceptQueryFallback(Locale locale) {
 		I18n.LOCALE.set(locale);
-		
+
 		CQConcept concept = new CQConcept();
 		concept.setLabel(null);
 		ConceptQuery cq = new ConceptQuery(concept);
@@ -92,118 +97,123 @@ public class DefaultLabelTest {
 		UUID uuid = UUID.randomUUID();
 		mQuery.setQueryId(uuid);
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
-		
-		assertThat(mQuery.getLabel()).isEqualTo(uuid+AUTO_LABEL_SUFFIX);
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY)));
+
+		assertThat(mQuery.getLabel()).isEqualTo(uuid + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(uuid.toString());
 	}
-	
-	
+
+
 	@ParameterizedTest
 	@CsvSource({
-		"de,Anfrage",
-		"en,Query"})
+			"de,Anfrage",
+			"en,Query"
+	})
 	void autoLabelReusedQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
-		
+
 		CQReusedQuery reused = new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID()));
 		ConceptQuery cq = new ConceptQuery(reused);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY)));
 
-		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
+		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
-	
-	
+
+
 	@ParameterizedTest
 	@CsvSource({
-		"de,Hochgeladene-Liste",
-		"en,Uploaded-List"})
+			"de,Hochgeladene-Liste",
+			"en,Uploaded-List"
+	})
 	void autoLabelUploadQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
-		
+
 		CQExternal external = new CQExternal(List.of(), new String[0][0]);
 		ConceptQuery cq = new ConceptQuery(external);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY)));
 
-		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
+		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
-	
+
 	@ParameterizedTest
 	@CsvSource({
-		"de,Hochgeladene-Liste Anfrage Default-Concept-Concept1 Default-Concept-Concept2 und weitere",
-		"en,Uploaded-List Query Default-Concept-Concept1 Default-Concept-Concept2 and further"})
+			"de,Hochgeladene-Liste Anfrage Default-Concept-Concept1 Default-Concept-Concept2 und weitere",
+			"en,Uploaded-List Query Default-Concept-Concept1 Default-Concept-Concept2 and further"
+	})
 	void autoLabelComplexQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
-		
+
 		CQAnd and = new CQAnd();
 		CQConcept concept1 = makeCQConcept("Concept1");
 		CQConcept concept2 = makeCQConcept("Concept2");
 		CQConcept concept3 = makeCQConcept("Concept3veryveryveryveryveryveryveryverylooooooooooooooooooooonglabel");
 		and.setChildren(List.of(
-			new CQExternal(List.of(), new String[0][0]),
-			new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID())),
-			concept1,
-			concept2,
-			concept3
-			));
+				new CQExternal(List.of(), new String[0][0]),
+				new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID())),
+				concept1,
+				concept2,
+				concept3
+		));
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY)));
 
-		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
+		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
-	
-	
+
+
 	@ParameterizedTest
 	@CsvSource({
-		"de,Hochgeladene-Liste Anfrage Default-Concept-Concept2 Default-Concept-Concept3",
-		"en,Uploaded-List Query Default-Concept-Concept2 Default-Concept-Concept3"})
+			"de,Hochgeladene-Liste Anfrage Default-Concept-Concept2 Default-Concept-Concept3",
+			"en,Uploaded-List Query Default-Concept-Concept2 Default-Concept-Concept3"
+	})
 	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
-		
+
 		CQAnd and = new CQAnd();
 		CQConcept concept1 = new CQConcept();
 		concept1.setLabel(null);
 		CQConcept concept2 = makeCQConcept("Concept2");
 		CQConcept concept3 = makeCQConcept("Concept3");
 		and.setChildren(List.of(
-			new CQExternal(List.of(), new String[0][0]),
-			new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID())),
-			concept1,
-			concept2,
-			concept3
-			));
+				new CQExternal(List.of(), new String[0][0]),
+				new CQReusedQuery(new ManagedExecutionId(DATASET.getId(), UUID.randomUUID())),
+				concept1,
+				concept2,
+				concept3
+		));
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY));
+		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY)));
 
-		assertThat(mQuery.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
+		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
-	
+
 	@ParameterizedTest
 	@CsvSource({
-		"de,Export 2020-10-30 12:37",
-		"en,Export 2020-10-30 12:37"})
+			"de,Export 2020-10-30 12:37",
+			"en,Export 2020-10-30 12:37"
+	})
 	void autoLabelExportForm(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
-		
+
 		ExportForm form = new ExportForm();
 		ManagedForm mForm = form.toManagedExecution(DATASET_REGISTRY, new UserId("User"), DATASET.getId());
 		mForm.setCreationTime(LocalDateTime.of(2020, 10, 30, 12, 37));
 
-		mForm.setLabel(mForm.makeAutoLabel(DATASET_REGISTRY));
-		
-		assertThat(mForm.getLabel()).isEqualTo(autoLabel+AUTO_LABEL_SUFFIX);
+		mForm.setLabel(mForm.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY)));
+
+		assertThat(mForm.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mForm.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
 
