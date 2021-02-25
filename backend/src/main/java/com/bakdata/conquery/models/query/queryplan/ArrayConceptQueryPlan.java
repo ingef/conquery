@@ -1,11 +1,9 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.*;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -119,7 +117,9 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
 			if (specialDateUnion) {
-				dateSet.addAll(CDateSet.parse(Objects.toString(singleLineResult.getValues()[0])));
+				for(Object dateRange : (Collection<CDateRange>) singleLineResult.getValues()[0]) {
+					dateSet.add((CDateRange) dateRange);
+				}
 				// Skip overwriting the first value: daterange
 				srcCopyPos = 1;
 			}
@@ -138,7 +138,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 		if (specialDateUnion) {
 			// Dateset was needed, add it to the front.
-			resultValues[0] = dateSet.toString();
+			resultValues[0] = dateSet.asRanges();
 		}
 
 		return new SinglelineContainedEntityResult(entity.getId(), resultValues);

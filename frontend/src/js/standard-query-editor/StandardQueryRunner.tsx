@@ -1,18 +1,15 @@
 import React, { FC } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { StateT } from "app-types";
 
 import QueryRunner from "../query-runner/QueryRunner";
 
 import { validateQueryLength, validateQueryDates } from "../model/query";
 
-import actions from "../app/actions";
-
 import type { DatasetIdT } from "../api/types";
 import type { QueryRunnerStateT } from "../query-runner/reducer";
+import { useStartQuery, useStopQuery } from "../query-runner/actions";
 import type { StandardQueryStateT } from "./queryReducer";
-
-const { startStandardQuery, stopStandardQuery } = actions;
 
 function validateQueryStartStop({ startQuery, stopQuery }: QueryRunnerStateT) {
   return !startQuery.loading && !stopQuery.loading;
@@ -54,15 +51,18 @@ const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const isQueryValid = validateQueryLength(query) && hasQueryValidDates;
   const isQueryNotStartedOrStopped = validateQueryStartStop(queryRunner);
 
-  const dispatch = useDispatch();
+  const startStandardQuery = useStartQuery("standard");
+  const stopStandardQuery = useStopQuery("standard");
 
   const startQuery = () =>
-    dispatch(
-      startStandardQuery(datasetId, query, {
-        selectedSecondaryId,
-      })
-    );
-  const stopQuery = () => dispatch(stopStandardQuery(datasetId, queryId));
+    startStandardQuery(datasetId, query, {
+      selectedSecondaryId,
+    });
+  const stopQuery = () => {
+    if (queryId) {
+      stopStandardQuery(datasetId, queryId);
+    }
+  };
 
   return (
     <QueryRunner
