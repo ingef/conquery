@@ -92,30 +92,38 @@ public class IntegrationUtils {
 			return;
 		}
 
-		ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
+		final JsonNode jsonNode = response.readEntity(JsonNode.class);
 
-		final URI queryStatusURI = getQueryStatusURI(conquery, status);
+		final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
+		String status = jsonNode.get(ExecutionStatus.Fields.status).asText();
+		long numberOfResults = 0;
+
+		// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
+
+		final URI queryStatusURI = getQueryStatusURI(conquery, id);
 
 		// We try at most 5 times, queryStatus waits for 10s, we therefore don't need to timeout here.
 		// Query getQueryStatus until it is no longer running.
 		for (int trial = 0; trial < 5; trial++) {
 
-			final ExecutionStatus currentStatus =
+			final JsonNode currentStatus =
 					conquery.getClient()
 							.target(queryStatusURI)
 							.request(MediaType.APPLICATION_JSON_TYPE)
-							.get(ExecutionStatus.Full.class);
+							.get(JsonNode.class);
 
-			if (currentStatus.getStatus() != ExecutionState.RUNNING) {
-				status = currentStatus;
+			status = currentStatus.get(ExecutionStatus.Fields.status).asText();
+			numberOfResults = currentStatus.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
+
+			if (!ExecutionState.RUNNING.name().equals(status)) {
 				break;
 			}
 		}
 
-		assertThat(status.getStatus()).isEqualTo(expectedState);
+		assertThat(status).isEqualTo(expectedState.name());
 
 		if (expectedState == ExecutionState.DONE) {
-			assertThat(status.getNumberOfResults())
+			assertThat(numberOfResults)
 					.describedAs("Query results")
 					.isEqualTo(size);
 		}
@@ -128,10 +136,10 @@ public class IntegrationUtils {
 							  ));
 	}
 
-	private static URI getQueryStatusURI(StandaloneSupport conquery, ExecutionStatus status) {
+	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
 		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
 							  .buildFromMap(Map.of(
-									  "query", status.getId(), "dataset", conquery.getDataset().getId()
+									  "query", id, "dataset", conquery.getDataset().getId()
 							  ));
 	}
 
