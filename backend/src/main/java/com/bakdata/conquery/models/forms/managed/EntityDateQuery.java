@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -46,6 +48,14 @@ public class EntityDateQuery extends IQuery {
 
     @Override
     public EntityDateQueryPlan createQueryPlan(QueryPlanContext context) {
+        // Clear all selects we need only the date union which is enforced through the content
+        query.visit(v -> {
+            if(v instanceof CQConcept) {
+                CQConcept concept = ((CQConcept) v);
+                concept.setSelects(Collections.emptyList());
+                concept.getTables().forEach(t -> t.setSelects(Collections.emptyList()));
+            }
+        });
         return new EntityDateQueryPlan(
                 query.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
                 features.createQueryPlan(context.withGenerateSpecialDateUnion(true)),

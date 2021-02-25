@@ -84,9 +84,14 @@ public class QueryToCSVRenderer {
 	public static String print(CsvWriter writer, PrintSettings cfg, ExternalEntityId entity, ResultInfoCollector infos, Object[] value) {
 		List<String> result = new ArrayList<>(entity.getExternalId().length + value.length);
 		result.addAll(Arrays.asList(entity.getExternalId()));
-		for(int i=0;i<infos.size();i++) {
-			result.add(infos.getInfos().get(i).getType().printNullable(cfg, value[i]));
+		try{
+			for(int i=0;i<infos.size();i++) {
+				result.add(infos.getInfos().get(i).getType().printNullable(cfg, value[i]));
+			}
+		} catch (Exception e) {
+			throw new IllegalStateException(String.format("Failed to print line '%s' with result infos: %s", Arrays.toString(value), infos.getInfos()), e);
 		}
+
 		return writer.writeRowToString(result);
 	}
 }

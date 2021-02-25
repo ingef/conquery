@@ -50,9 +50,9 @@ public class EntityDateQueryPlan implements QueryPlan {
                 contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
             }
 
-            FormQueryPlan resoltionQuery = new FormQueryPlan(contexts, features);
+            FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
             // We assume the date set to be in the first column, this might be wrong
-            EntityResult result = resoltionQuery.execute(ctx, entity);
+            EntityResult result = resolutionQuery.execute(ctx, entity);
 
             if (result.isFailed() || !result.isContained()) {
                 continue;
