@@ -32,7 +32,7 @@ public class NamespaceStorage extends NamespacedStorage {
         super(validator, storageFactory, pathName);
 
         idMapping = storageFactory.createIdMappingStore(pathName);
-        structure = storageFactory.createStructureStore(pathName);
+        structure = storageFactory.createStructureStore(pathName, getCentralRegistry());
         workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
     }
 
