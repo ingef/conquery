@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -265,7 +266,7 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
     @Override
-    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, CentralRegistry centralRegistry) {
+    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, SingletonNamespaceCollection centralRegistry) {
         return STRUCTURE.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE), centralRegistry);
     }
 

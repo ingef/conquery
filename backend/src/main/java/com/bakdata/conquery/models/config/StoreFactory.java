@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -58,7 +59,7 @@ public interface StoreFactory {
 	// NamespaceStorage
 	SingletonStore<PersistentIdMap> createIdMappingStore(List<String> pathName);
 	SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(List<String> pathName);
-	SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, CentralRegistry centralRegistry);
+	SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, SingletonNamespaceCollection centralRegistry);
 
 	// MetaStorage
     IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName);
