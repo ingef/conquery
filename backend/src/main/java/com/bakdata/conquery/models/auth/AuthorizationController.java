@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -66,11 +67,8 @@ public final class AuthorizationController implements Managed{
 	private List<Realm> realms = new ArrayList<>();
 
 	private DefaultSecurityManager securityManager;
-	
-	public void init(ManagerNode manager) {
-		// Create Jersey filter for authentication this is just referenced here and can be graped and registered by
-		// any servlet. In the following configured realms can register TokenExtractors in the filter.
-		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
+
+	public void init() {
 
 		// Add the central authentication realm
 		centralTokenRealm = new ConqueryTokenRealm(storage);
