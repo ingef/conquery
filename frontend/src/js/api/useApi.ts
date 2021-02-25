@@ -1,8 +1,9 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { useHistory } from "react-router-dom";
 
-import { isLoginDisabled } from "../environment";
+import { isIDPEnabled, isLoginDisabled } from "../environment";
 import { getStoredAuthToken } from "../authorization/helper";
+import { useKeycloak } from "@react-keycloak/web";
 
 export const useApiUnauthorized = <T>(
   requestConfig: Partial<AxiosRequestConfig> = {}
@@ -18,18 +19,30 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   const history = useHistory();
   const loginDisabled = isLoginDisabled();
 
+  const idpEnabled = isIDPEnabled();
+  const { keycloak } = useKeycloak();
+
+  const authToken = idpEnabled
+    ? keycloak.token || ""
+    : getStoredAuthToken() || "";
+
   return async (
     finalRequestConfig: Partial<AxiosRequestConfig> = {}
   ): Promise<T> => {
     try {
-      const response = await fetchJson({
+      const response = await fetchJson(authToken, {
         ...requestConfig,
         ...finalRequestConfig,
       });
 
       return response;
     } catch (error) {
-      if (!loginDisabled && error.status && error.status === 401) {
+      if (
+        !idpEnabled &&
+        !loginDisabled &&
+        error.status &&
+        error.status === 401
+      ) {
         history.push("/login");
       }
 
@@ -85,8 +98,7 @@ export async function fetchJsonUnauthorized(
   }
 }
 
-function fetchJson(request?: Partial<AxiosRequestConfig>) {
-  const authToken = getStoredAuthToken() || "";
+function fetchJson(authToken: string, request?: Partial<AxiosRequestConfig>) {
   const finalRequest = {
     ...(request || {}),
     headers: {
@@ -97,5 +109,3 @@ function fetchJson(request?: Partial<AxiosRequestConfig>) {
 
   return fetchJsonUnauthorized(finalRequest);
 }
-
-export default fetchJson;

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

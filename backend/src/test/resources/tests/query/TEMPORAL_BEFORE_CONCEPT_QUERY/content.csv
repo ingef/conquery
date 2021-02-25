@@ -1,4 +1,4 @@
-pid,datum,geschlecht
+pid,datum,value
 1,2011-01-01,"f"
 3,2011-01-01,"f"
 4,2011-01-01,"m"

@@ -13,15 +13,15 @@
          "child":{  
             "type":"CONCEPT",
             "ids":[  
-               "${dataset}.kg_tage_duration_sum"
+               "kg_tage_duration_sum"
             ],
             "label":"KG-Tage DURATION_SUM",
             "tables":[  
                {  
-                  "id":"${dataset}.kg_tage_duration_sum.kg_tage_connector",
+                  "id":"kg_tage_duration_sum.kg_tage_connector",
                   "filters":[  
                      {  
-                        "filter":"${dataset}.kg_tage_duration_sum.kg_tage_connector.datum",
+                        "filter":"kg_tage_duration_sum.kg_tage_connector.datum",
                         "type":"INTEGER_RANGE",
                         "value":{  
                            "min":0

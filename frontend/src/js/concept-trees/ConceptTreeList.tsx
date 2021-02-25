@@ -39,7 +39,7 @@ const Root = styled("div")<{ show?: boolean }>`
 `;
 
 interface PropsT {
-  datasetId: DatasetIdT;
+  datasetId: DatasetIdT | null;
 }
 
 const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
@@ -63,7 +63,11 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
   );
 
   const loadTree = useLoadTree();
-  const onLoadTree = (id: string) => loadTree(datasetId, id);
+  const onLoadTree = (id: string) => {
+    if (datasetId) {
+      loadTree(datasetId, id);
+    }
+  };
 
   const rootConceptIds = useRootConceptIds();
 

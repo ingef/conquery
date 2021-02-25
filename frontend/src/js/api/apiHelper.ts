@@ -1,7 +1,7 @@
 // Functions in this file help to transform data from our state into a shape
 // that is compatible with the backend api
 //
-// Mainly, certain keys are whitelisted
+// Mainly, certain keys are allowlisted
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
 
@@ -56,7 +56,7 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   return tables
     .filter((table) => !table.exclude)
     .map((table) => {
-      // Explicitly whitelist the tables that we allow to send to the API
+      // Explicitly allowlist the tables that we allow to send to the API
       return {
         id: table.connectorId,
         dateColumn: transformDateColumnToApi(table.dateColumn),
@@ -203,7 +203,7 @@ const createExternal = (query: any) => {
 };
 
 // The query state already contains the query.
-// But small additions are made (properties whitelisted), empty things filtered out
+// But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (
   query: Object,

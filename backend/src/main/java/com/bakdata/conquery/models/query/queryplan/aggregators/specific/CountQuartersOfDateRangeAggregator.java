@@ -87,6 +87,6 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

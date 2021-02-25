@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.TokenHandler;

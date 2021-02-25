@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;

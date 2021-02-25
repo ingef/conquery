@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.events.stores.root;
 
 
+import com.bakdata.conquery.models.events.MajorTypeId;
+
 /**
  * {@link ColumnStore} for Money based values.
- * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#MONEY} and {@link com.bakdata.conquery.models.events.parser.specific.MoneyParser}.
+ * See also {@link MajorTypeId#MONEY} and {@link com.bakdata.conquery.models.preproc.parser.specific.MoneyParser}.
  */
 public interface MoneyStore extends ColumnStore {
 

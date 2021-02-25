@@ -6,16 +6,16 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "${dataset}.number"
+        "number"
       ],
       "type": "CONCEPT",
       "label": "vs",
       "tables": [
         {
-          "id": "${dataset}.number.number_connector",
+          "id": "number.number_connector",
           "filters": [
             {
-              "filter": "${dataset}.number.number_connector.value",
+              "filter": "number.number_connector.value",
               "type": "REAL_RANGE",
               "value": {
                 "min": 1,
@@ -23,7 +23,7 @@
               }
             }
           ],
-          "selects": "${dataset}.number.exists"
+          "selects": "number.exists"
         }
       ]
     }

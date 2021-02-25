@@ -340,10 +340,8 @@ export type PostFilterSuggestionsResponseT = FilterSuggestion[];
 
 export type GetFormQueriesResponseT = Forms;
 
-export interface PermissionT {
-  domains: string[];
-  abilities: string[];
-  targets: string[];
+export interface PermissionsT {
+  [permission: string]: boolean;
 }
 
 export type UserGroupIdT = string;
@@ -354,7 +352,7 @@ export interface UserGroupT {
 
 export interface GetMeResponseT {
   userName: string;
-  permissions: PermissionT[];
+  datasetAbilities: Record<DatasetIdT, PermissionsT>;
   groups: UserGroupT[];
   hideLogoutButton?: boolean;
 }

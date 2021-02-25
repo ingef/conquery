@@ -1,10 +1,10 @@
-import { ThunkDispatch } from "redux-thunk";
-
-import api from "../api";
-import type { DatasetIdT } from "../api/types";
+import { useDispatch } from "react-redux";
+import type { ConceptIdT, DatasetIdT, FilterIdT, TableIdT } from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
-import { loadPreviousQuery } from "../previous-queries/list/actions";
+import { useLoadPreviousQuery } from "../previous-queries/list/actions";
+import type { TreesT } from "../concept-trees/reducer";
+import { usePostPrefixForSuggestions } from "../api/api";
 
 import type {
   DraggedNodeType,
@@ -39,7 +39,6 @@ import {
   SET_SELECTED_SECONDARY_ID,
   TOGGLE_SECONDARY_ID_EXCLUDE,
 } from "./actionTypes";
-import { TreesT } from "../concept-trees/reducer";
 
 export const dropAndNode = (item: DraggedNodeType | DraggedQueryType) => ({
   type: DROP_AND_NODE,
@@ -98,26 +97,30 @@ const findPreviousQueryIds = (node, queries = []) => {
   1) Expands previous query in the editor
   2) Triggers a load for all nested queries
 */
-export const expandPreviousQuery = (
-  datasetId: DatasetIdT,
-  rootConcepts: TreesT,
-  query: PreviousQueryQueryNodeType
-) => {
-  if (!query.root || query.root.type !== "AND") {
-    throw new Error("Cant expand query, because root is not AND");
-  }
+export const useExpandPreviousQuery = () => {
+  const dispatch = useDispatch();
+  const loadPreviousQuery = useLoadPreviousQuery();
 
-  const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+  return (
+    datasetId: DatasetIdT,
+    rootConcepts: TreesT,
+    query: PreviousQueryQueryNodeType
+  ) => {
+    if (!query.root || query.root.type !== "AND") {
+      throw new Error("Cant expand query, because root is not AND");
+    }
 
-  return [
-    {
+    const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+
+    dispatch({
       type: EXPAND_PREVIOUS_QUERY,
       payload: { rootConcepts, query },
-    },
-    ...nestedPreviousQueryIds.map((queryId) =>
-      loadPreviousQuery(datasetId, queryId)
-    ),
-  ];
+    });
+
+    for (const queryId of nestedPreviousQueryIds) {
+      loadPreviousQuery(datasetId, queryId);
+    }
+  };
 };
 
 export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
@@ -202,27 +205,38 @@ export const loadFilterSuggestionsSuccess = (
     filterIdx,
   });
 
-export const loadFilterSuggestionsError = (error, tableIdx, filterIdx) =>
+export const loadFilterSuggestionsError = (
+  error: Error,
+  tableIdx: number,
+  filterIdx: number
+) =>
   defaultError(LOAD_FILTER_SUGGESTIONS_ERROR, error, { tableIdx, filterIdx });
 
-export const loadFilterSuggestions = (
-  datasetId,
-  conceptId,
-  tableId,
-  filterId,
-  prefix,
-  tableIdx,
-  filterIdx
-) => {
-  return (dispatch: ThunkDispatch) => {
+export const useLoadFilterSuggestions = () => {
+  const dispatch = useDispatch();
+  const postPrefixForSuggestions = usePostPrefixForSuggestions();
+
+  return (
+    datasetId: DatasetIdT,
+    conceptId: ConceptIdT,
+    tableId: TableIdT,
+    filterId: FilterIdT,
+    prefix: string,
+    tableIdx: number,
+    filterIdx: number
+  ) => {
     dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
 
-    return api
-      .postPrefixForSuggestions(datasetId, conceptId, tableId, filterId, prefix)
-      .then(
-        (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
-        (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
-      );
+    return postPrefixForSuggestions(
+      datasetId,
+      conceptId,
+      tableId,
+      filterId,
+      prefix
+    ).then(
+      (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
+      (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
+    );
   };
 };
 

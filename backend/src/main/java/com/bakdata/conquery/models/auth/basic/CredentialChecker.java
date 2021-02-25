@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.auth.basic;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.io.xodus.stores.XodusStore;
+import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.bindings.StringBinding;

@@ -1,14 +1,12 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.*;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
@@ -58,7 +56,11 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 		int size = calculateCompleteLength();
 		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
-		CDateSet dateSet = CDateSet.parse(Objects.toString(contained.getValues()[0]));
+		CDateSet dateSet = CDateSet.create();
+
+		for(CDateRange dateRange : (Collection<CDateRange>) contained.getValues()[0]) {
+			dateSet.add(dateRange);
+		}
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
 		// dateset is empty or sampling failed.

@@ -12,14 +12,14 @@ export const tableIsEditable = (table: TableT) =>
   (!!table.dateColumn && table.dateColumn.options.length > 0);
 
 export const tablesHaveActiveFilter = (tables: TableWithFilterValueType[]) =>
-  tables.some(table => tableHasActiveFilters(table));
+  tables.some((table) => tableHasActiveFilters(table));
 
 export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
   objectHasSelectedSelects(table) ||
   tableHasNonDefaultDateColumn(table) ||
   (table.filters &&
     table.filters.some(
-      filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue
+      (filter) => !isEmpty(filter.value) && filter.value !== filter.defaultValue
     ));
 
 const tableHasNonDefaultDateColumn = (table: TableWithFilterValueType) =>
@@ -30,30 +30,32 @@ const tableHasNonDefaultDateColumn = (table: TableWithFilterValueType) =>
 
 export function tableIsDisabled(
   table: TableWithFilterValueType,
-  blacklistedTables?: string[],
-  whitelistedTables?: string[]
+  blocklistedTables?: string[],
+  allowlistedTables?: string[]
 ) {
   return (
-    (!!whitelistedTables && !tableIsWhitelisted(table, whitelistedTables)) ||
-    (!!blacklistedTables && tableIsBlacklisted(table, blacklistedTables))
+    (!!allowlistedTables && !tableIsAllowlisted(table, allowlistedTables)) ||
+    (!!blocklistedTables && tableIsBlocklisted(table, blocklistedTables))
   );
 }
 
-export function tableIsBlacklisted(
+export function tableIsBlocklisted(
   table: TableWithFilterValueType,
-  blacklistedTables: string[]
+  blocklistedTables: string[]
 ) {
-  return blacklistedTables.some(
-    tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
+  return blocklistedTables.some(
+    (tableName) =>
+      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
   );
 }
 
-export function tableIsWhitelisted(
+export function tableIsAllowlisted(
   table: TableWithFilterValueType,
-  whitelistedTables: string[]
+  allowlistedTables: string[]
 ) {
-  return whitelistedTables.some(
-    tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
+  return allowlistedTables.some(
+    (tableName) =>
+      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
   );
 }
 
@@ -63,7 +65,7 @@ export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
   return tablesWithDefaults(tables);
 };
 
-const tableWithDefaultDateColumn = table => {
+const tableWithDefaultDateColumn = (table) => {
   return {
     ...table,
     dateColumn:
@@ -71,29 +73,29 @@ const tableWithDefaultDateColumn = table => {
       !!table.dateColumn.options &&
       table.dateColumn.options.length > 0
         ? { ...table.dateColumn, value: table.dateColumn.options[0].value }
-        : null
+        : null,
   };
 };
 
-const tableWithDefaultFilters = table => ({
+const tableWithDefaultFilters = (table) => ({
   ...table,
-  filters: filtersWithDefaults(table.filters)
+  filters: filtersWithDefaults(table.filters),
 });
 
-const tableWithDefaultSelects = table => ({
+const tableWithDefaultSelects = (table) => ({
   ...table,
-  selects: selectsWithDefaults(table.selects)
+  selects: selectsWithDefaults(table.selects),
 });
 
-const tableWithDefaults = table =>
+const tableWithDefaults = (table) =>
   compose(
     tableWithDefaultDateColumn,
     tableWithDefaultSelects,
     tableWithDefaultFilters
   )({
     ...table,
-    exclude: false
+    exclude: false,
   });
 
-export const tablesWithDefaults = tables =>
+export const tablesWithDefaults = (tables) =>
   tables ? tables.map(tableWithDefaults) : null;
