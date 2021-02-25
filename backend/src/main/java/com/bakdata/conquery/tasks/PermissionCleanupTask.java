@@ -25,7 +25,7 @@ public class PermissionCleanupTask extends Task {
 
     private final MetaStorage storage;
 
-    protected PermissionCleanupTask(MetaStorage storage) {
+    public PermissionCleanupTask(MetaStorage storage) {
         super("permission-cleanup");
         this.storage = storage;
     }
