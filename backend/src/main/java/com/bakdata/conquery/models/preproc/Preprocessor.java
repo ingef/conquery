@@ -19,10 +19,10 @@ import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -182,10 +182,12 @@ public class Preprocessor {
 						try {
 							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
-							final int primary = result.addPrimary(primaryId);
 							final PPColumn[] columns = result.getColumns();
 
-							result.addRow(primary, columns, applyOutputs(outputs, columns, row, lineId));
+							final int primary = result.addPrimary(primaryId);
+							final Object[] outRow = applyOutputs(outputs, columns, row, lineId);
+
+							result.addRow(primary, columns, outRow);
 
 						}
 						catch (OutputDescription.OutputException e) {

@@ -18,7 +18,8 @@ import { TabT } from "./js/pane/types";
 import { Environment } from "./js/environment";
 
 const isProduction = process.env.NODE_ENV === "production";
-const disableLogin = !!process.env.REACT_APP_DISABLE_LOGIN;
+const disableLogin = process.env.REACT_APP_DISABLE_LOGIN === "true";
+const enableIDP = process.env.REACT_APP_IDP_ENABLE === "true";
 const LANG = process.env.REACT_APP_LANG;
 
 if (!LANG || LANG === "de") {
@@ -27,19 +28,14 @@ if (!LANG || LANG === "de") {
   initializeLocalization("en", enGB, translationsEn);
 }
 
-const MOCK_API_URL = "http://localhost:8001";
-
 const environment: Environment = {
   isProduction: isProduction,
   basename: isProduction
     ? "/" // Possibly: Run under a subpath in production
     : "/",
-  apiUrl: !!process.env.REACT_APP_API_URL
-    ? process.env.REACT_APP_API_URL
-    : isProduction
-    ? ""
-    : MOCK_API_URL,
+  apiUrl: process.env.REACT_APP_API_URL || "",
   disableLogin,
+  enableIDP,
 };
 
 const tabs: TabT[] = [

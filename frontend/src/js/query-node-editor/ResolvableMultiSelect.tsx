@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 
 import type { FilterIdT, SelectOptionT } from "../api/types";
 
@@ -8,7 +8,7 @@ import InputMultiSelect, {
 } from "../form-components/InputMultiSelect";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 
-import { postFilterValuesResolve } from "../api/api";
+import { usePostFilterValuesResolve } from "../api/api";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
@@ -46,10 +46,11 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   onLoad,
   isLoading,
 }) => {
-  const [resolved, setResolved] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(false);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [resolved, setResolved] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const postFilterValuesResolve = usePostFilterValuesResolve();
 
   // Can be both, an auto-completable (async) multi select or a regular one
   const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelect;

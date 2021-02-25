@@ -16,10 +16,13 @@ function setDefaultSelects(selects: SelectorT[], defaultSelects: string[]) {
   }));
 }
 
-export const initTables = (
-  blocklistedTables: string[],
-  allowlistedTables: string[]
-) => (node: ConceptQueryNodeType) => {
+export const initTables = ({
+  blocklistedTables,
+  allowlistedTables,
+}: {
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
+}) => (node: ConceptQueryNodeType) => {
   return !node.tables
     ? node
     : {

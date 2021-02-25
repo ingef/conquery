@@ -2,10 +2,12 @@ package com.bakdata.conquery.models.events.stores.root;
 
 import java.math.BigDecimal;
 
+import com.bakdata.conquery.models.events.MajorTypeId;
+
 /**
  * {@link ColumnStore}  for {@link BigDecimal} values.
  *
- * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#DECIMAL} and {@link com.bakdata.conquery.models.events.parser.specific.DecimalParser}.
+ * See also {@link MajorTypeId#DECIMAL} and {@link com.bakdata.conquery.models.preproc.parser.specific.DecimalParser}.
  */
 public interface DecimalStore extends ColumnStore {
 

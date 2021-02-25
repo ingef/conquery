@@ -9,7 +9,7 @@ import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
 import PreviousQueries from "./PreviousQueries";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
-import { loadPreviousQueries } from "./actions";
+import { useLoadPreviousQueries } from "./actions";
 import { selectPreviousQueries } from "./selector";
 import { canUploadResult } from "../../user/selectors";
 
@@ -25,9 +25,9 @@ const Container = styled("div")`
   padding: 0 10px;
 `;
 
-type PropsT = {
-  datasetId: DatasetIdT;
-};
+interface PropsT {
+  datasetId: DatasetIdT | null;
+}
 
 const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   const queries = useSelector<StateT, PreviousQueryT[]>((state) =>
@@ -44,15 +44,15 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
     canUploadResult(state)
   );
 
-  const dispatch = useDispatch();
+  const loadPreviousQueries = useLoadPreviousQueries();
 
   const hasQueries = loading || queries.length !== 0;
 
   useEffect(() => {
-    const loadQueries = () => dispatch(loadPreviousQueries(datasetId));
-
-    loadQueries();
-  }, [dispatch, datasetId]);
+    if (datasetId) {
+      loadPreviousQueries(datasetId);
+    }
+  }, [datasetId]);
 
   return (
     <>
