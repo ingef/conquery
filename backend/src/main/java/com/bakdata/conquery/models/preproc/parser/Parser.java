@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.parser;
+package com.bakdata.conquery.models.preproc.parser;
 
 import javax.annotation.Nonnull;
 

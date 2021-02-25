@@ -1,10 +1,10 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
-import com.bakdata.conquery.models.events.parser.ColumnValues;
-import it.unimi.dsi.fastutil.ints.IntBigArrayBigList;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 class IntegerColumnValues extends ColumnValues<Integer> {
-	private final IntBigArrayBigList values = new IntBigArrayBigList();
+	private final IntArrayList values = new IntArrayList();
 
 	protected IntegerColumnValues() {
 		super(0);
@@ -22,6 +22,6 @@ class IntegerColumnValues extends ColumnValues<Integer> {
 
 	@Override
 	protected int size() {
-		return (int) values.size64();
+		return (int) values.size();
 	}
 }

@@ -1,18 +1,15 @@
-package com.bakdata.conquery.models.events.parser.specific;
-
-import java.util.ArrayList;
-import java.util.List;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.ColumnValues;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateFormats;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -105,25 +102,8 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new ColumnValues<CDateRange>(null) {
-			final List<CDateRange> decimals = new ArrayList<>();
-
-			@Override
-			public CDateRange get(int event) {
-				return decimals.get(event);
-			}
-
-			@Override
-			protected void append(CDateRange obj) {
-				decimals.add(obj);
-			}
-
-			@Override
-			protected int size() {
-				return decimals.size();
-			}
-		};
+	public ColumnValues<CDateRange> createColumnValues(ParserConfig parserConfig) {
+		return new ListColumnValues<>();
 	}
 
 }

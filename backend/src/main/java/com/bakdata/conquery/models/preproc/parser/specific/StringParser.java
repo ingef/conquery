@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -10,13 +10,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
-import com.bakdata.conquery.models.events.parser.ColumnValues;
-import com.bakdata.conquery.models.events.parser.Parser;
-import com.bakdata.conquery.models.events.parser.specific.string.MapTypeGuesser;
-import com.bakdata.conquery.models.events.parser.specific.string.NumberTypeGuesser;
-import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser;
-import com.bakdata.conquery.models.events.parser.specific.string.StringTypeGuesser.Guess;
-import com.bakdata.conquery.models.events.parser.specific.string.TrieTypeGuesser;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -24,6 +17,13 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncod
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.models.preproc.parser.specific.string.MapTypeGuesser;
+import com.bakdata.conquery.models.preproc.parser.specific.string.NumberTypeGuesser;
+import com.bakdata.conquery.models.preproc.parser.specific.string.StringTypeGuesser;
+import com.bakdata.conquery.models.preproc.parser.specific.string.StringTypeGuesser.Guess;
+import com.bakdata.conquery.models.preproc.parser.specific.string.TrieTypeGuesser;
 import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;

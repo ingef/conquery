@@ -1,15 +1,13 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.ColumnValues;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
-import it.unimi.dsi.fastutil.doubles.DoubleBigArrayBigList;
-import it.unimi.dsi.fastutil.doubles.DoubleBigList;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,25 +62,7 @@ public class RealParser extends Parser<Double, RealStore> {
 
 	@Override
 	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new ColumnValues<Double>(Double.NaN) {
-
-			final DoubleBigList values = new DoubleBigArrayBigList();
-
-			@Override
-			public Double get(int event) {
-				return values.getDouble(event);
-			}
-
-			@Override
-			protected void append(Double obj) {
-				values.add(obj.doubleValue());
-			}
-
-			@Override
-			protected int size() {
-				return (int) values.size64();
-			}
-		};
+		return new DoubleColumnValues();
 	}
 
 }

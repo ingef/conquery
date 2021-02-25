@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.parser;
+package com.bakdata.conquery.models.preproc.parser;
 
 import java.util.BitSet;
 
@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 /**
- * per Column Store to encode null in auxiliary bitset, allowing primitive storage.
+ * For Preprocessing: per Column Store to encode null in auxiliary bitset, allowing primitive storage.
  */
 @SuppressWarnings("Unchecked")
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)

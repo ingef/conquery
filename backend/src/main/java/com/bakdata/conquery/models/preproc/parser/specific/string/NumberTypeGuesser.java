@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.parser.specific.string;
+package com.bakdata.conquery.models.preproc.parser.specific.string;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
@@ -6,11 +6,11 @@ import java.util.Map.Entry;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.specific.IntegerParser;
-import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
+import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
+import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;

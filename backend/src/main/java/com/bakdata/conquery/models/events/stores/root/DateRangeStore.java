@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.events.stores.root;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.events.MajorTypeId;
 
 /**
  * {@link ColumnStore} for {@link CDateRange}.
  *
- * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#DATE_RANGE} and {@link com.bakdata.conquery.models.events.parser.specific.DateRangeParser}.
+ * See also {@link MajorTypeId#DATE_RANGE} and {@link com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser}.
 
  */
 public interface DateRangeStore extends ColumnStore {

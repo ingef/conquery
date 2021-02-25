@@ -1,18 +1,16 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.ColumnValues;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
 import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -70,25 +68,8 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new ColumnValues<BigDecimal>(null) {
-			final List<BigDecimal> decimals = new ArrayList<>();
-
-			@Override
-			public BigDecimal get(int event) {
-				return decimals.get(event);
-			}
-
-			@Override
-			protected void append(BigDecimal obj) {
-				decimals.add(obj);
-			}
-
-			@Override
-			protected int size() {
-				return decimals.size();
-			}
-		};
+	public ColumnValues<BigDecimal> createColumnValues(ParserConfig parserConfig) {
+		return new ListColumnValues();
 	}
 
 }

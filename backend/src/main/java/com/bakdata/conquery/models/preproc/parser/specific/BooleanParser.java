@@ -1,15 +1,13 @@
-package com.bakdata.conquery.models.events.parser.specific;
-
-import java.util.BitSet;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.ColumnValues;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import lombok.ToString;
 
 @ToString(callSuper = true)
@@ -47,26 +45,7 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	@Override
 	public ColumnValues createColumnValues(ParserConfig parserConfig) {
-		return new ColumnValues<Boolean>(false) {
-			private final BitSet values = new BitSet();
-
-			@Override
-			public Boolean get(int event) {
-				return values.get(event);
-			}
-
-
-			@Override
-			protected int size() {
-				return values.cardinality();
-			}
-
-			@Override
-			protected void append(Boolean obj) {
-				values.set(size(), obj ? (byte) 1 : (byte) 0);
-			}
-
-		};
+		return new BooleanColumnValues();
 	}
 
 }

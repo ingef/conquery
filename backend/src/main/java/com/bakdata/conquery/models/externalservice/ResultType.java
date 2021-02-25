@@ -4,7 +4,7 @@ package com.bakdata.conquery.models.externalservice;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.NonNull;

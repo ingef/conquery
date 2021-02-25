@@ -16,7 +16,7 @@
 //import com.bakdata.conquery.models.exceptions.JSONException;
 //import com.bakdata.conquery.models.identifiable.CentralRegistry;
 //import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-//import com.bakdata.conquery.models.events.parser.MajorTypeId;
+//import com.bakdata.conquery.models.events.MajorTypeId;
 //import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 //import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 //import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
