@@ -1,15 +1,17 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateFormats;
+import lombok.SneakyThrows;
 import lombok.ToString;
 
 @ToString(callSuper = true)
@@ -55,4 +57,11 @@ public class DateParser extends Parser<Integer, DateStore> {
 	public void setValue(DateStore store, int event, Integer value) {
 		store.setDate(event, value);
 	}
+
+	@SneakyThrows
+	@Override
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+		return new IntegerColumnValues();
+	}
+
 }

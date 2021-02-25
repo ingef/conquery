@@ -1,10 +1,10 @@
-package com.bakdata.conquery.models.events.parser.specific.string;
+package com.bakdata.conquery.models.preproc.parser.specific.string;
 
-import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import lombok.RequiredArgsConstructor;
 
