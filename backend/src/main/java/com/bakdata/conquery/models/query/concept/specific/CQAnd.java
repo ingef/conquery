@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -78,12 +77,19 @@ public class CQAnd extends CQElement implements ForcedExists{
 		}
 
 		if(createExists){
-			final String label = Objects.requireNonNullElse(
-					getLabel(cfg),
-					QueryUtils.createDefaultMultiLabel(children, " " + cfg.getC10N(CQElementC10n.class).and() + " ", cfg)
-			);
+			final String label = getLabel(cfg);
 			collector.add(new SimpleResultInfo(label, ResultType.BooleanT.INSTANCE));
 		}
+	}
+
+	@Override
+	public String getLabel(PrintSettings cfg) {
+		String label = super.getLabel(cfg);
+		if (label != null) {
+			return label;
+		}
+
+		return QueryUtils.createDefaultMultiLabel(children, " " + cfg.getC10N(CQElementC10n.class).and() + " ", cfg);
 	}
 
 	@Override

@@ -2,15 +2,12 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
-import c10n.C10N;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -90,13 +87,14 @@ public class CQOr extends CQElement implements ForcedExists {
 
 	@Override
 	public String getLabel(PrintSettings cfg) {
-		//TODO copy from CQAnd
-		return Objects.requireNonNullElse(super.getLabel(cfg), QueryUtils.createDefaultMultiLabel(children, " " + getGetC10nName() + " ", cfg));
+		String label = super.getLabel(cfg);
+		if (label != null) {
+			return label;
+		}
+
+		return QueryUtils.createDefaultMultiLabel(children, " " + cfg.getC10N(CQElementC10n.class).or() + " ", cfg);
 	}
 
-	private static String getGetC10nName() {
-		return C10N.get(CQElementC10n.class, Locale.ROOT).or();
-	}
 
 
 	@Override
