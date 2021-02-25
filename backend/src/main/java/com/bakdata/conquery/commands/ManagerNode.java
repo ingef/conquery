@@ -136,9 +136,13 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		}
 
 
-		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
-		authController.init();
+		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
+		authController.init(this);
 		environment.lifecycle().manage(authController);
+
+		admin = new AdminServlet();
+		admin.register(this);
+
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
@@ -150,9 +154,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				log.error("Failed to register Resource {}",resourceProvider, e);
 			}
 		}
-
-		admin = new AdminServlet();
-		admin.register(this);
 
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
