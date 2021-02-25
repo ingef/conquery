@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -83,11 +81,10 @@ public class IntegrationUtils {
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
 	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState expectedState) {
-		DatasetId dataset = conquery.getNamespace().getDataset().getId();
+		final URI postQueryURI = getPostQueryURI(conquery);
 
-		final URI postQueryURI = getPostQueryURI(conquery, dataset);
-
-		Response response = conquery.getClient().target(postQueryURI)
+		Response response = conquery.getClient()
+									.target(postQueryURI)
 									.request(MediaType.APPLICATION_JSON_TYPE)
 									.post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
 
@@ -124,23 +121,18 @@ public class IntegrationUtils {
 		}
 	}
 
-	private static URI getPostQueryURI(StandaloneSupport conquery, DatasetId dataset) {
-		return HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("api")
-																		   .host("localhost")
-																		   .scheme("http")
-																		   .port(conquery.getLocalPort()), QueryResource.class, "postQuery")
+	private static URI getPostQueryURI(StandaloneSupport conquery) {
+		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "postQuery")
 							  .buildFromMap(Map.of(
 									  "dataset", conquery.getDataset().getId()
 							  ));
 	}
 
 	private static URI getQueryStatusURI(StandaloneSupport conquery, ExecutionStatus status) {
-		return HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("api")
-																		   .host("localhost")
-																		   .scheme("http")
-																		   .port(conquery.getLocalPort()), QueryResource.class, "getStatus")
+		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
 							  .buildFromMap(Map.of(
 									  "query", status.getId(), "dataset", conquery.getDataset().getId()
 							  ));
 	}
+
 }

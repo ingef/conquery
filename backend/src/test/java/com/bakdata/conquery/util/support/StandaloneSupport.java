@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
@@ -95,5 +96,19 @@ public class StandaloneSupport implements Closeable {
 	 */
 	public int getLocalPort() {
 		return testConquery.getDropwizard().getLocalPort();
+	}
+
+	public UriBuilder defaultApiURIBuilder() {
+		return UriBuilder.fromPath("api")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(getLocalPort());
+	}
+
+	public UriBuilder defaultAdminURIBuilder() {
+		return UriBuilder.fromPath("admin")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(getAdminPort());
 	}
 }
