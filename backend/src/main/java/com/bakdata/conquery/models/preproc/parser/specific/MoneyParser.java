@@ -1,14 +1,15 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -60,6 +61,11 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 	@Override
 	public void setValue(MoneyStore store, int event, Long value) {
 		store.setMoney(event, value);
+	}
+
+	@Override
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+		return new LongColumnValues();
 	}
 
 }

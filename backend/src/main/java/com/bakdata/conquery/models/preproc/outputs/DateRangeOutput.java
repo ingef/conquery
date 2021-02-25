@@ -6,9 +6,9 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateFormats;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

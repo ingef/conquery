@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.config;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
@@ -29,7 +28,6 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import javax.validation.Validator;
 import java.util.Collection;
 import java.util.List;
 
@@ -60,7 +58,7 @@ public interface StoreFactory {
 	// NamespaceStorage
 	SingletonStore<PersistentIdMap> createIdMappingStore(List<String> pathName);
 	SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(List<String> pathName);
-	SingletonStore<StructureNode[]> createStructureStore(List<String> pathName);
+	SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, CentralRegistry centralRegistry);
 
 	// MetaStorage
     IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName);

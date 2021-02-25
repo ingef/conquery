@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,8 @@
-package com.bakdata.conquery.models.events.parser.specific.string;
+package com.bakdata.conquery.models.preproc.parser.specific.string;
 
-import com.bakdata.conquery.models.events.parser.specific.StringParser;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

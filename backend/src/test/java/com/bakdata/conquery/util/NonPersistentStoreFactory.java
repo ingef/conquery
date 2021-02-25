@@ -105,8 +105,8 @@ public class NonPersistentStoreFactory implements StoreFactory {
     }
 
     @Override
-    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName) {
-        return STRUCTURE.singleton(new NonPersistentStore());
+    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, CentralRegistry centralRegistry) {
+        return STRUCTURE.singleton(new NonPersistentStore(), centralRegistry);
     }
 
     @Override

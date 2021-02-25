@@ -1,7 +1,6 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
@@ -9,6 +8,8 @@ import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.NumberParsing;
 import lombok.Getter;
 import lombok.Setter;
@@ -97,6 +98,11 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	@Override
 	public void setValue(IntegerStore store, int event, Long value) {
 		store.setInteger(event, value);
+	}
+
+	@Override
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+		return new LongColumnValues();
 	}
 
 }

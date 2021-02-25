@@ -265,8 +265,8 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
     @Override
-    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName) {
-        return STRUCTURE.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE));
+    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, CentralRegistry centralRegistry) {
+        return STRUCTURE.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE), centralRegistry);
     }
 
     @Override

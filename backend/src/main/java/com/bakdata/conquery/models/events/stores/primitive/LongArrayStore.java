@@ -10,7 +10,7 @@ import lombok.ToString;
 /**
  * Stores values as longs, can only Store 2^64-1 as MAX is used as NULL marker.
  *
- * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.events.parser.specific.IntegerParser}
+ * @apiNote do not instantiate this directly, but use {@link com.bakdata.conquery.models.preproc.parser.specific.IntegerParser}
  */
 @CPSType(id = "LONGS", base = ColumnStore.class)
 @Getter
