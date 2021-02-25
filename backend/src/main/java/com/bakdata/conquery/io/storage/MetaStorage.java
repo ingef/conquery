@@ -55,6 +55,8 @@ public class MetaStorage implements ConqueryStorage{
 
     @Override
     public void clear() {
+        centralRegistry.clear();
+
         executions.clear();
         formConfigs.clear();
         authUser.clear();

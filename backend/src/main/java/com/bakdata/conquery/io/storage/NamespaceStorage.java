@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
 import lombok.NonNull;
@@ -32,7 +33,7 @@ public class NamespaceStorage extends NamespacedStorage {
         super(validator, storageFactory, pathName);
 
         idMapping = storageFactory.createIdMappingStore(pathName);
-        structure = storageFactory.createStructureStore(pathName, getCentralRegistry());
+        structure = storageFactory.createStructureStore(pathName, new SingletonNamespaceCollection(getCentralRegistry()));
         workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
     }
 

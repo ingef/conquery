@@ -101,4 +101,9 @@ public class CentralRegistry implements Injectable {
 
 		return alternative.findRegistry(datasetId);
 	}
+
+	public void clear() {
+		map.clear();
+		cacheables.clear();
+	}
 }
