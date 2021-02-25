@@ -30,7 +30,7 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 
 	public void waitForFreeJobqueue() throws InterruptedException {
 		if (jobManagerStatus.size() >= 100) {
-			log.debug("Have to wait for free JobQueue (size = {})",jobManagerStatus.size());
+			log.trace("Have to wait for free JobQueue (size = {})", jobManagerStatus.size());
 			synchronized (jobManagerSync) {
 				jobManagerSync.wait();
 			}
