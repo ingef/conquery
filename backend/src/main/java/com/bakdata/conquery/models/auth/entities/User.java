@@ -69,7 +69,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 
 	public boolean isOwner(@NonNull Owned owned) {
-		return owned.getOwner().equals(getId());
+		return getId().equals(owned.getOwner());
 	}
 	
 	@Override

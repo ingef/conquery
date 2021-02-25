@@ -9,6 +9,8 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
@@ -97,6 +99,36 @@ class PermissionCleanupTaskTest {
         deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers());
 
         assertThat(user.getPermissions()).containsOnly(QueryPermission.onInstance(Ability.READ, managedQuery1.getId()));
+
+    }
+
+
+    @Test
+    void doDeletePermissionsOfOwnedReference() {
+        assertThat(storage.getAllExecutions()).isEmpty();
+
+        // Created owned execution
+        final ManagedQuery managedQueryOwned = createManagedQuery();
+        // Setup user
+        User user = new User("test", "test");
+        storage.updateUser(user);
+        user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
+
+        managedQueryOwned.setOwner(user.getId());
+        storage.updateExecution(managedQueryOwned);
+
+        // Created not owned execution
+        final ManagedQuery managedQueryNotOwned = createManagedQuery();
+        // Setup user
+        user.addPermission(storage, QueryPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
+
+        // Set owner
+        managedQueryNotOwned.setOwner(new UserId("test2"));
+        storage.updateExecution(managedQueryNotOwned);
+
+        deletePermissionsOfOwnedInstances(storage, QueryPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, storage::getExecution);
+
+        assertThat(user.getPermissions()).containsOnly(QueryPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
 
     }
 
