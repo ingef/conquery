@@ -1,14 +1,15 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateFormats;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -99,4 +100,10 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	public void setValue(DateRangeStore store, int event, CDateRange value) {
 		store.setDateRange(event, value);
 	}
+
+	@Override
+	public ColumnValues<CDateRange> createColumnValues(ParserConfig parserConfig) {
+		return new ListColumnValues<>();
+	}
+
 }

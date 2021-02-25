@@ -1,12 +1,13 @@
-package com.bakdata.conquery.models.events.parser.specific;
+package com.bakdata.conquery.models.preproc.parser.specific;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.ColumnValues;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import lombok.ToString;
 
 @ToString(callSuper = true)
@@ -41,4 +42,10 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 	public void setValue(BooleanStore store, int event, Boolean value) {
 		store.setBoolean(event, value);
 	}
+
+	@Override
+	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+		return new BooleanColumnValues();
+	}
+
 }

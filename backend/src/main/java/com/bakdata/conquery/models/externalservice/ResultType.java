@@ -13,7 +13,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -55,7 +55,7 @@ public interface ResultType {
             case DATE:
                 return DateT.INSTANCE;
             case DATE_RANGE:
-                return StringT.INSTANCE;
+                return DateRangeT.INSTANCE;
             case INTEGER:
                 return IntegerT.INSTANCE;
             case MONEY:
