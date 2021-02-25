@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
 import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -43,6 +44,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 	private final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 	private ExecutorService pool;
 	private boolean isFailFast = false;
+	private boolean isStrict;
 
 	public PreprocessorCommand() {
 		this(null);
@@ -89,6 +91,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 			 .action(Arguments.storeTrue())
 			 .help("Stop preprocessing and exit with failure if an error occures that prevents the generation of a cqpp.");
 
+		group.addArgument("--disable-strict")
+			 .action(Arguments.storeTrue())
+			 .help("Do not fail preprocessing for missing files immediately.");
+
 	}
 
 	@Override
@@ -97,10 +103,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
 		}
 
-
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
-		isFailFast = namespace.get("fast-fail") != null && namespace.<Boolean>get("fast-fail");
+		isFailFast = namespace.get("fast-fail") != null && namespace.getBoolean("fast-fail");
+		isStrict  = namespace.get("disable-strict") == null && !namespace.getBoolean("disable-strict");
 
 		final List<String> tags = namespace.getList("tag");
 
@@ -109,31 +115,45 @@ public class PreprocessorCommand extends ConqueryCommand {
 		final List<File> descriptionFiles = namespace.<File>getList("desc");
 
 
+
 		log.info("Preprocessing from command line config.");
 
-		final Collection<PreprocessingJob> descriptors = new ArrayList<>();
+		final Collection<PreprocessingJob> jobs = new ArrayList<>();
 
 		if (tags == null || tags.isEmpty()) {
 			for (File desc : descriptionFiles) {
 				final List<PreprocessingJob> descriptions =
 						findPreprocessingDescriptions(desc, inDir, outDir, Optional.empty(), environment.getValidator());
-				descriptors.addAll(descriptions);
+				jobs.addAll(descriptions);
 			}
 		}
 		else {
 			for (String tag : tags) {
 				for (File desc : descriptionFiles) {
-					final List<PreprocessingJob>
-							descriptions =
+					final List<PreprocessingJob> jobDescriptions =
 							findPreprocessingDescriptions(desc, inDir, outDir, Optional.of(tag), environment.getValidator());
-					descriptors.addAll(descriptions);
+
+					jobs.addAll(jobDescriptions);
 				}
 			}
 		}
 
-		descriptors.removeIf(Predicate.not(Preprocessor::requiresProcessing));
+		// This will halt preprocessing immediately.
+		if(isStrict) {
+			for (PreprocessingJob job : jobs) {
+				for(TableInputDescriptor input : job.getDescriptor().getInputs()) {
+					final File sourceFile = Preprocessor.resolveSourceFile(input.getSourceFile(), job.getCsvDirectory(), job.getTag());
+					if(!sourceFile.exists()) {
+						log.warn("Did not find file `{}` for preprocessing.", sourceFile);
+						addMissing(job);
+					}
+				}
+			}
+		}
 
-		final long totalSize = descriptors.stream()
+		jobs.removeIf(Predicate.not(Preprocessor::requiresProcessing));
+
+		final long totalSize = jobs.stream()
 										  .mapToLong(PreprocessingJob::estimateTotalCsvSize)
 										  .sum();
 
@@ -141,7 +161,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		ProgressBar totalProgress = new ProgressBar(totalSize, System.out);
 
-		for (PreprocessingJob job : descriptors) {
+		for (PreprocessingJob job : jobs) {
 			pool.submit(() -> {
 				ConqueryMDC.setLocation(job.toString());
 				try {
@@ -150,14 +170,11 @@ public class PreprocessorCommand extends ConqueryCommand {
 				}
 				catch (FileNotFoundException e) {
 					log.warn("Did not find file `{}` for preprocessing.", e.getMessage());
-					failed.add(job.toString());
+					addMissing(job);
 				}
 				catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptionFile()), e);
-					if (isFailFast) {
-						System.exit(1);
-					}
-					failed.add(job.toString());
+					addFailed(job);
 				}
 			});
 		}
@@ -183,6 +200,20 @@ public class PreprocessorCommand extends ConqueryCommand {
 			failed.forEach(desc -> log.error("\tFailed Preprocessing for {}", desc));
 			System.exit(1);
 		}
+	}
+
+	private void addMissing(PreprocessingJob job) {
+		log.error("Files are missing for {}", job);
+		if(isStrict) {
+			addFailed(job);
+		}
+	}
+
+	private void addFailed(PreprocessingJob job) {
+		if (isFailFast) {
+			System.exit(1);
+		}
+		failed.add(job.toString());
 	}
 
 	public List<PreprocessingJob> findPreprocessingDescriptions(File descriptionFiles, File inDir, File outputDir, Optional<String> tag, Validator validator)
