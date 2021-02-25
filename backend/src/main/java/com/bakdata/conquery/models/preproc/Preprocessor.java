@@ -40,15 +40,6 @@ import org.apache.commons.io.FileUtils;
 @UtilityClass
 public class Preprocessor {
 
-	public static long getTotalCsvSize(PreprocessingJob job,  TableImportDescriptor descriptor) {
-		long totalCsvSize = 0;
-		for (TableInputDescriptor input : descriptor.getInputs()) {
-			totalCsvSize += resolveSourceFile(input.getSourceFile(), job.getCsvDirectory(), job.getTag()).length();
-		}
-
-		return totalCsvSize;
-	}
-
 	@SneakyThrows
 	public static boolean requiresProcessing(PreprocessingJob preprocessingJob)  {
 		ConqueryMDC.setLocation(preprocessingJob.toString());

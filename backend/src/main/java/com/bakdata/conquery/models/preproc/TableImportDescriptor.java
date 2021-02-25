@@ -105,4 +105,5 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 		}
 		return validityHashBuilder.toHashCode();
 	}
+
 }

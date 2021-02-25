@@ -36,4 +36,12 @@ public class PreprocessingJob implements Serializable {
 		return preprocessedOut.resolve(descriptor.getName() + "." + tag.get() + EXTENSION_PREPROCESSED).toFile();
 	}
 
+	public long estimateTotalCsvSize() {
+		long totalCsvSize = 0;
+		for (TableInputDescriptor input : getDescriptor().getInputs()) {
+			totalCsvSize += Preprocessor.resolveSourceFile(input.getSourceFile(), getCsvDirectory(), getTag()).length();
+		}
+
+		return totalCsvSize;
+	}
 }

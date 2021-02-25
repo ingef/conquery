@@ -134,7 +134,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 		descriptors.removeIf(Predicate.not(Preprocessor::requiresProcessing));
 
 		final long totalSize = descriptors.stream()
-										  .mapToLong(job -> Preprocessor.getTotalCsvSize(job, job.getDescriptor())).sum();
+										  .mapToLong(PreprocessingJob::estimateTotalCsvSize)
+										  .sum();
 
 		log.info("Required to preprocess {} in total", BinaryByteUnit.format(totalSize));
 
