@@ -161,14 +161,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			}
 
 
-			// It's not exactly possible to issue a query for a non-existant dataset, so we assert that resolving the concept fails.
-			Namespace finalNamespace = namespace;
+			// It's not exactly possible to issue a query for a non-existant dataset, so we assert that resolving the dataset fails.
 			assertThatThrownBy(() -> {
 				final String src = Jackson.MAPPER.writeValueAsString(query);
 				Jackson.MAPPER.readerFor(IQuery.class).<IQuery>readValue(src);
-
-
 			}).isNotNull();
+
+			IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED);
 		}
 
 
