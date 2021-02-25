@@ -33,7 +33,7 @@ public abstract class SingleColumnSelect extends Select {
 	@Override
 	public ResultType getResultType() {
 		if(categorical) {
-			return ResultType.CATEGORICAL;
+			return ResultType.CategoricalT.INSTANCE;
 		}
 		
 		return super.getResultType();

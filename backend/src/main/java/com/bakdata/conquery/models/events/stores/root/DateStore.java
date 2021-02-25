@@ -17,6 +17,6 @@ public interface DateStore extends ColumnStore {
 
 	@Override
 	default Object createScriptValue(int event) {
-		return CDate.toLocalDate(getDate(event));
+		return getDate(event);
 	}
 }
