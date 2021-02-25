@@ -103,6 +103,7 @@ public class AdminServlet {
 		jerseyConfig
 			.register(new MultiPartFeature())
 			.register(IdParamConverter.Provider.INSTANCE)
-			.register(AuthCookieFilter.class);
+			.register(AuthCookieFilter.class)
+			.register(manager.getAuthController().getAuthenticationFilter());
 	}
 }

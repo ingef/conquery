@@ -63,7 +63,6 @@ public final class AuthorizationController implements Managed{
 		// Create Jersey filter for authentication this is just referenced here and can be graped and registered by
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
-		manager.getAdmin().getJerseyConfig().register(authenticationFilter);
 
 		// Add the central authentication realm
 		centralTokenRealm = new ConqueryTokenRealm(storage);
@@ -89,7 +88,7 @@ public final class AuthorizationController implements Managed{
 		
 		registerShiro();
 	}
-	
+
 	@Override
 	public void start() throws Exception {
 		// Call Shiros init on all realms
@@ -97,7 +96,7 @@ public final class AuthorizationController implements Managed{
 		// Register initial users for authorization and authentication (if the realm is able to)
 		initializeAuthConstellation(authorizationConfig, realms, storage);
 	}
-	
+
 	@Override
 	public void stop() throws Exception {
 		LifecycleUtils.destroy(authenticationRealms);
@@ -117,7 +116,7 @@ public final class AuthorizationController implements Managed{
 	/**
 	 * Sets up the initial subjects and permissions for the authentication system
 	 * that are found in the config.
-	 * 
+	 *
 	 * @param storage
 	 *            A storage, where the handler might add a new users.
 	 */

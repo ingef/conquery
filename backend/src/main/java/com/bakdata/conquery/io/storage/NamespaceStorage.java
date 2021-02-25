@@ -58,8 +58,6 @@ public class NamespaceStorage extends NamespacedStorage {
         idMapping.removeStore();
         structure.removeStore();
         workerToBuckets.removeStore();
-
-
     }
 
     @Override
@@ -75,7 +73,7 @@ public class NamespaceStorage extends NamespacedStorage {
     }
 
 
-    public void updateIdMapping(PersistentIdMap idMapping) throws JSONException {
+    public void updateIdMapping(PersistentIdMap idMapping) {
         this.idMapping.update(idMapping);
     }
 
@@ -92,7 +90,7 @@ public class NamespaceStorage extends NamespacedStorage {
         return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
     }
 
-    public void updateStructure(StructureNode[] structure) throws JSONException {
+    public void updateStructure(StructureNode[] structure) {
         this.structure.update(structure);
     }
 }

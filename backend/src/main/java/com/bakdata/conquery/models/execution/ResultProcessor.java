@@ -161,7 +161,7 @@ public class ResultProcessor {
 			@Override
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				renderToStream(writerProducer.apply(output),
-					settings, 
+					settings,
 					exec, 
 					cer -> ResultUtil.createId(datasetRegistry.get(datasetId), cer, config.getIdMapping(), mappingState).getExternalId(),
 					idMappingConf.getPrintIdFields(),

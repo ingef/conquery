@@ -141,13 +141,13 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
 
+		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
+		authController.init(this);
+		environment.lifecycle().manage(authController);
 
 		admin = new AdminServlet();
 		admin.register(this);
 
-		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
-		authController.init(this);
-		environment.lifecycle().manage(authController);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
