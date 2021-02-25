@@ -43,7 +43,6 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
@@ -62,6 +61,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 		}
 
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		final int nImports = namespace.getStorage().getAllImports().size();
 
@@ -92,7 +92,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Delete Dataset.
@@ -224,7 +224,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 		}
 
 
@@ -258,7 +258,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 		}
 	}
 }

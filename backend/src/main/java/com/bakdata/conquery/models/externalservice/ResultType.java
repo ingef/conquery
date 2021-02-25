@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.externalservice;
 
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
@@ -11,22 +19,13 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
-
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -82,7 +81,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "BOOLEAN", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class BooleanT extends PrimitiveResultType {
         public final static BooleanT INSTANCE = new BooleanT();
 
@@ -102,7 +101,7 @@ public interface ResultType {
 
 
     @CPSType(id = "INTEGER", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class IntegerT extends PrimitiveResultType {
         public final static IntegerT INSTANCE = new IntegerT();
 
@@ -121,7 +120,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "NUMERIC", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class NumericT extends PrimitiveResultType {
         public final static NumericT INSTANCE = new NumericT();
 
@@ -140,7 +139,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "CATEGORICAL", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class CategoricalT extends PrimitiveResultType {
         public final static CategoricalT INSTANCE = new CategoricalT();
 
@@ -157,7 +156,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "RESOLUTION", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class ResolutionT extends PrimitiveResultType {
         public final static ResolutionT INSTANCE = new ResolutionT();
 
@@ -182,7 +181,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "DATE", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class DateT extends PrimitiveResultType {
         public final static DateT INSTANCE = new DateT();
 
@@ -205,7 +204,7 @@ public interface ResultType {
      * The first int describes the included lower bound of the range. The second int descibes the included upper bound.
      */
     @CPSType(id = "DATE_RANGE", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class DateRangeT extends PrimitiveResultType {
         public final static DateRangeT INSTANCE = new DateRangeT();
 
@@ -234,7 +233,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "STRING", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class StringT extends PrimitiveResultType {
         public final static StringT INSTANCE = new StringT();
 
@@ -245,7 +244,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "ID", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class IdT extends PrimitiveResultType {
         public final static IdT INSTANCE = new IdT();
 
@@ -256,7 +255,7 @@ public interface ResultType {
     }
 
     @CPSType(id = "MONEY", base = ResultType.class)
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor()
     public static class MoneyT extends PrimitiveResultType {
         private static final int CURRENCY_DIGITS = ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits();
 
@@ -282,12 +281,17 @@ public interface ResultType {
     }
 
     @CPSType(id = "LIST", base = ResultType.class)
-    @AllArgsConstructor
-    public static class ListT implements ResultType {
+	@Getter
+	public static class ListT implements ResultType {
         @NonNull
         private final ResultType elementType;
 
-        @Override
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+		public ListT(ResultType elementType) {
+			this.elementType = elementType;
+		}
+
+		@Override
         public String print(PrintSettings cfg, @NonNull Object f) {
             // Jackson deserializes collections as lists instead of an array, if the type is not given
             if(!(f instanceof List)) {
