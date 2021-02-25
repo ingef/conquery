@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import { useDispatch } from "react-redux";
 import T from "i18n-react";
 import Hotkeys from "react-hot-keys";
 
@@ -70,8 +70,8 @@ export interface PropsType {
   isExcludeFromSecondaryIdQueryPossible: boolean;
   datasetId: DatasetIdT;
   suggestions: Object | null;
-  whitelistedTables?: string[];
-  blacklistedTables?: string[];
+  allowlistedTables?: string[];
+  blocklistedTables?: string[];
 
   onCloseModal: Function;
   onUpdateLabel: Function;
@@ -89,7 +89,7 @@ export interface PropsType {
   onSetDateColumn: Function;
 }
 
-const QueryNodeEditor = (props: PropsType) => {
+const QueryNodeEditorComponent = (props: PropsType) => {
   const { node, editorState } = props;
 
   function close() {
@@ -125,55 +125,32 @@ const QueryNodeEditor = (props: PropsType) => {
   );
 };
 
-export const createConnectedQueryNodeEditor = (
-  mapStateToProps: Function,
-  mapDispatchToProps: Function,
-  mergeProps?: Function
-) => {
-  const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
-    const externalDispatchProps = mapDispatchToProps
-      ? mapDispatchToProps(dispatch, ownProps)
-      : {};
+const QueryNodeEditor = (props: PropsType) => {
+  const dispatch = useDispatch();
 
-    const {
-      setDetailsViewActive,
-      toggleEditLabel,
-      setInputTableViewActive,
-      setFocusedInput,
-      reset,
-    } = createQueryNodeEditorActions(ownProps.name);
+  const {
+    setDetailsViewActive,
+    toggleEditLabel,
+    setInputTableViewActive,
+    setFocusedInput,
+    reset,
+  } = createQueryNodeEditorActions(props.name);
 
-    return {
-      ...externalDispatchProps,
-      editorState: {
-        ...(externalDispatchProps.editorState || {}),
+  return (
+    <QueryNodeEditorComponent
+      {...props}
+      editorState={{
+        ...(props.editorState || {}),
         onSelectDetailsView: () => dispatch(setDetailsViewActive()),
         onToggleEditLabel: () => dispatch(toggleEditLabel()),
-        onSelectInputTableView: (tableIdx) =>
+        onSelectInputTableView: (tableIdx: number) =>
           dispatch(setInputTableViewActive(tableIdx)),
-        onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
+        onShowDescription: (filterIdx: number) =>
+          dispatch(setFocusedInput(filterIdx)),
         onReset: () => dispatch(reset()),
-      },
-    };
-  };
-
-  const mergePropsInternal = (stateProps, dispatchProps, ownProps) => {
-    const externalMergedProps = mergeProps
-      ? mergeProps(stateProps, dispatchProps, ownProps)
-      : { ...ownProps, ...stateProps, ...dispatchProps };
-
-    return {
-      ...externalMergedProps,
-      editorState: {
-        ...(stateProps.editorState || {}),
-        ...(dispatchProps.editorState || {}),
-      },
-    };
-  };
-
-  return connect(
-    mapStateToProps,
-    mapDispatchToPropsInternal,
-    mergePropsInternal
-  )(QueryNodeEditor);
+      }}
+    />
+  );
 };
+
+export default QueryNodeEditor;

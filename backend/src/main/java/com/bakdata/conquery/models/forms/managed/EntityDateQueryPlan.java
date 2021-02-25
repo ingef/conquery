@@ -22,8 +22,12 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+/**
+ * Implementation of the QueryPlan for an {@link EntityDateQuery}.
+ */
 @RequiredArgsConstructor
 public class EntityDateQueryPlan implements QueryPlan {
 
@@ -35,16 +39,23 @@ public class EntityDateQueryPlan implements QueryPlan {
 
     @Override
     public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+        // Execute the prerequisite query
         EntityResult preResult = query.execute(ctx, entity);
         if (preResult.isFailed() || !preResult.isContained()) {
             return preResult;
         }
         final List<Object[]> resultLines = new ArrayList<>();
+        // It might be a multi line result, so iterate over every result
         for (Object[] line : preResult.asContained().listResultLines()) {
 
-            CDateSet entityDate = CDateSet.parse((String) line[0]);
+            // Transform the date set of a result line back to the actual result line
+            CDateSet entityDate = CDateSet.create();
+            for(CDateRange dateRange : (Collection<CDateRange>) line[0]) {
+                entityDate.add(dateRange);
+            }
             entityDate.retainAll(dateRange);
 
+            // Generate DateContexts in the provided resolutions
             List<DateContext> contexts = new ArrayList<>();
             for (CDateRange range : entityDate.asRanges()) {
                 contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));

@@ -17,10 +17,10 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import EditableTags from "../../form-components/EditableTags";
 
 import {
-  renamePreviousQuery,
-  retagPreviousQuery,
   toggleEditPreviousQueryLabel,
   toggleEditPreviousQueryTags,
+  useRenamePreviousQuery,
+  useRetagPreviousQuery,
 } from "./actions";
 
 import PreviousQueryTags from "./PreviousQueryTags";
@@ -113,20 +113,21 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     );
 
     const dispatch = useDispatch();
+    const renamePreviousQuery = useRenamePreviousQuery();
+    const retagPreviousQuery = useRetagPreviousQuery();
+    const onDeletePreviousQuery = useDeletePreviousQuery(query.id);
 
     const onRenamePreviousQuery = (label: string) =>
-      dispatch(renamePreviousQuery(datasetId, query.id, label));
+      renamePreviousQuery(datasetId, query.id, label);
 
     const onRetagPreviousQuery = (tags: string[]) =>
-      dispatch(retagPreviousQuery(datasetId, query.id, tags));
+      retagPreviousQuery(datasetId, query.id, tags);
 
     const onToggleEditPreviousQueryLabel = () =>
       dispatch(toggleEditPreviousQueryLabel(query.id));
 
     const onToggleEditPreviousQueryTags = () =>
       dispatch(toggleEditPreviousQueryTags(query.id));
-
-    const { onDeletePreviousQuery } = useDeletePreviousQuery(query.id);
 
     const mayDeleteQueryRightAway =
       query.tags.length === 0 && query.isPristineLabel;

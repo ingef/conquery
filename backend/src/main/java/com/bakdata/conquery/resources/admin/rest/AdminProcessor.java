@@ -5,9 +5,8 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.*;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -76,6 +75,7 @@ public class AdminProcessor {
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final int entityBucketSize;
+	private final String storagePrefix;
 
 	public synchronized void addTable(Table table, Namespace namespace) throws JSONException {
 		Dataset dataset = namespace.getDataset();
@@ -116,10 +116,8 @@ public class AdminProcessor {
 		dataset.setName(name);
 
 		// store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
-				storage.getValidator(),
-				config.getStorage(),
-				new File(config.getStorage().getDirectory(), "dataset_" + name));
+		NamespaceStorage datasetStorage = new NamespaceStorage(storage.getValidator(), config.getStorage(), List.of(storagePrefix, "dataset_" + name));
+
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
@@ -554,7 +552,7 @@ public class AdminProcessor {
 					));
 		}
 
-
+		namespace.close();
 		datasetRegistry.removeNamespace(datasetId);
 		datasetRegistry.getShardNodes().values().forEach( shardNode -> shardNode.send(new RemoveWorker(datasetId)));
 

@@ -6,7 +6,9 @@ import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> {
 	@JsonIgnore @Getter
 	private transient JobManagerStatus jobManagerStatus = new JobManagerStatus();
@@ -28,6 +30,7 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 
 	public void waitForFreeJobqueue() throws InterruptedException {
 		if (jobManagerStatus.size() >= 100) {
+			log.trace("Have to wait for free JobQueue (size = {})", jobManagerStatus.size());
 			synchronized (jobManagerSync) {
 				jobManagerSync.wait();
 			}

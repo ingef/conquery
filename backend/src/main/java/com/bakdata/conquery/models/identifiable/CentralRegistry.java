@@ -1,12 +1,20 @@
 package com.bakdata.conquery.models.identifiable;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -14,20 +22,24 @@ import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Validator;
+
 
 @Slf4j
 @SuppressWarnings({"rawtypes", "unchecked"}) @NoArgsConstructor
 public class CentralRegistry implements Injectable {
 	
 	private final IdMap map = new IdMap<>();
-	private final ConcurrentMap<IId<?>, Supplier<Identifiable<?>>> cacheables = new ConcurrentHashMap<>();
+	private final ConcurrentMap<IId<?>, Function<IId,Identifiable>> cacheables = new ConcurrentHashMap<>();
 	
 	public synchronized void register(Identifiable<?> ident) {
 		map.add(ident);
 	}
 	
-	public synchronized void registerCacheable(IId<?> id, Supplier<Identifiable<?>> supplier) {
+	public synchronized void registerCacheable(IId id, Function<IId,Identifiable> supplier) {
 		cacheables.put(id, supplier);
 	}
 	
@@ -36,11 +48,11 @@ public class CentralRegistry implements Injectable {
 		if(res!=null) {
 			return (T)res;
 		}
-		Supplier<Identifiable<?>> supplier = cacheables.get(name);
+		Function<IId, Identifiable> supplier = cacheables.get(name);
 		if(supplier == null) {
 			throw new ExecutionCreationResolveError(name);
 		}
-		return (T)supplier.get();
+		return (T)supplier.apply(name);
 	}
 
 	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {
@@ -48,11 +60,11 @@ public class CentralRegistry implements Injectable {
 		if (res != null) {
 			return Optional.of((T) res);
 		}
-		Supplier<Identifiable<?>> supplier = cacheables.get(name);
+		Function<IId, Identifiable> supplier = cacheables.get(name);
 		if (supplier == null) {
 			return Optional.empty();
 		}
-		return Optional.of((T) supplier.get());
+		return Optional.ofNullable((T) supplier.apply(name));
 	}
 
 	public synchronized void remove(IId<?> id) {
@@ -88,5 +100,10 @@ public class CentralRegistry implements Injectable {
 			return null;
 
 		return alternative.findRegistry(datasetId);
+	}
+
+	public void clear() {
+		map.clear();
+		cacheables.clear();
 	}
 }

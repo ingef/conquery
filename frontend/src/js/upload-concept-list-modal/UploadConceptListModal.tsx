@@ -1,6 +1,5 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
-import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import T from "i18n-react";
 
@@ -15,7 +14,7 @@ import type { StateT } from "../app/reducers";
 import type { DatasetIdT } from "../api/types";
 import type { TreesT } from "../concept-trees/reducer";
 
-import { selectConceptRootNodeAndResolveCodes } from "./actions";
+import { useSelectConceptRootNodeAndResolveCodes } from "./actions";
 
 const Root = styled("div")`
   padding: 0 0 10px;
@@ -55,11 +54,11 @@ const SxPrimaryButton = styled(PrimaryButton)`
   flex-shrink: 0;
 `;
 
-type PropsType = {
+interface PropsT {
   loading: boolean;
   filename: string;
   availableConceptRootNodes: Object[];
-  selectedConceptRootNode: Object;
+  selectedConceptRootNode: string;
   selectedDatasetId: DatasetIdT;
   conceptCodesFromFile: string[];
   resolved: Object;
@@ -67,37 +66,36 @@ type PropsType = {
   resolvedItemsCount: number;
   unresolvedItemsCount: number;
   error: Object;
-  onSelectConceptRootNode: Function;
 
   // This really comes from outside container, and depends on the context
   // in which this modal is opened. (query editor / statistic form field)
   onAccept: Function;
   onClose: Function;
-};
+}
 
-const UploadConceptListModal = (props: PropsType) => {
-  const [label, setLabel] = React.useState(props.filename);
+const UploadConceptListModal = ({
+  availableConceptRootNodes,
+  selectedConceptRootNode,
+  selectedDatasetId,
+  loading,
+  conceptCodesFromFile,
+  resolved,
+  resolvedItemsCount,
+  unresolvedItemsCount,
+  error,
+  filename,
+  rootConcepts,
 
-  React.useEffect(() => {
-    setLabel(props.filename);
-  }, [props.filename]);
+  onAccept,
+  onClose,
+}: PropsT) => {
+  const [label, setLabel] = useState(filename);
 
-  const {
-    availableConceptRootNodes,
-    selectedConceptRootNode,
-    selectedDatasetId,
-    loading,
-    conceptCodesFromFile,
-    resolved,
-    resolvedItemsCount,
-    unresolvedItemsCount,
-    error,
-    rootConcepts,
-    onSelectConceptRootNode,
+  useEffect(() => {
+    setLabel(filename);
+  }, [filename]);
 
-    onAccept,
-    onClose
-  } = props;
+  const selectConceptRootNodeAndResolveCode = useSelectConceptRootNodeAndResolveCodes();
 
   if (!conceptCodesFromFile || conceptCodesFromFile.length === 0) {
     onClose();
@@ -124,20 +122,20 @@ const UploadConceptListModal = (props: PropsType) => {
           label={T.translate("uploadConceptListModal.selectConceptRootNode")}
           input={{
             value: selectedConceptRootNode,
-            onChange: value =>
-              onSelectConceptRootNode(
+            onChange: (value) =>
+              selectConceptRootNodeAndResolveCode(
                 selectedDatasetId,
                 value,
                 conceptCodesFromFile
-              )
+              ),
           }}
-          options={availableConceptRootNodes.map(x => ({
+          options={availableConceptRootNodes.map((x) => ({
             value: x.key,
-            label: x.value.label
+            label: x.value.label,
           }))}
           selectProps={{
             isSearchable: true,
-            autoFocus: true
+            autoFocus: true,
           }}
         />
         {!!resolved && !hasResolvedItems && !hasUnresolvedItems && (
@@ -163,7 +161,7 @@ const UploadConceptListModal = (props: PropsType) => {
                     <Msg>
                       <SuccessIcon icon="check-circle" />
                       {T.translate("uploadConceptListModal.resolvedCodes", {
-                        context: resolvedItemsCount
+                        context: resolvedItemsCount,
                       })}
                     </Msg>
                     <MsgRow>
@@ -171,11 +169,11 @@ const UploadConceptListModal = (props: PropsType) => {
                         label={T.translate("uploadConceptListModal.label")}
                         fullWidth
                         inputProps={{
-                          autoFocus: true
+                          autoFocus: true,
                         }}
                         input={{
                           value: label,
-                          onChange: setLabel
+                          onChange: setLabel,
                         }}
                       />
                       <SxPrimaryButton type="submit">
@@ -190,7 +188,7 @@ const UploadConceptListModal = (props: PropsType) => {
                       <ErrorIcon icon="exclamation-circle" />
                       <span>
                         {T.translate("uploadConceptListModal.unknownCodes", {
-                          context: unresolvedItemsCount
+                          context: unresolvedItemsCount,
                         })}
                       </span>
                     </Msg>
@@ -210,7 +208,7 @@ const UploadConceptListModal = (props: PropsType) => {
   );
 };
 
-const selectUnresolvedItemsCount = state => {
+const selectUnresolvedItemsCount = (state: StateT) => {
   const { resolved } = state.uploadConceptListModal;
 
   return resolved && resolved.unknownCodes && resolved.unknownCodes.length
@@ -218,7 +216,7 @@ const selectUnresolvedItemsCount = state => {
     : 0;
 };
 
-const selectResolvedItemsCount = state => {
+const selectResolvedItemsCount = (state: StateT) => {
   const { resolved } = state.uploadConceptListModal;
 
   return resolved &&
@@ -228,14 +226,14 @@ const selectResolvedItemsCount = state => {
     : 0;
 };
 
-const selectAvailableConceptRootNodes = state => {
+const selectAvailableConceptRootNodes = (state: StateT) => {
   const { trees } = state.conceptTrees;
 
   if (!trees) return null;
 
   return Object.entries(trees)
     .map(([key, value]) => ({ key, value }))
-    .filter(({ key, value }) => value.codeListResolvable)
+    .filter(({ value }) => value.codeListResolvable)
     .sort((a, b) =>
       a.value.label.toLowerCase().localeCompare(b.value.label.toLowerCase())
     );
@@ -251,15 +249,7 @@ const mapStateToProps = (state: StateT) => ({
   resolvedItemsCount: selectResolvedItemsCount(state),
   unresolvedItemsCount: selectUnresolvedItemsCount(state),
   rootConcepts: state.conceptTrees.trees,
-  error: state.uploadConceptListModal.error
+  error: state.uploadConceptListModal.error,
 });
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onSelectConceptRootNode: (...params) =>
-    dispatch(selectConceptRootNodeAndResolveCodes(...params))
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(UploadConceptListModal);
+export default connect(mapStateToProps)(UploadConceptListModal);

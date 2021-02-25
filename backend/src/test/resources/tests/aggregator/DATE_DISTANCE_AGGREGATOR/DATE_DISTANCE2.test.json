@@ -15,14 +15,14 @@
             "children":[  
                {  
       "ids": [
-        "${dataset}.con"
+        "con"
       ],
       "type": "CONCEPT",
       "label": "Geschlecht SELECT",
       "tables": [
         {
-          "id": "${dataset}.con.geschlecht_connector",
-		  "selects": "${dataset}.con.geschlecht_connector.geb"
+          "id": "con.geschlecht_connector",
+		  "selects": "con.geschlecht_connector.geb"
         }
       ]
 	  

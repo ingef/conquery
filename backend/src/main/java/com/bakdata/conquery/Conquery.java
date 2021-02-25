@@ -26,6 +26,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
+	@Setter
 	private ManagerNode manager;
 
 	public Conquery() {
@@ -102,7 +104,9 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		manager = new ManagerNode();
+		if (manager == null) {
+			manager = new ManagerNode();
+		}
 		manager.run(configuration, environment);
 	}
 

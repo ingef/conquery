@@ -49,8 +49,8 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
 
 interface PropsT {
   loading: boolean;
-  success: Object | null;
-  error: Object | null;
+  success: boolean;
+  error: boolean;
   onClose: () => void;
   onUpload: (query: ExternalQueryT) => void;
 }

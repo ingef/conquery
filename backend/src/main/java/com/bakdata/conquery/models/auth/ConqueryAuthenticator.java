@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.Optional;
 
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;

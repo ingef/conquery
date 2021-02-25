@@ -1,10 +1,12 @@
 package com.bakdata.conquery.models.events.stores.root;
 
 
+import com.bakdata.conquery.models.events.MajorTypeId;
+
 /**
  * {@link ColumnStore} for Integer based values.
  * <p>
- * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#INTEGER} and {@link com.bakdata.conquery.models.events.parser.specific.IntegerParser}.
+ * See also {@link MajorTypeId#INTEGER} and {@link com.bakdata.conquery.models.preproc.parser.specific.IntegerParser}.
  */
 public interface IntegerStore extends ColumnStore {
 

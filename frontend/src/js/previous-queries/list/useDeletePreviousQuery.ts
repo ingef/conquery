@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
 
 import type { DatasetIdT } from "../../api/types";
-import { deleteStoredQuery } from "../../api/api";
+import { useDeleteStoredQuery } from "../../api/api";
 import { setMessage } from "../../snack-message/actions";
 import type { PreviousQueryIdT } from "./reducer";
 import { deletePreviousQuerySuccess } from "./actions";
@@ -15,8 +15,9 @@ export const useDeletePreviousQuery = (
     (state) => state.datasets.selectedDatasetId
   );
   const dispatch = useDispatch();
+  const deleteStoredQuery = useDeleteStoredQuery();
 
-  async function onDeletePreviousQuery() {
+  return async () => {
     if (!datasetId) return;
 
     try {
@@ -30,9 +31,5 @@ export const useDeletePreviousQuery = (
     } catch (e) {
       dispatch(setMessage("previousQuery.deleteError"));
     }
-  }
-
-  return {
-    onDeletePreviousQuery,
   };
 };
