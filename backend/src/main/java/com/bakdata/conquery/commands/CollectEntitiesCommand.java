@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -28,7 +27,8 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.cli.Command;
+import io.dropwizard.setup.Bootstrap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 @Slf4j
-public class CollectEntitiesCommand extends ConqueryCommand {
+public class CollectEntitiesCommand extends Command {
 
 	private ConcurrentMap<File, Set<String>> entities = new ConcurrentHashMap<>();
 	private boolean verbose = false;
@@ -58,17 +58,15 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 				.nargs("+")
 				.help("List of CQPP to process");
 
-
-		super.configure(subparser);
 	}
 
+
 	@Override
-	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+	public void run(Bootstrap<?> bootstrap, Namespace namespace) throws Exception {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
 		Collection<EntityExtractor> jobs = findPreprocessedJobs(namespace.<File>getList("file"));
 
-		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getNThreads());
-
+		ExecutorService pool = Executors.newCachedThreadPool();
 
 		for (EntityExtractor job : jobs) {
 			pool.submit(() -> {
