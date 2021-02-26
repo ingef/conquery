@@ -71,7 +71,6 @@ public class QueryResource {
 	@Path("{" + QUERY + "}")
 	public ExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws SQLException {
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, queryId, Ability.READ);
 
 		return processor.cancel(
 			dsUtil.getDataset(datasetId),
@@ -83,8 +82,8 @@ public class QueryResource {
 	@Path("{" + QUERY + "}")
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, queryId, Ability.READ);
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
+		authorize(user, query, Ability.READ);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
 			query,

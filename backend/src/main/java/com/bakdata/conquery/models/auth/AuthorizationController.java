@@ -4,11 +4,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.*;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
@@ -63,8 +67,9 @@ public final class AuthorizationController implements Managed{
 	private List<Realm> realms = new ArrayList<>();
 
 	private DefaultSecurityManager securityManager;
-	
+
 	public void init() {
+
 		// Add the central authentication realm
 		centralTokenRealm = new ConqueryTokenRealm(storage);
 		authenticationRealms.add(centralTokenRealm);
@@ -94,7 +99,7 @@ public final class AuthorizationController implements Managed{
 
 		INSTANCE = this;
 	}
-	
+
 	@Override
 	public void start() throws Exception {
 		// Call Shiros init on all realms
@@ -102,7 +107,7 @@ public final class AuthorizationController implements Managed{
 		// Register initial users for authorization and authentication (if the realm is able to)
 		initializeAuthConstellation(authorizationConfig, realms, storage);
 	}
-	
+
 	@Override
 	public void stop() throws Exception {
 		LifecycleUtils.destroy(authenticationRealms);
@@ -122,7 +127,7 @@ public final class AuthorizationController implements Managed{
 	/**
 	 * Sets up the initial subjects and permissions for the authentication system
 	 * that are found in the config.
-	 * 
+	 *
 	 * @param storage
 	 *            A storage, where the handler might add a new users.
 	 */
@@ -159,12 +164,32 @@ public final class AuthorizationController implements Managed{
 
 		// Retrieve original user and its effective permissions
 		User origin = Objects.requireNonNull(storage.getUser(originUserId), "User to copy cannot be found");
-		Set<Permission> effectivePermissions = AuthorizationHelper.getEffectiveUserPermissions(originUserId, storage);
+
+		// Copy inherited permissions
+		Set<ConqueryPermission> copiedPermission = new HashSet(AuthorizationHelper.getEffectiveUserPermissions(originUserId, storage));
+
+		// Give read permission to all executions the original user owned
+		copiedPermission.addAll(
+			storage.getAllExecutions().stream()
+					.filter(e -> origin.isOwner(e))
+					.map(ManagedExecution::getId)
+					.map(id -> QueryPermission.onInstance(Ability.READ,id))
+					.collect(Collectors.toSet())
+		);
+
+		// Give read permission to all form configs the original user owned
+		copiedPermission.addAll(
+				storage.getAllFormConfigs().stream()
+						.filter(e -> origin.isOwner(e))
+						.map(FormConfig::getId)
+						.map(id -> FormConfigPermission.onInstance(Ability.READ,id))
+						.collect(Collectors.toSet())
+		);
 
 		// Create copied user
 		User copy = new User(name, origin.getLabel());
 		storage.addUser(copy);
-		copy.setPermissions(storage, new HashSet(effectivePermissions));
+		copy.setPermissions(storage, copiedPermission);
 
 		return copy;
 	}

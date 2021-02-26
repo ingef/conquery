@@ -119,6 +119,7 @@ public class AdminServlet {
 			.register(new MultiPartFeature())
 			.register(manager.getAuthController().getAuthenticationFilter())
 			.register(IdParamConverter.Provider.INSTANCE)
-			.register(AuthCookieFilter.class);
+			.register(AuthCookieFilter.class)
+			.register(manager.getAuthController().getAuthenticationFilter());
 	}
 }
