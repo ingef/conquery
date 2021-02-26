@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -45,6 +46,10 @@ public class QueryUtils {
 	 */
 	public static <T extends QueryVisitor> T getVisitor(ClassToInstanceMap<QueryVisitor> visitors, Class<T> clazz){
 		return Objects.requireNonNull(visitors.getInstance(clazz),String.format("Among the visitor that traversed the query no %s could be found", clazz));
+	}
+
+	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
+		return elements.stream().map(elt -> elt.getLabel(locale)).collect(Collectors.joining(delimiter));
 	}
 
 	/**

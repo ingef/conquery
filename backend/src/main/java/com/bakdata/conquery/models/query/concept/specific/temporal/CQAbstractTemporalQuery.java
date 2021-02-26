@@ -40,5 +40,8 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {}
+	public void collectResultInfos(ResultInfoCollector collector) {
+		index.getChild().collectResultInfos(collector);
+		preceding.getChild().collectResultInfos(collector);
+	}
 }

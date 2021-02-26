@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -78,7 +79,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		this.connector = connector;
 	}
 
-	public static long calculateBitMask(ConceptElement<?>[] concepts) {
+	public static long calculateBitMask(List<ConceptElement<?>> concepts) {
 		long mask = 0;
 		for (ConceptElement<?> concept : concepts) {
 			mask |= concept.calculateBitMask();
