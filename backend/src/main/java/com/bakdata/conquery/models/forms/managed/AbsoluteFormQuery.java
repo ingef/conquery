@@ -43,6 +43,7 @@ public class AbsoluteFormQuery extends IQuery {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);
+		features.resolve(context);
 	}
 
 	@Override
