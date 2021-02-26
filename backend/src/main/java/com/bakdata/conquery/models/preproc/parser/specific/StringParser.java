@@ -125,9 +125,9 @@ public class StringParser extends Parser<Integer, StringStore> {
 							.min(Comparator.naturalOrder())
 							.get();
 
-		log.info(
+		log.debug(
 				"\tUsing {}(est. {})",
-				guess.getGuesser().getClass().getSimpleName(),
+				guess.getGuesser(),
 				BinaryByteUnit.format(guess.estimate())
 		);
 
@@ -146,7 +146,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	 */
 	private void decode() {
 		encoding = findEncoding();
-		log.info("\tChosen encoding is {}", encoding);
+		log.debug("\tChosen encoding is {}", encoding);
 		applyEncoding(encoding);
 	}
 

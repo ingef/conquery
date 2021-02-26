@@ -34,7 +34,7 @@ public class SelectResultInfo extends ResultInfo {
 		return ColumnDescriptor.builder()
 							   .label(getUniqueName(settings))
 							   .userConceptLabel(cqConcept.getLabel(settings.getLocale()))
-							   .type(getType())
+							   .type(getType().typeInfo())
 							   .selectId(select.getId())
 							   .build();
 	}

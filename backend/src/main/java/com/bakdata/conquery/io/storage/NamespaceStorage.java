@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
 import lombok.NonNull;
@@ -32,7 +33,7 @@ public class NamespaceStorage extends NamespacedStorage {
         super(validator, storageFactory, pathName);
 
         idMapping = storageFactory.createIdMappingStore(pathName);
-        structure = storageFactory.createStructureStore(pathName);
+        structure = storageFactory.createStructureStore(pathName, new SingletonNamespaceCollection(getCentralRegistry()));
         workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
     }
 
@@ -58,8 +59,6 @@ public class NamespaceStorage extends NamespacedStorage {
         idMapping.removeStore();
         structure.removeStore();
         workerToBuckets.removeStore();
-
-
     }
 
     @Override
@@ -75,7 +74,7 @@ public class NamespaceStorage extends NamespacedStorage {
     }
 
 
-    public void updateIdMapping(PersistentIdMap idMapping) throws JSONException {
+    public void updateIdMapping(PersistentIdMap idMapping) {
         this.idMapping.update(idMapping);
     }
 
@@ -92,7 +91,7 @@ public class NamespaceStorage extends NamespacedStorage {
         return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
     }
 
-    public void updateStructure(StructureNode[] structure) throws JSONException {
+    public void updateStructure(StructureNode[] structure) {
         this.structure.update(structure);
     }
 }

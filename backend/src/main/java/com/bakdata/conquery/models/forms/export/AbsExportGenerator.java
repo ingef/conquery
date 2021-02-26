@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 
 @AllArgsConstructor
 public class AbsExportGenerator {
@@ -26,18 +25,7 @@ public class AbsExportGenerator {
 
 	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, AbsoluteMode mode, UserId userId, DatasetId submittedDataset, DateContext.Alignment alignmentHint) {
 
-		List<DateContext.Resolution> resolutions = null;
-		if(mode.getForm().isAlsoCreateCoarserSubdivisions()) {
-			if(mode.getForm().getResolution().size() != 1) {
-				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
-			}
-			resolutions = mode.getForm().getResolution().get(0).getThisAndCoarserSubdivisions();
-		}
-		else {
-			resolutions = mode.getForm().getResolution();
-		}
-
-		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(resolutions, mode.getAlignmentHint());
+		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getAlignmentHint());
 
 		return generate(namespaces, userId, submittedDataset, mode.getFeatures(), mode.getForm().getPrerequisite(), mode.getDateRange(), resolutionsAndAlignments);
 	}

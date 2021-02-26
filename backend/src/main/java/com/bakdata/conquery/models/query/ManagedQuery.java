@@ -26,6 +26,7 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -154,8 +155,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
-		super.setStatusBase(storage, user, status, url);
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		super.setStatusBase(storage, user, status, url, datasetAbilities);
 		status.setNumberOfResults(lastResultCount);
 
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -184,7 +185,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		for (String header : config.getIdMapping().getPrintIdFields()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(header)
-												   .type(ResultType.IdT.INSTANCE)
+												   .type(ResultType.IdT.INSTANCE.typeInfo())
 												   .build());
 		}
 		// Then all columns that originate from selects and static aggregators

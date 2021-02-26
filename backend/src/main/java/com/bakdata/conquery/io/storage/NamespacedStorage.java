@@ -82,6 +82,8 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 
     @Override
     public void clear() {
+        centralRegistry.clear();
+
         dataset.clear();
         secondaryIds.clear();
         tables.clear();

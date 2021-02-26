@@ -9,12 +9,14 @@ import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Store Decimals as longs with a fixed scale.
  */
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
+@ToString(of = {"scale", "subType"})
 public class DecimalTypeScaled implements DecimalStore {
 
 	private final int scale;
@@ -29,11 +31,6 @@ public class DecimalTypeScaled implements DecimalStore {
 	@Override
 	public int getLines() {
 		return subType.getLines();
-	}
-
-	@Override
-	public String toString() {
-		return "DecimalTypeScaled[numberType=" + subType + "]";
 	}
 
 	@Override

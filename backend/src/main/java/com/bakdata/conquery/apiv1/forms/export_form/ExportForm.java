@@ -54,6 +54,8 @@ public class ExportForm implements Form, NamespacedIdHolding {
 
 	@JsonIgnore
 	private IQuery prerequisite;
+	@JsonIgnore
+	private List<DateContext.Resolution> resolvedResolutions;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -87,6 +89,17 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	public void resolve(QueryResolveContext context) {
 		timeMode.resolve(context);
 		prerequisite = Form.resolvePrerequisite(context, queryGroup);
+
+
+		if(isAlsoCreateCoarserSubdivisions()) {
+			if(getResolution().size() != 1) {
+				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
+			}
+			resolvedResolutions = getResolution().get(0).getThisAndCoarserSubdivisions();
+		}
+		else {
+			resolvedResolutions = getResolution();
+		}
 	}
 
 	@Override
