@@ -16,16 +16,16 @@
             "child":{  
                   
                      "ids":[  
-                        "${dataset}.sum"
+                        "sum"
                      ],
                      "type":"CONCEPT",
                      "label":"vs",
                      "tables":[  
                         {  
-                           "id":"${dataset}.sum.sum_connector",
+                           "id":"sum.sum_connector",
                            "filters":[  
                               {  
-                                 "filter":"${dataset}.sum.sum_connector.value",
+                                 "filter":"sum.sum_connector.value",
                                  "type":"REAL_RANGE",
                                  "value":{  
                                     "min": 2,

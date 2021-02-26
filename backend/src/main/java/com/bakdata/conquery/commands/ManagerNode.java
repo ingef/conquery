@@ -1,14 +1,10 @@
 package com.bakdata.conquery.commands;
 
-import java.io.File;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -21,9 +17,8 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.MetaStorageImpl;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -42,6 +37,7 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.ClearFilterSourceSearch;
+import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -50,6 +46,8 @@ import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -66,6 +64,10 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 @Getter
 public class ManagerNode extends IoHandlerAdapter implements Managed {
 
+	public static final String DEFAULT_NAME = "manager";
+
+	private final String name;
+
 	private IoAcceptor acceptor;
 	private MetaStorage storage;
 	private JobManager jobManager;
@@ -73,12 +75,25 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private ConqueryConfig config;
 	private AdminServlet admin;
 	private AuthorizationController authController;
-	private AuthServlet authServletApp;
-	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
 	private DatasetRegistry datasetRegistry;
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
+
+	/**
+	 * Flags if the instance name should be a prefix for the instances storage.
+	 */
+	@Getter
+	@Setter
+	private boolean useNameForStoragePrefix = false;
+
+	public ManagerNode() {
+		this(DEFAULT_NAME);
+	}
+
+	public ManagerNode(@NonNull String name) {
+		this.name = name;
+	}
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 
@@ -93,7 +108,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		this.environment = environment;
 		this.validator = environment.getValidator();
 		this.config = config;
-		config.initializePlugins(this);
+		config.initialize(this);
 
 		// Initialization of internationalization
 		I18n.init();
@@ -109,40 +124,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		environment.lifecycle().manage(this);
 
-		if(config.getStorage().getDirectory().mkdirs()){
-			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
-		}
+		loadNamespaces();
 
 		log.info("Started meta storage");
-
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
-
-
-		for (File directory : config.getStorage().getDirectory().listFiles((file, name) -> name.startsWith("dataset_"))) {
-			loaders.submit(() -> {
-				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
-
-				if (datasetStorage == null) {
-					log.warn("Unable to load a dataset at `{}`", directory);
-					return;
-				}
-
-				Namespace ns = new Namespace(datasetStorage, config.isFailOnError());
-				ns.initMaintenance(maintenanceService);
-				datasetRegistry.add(ns);
-			});
-		}
-
-
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)){
-			log.debug("Still waiting for Datasets to load. {} already finished.", datasetRegistry.getDatasets());
-		}
-
-		log.info("All stores loaded: {}", datasetRegistry.getDatasets());
-
-
-		this.storage = new MetaStorageImpl(datasetRegistry, environment.getValidator(), config.getStorage());
+		this.storage = new MetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 
@@ -156,6 +141,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		authController.init();
 		environment.lifecycle().manage(authController);
 
+		admin = new AdminServlet();
+		admin.register(this);
+
+
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
 			try {
@@ -166,9 +155,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				log.error("Failed to register Resource {}",resourceProvider, e);
 			}
 		}
-
-		admin = new AdminServlet();
-		admin.register(this);
 
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
@@ -190,12 +176,21 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 						config.getQueries().getOldQueriesTime().getQuantity(),
 						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
+		environment.admin().addTask(new PermissionCleanupTask(storage));
 		environment.admin().addTask(new ClearFilterSourceSearch());
 		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+	}
+
+	public void loadNamespaces() {
+		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
+			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
+
+			datasetRegistry.add(ns);
+		}
 	}
 
 	@Override
@@ -225,7 +220,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
 					jobManager,
 					new NetworkSession(session),
-					datasetRegistry
+					datasetRegistry, config.getCluster().getBackpressure()
 			));
 
 			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)

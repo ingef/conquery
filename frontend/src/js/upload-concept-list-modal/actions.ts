@@ -1,10 +1,6 @@
-import type { Dispatch } from "redux";
-
-import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
-import { isEmpty } from "../common/helpers/commonHelper";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
-import type { ConceptIdT } from "../api/types";
+import type { ConceptIdT, DatasetIdT } from "../api/types";
 
 import {
   SELECT_CONCEPT_ROOT_NODE,
@@ -12,8 +8,11 @@ import {
   RESOLVE_CONCEPTS_SUCCESS,
   RESOLVE_CONCEPTS_ERROR,
   INIT,
-  RESET
+  RESET,
 } from "./actionTypes";
+import { useDispatch } from "react-redux";
+import { usePostConceptsListToResolve } from "../api/api";
+import { exists } from "../common/helpers/exists";
 
 export const resolveConceptsStart = () => ({ type: RESOLVE_CONCEPTS_START });
 export const resolveConceptsSuccess = (res: any, payload?: Object) =>
@@ -23,39 +22,42 @@ export const resolveConceptsError = (err: any) =>
 
 export const selectConceptRootNode = (conceptId: ConceptIdT) => ({
   type: SELECT_CONCEPT_ROOT_NODE,
-  conceptId
+  conceptId,
 });
 
-export const selectConceptRootNodeAndResolveCodes = (
-  datasetId,
-  treeId,
-  conceptCodes
-) => (dispatch: Dispatch) => {
-  if (isEmpty(treeId)) {
-    return dispatch(selectConceptRootNode(""));
-  } else {
-    dispatch(selectConceptRootNode(treeId));
-  }
+export const useSelectConceptRootNodeAndResolveCodes = () => {
+  const dispatch = useDispatch();
+  const postConceptsListToResolve = usePostConceptsListToResolve();
 
-  dispatch(resolveConceptsStart());
+  return (
+    datasetId: DatasetIdT,
+    treeId: string | null,
+    conceptCodes: string[]
+  ) => {
+    if (exists(treeId)) {
+      dispatch(selectConceptRootNode(treeId));
+    } else {
+      return dispatch(selectConceptRootNode(""));
+    }
 
-  return api
-    .postConceptsListToResolve(datasetId, treeId, conceptCodes)
-    .then(
-      r => dispatch(resolveConceptsSuccess(r)),
-      e => dispatch(resolveConceptsError(e))
+    dispatch(resolveConceptsStart());
+
+    return postConceptsListToResolve(datasetId, treeId, conceptCodes).then(
+      (r) => dispatch(resolveConceptsSuccess(r)),
+      (e) => dispatch(resolveConceptsError(e))
     );
+  };
 };
 
-export const initUploadConceptListModal = file => async dispatch => {
+export const initUploadConceptListModal = (file) => async (dispatch) => {
   const rows = await getUniqueFileRows(file);
 
   return dispatch({
     type: INIT,
-    payload: { rows, filename: file.name }
+    payload: { rows, filename: file.name },
   });
 };
 
 export const resetUploadConceptListModal = () => ({
-  type: RESET
+  type: RESET,
 });

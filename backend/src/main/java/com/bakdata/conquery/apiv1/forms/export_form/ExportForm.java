@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
-import com.bakdata.conquery.models.query.concept.specific.ForcedExists;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -55,6 +54,8 @@ public class ExportForm implements Form, NamespacedIdHolding {
 
 	@JsonIgnore
 	private IQuery prerequisite;
+	@JsonIgnore
+	private List<DateContext.Resolution> resolvedResolutions;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -89,12 +90,16 @@ public class ExportForm implements Form, NamespacedIdHolding {
 		timeMode.resolve(context);
 		prerequisite = Form.resolvePrerequisite(context, queryGroup);
 
-		// createExists is always true in ExportForm.
-		this.visit(visitable -> {
-			if(visitable instanceof ForcedExists){
-				((ForcedExists) visitable).setCreateExists(true);
+
+		if(isAlsoCreateCoarserSubdivisions()) {
+			if(getResolution().size() != 1) {
+				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
 			}
-		});
+			resolvedResolutions = getResolution().get(0).getThisAndCoarserSubdivisions();
+		}
+		else {
+			resolvedResolutions = getResolution();
+		}
 	}
 
 	@Override

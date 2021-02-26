@@ -27,7 +27,7 @@ import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -76,7 +75,7 @@ import org.jetbrains.annotations.TestOnly;
 @CPSBase
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned {
 	
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this. 
@@ -192,12 +191,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 					log.warn("Not saving successful execution {} because no storage was provided", getId());
 					return;
 				}
-				try {
-					storage.updateExecution(this);
-				}
-				catch (JSONException e) {
-					log.error("Failed to store execution {} after finishing: {}", getClass().getSimpleName(), this, e);
-				}
+				storage.updateExecution(this);
 			}
 		}
 
@@ -223,7 +217,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -235,13 +229,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
-		status.setResultUrl(getDownloadURL(url, user).orElse(null));
+		status.setResultUrl(getDownloadURL(url, user, datasetAbilities).orElse(null));
 	}
 	
 
 	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
-	public final Optional<URL> getDownloadURL(UriBuilder url, User user) {
-		if(url == null || !isReadyToDownload(url, user)) {
+	public final Optional<URL> getDownloadURL(UriBuilder url, User user, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		if(url == null || !isReadyToDownload(url, user, datasetAbilities)) {
 			// url might be null because no url was wished and no builder was provided
 			return Optional.empty();
 		}
@@ -257,9 +251,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
-		setStatusBase(storage, user, status, url);
+		setStatusBase(storage, user, status, url, datasetAbilities);
 
 		return status;
 	}
@@ -268,10 +262,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Renders an extensive status of this query (see {@link ExecutionStatus.Full}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry) {
+	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		ExecutionStatus.Full status = new ExecutionStatus.Full();
-		setStatusBase(storage, user, status, url);
+		setStatusBase(storage, user, status, url, datasetAbilities);
 
 		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
@@ -323,8 +317,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user) {
-		if(state != ExecutionState.DONE) {
+	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		if (state != ExecutionState.DONE) {
 			// No url for unfinished executions, quick return
 			return false;
 		}
@@ -332,10 +326,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
-		return user.isPermittedAll(getUsedNamespacedIds().stream()
-			.map(NamespacedId::getDataset)
-			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
-			.collect(Collectors.toList()));
+		return getUsedNamespacedIds().stream()
+				.map(NamespacedId::getDataset)
+				.distinct()
+				.allMatch((id) -> datasetAbilities.get(id).contains(Ability.DOWNLOAD));
 	}
 
 	/**

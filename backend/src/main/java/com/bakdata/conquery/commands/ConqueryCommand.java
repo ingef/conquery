@@ -7,6 +7,10 @@ import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.eclipse.jetty.util.component.ContainerLifeCycle;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> {
@@ -70,4 +74,9 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	 * @throws Exception if something goes wrong
 	 */
 	protected abstract void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception;
+
+	@NotNull
+	public static List<String> getStoragePathParts(boolean useNameForStoragePrefix, String name) {
+		return useNameForStoragePrefix ? List.of(name) : Collections.emptyList();
+	}
 }

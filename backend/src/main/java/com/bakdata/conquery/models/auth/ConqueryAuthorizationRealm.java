@@ -5,7 +5,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;

@@ -1,22 +1,24 @@
 package com.bakdata.conquery.models.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.util.NonPersistentMetaStorage;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CopyUserTest {
 
 	@Test
 	void testUserCopy(){
-		MetaStorage storage = new NonPersistentMetaStorage();
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), null);
 
 		// Create test role
 		Role role = new Role("role", "role");

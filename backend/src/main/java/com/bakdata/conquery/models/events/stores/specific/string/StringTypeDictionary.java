@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -94,7 +94,7 @@ public class StringTypeDictionary implements ColumnStore {
 
 	@Override
 	public String toString() {
-		return "StringTypeDictionary[dictionary=" + dictionary + ", numberType=" + numberType + "]";
+		return "StringTypeDictionary(dictionary=" + dictionary + ", numberType=" + numberType + ")";
 	}
 
 	@Override

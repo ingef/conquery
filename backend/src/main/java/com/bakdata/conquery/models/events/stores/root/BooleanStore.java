@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.events.stores.root;
 
+import com.bakdata.conquery.models.events.MajorTypeId;
+
 /**
  * {@link ColumnStore} for boolean values.
  *
- * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#BOOLEAN} and {@link com.bakdata.conquery.models.events.parser.specific.BooleanParser}.
+ * See also {@link MajorTypeId#BOOLEAN} and {@link com.bakdata.conquery.models.preproc.parser.specific.BooleanParser}.
  *
  * @implSpec this class cannot handle null values.
  */

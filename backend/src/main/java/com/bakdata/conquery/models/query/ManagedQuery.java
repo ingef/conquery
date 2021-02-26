@@ -20,20 +20,24 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
 import c10n.C10N;
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -155,8 +159,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url) {
-		super.setStatusBase(storage, user, status, url);
+	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		super.setStatusBase(storage, user, status, url, datasetAbilities);
 		status.setNumberOfResults(lastResultCount);
 
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -185,7 +189,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		for (String header : config.getIdMapping().getPrintIdFields()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 				.label(header)
-				.type(ConqueryConstants.ID_TYPE)
+				.type(ResultType.IdT.INSTANCE.typeInfo())
 				.build());
 		}
 		// Then all columns that originate from selects and static aggregators
@@ -260,7 +264,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		int sbStartSize = sb.length();
 		
 		QueryVisitor visitor = new QueryVisitor() {
-			
+
 			@Override
 			public void accept(Visitable t) {
 				sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);

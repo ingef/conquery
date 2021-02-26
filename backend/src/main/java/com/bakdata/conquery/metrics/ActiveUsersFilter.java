@@ -11,7 +11,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -50,7 +50,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		final Optional<Group> groupOptional = AuthorizationHelper.getPrimaryGroup(user.getId(), storage);
 
 		if (groupOptional.isEmpty()) {
-			log.debug("{} has no primary group", user);
+			log.trace("{} has no primary group", user);
 			return;
 		}
 

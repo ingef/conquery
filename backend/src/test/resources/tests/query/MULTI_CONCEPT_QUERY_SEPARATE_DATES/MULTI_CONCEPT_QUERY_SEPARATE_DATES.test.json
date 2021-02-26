@@ -10,14 +10,14 @@
                 {
                     "type": "CONCEPT",
                     "ids": [
-                        "${dataset}.test_tree.test_child1"
+                        "test_tree.test_child1"
                     ],
                     "tables": [
                         {
-                            "id": "${dataset}.test_tree.test_column",
+                            "id": "test_tree.test_column",
                             "filters": [],
                             "selects": [
-                                "${dataset}.test_tree.event-date"
+                                "test_tree.event-date"
                             ]
                         }
                     ]
@@ -25,14 +25,14 @@
                 {
                     "type": "CONCEPT",
                     "ids": [
-                        "${dataset}.test_tree2.test_child1"
+                        "test_tree2.test_child1"
                     ],
                     "tables": [
                         {
-                            "id": "${dataset}.test_tree2.test_column2",
+                            "id": "test_tree2.test_column2",
                             "filters": [],
                             "selects": [
-                                "${dataset}.test_tree2.event-date"
+                                "test_tree2.event-date"
                             ]
                         }
                     ]

@@ -1,10 +1,10 @@
-import { createActionTypes } from "./actionTypes";
+import { toUpperCaseUnderscore } from "../../common/helpers";
 
 const updateFormFilterProperty = (
-  state: Object,
-  action: Object,
-  property: Object
-): Object => {
+  state: any,
+  action: any,
+  property: any
+): any => {
   const { andIdx, orIdx, filterIdx, tableIdx, fieldName } = action.payload;
 
   const fieldContent = state[fieldName];
@@ -25,26 +25,20 @@ const updateFormFilterProperty = (
             ...tableContent,
             [filterIdx]: {
               ...filterContent,
-              ...property
-            }
-          }
-        }
-      }
-    }
+              ...property,
+            },
+          },
+        },
+      },
+    },
   };
 };
 
-const loadFormFilterSuggestionsStart = (
-  state: Object,
-  action: Object
-): Object => {
+const loadFormFilterSuggestionsStart = (state: any, action: any): any => {
   return updateFormFilterProperty(state, action, { isLoading: true });
 };
 
-const loadFormFilterSuggestionsSuccess = (
-  state: Object,
-  action: Object
-): Object => {
+const loadFormFilterSuggestionsSuccess = (state: any, action: any): any => {
   const { andIdx, orIdx, filterIdx, tableIdx, fieldName } = action.payload;
   const previousOptions =
     (state[fieldName] &&
@@ -63,43 +57,40 @@ const loadFormFilterSuggestionsSuccess = (
       // Remove duplicate items
       .reduce(
         (options, currentOption) =>
-          options.find(x => x.value === currentOption.value)
+          options.find((x) => x.value === currentOption.value)
             ? options
             : [...options, currentOption],
         []
-      )
+      ),
   });
 };
 
-const loadFormFilterSuggestionsError = (
-  state: Object,
-  action: Object
-): Object => {
+const loadFormFilterSuggestionsError = (state: any, action: any): any => {
   return updateFormFilterProperty(state, action, { isLoading: false });
 };
 
 // TODO: SPEC THIS OUT!
-export type FormSuggestionsStateT = Object;
+export type FormSuggestionsStateT = any;
 
 export const createFormSuggestionsReducer = (
   formType: string,
   fieldNames: string[]
 ) => {
   const reducerHandlers = fieldNames
-    .map(fieldName => {
-      const actionTypes = createActionTypes(formType, fieldName);
+    .map((fieldName) => {
+      const uppercasedFieldName = toUpperCaseUnderscore(fieldName);
 
       return {
-        [actionTypes.LOAD_FILTER_SUGGESTIONS_START]: loadFormFilterSuggestionsStart,
-        [actionTypes.LOAD_FILTER_SUGGESTIONS_SUCCESS]: loadFormFilterSuggestionsSuccess,
-        [actionTypes.LOAD_FILTER_SUGGESTIONS_ERROR]: loadFormFilterSuggestionsError
+        [`form-suggestions/LOAD_${formType}_${uppercasedFieldName}_FILTER_SUGGESTIONS_START`]: loadFormFilterSuggestionsStart,
+        [`form-suggestions/LOAD_${formType}_${uppercasedFieldName}_FILTER_SUGGESTIONS_SUCCESS`]: loadFormFilterSuggestionsSuccess,
+        [`form-suggestions/LOAD_${formType}_${uppercasedFieldName}_FILTER_SUGGESTIONS_ERROR`]: loadFormFilterSuggestionsError,
       };
     })
     .reduce((acc, handlers) => ({ ...acc, ...handlers }), {});
 
   return (
     state: FormSuggestionsStateT = {},
-    action: Object
+    action: any
   ): FormSuggestionsStateT => {
     if (reducerHandlers[action.type])
       return reducerHandlers[action.type](state, action);

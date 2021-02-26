@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.events.stores.root;
 
+import com.bakdata.conquery.models.events.MajorTypeId;
+
 /**
  * {@link ColumnStore} for real values (double/float).
  *
- * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#REAL} and {@link com.bakdata.conquery.models.events.parser.specific.RealParser}.
+ * See also {@link MajorTypeId#REAL} and {@link com.bakdata.conquery.models.preproc.parser.specific.RealParser}.
  */
 public interface RealStore extends ColumnStore {
 

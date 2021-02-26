@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import ReactList from "react-list";
 
+import { DatasetIdT } from "../../api/types";
+
 import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import { PreviousQueryT } from "./reducer";
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
 import SharePreviousQueryModal from "./SharePreviousQueryModal";
 
 interface PropsT {
-  datasetId: string;
+  datasetId: DatasetIdT | null;
   queries: PreviousQueryT[];
 }
 
@@ -45,19 +47,6 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
     onCloseDeleteModal();
   }
 
-  function renderQuery(index: number, key: string | number) {
-    return (
-      <Container key={key}>
-        <PreviousQueryDragContainer
-          query={queries[index]}
-          datasetId={datasetId}
-          onIndicateDeletion={() => setPreviousQueryToDelete(queries[index].id)}
-          onIndicateShare={() => setPreviousQueryToShare(queries[index].id)}
-        />
-      </Container>
-    );
-  }
-
   return (
     <Root>
       {!!previousQueryToShare && (
@@ -74,11 +63,28 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
           onDeleteSuccess={onDeleteSuccess}
         />
       )}
-      <ReactList
-        itemRenderer={renderQuery}
-        length={queries.length}
-        type="variable"
-      />
+      {datasetId && (
+        <ReactList
+          itemRenderer={(index: number, key: string | number) => {
+            return (
+              <Container key={key}>
+                <PreviousQueryDragContainer
+                  query={queries[index]}
+                  datasetId={datasetId}
+                  onIndicateDeletion={() =>
+                    setPreviousQueryToDelete(queries[index].id)
+                  }
+                  onIndicateShare={() =>
+                    setPreviousQueryToShare(queries[index].id)
+                  }
+                />
+              </Container>
+            );
+          }}
+          length={queries.length}
+          type="variable"
+        />
+      )}
     </Root>
   );
 };

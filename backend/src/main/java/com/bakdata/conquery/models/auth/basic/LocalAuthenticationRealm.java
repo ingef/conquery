@@ -11,9 +11,9 @@ import javax.ws.rs.container.ContainerRequestContext;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
-import com.bakdata.conquery.io.xodus.stores.XodusStore;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.IStoreInfo;
+import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.AdminServlet.AuthAdminResourceProvider;
@@ -66,7 +65,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
 	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the ManagerNode)
 	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
-	private static final File STORE_DIR = ConqueryConfig.getInstance().getStorage().getDirectory();
+	private final File storageDir;
 
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
@@ -85,7 +84,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	@Getter
 	private static class StoreInfo implements IStoreInfo {
 
-		private final String xodusName;
+		private final String name;
 		// Not used
 		private final Class<?> keyType = String.class;
 		// Not used
@@ -99,6 +98,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
 		this.storage = controller.getStorage();
 		this.storeName = config.getStoreName();
+		this.storageDir = config.getDirectory();
 		this.centralTokenRealm = controller.getCentralTokenRealm();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
 	}
@@ -107,9 +107,9 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	protected void onInit() {
 		super.onInit();
 		// Open/create the database/store
-		File passwordStoreFile = new File(STORE_DIR, storeName);
+		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"));
+		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"), new ArrayList<>(), (e) -> e.close(), (e) -> {});
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
@@ -245,7 +245,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {			
 			try {
 				log.info("Closing the password environment.");
-				passwordEnvironment.close();
+				passwordStore.close();
 				return;
 			}
 			catch (EnvironmentClosedException e) {
