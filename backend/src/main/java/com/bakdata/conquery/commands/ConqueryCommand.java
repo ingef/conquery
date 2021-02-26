@@ -1,5 +1,8 @@
 package com.bakdata.conquery.commands;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
@@ -9,16 +12,12 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.eclipse.jetty.util.component.ContainerLifeCycle;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.List;
-
 @Slf4j
 public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> {
 	
 	/**
 	 * Creates a new environment command.
 	 *
-	 * @param application	 the application providing this command
 	 * @param name		the name of the command, used for command line invocation
 	 */
 	protected ConqueryCommand(String name, String description) {
