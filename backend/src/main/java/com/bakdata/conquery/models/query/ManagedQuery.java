@@ -189,7 +189,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		for (String header : config.getIdMapping().getPrintIdFields()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 				.label(header)
-				.type(ResultType.IdT.INSTANCE)
+				.type(ResultType.IdT.INSTANCE.typeInfo())
 				.build());
 		}
 		// Then all columns that originate from selects and static aggregators

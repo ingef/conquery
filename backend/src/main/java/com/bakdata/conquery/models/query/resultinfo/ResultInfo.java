@@ -71,7 +71,7 @@ public abstract class ResultInfo {
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
 		return ColumnDescriptor.builder()
 			.label(getUniqueName(settings))
-			.type(getType())
+			.type(getType().typeInfo())
 			.build();
 	}
 }

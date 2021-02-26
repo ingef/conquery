@@ -26,7 +26,7 @@ public class ColumnDescriptor {
 	/**
 	 * The datatype that corresponds to this column.
 	 */
-	private ResultType type;
+	private String type;
 	/**
 	 * Similar to {@link ColumnDescriptor.userConceptLabel} this holds the submitted {@link SelectId}.
 	 */
