@@ -6,12 +6,14 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
  * Outputs the current line in the file.
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ToString
 @CPSType(id="LINE", base= OutputDescription.class)
 public class LineOutput extends OutputDescription {

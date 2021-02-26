@@ -1,5 +1,7 @@
 package com.bakdata.conquery.integration.common;
 
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
@@ -11,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -21,7 +24,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -92,38 +94,46 @@ public class LoadingUtil {
 	
 	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws Exception {
 		List<File> preprocessedFiles = new ArrayList<>();
+		List<File> descriptions = new ArrayList<>();
 
 		for (RequiredTable rTable : tables) {
 			// copy csv to tmp folder
-			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
+			String name = rTable.getName();
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			// create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name, null);
+			final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
+			final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
+
 			TableImportDescriptor desc = new TableImportDescriptor();
-			desc.setInputFile(inputFile);
-			desc.setName(rTable.getName() + "_import");
-			desc.setTable(rTable.getName());
+
+			desc.setName(name);
+			desc.setTable(name);
 			TableInputDescriptor input = new TableInputDescriptor();
 			{
 				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
-				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
+				input.setSourceFile(rTable.getCsv().getName());
 				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
 					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
 				}
 			}
 			desc.setInputs(new TableInputDescriptor[] { input });
-			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
-			preprocessedFiles.add(inputFile.getPreprocessedFile());
+
+			Jackson.MAPPER.writeValue(descriptionFile, desc);
+
+			descriptions.add(descriptionFile);
+			preprocessedFiles.add(outFile);
 		}
 		// preprocess
-		support.preprocessTmp();
+		support.preprocessTmp(support.getTmpDir(), descriptions);
 		//clear the MDC location from the preprocessor
 		ConqueryMDC.clearLocation();
 
 		// import preprocessedFiles
 		for (File file : preprocessedFiles) {
+			assertThat(file).exists();
+
 			support.getDatasetsProcessor().addImport(support.getNamespace(), file);
 		}
 	}
