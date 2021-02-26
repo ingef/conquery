@@ -38,13 +38,13 @@ public abstract class IQuery implements QueryDescription {
 		return set;
 	}
 
-	public ResultInfoCollector collectResultInfos(PrintSettings cfg) {
+	public ResultInfoCollector collectResultInfos() {
 		ResultInfoCollector collector = new ResultInfoCollector();
-		collectResultInfos(collector, cfg);
+		collectResultInfos(collector);
 		return collector;
 	}
 	
-	public abstract void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg);
+	public abstract void collectResultInfos(ResultInfoCollector collector);
 	
 	@Override
 	public ManagedQuery toManagedExecution(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset) {

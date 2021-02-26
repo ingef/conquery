@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -56,8 +55,8 @@ public class AbsoluteFormQuery extends IQuery {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
-		features.collectResultInfos(collector, cfg);
+	public void collectResultInfos(ResultInfoCollector collector) {
+		features.collectResultInfos(collector);
 		//remove SpecialDateUnion
 		collector.getInfos().remove(0);
 

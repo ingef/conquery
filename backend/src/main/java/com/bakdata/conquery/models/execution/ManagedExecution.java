@@ -9,7 +9,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -37,6 +36,7 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -127,7 +127,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				return;
 			}
 			if(label == null) {
-				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, Locale.ROOT, datasetRegistry)); // TODO wat do?
+				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry));
 			}
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;

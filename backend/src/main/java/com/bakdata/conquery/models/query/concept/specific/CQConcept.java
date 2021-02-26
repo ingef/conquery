@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
@@ -29,7 +30,6 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -83,7 +83,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	private boolean excludeFromSecondaryIdQuery = false;
 
 	@Override
-	public String getLabel(PrintSettings cfg) {
+	public String getLabel(Locale cfg) {
 		final String label = super.getLabel(cfg);
 		if(!Strings.isNullOrEmpty(label)) {
 			return label;
@@ -254,7 +254,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		selects.forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		for (CQTable table : tables) {
 			table.getSelects()

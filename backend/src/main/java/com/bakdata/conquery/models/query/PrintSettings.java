@@ -9,6 +9,7 @@ import java.util.function.Function;
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -34,7 +35,7 @@ public class PrintSettings implements SelectNameExtractor {
 	private final NumberFormat integerFormat;
 	
 	/**
-	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept::getIds()}.
+	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept#getElements()}.
 	 */
 	private final DatasetRegistry datasetRegistry;
 	
@@ -77,9 +78,8 @@ public class PrintSettings implements SelectNameExtractor {
 
 	private String defaultColumnName(SelectResultInfo columnInfo, DatasetRegistry datasetRegistry) {
 		StringBuilder sb = new StringBuilder();
-		String cqLabel = columnInfo.getCqConcept().getLabel(this);
-		String conceptLabel = columnInfo.getSelect().getHolder().findConcept().getLabel();
-		
+		String cqLabel = columnInfo.getCqConcept().getLabel(getLocale());
+
 		if (cqLabel != null) {
 			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);

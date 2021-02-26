@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
@@ -48,8 +48,8 @@ public class QueryUtils {
 		return Objects.requireNonNull(visitors.getInstance(clazz),String.format("Among the visitor that traversed the query no %s could be found", clazz));
 	}
 
-	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, PrintSettings cfg) {
-		return elements.stream().map(elt -> elt.getLabel(cfg)).collect(Collectors.joining(delimiter));
+	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
+		return elements.stream().map(elt -> elt.getLabel(locale)).collect(Collectors.joining(delimiter));
 	}
 
 	/**

@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -41,9 +40,9 @@ public class ResultInfoDecorator extends CQElement {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		int index = collector.getInfos().size();
-		child.collectResultInfos(collector, cfg);
+		child.collectResultInfos(collector);
 		collector.getInfos()
 				 .listIterator(index)
 				 .forEachRemaining(sd -> {

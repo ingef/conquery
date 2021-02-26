@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -139,7 +138,7 @@ public class TableExportQuery extends IQuery {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		for (Column col : resolvedHeader) {
 			collector.add(new SimpleResultInfo(col.getId().toStringWithoutDataset(), ResultType.resolveResultType(col.getType())));
 		}

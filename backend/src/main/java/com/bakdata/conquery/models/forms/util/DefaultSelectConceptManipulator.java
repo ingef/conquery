@@ -33,14 +33,14 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 	@Override
 	public void consume(CQConcept concept, DatasetRegistry namespaces) {
 		// Obtain the concept Id
-		List<ConceptElement<?>> conceptIds = concept.getElements();
-		if(conceptIds.isEmpty()) {
+		List<ConceptElement<?>> conceptElements = concept.getElements();
+		if(conceptElements.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Cannot set defaults on a CQConcept without ids. Provided concept: %s", concept));
 		}
 		
 		// Gather Default Selects
 			// On concept level
-		Concept<?> actualConcept = conceptIds.get(0).getConcept();
+		Concept<?> actualConcept = conceptElements.get(0).getConcept();
 		List<Select> defaultConceptSelects = new ArrayList<>(actualConcept.getSelects());
 		defaultConceptSelects.removeIf(s -> !s.isDefault());
 		

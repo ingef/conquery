@@ -10,7 +10,6 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -59,10 +58,10 @@ public class ArrayConceptQuery extends IQuery {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		List<ResultInfo> infos = collector.getInfos();
 		int lastIndex = Math.max(0,infos.size()-1);
-		childQueries.forEach(q -> q.collectResultInfos(collector, cfg));
+		childQueries.forEach(q -> q.collectResultInfos(collector));
 		ResultInfo dateInfo = ConqueryConstants.DATES_INFO;
 		
 		if(!infos.isEmpty()) {

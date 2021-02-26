@@ -52,7 +52,7 @@ public class ArrowRenderer {
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
         Stream<EntityResult> results = getResults(exec);
-        List<ResultInfo> resultInfos = getResultInfos(exec, cfg);
+        List<ResultInfo> resultInfos = getResultInfos(exec);
 
         // Combine id and value Fields to one vector to build a schema
         List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
@@ -79,11 +79,11 @@ public class ArrowRenderer {
         throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
     }
 
-    private static List<ResultInfo> getResultInfos(ManagedExecution<?> exec, PrintSettings cfg) {
+    private static List<ResultInfo> getResultInfos(ManagedExecution<?> exec) {
         if (exec instanceof ManagedQuery) {
-            return ((ManagedQuery) exec).collectResultInfos(cfg).getInfos();
+            return ((ManagedQuery) exec).collectResultInfos().getInfos();
         } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
-            return ((ManagedForm) exec).getSubQueries().values().iterator().next().get(0).collectResultInfos(cfg).getInfos();
+            return ((ManagedForm) exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
         }
         throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
     }

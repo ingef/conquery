@@ -64,7 +64,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		//check result info size
-		ResultInfoCollector resultInfos = managed.collectResultInfos(new PrintSettings(false,Locale.ROOT, namespaces));
+		ResultInfoCollector resultInfos = managed.collectResultInfos();
 
 		assertThat(
 				managed

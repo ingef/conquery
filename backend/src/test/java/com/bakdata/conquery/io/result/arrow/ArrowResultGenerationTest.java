@@ -147,7 +147,7 @@ public class ArrowResultGenerationTest {
                 EntityResult.notContained());
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
-            public ResultInfoCollector collectResultInfos(PrintSettings cfg) {
+            public ResultInfoCollector collectResultInfos() {
                 ResultInfoCollector coll = new ResultInfoCollector();
                 coll.addAll(getResultTypes().stream()
                         .map(TypedSelectDummy::new)
@@ -178,7 +178,7 @@ public class ArrowResultGenerationTest {
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.collectResultInfos(printSettings).getInfos()));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.collectResultInfos().getInfos()));
 
     }
 

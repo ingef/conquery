@@ -189,13 +189,15 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		}
 		// Then all columns that originate from selects and static aggregators
 		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry);
-		collectResultInfos(settings).getInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
+
+		collectResultInfos().getInfos()
+							.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	public ResultInfoCollector collectResultInfos(PrintSettings cfg) {
-		return query.collectResultInfos(cfg);
+	public ResultInfoCollector collectResultInfos() {
+		return query.collectResultInfos();
 	}
 
 	@Override
@@ -314,7 +316,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept, PrintSettings cfg) {
-		String cqConceptLabel = cqConcept.getLabel(cfg);
+		String cqConceptLabel = cqConcept.getLabel(cfg.getLocale());
 		if (cqConceptLabel == null) {
 			return "";
 		}

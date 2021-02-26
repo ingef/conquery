@@ -16,7 +16,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -75,9 +74,9 @@ public class RelativeFormQuery extends IQuery {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
-		ResultInfoCollector featureHeader = features.collectResultInfos(cfg);
-		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos(cfg);
+	public void collectResultInfos(ResultInfoCollector collector) {
+		ResultInfoCollector featureHeader = features.collectResultInfos();
+		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos();
 		//remove SpecialDateUnion
 		featureHeader.getInfos().remove(0);
 		outcomeHeader.getInfos().remove(0);

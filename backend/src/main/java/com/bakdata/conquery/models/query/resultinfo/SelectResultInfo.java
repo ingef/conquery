@@ -28,15 +28,15 @@ public class SelectResultInfo extends ResultInfo {
 	public String getName(PrintSettings settings) {
 		return settings.columnName(this);
 	}
-	
+
 	@Override
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
 		return ColumnDescriptor.builder()
-			.label(getUniqueName(settings))
-			.userConceptLabel(cqConcept.getLabel(settings))
-			.type(getType())
-			.selectId(select.getId())
-			.build();
+							   .label(getUniqueName(settings))
+							   .userConceptLabel(cqConcept.getLabel(settings.getLocale()))
+							   .type(getType())
+							   .selectId(select.getId())
+							   .build();
 	}
 
 	@Override

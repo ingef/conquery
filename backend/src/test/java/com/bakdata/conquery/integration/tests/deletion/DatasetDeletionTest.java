@@ -11,7 +11,6 @@ import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -161,10 +160,9 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			}
 
 
-			// It's not exactly possible to issue a query for a non-existant dataset, so we assert that resolving the dataset fails.
+			// It's not exactly possible to issue a query for a non-existant dataset, so we assert that parsing the fails.
 			assertThatThrownBy(() -> {
-				final String src = Jackson.MAPPER.writeValueAsString(query);
-				Jackson.MAPPER.readerFor(IQuery.class).<IQuery>readValue(src);
+				IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 			}).isNotNull();
 
 			IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED);

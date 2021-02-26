@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -65,7 +64,7 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {}
+	public void collectResultInfos(ResultInfoCollector collector) {}
 
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> ids) {

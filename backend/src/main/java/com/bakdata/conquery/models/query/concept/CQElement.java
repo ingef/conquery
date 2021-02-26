@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -29,7 +30,7 @@ public abstract class CQElement implements Visitable {
 	@Setter
 	private String label = null;
 
-	public String getLabel(PrintSettings settings){
+	public String getLabel(Locale locale){
 		return label;
 	}
 
@@ -56,11 +57,11 @@ public abstract class CQElement implements Visitable {
 
 	public ResultInfoCollector collectResultInfos(PrintSettings cfg) {
 		ResultInfoCollector collector = new ResultInfoCollector();
-		collectResultInfos(collector, cfg);
+		collectResultInfos(collector);
 		return collector;
 	}
 	
-	public abstract void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg);
+	public abstract void collectResultInfos(ResultInfoCollector collector);
 
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);

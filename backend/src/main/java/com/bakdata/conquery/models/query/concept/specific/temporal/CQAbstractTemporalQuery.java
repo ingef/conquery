@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -41,8 +40,8 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
-		index.getChild().collectResultInfos(collector, cfg);
-		preceding.getChild().collectResultInfos(collector, cfg);
+	public void collectResultInfos(ResultInfoCollector collector) {
+		index.getChild().collectResultInfos(collector);
+		preceding.getChild().collectResultInfos(collector);
 	}
 }

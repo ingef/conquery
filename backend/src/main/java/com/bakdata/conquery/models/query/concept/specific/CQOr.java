@@ -2,17 +2,18 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
+import c10n.C10N;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -21,8 +22,8 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
+import com.bakdata.conquery.models.query.resultinfo.LocalizedSimpleResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -75,24 +76,24 @@ public class CQOr extends CQElement implements ForcedExists {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector, PrintSettings cfg) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		for (CQElement c : children) {
-			c.collectResultInfos(collector, cfg);
+			c.collectResultInfos(collector);
 		}
 
 		if (createExists) {
-			collector.add(new SimpleResultInfo(getLabel(cfg), ResultType.BooleanT.INSTANCE));
+			collector.add(new LocalizedSimpleResultInfo(this::getLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	@Override
-	public String getLabel(PrintSettings cfg) {
-		String label = super.getLabel(cfg);
+	public String getLabel(Locale locale) {
+		String label = super.getLabel(locale);
 		if (label != null) {
 			return label;
 		}
 
-		return QueryUtils.createDefaultMultiLabel(children, " " + cfg.getC10N(CQElementC10n.class).or() + " ", cfg);
+		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).or() + " ", locale);
 	}
 
 
