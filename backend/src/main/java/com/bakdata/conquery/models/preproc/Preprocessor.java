@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CsvIo;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -31,7 +29,6 @@ import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -39,38 +36,6 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 @UtilityClass
 public class Preprocessor {
-
-	@SneakyThrows
-	public static boolean requiresProcessing(PreprocessingJob preprocessingJob)  {
-		ConqueryMDC.setLocation(preprocessingJob.toString());
-		if (preprocessingJob.getPreprocessedFile().exists()) {
-
-			log.info("EXISTS ALREADY");
-
-			int currentHash = preprocessingJob.getDescriptor()
-											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
-
-			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
-				 InputStream is = outFile.readHeader()) {
-
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
-
-				if (header.getValidityHash() == currentHash) {
-					log.info("\tHASH STILL VALID");
-					return false;
-				}
-				log.info("\tHASH OUTDATED");
-			} catch (Exception e) {
-				log.error("\tHEADER READING FAILED", e);
-				return false;
-			}
-		}
-		else {
-			log.info("DOES NOT EXIST");
-		}
-
-		return true;
-	}
 
 	/**
 	 * Create version of file-name with tag.

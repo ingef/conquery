@@ -3,6 +3,7 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +17,10 @@ import java.util.function.Predicate;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.HCFile;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
 import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
@@ -26,6 +30,7 @@ import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.setup.Environment;
+import lombok.SneakyThrows;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -53,6 +58,38 @@ public class PreprocessorCommand extends ConqueryCommand {
 	public PreprocessorCommand(ExecutorService pool) {
 		super("preprocess", "Preprocesses all the files in the given input directories. This has to be done only if the model or the files changed.");
 		this.pool = pool;
+	}
+
+	@SneakyThrows
+	public static boolean requiresProcessing(PreprocessingJob preprocessingJob)  {
+		ConqueryMDC.setLocation(preprocessingJob.toString());
+		if (preprocessingJob.getPreprocessedFile().exists()) {
+
+			log.info("EXISTS ALREADY");
+
+			int currentHash = preprocessingJob.getDescriptor()
+											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
+
+			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
+				 InputStream is = outFile.readHeader()) {
+
+				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
+
+				if (header.getValidityHash() == currentHash) {
+					log.info("\tHASH STILL VALID");
+					return false;
+				}
+				log.info("\tHASH OUTDATED");
+			} catch (Exception e) {
+				log.error("\tHEADER READING FAILED", e);
+				return false;
+			}
+		}
+		else {
+			log.info("DOES NOT EXIST");
+		}
+
+		return true;
 	}
 
 	/**
@@ -140,21 +177,28 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		// This will halt preprocessing immediately.
 		if(isStrict) {
+			List<PreprocessingJob> missing = new ArrayList<>();
+
 			for (PreprocessingJob job : jobs) {
 				for(TableInputDescriptor input : job.getDescriptor().getInputs()) {
 					final File sourceFile = Preprocessor.resolveSourceFile(input.getSourceFile(), job.getCsvDirectory(), job.getTag());
 					if(!sourceFile.exists()) {
-						log.warn("Did not find file `{}` for preprocessing.", sourceFile);
-						addMissing(job);
+						log.error("Did not find file `{}` for Preprocessing[{}].", sourceFile, job);
+						missing.add(job);
 					}
 				}
 			}
+
+			if(!missing.isEmpty()){
+				log.error("FAILED Preprocessing, files are missing.");
+				doFail();
+			}
 		}
 
-		jobs.removeIf(Predicate.not(Preprocessor::requiresProcessing));
+		jobs.removeIf(Predicate.not(PreprocessorCommand::requiresProcessing));
 
 		final long totalSize = jobs.stream()
-										  .mapToLong(PreprocessingJob::estimateTotalCsvSize)
+										  .mapToLong(PreprocessingJob::estimateTotalCsvSizeBytes)
 										  .sum();
 
 		log.info("Required to preprocess {} in total", BinaryByteUnit.format(totalSize));
@@ -198,7 +242,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		if (isFailed()) {
 			log.error("Failed {} Preprocessing Jobs:", failed.size());
 			failed.forEach(desc -> log.error("\tFailed Preprocessing for {}", desc));
-			System.exit(1);
+			doFail();
 		}
 	}
 
@@ -211,7 +255,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 	private void addFailed(PreprocessingJob job) {
 		if (isFailFast) {
-			System.exit(1);
+			doFail();
 		}
 		failed.add(job.toString());
 	}
@@ -259,11 +303,15 @@ public class PreprocessorCommand extends ConqueryCommand {
 		catch (Exception e) {
 			log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
 			if (isFailFast) {
-				System.exit(1);
+				doFail();
 			}
 			failed.add(descriptionFile.toString());
 		}
 		return Optional.empty();
+	}
+
+	private void doFail() {
+		System.exit(1);
 	}
 
 }
