@@ -48,8 +48,8 @@ public class StoredQueriesResource extends HDatasets {
 	@Path("{" + QUERY + "}")
 	public ExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecutionId queryId) {
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, queryId, Ability.READ);
-		
+
+		// Permission to see the actual query is checked in the processor
 		ExecutionStatus status = processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 		if (status == null) {
 			throw new WebApplicationException("Unknown query " + queryId, Status.NOT_FOUND);
@@ -70,8 +70,7 @@ public class StoredQueriesResource extends HDatasets {
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@PathParam(QUERY) ManagedExecutionId queryId) {
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, queryId, Ability.DELETE);
 
-		processor.deleteQuery(namespace, queryId);
+		processor.deleteQuery(queryId, user);
 	}
 }

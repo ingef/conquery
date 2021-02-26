@@ -1,4 +1,5 @@
 package com.bakdata.conquery.api.form.config;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -146,8 +147,6 @@ public class FormConfigTest {
 		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
 		
 		assertThat(storage.getAllFormConfigs()).containsExactly(FormConfigAPI.intern(formConfig, user.getId(), dataset.getId()));
-		
-		assertThat(storage.getUser(user.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formId));
 	}
 
 	@Test
@@ -235,7 +234,7 @@ public class FormConfigTest {
 		FormConfigId formId2 = processor.addConfig(user, datasetId, formConfig2);
 		
 		// EXECUTE
-		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Optional.empty());
+		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptySet());
 		
 		// CHECK
 		assertThat(response).containsExactlyInAnyOrder(
