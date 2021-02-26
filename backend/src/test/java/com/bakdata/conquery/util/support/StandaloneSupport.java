@@ -1,13 +1,9 @@
 package com.bakdata.conquery.util.support;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.Closeable;
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -21,11 +17,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.dropwizard.cli.Cli;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.util.JarLocation;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,26 +46,23 @@ public class StandaloneSupport implements Closeable {
 	}
 
 	public void preprocessTmp(File tmpDir, List<File> descriptions) throws Exception {
-		// Setup necessary mock
-		final JarLocation location = mock(JarLocation.class);
-		when(location.getVersion()).thenReturn(Optional.of("1.0.0"));
+		final Environment env = testConquery.getDropwizard().getEnvironment();
+		final net.sourceforge.argparse4j.inf.Namespace namespace = new net.sourceforge.argparse4j.inf.Namespace(
+				Map.of(
+						"in", tmpDir,
+						"out", tmpDir,
+						"desc" , descriptions
+				)
+		);
 
-		// Add commands you want to test
-		final Bootstrap<ConqueryConfig> bootstrap = TestBootstrappingConquery.createTestBootstrapConquery(tmpDir);
-
-		bootstrap.addCommand(new PreprocessorCommand(MoreExecutors.newDirectExecutorService()));
-
-		final Cli cli = new Cli(location, bootstrap, System.out, System.err);
-
-		final ImmutableList<String> params =
-				ImmutableList.<String>builder()
-							 .add("preprocess", "--in", tmpDir.toString(), "--out", tmpDir.toString())
-							 .add("--desc")
-							 .addAll(descriptions.stream().map(File::toString).collect(Collectors.toList()))
-							 .build();
-
-
-		cli.run(params.toArray(String[]::new));
+		// We use this to change the visibility of the run method, hence it cannot be instantiated.
+		new PreprocessorCommand(MoreExecutors.newDirectExecutorService()){
+			@Override
+			public void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig config) throws Exception {
+				super.run(environment, namespace, config);
+			}
+		}
+		.run(env, namespace, config);
 	}
 
 	@Override
