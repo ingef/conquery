@@ -40,8 +40,6 @@ public class UserIdTokenExtractor implements DefaultAuthFilter.TokenExtractor {
 		UserId userId = null;
 
 		if (StringUtils.isNotEmpty(uid)) {
-			uid = uid.replaceFirst("^Bearer ", "");
-
 			try {
 				userId = UserId.Parser.INSTANCE.parse(uid);
 				return new DevelopmentToken(userId, uid);
