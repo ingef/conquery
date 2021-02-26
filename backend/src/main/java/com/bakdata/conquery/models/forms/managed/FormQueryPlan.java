@@ -87,7 +87,7 @@ public class FormQueryPlan implements QueryPlan {
 
 	private MultilineContainedEntityResult createResultForNotContained(Entity entity, DateContext dateContext) {
 		List<Object[]> result = new ArrayList<>();
-		result.add(new Object[getAggregators().size()]);
+		result.add(new Object[features.getAggregatorSize()]);
 		return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), result), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0)).unaryAndThen( v->addConstants(v, dateContext)));
 	}
 	

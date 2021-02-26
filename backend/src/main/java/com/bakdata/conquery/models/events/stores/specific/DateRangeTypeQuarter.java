@@ -11,12 +11,14 @@ import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * a type to store effectively a date range by only storing the first epoch day of the quarter
  **/
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
 @Getter
+@ToString(of = "store")
 public class DateRangeTypeQuarter implements DateRangeStore {
 
 	private final IntegerStore store;

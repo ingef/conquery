@@ -7,10 +7,12 @@ import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
+@ToString(of = "numberType")
 public class MoneyIntStore implements MoneyStore {
 
 	protected IntegerStore numberType;
@@ -33,11 +35,6 @@ public class MoneyIntStore implements MoneyStore {
 	@Override
 	public long getMoney(int event) {
 		return numberType.getInteger(event);
-	}
-
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName() + "[numberType=" + numberType + "]";
 	}
 
 	@Override

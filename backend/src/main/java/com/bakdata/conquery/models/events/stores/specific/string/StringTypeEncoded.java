@@ -88,7 +88,7 @@ public class StringTypeEncoded implements StringStore {
 
 	@Override
 	public String toString() {
-		return "StringTypeEncoded[encoding=" + encoding + ", subType=" + subType + "]";
+		return "StringTypeEncoded(encoding=" + encoding + ", subType=" + subType + ")";
 	}
 
 	@Override

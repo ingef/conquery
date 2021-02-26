@@ -37,6 +37,7 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.ClearFilterSourceSearch;
+import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -139,6 +140,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		authController.init();
 		environment.lifecycle().manage(authController);
 
+		admin = new AdminServlet();
+		admin.register(this);
+
+
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
 			try {
@@ -149,9 +154,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				log.error("Failed to register Resource {}",resourceProvider, e);
 			}
 		}
-
-		admin = new AdminServlet();
-		admin.register(this);
 
 		// Register an unprotected servlet for logins on the app port
 		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
@@ -173,6 +175,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 						config.getQueries().getOldQueriesTime().getQuantity(),
 						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
+		environment.admin().addTask(new PermissionCleanupTask(storage));
 		environment.admin().addTask(new ClearFilterSourceSearch());
 		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
 

@@ -1,12 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -30,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -73,45 +68,27 @@ public class AuthorizationHelper {
 	 * @param query The id of the object that needs to be checked.
 	 * @param ability The kind of ability that is checked.
 	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecutionId query, @NonNull Ability ability) {
+	public static void authorize(@NonNull User user, @NonNull ManagedExecution query, @NonNull Ability ability) {
 		authorize(user, query, EnumSet.of(ability));
 	}
 
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
-	 * @param query The id of the object that needs to be checked.
+	 * @param execution The id of the object that needs to be checked.
 	 * @param abilities The kind of ability that is checked.
 	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecutionId query, @NonNull EnumSet<Ability> abilities) {
-		user.checkPermission(QueryPermission.onInstance(abilities, query));
+	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> execution, @NonNull EnumSet<Ability> abilities) {
+
+		if(!execution.getOwner().equals(user.getId())) {
+			user.checkPermission(QueryPermission.onInstance(abilities, execution.getId()));
+		}
 	}
 
 	/**
 	 * Helper function for authorizing an ability on a query.
 	 * @param user The subject that needs authorization.
-	 * @param query The object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedQuery query, @NonNull Ability ability) {
-		authorize(user, query.getId(), EnumSet.of(ability));
-	}
-
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param query The object that needs to be checked.
-	 * @param abilities The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedQuery query, @NonNull EnumSet<Ability> abilities) {
-		user.checkPermission(QueryPermission.onInstance(abilities, query.getId()));
-	}
-
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param query The object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
+	 * @param toBeChecked The permission that is checked
 	 */
 	public static void authorize(@NonNull User user, @NonNull ConqueryPermission toBeChecked) {
 		user.checkPermission(toBeChecked);
@@ -282,7 +259,7 @@ public class AuthorizationHelper {
 
 	/**
 	 * Checks if an execution is allowed to be downloaded by a user.
-	 * This checks all used {@link DatasetId}s for the {@link Ability.DOWNLOAD} on the user.
+	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
 	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
 		List<Permission> perms = exec.getUsedNamespacedIds().stream()
@@ -296,7 +273,7 @@ public class AuthorizationHelper {
 
 	/**
 	 * Checks if a {@link Visitable} has only references to {@link Dataset}s a user is allowed to read.
-	 * This checks all used {@link DatasetId}s for the {@link Ability.READ} on the user.
+	 * This checks all used {@link DatasetId}s for the {@link Ability#READ} on the user.
 	 */
 	public static void authorizeReadDatasets(@NonNull User user, @NonNull Visitable visitable) {
 		NamespacedIdCollector collector = new NamespacedIdCollector();
@@ -308,5 +285,34 @@ public class AuthorizationHelper {
 				.map(Permission.class::cast)
 				.collect(Collectors.toList());
 		user.checkPermissions(perms);
+	}
+
+
+	/**
+	 * Calculates the abilities on all datasets a user has based on its permissions.
+	 */
+	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(User user, DatasetRegistry datasetRegistry) {
+		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
+		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
+			boolean[] abilitiesCheck = user.isPermitted(List.of(
+					DatasetPermission.onInstance(Ability.READ, dataset.getId()),
+					DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()),
+					DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId())
+			));
+			Set<Ability> abilities = datasetAbilities.computeIfAbsent(dataset.getId(), (k) -> new HashSet<>());
+			if(abilitiesCheck[0]) {
+				// READ
+				abilities.add(Ability.READ);
+			}
+			if (abilitiesCheck[1]){
+				// DOWNLOAD
+				abilities.add(Ability.DOWNLOAD);
+			}
+			if (abilitiesCheck[2]) {
+				// PRESERVE_ID
+				abilities.add(Ability.PRESERVE_ID);
+			}
+		}
+		return datasetAbilities;
 	}
 }
