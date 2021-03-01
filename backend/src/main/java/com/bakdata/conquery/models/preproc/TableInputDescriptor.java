@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -11,7 +10,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,6 +19,7 @@ import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -30,9 +30,11 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  * It requires a primary Output and at least one normal output.
  *
  * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
+ *
  */
 @Data
 @Slf4j
+@EqualsAndHashCode
 public class TableInputDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -42,7 +44,7 @@ public class TableInputDescriptor implements Serializable {
 	).map(Class::getName).toArray(String[]::new);
 
 	@NotNull
-	private File sourceFile;
+	private String sourceFile;
 
 	private String filter;
 

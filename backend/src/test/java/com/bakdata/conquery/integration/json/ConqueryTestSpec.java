@@ -67,6 +67,7 @@ public abstract class ConqueryTestSpec {
 					Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
 			)
 		);
+
 		T result = mapper.readerFor(expectedType).readValue(node);
 
 		if (modifierBeforeValidation != null) {

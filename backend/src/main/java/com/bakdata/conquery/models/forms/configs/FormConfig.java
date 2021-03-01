@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.execution.Labelable;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -46,7 +47,7 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
+public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
 	protected DatasetId dataset;
 	@NotEmpty

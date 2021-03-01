@@ -1,28 +1,35 @@
 package com.bakdata.conquery.io.storage;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.*;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.*;
-import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.Getter;
 import lombok.SneakyThrows;
-
-import javax.validation.Validator;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Overlapping storage structure for {@link WorkerStorage} and {@link NamespaceStorage}.
@@ -99,9 +106,8 @@ public abstract class NamespacedStorage implements ConqueryStorage {
     protected abstract boolean isRegisterImports();
 
     private void decorateDatasetStore(SingletonStore<Dataset> store) {
-        store
-                .onAdd(getCentralRegistry()::register)
-                .onRemove(getCentralRegistry()::remove);
+        store.onAdd(centralRegistry::register)
+			 .onRemove(centralRegistry::remove);
     }
 
     private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
@@ -154,6 +160,10 @@ public abstract class NamespacedStorage implements ConqueryStorage {
                             }
                         }
                     }
+
+                    if(concept instanceof TreeConcept){
+                    	((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::register);
+					}
                 })
                 .onRemove(concept -> {
                     concept.getSelects().forEach(centralRegistry::remove);
@@ -163,7 +173,11 @@ public abstract class NamespacedStorage implements ConqueryStorage {
                         c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
                         centralRegistry.remove(c.getId());
                     }
-                });
+
+					if(concept instanceof TreeConcept){
+						((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::remove);
+					}
+				});
     }
 
     private void decorateImportStore(IdentifiableStore<Import> store) {

@@ -50,11 +50,10 @@ import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.config.MinaConfig;
 import com.bakdata.conquery.models.config.PluginConfig;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
-import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.config.QueryConfig;
 import com.bakdata.conquery.models.config.StandaloneConfig;
-import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.config.XodusConfig;
+import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -131,7 +130,6 @@ public class Constants {
 			.otherClass(MinaConfig.class)
 			.otherClass(FrontendConfig.CurrencyConfig.class)
 			.otherClass(XodusConfig.class)
-			.otherClass(PreprocessingDirectories.class)
 			.hide(Charset.class)
 			.hide(Currency.class)
 			.hide(InetAddress.class)

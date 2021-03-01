@@ -50,7 +50,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 		final Optional<Group> groupOptional = AuthorizationHelper.getPrimaryGroup(user.getId(), storage);
 
 		if (groupOptional.isEmpty()) {
-			log.debug("{} has no primary group", user);
+			log.trace("{} has no primary group", user);
 			return;
 		}
 
