@@ -23,7 +23,6 @@ public class UserId extends PermissionOwnerId<User> {
 	
 	@Override
 	public void collectComponents(List<Object> components) {
-		super.collectComponents(components);
 		components.add(TYPE);
 		components.add(email);
 	}
