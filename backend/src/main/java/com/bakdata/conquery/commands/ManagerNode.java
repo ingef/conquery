@@ -129,26 +129,21 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadNamespaces();
 
-		log.info("Started meta storage");
-		this.storage = new MetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
-		this.storage.loadData();
-		log.info("MetaStorage loaded {}", this.storage);
-
-		datasetRegistry.setMetaStorage(this.storage);
-		for (Namespace sn : datasetRegistry.getDatasets()) {
-			sn.getStorage().setMetaStorage(storage);
-		}
+		loadMetaStorage();
 
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+
+		// Create AdminServlet first to make it available to the realms
+		admin = new AdminServlet(this);
 
 		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init(this);
 		environment.lifecycle().manage(authController);
 
-		admin = new AdminServlet();
-		admin.register(this);
 
+		// Register default components for the admin interface
+		admin.register(this);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
@@ -182,6 +177,18 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+	}
+
+	private void loadMetaStorage() {
+		log.info("Started meta storage");
+		this.storage = new MetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
+		this.storage.loadData();
+		log.info("MetaStorage loaded {}", this.storage);
+
+		datasetRegistry.setMetaStorage(this.storage);
+		for (Namespace sn : datasetRegistry.getDatasets()) {
+			sn.getStorage().setMetaStorage(storage);
+		}
 	}
 
 	public void loadNamespaces() {

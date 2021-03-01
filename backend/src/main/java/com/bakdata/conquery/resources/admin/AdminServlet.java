@@ -44,10 +44,10 @@ import org.glassfish.jersey.servlet.ServletContainer;
 @Slf4j
 public class AdminServlet {
 
-	private AdminProcessor adminProcessor;
-	private DropwizardResourceConfig jerseyConfig;
+	private final AdminProcessor adminProcessor;
+	private final DropwizardResourceConfig jerseyConfig;
 
-	public void register(ManagerNode manager) {
+	public AdminServlet(ManagerNode manager) {
 		jerseyConfig = new DropwizardResourceConfig(manager.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 
@@ -70,6 +70,7 @@ public class AdminServlet {
 				manager.isUseNameForStoragePrefix() ? manager.getName() : ""
 		);
 
+
 		// inject required services
 		jerseyConfig.register(new AbstractBinder() {
 
@@ -78,6 +79,10 @@ public class AdminServlet {
 				bind(adminProcessor).to(AdminProcessor.class);
 			}
 		});
+
+	}
+
+	public void register(ManagerNode manager) {
 
 		// register root resources
 		jerseyConfig

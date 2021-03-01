@@ -63,9 +63,11 @@ public final class AuthorizationController implements Managed{
 	private DefaultSecurityManager securityManager;
 	
 	public void init(ManagerNode manager) {
-		// Create Jersey filter for authentication this is just referenced here and can be graped and registered by
+		// Create Jersey filter for authentication. The filter is registered here for the api and the but can be used by
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
+		manager.getAdmin().getJerseyConfig().register(authenticationFilter);
+		manager.getEnvironment().jersey().register(authenticationFilter);
 
 		// Add the central authentication realm
 		centralTokenRealm = new ConqueryTokenRealm(storage);
