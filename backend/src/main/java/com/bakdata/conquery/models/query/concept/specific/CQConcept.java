@@ -67,8 +67,9 @@ import lombok.extern.slf4j.Slf4j;
 @JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
+	public static final String JSON_ELEMENTS_PROPERTY = "ids";
 
-	@JsonProperty("ids")
+	@JsonProperty(CQConcept.JSON_ELEMENTS_PROPERTY)
 	@Valid @NotEmpty @NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
 

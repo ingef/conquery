@@ -88,8 +88,8 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
 		}
 
-		// Try to read id's field as that contains the information specifying the targeted concept.
-		final ConceptElementId<?>[] elements = treeNode.get(CQConcept.Fields.elements).traverse(codec).readValueAs(ConceptElementId[].class);
+		// Try to read ids field as that contains the information specifying the targeted concept.
+		final ConceptElementId<?>[] elements = treeNode.get(CQConcept.JSON_ELEMENTS_PROPERTY).traverse(codec).readValueAs(ConceptElementId[].class);
 
 		if (elements == null || elements.length == 0) {
 			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
