@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
@@ -21,6 +22,7 @@ import org.keycloak.representations.AccessToken;
 import java.security.PublicKey;
 
 
+@Slf4j
 public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
@@ -37,6 +39,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     @Override
     protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        log.trace("Creating token verifier");
         TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class);
 
         verifier.publicKey(publicKey);
@@ -44,14 +47,17 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
                 .withChecks(t -> t.isActive());
 
         String subject;
+        log.trace("Verifying token");
         try {
             verifier.verify();
             subject = verifier.getToken().getSubject();
         } catch (VerificationException e) {
+            log.trace("Verification failed",e);
             throw new IncorrectCredentialsException(e);
         }
 
         if (subject == null) {
+            log.trace("Could not find a subject in provided token.");
             throw new UnsupportedTokenException("Unable to extract a subject from the provided token.");
         }
 
