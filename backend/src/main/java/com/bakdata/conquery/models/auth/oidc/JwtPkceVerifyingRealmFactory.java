@@ -36,6 +36,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
     @SneakyThrows(JsonProcessingException.class)
     private static PublicKey getPublicKey(JWK jwk) {
         // We have to re-serdes the object because it might be a sub class which can not be handled correctly by the JWKParser
-        return JWKParser.create().parse(Jackson.MAPPER.writeValueAsString(jwk)).toPublicKey();
+        String jwkString = Jackson.MAPPER.writeValueAsString(jwk);
+        return JWKParser.create().parse(jwkString).toPublicKey();
     }
 }

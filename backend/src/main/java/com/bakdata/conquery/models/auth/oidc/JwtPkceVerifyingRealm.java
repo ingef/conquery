@@ -18,6 +18,7 @@ import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.representations.JsonWebToken;
 
 import java.security.PublicKey;
 
@@ -44,7 +45,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
         verifier.publicKey(publicKey);
         verifier
-                .withChecks(t -> t.isActive());
+                .withChecks(JsonWebToken::isActive);
 
         String subject;
         log.trace("Verifying token");
