@@ -68,7 +68,12 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
 
-	@JsonProperty("ids")
+	/**
+	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
+	 */
+	public static final String FIELDNAME_IDS = "ids";
+
+	@JsonProperty(FIELDNAME_IDS)
 	@Valid @NotEmpty @NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
 
