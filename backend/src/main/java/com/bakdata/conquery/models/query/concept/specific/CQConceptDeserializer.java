@@ -84,10 +84,6 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 		final ObjectCodec codec = parser.getCodec();
 		final ObjectNode treeNode = codec.readValue(parser, ObjectNode.class);
 
-		if(transformers.isEmpty()) {
-			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
-		}
-
 		// Try to read id's field as that contains the information specifying the targeted concept.
 		final ConceptElementId<?>[] elements = treeNode.get(CQConcept.FIELDNAME_IDS)
 													   .traverse(codec)
