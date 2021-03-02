@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.set.UnmodifiableSet;
 import org.apache.shiro.authz.Permission;
 
 /**
@@ -120,7 +121,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			if (permissions.isEmpty()) {
 				return Collections.emptySet();
 			}
-			return new HashSet<>(permissions);
+			return Collections.unmodifiableSet(permissions);
 		}
 	}
 	
