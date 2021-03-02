@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -21,7 +22,7 @@ import lombok.Getter;
 @Getter
 public class ConceptNode extends QPChainNode {
 
-	private final ConceptElement<?>[] concepts;
+	private final List<ConceptElement<?>> concepts;
 	private final long requiredBits;
 	private final CQTable table;
 	private final SecondaryIdDescriptionId selectedSecondaryId;
@@ -30,7 +31,7 @@ public class ConceptNode extends QPChainNode {
 	private CBlock currentRow = null;
 
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescriptionId selectedSecondaryId) {
+	public ConceptNode(List<ConceptElement<?>> concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescriptionId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;

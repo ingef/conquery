@@ -1,4 +1,4 @@
-result,dates,AND,OR
+result,dates,tree - a and tree - b,tree - a or tree - b
 1,{2012-01-01/2012-01-01},f,t
 2,{2012-01-01/2012-01-01},f,t
 3,{2012-01-01/2012-01-01},t,t

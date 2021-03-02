@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -9,6 +10,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -16,7 +18,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.Getter;
 import lombok.Setter;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -26,8 +27,12 @@ public abstract class CQElement implements Visitable {
 	/**
 	 * Allows the user to define labels.
 	 */
-	@Getter @Setter
+	@Setter
 	private String label = null;
+
+	public String getLabel(Locale locale){
+		return label;
+	}
 
 	/**
 	 * Allows a query element to initialize data structures from resources, that are only available on the {@link ManagerNode}.
@@ -50,7 +55,7 @@ public abstract class CQElement implements Visitable {
 		return set;
 	}
 
-	public ResultInfoCollector collectResultInfos() {
+	public ResultInfoCollector collectResultInfos(PrintSettings cfg) {
 		ResultInfoCollector collector = new ResultInfoCollector();
 		collectResultInfos(collector);
 		return collector;

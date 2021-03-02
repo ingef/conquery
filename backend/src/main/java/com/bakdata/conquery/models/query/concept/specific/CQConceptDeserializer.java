@@ -84,12 +84,10 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 		final ObjectCodec codec = parser.getCodec();
 		final ObjectNode treeNode = codec.readValue(parser, ObjectNode.class);
 
-		if(transformers.isEmpty()) {
-			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
-		}
-
 		// Try to read id's field as that contains the information specifying the targeted concept.
-		final ConceptElementId<?>[] elements = treeNode.get(CQConcept.Fields.ids).traverse(codec).readValueAs(ConceptElementId[].class);
+		final ConceptElementId<?>[] elements = treeNode.get(CQConcept.FIELDNAME_IDS)
+													   .traverse(codec)
+													   .readValueAs(ConceptElementId[].class);
 
 		if (elements == null || elements.length == 0) {
 			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
@@ -108,6 +106,7 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
 		}
 
+		// TODO read values properly already and just check the concept.
 		final ConceptElement[] conceptElements = CQConcept.resolveConcepts(
 				Collections.singletonList(first),
 				Objects.requireNonNull(registry, () -> String.format("Unable to find Central registry for dataset `%s`", first.getDataset()))

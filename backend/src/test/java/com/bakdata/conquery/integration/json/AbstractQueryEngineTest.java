@@ -65,15 +65,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		//check result info size
 		ResultInfoCollector resultInfos = managed.collectResultInfos();
+
 		assertThat(
-				managed
-						.fetchContainedEntityResult()
-						.flatMap(ContainedEntityResult::streamValues)
+				managed.fetchContainedEntityResult()
+					   .flatMap(ContainedEntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
-				.allSatisfy(v ->
-									assertThat(v).hasSameSizeAs(resultInfos.getInfos())
-				);
+				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
 
 		PrintSettings
 				PRINT_SETTINGS =

@@ -9,6 +9,7 @@
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "AND",
+          "label" : "AND",
           "createExists": true,
           "children": [
             {
@@ -42,6 +43,7 @@
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "OR",
+          "label" : "OR",
           "createExists": true,
           "children": [
             {

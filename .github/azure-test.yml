@@ -2,6 +2,9 @@ pr:
   branches:
     include:
       - "*"
+  paths:
+    exclude:
+      - "frontend/*"
 
 variables:
   - group: ConqueryConstants

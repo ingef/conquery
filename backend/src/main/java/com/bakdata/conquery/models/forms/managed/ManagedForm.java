@@ -265,7 +265,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry) {
+	protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg) {
 		sb
 			.append(getSubmittedForm().getLocalizedTypeLabel())
 			.append(" ")

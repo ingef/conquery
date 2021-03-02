@@ -128,7 +128,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		cqTable.setConcept(cqConcept);
 
-		cqConcept.setIds(Collections.singletonList(concept.getId()));
+		cqConcept.setElements(Collections.singletonList(concept));
 		cqConcept.setTables(Collections.singletonList(cqTable));
 
 		if (dateRange != null) {

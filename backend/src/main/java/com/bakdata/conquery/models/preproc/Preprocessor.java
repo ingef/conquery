@@ -4,23 +4,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CsvIo;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -36,45 +36,6 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 @UtilityClass
 public class Preprocessor {
-
-	public static long getTotalCsvSize(TableImportDescriptor descriptor) {
-		long totalCsvSize = 0;
-		for (TableInputDescriptor input : descriptor.getInputs()) {
-			totalCsvSize += input.getSourceFile().length();
-		}
-
-		return totalCsvSize;
-	}
-
-	public static boolean requiresProcessing(TableImportDescriptor descriptor) {
-		ConqueryMDC.setLocation(descriptor.toString());
-		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
-
-			log.info("EXISTS ALREADY");
-
-			int currentHash = descriptor.calculateValidityHash();
-
-			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false);
-				 InputStream is = outFile.readHeader()) {
-
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
-
-				if (header.getValidityHash() == currentHash) {
-					log.info("\tHASH STILL VALID");
-					return false;
-				}
-				log.info("\tHASH OUTDATED");
-			} catch (Exception e) {
-				log.error("\tHEADER READING FAILED", e);
-				return false;
-			}
-		}
-		else {
-			log.info("DOES NOT EXIST");
-		}
-
-		return true;
-	}
 
 	/**
 	 * Create version of file-name with tag.
@@ -93,9 +54,10 @@ public class Preprocessor {
 	 *
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
 	 */
-	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
+	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
 
-		final File preprocessedFile = descriptor.getInputFile().getPreprocessedFile();
+		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
+		TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
 
 		// Create temp file that will be moved when finished (we ensure the same file system, to avoid unnecessary copying)
 		File tmp = new File(preprocessedFile.getParentFile(),preprocessedFile.getName() + ".tmp");
@@ -118,11 +80,11 @@ public class Preprocessor {
 			FileUtils.forceDelete(preprocessedFile);
 		}
 
-		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
+		log.info("PREPROCESSING START in {}", preprocessingJob);
 
 		int errors = 0;
 
-		final Preprocessed result = new Preprocessed(descriptor, config.getPreprocessor().getParsers());
+		final Preprocessed result = new Preprocessed(config.getPreprocessor().getParsers(), preprocessingJob);
 
 		long lineId = 0;
 
@@ -134,7 +96,7 @@ public class Preprocessor {
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
 				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
-				final File sourceFile = input.getSourceFile();
+				final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 				final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
 				ConqueryMDC.setLocation(name);
@@ -185,10 +147,12 @@ public class Preprocessor {
 						try {
 							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
-							final int primary = result.addPrimary(primaryId);
 							final PPColumn[] columns = result.getColumns();
 
-							result.addRow(primary, columns, applyOutputs(outputs, columns, row, lineId));
+							final int primary = result.addPrimary(primaryId);
+							final Object[] outRow = applyOutputs(outputs, columns, row, lineId);
+
+							result.addRow(primary, columns, outRow);
 
 						}
 						catch (OutputDescription.OutputException e) {
@@ -236,7 +200,7 @@ public class Preprocessor {
 			}
 
 			if (errors > 0) {
-				log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errors, lineId);
+				log.warn("File `{}` contained {} faulty lines of ~{} total.", preprocessingJob, errors, lineId);
 			}
 
 			if (log.isWarnEnabled()) {
@@ -249,7 +213,7 @@ public class Preprocessor {
 		}
 
 		if(errors > 0){
-			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%f.2", 100d * (double) errors / (double) lineId), errors, lineId);
+			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);
 		}
 
 		if((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()){
@@ -259,7 +223,7 @@ public class Preprocessor {
 
 			//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, preprocessedFile);
-		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
+		log.info("PREPROCESSING DONE in {}", preprocessingJob);
 	}
 
 	/**
@@ -287,5 +251,28 @@ public class Preprocessor {
 			}
 		}
 		return outRow;
+	}
+
+	public static File resolveSourceFile(String fileName, Path csvDirectory, Optional<String> tag) {
+		if(tag.isEmpty()){
+			return csvDirectory.resolve(fileName).toFile();
+		}
+
+		String name = fileName;
+		final String suffix;
+
+		if(name.endsWith(".csv.gz")){
+			name = name.substring(0, name.length() - ".csv.gz".length());
+			suffix = ".csv.gz";
+		}
+		else if(name.endsWith(".csv")){
+			name = name.substring(0, name.length() - ".csv".length());
+			suffix = ".csv";
+		}
+		else {
+			throw new IllegalArgumentException("Unknown suffix for file " + name);
+		}
+
+		return csvDirectory.resolve(name + "." + tag.get() + suffix).toFile();
 	}
 }

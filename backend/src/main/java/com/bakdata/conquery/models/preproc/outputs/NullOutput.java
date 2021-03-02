@@ -3,16 +3,18 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Output a null value.
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @CPSType(id="NULL", base= OutputDescription.class)
 public class NullOutput extends OutputDescription {
 	

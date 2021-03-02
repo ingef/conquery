@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -57,8 +56,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 					.containsExactly(description.getId().toString());
 		}
 		{
-			final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("admin"), DatasetsUIResource.class, "getDataset")
-										   .scheme("http").host("localhost").port(conquery.getAdminPort())
+			final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), DatasetsUIResource.class, "getDataset")
 										   .buildFromMap(Map.of("dataset", conquery.getDataset().getName()));
 
 			final Response actual = conquery.getClient().target(uri).request().get();
@@ -83,10 +81,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	}
 
 	private Set<FESecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
-		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("api"), DatasetResource.class, "getRoot")
-									   .scheme("http")
-									   .host("localhost")
-									   .port(conquery.getLocalPort())
+		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), DatasetResource.class, "getRoot")
 									   .buildFromMap(Map.of(
 											   "dataset", conquery.getDataset().getName()
 									   ));
@@ -108,7 +103,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	}
 
 	private Response uploadDescription(StandaloneSupport conquery, SecondaryIdDescription description) {
-		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("admin").host("localhost").scheme("http").port(conquery.getAdminPort()), AdminDatasetResource.class, "addSecondaryId")
+		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
 
 									   .buildFromMap(Map.of(
 											   "dataset", conquery.getDataset().getName()
@@ -124,10 +119,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 
 	private Response deleteDescription(StandaloneSupport conquery, SecondaryIdDescriptionId id) {
-		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(UriBuilder.fromPath("admin"), AdminDatasetResource.class, "deleteSecondaryId")
-									   .host("localhost")
-									   .scheme("http")
-									   .port(conquery.getAdminPort())
+		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "deleteSecondaryId")
 									   .buildFromMap(Map.of(
 											   "dataset", conquery.getDataset().getName(),
 											   "secondaryId", id

@@ -2,13 +2,14 @@ package com.bakdata.conquery.models.events.stores.root;
 
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * {@link ColumnStore} for dictionary encoded string values.
  *
- * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#STRING} and {@link com.bakdata.conquery.models.events.parser.specific.StringParser}.
+ * See also {@link MajorTypeId#STRING} and {@link com.bakdata.conquery.models.preproc.parser.specific.StringParser}.
  *
  * This class has a lot of special methods for handling dictionary encoded values.
  *

@@ -3,8 +3,6 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.TimeUnit;
-
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -17,13 +15,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -59,7 +52,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 		final QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
 
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
@@ -77,6 +69,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
+
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
 		// State before deletion.
@@ -111,7 +105,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			log.info("Executing query before deletion");
 
-			assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
 		}
 
 		// Delete the Concept.
@@ -162,7 +156,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 			// Issue a query and assert that it is failing.
-			assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -207,7 +201,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after update");
 
 			// Assert that it now contains 2 instead of 1.
-			assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
@@ -239,7 +233,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						}
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
-						
+
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 								.isNotEmpty();
 
@@ -252,29 +246,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after restart.");
 				// Re-assert state.
-				assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 			}
 		}
 	}
 
-	/**
-	 * Send a query onto the conquery instance and assert the result's size.
-	 */
-	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState state) {
-		DatasetRegistry namespaces = conquery.getNamespace().getNamespaces();
-		MetaStorage storage = conquery.getNamespace().getStorage().getMetaStorage();
-		UserId userId = conquery.getTestUser().getId();
-		DatasetId dataset = conquery.getNamespace().getDataset().getId();
-		
-		final ManagedQuery managedQuery = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, dataset, conquery.getConfig());
-
-		managedQuery.awaitDone(2, TimeUnit.MINUTES);
-		assertThat(managedQuery.getState()).isEqualTo(state);
-
-		if (state == ExecutionState.DONE) {
-			assertThat(managedQuery.getLastResultCount())
-					.describedAs("Query results")
-					.isEqualTo(size);
-		}
-	}
 }

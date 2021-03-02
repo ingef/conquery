@@ -12,6 +12,7 @@ import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Function;
 
 import javax.ws.rs.WebApplicationException;
@@ -61,10 +62,11 @@ public class ResultProcessor {
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, queryId, Ability.READ);
 
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
-		
+		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
+
+		authorize(user, exec, Ability.READ);
+
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
@@ -139,10 +141,11 @@ public class ResultProcessor {
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, queryId, Ability.READ);
 
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
-		
+		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
+
+		authorize(user, exec, Ability.READ);
+
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
