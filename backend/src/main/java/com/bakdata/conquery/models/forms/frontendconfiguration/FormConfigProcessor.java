@@ -57,30 +57,30 @@ public class FormConfigProcessor {
 	 * @param dataset 
 	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Set<String> requestedFormType){
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Set<String> requestedFormType) {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the user is permitted to create.
 			// However if a user queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the user again.
 			Set<String> allowedFormTypes = new HashSet<>();
-			for(String formType : FormScanner.FRONTEND_FORM_CONFIGS.keySet()) {
-				if(user.isPermitted(FormPermission.onInstance(Ability.CREATE, formType))){
+			for (String formType : FormScanner.FRONTEND_FORM_CONFIGS.keySet()) {
+				if (user.isPermitted(FormPermission.onInstance(Ability.CREATE, formType))) {
 					allowedFormTypes.add(formType);
 				}
 			}
 			requestedFormType = allowedFormTypes;
 		}
 
+		final Set<String> formTypesFinal = requestedFormType;
+
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
-			.filter(c -> dataset.equals(c.getDataset()))
-			.filter(c -> user.getId().equals(c.getOwner()) || user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
-		if(!requestedFormType.isEmpty()) {
-			final Set<String> formTypesFinal = requestedFormType;
-			stream = stream.filter(c -> formTypesFinal.contains(c.getFormType()));
-		}
-		
-		return stream.map(c -> c.overview(storage, user));	
+				.filter(c -> dataset.equals(c.getDataset()))
+				.filter(c -> formTypesFinal.contains(c.getFormType()))
+				.filter(c -> user.getId().equals(c.getOwner()) || user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
+
+
+		return stream.map(c -> c.overview(storage, user));
 	}
 
 	/**
