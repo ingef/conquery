@@ -18,7 +18,6 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "serve": "ts-node mock-api/server"
   },
-  "homepage": "/app/static",
   "dependencies": {
     "@emotion/babel-plugin": "^11.0.0-next.12",
     "@emotion/is-prop-valid": "^1.0.0",

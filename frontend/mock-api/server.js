@@ -18,12 +18,6 @@ app.use(bodyParser.json());
 
 mountApi(app, port);
 
-console.log(`MODE: ${isDeveloping ? "dev" : "production"}`);
-
-if (!isDeveloping) {
-  app.use("/app/static", express.static(path.join(__dirname, "../build")));
-}
-
 app.listen(port, "0.0.0.0", function onStart(err) {
   if (err) {
     console.log(err);
