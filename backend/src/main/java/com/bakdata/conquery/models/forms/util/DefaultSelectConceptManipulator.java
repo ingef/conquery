@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -33,14 +33,14 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 	@Override
 	public void consume(CQConcept concept, DatasetRegistry namespaces) {
 		// Obtain the concept Id
-		List<ConceptElementId<?>> conceptIds = concept.getIds();
-		if(conceptIds.isEmpty()) {
+		List<ConceptElement<?>> conceptElements = concept.getElements();
+		if(conceptElements.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Cannot set defaults on a CQConcept without ids. Provided concept: %s", concept));
 		}
 		
 		// Gather Default Selects
 			// On concept level
-		Concept<?> actualConcept = namespaces.resolve(concept.getIds().get(0).findConcept());
+		Concept<?> actualConcept = conceptElements.get(0).getConcept();
 		List<Select> defaultConceptSelects = new ArrayList<>(actualConcept.getSelects());
 		defaultConceptSelects.removeIf(s -> !s.isDefault());
 		
@@ -69,7 +69,7 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 				
 			case ADD:
 				// TODO Add select only if it is not present already
-				ArrayList<Select> cSelects = new ArrayList<>(concept.getSelects());
+				List<Select> cSelects = new ArrayList<>(concept.getSelects());
 				cSelects.addAll(defaultConceptSelects);
 				concept.setSelects(cSelects);
 				concept.getTables().forEach(t -> {

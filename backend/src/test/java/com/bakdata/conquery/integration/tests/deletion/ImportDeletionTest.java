@@ -55,7 +55,6 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
 
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
@@ -73,6 +72,9 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
+
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
+
 
 		final int nImports = namespace.getStorage().getAllImports().size();
 
@@ -114,7 +116,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Delete the import.
@@ -169,7 +171,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after deletion");
 
 			// Issue a query and assert that it has less content.
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -244,7 +246,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
@@ -281,7 +283,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 			}
 		}
 	}

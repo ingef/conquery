@@ -6,6 +6,7 @@ import java.util.function.Function;
 import c10n.C10N;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
  * </pre>
  */
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class LocalizedSimpleResultInfo extends ResultInfo {
 	
 	private final Function<Locale, String> localizedNameProvider;

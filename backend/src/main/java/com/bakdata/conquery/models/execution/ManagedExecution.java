@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -126,7 +127,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				return;
 			}
 			if(label == null) {
-				label = makeAutoLabel(datasetRegistry);
+				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry));
 			}
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;
@@ -384,11 +385,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry);
+	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg);
 	
-	protected String makeAutoLabel(DatasetRegistry datasetRegistry) {
+	protected String makeAutoLabel(DatasetRegistry datasetRegistry, PrintSettings cfg) {
 		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb, datasetRegistry);
+		makeDefaultLabel(sb, datasetRegistry, cfg);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
 	}
 }

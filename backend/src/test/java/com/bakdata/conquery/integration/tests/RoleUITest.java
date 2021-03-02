@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -53,13 +52,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			user.addRole(storage, mandator);
 
 
-			final UriBuilder root = UriBuilder.fromPath("admin")
-											  .host("localhost")
-											  .scheme("http")
-											  .port(conquery.getAdminPort());
-
-
-			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(root, RoleUIResource.class, "getRole")
+			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
 				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 	
 			Response response = conquery
