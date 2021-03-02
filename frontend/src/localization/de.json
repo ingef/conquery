@@ -57,6 +57,11 @@
     "secondaryIdStandard": "Standard",
     "hasSecondaryId": "Analyse-Ebene aktiv"
   },
+  "expandPreviousQueryModal": {
+    "headline": "Anfrage wirklich expandieren?",
+    "description": "Beim Klick auf Expandieren werden alle Konzepte innerhalb des Editors durch die Inhalte der expandierten Anfrage ersetzt. Bist du dir sicher?",
+    "submit": "Expandieren"
+  },
   "dropzone": {
     "dragElementPlease": "Füge ein Element hinzu",
     "dragQuery": "Füge eine Anfrage hinzu",
