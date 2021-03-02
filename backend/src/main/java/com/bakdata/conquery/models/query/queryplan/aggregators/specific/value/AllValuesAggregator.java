@@ -41,6 +41,6 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.StringT.INSTANCE;
+		return new ResultType.ListT(ResultType.resolveResultType(column.getType()));
 	}
 }
