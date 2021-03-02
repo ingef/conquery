@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.async.ByteArrayFeeder;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 	private static final AttributeKey MESSAGE_MANAGER = new AttributeKey(BinaryJacksonCoder.class, "messageManager");
 
 	private final BinaryJacksonCoder coder;
+	private final ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) {
@@ -33,11 +35,9 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 
 		boolean last = in.get() == ChunkWriter.LAST_MESSAGE;
 		int length = in.getInt();
-
 		if (length < 0) {
 			throw new IllegalStateException("Read message length " + length);
 		}
-
 		UUID id = new UUID(in.getLong(), in.getLong());
 
 		if (in.remaining() < length) {
@@ -45,38 +45,37 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 			return false;
 		}
 
-		MessageManager messageManager = getMessageManager(session);
-
+		MessageManager messageManager = getMessageManager(session, service);
 		try {
-			final ChunkedMessage chunkedMessage = messageManager.get(id);
-			final ByteArrayFeeder feeder = chunkedMessage.getFeeder();
+			messageManager.addBuffer(id, in, length);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 
-			// TODO this is just for testing
-			while (!feeder.needMoreInput()){
-				Thread.sleep(100);
-			}
+		if (last) {
 
-			feeder.feedInput(in.array(), in.arrayOffset() + in.position(), in.position() + length);
-			in.skip(length);
-
-			if (last) {
-				feeder.endOfInput();
+			try {
+				ChunkedMessage chunkedMessage = messageManager.finish(id);
 				out.write(coder.decode(chunkedMessage));
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			finally {
 				messageManager.remove(id);
 			}
 		}
-		catch (Exception e) {
-			log.error("Failed parsing Message[{}]", id, e);
-		}
+
 
 		return true;
 	}
 
-	private MessageManager getMessageManager(IoSession session) {
+	private MessageManager getMessageManager(IoSession session, ListeningExecutorService service) {
 		MessageManager messageManager = (MessageManager) session.getAttribute(MESSAGE_MANAGER);
 
 		if (messageManager == null) {
-			messageManager = new MessageManager(coder);
+			messageManager = new MessageManager(service, this.coder);
 			session.setAttribute(MESSAGE_MANAGER, messageManager);
 		}
 		return messageManager;
@@ -85,29 +84,45 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 	@Getter
 	@RequiredArgsConstructor
 	public static class MessageManager {
+
+		private final ListeningExecutorService service;
 		private final BinaryJacksonCoder coder;
 
 		private final Map<UUID, ChunkedMessage> messages = new HashMap<>();
 
-		private ChunkedMessage get(UUID id) throws IOException {
-			if (messages.containsKey(id)) {
-				return messages.get(id);
-			}
+		public ChunkedMessage addBuffer(UUID id, IoBuffer in, int length) throws IOException {
+			IoBuffer copy = IoBuffer.allocate(length);
+			copy.put(in.array(), in.arrayOffset() + in.position(), length);
+			copy.flip();
+			in.skip(length);
+			ChunkedMessage chunkedMessage = getChunkedMessage(id);
+			chunkedMessage.addBuffer(copy, length);
 
-			final ChunkedMessage message = createMessage();
-			messages.put(id, message);
+
+			return chunkedMessage;
+		}
+
+		private ChunkedMessage getChunkedMessage(UUID id) {
+			return messages.computeIfAbsent(id, (ignored) -> {
+				try {
+					return new ChunkedMessage(service, coder.getReader());
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+				return null;
+			});
+		}
+
+		private void remove(UUID id) {
+			messages.remove(id);
+		}
+
+		public ChunkedMessage finish(UUID id) throws IOException {
+			final ChunkedMessage message = getChunkedMessage(id);
+			message.getOutputStream().flush();
+			message.getOutputStream().close();
 			return message;
-		}
-
-		private ChunkedMessage createMessage() throws IOException {
-			final JsonParser parser = coder.getReader().getFactory().createNonBlockingByteArrayParser();
-
-			return new ChunkedMessage((ByteArrayFeeder) parser.getNonBlockingInputFeeder(), parser);
-		}
-
-		public void remove(UUID id) throws IOException {
-			final ChunkedMessage message = messages.remove(id);
-			message.getParser().close();
 		}
 	}
 }

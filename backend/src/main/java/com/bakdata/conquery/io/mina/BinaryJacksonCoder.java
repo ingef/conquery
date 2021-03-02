@@ -52,6 +52,6 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 
 	@Override
 	public NetworkMessage<?> decode(ChunkedMessage message) throws Exception {
-		return reader.readValue(message.getParser());
+		return message.getResult().get();
 	}
 }
