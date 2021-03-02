@@ -10,29 +10,32 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.worker.IdResolveContext;
-import com.bakdata.conquery.util.io.EndCheckableInputStream;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
 public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 
 	private final Validator validator;
 	private final ObjectWriter writer;
 	private final ObjectReader reader;
+	private final IdResolveContext resolveContext;
 
 	public BinaryJacksonCoder(IdResolveContext datasets, Validator validator) {
 		this.validator = validator;
 		this.writer = Jackson.BINARY_MAPPER
-			.writerFor(NetworkMessage.class)
-			.withView(InternalOnly.class);
-		this.reader = datasets
-				.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class))
-				.without(Feature.AUTO_CLOSE_SOURCE)
-				.withView(InternalOnly.class);
+							  .writerFor(NetworkMessage.class)
+							  .withView(InternalOnly.class);
+
+		this.reader = datasets.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class))
+							  .without(Feature.AUTO_CLOSE_SOURCE)
+							  .withView(InternalOnly.class);
+		this.resolveContext = datasets;
 	}
 
 	@Override
@@ -41,21 +44,14 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 
 		UUID id = message.getMessageId();
 		Chunkable chunkable = new Chunkable(id, writer, message);
-		if(log.isTraceEnabled()) {
-			Jackson.MAPPER.writerFor(NetworkMessage.class).with(SerializationFeature.INDENT_OUTPUT).writeValue(new File("dumps/out_"+id+".json"), message);
+		if (log.isTraceEnabled()) {
+			Jackson.MAPPER.writerFor(NetworkMessage.class).with(SerializationFeature.INDENT_OUTPUT).writeValue(new File("dumps/out_" + id + ".json"), message);
 		}
 		return chunkable;
 	}
 
 	@Override
 	public NetworkMessage<?> decode(ChunkedMessage message) throws Exception {
-		try(EndCheckableInputStream is = message.createInputStream()) {
-			Object obj = reader.readValue(is);
-			if(!is.isAtEnd()) {
-				throw new IllegalStateException("After reading the JSON message "+obj+" the buffer has still bytes available");
-			}
-			ValidatorHelper.failOnError(log, validator.validate(obj), "decoding " + obj.getClass().getSimpleName());
-			return (NetworkMessage<?>)obj;
-		}
+		return reader.readValue(message.getParser());
 	}
 }

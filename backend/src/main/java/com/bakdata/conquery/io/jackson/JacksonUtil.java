@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 
-import com.bakdata.conquery.io.mina.ChunkedMessage;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import lombok.experimental.UtilityClass;
@@ -103,7 +102,5 @@ public class JacksonUtil {
 		);
 	}
 
-	public static String toJsonDebug(ChunkedMessage msg) {
-		return toJsonDebug(msg.createInputStream());
-	}
+
 }
