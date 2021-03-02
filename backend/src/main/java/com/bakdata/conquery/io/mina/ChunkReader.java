@@ -51,9 +51,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 			final ChunkedMessage chunkedMessage = messageManager.get(id);
 			final ByteArrayFeeder feeder = chunkedMessage.getFeeder();
 
-			assert in.position() + length == in.limit();
-
-			feeder.feedInput(in.array(), in.arrayOffset() + in.position(), in.limit());
+			feeder.feedInput(in.array(), in.arrayOffset() + in.position(), in.position() + length);
 			in.skip(length);
 
 			if (last) {
