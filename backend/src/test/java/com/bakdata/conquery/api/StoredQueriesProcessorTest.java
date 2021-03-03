@@ -29,8 +29,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,6 +54,7 @@ public class StoredQueriesProcessorTest {
 	private static final ManagedExecutionId QUERY_ID_5 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000005"));
 	private static final ManagedExecutionId QUERY_ID_6 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000006"));
 	private static final ManagedExecutionId QUERY_ID_7 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000007"));
+	private static final ManagedExecutionId QUERY_ID_8 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000008"));
 
 	private static int USER_COUNT = 0;
 	private static final User[] USERS = new User[] {
@@ -61,14 +65,15 @@ public class StoredQueriesProcessorTest {
 
 
 	private static final List<ManagedExecution<?>> queries = ImmutableList.of(
-			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW),        // included
-			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW),        // not included: wrong dataset
-			mockManagedForm(USERS[0], QUERY_ID_2, NEW),                // not included: not a ManagedQuery
-			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_3, NEW),        // not included: missing permission
-			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE),    // included
-			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED),    // not included: wrong state
-			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW),    // not included: wrong query structure
-			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE)    // included, but secondaryId-Query
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW),            // included
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW),            // not included: wrong dataset
+			mockManagedForm(USERS[0], QUERY_ID_2, NEW),                            // not included: not a ManagedQuery
+			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_3, NEW),         // not included: missing permission
+			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE),        // included
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED),        // not included: wrong state
+			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW),                                                    // not included: wrong query structure
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd()),    // included, but secondaryId-Query
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept())    // not-included, wrong structure
 
 		);
 
@@ -122,14 +127,15 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedQuery mockManagedConceptQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState){
-		return mockManagedQuery(new ConceptQuery(null), user, id, execState);
+		return mockManagedQuery(new ConceptQuery(new CQAnd()), user, id, execState);
 	}
-	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState){
+	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root){
 		final SecondaryIdQuery sid = new SecondaryIdQuery();
 		sid.setSecondaryId(new SecondaryIdDescription() {{
 			setDataset(DATASET_0);
 			setName("sid");
 		}});
+		sid.setRoot(root);
 
 		return mockManagedQuery(sid, user, id, execState);
 	}
