@@ -29,7 +29,7 @@ public class OrNode extends QPParentNode {
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		Pair<List<QPNode>, ListMultimap<TableId, QPNode>> fields = createClonedFields(ctx);
-		return new OrNode(fields.getLeft(), fields.getRight(), ctx.clone(getDateAggregator()));
+		return new OrNode(fields.getLeft(), fields.getRight(), getDateAggregator() != null ? ctx.clone(getDateAggregator()): null);
 	}
 	
 	@Override

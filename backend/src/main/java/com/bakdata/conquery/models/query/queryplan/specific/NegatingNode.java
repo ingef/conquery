@@ -41,7 +41,7 @@ public class NegatingNode extends QPChainNode {
 	
 	@Override
 	public NegatingNode doClone(CloneContext ctx) {
-		return new NegatingNode(ctx.clone(getChild()), ctx.clone(this.dateAggregator));
+		return new NegatingNode(ctx.clone(getChild()), this.dateAggregator != null ? ctx.clone(this.dateAggregator): null);
 	}
 	
 	@Override
