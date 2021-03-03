@@ -48,11 +48,25 @@ public class CQOr extends CQElement implements ForcedExists {
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		QPNode[] nodes = new QPNode[children.size()];
 
+		ConceptQueryPlan.DateAggregationAction dateAction = null;
+		switch(plan.getDateAggregationMode()) {
+			case NONE:
+				dateAction = null;
+				break;
+			case MERGE:
+			case LOGICAL:
+				dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
+				break;
+			case INTERSECT:
+				dateAction = ConceptQueryPlan.DateAggregationAction.INTERSECT;
+				break;
+		}
+
 		for (int i = 0; i < nodes.length; i++) {
 			nodes[i] = children.get(i).createQueryPlan(context, plan);
 		}
 
-		final QPNode or = OrNode.of(Arrays.asList(nodes));
+		final QPNode or = OrNode.of(Arrays.asList(nodes), dateAction);
 
 		if (createExists) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(or.collectRequiredTables());

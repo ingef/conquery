@@ -27,7 +27,18 @@ public class CQNegation extends CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		return new NegatingNode(child.createQueryPlan(context.withGenerateSpecialDateUnion(false), plan));
+		ConceptQueryPlan.DateAggregationAction dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
+		switch(plan.getDateAggregationMode()) {
+			case MERGE:
+			case NONE:
+			case INTERSECT:
+				dateAction = null;
+			case LOGICAL:
+				dateAction = ConceptQueryPlan.DateAggregationAction.NEGATE;
+				break;
+		}
+
+		return new NegatingNode(child.createQueryPlan(context.withGenerateSpecialDateUnion(false), plan), dateAction);
 	}
 
 	@Override

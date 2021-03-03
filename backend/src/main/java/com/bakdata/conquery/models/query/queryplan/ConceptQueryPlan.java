@@ -1,10 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.fasterxml.jackson.databind.ser.std.CollectionSerializer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -38,6 +40,7 @@ public class ConceptQueryPlan implements QueryPlan {
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
+	private DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
 
 	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
 		if (generateSpecialDateUnion) {
@@ -196,5 +199,56 @@ public class ConceptQueryPlan implements QueryPlan {
 
 	public Set<TableId> collectRequiredTables() {
 		return child.collectRequiredTables();
+	}
+
+	public enum DateAggregationMode {
+		NONE,
+		MERGE,
+		INTERSECT,
+		LOGICAL;
+	}
+
+
+	public enum DateAggregationAction {
+		MERGE(){
+			@Override
+			public Set<CDateRange> aggregate(Set<CDateRange> all) {
+				return CDateSet.create(all).asRanges();
+			}
+		},
+		INTERSECT(){
+			@Override
+			public Set<CDateRange> aggregate(Set<CDateRange> all) {
+				if(all.size() < 1) {
+					return Collections.emptySet();
+				}
+
+				Iterator<CDateRange> it = all.iterator();
+				CDateRange first = it.next();
+
+				if(all.size() == 1) {
+					return Set.of(first);
+				}
+				// Use the first range as mask and subtract all other ranges from it
+
+				CDateSet intersection = CDateSet.create(first);
+
+				// Intersect
+				while(it.hasNext()){
+					intersection.retainAll(it.next());
+				}
+				return intersection.asRanges();
+			}
+		},
+		NEGATE() {
+			@Override
+			public Set<CDateRange> aggregate(Set<CDateRange> all) {
+				CDateSet negative = CDateSet.createFull();
+				negative.removeAll(all);
+				return negative.asRanges();
+			}
+		};
+
+		public abstract Set<CDateRange> aggregate(Set<CDateRange> all);
 	}
 }

@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
@@ -164,6 +165,10 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
+			if(!plan.getDateAggregationMode().equals(ConceptQueryPlan.DateAggregationMode.NONE)){
+				aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
+			}
+
 			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
@@ -200,7 +205,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			throw new IllegalStateException(String.format("Unable to resolve any connector for Query[%s]", this));
 		}
 
-		final QPNode outNode = OrNode.of(tableNodes);
+		// We always merge on concept level
+		final QPNode outNode = OrNode.of(tableNodes, ConceptQueryPlan.DateAggregationAction.MERGE);
 
 		for (Iterator<Aggregator<?>> iterator = conceptAggregators.iterator(); iterator.hasNext(); ) {
 			Aggregator<?> aggregator = iterator.next();
@@ -231,6 +237,13 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return FiltersNode.create(filters, aggregators);
 	}
 
+	/**
+	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
+	 * query plan that contribute to columns the result.
+	 * @param plan
+	 * @param select
+	 * @return
+	 */
 	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<Select> select) {
 
 		List<Aggregator<?>> nodes = new ArrayList<>();

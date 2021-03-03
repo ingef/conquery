@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<Collection<CDateRange>> {
+public class EventDateUnionAggregator implements Aggregator<Collection<CDateRange>>{
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;

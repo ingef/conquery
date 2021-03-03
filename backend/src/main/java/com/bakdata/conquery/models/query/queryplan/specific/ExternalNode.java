@@ -1,16 +1,19 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
@@ -66,7 +69,12 @@ public class ExternalNode extends QPNode {
 	public boolean isContained() {
 		return contained != null && !contained.isEmpty();
 	}
-	
+
+	@Override
+	public Collection<Aggregator<Collection<CDateRange>>> getDateAggregators() {
+		return Set.of(dateUnion);
+	}
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);

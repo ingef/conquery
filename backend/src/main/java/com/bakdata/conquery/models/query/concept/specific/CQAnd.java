@@ -47,7 +47,22 @@ public class CQAnd extends CQElement implements ForcedExists{
 			nodes[i] = children.get(i).createQueryPlan(context, plan);
 		}
 
-		final QPNode node = AndNode.of(Arrays.asList(nodes));
+
+		ConceptQueryPlan.DateAggregationAction dateAction = null;
+		switch(plan.getDateAggregationMode()) {
+			case NONE:
+				dateAction = null;
+				break;
+			case MERGE:
+				dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
+				break;
+			case LOGICAL:
+			case INTERSECT:
+				dateAction = ConceptQueryPlan.DateAggregationAction.INTERSECT;
+				break;
+		}
+
+		final QPNode node = AndNode.of(Arrays.asList(nodes), dateAction);
 
 		if (createExists) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(node.collectRequiredTables());
