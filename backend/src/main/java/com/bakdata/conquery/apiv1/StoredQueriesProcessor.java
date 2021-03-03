@@ -1,6 +1,18 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -15,20 +27,15 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.UriBuilder;
-import java.util.*;
-import java.util.stream.Stream;
-
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -80,16 +87,24 @@ public class StoredQueriesProcessor {
             return false;
         }
 
-        if (((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class)) {
-            return true;
+        if (((ManagedQuery) q).getQuery() instanceof ConceptQuery) {
+            return isFrontendStructure(((ConceptQuery) ((ManagedQuery) q).getQuery()).getRoot());
         }
 
-        if (((ManagedQuery) q).getQuery().getClass().equals(SecondaryIdQuery.class)) {
-            return true;
+        if (((ManagedQuery) q).getQuery() instanceof  SecondaryIdQuery) {
+            return isFrontendStructure(((SecondaryIdQuery) ((ManagedQuery) q).getQuery()).getRoot());
         }
 
         return false;
     }
+
+	/**
+	 * Frontend can only render very specific formats properly.
+	 * @implNote We filter for just the bare minimum, as the structure of the frontend is very specific and hard to fix in java code.
+	 */
+	public static boolean isFrontendStructure(CQElement root) {
+		return root instanceof CQAnd;
+	}
 
     public void deleteQuery(ManagedExecutionId executionId, User user) {
         ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId));
