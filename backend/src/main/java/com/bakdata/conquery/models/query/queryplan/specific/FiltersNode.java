@@ -67,6 +67,7 @@ public class FiltersNode extends QPNode {
 		filtersNode.setAggregators(aggregators);
 		filtersNode.setFilters(filters);
 		filtersNode.setEventFilters(eventFilters);
+		filtersNode.setEventDateAggregators(eventDateAggregators);
 
 		return filtersNode;
 	}
