@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -91,7 +92,7 @@ public class QueryUtils {
 			if (element instanceof CQReusedQuery) {
 				reusedElements.add((CQReusedQuery) element);
 			}
-			else if (element instanceof CQAnd || element instanceof CQOr) {
+			else if (element instanceof CQAnd || element instanceof CQOr || element instanceof QueryDescription) {
 				// Ignore these elements
 			}
 			else {
