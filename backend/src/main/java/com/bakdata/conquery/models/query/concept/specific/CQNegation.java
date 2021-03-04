@@ -32,7 +32,8 @@ public class CQNegation extends CQElement {
 			case MERGE:
 			case NONE:
 			case INTERSECT:
-				dateAction = null;
+				dateAction = ConceptQueryPlan.DateAggregationAction.BLOCK;
+				break;
 			case LOGICAL:
 				dateAction = ConceptQueryPlan.DateAggregationAction.NEGATE;
 				break;

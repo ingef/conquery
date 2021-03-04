@@ -24,7 +24,7 @@ public class QueryPlanContext {
 
 	private CDateRange dateRestriction = CDateRange.all();
 
-	private ConceptQueryPlan.DateAggregationMode dateAggregationMode = ConceptQueryPlan.DateAggregationMode.MERGE;
+	private ConceptQueryPlan.DateAggregationMode dateAggregationMode = null;
 
 
 	/**

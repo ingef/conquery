@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -12,16 +13,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 @RequiredArgsConstructor
-public class DateAggregator<R extends Collection<CDateRange>, A extends Aggregator<R>> implements Aggregator<Collection<CDateRange>> {
+public class DateAggregator implements Aggregator<Collection<CDateRange>> {
 
     private final ConceptQueryPlan.DateAggregationAction action;
 
-    private Set<A> siblings = new HashSet<>();
+    private Set<Aggregator<Collection<CDateRange>>> siblings = new HashSet<>();
 
     /**
      * Register {@link DateAggregator}s from lower levels for the final result generation.
      */
-    public void register(Collection<A> siblings) {
+    public void register(Collection<Aggregator<Collection<CDateRange>>> siblings) {
         this.siblings.addAll(siblings);
     }
 
@@ -32,9 +33,12 @@ public class DateAggregator<R extends Collection<CDateRange>, A extends Aggregat
 
     @Override
     public Collection<CDateRange> getAggregationResult() {
+        CDateSet ret = CDateSet.create();
         final Set<CDateRange> all = new HashSet<>();
         siblings.forEach(s -> all.addAll(s.getAggregationResult()));
-        return action.aggregate(all);
+
+        // Repackage to get the results sorted. Might need some optimization.
+        return CDateSet.create(action.aggregate(all)).asRanges();
     }
 
     @Override
@@ -44,9 +48,9 @@ public class DateAggregator<R extends Collection<CDateRange>, A extends Aggregat
 
     @Override
     public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
-        DateAggregator<R, A> clone = new DateAggregator<>(action);
-        Set<A> clonedSiblings = new HashSet<>();
-        for (A sibling : siblings) {
+        DateAggregator clone = new DateAggregator(action);
+        Set<Aggregator<Collection<CDateRange>>> clonedSiblings = new HashSet<>();
+        for (Aggregator<Collection<CDateRange>> sibling : siblings) {
             clonedSiblings.add(ctx.clone(sibling));
         }
         clone.siblings = clonedSiblings;

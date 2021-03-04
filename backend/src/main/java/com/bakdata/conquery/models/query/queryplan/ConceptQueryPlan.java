@@ -208,6 +208,12 @@ public class ConceptQueryPlan implements QueryPlan {
 
 
 	public enum DateAggregationAction {
+		BLOCK() {
+			@Override
+			public Set<CDateRange> aggregate(Set<CDateRange> all) {
+				return Collections.emptySet();
+			}
+		},
 		PASS(){
 			@Override
 			public Set<CDateRange> aggregate(Set<CDateRange> all) {

@@ -24,16 +24,35 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
-@AllArgsConstructor(onConstructor = @__({@JsonCreator}))
 public class ConceptQuery extends IQuery {
 
 	@Valid
 	@NotNull
 	protected CQElement root;
 
+	@NotNull
+	protected ConceptQueryPlan.DateAggregationMode dateAggregationMode = ConceptQueryPlan.DateAggregationMode.MERGE;
+
+	private ConceptQuery () {
+
+	}
+
+	public ConceptQuery(CQElement root) {
+		this.root = root;
+	}
+
+	public ConceptQuery(CQElement root, ConceptQueryPlan.DateAggregationMode dateAggregationMode) {
+		this(root);
+		this.dateAggregationMode = dateAggregationMode;
+	}
+
 	@Override
 	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
-		ConceptQueryPlan qp = new ConceptQueryPlan(context);
+		if(context.getDateAggregationMode() == null) {
+			// Set aggregation mode if none was defined.
+			context = context.withDateAggregationMode(dateAggregationMode);
+		}
+		ConceptQueryPlan qp = new ConceptQueryPlan(context.withDateAggregationMode(dateAggregationMode));
 		qp.setChild(root.createQueryPlan(context, qp));
 		qp.getDateAggregator().register(qp.getChild().getDateAggregators());
 		return qp;

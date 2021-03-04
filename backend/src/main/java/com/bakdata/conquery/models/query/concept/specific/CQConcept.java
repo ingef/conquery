@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.OpenEventDateAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
@@ -162,8 +163,14 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			Column validityDateColumn = selectValidityDateColumn(table);
 
-			if(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE) && validityDateColumn != null){
-				aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
+			if(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE)){
+				if (validityDateColumn != null) {
+					aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
+				}
+				else {
+					// If there is no validity date for this table we assume that the "events" are always valid
+					aggregators.add(new OpenEventDateAggregator());
+				}
 			}
 
 			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
