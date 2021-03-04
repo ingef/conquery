@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<Collection<CDateRange>>{
+public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
@@ -46,13 +46,13 @@ public class EventDateUnionAggregator implements Aggregator<Collection<CDateRang
 	}
 
 	@Override
-	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
+	public Aggregator<CDateSet> doClone(CloneContext ctx) {
 		return new EventDateUnionAggregator(requiredTables);
 	}
 
 	@Override
-	public Collection<CDateRange> getAggregationResult() {
-		return set.asRanges();
+	public CDateSet getAggregationResult() {
+		return set;
 	}
 
 	@Override

@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -83,7 +83,7 @@ public abstract class QPChainNode extends QPNode {
 	}
 
 	@Override
-	public Collection<Aggregator<Collection<CDateRange>>> getDateAggregators() {
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		return child.getDateAggregators();
 	}
 }

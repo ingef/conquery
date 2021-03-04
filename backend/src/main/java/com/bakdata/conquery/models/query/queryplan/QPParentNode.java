@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.*;
-import java.util.Map.Entry;
-
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -18,6 +15,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 @Getter @Setter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -137,7 +137,7 @@ public abstract class QPParentNode extends QPNode {
 	}
 
 	@Override
-	public Collection<Aggregator<Collection<CDateRange>>> getDateAggregators() {
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		if(dateAggregator != null) {
 			return Set.of(dateAggregator);
 		}

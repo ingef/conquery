@@ -5,7 +5,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -144,7 +143,7 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	@Override
-	public Collection<Aggregator<Collection<CDateRange>>> getDateAggregators() {
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		// Todo Check if this is right
 		return Set.of(dateUnion);
 	}

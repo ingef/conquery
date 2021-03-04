@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
@@ -50,7 +50,7 @@ public class NegatingNode extends QPChainNode {
 	}
 
 	@Override
-	public Collection<Aggregator<Collection<CDateRange>>> getDateAggregators() {
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		if (dateAggregator != null) {
 			return Set.of(dateAggregator);
 		}

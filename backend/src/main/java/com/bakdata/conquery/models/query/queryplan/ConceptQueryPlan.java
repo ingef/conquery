@@ -1,11 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.*;
-
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
@@ -14,16 +10,16 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
-import com.fasterxml.jackson.databind.ser.std.CollectionSerializer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.*;
 
 @Getter
 @Setter
@@ -38,7 +34,7 @@ public class ConceptQueryPlan implements QueryPlan {
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
-	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.PASS);
+	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
 	public ConceptQueryPlan(DateAggregationMode dateAggregationMode) {
 		if (!Objects.equals(dateAggregationMode,DateAggregationMode.NONE)){
@@ -210,55 +206,50 @@ public class ConceptQueryPlan implements QueryPlan {
 	public enum DateAggregationAction {
 		BLOCK() {
 			@Override
-			public Set<CDateRange> aggregate(Set<CDateRange> all) {
-				return Collections.emptySet();
-			}
-		},
-		PASS(){
-			@Override
-			public Set<CDateRange> aggregate(Set<CDateRange> all) {
-				return all;
+			public CDateSet aggregate(Set<CDateSet> all) {
+				return CDateSet.create();
 			}
 		},
 		MERGE(){
 			@Override
-			public Set<CDateRange> aggregate(Set<CDateRange> all) {
-				return CDateSet.create(all).asRanges();
+			public CDateSet aggregate(Set<CDateSet> all) {
+				CDateSet combined = CDateSet.create();
+				all.forEach(combined::addAll);
+				return combined;
 			}
 		},
 		INTERSECT(){
 			@Override
-			public Set<CDateRange> aggregate(Set<CDateRange> all) {
+			public CDateSet aggregate(Set<CDateSet> all) {
 				if(all.size() < 1) {
-					return Collections.emptySet();
+					return CDateSet.create();
 				}
 
-				Iterator<CDateRange> it = all.iterator();
-				CDateRange first = it.next();
+				Iterator<CDateSet> it = all.iterator();
+				CDateSet intersection = it.next();
 
 				if(all.size() == 1) {
-					return Set.of(first);
+					return intersection;
 				}
 				// Use the first range as mask and subtract all other ranges from it
 
-				CDateSet intersection = CDateSet.create(first);
 
 				// Intersect
 				while(it.hasNext()){
 					intersection.retainAll(it.next());
 				}
-				return intersection.asRanges();
+				return intersection;
 			}
 		},
 		NEGATE() {
 			@Override
-			public Set<CDateRange> aggregate(Set<CDateRange> all) {
+			public CDateSet aggregate(Set<CDateSet> all) {
 				CDateSet negative = CDateSet.createFull();
-				negative.removeAll(all);
-				return negative.asRanges();
+				all.forEach(negative::removeAll);
+				return negative;
 			}
 		};
 
-		public abstract Set<CDateRange> aggregate(Set<CDateRange> all);
+		public abstract CDateSet aggregate(Set<CDateSet> all);
 	}
 }

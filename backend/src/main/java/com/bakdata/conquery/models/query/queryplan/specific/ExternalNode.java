@@ -1,13 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -18,6 +11,11 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.validation.constraints.NotEmpty;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 public class ExternalNode extends QPNode {
 
@@ -71,7 +69,7 @@ public class ExternalNode extends QPNode {
 	}
 
 	@Override
-	public Collection<Aggregator<Collection<CDateRange>>> getDateAggregators() {
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		return Set.of(dateUnion);
 	}
 

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -48,5 +48,5 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 		return this.getClass().getSimpleName();
 	}
 
-	public abstract Collection<Aggregator<Collection<CDateRange>>> getDateAggregators();
+	public abstract Collection<Aggregator<CDateSet>> getDateAggregators();
 }

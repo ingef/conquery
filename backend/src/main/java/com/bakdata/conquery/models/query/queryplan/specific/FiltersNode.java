@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.*;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -37,7 +37,7 @@ public class FiltersNode extends QPNode {
 
 
 	@Setter(AccessLevel.PRIVATE)
-	private Set<Aggregator<Collection<CDateRange>>> eventDateAggregators;
+	private Set<Aggregator<CDateSet>> eventDateAggregators;
 
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
@@ -56,7 +56,7 @@ public class FiltersNode extends QPNode {
 			eventFilters.add((EventFilterNode<?>) filter);
 		}
 
-		Set<Aggregator<Collection<CDateRange>>> eventDateAggregators = new HashSet<>();
+		Set<Aggregator<CDateSet>> eventDateAggregators = new HashSet<>();
 		for (Aggregator<?> aggregator: aggregators) {
 			if(aggregator instanceof EventDateUnionAggregator) {
 				eventDateAggregators.add((EventDateUnionAggregator) aggregator);
@@ -113,7 +113,7 @@ public class FiltersNode extends QPNode {
 	}
 
 	@Override
-	public Collection<Aggregator<Collection<CDateRange>>> getDateAggregators() {
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		return eventDateAggregators;
 	}
 
