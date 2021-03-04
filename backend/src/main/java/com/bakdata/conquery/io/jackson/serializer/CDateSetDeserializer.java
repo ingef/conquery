@@ -21,11 +21,11 @@ public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
 	@Override
 	public CDateSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		if (p.currentToken() == JsonToken.START_ARRAY) {
-			int[] ints = p.readValueAs(int[].class);
+			int[][] ints = p.readValueAs(int[][].class);
 			
 			CDateSet set = CDateSet.create();
-			for(int i=0; i<ints.length; i+=2) {
-				set.add(CDateRange.of(ints[i], ints[i+1]));
+			for(int i=0; i<ints.length; i++) {
+				set.add(CDateRange.of(ints[i][0], ints[i][1]));
 			}
 			return set;
 		}
