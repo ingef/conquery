@@ -29,14 +29,14 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 	private List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
-	private boolean specialDateUnion = false;
+	private boolean generateDateAggregation = false;
 
-	private ArrayConceptQueryPlan(boolean generateSpecialDateUnion) {
-		specialDateUnion = generateSpecialDateUnion;
+	private ArrayConceptQueryPlan(boolean generateDateAggregation) {
+		this.generateDateAggregation = generateDateAggregation;
 	}
 
 	public ArrayConceptQueryPlan(QueryPlanContext context) {
-		this(context.isGenerateSpecialDateUnion());
+		this(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE));
 	}
 
 	public boolean isOfInterest(Bucket bucket) {
@@ -54,7 +54,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		for (ConceptQueryPlan child : childPlans) {
 			childPlanClones.add(child.clone(ctx));
 		}
-		ArrayConceptQueryPlan aqClone = new ArrayConceptQueryPlan(specialDateUnion);
+		ArrayConceptQueryPlan aqClone = new ArrayConceptQueryPlan(generateDateAggregation);
 		aqClone.childPlans = new ArrayList<>(childPlanClones);
 		return aqClone;
 	}
@@ -93,7 +93,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
 		CDateSet dateSet = CDateSet.create();
-		int resultInsertIdx = specialDateUnion ? 1 : 0;
+		int resultInsertIdx = generateDateAggregation ? 1 : 0;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {
 			SinglelineEntityResult result = child.execute(ctx, entity);
@@ -103,8 +103,8 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 				final Object[] applied = ResultModifier.existAggValuesSetterFor(child.getAggregators(), OptionalInt.of(0)).apply(new Object[child.getAggregatorSize()]);
 
 				// applied[0] is the child-queries DateUnion, which we don't copy.
-				int copyLength = applied.length - (specialDateUnion ? 1 : 0);
-				System.arraycopy(applied, specialDateUnion ? 1 : 0, resultValues, resultInsertIdx, copyLength);
+				int copyLength = applied.length - (generateDateAggregation ? 1 : 0);
+				System.arraycopy(applied, generateDateAggregation ? 1 : 0, resultValues, resultInsertIdx, copyLength);
 
 				// Advance pointer for the result insertion by the number of currently handled
 				// aggregators.
@@ -116,7 +116,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
-			if (specialDateUnion) {
+			if (generateDateAggregation) {
 				for(Object dateRange : (Collection<CDateRange>) singleLineResult.getValues()[0]) {
 					dateSet.add((CDateRange) dateRange);
 				}
@@ -136,7 +136,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 			return EntityResult.notContained();
 		}
 
-		if (specialDateUnion) {
+		if (generateDateAggregation) {
 			// Dateset was needed, add it to the front.
 			resultValues[0] = dateSet.asRanges();
 		}
@@ -166,14 +166,14 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		 * one such column we substract the number of queries from the aggregator size
 		 * and add one for the union present in this class.
 		 */
-		return specialDateUnion ? size - childPlans.size() + 1 : size;
+		return generateDateAggregation ? size - childPlans.size() + 1 : size;
 	}
 
 	public List<Aggregator<?>> getAggregators() {
 		List<Aggregator<?>> aggregators = new ArrayList<>();
 		for (ConceptQueryPlan child : childPlans) {
 			List<Aggregator<?>> allAggs = child.getAggregators();
-			aggregators.addAll(allAggs.subList((specialDateUnion ? 1 : 0), allAggs.size()));
+			aggregators.addAll(allAggs.subList((generateDateAggregation ? 1 : 0), allAggs.size()));
 		}
 
 		return aggregators;
@@ -185,7 +185,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		 * want to add the result directly to the end result (its merged in a single
 		 * DateSet). Hence the index for the result insertion is reduces by one.
 		 */
-		int offset = child.getAggregatorSize() - (specialDateUnion ? 1 : 0);
+		int offset = child.getAggregatorSize() - (generateDateAggregation ? 1 : 0);
 		if (offset < 0) {
 			throw new IllegalStateException("Result index offset must be positive, so the advancing pointer does not override results.");
 		}
@@ -193,7 +193,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	}
 
 	private int calculateCopyLength(SinglelineContainedEntityResult singleLineResult) {
-		int length = singleLineResult.getValues().length - (specialDateUnion ? 1 : 0);
+		int length = singleLineResult.getValues().length - (generateDateAggregation ? 1 : 0);
 		if (length < 0) {
 			throw new IllegalStateException("Copy length must be positive.");
 		}

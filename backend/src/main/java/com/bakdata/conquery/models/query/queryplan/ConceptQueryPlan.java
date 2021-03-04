@@ -36,37 +36,31 @@ public class ConceptQueryPlan implements QueryPlan {
 	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
 	private QPNode child;
 	@ToString.Exclude
-	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
-	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
 	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.PASS);
 
-	public ConceptQueryPlan(boolean generateSpecialDateUnion, DateAggregationMode dateAggregationMode) {
-		if (generateSpecialDateUnion) {
-			aggregators.add(specialDateUnion);
-		}
+	public ConceptQueryPlan(DateAggregationMode dateAggregationMode) {
 		if (!Objects.equals(dateAggregationMode,DateAggregationMode.NONE)){
 			aggregators.add(dateAggregator);
 		}
 	}
 
 	public ConceptQueryPlan(QueryPlanContext ctx) {
-		this(ctx.isGenerateSpecialDateUnion(), ctx.getDateAggregationMode());
+		this(ctx.getDateAggregationMode());
 	}
 
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
 
-		ConceptQueryPlan clone = new ConceptQueryPlan(false, DateAggregationMode.NONE);
+		ConceptQueryPlan clone = new ConceptQueryPlan(DateAggregationMode.NONE);
 		clone.setChild(ctx.clone(child));
 
 		for (Aggregator<?> agg : aggregators) {
 			clone.aggregators.add(ctx.clone(agg));
 		}
 
-		clone.specialDateUnion = ctx.clone(specialDateUnion);
 		clone.dateAggregator = ctx.clone(dateAggregator);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;

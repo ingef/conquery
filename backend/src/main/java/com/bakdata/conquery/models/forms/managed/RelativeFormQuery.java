@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -59,10 +60,10 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
+		return new RelativeFormQueryPlan(query.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE)),
 			// At the moment we do not use the dates of feature and outcome query
-			features.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			outcomes.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
+			features.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE)),
+			outcomes.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE)),
 			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 	}
 

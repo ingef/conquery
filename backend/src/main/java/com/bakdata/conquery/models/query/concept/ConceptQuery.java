@@ -52,7 +52,6 @@ public class ConceptQuery extends IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		collector.add(ConqueryConstants.DATES_INFO);
-		collector.add(ConqueryConstants.DATES_INFO);
 		root.collectResultInfos(collector);
 	}
 

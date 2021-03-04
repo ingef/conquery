@@ -160,11 +160,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
-
-			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
-				aggregators.add(plan.getSpecialDateUnion());
-			}
-
 			if(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE)){
 				aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
 			}

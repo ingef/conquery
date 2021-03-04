@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -62,8 +63,8 @@ public class EntityDateQuery extends IQuery {
             }
         });
         return new EntityDateQueryPlan(
-                query.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
-                features.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
+                query.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE)),
+                features.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE)),
                 resolutionsAndAlignments,
                 dateRange
         );

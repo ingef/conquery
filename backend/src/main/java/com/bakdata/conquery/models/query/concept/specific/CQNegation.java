@@ -38,7 +38,7 @@ public class CQNegation extends CQElement {
 				break;
 		}
 
-		return new NegatingNode(child.createQueryPlan(context.withGenerateSpecialDateUnion(false), plan), dateAction);
+		return new NegatingNode(child.createQueryPlan(context, plan), dateAction);
 	}
 
 	@Override

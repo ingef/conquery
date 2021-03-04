@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -49,9 +50,9 @@ public class AbsoluteFormQuery extends IQuery {
 	@Override
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
-			query.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
+			query.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE)),
 			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-			features.createQueryPlan(context.withGenerateSpecialDateUnion(false))
+			features.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE))
 		);
 	}
 	
