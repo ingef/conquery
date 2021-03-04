@@ -17,7 +17,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -31,7 +30,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
@@ -47,6 +45,7 @@ import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -76,7 +75,7 @@ import org.jetbrains.annotations.TestOnly;
 @CPSBase
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 	
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this. 
@@ -271,6 +270,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
 		setAdditionalFieldsForStatusWithGroups(storage, user, status);
+		setAvailableSecondaryIds(status);
+
 
 		if (state.equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
@@ -278,6 +279,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 
 		return status;
+	}
+
+	private void setAvailableSecondaryIds(ExecutionStatus.Full status) {
+		final QueryUtils.AvailableSecondaryIdCollector secondaryIdCollector = new QueryUtils.AvailableSecondaryIdCollector();
+
+		visit(secondaryIdCollector);
+
+		status.setAvailableSecondaryIds(secondaryIdCollector.getIds());
 	}
 
 	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus.Full status) {

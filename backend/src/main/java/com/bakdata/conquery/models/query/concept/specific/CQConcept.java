@@ -213,7 +213,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	}
 
 	@JsonIgnore
-	private Concept<?> getConcept() {
+	public Concept<?> getConcept() {
 		return elements.get(0).getConcept();
 	}
 

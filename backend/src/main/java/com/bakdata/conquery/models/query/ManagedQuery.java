@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -334,5 +335,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 		// Concat everything with dashes
 		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
+	}
+
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+		query.visit(visitor);
 	}
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -193,7 +195,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		}
 		return result;
 	}
-	
+
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+		submittedForm.visit(visitor);
+	}
+
 	@Data
 	@CPSType(id = "FORM_SHARD_RESULT", base = ShardResult.class)
 	@EqualsAndHashCode(callSuper = true)

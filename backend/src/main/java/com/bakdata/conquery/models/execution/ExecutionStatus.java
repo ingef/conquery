@@ -4,9 +4,11 @@ import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -14,9 +16,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
-import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @ToString
@@ -43,6 +47,7 @@ public abstract class ExecutionStatus {
 
 	private String queryType;
 	private SecondaryIdDescriptionId secondaryId;
+
 
 	/**
 	 * The url under from which the result of the execution can be downloaded as soon as it finished successfully.
@@ -93,5 +98,8 @@ public abstract class ExecutionStatus {
          * The groups this execution is shared with.
          */
         private Collection<GroupId> groups;
+
+        @NsIdRefCollection
+		private Set<SecondaryIdDescription> availableSecondaryIds;
 	}
 }
