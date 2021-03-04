@@ -35,6 +35,7 @@ public class ConceptQuery extends IQuery {
 	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		ConceptQueryPlan qp = new ConceptQueryPlan(context);
 		qp.setChild(root.createQueryPlan(context, qp));
+		qp.getDateAggregator().register(qp.getChild().getDateAggregators());
 		return qp;
 	}
 
@@ -50,6 +51,7 @@ public class ConceptQuery extends IQuery {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
+		collector.add(ConqueryConstants.DATES_INFO);
 		collector.add(ConqueryConstants.DATES_INFO);
 		root.collectResultInfos(collector);
 	}

@@ -44,6 +44,12 @@ public class DateAggregator<R extends Collection<CDateRange>, A extends Aggregat
 
     @Override
     public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
-        return null;
+        DateAggregator<R, A> clone = new DateAggregator<>(action);
+        Set<A> clonedSiblings = new HashSet<>();
+        for (A sibling : siblings) {
+            clonedSiblings.add(ctx.clone(sibling));
+        }
+        clone.siblings = clonedSiblings;
+        return clone;
     }
 }

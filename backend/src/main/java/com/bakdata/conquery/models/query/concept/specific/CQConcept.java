@@ -165,7 +165,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
-			if(!plan.getDateAggregationMode().equals(ConceptQueryPlan.DateAggregationMode.NONE)){
+			if(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE)){
 				aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
 			}
 
@@ -186,18 +186,18 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 						  .orElse(null);
 
 			tableNodes.add(
-				new ConceptNode(
-						elements,
-						CBlock.calculateBitMask(elements),
-						table,
-						// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-						new ValidityDateNode(
-						selectValidityDateColumn(table),
-						filtersNode
-					),
-						// if the node is excluded, don't pass it into the Node.
-					excludeFromSecondaryIdQuery ? null : selectedSecondaryId
-				)
+					new ConceptNode(
+							elements,
+							CBlock.calculateBitMask(elements),
+							table,
+							// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
+							new ValidityDateNode(
+									selectValidityDateColumn(table),
+									filtersNode
+							),
+							// if the node is excluded, don't pass it into the Node.
+							excludeFromSecondaryIdQuery ? null : selectedSecondaryId
+					)
 			);
 		}
 
@@ -240,9 +240,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	/**
 	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
 	 * query plan that contribute to columns the result.
-	 * @param plan
-	 * @param select
-	 * @return
 	 */
 	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<Select> select) {
 

@@ -28,7 +28,7 @@ public class CQNegation extends CQElement {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		ConceptQueryPlan.DateAggregationAction dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
-		switch(plan.getDateAggregationMode()) {
+		switch(context.getDateAggregationMode()) {
 			case MERGE:
 			case NONE:
 			case INTERSECT:

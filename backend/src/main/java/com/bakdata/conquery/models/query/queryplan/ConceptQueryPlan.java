@@ -40,23 +40,26 @@ public class ConceptQueryPlan implements QueryPlan {
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
-	private DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
+	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.PASS);
 
-	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
+	public ConceptQueryPlan(boolean generateSpecialDateUnion, DateAggregationMode dateAggregationMode) {
 		if (generateSpecialDateUnion) {
 			aggregators.add(specialDateUnion);
+		}
+		if (!Objects.equals(dateAggregationMode,DateAggregationMode.NONE)){
+			aggregators.add(dateAggregator);
 		}
 	}
 
 	public ConceptQueryPlan(QueryPlanContext ctx) {
-		this(ctx.isGenerateSpecialDateUnion());
+		this(ctx.isGenerateSpecialDateUnion(), ctx.getDateAggregationMode());
 	}
 
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
 
-		ConceptQueryPlan clone = new ConceptQueryPlan(false);
+		ConceptQueryPlan clone = new ConceptQueryPlan(false, DateAggregationMode.NONE);
 		clone.setChild(ctx.clone(child));
 
 		for (Aggregator<?> agg : aggregators) {
@@ -64,6 +67,7 @@ public class ConceptQueryPlan implements QueryPlan {
 		}
 
 		clone.specialDateUnion = ctx.clone(specialDateUnion);
+		clone.dateAggregator = ctx.clone(dateAggregator);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
@@ -210,6 +214,12 @@ public class ConceptQueryPlan implements QueryPlan {
 
 
 	public enum DateAggregationAction {
+		PASS(){
+			@Override
+			public Set<CDateRange> aggregate(Set<CDateRange> all) {
+				return all;
+			}
+		},
 		MERGE(){
 			@Override
 			public Set<CDateRange> aggregate(Set<CDateRange> all) {

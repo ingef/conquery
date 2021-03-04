@@ -49,7 +49,7 @@ public class CQOr extends CQElement implements ForcedExists {
 		QPNode[] nodes = new QPNode[children.size()];
 
 		ConceptQueryPlan.DateAggregationAction dateAction = null;
-		switch(plan.getDateAggregationMode()) {
+		switch(context.getDateAggregationMode()) {
 			case NONE:
 				dateAction = null;
 				break;

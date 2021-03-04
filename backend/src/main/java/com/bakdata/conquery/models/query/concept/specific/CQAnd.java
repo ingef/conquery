@@ -49,7 +49,7 @@ public class CQAnd extends CQElement implements ForcedExists{
 
 
 		ConceptQueryPlan.DateAggregationAction dateAction = null;
-		switch(plan.getDateAggregationMode()) {
+		switch(context.getDateAggregationMode()) {
 			case NONE:
 				dateAction = null;
 				break;
