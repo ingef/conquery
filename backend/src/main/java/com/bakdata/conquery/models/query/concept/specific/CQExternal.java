@@ -1,10 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.time.LocalDate;
-import java.util.*;
-
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -34,6 +29,10 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.constraints.NotEmpty;
+import java.time.LocalDate;
+import java.util.*;
 
 @Slf4j
 @CPSType(id = "EXTERNAL", base = CQElement.class)

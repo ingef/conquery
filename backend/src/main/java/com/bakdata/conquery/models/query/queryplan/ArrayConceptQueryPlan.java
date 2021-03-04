@@ -117,9 +117,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
 			if (generateDateAggregation) {
-				for(Object dateRange : (Collection<CDateRange>) singleLineResult.getValues()[0]) {
-					dateSet.add((CDateRange) dateRange);
-				}
+				dateSet.addAll((CDateSet) singleLineResult.getValues()[0]);
 				// Skip overwriting the first value: daterange
 				srcCopyPos = 1;
 			}
@@ -138,7 +136,7 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 
 		if (generateDateAggregation) {
 			// Dateset was needed, add it to the front.
-			resultValues[0] = dateSet.asRanges();
+			resultValues[0] = dateSet;
 		}
 
 		return new SinglelineContainedEntityResult(entity.getId(), resultValues);

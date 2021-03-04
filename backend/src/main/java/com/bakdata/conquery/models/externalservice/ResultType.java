@@ -200,7 +200,7 @@ public interface ResultType {
     }
 
     /**
-     * A DateRange is provided by in a query result as two ints in a list, both standing for an epochday (see {@link LocalDate#toEpochDay()}).
+     * A DateRange is provided by in a query result as two ints in a list, both standing for an epoch day (see {@link LocalDate#toEpochDay()}).
      * The first int describes the included lower bound of the range. The second int descibes the included upper bound.
      */
     @CPSType(id = "DATE_RANGE", base = ResultType.class)
