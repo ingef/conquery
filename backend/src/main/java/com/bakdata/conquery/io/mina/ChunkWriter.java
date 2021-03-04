@@ -99,7 +99,6 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			while(len > 0) {
 				if(buffer == null || !buffer.hasRemaining()) {
 					newBuffer(len);
-					off = 0;
 				}
 				
 				int write = Math.min(len, buffer.remaining());
