@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -89,20 +90,15 @@ public class QueryProcessor {
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
 
-		// Evaluate the checks and take action
+		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
-			// If this is only a re-executing query, execute the underlying query instead.
-			final ManagedExecutionId executionId = visitors.getInstance(QueryUtils.SingleReusedChecker.class).getOnlyReused();
+			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.SingleReusedChecker.class).getOnlyReused();
 
-			if (executionId != null) {
-				log.info("Re-executing Query {}", executionId);
+			final ExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
 
-
-				final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, storage.getExecution(executionId), config);
-
-				return getStatus(mq, urlb, user);
+			if(status != null){
+				return status;
 			}
-
 		}
 
 		// Run the query on behalf of the user
@@ -114,6 +110,31 @@ public class QueryProcessor {
 
 		// return status
 		return getStatus(mq, urlb, user);
+	}
+
+	private ExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+
+		// If this is only a re-executing query, execute the underlying query instead.
+		if (maybeId.isEmpty()) {
+			return null;
+		}
+
+		final ManagedExecutionId executionId = maybeId.get();
+
+
+		final ManagedExecution<?> execution = storage.getExecution(executionId);
+
+		// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
+		if (!query.getClass().equals(execution.getSubmitted().getClass())) {
+			return null;
+		}
+
+		log.trace("Re-executing Query {}", executionId);
+
+		final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, execution, config);
+
+		return getStatus(mq, urlb, user);
+
 	}
 
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {

@@ -145,4 +145,9 @@ public class SecondaryIdQuery extends IQuery {
 					  .mapToLong(List::size)
 					  .sum();
 	}
+
+	@Override
+	public CQElement getReusableComponents() {
+		return getRoot();
+	}
 }

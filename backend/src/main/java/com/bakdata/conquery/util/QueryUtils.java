@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -98,8 +99,12 @@ public class QueryUtils {
 			}
 		}
 
-		public ManagedExecutionId getOnlyReused() {
-			return (reusedElements.size() == 1 && !containsOthersElements) ? reusedElements.get(0).getQuery() : null;
+		public Optional<ManagedExecutionId> getOnlyReused() {
+			if (reusedElements.size() > 1 || containsOthersElements) {
+				return Optional.empty();
+			}
+
+			return Optional.of(reusedElements.get(0).getQuery());
 		}
 	}
 
