@@ -160,7 +160,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
-			if(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE)){
+			Column validityDateColumn = selectValidityDateColumn(table);
+
+			if(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE) && validityDateColumn != null){
 				aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
 			}
 
@@ -187,7 +189,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 							table,
 							// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 							new ValidityDateNode(
-									selectValidityDateColumn(table),
+									validityDateColumn,
 									filtersNode
 							),
 							// if the node is excluded, don't pass it into the Node.
