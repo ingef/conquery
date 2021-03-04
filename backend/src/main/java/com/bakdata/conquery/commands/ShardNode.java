@@ -1,7 +1,9 @@
 package com.bakdata.conquery.commands;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -198,7 +200,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		}
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder, (int) config.getCluster().getChunkSize().toBytes()), new ChunkReader(coder)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 

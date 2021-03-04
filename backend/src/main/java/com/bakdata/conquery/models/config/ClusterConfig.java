@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import io.dropwizard.Configuration;
+import io.dropwizard.util.DataSize;
 import io.dropwizard.validation.PortRange;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,8 @@ public class ClusterConfig extends Configuration {
 	private MinaConfig mina = new MinaConfig();
 	@Min(1)
 	private int entityBucketSize = 1000;
+
+	private DataSize chunkSize = DataSize.megabytes(1);
 
 	/**
 	 * Amount of backpressure before jobs can volunteer to block to send messages to their shards.

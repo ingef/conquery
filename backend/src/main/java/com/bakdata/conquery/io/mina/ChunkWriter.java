@@ -4,19 +4,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import com.bakdata.conquery.models.messages.network.NetworkMessage;
+import com.bakdata.conquery.util.SimplePool;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
-
-import com.bakdata.conquery.util.SimplePool;
-import com.google.common.primitives.Ints;
-
-import io.dropwizard.util.Size;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j @RequiredArgsConstructor
 public class ChunkWriter extends ProtocolEncoderAdapter {
@@ -24,20 +20,23 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	public static final int HEADER_SIZE = Integer.BYTES + Byte.BYTES + 2*Long.BYTES;
 	public static final byte LAST_MESSAGE = 1;
 	public static final byte CONTINUED_MESSAGE = 0;
-	
-	@Getter @Setter
-	private int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
-	private SimplePool<IoBuffer> bufferPool = new SimplePool<>(()->IoBuffer.allocate(bufferSize));
-	@SuppressWarnings("rawtypes")
-	private final CQCoder coder;
 
-	@SuppressWarnings("unchecked")
+	private final BinaryJacksonCoder coder;
+
+	@Getter
+	private final int bufferSizeBytes;
+	private final SimplePool<IoBuffer> bufferPool = new SimplePool<>(this::allocateBuffer);
+
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		Chunkable ch = coder.encode(message);
+		Chunkable ch = coder.encode(((NetworkMessage<?>) message));
 		try(ChunkOutputStream cos = new ChunkOutputStream(ch.getId(), out)) {
 			ch.writeMessage(cos);
 		}
+	}
+
+	private IoBuffer allocateBuffer() {
+		return IoBuffer.allocate(getBufferSizeBytes());
 	}
 
 	@RequiredArgsConstructor
@@ -100,6 +99,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			while(len > 0) {
 				if(buffer == null || !buffer.hasRemaining()) {
 					newBuffer(len);
+					off = 0;
 				}
 				
 				int write = Math.min(len, buffer.remaining());

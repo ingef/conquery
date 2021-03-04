@@ -240,7 +240,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		acceptor = new NioSocketAcceptor();
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder, (int) config.getCluster().getChunkSize().toBytes()), new ChunkReader(coder)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
