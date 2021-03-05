@@ -76,9 +76,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 				 InputStream is = outFile.readHeader()) {
 
 				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
-				log.debug("Old hash = `{}`, New hash = `{}`", header.getValidityHash(), currentHash);
-				if (header.getValidityHash() == currentHash) {
 
+				if (header.getValidityHash() == currentHash) {
 					log.info("\tHASH STILL VALID");
 					return false;
 				}
