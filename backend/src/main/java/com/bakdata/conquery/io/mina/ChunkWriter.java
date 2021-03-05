@@ -45,6 +45,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 		private final ProtocolEncoderOutput out;
 		private IoBuffer buffer = null;
 		private boolean closed = false;
+		private int writtenBytes = 0;
 		
 		private void newBuffer(int required) {
 			if(buffer == null || buffer.remaining()<required) {
@@ -81,6 +82,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			}
 			newBuffer(1);
 			buffer.put((byte)b);
+			writtenBytes++;
 		}
 		
 		@Override
@@ -95,7 +97,9 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			} else if (len == 0) {
 				return;
 			}
-			
+
+			writtenBytes += len;
+
 			while(len > 0) {
 				if(buffer == null || !buffer.hasRemaining()) {
 					newBuffer(len);
@@ -114,6 +118,8 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 				newBuffer(0);
 				finishBuffer(true);
 				closed = true;
+
+				log.trace("Message[{}] was of size {} byte", id, writtenBytes);
 			}
 		}
 	}
