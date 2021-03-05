@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 @Getter
 @Setter
+@Slf4j
 public class TableImportDescriptor extends Labeled<TableImportDescriptorId> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -95,18 +97,26 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();
 
+		log.debug("name = {}", getName().hashCode());
+		log.debug("table = {}", getTable().hashCode());
+
 		validityHashBuilder
 				.append(getName())
 				.append(getTable())
 		;
 
 		for (TableInputDescriptor input : getInputs()) {
+			log.debug("Input[{}] = {}", input.getSourceFile(), input.hashCode());
+
 			validityHashBuilder.append(input.hashCode());
 		}
 
 		for (TableInputDescriptor input : getInputs()) {
-			validityHashBuilder
-					.append(Preprocessor.resolveSourceFile(input.getSourceFile(), csvDirectory, tag).length());
+			final long length = Preprocessor.resolveSourceFile(input.getSourceFile(), csvDirectory, tag).length();
+
+			log.debug("File[{}] = {}", input.getSourceFile(), length);
+
+			validityHashBuilder.append(length);
 		}
 		return validityHashBuilder.toHashCode();
 	}
