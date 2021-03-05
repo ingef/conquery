@@ -2,13 +2,13 @@ package com.bakdata.conquery.models.forms.export;
 
 import java.util.List;
 
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.ConceptManipulator;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -39,12 +39,12 @@ public class RelExportGenerator {
 		return new RelativeFormQuery(
 			query, 
 			setInfos(
-				AbsExportGenerator.createSubQuery(features),
-				FeatureGroup.FEATURE
+					ArrayConceptQuery.createFromFeatures(features),
+					FeatureGroup.FEATURE
 			),
 			setInfos(
-				AbsExportGenerator.createSubQuery(outcomes),
-				FeatureGroup.OUTCOME
+					ArrayConceptQuery.createFromFeatures(outcomes),
+					FeatureGroup.OUTCOME
 			),
 			indexSelector, 
 			indexPlacement, 

@@ -34,7 +34,7 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		features.forEach(e -> visitor.accept(e));
+		features.forEach(visitor::accept);
 	}
 
 	@NotNull
@@ -42,7 +42,7 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(datasets, this);
+		return AbsExportGenerator.generate(this);
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.query.concept;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -16,27 +16,29 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Query type that combines a set of {@link ConceptQuery}s which are separately evaluated
  * and whose results are merged. If a SpecialDateUnion is required, the result will hold
  * the union of all dates from the separate queries.
  */
-@NoArgsConstructor
 @Getter
-@Setter
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
 public class ArrayConceptQuery extends IQuery {
-	private List<ConceptQuery> childQueries = new ArrayList<>();
-	
-	public ArrayConceptQuery( List<ConceptQuery> queries) {
-		if(queries == null) {
-			throw new IllegalArgumentException("No sub query list provided.");
-		}
-		this.childQueries = queries;
+
+	@NonNull
+	private final List<ConceptQuery> childQueries;
+
+	public static ArrayConceptQuery createFromFeatures(List<CQElement> features) {
+		List<ConceptQuery> cqWraps = features.stream()
+											 .map(ConceptQuery::new)
+											 .collect(Collectors.toList());
+		return new ArrayConceptQuery(cqWraps);
 	}
 
 	@Override
