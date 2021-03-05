@@ -49,7 +49,7 @@ public class ConceptQuery extends IQuery {
 			// Set aggregation mode if none was defined.
 			context = context.withDateAggregationMode(dateAggregationMode);
 		}
-		ConceptQueryPlan qp = new ConceptQueryPlan(context.withDateAggregationMode(dateAggregationMode));
+		ConceptQueryPlan qp = new ConceptQueryPlan(context);
 		qp.setChild(root.createQueryPlan(context, qp));
 		qp.getDateAggregator().register(qp.getChild().getDateAggregators());
 		return qp;
