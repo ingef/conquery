@@ -144,21 +144,11 @@ public class TableInputDescriptor {
 	public int hashCode() {
 		final HashCodeBuilder builder = new HashCodeBuilder();
 
-		log.debug("SourceFile = {}", getSourceFile().hashCode());
-
-		if(filter != null) {
-			log.debug("Filter = {}", getFilter().hashCode());
-		}
-
-		log.debug("Primary = {}", getPrimary().hashCode());
-
 		builder.append(getSourceFile());
 		builder.append(getFilter());
 		builder.append(getPrimary());
 
 		for (OutputDescription outputDescription : getOutput()) {
-			log.debug("Output[{}] = {}", outputDescription.getName(), outputDescription.hashCode());
-
 			builder.append(outputDescription.hashCode());
 		}
 

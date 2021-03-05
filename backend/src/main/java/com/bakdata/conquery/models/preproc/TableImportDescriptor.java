@@ -97,27 +97,20 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();
 
-		log.debug("name = {}", getName().hashCode());
-		log.debug("table = {}", getTable().hashCode());
-
 		validityHashBuilder
 				.append(getName())
 				.append(getTable())
 		;
 
 		for (TableInputDescriptor input : getInputs()) {
-			log.debug("Input[{}] = {}", input.getSourceFile(), input.hashCode());
-
 			validityHashBuilder.append(input.hashCode());
 		}
 
 		for (TableInputDescriptor input : getInputs()) {
 			final long length = Preprocessor.resolveSourceFile(input.getSourceFile(), csvDirectory, tag).length();
-
-			log.debug("File[{}] = {}", input.getSourceFile(), length);
-
 			validityHashBuilder.append(length);
 		}
+
 		return validityHashBuilder.toHashCode();
 	}
 
