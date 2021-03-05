@@ -34,5 +34,4 @@ public enum MajorTypeId {
 	public Parser createParser(ParserConfig config) {
 		return supplier.apply(config);
 	}
-
 }

@@ -8,14 +8,12 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Output a null value.
  */
 @Data
-@EqualsAndHashCode(callSuper = true, of = {"inputType"})
 @CPSType(id="NULL", base= OutputDescription.class)
 public class NullOutput extends OutputDescription {
 	
@@ -25,7 +23,7 @@ public class NullOutput extends OutputDescription {
 	public int hashCode(){
 		return new HashCodeBuilder()
 					   .append(super.hashCode())
-					   .append(inputType)
+					   .append(inputType.name().hashCode())
 					   .toHashCode();
 	}
 
