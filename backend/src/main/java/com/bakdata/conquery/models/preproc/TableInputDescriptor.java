@@ -152,6 +152,6 @@ public class TableInputDescriptor {
 			builder.append(outputDescription.hashCode());
 		}
 
-		return builder.hashCode();
+		return builder.toHashCode();
 	}
 }
