@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import java.io.Serializable;
 import java.util.InputMismatchException;
 import java.util.StringJoiner;
 
@@ -25,8 +24,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "operation")
 @CPSBase
-@EqualsAndHashCode
-public abstract class OutputDescription implements Serializable {
+@EqualsAndHashCode(of = {"name", "required"})
+public abstract class OutputDescription {
 
 	private static final long serialVersionUID = 1L;
 

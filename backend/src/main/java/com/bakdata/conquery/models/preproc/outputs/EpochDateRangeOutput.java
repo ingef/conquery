@@ -17,7 +17,7 @@ import lombok.ToString;
  * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {"startColumn", "endColumn"})
 @ToString(of = {"startColumn", "endColumn"})
 @CPSType(id = "EPOCH_DATE_RANGE", base = OutputDescription.class)
 public class EpochDateRangeOutput extends OutputDescription {

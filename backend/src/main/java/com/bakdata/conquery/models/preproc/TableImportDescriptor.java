@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescript
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -33,7 +32,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"table", "inputs"}, callSuper = false)
 public class TableImportDescriptor extends Labeled<TableImportDescriptorId> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -97,7 +95,14 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();
 
-		validityHashBuilder.append(this);
+		validityHashBuilder
+				.append(getName())
+				.append(getTable())
+		;
+
+		for (TableInputDescriptor input : getInputs()) {
+			validityHashBuilder.append(input.hashCode());
+		}
 
 		for (TableInputDescriptor input : getInputs()) {
 			validityHashBuilder

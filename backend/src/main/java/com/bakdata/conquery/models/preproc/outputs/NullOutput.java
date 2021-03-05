@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
  * Output a null value.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {"inputType"})
 @CPSType(id="NULL", base= OutputDescription.class)
 public class NullOutput extends OutputDescription {
 	

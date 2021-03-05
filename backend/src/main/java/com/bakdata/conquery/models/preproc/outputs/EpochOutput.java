@@ -15,7 +15,7 @@ import lombok.ToString;
  * Parse input column as {@link com.bakdata.conquery.models.common.CDate} based int.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {"inputColumn"})
 @ToString(of = {"inputColumn"})
 @CPSType(id = "EPOCH", base = OutputDescription.class)
 public class EpochOutput extends OutputDescription {

@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  * Parse column as type.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, of = {"inputColumn", "inputType"})
 @NoArgsConstructor
 @ToString(of = {"inputColumn", "inputType"})
 @CPSType(id = "COPY", base = OutputDescription.class)
