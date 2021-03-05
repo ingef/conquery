@@ -6,6 +6,7 @@ import java.util.StringJoiner;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
@@ -14,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Output's are used for preprocessing to generate cqpp files. Their main function is to selectivley read data from an Input CSV and prepare it for fast reading into a live Conquery instance. An output describes the transformation of an input row into an output row. It can do some transformation but should avoid complex work.
@@ -24,7 +25,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "operation")
 @CPSBase
-@EqualsAndHashCode(of = {"name", "required"})
 public abstract class OutputDescription {
 
 	private static final long serialVersionUID = 1L;
@@ -34,6 +34,14 @@ public abstract class OutputDescription {
 
 	private boolean required = false;
 
+	@Override
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(name)
+					   .append(required)
+					   .append(getClass().getAnnotation(CPSType.class).id())
+					   .toHashCode();
+	}
 
 	/**
 	 * Describes a transformation of an input row to a single value.
