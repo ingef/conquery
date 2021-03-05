@@ -124,7 +124,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable table : tables) {
 			try {
-				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
+				table.setResolvedConnector(concept.getConnector(table.getId()));
 			}
 			catch (NoSuchElementException exc){
 				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), concept.getDataset(), exc);
@@ -214,7 +214,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	}
 
 	@JsonIgnore
-	private Concept<?> getConcept() {
+	public Concept<?> getConcept() {
 		return elements.get(0).getConcept();
 	}
 

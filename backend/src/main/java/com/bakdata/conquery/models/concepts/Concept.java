@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
@@ -14,6 +15,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -37,13 +39,18 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@NotNull @Getter @Setter
 	private DatasetId dataset;
 
-	
-	public CONNECTOR getConnectorByName(String connector) {
-		return connectors
-				.stream()
-				.filter(n->n.getName().equals(connector))
-				.findAny()
-				.orElseThrow(() -> new NoSuchElementException("Connector not found: " + connector));
+	public List<Select> getDefaultSelects() {
+		return getSelects()
+					  .stream()
+					  .filter(Select::isDefault)
+					  .collect(Collectors.toList());
+	}
+
+	public CONNECTOR getConnector(ConnectorId connectorId) {
+		return connectors.stream()
+						 .filter(conn -> connectorId.equals(conn.getId()))
+						 .findAny()
+						 .orElseThrow(() -> new NoSuchElementException("Connector not found: " + connectorId));
 	}
 
 	public abstract List<? extends Select> getSelects();
