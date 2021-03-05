@@ -145,7 +145,11 @@ public class TableInputDescriptor {
 		final HashCodeBuilder builder = new HashCodeBuilder();
 
 		log.debug("SourceFile = {}", getSourceFile().hashCode());
-		log.debug("Filter = {}", getFilter().hashCode());
+
+		if(filter != null) {
+			log.debug("Filter = {}", getFilter().hashCode());
+		}
+
 		log.debug("Primary = {}", getPrimary().hashCode());
 
 		builder.append(getSourceFile());
