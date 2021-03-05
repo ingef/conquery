@@ -71,12 +71,14 @@ public class PreprocessorCommand extends ConqueryCommand {
 			int currentHash = preprocessingJob.getDescriptor()
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
+
 			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
 				 InputStream is = outFile.readHeader()) {
 
 				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
-
+				log.debug("Old hash = `{}`, New hash = `{}`", header.getValidityHash(), currentHash);
 				if (header.getValidityHash() == currentHash) {
+
 					log.info("\tHASH STILL VALID");
 					return false;
 				}
