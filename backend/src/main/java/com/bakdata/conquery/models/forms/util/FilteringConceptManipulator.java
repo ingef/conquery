@@ -31,6 +31,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @Builder(builderClassName = "ConceptManipulatorInternalBuilder", builderMethodName = "internalBuilder")
+@Deprecated
 public class FilteringConceptManipulator implements ConceptManipulator{
 
 	@Builder.Default
@@ -54,10 +55,10 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 		}
 
 		Set<ConceptSelectId> blockDefaultSelectIntersection = selectBlockList
-			.stream()
-			.distinct()
-			.filter(selectDefault::contains)
-			.collect(Collectors.toSet());
+																	  .stream()
+																	  .filter(selectDefault::contains)
+																	  .collect(Collectors.toSet());
+
 		if (!blockDefaultSelectIntersection.isEmpty()) {
 			throw new IllegalArgumentException(
 				String
@@ -72,11 +73,11 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 		}
 
 		Set<ConnectorId> blockDefaultTableIntersection = tableDefault
-			.stream()
-			.map(CQTable::getId)
-			.distinct()
-			.filter(tableBlockList::contains)
-			.collect(Collectors.toSet());
+																 .stream()
+																 .map(CQTable::getId)
+																 .filter(tableBlockList::contains)
+																 .collect(Collectors.toSet());
+
 		if (!blockDefaultTableIntersection.isEmpty()) {
 			throw new IllegalArgumentException(
 				String
