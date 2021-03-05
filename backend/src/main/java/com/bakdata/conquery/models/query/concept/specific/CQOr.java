@@ -33,7 +33,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @CPSType(id = "OR", base = CQElement.class)
-public class CQOr extends CQElement implements ForcedExists {
+public class CQOr extends CQElement implements DefaultSelectSettable {
 	@Getter
 	@Setter
 	@NotEmpty
@@ -43,6 +43,11 @@ public class CQOr extends CQElement implements ForcedExists {
 	@Getter
 	@Setter
 	private boolean createExists = false;
+
+	@Override
+	public void setDefaultExists() {
+		createExists = true;
+	}
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {

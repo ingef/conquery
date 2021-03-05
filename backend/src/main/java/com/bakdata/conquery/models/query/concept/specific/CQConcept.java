@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.forms.util.DefaultSelectConceptManipulator;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -66,7 +67,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants
 @JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
-public class CQConcept extends CQElement implements NamespacedIdHolding {
+public class CQConcept extends CQElement implements NamespacedIdHolding, DefaultSelectSettable {
 
 	/**
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
@@ -278,5 +279,10 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		// Do nothing
+	}
+
+	@Override
+	public void setDefaultExists() {
+		DefaultSelectConceptManipulator.FillMethod.ADD_TO_COMPLETE_EMPTY.fill(this);
 	}
 }

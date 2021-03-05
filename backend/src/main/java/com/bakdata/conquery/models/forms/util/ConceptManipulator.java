@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.forms.util;
 import java.util.List;
 
 import com.bakdata.conquery.models.forms.util.DefaultSelectConceptManipulator.FillMethod;
-import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 
 public interface ConceptManipulator {
@@ -17,13 +15,9 @@ public interface ConceptManipulator {
 	
 	default void consume(List<? extends CQElement> userFeatures, DatasetRegistry namespaces) {
 		for(CQElement feature : userFeatures) {
-			feature.visit(new QueryVisitor() {
-				
-				@Override
-				public void accept(Visitable element) {
-					if (element instanceof CQConcept) {
-						consume((CQConcept) element, namespaces);
-					}					
+			feature.visit(element -> {
+				if (element instanceof CQConcept) {
+					consume((CQConcept) element, namespaces);
 				}
 			});
 		}

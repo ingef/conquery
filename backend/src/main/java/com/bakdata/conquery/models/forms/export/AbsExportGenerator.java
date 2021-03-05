@@ -8,11 +8,11 @@ import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.specific.DefaultSelectSettable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.experimental.UtilityClass;
 
@@ -30,8 +30,13 @@ public class AbsExportGenerator {
 
 	public static AbsoluteFormQuery generate(DatasetRegistry namespaces, List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 
-		// Apply defaults to user concept
-		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
+		// Apply defaults to user concepts
+		for (CQElement feature : features) {
+			if(feature instanceof DefaultSelectSettable){
+				((DefaultSelectSettable) feature).setDefaultExists();
+			}
+		}
+
 
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
 				queryGroup,
