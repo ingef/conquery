@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -28,6 +29,7 @@ import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -63,7 +65,7 @@ public class QueryProcessor {
 		query.addVisitors(visitors);
 
 		// Initialize checks that need to traverse the query tree
-		visitors.putInstance(QueryUtils.SingleReusedChecker.class, new QueryUtils.SingleReusedChecker());
+		visitors.putInstance(QueryUtils.OnlyReusingChecker.class, new QueryUtils.OnlyReusingChecker());
 		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
 
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user.getId(), storage).map(Group::getName).orElse("none");
@@ -92,7 +94,7 @@ public class QueryProcessor {
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
-			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.SingleReusedChecker.class).getOnlyReused();
+			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
 			final ExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
 
@@ -127,6 +129,16 @@ public class QueryProcessor {
 		// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
 		if (!query.getClass().equals(execution.getSubmitted().getClass())) {
 			return null;
+		}
+
+		// If SecondaryIds differ from selected and prior, we cannot reuse them.
+		if(query instanceof SecondaryIdQuery){
+			final SecondaryIdDescription selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId();
+			final SecondaryIdDescription reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
+
+			if(!selectedSecondaryId.equals(reusedSecondaryId)){
+				return null;
+			}
 		}
 
 		log.trace("Re-executing Query {}", executionId);

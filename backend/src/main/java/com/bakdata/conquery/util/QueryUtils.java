@@ -76,36 +76,40 @@ public class QueryUtils {
 	}
 
 	/**
-	 * Find first and only directly ReusedQuery in the queries tree, and return its
-	 * Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
-	 *
-	 * @return Null if not only a single {@link CQReusedQuery} was found beside
-	 * {@link CQAnd} / {@link CQOr}.
+	 * Test if this query is only reusing a different query (ie not combining it with other elements, or changing its secondaryId)
 	 */
-	public static class SingleReusedChecker implements QueryVisitor {
+	public static class OnlyReusingChecker implements QueryVisitor {
 
-		final List<CQReusedQuery> reusedElements = new ArrayList<>();
+		private CQReusedQuery reusedQuery = null;
 		private boolean containsOthersElements = false;
 
 		@Override
 		public void accept(Visitable element) {
+			if(containsOthersElements){
+				return;
+			}
+
 			if (element instanceof CQReusedQuery) {
-				reusedElements.add((CQReusedQuery) element);
+				if (reusedQuery == null) {
+					reusedQuery = (CQReusedQuery) element;
+				}
+				else {
+					containsOthersElements = true;
+				}
+				return;
 			}
-			else if (element instanceof CQAnd || element instanceof CQOr || element instanceof QueryDescription) {
-				// Ignore these elements
-			}
-			else {
+
+			if (!(element instanceof CQAnd || element instanceof CQOr || element instanceof QueryDescription)) {
 				containsOthersElements = true;
 			}
 		}
 
 		public Optional<ManagedExecutionId> getOnlyReused() {
-			if (reusedElements.size() > 1 || containsOthersElements) {
+			if (containsOthersElements) {
 				return Optional.empty();
 			}
 
-			return Optional.of(reusedElements.get(0).getQuery());
+			return Optional.of(reusedQuery.getQuery());
 		}
 	}
 
