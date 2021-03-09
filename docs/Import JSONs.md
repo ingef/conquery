@@ -84,7 +84,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/OutputDescription.java#L35) | required | `boolean` | `false` |  |  | 
 </p></details>
 
-### LINE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/LineOutput.java#L11-L13)</sup></sub></sup>
+### LINE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/LineOutput.java#L12-L14)</sup></sub></sup>
 Outputs the current line in the file.
 
 <details><summary>Details</summary><p>
@@ -139,7 +139,7 @@ Supported Fields:
 </p></details>
 
 ### Type TableInputDescriptor<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/TableInputDescriptor.java#L26-L33)</sup></sub></sup>
-An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}. It requires a primary Output and at least one normal output. Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
+An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}. It requires a primary Output and at least one normal output. Input data can be filtered using the field filter, which is evaluated as a groovy script on every row.
 
 <details><summary>Details</summary><p>
 
