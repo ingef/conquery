@@ -1,6 +1,15 @@
-trigger:
-  - master
-  - develop
+pr:
+  branches:
+    include:
+      - "*"
+  paths:
+    # Wild cards are not supported with path filters (In PR trigger). https://docs.microsoft.com/en-us/azure/devops/pipelines/repos/github?view=azure-devops&tabs=yaml#paths
+    include:
+      - "pom.xml"
+      - "backend"
+      - "autodoc"
+    exclude:
+      - "frontend"
 
 variables:
   - group: ConqueryConstants
