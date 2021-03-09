@@ -49,8 +49,7 @@ public class EntityDateQueryPlan implements QueryPlan {
         for (Object[] line : preResult.asContained().listResultLines()) {
 
             // Transform the date set of a result line back to the actual result line
-            CDateSet entityDate = CDateSet.create();
-            entityDate.addAll((CDateSet) line[0]);
+            CDateSet entityDate = (CDateSet) line[0];
             entityDate.retainAll(dateRange);
 
             // Generate DateContexts in the provided resolutions

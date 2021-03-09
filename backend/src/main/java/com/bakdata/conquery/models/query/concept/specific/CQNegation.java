@@ -28,6 +28,7 @@ public class CQNegation extends CQElement {
 	private CQElement child;
 
 	@InternalOnly
+	@Getter @Setter
 	private ConceptQueryPlan.DateAggregationAction dateAction;
 
 	@Override

@@ -50,6 +50,8 @@ public class EntityDateQuery extends IQuery {
     @NotNull @Valid
     private final CDateRange dateRange;
 
+    @NotNull
+    private final ConceptQueryPlan.DateAggregationMode dateAggregationMode;
 
 
     @Override
@@ -78,13 +80,15 @@ public class EntityDateQuery extends IQuery {
 
     @Override
     public void resolve(QueryResolveContext context) {
-        query.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
-        features.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
+        query.resolve(context.withDateAggregationMode(dateAggregationMode));
+        features.resolve(context);
     }
 
     @Override
     public void collectResultInfos(ResultInfoCollector collector) {
         features.collectResultInfos(collector);
+
+        collector.getInfos().removeIf(ConqueryConstants.DATES_INFO::equals);
 
         collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
         collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);

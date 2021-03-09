@@ -44,6 +44,7 @@ public class CQAnd extends CQElement implements ForcedExists{
 	boolean createExists = false;
 
 	@InternalOnly
+	@Getter @Setter
 	private ConceptQueryPlan.DateAggregationAction dateAction;
 
 	@Override
