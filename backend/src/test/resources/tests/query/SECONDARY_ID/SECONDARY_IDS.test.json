@@ -13,6 +13,7 @@
             "number"
           ],
           "type": "CONCEPT",
+          "excludeFromSecondaryIdQuery" : false,
           "label": "vs",
           "tables": [
             {
