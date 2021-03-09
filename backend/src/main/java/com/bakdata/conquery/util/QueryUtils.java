@@ -75,7 +75,7 @@ public class QueryUtils {
 		}
 
 		public boolean resolvesExternalIds() {
-			return elements.size() > 0;
+			return !elements.isEmpty();
 		}
 	}
 
@@ -167,6 +167,12 @@ public class QueryUtils {
 		public void accept(Visitable element) {
 			if(element instanceof CQConcept){
 				final CQConcept cqConcept = (CQConcept) element;
+
+				// Excluded Concepts are not available
+				if(cqConcept.isExcludeFromSecondaryIdQuery()){
+					return;
+				}
+
 				for (Connector connector : cqConcept.getConcept().getConnectors()) {
 					for (Column column : connector.getTable().getColumns()) {
 						if(column.getSecondaryId() == null){

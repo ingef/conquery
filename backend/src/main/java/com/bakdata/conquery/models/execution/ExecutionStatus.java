@@ -74,32 +74,35 @@ public abstract class ExecutionStatus {
 	@FieldNameConstants
 	public static class Full extends ExecutionStatus {
 
-        /**
-         * Holds a description for each column, present in the result.
-         */
-        private List<ColumnDescriptor> columnDescriptions;
+		/**
+		 * Holds a description for each column, present in the result.
+		 */
+		private List<ColumnDescriptor> columnDescriptions;
 
-        /**
-         * Indicates if the concepts that are included in the query description can be accessed by the user.
-         */
-        private boolean canExpand;
+		/**
+		 * Indicates if the concepts that are included in the query description can be accessed by the user.
+		 */
+		private boolean canExpand;
 
-        /**
-         * Is set to the query description if the user can expand all included concepts.
-         */
-        private QueryDescription query;
+		/**
+		 * Is set to the query description if the user can expand all included concepts.
+		 */
+		private QueryDescription query;
 
-        /**
-         * Is set when the QueryFailed
-         */
-        private ConqueryErrorInfo error;
+		/**
+		 * Is set when the QueryFailed
+		 */
+		private ConqueryErrorInfo error;
 
-        /**
-         * The groups this execution is shared with.
-         */
-        private Collection<GroupId> groups;
+		/**
+		 * The groups this execution is shared with.
+		 */
+		private Collection<GroupId> groups;
 
-        @NsIdRefCollection
+		/**
+		 * Possible {@link SecondaryIdDescription}s available, of {@link com.bakdata.conquery.models.concepts.Concept}s used in this Query.
+		 */
+		@NsIdRefCollection
 		private Set<SecondaryIdDescription> availableSecondaryIds;
 	}
 }

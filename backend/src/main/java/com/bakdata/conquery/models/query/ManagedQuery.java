@@ -339,6 +339,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
 		query.visit(visitor);
 	}
 }
