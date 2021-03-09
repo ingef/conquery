@@ -54,8 +54,8 @@ public class RelativeFormQuery extends IQuery {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
-		features.resolve(context);
-		outcomes.resolve(context);
+		features.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
+		outcomes.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
 	}
 	
 	@Override
