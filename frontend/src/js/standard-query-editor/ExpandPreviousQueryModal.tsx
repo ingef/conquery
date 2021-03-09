@@ -1,9 +1,10 @@
-import Modal from "../modal/Modal";
 import React, { FC } from "react";
 import T from "i18n-react";
+import styled from "@emotion/styled";
+
+import Modal from "../modal/Modal";
 import PrimaryButton from "../button/PrimaryButton";
 import TransparentButton from "../button/TransparentButton";
-import styled from "@emotion/styled";
 
 const Description = styled.p`
   max-width: 400px;

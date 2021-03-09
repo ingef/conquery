@@ -103,6 +103,29 @@ interface PropsT {
   onExpandClick: (q: PreviousQueryQueryNodeType) => void;
 }
 
+const nodeHasActiveSecondaryId = (
+  node: QueryNodeType,
+  activeSecondaryId: string | null
+) => {
+  if (!activeSecondaryId) {
+    return false;
+  }
+
+  if (node.isPreviousQuery) {
+    return (
+      !!node.availableSecondaryIds &&
+      node.availableSecondaryIds.includes(activeSecondaryId)
+    );
+  } else {
+    return node.tables.some(
+      (table) =>
+        !table.exclude &&
+        table.supportedSecondaryIds &&
+        table.supportedSecondaryIds.includes(activeSecondaryId)
+    );
+  }
+};
+
 const QueryNode: FC<PropsT> = ({
   node,
   andIdx,
@@ -113,7 +136,6 @@ const QueryNode: FC<PropsT> = ({
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
 }) => {
-  const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -121,15 +143,11 @@ const QueryNode: FC<PropsT> = ({
     (state) => state.queryEditor.selectedSecondaryId
   );
 
-  const hasActiveSecondaryId =
-    !!activeSecondaryId &&
-    !!node.tables &&
-    node.tables.some(
-      (table) =>
-        !table.exclude &&
-        table.supportedSecondaryIds &&
-        table.supportedSecondaryIds.includes(activeSecondaryId)
-    );
+  const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
+  const hasActiveSecondaryId = nodeHasActiveSecondaryId(
+    node,
+    activeSecondaryId
+  );
 
   const item = {
     // Return the data describing the dragged item
@@ -145,6 +163,7 @@ const QueryNode: FC<PropsT> = ({
 
     label: node.label,
     excludeTimestamps: node.excludeTimestamps,
+    excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
 
     additionalInfos: node.additionalInfos,
     matchingEntries: node.matchingEntries,
@@ -164,7 +183,6 @@ const QueryNode: FC<PropsT> = ({
           tree: node.tree,
           tables: node.tables,
           selects: node.selects,
-          excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
         }),
   };
   const [, drag] = useDrag({

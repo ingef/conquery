@@ -78,11 +78,12 @@ const filterItem = (
   const baseItem = {
     label: item.label,
     excludeTimestamps: item.excludeTimestamps,
+    excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
     loading: item.loading,
     error: item.error,
   };
 
-  if (item.isPreviousQuery)
+  if (item.isPreviousQuery) {
     return {
       ...baseItem,
 
@@ -91,12 +92,12 @@ const filterItem = (
       query: item.query,
       isPreviousQuery: item.isPreviousQuery,
       canExpand: item.canExpand,
+      availableSecondaryIds: item.availableSecondaryIds,
     };
-  else
+  } else {
     return {
       ...baseItem,
 
-      excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
       ids: item.ids,
       description: item.description,
       tables: item.tables,
@@ -109,6 +110,7 @@ const filterItem = (
 
       isPreviousQuery: item.isPreviousQuery,
     };
+  }
 };
 
 const setGroupProperties = (node, andIdx, properties) => {
@@ -669,6 +671,7 @@ const loadPreviousQuerySuccess = (state: StandardQueryStateT, action: any) => {
     loading: false,
     query: action.payload.data.query,
     canExpand: action.payload.data.canExpand,
+    availableSecondaryIds: action.payload.data.availableSecondaryIds,
   });
 };
 const loadPreviousQueryError = (state: StandardQueryStateT, action: any) => {

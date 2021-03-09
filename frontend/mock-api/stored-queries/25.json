@@ -7,7 +7,10 @@
   "version": 0,
   "tags": ["Fun"],
   "canExpand": true,
+  "secondaryId": "fun2_fall_id",
+  "availableSecondaryIds": ["fun2_fall_id"],
   "query": {
+    "secondaryId": "fun2_fall_id",
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "AND",
@@ -25,11 +28,13 @@
               "children": [
                 {
                   "query": "25602",
-                  "type": "SAVED_QUERY"
+                  "type": "SAVED_QUERY",
+                  "excludeFromSecondaryIdQuery": true
                 },
                 {
                   "ids": ["action_movies"],
                   "type": "CONCEPT",
+                  "excludeFromSecondaryIdQuery": true,
                   "excludeFromTimeAggregation": true,
                   "selects": ["123456789"],
                   "tables": [
