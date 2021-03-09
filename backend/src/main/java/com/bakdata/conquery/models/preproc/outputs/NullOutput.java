@@ -23,7 +23,7 @@ public class NullOutput extends OutputDescription {
 	public int hashCode(){
 		return new HashCodeBuilder()
 					   .append(super.hashCode())
-					   .append(inputType.name().hashCode())
+					   .append(inputType.name())
 					   .toHashCode();
 	}
 

@@ -28,7 +28,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  *
  * It requires a primary Output and at least one normal output.
  *
- * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
+ * Input data can be filtered using the field filter, which is evaluated as a groovy script on every row.
  *
  */
 @Data
@@ -140,7 +140,9 @@ public class TableInputDescriptor {
 		return new Object2IntArrayMap<>(headers, indices);
 	}
 
-
+	/**
+	 * Hashcode is used to in validity-hash of Preprocessed files.
+	 */
 	public int hashCode() {
 		final HashCodeBuilder builder = new HashCodeBuilder();
 

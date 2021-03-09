@@ -91,8 +91,6 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 
 	/**
 	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
-	 * @param csvDirectory
-	 * @param tag
 	 */
 	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();

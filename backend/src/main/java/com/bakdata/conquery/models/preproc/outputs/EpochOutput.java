@@ -27,7 +27,6 @@ public class EpochOutput extends OutputDescription {
 		return new HashCodeBuilder()
 					   .append(super.hashCode())
 					   .append(inputColumn)
-					   .append(getClass().getAnnotation(CPSType.class).id())
 					   .toHashCode();
 	}
 

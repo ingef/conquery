@@ -34,6 +34,9 @@ public abstract class OutputDescription {
 
 	private boolean required = false;
 
+	/**
+	 * Hashcode is used to in validity-hash of Preprocessed files.
+	 */
 	@Override
 	public int hashCode(){
 		return new HashCodeBuilder()

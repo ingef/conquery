@@ -253,6 +253,9 @@ public class Preprocessor {
 		return outRow;
 	}
 
+	/**
+	 * Resolve a source file with tag appended if present, in csvDirectory.
+	 */
 	public static File resolveSourceFile(String fileName, Path csvDirectory, Optional<String> tag) {
 		if(tag.isEmpty()){
 			return csvDirectory.resolve(fileName).toFile();

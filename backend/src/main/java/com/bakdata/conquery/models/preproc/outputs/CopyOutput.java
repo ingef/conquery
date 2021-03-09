@@ -35,7 +35,7 @@ public class CopyOutput extends OutputDescription {
 		return new HashCodeBuilder()
 					   .append(super.hashCode())
 					   .append(inputColumn)
-					   .append(inputType.name().hashCode())
+					   .append(inputType.name())
 					   .toHashCode();
 	}
 
