@@ -8,10 +8,12 @@ import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -25,6 +27,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedSimpleResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.util.QueryUtils;
+import com.google.common.base.Preconditions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,23 +47,14 @@ public class CQOr extends CQElement implements ForcedExists {
 	@Setter
 	private boolean createExists = false;
 
+	@InternalOnly
+	private ConceptQueryPlan.DateAggregationAction dateAction;
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		QPNode[] nodes = new QPNode[children.size()];
+		Preconditions.checkNotNull(dateAction);
 
-		ConceptQueryPlan.DateAggregationAction dateAction = null;
-		switch(context.getDateAggregationMode()) {
-			case NONE:
-				dateAction = null;
-				break;
-			case MERGE:
-			case LOGICAL:
-				dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
-				break;
-			case INTERSECT:
-				dateAction = ConceptQueryPlan.DateAggregationAction.INTERSECT;
-				break;
-		}
+		QPNode[] nodes = new QPNode[children.size()];
 
 		for (int i = 0; i < nodes.length; i++) {
 			nodes[i] = children.get(i).createQueryPlan(context, plan);
@@ -86,6 +80,23 @@ public class CQOr extends CQElement implements ForcedExists {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+		Preconditions.checkNotNull(context.getDateAggregationMode());
+
+		switch(context.getDateAggregationMode()) {
+			case NONE:
+				dateAction = ConceptQueryPlan.DateAggregationAction.BLOCK;
+				break;
+			case MERGE:
+			case LOGICAL:
+				dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
+				break;
+			case INTERSECT:
+				dateAction = ConceptQueryPlan.DateAggregationAction.INTERSECT;
+				break;
+			default:
+				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
+		}
+
 		children.forEach(c -> c.resolve(context));
 	}
 

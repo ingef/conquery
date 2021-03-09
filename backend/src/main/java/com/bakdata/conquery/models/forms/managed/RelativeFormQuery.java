@@ -53,17 +53,17 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
-		query.resolve(context);
+		query.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
 		features.resolve(context);
 		outcomes.resolve(context);
 	}
 	
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE)),
+		return new RelativeFormQueryPlan(query.createQueryPlan(context),
 			// At the moment we do not use the dates of feature and outcome query
-			features.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE)),
-			outcomes.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE)),
+			features.createQueryPlan(context),
+			outcomes.createQueryPlan(context),
 			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 	}
 

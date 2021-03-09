@@ -39,7 +39,7 @@ public class CQSampled {
 	 * @return a new SampledNode
 	 */
 	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
-		ConceptQueryPlan subPlan = new ConceptQueryPlan(ctx);
+		ConceptQueryPlan subPlan = new ConceptQueryPlan(ConceptQueryPlan.DateAggregationMode.MERGE);
 		subPlan.setChild(child.createQueryPlan(ctx, subPlan));
 		return new SampledNode(subPlan, sampler);
 	}
@@ -48,6 +48,7 @@ public class CQSampled {
 	 * @see CQElement#resolve(QueryResolveContext)
 	 */
 	public void resolve(QueryResolveContext context) {
+
 		child.resolve(context);
 	}
 }

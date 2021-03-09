@@ -63,8 +63,8 @@ public class EntityDateQuery extends IQuery {
             }
         });
         return new EntityDateQueryPlan(
-                query.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE)),
-                features.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE)),
+                query.createQueryPlan(context),
+                features.createQueryPlan(context),
                 resolutionsAndAlignments,
                 dateRange
         );
@@ -78,8 +78,8 @@ public class EntityDateQuery extends IQuery {
 
     @Override
     public void resolve(QueryResolveContext context) {
-        query.resolve(context);
-        features.resolve(context);
+        query.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
+        features.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
     }
 
     @Override

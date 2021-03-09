@@ -44,15 +44,15 @@ public class AbsoluteFormQuery extends IQuery {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);
-		features.resolve(context);
+		features.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
 	}
 
 	@Override
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
-			query.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE)),
+			query.createQueryPlan(context),
 			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-			features.createQueryPlan(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE))
+			features.createQueryPlan(context)
 		);
 	}
 	

@@ -2,23 +2,31 @@ package com.bakdata.conquery.models.query.concept;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.constraints.NotEmpty;
 
 /**
  * Query type that combines a set of {@link ConceptQuery}s which are separately evaluated
@@ -29,10 +37,25 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
+@Slf4j
 public class ArrayConceptQuery extends IQuery {
+
+	@NotEmpty
 	private List<ConceptQuery> childQueries = new ArrayList<>();
+	@NotNull
+	protected ConceptQueryPlan.DateAggregationMode dateAggregationMode;
+
+
+	@InternalOnly
+	protected ConceptQueryPlan.DateAggregationMode resolvedDateAggregationMode;
+
+	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, ConceptQueryPlan.DateAggregationMode dateAggregationMode) {
+		this.childQueries = queries;
+		this.dateAggregationMode = dateAggregationMode;
+	}
 	
 	public ArrayConceptQuery( List<ConceptQuery> queries) {
+		this(queries, ConceptQueryPlan.DateAggregationMode.NONE);
 		if(queries == null) {
 			throw new IllegalArgumentException("No sub query list provided.");
 		}
@@ -41,13 +64,24 @@ public class ArrayConceptQuery extends IQuery {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		childQueries.forEach(c -> c.resolve(context));
+		resolvedDateAggregationMode = dateAggregationMode;
+		if(context.getDateAggregationMode() != null) {
+			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
+			resolvedDateAggregationMode = context.getDateAggregationMode();
+		}
+
+		if (resolvedDateAggregationMode == null) {
+			log.trace("No date aggregation mode was availiable. Falling back to MERGE");
+			resolvedDateAggregationMode = ConceptQueryPlan.DateAggregationMode.MERGE;
+
+		}
+		childQueries.forEach(c -> c.resolve(context.withDateAggregationMode(resolvedDateAggregationMode)));
 	}
 
 	@Override
 	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
-		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(context);
+		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(!Objects.equals(resolvedDateAggregationMode, ConceptQueryPlan.DateAggregationMode.NONE));
 		aq.addChildPlans(childQueries, context);
 		return aq;
 	}

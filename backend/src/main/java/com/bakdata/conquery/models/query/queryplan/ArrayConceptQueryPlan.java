@@ -31,12 +31,8 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	@ToString.Exclude
 	private boolean generateDateAggregation = false;
 
-	private ArrayConceptQueryPlan(boolean generateDateAggregation) {
+	public ArrayConceptQueryPlan(boolean generateDateAggregation) {
 		this.generateDateAggregation = generateDateAggregation;
-	}
-
-	public ArrayConceptQueryPlan(QueryPlanContext context) {
-		this(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE));
 	}
 
 	public boolean isOfInterest(Bucket bucket) {

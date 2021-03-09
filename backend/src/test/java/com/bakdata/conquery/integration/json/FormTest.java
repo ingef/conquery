@@ -118,7 +118,7 @@ public class FormTest extends ConqueryTestSpec {
 		DatasetId dataset = support.getNamespace().getDataset().getId();
 		
 		log.info("{} FORM INIT", getLabel());
-		form.resolve(new QueryResolveContext(dataset, namespaces));
+		form.resolve(new QueryResolveContext(dataset, namespaces, null));
 		
 		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset, support.getConfig());
 

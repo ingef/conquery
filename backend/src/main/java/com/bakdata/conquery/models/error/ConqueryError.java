@@ -12,6 +12,8 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -140,6 +142,28 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			this();
 			getContext().put(FAILED_ELEMENT, unresolvableElementId.toString());
 			getContext().put(FAILED_ELEMENT_CLASS, unresolvableElementId.getClass().getSimpleName());
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_DATE_AGGREGATION_RESOLVE")
+	public static class ExecutionResolveDateAggregationError extends ContextError {
+
+		private final static String CONTEXT_DATE_AGGREGATION = "CONTEXT_DATE_AGGREGATION";
+		private final static String CQ_ELEM_DATE_AGGREGATION = "CQ_ELEM_DATE_AGGREGATION";
+		private final static String TEMPLATE = "The date aggregation mode in the resolve context (${" + CONTEXT_DATE_AGGREGATION + "}) and the query element (${" + CQ_ELEM_DATE_AGGREGATION + "}) differ.";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExecutionResolveDateAggregationError() {
+			super(TEMPLATE);
+		}
+
+		public ExecutionResolveDateAggregationError(QueryResolveContext context, ConceptQueryPlan.DateAggregationMode elementMode) {
+			this();
+			getContext().put(CONTEXT_DATE_AGGREGATION, context.getDateAggregationMode().toString());
+			getContext().put(CQ_ELEM_DATE_AGGREGATION, elementMode.toString());
 		}
 	}
 

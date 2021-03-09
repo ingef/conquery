@@ -29,21 +29,20 @@ public class RelExportGenerator {
 
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getTimeUnit().getAlignment());
 
-		return generate(mode.getForm().getPrerequisite(), mode.getFeatures(), mode.getOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), namespaces, resolutionsAndAlignments);
+		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getResolvedOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), namespaces, resolutionsAndAlignments);
 	}
 	
-	public static RelativeFormQuery generate(IQuery query, List<CQElement> features, List<CQElement> outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContext.CalendarUnit timeUnit, DatasetRegistry namespaces, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
-		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
-		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(outcomes, namespaces);
+	public static RelativeFormQuery generate(IQuery query, ArrayConceptQuery features, ArrayConceptQuery outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContext.CalendarUnit timeUnit, DatasetRegistry namespaces, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
+
 
 		return new RelativeFormQuery(
 			query, 
 			setInfos(
-				AbsExportGenerator.createSubQuery(features),
+				features,
 				FeatureGroup.FEATURE
 			),
 			setInfos(
-				AbsExportGenerator.createSubQuery(outcomes),
+				outcomes,
 				FeatureGroup.OUTCOME
 			),
 			indexSelector, 

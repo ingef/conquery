@@ -2,12 +2,16 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import java.util.function.Consumer;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Abstract data class specifying the data needed for a TemporalQuery.
@@ -35,8 +39,8 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
-		index.resolve(context);
-		preceding.resolve(context);
+		index.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
+		preceding.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
 	}
 	
 	@Override

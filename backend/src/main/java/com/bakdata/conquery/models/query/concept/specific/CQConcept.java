@@ -18,6 +18,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
@@ -82,6 +83,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	private boolean excludeFromTimeAggregation = false;
 	private boolean excludeFromSecondaryIdQuery = false;
+
+	@InternalOnly @NotNull
+	private boolean aggregateEventDates;
 
 	@Override
 	public String getLabel(Locale cfg) {
@@ -159,7 +163,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			Column validityDateColumn = selectValidityDateColumn(table);
 
-			if(!Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE)){
+			if(aggregateEventDates){
 				if (validityDateColumn != null) {
 					aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
 				}
@@ -283,6 +287,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		// Do nothing
+		this.aggregateEventDates = !Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE);
 	}
 }

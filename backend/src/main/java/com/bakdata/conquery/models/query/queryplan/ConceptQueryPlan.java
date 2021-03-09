@@ -42,10 +42,6 @@ public class ConceptQueryPlan implements QueryPlan {
 		}
 	}
 
-	public ConceptQueryPlan(QueryPlanContext ctx) {
-		this(ctx.getDateAggregationMode());
-	}
-
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
