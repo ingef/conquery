@@ -80,14 +80,17 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
+	public ExecutionStatus.Full getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req)
+			throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 		authorize(user, query, Ability.READ);
 		query.awaitDone(10, TimeUnit.SECONDS);
+
 		return processor.getStatus(
-			query,
-			RequestAwareUriBuilder.fromRequest(req),
-			user);
+				query,
+				RequestAwareUriBuilder.fromRequest(req),
+				user
+		);
 	}
 }

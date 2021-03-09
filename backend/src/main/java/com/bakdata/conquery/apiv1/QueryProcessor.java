@@ -55,7 +55,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
+	public ExecutionStatus.Full postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
 		authorize(user, dataset.getId(), Ability.READ);
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
@@ -96,7 +96,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final ExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
+			final ExecutionStatus.Full status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
 
 			if(status != null){
 				return status;
@@ -114,7 +114,7 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	private ExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+	private ExecutionStatus.Full tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
 
 		// If this is only a re-executing query, execute the underlying query instead.
 		if (maybeId.isEmpty()) {
@@ -180,7 +180,7 @@ public class QueryProcessor {
 		}
 	}
 
-	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
+	public ExecutionStatus.Full getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
 		query.initExecutable(datasetRegistry, config);
 		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user,datasetRegistry));
 	}
