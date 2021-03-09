@@ -129,12 +129,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		group.addArgument("--fast-fail")
 			 .action(Arguments.storeTrue())
+			 .setDefault(false)
 			 .help("Stop preprocessing and exit with failure if an error occures that prevents the generation of a cqpp.");
 
 		group.addArgument("--strict")
 			 .type(new BooleanArgumentType())
 			 .setDefault(true)
-			 .help("Fail immediately when files are missing.");
+			 .help("Escalate missing files to errors.");
 
 	}
 
@@ -146,8 +147,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
-		isFailFast = namespace.get("fast-fail") != null && namespace.getBoolean("fast-fail");
-		isStrict = namespace.getBoolean("strict") == null || namespace.getBoolean("strict");
+		isFailFast = namespace.getBoolean("fast-fail");
+		isStrict = namespace.getBoolean("strict");
 
 		final List<String> tags = namespace.getList("tag");
 
