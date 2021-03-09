@@ -4,10 +4,7 @@ import type { DatasetIdT } from "../api/types";
 
 import { defaultError, defaultSuccess } from "../common/actions";
 import { useLoadTrees } from "../concept-trees/actions";
-import {
-  loadPreviousQueries,
-  useLoadPreviousQueries,
-} from "../previous-queries/list/actions";
+import { useLoadPreviousQueries } from "../previous-queries/list/actions";
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import { setMessage } from "../snack-message/actions";
 
@@ -116,7 +113,7 @@ export const useSelectDataset = () => {
         dispatch(loadQuery(nextDataset.query));
       }
 
-      dispatch(loadTrees(datasetId));
+      loadTrees(datasetId);
 
       // CLEAR Redux Form
       if (activeForm) {

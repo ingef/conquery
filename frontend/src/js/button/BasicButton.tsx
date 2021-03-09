@@ -7,6 +7,7 @@ interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
   small?: boolean;
   large?: boolean;
   active?: boolean;
+  autoFocus?: boolean; // Should actually be within the extends, not sure why I had to declare this.
 }
 
 const Button = styled("button")<PropsT>`

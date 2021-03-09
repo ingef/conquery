@@ -6,6 +6,7 @@
   "createdAt": "2016-12-02T14:19:09Z",
   "version": 0,
   "tags": ["Fun"],
+  "canExpand": true,
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

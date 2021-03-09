@@ -182,6 +182,7 @@ module.exports = function (app, port) {
               Date.now() - Math.floor(Math.random() * 10000000)
             ).toISOString(),
             own: Math.random() < 0.1,
+            canExpand: Math.random() < 0.8,
             shared: Math.random() < 0.8,
             resultUrl: notExecuted ? null : `/api/results/results.csv`,
             ownerName: "System",

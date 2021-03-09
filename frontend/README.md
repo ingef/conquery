@@ -29,9 +29,8 @@ Commands analogoues to `start_production.sh` script.
 ### Using node / express
 
 ```bash
-yarn
-yarn build
-PORT=8000 yarn run start-production
+docker build -t frontend .
+docker run -d -p 8000:8000 -name frontend frontend
 ```
 
 ## Setup development

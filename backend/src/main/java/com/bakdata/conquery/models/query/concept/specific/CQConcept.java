@@ -42,8 +42,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
-import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
-import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -63,17 +61,13 @@ import lombok.extern.slf4j.Slf4j;
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
 @Slf4j
-@FieldNameConstants
-@JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	/**
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
 	 */
-	public static final String FIELDNAME_IDS = "ids";
-
-	@JsonProperty(FIELDNAME_IDS)
+	@JsonProperty("ids")
 	@Valid @NotEmpty @NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
 
@@ -121,6 +115,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 		Concept<?> concept = getConcept();
 
+		final SecondaryIdDescriptionId secondaryId = context.getSelectedSecondaryId();
+
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable table : tables) {
 			try {
@@ -164,7 +160,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
-			final QPNode filtersNode = conceptChild(concept, context, filters, aggregators);
+			concept.getConcept();
+			final QPNode filtersNode = concept.createConceptQuery(context, filters, aggregators);
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
 			
@@ -176,7 +173,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
 						  .map(SecondaryIdDescription::getId)
-						  .filter(o -> Objects.equals(context.getSelectedSecondaryId(), o))
+						  .filter(o -> {
+							  return Objects.equals(secondaryId, o);
+						  })
 						  .collect(MoreCollectors.toOptional())
 						  .orElse(null);
 
@@ -222,13 +221,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return ids.stream()
 				  .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
 				  .toArray(ConceptElement[]::new);
-	}
-
-	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
-		if (filters.isEmpty() && aggregators.isEmpty()) {
-			return new Leaf();
-		}
-		return FiltersNode.create(filters, aggregators);
 	}
 
 	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<Select> select) {
