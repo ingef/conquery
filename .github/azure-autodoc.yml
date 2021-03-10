@@ -17,8 +17,8 @@ variables:
 pool:
   vmImage: $(IMAGE)
 steps:
-#  - checkout: self
-#    persistCredentials: true
+  - checkout: self
+    persistCredentials: true
 #  - task: Maven@3
 #    displayName: build conquery
 #    inputs:
@@ -40,7 +40,7 @@ steps:
       script: |
         git fetch
         git checkout $(System.PullRequest.SourceBranch)
-        mvn -f autodoc/pom.xml exec:java -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs/
+        mvn -f autodoc/pom.xml clean package exec:java -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs/
 
         if [ $? -ne 0 ]
         then
