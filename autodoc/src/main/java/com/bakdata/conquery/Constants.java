@@ -2,7 +2,6 @@ package com.bakdata.conquery;
 
 import java.net.InetAddress;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Currency;
 import java.util.Locale;
@@ -12,6 +11,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
