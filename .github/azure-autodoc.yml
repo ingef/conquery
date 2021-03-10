@@ -36,11 +36,11 @@ steps:
     displayName: push new docs
     inputs:
       targetType: inline
-      workingDirectory: docs/
+      workingDirectory: ./
       script: |
         git fetch
         git checkout $(System.PullRequest.SourceBranch)
-        mvn exec:java -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=./
+        mvn exec:java -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs/
 
         echo "Diffing the generated docs with the previous state"
 
@@ -53,7 +53,7 @@ steps:
         echo "Documentation needs update"
         git config --global user.email "bot@bakdata.com"
         git config --global user.name "bakdata-bot"
-        git add *
+        git add docs/*
         git commit --message "automatic update to docs"
         git push
         echo "Documentation updated"
