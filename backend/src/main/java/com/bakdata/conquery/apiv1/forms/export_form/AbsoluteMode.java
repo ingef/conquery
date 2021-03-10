@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -48,6 +49,6 @@ public class AbsoluteMode extends Mode {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		// Resolve all
-		features.forEach(e -> e.resolve(context));
+		features.forEach(e -> e.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE)));
 	}
 }

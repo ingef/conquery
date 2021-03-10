@@ -102,8 +102,11 @@ public class ArrayConceptQuery extends IQuery {
 			// Remove DateInfo from each childQuery			
 			infos.subList(lastIndex, infos.size()).removeAll(List.of(dateInfo));
 		}
-		// Add one DateInfo for the whole Query
-		collector.getInfos().add(0, dateInfo);
+
+		if(!Objects.equals(getResolvedDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE)){
+			// Add one DateInfo for the whole Query
+			collector.getInfos().add(0, dateInfo);
+		}
 	}
 
 	@Override

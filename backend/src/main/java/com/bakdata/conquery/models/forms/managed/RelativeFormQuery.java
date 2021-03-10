@@ -78,12 +78,6 @@ public class RelativeFormQuery extends IQuery {
 	public void collectResultInfos(ResultInfoCollector collector) {
 		ResultInfoCollector featureHeader = features.collectResultInfos();
 		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos();
-		//remove SpecialDateUnion
-		featureHeader.getInfos().remove(0);
-		outcomeHeader.getInfos().remove(0);
-		//remove resolution info
-		featureHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
-		outcomeHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
 
 		// resolution
 		collector.add(ConqueryConstants.RESOLUTION_INFO);

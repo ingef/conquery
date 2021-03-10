@@ -59,8 +59,6 @@ public class AbsoluteFormQuery extends IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		features.collectResultInfos(collector);
-		//remove SpecialDateUnion
-		collector.getInfos().remove(0);
 
 		collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
 		collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
