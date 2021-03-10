@@ -149,11 +149,13 @@ public class Constants {
 				 .base(new Base(QueryDescription.class, ""))
 				 .base(new Base(CQElement.class, ""))
 				 .base(new Base(FilterValue.class, ""))
-				 .base(new Base(ExecutionStatus.class, "Query Execution Status"))
 
 				 .hide(Response.class)
 				 .hide(ZonedDateTime.class)
 				 .hide(Range.class)
+
+				 .otherClass(ExecutionStatus.Full.class)
+				 .otherClass(ExecutionStatus.Overview.class)
 				 .otherClass(IdLabel.class)
 				 .otherClass(FrontendConfig.class)
 				 .otherClass(FERoot.class)
