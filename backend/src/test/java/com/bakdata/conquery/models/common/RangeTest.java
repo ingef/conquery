@@ -138,7 +138,7 @@ class RangeTest {
 	public void coveredQuartersNotAFullQuarter() {
 		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 1, 10), LocalDate.of(2000, 3, 15));
 
-		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrder(CDateRange.of(LocalDate.of(2000, 1, 10), LocalDate.of(2000, 3, 31)));
+		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrder(CDateRange.of(LocalDate.of(2000, 1, 10), LocalDate.of(2000, 3, 15)));
 	}
 	
 	public static List<Arguments> deserialize() {
