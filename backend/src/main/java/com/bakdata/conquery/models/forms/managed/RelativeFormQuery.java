@@ -76,9 +76,6 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		ResultInfoCollector featureHeader = features.collectResultInfos();
-		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos();
-
 		// resolution
 		collector.add(ConqueryConstants.RESOLUTION_INFO);
 		// index
@@ -86,8 +83,8 @@ public class RelativeFormQuery extends IQuery {
 		// event date
 		collector.add(ConqueryConstants.EVENT_DATE_INFO);
 
-		final List<ResultInfo> featureInfos = featureHeader.getInfos();
-		final List<ResultInfo> outcomeInfos = outcomeHeader.getInfos();
+		final List<ResultInfo> featureInfos = features.collectResultInfos().getInfos();
+		final List<ResultInfo> outcomeInfos = outcomes.collectResultInfos().getInfos();
 
 		//date ranges
 		if (!featureInfos.isEmpty()){

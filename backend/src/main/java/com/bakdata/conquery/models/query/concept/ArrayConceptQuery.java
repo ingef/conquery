@@ -50,16 +50,15 @@ public class ArrayConceptQuery extends IQuery {
 	protected ConceptQueryPlan.DateAggregationMode resolvedDateAggregationMode;
 
 	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, ConceptQueryPlan.DateAggregationMode dateAggregationMode) {
+		if(queries == null) {
+			throw new IllegalArgumentException("No sub query list provided.");
+		}
 		this.childQueries = queries;
 		this.dateAggregationMode = dateAggregationMode;
 	}
 	
 	public ArrayConceptQuery( List<ConceptQuery> queries) {
 		this(queries, ConceptQueryPlan.DateAggregationMode.NONE);
-		if(queries == null) {
-			throw new IllegalArgumentException("No sub query list provided.");
-		}
-		this.childQueries = queries;
 	}
 
 	@Override
@@ -71,8 +70,8 @@ public class ArrayConceptQuery extends IQuery {
 		}
 
 		if (resolvedDateAggregationMode == null) {
-			log.trace("No date aggregation mode was availiable. Falling back to MERGE");
-			resolvedDateAggregationMode = ConceptQueryPlan.DateAggregationMode.MERGE;
+			log.trace("No date aggregation mode was availiable. Falling back to NONE");
+			resolvedDateAggregationMode = ConceptQueryPlan.DateAggregationMode.NONE;
 
 		}
 		childQueries.forEach(c -> c.resolve(context.withDateAggregationMode(resolvedDateAggregationMode)));

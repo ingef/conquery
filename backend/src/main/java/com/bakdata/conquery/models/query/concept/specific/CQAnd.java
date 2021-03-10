@@ -1,15 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -30,6 +20,14 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.Consumer;
 
 @CPSType(id = "AND", base = CQElement.class)
 public class CQAnd extends CQElement implements ForcedExists{

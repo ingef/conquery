@@ -88,8 +88,6 @@ public class EntityDateQuery extends IQuery {
     public void collectResultInfos(ResultInfoCollector collector) {
         features.collectResultInfos(collector);
 
-        collector.getInfos().removeIf(ConqueryConstants.DATES_INFO::equals);
-
         collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
         collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
         collector.getInfos().add(2, ConqueryConstants.DATE_RANGE_INFO);
