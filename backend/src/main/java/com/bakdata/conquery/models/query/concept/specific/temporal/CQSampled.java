@@ -14,6 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Set;
+
 /**
  * This class represents a wrapper around any type of {@link CQElement} but also
  * holds a sampler to select a single day from the child elements result.
@@ -41,6 +43,9 @@ public class CQSampled {
 	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
 		ConceptQueryPlan subPlan = new ConceptQueryPlan(ConceptQueryPlan.DateAggregationMode.MERGE);
 		subPlan.setChild(child.createQueryPlan(ctx, subPlan));
+		// Since we create the plan manually we have to register the lower date aggregators manually.
+		// Such an aggregator exists because it was enforced in CQAbstractTemporalQuery::resolve on the child.
+		subPlan.getDateAggregator().register(subPlan.getChild().getDateAggregators());
 		return new SampledNode(subPlan, sampler);
 	}
 
