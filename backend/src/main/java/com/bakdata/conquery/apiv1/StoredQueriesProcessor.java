@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -112,7 +113,7 @@ public class StoredQueriesProcessor {
         storage.removeExecution(executionId);
     }
 
-    public ExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
+    public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
         ManagedExecution<?> query = storage.getExecution(queryId);
 
         authorize(user, query, Ability.READ);

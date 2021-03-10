@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -55,7 +55,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
+	public FullExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
 		authorize(user, dataset.getId(), Ability.READ);
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
@@ -96,7 +96,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final ExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
+			final FullExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
 
 			if(status != null){
 				return status;
@@ -114,7 +114,7 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	private ExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
 
 		// If this is only a re-executing query, execute the underlying query instead.
 		if (maybeId.isEmpty()) {
@@ -180,12 +180,12 @@ public class QueryProcessor {
 		}
 	}
 
-	public ExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
+	public FullExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
 		query.initExecutable(datasetRegistry, config);
 		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user,datasetRegistry));
 	}
 
-	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
+	public FullExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
 		return null;
 	}
