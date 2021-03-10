@@ -122,6 +122,7 @@ public class GroupHandler {
 
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
 		Introspection introspec = Introspection.from(root, method.getClassInfo()).findMethod(method);
+
 		try (Closeable details = details(getRestMethod(method) + "\u2001" + url, method.getClassInfo(), introspec)) {
 			out.paragraph("Method: " + code(method.getName()));
 			for (MethodParameterInfo param : method.getParameterInfo()) {
