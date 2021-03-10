@@ -77,6 +77,19 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE);
 		}
 
+		// Reuse in SecondaryId, but do exclude
+		{
+			final SecondaryIdQuery reused = new SecondaryIdQuery();
+			final CQReusedQuery root = new CQReusedQuery(id);
+			root.setExcludeFromSecondaryId(true);
+			reused.setRoot(root);
+
+
+			reused.setSecondaryId(conquery.getNamespace().getStorage().getSecondaryIds().get(0));
+
+			IntegrationUtils.assertQueryResult(conquery, reused, 2L, ExecutionState.DONE);
+		}
+
 		// Reuse Multiple times with different query types
 		{
 			final SecondaryIdQuery reused1 = new SecondaryIdQuery();

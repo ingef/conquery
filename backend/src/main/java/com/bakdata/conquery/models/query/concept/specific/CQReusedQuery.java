@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @CPSType(id="SAVED_QUERY", base=CQElement.class)
 @RequiredArgsConstructor @AllArgsConstructor(onConstructor_=@JsonCreator)
@@ -37,6 +38,9 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	@Getter @InternalOnly
 	private IQuery resolvedQuery;
 
+	@Setter
+	private boolean excludeFromSecondaryId =  false;
+
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		requiredQueries.add(query);
@@ -44,7 +48,13 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		return resolvedQuery.getReusableComponents().createQueryPlan(context, plan);
+		// We shadow the SecondaryId if it is excluded
+		if(excludeFromSecondaryId){
+			context = context.withSelectedSecondaryId(null);
+		}
+
+		return resolvedQuery.getReusableComponents()
+							.createQueryPlan(context, plan);
 	}
 	
 	@Override

@@ -49,13 +49,10 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Strings;
-import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter
@@ -168,16 +165,12 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			final Connector connector = table.getResolvedConnector();
 
 			// Select matching secondaryId if available
-			final SecondaryIdDescriptionId selectedSecondaryId =
+			final boolean hasSelectedSecondaryId =
 					Arrays.stream(connector.getTable().getColumns())
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
 						  .map(SecondaryIdDescription::getId)
-						  .filter(o -> {
-							  return Objects.equals(secondaryId, o);
-						  })
-						  .collect(MoreCollectors.toOptional())
-						  .orElse(null);
+						  .anyMatch(o -> Objects.equals(secondaryId, o));
 
 			tableNodes.add(
 				new ConceptNode(
@@ -190,7 +183,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 						filtersNode
 					),
 						// if the node is excluded, don't pass it into the Node.
-					excludeFromSecondaryIdQuery ? null : selectedSecondaryId
+					excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? secondaryId : null
 				)
 			);
 		}
