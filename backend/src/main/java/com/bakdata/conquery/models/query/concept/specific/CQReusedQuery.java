@@ -29,34 +29,37 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@CPSType(id="SAVED_QUERY", base=CQElement.class)
-@RequiredArgsConstructor @AllArgsConstructor(onConstructor_=@JsonCreator)
+@CPSType(id = "SAVED_QUERY", base = CQElement.class)
+@RequiredArgsConstructor
+@AllArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter
 public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 
-	@Getter @NotNull @Valid
+	@NotNull
+	@Valid
 	private final ManagedExecutionId query;
-	@Getter @InternalOnly
+	@InternalOnly
 	private IQuery resolvedQuery;
 
 	@Setter
-	private boolean excludeFromSecondaryId =  false;
+	private boolean excludeFromSecondaryId = false;
 
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		requiredQueries.add(query);
 	}
-	
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		// We shadow the SecondaryId if it is excluded
-		if(excludeFromSecondaryId){
+		if (excludeFromSecondaryId) {
 			context = context.withSelectedSecondaryId(null);
 		}
 
 		return resolvedQuery.getReusableComponents()
 							.createQueryPlan(context, plan);
 	}
-	
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		resolvedQuery = ((ManagedQuery) Objects.requireNonNull(
@@ -68,22 +71,23 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 		// Yey recursion, because the query might consists of another CQReusedQuery or CQExternal
 		resolvedQuery.resolve(context);
 	}
-	
+
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
-		if(resolvedQuery != null) {
+		if (resolvedQuery != null) {
 			resolvedQuery.visit(visitor);
 		}
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {}
+	public void collectResultInfos(ResultInfoCollector collector) {
+	}
 
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> ids) {
 		checkNotNull(ids);
-		if(query != null) {
+		if (query != null) {
 			ids.add(query);
 		}
 	}

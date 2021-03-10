@@ -12,14 +12,13 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -45,7 +44,8 @@ public class SecondaryIdQuery extends IQuery {
 	@NotNull
 	private CQElement root;
 
-	@NsIdRef @NotNull
+	@NsIdRef
+	@NotNull
 	private SecondaryIdDescription secondaryId;
 
 	/**
@@ -55,12 +55,15 @@ public class SecondaryIdQuery extends IQuery {
 	private ConceptQuery query;
 
 	@InternalOnly
-	private Set<ColumnId> withSecondaryId;
+	@NsIdRefCollection
+	private Set<Column> withSecondaryId;
+
 	@InternalOnly
-	private Set<TableId> withoutSecondaryId;
+	@NsIdRefCollection
+	private Set<Table> withoutSecondaryId;
 
 	@JsonProperty
-	public void setRoot(@NotNull CQElement root){
+	public void setRoot(@NotNull CQElement root) {
 		this.root = root;
 		this.query = new ConceptQuery(root);
 	}
@@ -74,23 +77,6 @@ public class SecondaryIdQuery extends IQuery {
 		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
 
 		return new SecondaryIdQueryPlan(queryPlan, secondaryId.getId(), withSecondaryId, withoutSecondaryId);
-	}
-
-	/**
-	 * selects the right column for the given secondaryId from a table
-	 */
-	@CheckForNull
-	private Column findSecondaryIdColumn(Table table) {
-
-		for (Column col : table.getColumns()) {
-			if (!secondaryId.equals(col.getSecondaryId())) {
-				continue;
-			}
-
-			return col;
-		}
-
-		return null;
 	}
 
 	@Override
@@ -115,14 +101,14 @@ public class SecondaryIdQuery extends IQuery {
 			final CQConcept concept = (CQConcept) queryElement;
 
 			for (CQTable connector : concept.getTables()) {
-				final Table table = connector.getResolvedConnector().getTable();
+				final Table table = connector.getConnector().getTable();
 				final Column secondaryIdColumn = findSecondaryIdColumn(table);
 
 				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryIdQuery()) {
-					withSecondaryId.add(secondaryIdColumn.getId());
+					withSecondaryId.add(secondaryIdColumn);
 				}
 				else {
-					withoutSecondaryId.add(table.getId());
+					withoutSecondaryId.add(table);
 				}
 			}
 		});
@@ -131,6 +117,24 @@ public class SecondaryIdQuery extends IQuery {
 		if (withSecondaryId.isEmpty()) {
 			throw new ConqueryError.NoSecondaryIdSelectedError();
 		}
+	}
+
+	/**
+	 * selects the right column for the given secondaryId from a table
+	 */
+	@CheckForNull
+	private Column findSecondaryIdColumn(Table table) {
+
+		for (Column col : table.getColumns()) {
+			//TODO somehow these are equal by Id but not the same object (in tests)
+			if (col.getSecondaryId() == null || !secondaryId.getId().equals(col.getSecondaryId().getId())) {
+				continue;
+			}
+
+			return col;
+		}
+
+		return null;
 	}
 
 	@Override
