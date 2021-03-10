@@ -2,7 +2,10 @@ import React, { FC, useRef } from "react";
 
 import { useDrag } from "react-dnd";
 
-import { PREVIOUS_QUERY } from "../../common/constants/dndTypes";
+import {
+  PREVIOUS_QUERY,
+  PREVIOUS_SECONDARY_ID_QUERY,
+} from "../../common/constants/dndTypes";
 import { DatasetIdT } from "../../api/types";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
@@ -20,7 +23,10 @@ interface PropsT {
 const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
   const isNotEditing = !(query.editingLabel || query.editingTags);
   const ref = useRef<HTMLDivElement | null>(null);
-  const dragType = PREVIOUS_QUERY;
+  const dragType =
+    query.queryType === "CONCEPT_QUERY"
+      ? PREVIOUS_QUERY
+      : PREVIOUS_SECONDARY_ID_QUERY;
 
   const item = {
     width: 0,
