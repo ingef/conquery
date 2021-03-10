@@ -87,6 +87,9 @@
     "secondaryIds": [
       {
         "name" : "secondary"
+      },
+      {
+        "name" : "ignored"
       }
     ],
     "tables": [
@@ -110,7 +113,13 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "ignored",
+            "type": "STRING",
+            "secondaryId": "ignored"
           }
+
         ]
       },
       {

@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
@@ -29,7 +30,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
 
-		final String testJson = In.resource("/tests/query/SECONDARY_ID/SECONDARY_IDS.test.json").withUTF8().readAll();
+		final String testJson = In.resource("/tests/query/SECONDARY_ID_MIXED/SECONDARY_IDS_MIXED.test.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
 
@@ -55,7 +56,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
-		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, 5L, ExecutionState.DONE);
+		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE);
 
 		assertThat(id).isNotNull();
 
@@ -73,7 +74,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused.setSecondaryId(conquery.getNamespace().getStorage().getSecondaryIds().get(0));
 
-			IntegrationUtils.assertQueryResult(conquery, reused, 5L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE);
 		}
 
 		// Reuse Multiple times with different query types
@@ -83,22 +84,42 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused1.setSecondaryId(query.getSecondaryId());
 
-			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 5L, ExecutionState.DONE);
+			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 4L, ExecutionState.DONE);
+			{
+				final SecondaryIdQuery reused2 = new SecondaryIdQuery();
+				reused2.setRoot(new CQReusedQuery(reused1Id));
 
-			final SecondaryIdQuery reused2 = new SecondaryIdQuery();
-			reused2.setRoot(new CQReusedQuery(reused1Id));
+				reused2.setSecondaryId(query.getSecondaryId());
 
-			reused2.setSecondaryId(query.getSecondaryId());
+				final ManagedExecutionId reused2Id = IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE);
 
-			final ManagedExecutionId reused2Id = IntegrationUtils.assertQueryResult(conquery, reused2, 5L, ExecutionState.DONE);
+				assertThat(reused2Id)
+						.as("Query should be reused.")
+						.isEqualTo(reused1Id);
 
-			assertThat(reused2Id)
-					.as("Query should be reused.")
-					.isEqualTo(reused1Id);
+				// Now we change to ConceptQuery
+				final ConceptQuery reused3 = new ConceptQuery(new CQReusedQuery(reused2Id));
 
-			final ConceptQuery reused3 = new ConceptQuery(new CQReusedQuery(reused2Id));
+				IntegrationUtils.assertQueryResult(conquery, reused3, 2L, ExecutionState.DONE);
+			}
 
-			IntegrationUtils.assertQueryResult(conquery, reused3, 2L, ExecutionState.DONE);
+			{
+				final SecondaryIdQuery reusedDiffId = new SecondaryIdQuery();
+				reusedDiffId.setRoot(new CQReusedQuery(reused1Id));
+
+				// ignored is a single global value and therefore the same as by-PID
+				reusedDiffId.setSecondaryId(conquery.getNamespace()
+											   .getStorage()
+											   .getSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored")));
+
+				final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, reusedDiffId, 2L, ExecutionState.DONE);
+
+				assertThat(executionId)
+						.as("Query should NOT be reused.")
+						.isNotEqualTo(reused1Id);
+			}
+
+
 		}
 
 	}

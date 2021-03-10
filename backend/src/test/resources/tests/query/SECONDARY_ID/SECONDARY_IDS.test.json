@@ -87,6 +87,9 @@
     "secondaryIds": [
       {
         "name": "secondary"
+      },
+      {
+        "name": "ignored"
       }
     ],
     "tables": [
