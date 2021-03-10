@@ -34,6 +34,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.impl.type.BooleanArgumentType;
 import net.sourceforge.argparse4j.impl.type.FileArgumentType;
 import net.sourceforge.argparse4j.impl.type.StringArgumentType;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
@@ -49,7 +50,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 	private final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 	private ExecutorService pool;
 	private boolean isFailFast = false;
-	private boolean isStrict;
+	private boolean isStrict = true;
 
 	public PreprocessorCommand() {
 		this(null);
@@ -69,6 +70,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 			int currentHash = preprocessingJob.getDescriptor()
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
+
 
 			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
 				 InputStream is = outFile.readHeader()) {
@@ -127,11 +129,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		group.addArgument("--fast-fail")
 			 .action(Arguments.storeTrue())
+			 .setDefault(false)
 			 .help("Stop preprocessing and exit with failure if an error occures that prevents the generation of a cqpp.");
 
-		group.addArgument("--disable-strict")
-			 .action(Arguments.storeTrue())
-			 .help("Do not fail preprocessing for missing files immediately.");
+		group.addArgument("--strict")
+			 .type(new BooleanArgumentType())
+			 .setDefault(true)
+			 .help("Escalate missing files to errors.");
 
 	}
 
@@ -143,8 +147,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
 
-		isFailFast = namespace.get("fast-fail") != null && namespace.getBoolean("fast-fail");
-		isStrict = namespace.get("disable-strict") == null || !namespace.getBoolean("disable-strict");
+		isFailFast = namespace.getBoolean("fast-fail");
+		isStrict = namespace.getBoolean("strict");
 
 		final List<String> tags = namespace.getList("tag");
 
