@@ -26,14 +26,13 @@ steps:
       goals: package
       options: $(MVN) -T 1C -DskipTests -pl !executable
   - task: Bash@3
-   displayName: Pull and reset
-   inputs:
-     targetType: inline
-     workingDirectory: ./
-     script: |
-       git fetch
-       git checkout $(System.PullRequest.SourceBranch)
-
+    displayName: Pull and reset
+    inputs:
+      targetType: inline
+      workingDirectory: ./
+      script: |
+        git fetch
+        git checkout $(System.PullRequest.SourceBranch)
   - task: Maven@3
     displayName: autodoc
     inputs:
