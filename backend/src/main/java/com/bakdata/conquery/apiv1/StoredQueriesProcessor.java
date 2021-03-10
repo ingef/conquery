@@ -1,6 +1,18 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.*;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -11,6 +23,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -22,13 +35,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.UriBuilder;
-import java.util.*;
-import java.util.stream.Stream;
-
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -97,7 +103,7 @@ public class StoredQueriesProcessor {
         storage.removeExecution(executionId);
     }
 
-    public ExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
+    public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
         ManagedExecution<?> query = storage.getExecution(queryId);
 
         authorize(user, query, Ability.READ);

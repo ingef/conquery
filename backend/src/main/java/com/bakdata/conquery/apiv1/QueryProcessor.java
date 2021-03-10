@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -186,7 +185,7 @@ public class QueryProcessor {
 		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user,datasetRegistry));
 	}
 
-	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
+	public FullExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
 		return null;
 	}
