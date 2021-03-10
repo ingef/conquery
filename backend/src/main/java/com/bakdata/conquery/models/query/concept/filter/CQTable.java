@@ -6,13 +6,13 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,12 +30,10 @@ public class CQTable {
 
 	@JsonBackReference
 	private CQConcept concept;
-	@Valid
-	@NotNull
-	private ConnectorId id;
+
+	@NsIdRef
+	@JsonProperty("id")
+	private Connector connector;
 
 	private ValidityDateContainer dateColumn;
-
-	@JsonIgnore
-	private Connector resolvedConnector;
 }

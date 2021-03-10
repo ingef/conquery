@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,7 +28,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -112,15 +110,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 		Concept<?> concept = getConcept();
 
-		final SecondaryIdDescriptionId secondaryId = context.getSelectedSecondaryId();
-
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable table : tables) {
-			try {
-				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
-			}
-			catch (NoSuchElementException exc){
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), concept.getDataset(), exc);
+			if (table.getConnector() == null){
 				continue;
 			}
 
@@ -162,15 +154,15 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
 			
-			final Connector connector = table.getResolvedConnector();
+			final Connector connector = table.getConnector();
 
-			// Select matching secondaryId if available
+			// Select if matching secondaryId available
 			final boolean hasSelectedSecondaryId =
 					Arrays.stream(connector.getTable().getColumns())
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
 						  .map(SecondaryIdDescription::getId)
-						  .anyMatch(o -> Objects.equals(secondaryId, o));
+						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
 
 			tableNodes.add(
 				new ConceptNode(
@@ -183,7 +175,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 						filtersNode
 					),
 						// if the node is excluded, don't pass it into the Node.
-					excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? secondaryId : null
+					!excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
 				)
 			);
 		}
@@ -231,13 +223,13 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	private Column selectValidityDateColumn(CQTable table) {
 		if (table.getDateColumn() != null) {
-			return table.getResolvedConnector()
+			return table.getConnector()
 						.getValidityDateColumn(table.getDateColumn().getValue());
 		}
 
 		//else use this first defined validity date column
-		if (!table.getResolvedConnector().getValidityDates().isEmpty()) {
-			return table.getResolvedConnector().getValidityDates().get(0).getColumn();
+		if (!table.getConnector().getValidityDates().isEmpty()) {
+			return table.getConnector().getValidityDates().get(0).getColumn();
 		}
 
 		return null;
@@ -257,11 +249,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		checkNotNull(namespacedIds);
 		elements.forEach(ce -> namespacedIds.add(ce.getId()));
 		selects.forEach(select -> namespacedIds.add(select.getId()));
-		tables.forEach(table -> namespacedIds.add(table.getId()));
+		tables.forEach(table -> namespacedIds.add(table.getConnector().getId()));
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		// Do nothing
+
 	}
 }

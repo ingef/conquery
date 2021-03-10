@@ -120,9 +120,8 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		CQTable cqTable = new CQTable();
 
-		cqTable.setResolvedConnector(connector);
 		cqTable.setFilters(Collections.singletonList(result));
-		cqTable.setId(connector.getId());
+		cqTable.setConnector(connector);
 
 		CQConcept cqConcept = new CQConcept();
 
