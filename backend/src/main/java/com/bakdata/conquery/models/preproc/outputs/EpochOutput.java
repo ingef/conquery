@@ -8,22 +8,27 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parse input column as {@link com.bakdata.conquery.models.common.CDate} based int.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
 @ToString(of = {"inputColumn"})
 @CPSType(id = "EPOCH", base = OutputDescription.class)
 public class EpochOutput extends OutputDescription {
 
-	private static final long serialVersionUID = 1L;
-
 	@NotNull
 	private String inputColumn;
+
+	@Override
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(inputColumn)
+					   .toHashCode();
+	}
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
