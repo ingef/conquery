@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,6 +32,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -167,7 +169,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions(datasetRegistry);
@@ -334,5 +336,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 		// Concat everything with dashes
 		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
+	}
+
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
+		query.visit(visitor);
 	}
 }

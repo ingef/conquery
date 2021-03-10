@@ -25,6 +25,14 @@ steps:
       jdkVersionOption: "1.11"
       goals: install
       options: $(MVN) -T 1C -DskipTests -pl !executable
+  - task: Bash@3
+    displayName: Pull and reset
+    inputs:
+      targetType: inline
+      workingDirectory: ./
+      script: |
+        git fetch
+        git checkout $(System.PullRequest.SourceBranch)
   - task: Maven@3
     displayName: autodoc
     inputs:
@@ -36,19 +44,22 @@ steps:
     displayName: push new docs
     inputs:
       targetType: inline
-      workingDirectory: docs/
+      workingDirectory: ./
       script: |
         echo "Diffing the generated docs with the previous state"
-        git diff --quiet HEAD || \
-        {
-          echo "Documentation needs updated"
-          git fetch
-          git checkout $(System.PullRequest.SourceBranch)
-          git config --global user.email "bot@bakdata.com"
-          git config --global user.name "bakdata-bot"
-          git add *
-          git commit --message "automatic update to docs"
-          git push
-          echo "Documentation updated"
-          exit -1
-        }
+
+        if git diff --quiet HEAD
+        then
+          echo "No changes detected"
+          exit 0
+        fi
+
+        echo "Documentation needs update"
+        git config --global user.email "bot@bakdata.com"
+        git config --global user.name "bakdata-bot"
+        git add docs/*
+        git commit --message "automatic update to docs"
+        git push || exit 1
+        echo "Documentation updated"
+
+        exit 0

@@ -17,7 +17,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -31,7 +30,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
@@ -47,6 +45,7 @@ import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -76,7 +75,7 @@ import org.jetbrains.annotations.TestOnly;
 @CPSBase
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 	
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this. 
@@ -252,25 +251,27 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
-		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
+	public OverviewExecutionStatus buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		OverviewExecutionStatus status = new OverviewExecutionStatus();
 		setStatusBase(storage, user, status, url, datasetAbilities);
 
 		return status;
 	}
 
 	/**
-	 * Renders an extensive status of this query (see {@link ExecutionStatus.Full}. The rendering can be computation intensive and can produce a large
+	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-		ExecutionStatus.Full status = new ExecutionStatus.Full();
+		FullExecutionStatus status = new FullExecutionStatus();
 		setStatusBase(storage, user, status, url, datasetAbilities);
 
 		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
 		setAdditionalFieldsForStatusWithGroups(storage, user, status);
+		setAvailableSecondaryIds(status);
+
 
 		if (state.equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
@@ -280,7 +281,15 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return status;
 	}
 
-	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus.Full status) {
+	private void setAvailableSecondaryIds(FullExecutionStatus status) {
+		final QueryUtils.AvailableSecondaryIdCollector secondaryIdCollector = new QueryUtils.AvailableSecondaryIdCollector();
+
+		visit(secondaryIdCollector);
+
+		status.setAvailableSecondaryIds(secondaryIdCollector.getIds());
+	}
+
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
@@ -297,14 +306,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
