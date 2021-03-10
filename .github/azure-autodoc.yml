@@ -40,7 +40,13 @@ steps:
       script: |
         git fetch
         git checkout $(System.PullRequest.SourceBranch)
-        mvn exec:java -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs/
+        mvn -f autodoc/pom.xml exec:java -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs/
+
+        if [ $? -ne 0 ]
+        then
+          echo "Autodoc failed"
+          exit 1
+        fi
 
         echo "Diffing the generated docs with the previous state"
 
