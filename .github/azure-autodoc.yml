@@ -19,36 +19,34 @@ pool:
 steps:
   - checkout: self
     persistCredentials: true
-#  - task: Maven@3
-#    displayName: build conquery
-#    inputs:
-#      jdkVersionOption: "1.11"
-#      goals: install
-#      options: $(MVN) -T 1C -DskipTests -pl !executable
-#  - task: Maven@3
-#    displayName: autodoc
-#    inputs:
-#      jdkVersionOption: "1.11"
-#      goals: exec:java
-#      mavenPomFile: autodoc/pom.xml
-#      options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
+  - task: Maven@3
+    displayName: build conquery
+    inputs:
+      jdkVersionOption: "1.11"
+      goals: package
+      options: $(MVN) -T 1C -DskipTests -pl !executable
+ - task: Bash@3
+   displayName: Pull and reset
+   inputs:
+     targetType: inline
+     workingDirectory: ./
+     script: |
+       git fetch
+       git checkout $(System.PullRequest.SourceBranch)
+
+  - task: Maven@3
+    displayName: autodoc
+    inputs:
+      jdkVersionOption: "1.11"
+      goals: exec:java
+      mavenPomFile: autodoc/pom.xml
+      options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
   - task: Bash@3
     displayName: push new docs
     inputs:
       targetType: inline
       workingDirectory: ./
       script: |
-        git fetch
-        git checkout $(System.PullRequest.SourceBranch)
-        mvn -f pom.xml clean package -pl !executable
-        mvn -f autodoc/pom.xml clean package exec:java -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs/
-
-        if [ $? -ne 0 ]
-        then
-          echo "Autodoc failed"
-          exit 1
-        fi
-
         echo "Diffing the generated docs with the previous state"
 
         if git diff --quiet HEAD
