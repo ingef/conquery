@@ -57,6 +57,8 @@ import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
+import com.bakdata.conquery.models.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
@@ -154,8 +156,8 @@ public class Constants {
 				 .hide(ZonedDateTime.class)
 				 .hide(Range.class)
 
-				 .otherClass(ExecutionStatus.Full.class)
-				 .otherClass(ExecutionStatus.Overview.class)
+				 .otherClass(FullExecutionStatus.class)
+				 .otherClass(OverviewExecutionStatus.class)
 				 .otherClass(IdLabel.class)
 				 .otherClass(FrontendConfig.class)
 				 .otherClass(FERoot.class)

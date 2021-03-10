@@ -251,20 +251,20 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public ExecutionStatus.Overview buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
-		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
+	public OverviewExecutionStatus buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		OverviewExecutionStatus status = new OverviewExecutionStatus();
 		setStatusBase(storage, user, status, url, datasetAbilities);
 
 		return status;
 	}
 
 	/**
-	 * Renders an extensive status of this query (see {@link ExecutionStatus.Full}. The rendering can be computation intensive and can produce a large
+	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public ExecutionStatus.Full buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-		ExecutionStatus.Full status = new ExecutionStatus.Full();
+		FullExecutionStatus status = new FullExecutionStatus();
 		setStatusBase(storage, user, status, url, datasetAbilities);
 
 		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
@@ -281,7 +281,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return status;
 	}
 
-	private void setAvailableSecondaryIds(ExecutionStatus.Full status) {
+	private void setAvailableSecondaryIds(FullExecutionStatus status) {
 		final QueryUtils.AvailableSecondaryIdCollector secondaryIdCollector = new QueryUtils.AvailableSecondaryIdCollector();
 
 		visit(secondaryIdCollector);
@@ -289,7 +289,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setAvailableSecondaryIds(secondaryIdCollector.getIds());
 	}
 
-	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, ExecutionStatus.Full status) {
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
@@ -306,14 +306,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status) {
+	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
