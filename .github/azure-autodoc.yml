@@ -25,7 +25,7 @@ steps:
       jdkVersionOption: "1.11"
       goals: package
       options: $(MVN) -T 1C -DskipTests -pl !executable
- - task: Bash@3
+  - task: Bash@3
    displayName: Pull and reset
    inputs:
      targetType: inline
