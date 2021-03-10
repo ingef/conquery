@@ -5,12 +5,14 @@ import static com.bakdata.conquery.Constants.*;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,6 +27,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.PrettyPrinter;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ClassToInstanceMap;
@@ -38,6 +41,7 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassRefTypeSignature;
 import io.github.classgraph.FieldInfo;
 import io.github.classgraph.MethodInfo;
+import io.github.classgraph.MethodParameterInfo;
 import io.github.classgraph.ScanResult;
 import io.github.classgraph.TypeArgument;
 import io.github.classgraph.TypeParameter;
@@ -67,7 +71,7 @@ public class GroupHandler {
 			out.paragraph(group.getDescription());
 		}
 		
-		for(var base : group.getBases()) {
+		for(Base base : group.getBases()) {
 			content.putAll(
 				base,
 				scan
@@ -89,28 +93,28 @@ public class GroupHandler {
 			);
 		}
 		
-		for(var resource : group.getResources()) {
+		for(Class<?> resource : group.getResources()) {
 			collectEndpoints(resource);
 		}
 		if(!endpoints.isEmpty()) {
 			out.heading("REST endpoints");
-			for(var endpoint : endpoints.stream().sorted(Comparator.comparing(Pair::getLeft)).collect(Collectors.toList())) {
+			for(Pair<String, MethodInfo> endpoint : endpoints.stream().sorted(Comparator.comparing(Pair::getLeft)).collect(Collectors.toList())) {
 				handleEndpoint(endpoint.getLeft(), endpoint.getRight());
 			}
 		}
 		
-		for(var base : group.getBases()) {
+		for(Base base : group.getBases()) {
 			handleBase(base);
 		}
 		
 		out.subHeading("Other Types");
-		for(var t : group.getOtherClasses().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
+		for(Class<?> t : group.getOtherClasses().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
 			handleClass(typeTitle(t), scan.getClassInfo(t.getName()));
 		}
 		
 		if(!group.getMarkerInterfaces().isEmpty()) {
 			out.subHeading("Marker Interfaces");
-			for(var t : group.getMarkerInterfaces().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
+			for(Class<?> t : group.getMarkerInterfaces().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
 				handleMarkerInterface(markerTitle(t), scan.getClassInfo(t.getName()));
 			}
 		}
@@ -118,9 +122,9 @@ public class GroupHandler {
 	
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
 		Introspection introspec = Introspection.from(root, method.getClassInfo()).findMethod(method);
-		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo(), introspec)) {
+		try(Closeable details = details(getRestMethod(method) + "\u2001" + url, method.getClassInfo(), introspec)) {
 			out.paragraph("Method: "+code(method.getName()));
-			for(var param : method.getParameterInfo()) {
+			for(MethodParameterInfo param : method.getParameterInfo()) {
 				if(param.hasAnnotation(PATH_PARAM) || param.hasAnnotation(AUTH) || param.hasAnnotation(CONTEXT)) {
 					continue;
 				}
@@ -133,7 +137,7 @@ public class GroupHandler {
 	private void collectEndpoints(Class<?> resource) throws IOException {
 		ClassInfo info = scan.getClassInfo(resource.getName());
 		
-		for(var method : info.getMethodInfo()) {
+		for(MethodInfo method : info.getMethodInfo()) {
 			if(getRestMethod(method) == null) {
 				continue;
 			}
@@ -148,7 +152,7 @@ public class GroupHandler {
 	}
 
 	private String getRestMethod(MethodInfo method) {
-		for(var rest : RESTS) {
+		for(String rest : RESTS) {
 			if(method.hasAnnotation(rest)) {
 				return method.getAnnotationInfo(rest).getClassInfo().getSimpleName();
 			}
@@ -183,13 +187,13 @@ public class GroupHandler {
 	}
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
-		var source = Introspection.from(root, c); 
-		try(var details = details(name, c, source)) {
+		Introspection source = Introspection.from(root, c);
+		try(Closeable details = details(name, c, source)) {
 			if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 				out.line("Supported Fields:");
 	
 				out.tableHeader("", "Field", "Type", "Default", "Example", "Description");
-				for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
+				for(FieldInfo field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
 					handleField(c, field);
 				}
 			}
@@ -226,10 +230,10 @@ public class GroupHandler {
 	}
 	
 	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
-		var source = Introspection.from(root, c); 
-		try(var details = details(name, c, source)) {			
+		Introspection source = Introspection.from(root, c);
+		try(Closeable details = details(name, c, source)) {
 			Set<String> values = new HashSet<>();
-			for(var cl : group.getOtherClasses()) {
+			for(Class<?> cl : group.getOtherClasses()) {
 				if(c.loadClass().isAssignableFrom(cl)) {
 					values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
 				}
@@ -239,7 +243,7 @@ public class GroupHandler {
 				.stream()
 				.filter(p-> c.loadClass().isAssignableFrom(p.getRight().loadClass()))
 				.forEach(p->values.add("["+p.getLeft().id()+"]("+anchor(p.getLeft().id())+")"));
-			for(var cl : group.getMarkerInterfaces()) {
+			for(Class<?> cl : group.getMarkerInterfaces()) {
 				if(c.loadClass().isAssignableFrom(cl) && !c.loadClass().equals(cl)) {
 					values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
 				}
@@ -258,10 +262,10 @@ public class GroupHandler {
 		if(!isJSONSettableField(field)) {
 			return;
 		}
-		
-		var introspec = Introspection.from(root, field.getClassInfo()).findField(field);
+
+		Introspection introspec = Introspection.from(root, field.getClassInfo()).findField(field);
 		String name = field.getName();
-		var typeSignature = field.getTypeSignatureOrTypeDescriptor();
+		TypeSignature typeSignature = field.getTypeSignatureOrTypeDescriptor();
 		Ctx ctx = new Ctx().withField(field);
 		
 		String type;
@@ -288,8 +292,8 @@ public class GroupHandler {
 	private String findDefault(ClassInfo currentType, FieldInfo field) {
 		try {
 			Object value = currentType.loadClass().getConstructor().newInstance();
-			var node = Jackson.MAPPER.valueToTree(value);
-			var def = node.get(field.getName());
+			JsonNode node = Jackson.MAPPER.valueToTree(value);
+			JsonNode def = node.get(field.getName());
 			if(def == null) {
 				return "\u2400";
 			}
@@ -313,7 +317,7 @@ public class GroupHandler {
 	}
 
 	private String editLink(Introspection intro) throws IOException {
-		var target = root.toPath().relativize(intro.getFile().getCanonicalFile().toPath());
+		Path target = root.toPath().relativize(intro.getFile().getCanonicalFile().toPath());
 		String line = intro.getLine();
 		return "[✎]("
 			+ "https://github.com/bakdata/conquery/edit/develop/"
@@ -330,7 +334,7 @@ public class GroupHandler {
 			return code(type.toString());
 		}
 		if(type instanceof ClassRefTypeSignature) {
-			var classRef = (ClassRefTypeSignature) type;
+			ClassRefTypeSignature classRef = (ClassRefTypeSignature) type;
 			Class<?> cl = classRef.loadClass();
 			
 			//ID
@@ -347,7 +351,7 @@ public class GroupHandler {
 			
 			//List
 			if(List.class.isAssignableFrom(cl)) {
-				var param = classRef.getTypeArguments().get(0);
+				TypeArgument param = classRef.getTypeArguments().get(0);
 				return LIST_OF+printType(ctx.withGeneric(true), param);
 			}
 			
@@ -381,7 +385,7 @@ public class GroupHandler {
 				return "["+type.toStringWithSimpleNames()+"]("+anchor(baseTitle(cl))+")";
 			}
 			//another contentClass
-			var match=content.values().stream().filter(p->p.getRight().loadClass().equals(cl)).collect(MoreCollectors.toOptional());
+			Optional<Pair<CPSType, ClassInfo>> match=content.values().stream().filter(p->p.getRight().loadClass().equals(cl)).collect(MoreCollectors.toOptional());
 			if(match.isPresent()) {
 				return "["+match.get().getLeft().id()+"]("+anchor(match.get().getLeft().id())+")";
 			}
@@ -467,7 +471,7 @@ public class GroupHandler {
 			return true;
 		}
 		//has @JsonCreator
-		for(var method : field.getClassInfo().getMethodAndConstructorInfo()) {
+		for(MethodInfo method : field.getClassInfo().getMethodAndConstructorInfo()) {
 			if(method.hasAnnotation(JSON_CREATOR)) {
 				if(Arrays.stream(method.getParameterInfo()).anyMatch(param->param.getName().equals(field.getName()))) {
 					return true;
