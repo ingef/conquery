@@ -59,6 +59,7 @@ steps:
         git config --global user.name "bakdata-bot"
         git add docs/*
         git commit --message "automatic update to docs"
-        git push
+        git push || exit 1
         echo "Documentation updated"
-        exit -1
+
+        exit 0
