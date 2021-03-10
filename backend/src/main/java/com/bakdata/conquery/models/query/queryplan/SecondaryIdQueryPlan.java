@@ -94,7 +94,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, ColumnId secondaryIdColumnId) {
 
 		QueryExecutionContext ctxWithPhase = ctx.withActiveSecondaryId(getSecondaryId());
-				;
 
 		TableId currentTable = secondaryIdColumnId.getTable();
 		final Column secondaryIdColumn = ctx.getStorage().getCentralRegistry().getOptional(secondaryIdColumnId).orElseThrow();
