@@ -17,33 +17,36 @@ variables:
 pool:
   vmImage: $(IMAGE)
 steps:
-  - checkout: self
-    persistCredentials: true
-  - task: Maven@3
-    displayName: build conquery
-    inputs:
-      jdkVersionOption: "1.11"
-      goals: install
-      options: $(MVN) -T 1C -DskipTests -pl !executable
-  - task: Maven@3
-    displayName: autodoc
-    inputs:
-      jdkVersionOption: "1.11"
-      goals: exec:java
-      mavenPomFile: autodoc/pom.xml
-      options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
+#  - checkout: self
+#    persistCredentials: true
+#  - task: Maven@3
+#    displayName: build conquery
+#    inputs:
+#      jdkVersionOption: "1.11"
+#      goals: install
+#      options: $(MVN) -T 1C -DskipTests -pl !executable
+#  - task: Maven@3
+#    displayName: autodoc
+#    inputs:
+#      jdkVersionOption: "1.11"
+#      goals: exec:java
+#      mavenPomFile: autodoc/pom.xml
+#      options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
   - task: Bash@3
     displayName: push new docs
     inputs:
       targetType: inline
       workingDirectory: docs/
       script: |
+        git fetch
+        git checkout $(System.PullRequest.SourceBranch)
+        $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=./
+
         echo "Diffing the generated docs with the previous state"
-        git diff --quiet HEAD || \
-        {
-          echo "Documentation needs updated"
-          git fetch
-          git checkout $(System.PullRequest.SourceBranch)
+
+        if git diff --quiet HEAD
+        then
+          echo "Documentation needs update"
           git config --global user.email "bot@bakdata.com"
           git config --global user.name "bakdata-bot"
           git add *
@@ -51,4 +54,4 @@ steps:
           git push
           echo "Documentation updated"
           exit -1
-        }
+        fi
