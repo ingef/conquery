@@ -80,7 +80,7 @@ public class CQAnd extends CQElement implements ForcedExists{
 
 		switch(context.getDateAggregationMode()) {
 			case NONE:
-				dateAction = null;
+				dateAction = ConceptQueryPlan.DateAggregationAction.BLOCK;
 				break;
 			case MERGE:
 				dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
