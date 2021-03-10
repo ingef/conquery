@@ -79,7 +79,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
-	private boolean excludeFromSecondaryIdQuery = false;
+	private boolean excludeFromSecondaryIdQuery = true;
 
 	@Override
 	public String getLabel(Locale cfg) {

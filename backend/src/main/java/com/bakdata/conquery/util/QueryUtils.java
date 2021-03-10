@@ -6,10 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -74,32 +76,40 @@ public class QueryUtils {
 	}
 
 	/**
-	 * Find first and only directly ReusedQuery in the queries tree, and return its
-	 * Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
-	 *
-	 * @return Null if not only a single {@link CQReusedQuery} was found beside
-	 * {@link CQAnd} / {@link CQOr}.
+	 * Test if this query is only reusing a different query (ie not combining it with other elements, or changing its secondaryId)
 	 */
-	public static class SingleReusedChecker implements QueryVisitor {
+	public static class OnlyReusingChecker implements QueryVisitor {
 
-		final List<CQReusedQuery> reusedElements = new ArrayList<>();
+		private CQReusedQuery reusedQuery = null;
 		private boolean containsOthersElements = false;
 
 		@Override
 		public void accept(Visitable element) {
+			if(containsOthersElements){
+				return;
+			}
+
 			if (element instanceof CQReusedQuery) {
-				reusedElements.add((CQReusedQuery) element);
+				if (reusedQuery == null) {
+					reusedQuery = (CQReusedQuery) element;
+				}
+				else {
+					containsOthersElements = true;
+				}
+				return;
 			}
-			else if (element instanceof CQAnd || element instanceof CQOr) {
-				// Ignore these elements
-			}
-			else {
+
+			if (!(element instanceof CQAnd || element instanceof CQOr || element instanceof QueryDescription)) {
 				containsOthersElements = true;
 			}
 		}
 
-		public ManagedExecutionId getOnlyReused() {
-			return (reusedElements.size() == 1 && !containsOthersElements) ? reusedElements.get(0).getQuery() : null;
+		public Optional<ManagedExecutionId> getOnlyReused() {
+			if (containsOthersElements) {
+				return Optional.empty();
+			}
+
+			return Optional.of(reusedQuery.getQuery());
 		}
 	}
 
