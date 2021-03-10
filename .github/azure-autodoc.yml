@@ -40,7 +40,7 @@ steps:
       script: |
         git fetch
         git checkout $(System.PullRequest.SourceBranch)
-        $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=./
+        mvn -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=./
 
         echo "Diffing the generated docs with the previous state"
 
