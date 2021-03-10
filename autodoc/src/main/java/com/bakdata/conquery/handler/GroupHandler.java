@@ -144,8 +144,7 @@ public class GroupHandler {
 
 			UriBuilder builder = UriBuilder.fromResource(resource);
 			if (method.hasAnnotation(PATH)) {
-				builder = builder.path(resource, method.getName())
-								 .path(((String) method.getAnnotationInfo(PATH).getParameterValues().get("value").getValue()));
+				builder = builder.path(resource, method.getName());
 			}
 
 			endpoints.add(Pair.of(builder.toTemplate(), method));
