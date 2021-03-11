@@ -110,6 +110,7 @@ public class ArrayConceptQuery extends IQuery {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
 		childQueries.forEach(q -> q.visit(visitor));
 	}
 }

@@ -88,6 +88,7 @@ public class ConceptQuery extends IQuery {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
 		root.visit(visitor);
 	}
 

@@ -38,8 +38,7 @@ public interface QueryDescription extends Visitable {
 	 * However steps that require add or manipulates queries programmatically based on the submitted query
 	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
-	 * 
-	 * @param storage Needed by {@link ManagedExecution} for the self update upon completion.
+	 *
 	 * @param datasets
 	 * @param userId
 	 * @param submittedDataset
