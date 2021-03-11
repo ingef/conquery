@@ -81,7 +81,7 @@ public class QueryProcessor {
 
 
 		Set<Permission> permissions = new HashSet<>();
-		query.collectPermissions(visitors, permissions, dataset.getId());
+		query.collectPermissions(visitors, permissions, dataset.getId(), storage, user);
 		user.checkPermissions(permissions);
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);

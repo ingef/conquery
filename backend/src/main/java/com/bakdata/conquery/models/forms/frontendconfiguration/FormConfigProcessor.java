@@ -16,6 +16,7 @@ import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.*;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -88,7 +89,8 @@ public class FormConfigProcessor {
 	 * It also tried to convert all {@link NamespacedId}s into the given dataset, so that the frontend can resolve them.
 	 */
 	public FormConfigFullRepresentation getConfig(DatasetId datasetId, User user, FormConfigId formId) {
-		user.checkPermission(FormConfigPermission.onInstance(Ability.READ, formId));
+		FormConfig form = Objects.requireNonNull(storage.getFormConfig(formId));
+		AuthorizationHelper.authorize(user,form,Ability.READ);
 		return Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId))
 			.fullRepresentation(storage, user);
 	}
@@ -151,7 +153,8 @@ public class FormConfigProcessor {
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
 	public void deleteConfig(User user, FormConfigId formId) {
-		user.checkPermission(FormConfigPermission.onInstance(Ability.DELETE, formId));
+		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
+		AuthorizationHelper.authorize(user,config,Ability.DELETE);
 		storage.removeFormConfig(formId);
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
 		for(Permission permission : user.getPermissions()) {
