@@ -48,7 +48,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			storage.addUser(user);
 			// override permission object, because it might have changed by the subject
 			// owning the permission
-			permission = mandator.addPermission(storage, permission);
+			mandator.addPermission(storage, permission);
 			user.addRole(storage, mandator);
 
 

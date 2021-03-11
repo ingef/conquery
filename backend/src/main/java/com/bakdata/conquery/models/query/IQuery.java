@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
 import lombok.EqualsAndHashCode;
 
@@ -65,6 +67,11 @@ public abstract class IQuery implements QueryDescription {
 		// than the dataset is chosen under which the query was submitted
 		DatasetId dataset = datasetOp.orElse(alternativeDataset);
 		return dataset;
+	}
+
+	@JsonIgnore
+	public CQElement getReusableComponents() {
+		throw new IllegalArgumentException(String.format("Query of Type[%s] cannot be reused", getClass()));
 	}
 
 	/**

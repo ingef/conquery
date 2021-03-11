@@ -19,9 +19,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescript
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -33,7 +33,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"table", "inputs"}, callSuper = false)
+@Slf4j
 public class TableImportDescriptor extends Labeled<TableImportDescriptorId> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -91,18 +91,24 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 
 	/**
 	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
-	 * @param csvDirectory
-	 * @param tag
 	 */
 	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();
 
-		validityHashBuilder.append(this);
+		validityHashBuilder
+				.append(getName())
+				.append(getTable())
+		;
 
 		for (TableInputDescriptor input : getInputs()) {
-			validityHashBuilder
-					.append(Preprocessor.resolveSourceFile(input.getSourceFile(), csvDirectory, tag).length());
+			validityHashBuilder.append(input.hashCode());
 		}
+
+		for (TableInputDescriptor input : getInputs()) {
+			final long length = Preprocessor.resolveSourceFile(input.getSourceFile(), csvDirectory, tag).length();
+			validityHashBuilder.append(length);
+		}
+
 		return validityHashBuilder.toHashCode();
 	}
 

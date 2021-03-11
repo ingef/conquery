@@ -43,7 +43,7 @@ public class SecondaryIdQuery extends IQuery {
 	@NotNull
 	private CQElement root;
 
-	@NsIdRef
+	@NsIdRef @NotNull
 	private SecondaryIdDescription secondaryId;
 
 	/**
@@ -144,5 +144,10 @@ public class SecondaryIdQuery extends IQuery {
 					  .map(ContainedEntityResult::listResultLines)
 					  .mapToLong(List::size)
 					  .sum();
+	}
+
+	@Override
+	public CQElement getReusableComponents() {
+		return getRoot();
 	}
 }

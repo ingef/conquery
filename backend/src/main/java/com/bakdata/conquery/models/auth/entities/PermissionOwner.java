@@ -13,12 +13,9 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.set.UnmodifiableSet;
 import org.apache.shiro.authz.Permission;
 
 /**
@@ -51,7 +48,9 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	protected String label;
 	
 	@ToString.Exclude
-	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
+	@Getter(AccessLevel.PRIVATE) // So only Jackson can use this to deserialize
+	@NotNull
+	private Set<ConqueryPermission> permissions = new HashSet<>();
 	
 	
 	public PermissionOwner(String name, String label) {
@@ -65,46 +64,65 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *
 	 * @param storage
 	 *            A storage where the permission are added for persistence.
-	 * @param permission
-	 *            The permission to add.
+	 * @param permissions
+	 *            The permissions to add.
 	 * @return Returns the added Permission
 	 */
-	public Set<ConqueryPermission> addPermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
-		HashSet<ConqueryPermission> addedPermissions = new HashSet<>();
-		for (ConqueryPermission permission : permissions) {
-			addedPermissions.add(addPermission(storage, permission));
+	public boolean addPermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
+		boolean ret = false;
+		synchronized (this) {
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ permissions.size());
+			newSet.addAll(this.permissions);
+			ret = newSet.addAll(permissions);
+			this.permissions = newSet;
+			updateStorage(storage);
 		}
-		return addedPermissions;
+		return ret;
 	}
 
-	public ConqueryPermission addPermission(MetaStorage storage, ConqueryPermission permission) {
-		if (permissions.add(permission)) {
+	public boolean addPermission(MetaStorage storage, ConqueryPermission permission) {
+		boolean ret = false;
+		synchronized (this) {
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ 1);
+			newSet.addAll(this.permissions);
+			ret = newSet.add(permission);
+			this.permissions = newSet;
 			updateStorage(storage);
-			log.trace("Added permission {} to owner {}", permission, getId());
 		}
-		return permission;
+		return ret;
 	}
 	
 	/**
 	 * Removes permissions from the owner object and from the persistent storage.
 	 *
 	 * @param storage
-	 *            A storage where the permission are added for persistence.
-	 * @param permission
-	 *            The permission to add.
+	 *            A storage where the permission are saved for persistence.
+	 * @param permissions
+	 *            The permission to remove.
 	 * @return Returns the added Permission
 	 */
-	public void removePermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
-		for (ConqueryPermission permission : permissions) {
-			removePermission(storage, permission);
+	public boolean removePermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
+		boolean ret = false;
+		synchronized (this) {
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ permissions.size());
+			newSet.addAll(this.permissions);
+			ret = newSet.removeAll(permissions);
+			this.permissions = newSet;
+			updateStorage(storage);
 		}
+		return ret;
 	}
 
-	public void removePermission(MetaStorage storage, Permission delPermission) {
-		if (permissions.remove(delPermission)) {
-			this.updateStorage(storage);
-			log.trace("Removed permission {} from owner {}", delPermission, getId());
+	public boolean removePermission(MetaStorage storage, Permission permission) {
+		boolean ret = false;
+		synchronized (this) {
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ 1);
+			newSet.addAll(this.permissions);
+			ret = newSet.remove(permission);
+			this.permissions = newSet;
+			updateStorage(storage);
 		}
+		return ret;
 	}
 
 	/**
@@ -115,31 +133,20 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return A set of the permissions hold by the owner.
 	 */
 	public Set<Permission> getPermissions() {
-		// HashSet uses internally an iterator for copying, so we need to synchronize this
-		synchronized (permissions) {
-			if (permissions.isEmpty()) {
-				return Collections.emptySet();
-			}
-			return new HashSet<>(permissions);
+		if (permissions.isEmpty()) {
+			return Collections.emptySet();
 		}
-	}
-	
-	/**
-	 * Custom property setter for permissions so that the existing Hashset is not replaced by Jackson and
-	 * the references held by the members {@link PemissionOwner#unmodifiablePermissions} and {@link PermissionOwner#synchronizedUnmodifiablePermissions}
-	 * are still valid.
-	 * @param permissions
-	 */
-	@JsonProperty
-	private void setPermissions(Set<ConqueryPermission> permissions) {
-		this.permissions.clear();
-		this.permissions.addAll(permissions);
+		return Collections.unmodifiableSet(permissions);
+
 	}
 
 	public void setPermissions(MetaStorage storage, Set<ConqueryPermission> permissionsNew) {
-		permissions.clear();
-		permissions.addAll(permissionsNew);
-		updateStorage(storage);
+		synchronized (this) {
+			Set<ConqueryPermission> newSet = new HashSet<>(permissionsNew.size());
+			newSet.addAll(permissionsNew);
+			this.permissions = newSet;
+			updateStorage(storage);
+		}
 	}
 
 	/**

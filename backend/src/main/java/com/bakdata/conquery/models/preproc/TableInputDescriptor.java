@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -19,8 +18,8 @@ import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
@@ -29,13 +28,12 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  *
  * It requires a primary Output and at least one normal output.
  *
- * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
+ * Input data can be filtered using the field filter, which is evaluated as a groovy script on every row.
  *
  */
 @Data
 @Slf4j
-@EqualsAndHashCode
-public class TableInputDescriptor implements Serializable {
+public class TableInputDescriptor {
 
 	private static final long serialVersionUID = 1L;
 	private static final String[] AUTO_IMPORTS = Stream.of(
@@ -55,6 +53,7 @@ public class TableInputDescriptor implements Serializable {
 	@NotNull
 	@Valid
 	private OutputDescription primary = new CopyOutput("pid", "id", MajorTypeId.STRING);
+
 	@Valid @NotEmpty
 	private OutputDescription[] output;
 
@@ -139,5 +138,22 @@ public class TableInputDescriptor implements Serializable {
 		final int[] indices = new int[headers.length];
 		Arrays.setAll(indices, i -> i);
 		return new Object2IntArrayMap<>(headers, indices);
+	}
+
+	/**
+	 * Hashcode is used to in validity-hash of Preprocessed files.
+	 */
+	public int hashCode() {
+		final HashCodeBuilder builder = new HashCodeBuilder();
+
+		builder.append(getSourceFile());
+		builder.append(getFilter());
+		builder.append(getPrimary());
+
+		for (OutputDescription outputDescription : getOutput()) {
+			builder.append(outputDescription.hashCode());
+		}
+
+		return builder.toHashCode();
 	}
 }

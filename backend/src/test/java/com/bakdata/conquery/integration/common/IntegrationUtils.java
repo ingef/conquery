@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -79,8 +80,9 @@ public class IntegrationUtils {
 
 	/**
 	 * Send a query onto the conquery instance and assert the result's size.
+	 * @return
 	 */
-	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState expectedState) {
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState expectedState) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
 		Response response = conquery.getClient()
@@ -89,7 +91,7 @@ public class IntegrationUtils {
 									.post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
 
 		if (response.getStatusInfo().getFamily().equals(Response.Status.Family.familyOf(400)) && expectedState.equals(ExecutionState.FAILED)) {
-			return;
+			return null;
 		}
 
 		final JsonNode jsonNode = response.readEntity(JsonNode.class);
@@ -127,6 +129,8 @@ public class IntegrationUtils {
 					.describedAs("Query results")
 					.isEqualTo(size);
 		}
+
+		return ManagedExecutionId.Parser.INSTANCE.parse(id);
 	}
 
 	private static URI getPostQueryURI(StandaloneSupport conquery) {
