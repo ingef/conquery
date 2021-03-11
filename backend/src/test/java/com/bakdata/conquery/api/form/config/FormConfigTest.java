@@ -6,16 +6,14 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import java.time.ZoneId;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
+import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -27,18 +25,20 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.auth.permissions.*;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
@@ -205,13 +205,48 @@ public class FormConfigTest {
 						.build());
 
 	}
+
+	private static class TestForm implements Form {
+
+		@Override
+		public String getFormType() {
+			return "test-form";
+		}
+
+		@Override
+		public Set<ManagedExecutionId> collectRequiredQueries() {
+			return Collections.emptySet();
+		}
+
+		@Override
+		public void resolve(QueryResolveContext context) {
+
+		}
+
+		@Override
+		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+			return Collections.emptyMap();
+		}
+
+		@Override
+		public String getLocalizedTypeLabel() {
+			return null;
+		}
+
+		@Override
+		public void visit(Consumer<Visitable> visitor) {
+
+		}
+	}
 	
 	@Test
 	public void getConfigs() {
 		// PREPARE
+
 		User user = new User("test","test");
 		storage.addUser(user);
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
+		user.addPermission(storage, FormPermission.onInstance(Ability.CREATE, form.getFormType()));
 		
 		ExportForm form2 = new ExportForm();
 		RelativeMode mode3 = new RelativeMode();
@@ -219,6 +254,8 @@ public class FormConfigTest {
 		mode3.setForm(form);
 		mode3.setFeatures(List.of(new CQConcept()));
 		mode3.setOutcomes(List.of(new CQConcept()));
+
+		TestForm form3 = new TestForm();
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 
@@ -230,9 +267,18 @@ public class FormConfigTest {
 			.formType(form2.getFormType())
 			.values(mapper.valueToTree(form2))
 			.build();
+		// This should not be retrieved by the user because it does not hold the Permission to create TestForms
+		FormConfigAPI formConfig3 = FormConfigAPI.builder()
+				.formType(form3.getFormType())
+				.values(mapper.valueToTree(form2))
+				.build();
 		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
 		FormConfigId formId2 = processor.addConfig(user, datasetId, formConfig2);
-		
+		FormConfigId _formId3 = processor.addConfig(user, datasetId, formConfig3);
+
+		FormScanner.FRONTEND_FORM_CONFIGS = Map.of(
+				form.getFormType(), new TextNode("dummy"));
+
 		// EXECUTE
 		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptySet());
 		

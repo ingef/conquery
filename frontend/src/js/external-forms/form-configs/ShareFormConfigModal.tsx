@@ -49,6 +49,20 @@ interface PropsT {
   onShareSuccess: () => void;
 }
 
+const getUserGroupsValue = (
+  userGroups: UserGroupT[],
+  formConfig?: FormConfigT
+) => {
+  return formConfig && formConfig.groups
+    ? userGroups
+        .filter((group) => formConfig.groups?.includes(group.id))
+        .map((group) => ({
+          label: group.label,
+          value: group.id,
+        }))
+    : [];
+};
+
 const ShareFormConfigModal = ({
   formConfigId,
   onClose,
@@ -63,12 +77,7 @@ const ShareFormConfigModal = ({
   const formConfig = useSelector<StateT, FormConfigT | undefined>((state) =>
     state.formConfigs.data.find((config) => config.id === formConfigId)
   );
-  const initialUserGroupsValue =
-    formConfig && formConfig.groups
-      ? userGroups
-          .filter((group) => formConfig.groups?.includes(group.id))
-          .map((group) => ({ label: group.label, value: group.id }))
-      : [];
+  const initialUserGroupsValue = getUserGroupsValue(userGroups, formConfig);
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(
     initialUserGroupsValue
@@ -89,6 +98,10 @@ const ShareFormConfigModal = ({
     }
   }, [datasetId, previousFormConfigId, formConfigId, loadFormConfig]);
 
+  useEffect(() => {
+    setUserGroupsValue(getUserGroupsValue(userGroups, formConfig));
+  }, [userGroups, formConfig]);
+
   const dispatch = useDispatch();
 
   const onSetUserGroupsValue = (value: SelectValueT[] | null) => {
@@ -101,7 +114,7 @@ const ShareFormConfigModal = ({
 
   const userGroupOptions = userGroups.map((group) => ({
     label: group.label,
-    value: group.groupId,
+    value: group.id,
   }));
 
   async function onShareClicked() {
@@ -112,7 +125,6 @@ const ShareFormConfigModal = ({
 
     try {
       await patchFormConfig(datasetId, formConfigId, {
-        shared,
         groups: userGroupsToShare,
       });
 

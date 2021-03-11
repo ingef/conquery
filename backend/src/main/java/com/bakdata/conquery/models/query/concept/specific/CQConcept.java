@@ -82,7 +82,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
-	private boolean excludeFromSecondaryIdQuery = false;
+	private boolean excludeFromSecondaryIdQuery = true;
 
 	@InternalOnly @NotNull
 	private boolean aggregateEventDates;
@@ -227,7 +227,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	}
 
 	@JsonIgnore
-	private Concept<?> getConcept() {
+	public Concept<?> getConcept() {
 		return elements.get(0).getConcept();
 	}
 

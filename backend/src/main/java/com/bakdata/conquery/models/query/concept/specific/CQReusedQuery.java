@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -45,12 +44,17 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		return ((ConceptQuery)resolvedQuery).getRoot().createQueryPlan(context, plan);
+		return resolvedQuery.getReusableComponents().createQueryPlan(context, plan);
 	}
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
-		resolvedQuery = ((ManagedQuery)Objects.requireNonNull(context.getDatasetRegistry().getMetaStorage().getExecution(query), "Unable to resolve stored query")).getQuery();
+		resolvedQuery = ((ManagedQuery) Objects.requireNonNull(
+				context.getDatasetRegistry().getMetaStorage().getExecution(query),
+				"Unable to resolve stored query"
+		))
+								.getQuery();
+
 		// Yey recursion, because the query might consists of another CQReusedQuery or CQExternal
 		resolvedQuery.resolve(context);
 	}

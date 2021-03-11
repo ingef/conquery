@@ -4,21 +4,24 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
  * Outputs the current line in the file.
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 @ToString
 @CPSType(id="LINE", base= OutputDescription.class)
 public class LineOutput extends OutputDescription {
-	
-	private static final long serialVersionUID = 1L;
+
+
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
 
 	@Override
 	public boolean isRequired() {

@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -51,7 +51,7 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 
-	@Override @JsonIgnore
+	@Override @InternalOnly
 	public Table getTable() {
 		if(column != null){
 			return column.getTable();

@@ -8,17 +8,24 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Output a null value.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
 @CPSType(id="NULL", base= OutputDescription.class)
 public class NullOutput extends OutputDescription {
 	
 	private static final long serialVersionUID = 1L;
+
+	@Override
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(inputType.name())
+					   .toHashCode();
+	}
 
 	@NotNull
 	private MajorTypeId inputType;
