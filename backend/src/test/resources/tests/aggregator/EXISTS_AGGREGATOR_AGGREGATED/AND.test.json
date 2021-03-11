@@ -7,6 +7,7 @@
     "childQueries": [
       {
         "type": "CONCEPT_QUERY",
+        "dateAggregationMode": "MERGE",
         "root": {
           "type": "AND",
           "label" : "AND",
