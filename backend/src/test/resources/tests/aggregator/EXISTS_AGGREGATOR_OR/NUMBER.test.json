@@ -4,7 +4,6 @@
   "expectedCsv": "tests/aggregator/EXISTS_AGGREGATOR_OR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
-    "dateAggregationMode": "MERGE",
     "root": {
       "type" : "OR",
       "children" : [
