@@ -81,7 +81,7 @@ public class QueryProcessor {
 
 
 		Set<Permission> permissions = new HashSet<>();
-		query.collectPermissions(visitors, permissions, dataset.getId());
+		query.collectPermissions(visitors, permissions, dataset.getId(), storage, user);
 		user.checkPermissions(permissions);
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);
@@ -125,13 +125,6 @@ public class QueryProcessor {
 				continue;
 			}
 
-			// Ensure that user is allowed to read all sub-queries of the actual query.
-
-			if (!translateable.collectRequiredQueries().stream()
-					.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
-				continue;
-			}
-
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
@@ -139,7 +132,6 @@ public class QueryProcessor {
 						mqTranslated =
 						ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
 
-				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}
 			catch (Exception e) {
 				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
