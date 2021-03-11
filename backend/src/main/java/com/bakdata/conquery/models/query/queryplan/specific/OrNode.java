@@ -4,20 +4,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.DateAggregator;
-import groovyjarjarantlr4.v4.parse.ANTLRParser;
+import com.bakdata.conquery.models.query.queryplan.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QPParentNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ListMultimap;
 
 public class OrNode extends QPParentNode {
 
-	public OrNode(List<QPNode> children, ConceptQueryPlan.DateAggregationAction action) {
+	public OrNode(List<QPNode> children, DateAggregationAction action) {
 		super(children, action);
 	}
 	
@@ -41,7 +37,7 @@ public class OrNode extends QPParentNode {
 		return currently;
 	}
 	
-	public static QPNode of(Collection<QPNode> children, ConceptQueryPlan.DateAggregationAction dateAggregationAction) {
+	public static QPNode of(Collection<QPNode> children, DateAggregationAction dateAggregationAction) {
 		switch (children.size()) {
 			case 0:
 				return new Leaf();

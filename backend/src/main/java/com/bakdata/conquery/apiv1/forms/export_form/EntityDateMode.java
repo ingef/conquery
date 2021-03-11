@@ -10,12 +10,12 @@ import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -40,7 +40,7 @@ public class EntityDateMode extends Mode {
     private List<CQElement> features = ImmutableList.of();
 
     @NotNull
-    private ConceptQueryPlan.DateAggregationMode dateAggregationMode = ConceptQueryPlan.DateAggregationMode.MERGE;
+    private DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
 
     @InternalOnly
     private ArrayConceptQuery resolvedFeatures;

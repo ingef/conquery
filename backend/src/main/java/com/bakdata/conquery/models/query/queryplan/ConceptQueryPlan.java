@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -190,61 +190,5 @@ public class ConceptQueryPlan implements QueryPlan {
 		return child.collectRequiredTables();
 	}
 
-	public enum DateAggregationMode {
-		NONE,
-		MERGE,
-		INTERSECT,
-		LOGICAL;
-	}
 
-
-	public enum DateAggregationAction {
-		BLOCK() {
-			@Override
-			public CDateSet aggregate(Set<CDateSet> all) {
-				return CDateSet.create();
-			}
-		},
-		MERGE(){
-			@Override
-			public CDateSet aggregate(Set<CDateSet> all) {
-				CDateSet combined = CDateSet.create();
-				all.forEach(combined::addAll);
-				return combined;
-			}
-		},
-		INTERSECT(){
-			@Override
-			public CDateSet aggregate(Set<CDateSet> all) {
-				if(all.size() < 1) {
-					return CDateSet.create();
-				}
-
-				Iterator<CDateSet> it = all.iterator();
-				CDateSet intersection = it.next();
-
-				if(all.size() == 1) {
-					return intersection;
-				}
-				// Use the first range as mask and subtract all other ranges from it
-
-
-				// Intersect
-				while(it.hasNext()){
-					intersection.retainAll(it.next());
-				}
-				return intersection;
-			}
-		},
-		NEGATE() {
-			@Override
-			public CDateSet aggregate(Set<CDateSet> all) {
-				CDateSet negative = CDateSet.createFull();
-				all.forEach(negative::removeAll);
-				return negative;
-			}
-		};
-
-		public abstract CDateSet aggregate(Set<CDateSet> all);
-	}
 }

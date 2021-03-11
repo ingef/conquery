@@ -14,7 +14,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DateAggregator implements Aggregator<CDateSet> {
 
-    private final ConceptQueryPlan.DateAggregationAction action;
+    private final DateAggregationAction action;
 
     private Set<Aggregator<CDateSet>> siblings = new HashSet<>();
 

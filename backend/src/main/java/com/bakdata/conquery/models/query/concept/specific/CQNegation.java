@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -29,7 +30,7 @@ public class CQNegation extends CQElement {
 
 	@InternalOnly
 	@Getter @Setter
-	private ConceptQueryPlan.DateAggregationAction dateAction;
+	private DateAggregationAction dateAction;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -45,10 +46,10 @@ public class CQNegation extends CQElement {
 			case MERGE:
 			case NONE:
 			case INTERSECT:
-				dateAction = ConceptQueryPlan.DateAggregationAction.BLOCK;
+				dateAction = DateAggregationAction.BLOCK;
 				break;
 			case LOGICAL:
-				dateAction = ConceptQueryPlan.DateAggregationAction.NEGATE;
+				dateAction = DateAggregationAction.NEGATE;
 				break;
 			default:
 				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());

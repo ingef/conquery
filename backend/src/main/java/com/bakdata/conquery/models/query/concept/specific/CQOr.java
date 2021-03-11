@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.CQElementC10n;
@@ -21,6 +20,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
@@ -49,7 +49,7 @@ public class CQOr extends CQElement implements ForcedExists {
 
 	@InternalOnly
 	@Getter @Setter
-	private ConceptQueryPlan.DateAggregationAction dateAction;
+	private DateAggregationAction dateAction;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -85,14 +85,14 @@ public class CQOr extends CQElement implements ForcedExists {
 
 		switch(context.getDateAggregationMode()) {
 			case NONE:
-				dateAction = ConceptQueryPlan.DateAggregationAction.BLOCK;
+				dateAction = DateAggregationAction.BLOCK;
 				break;
 			case MERGE:
 			case LOGICAL:
-				dateAction = ConceptQueryPlan.DateAggregationAction.MERGE;
+				dateAction = DateAggregationAction.MERGE;
 				break;
 			case INTERSECT:
-				dateAction = ConceptQueryPlan.DateAggregationAction.INTERSECT;
+				dateAction = DateAggregationAction.INTERSECT;
 				break;
 			default:
 				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());

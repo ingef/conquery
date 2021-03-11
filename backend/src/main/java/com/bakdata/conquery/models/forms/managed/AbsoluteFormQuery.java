@@ -16,12 +16,8 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -44,7 +40,7 @@ public class AbsoluteFormQuery extends IQuery {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);
-		features.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
+		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 
 	@Override

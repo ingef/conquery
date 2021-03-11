@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -38,6 +39,7 @@ import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
@@ -52,13 +54,11 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter
@@ -213,7 +213,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		}
 
 		// We always merge on concept level
-		final QPNode outNode = OrNode.of(tableNodes, ConceptQueryPlan.DateAggregationAction.MERGE);
+		final QPNode outNode = OrNode.of(tableNodes, DateAggregationAction.MERGE);
 
 		for (Iterator<Aggregator<?>> iterator = conceptAggregators.iterator(); iterator.hasNext(); ) {
 			Aggregator<?> aggregator = iterator.next();
@@ -287,6 +287,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		this.aggregateEventDates = !Objects.equals(context.getDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE);
+		this.aggregateEventDates = !Objects.equals(context.getDateAggregationMode(), DateAggregationMode.NONE);
 	}
 }

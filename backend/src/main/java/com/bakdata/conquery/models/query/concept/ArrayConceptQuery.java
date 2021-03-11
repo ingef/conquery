@@ -11,12 +11,8 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
@@ -43,13 +39,13 @@ public class ArrayConceptQuery extends IQuery {
 	@NotEmpty
 	private List<ConceptQuery> childQueries = new ArrayList<>();
 	@NotNull
-	protected ConceptQueryPlan.DateAggregationMode dateAggregationMode;
+	protected DateAggregationMode dateAggregationMode;
 
 
 	@InternalOnly
-	protected ConceptQueryPlan.DateAggregationMode resolvedDateAggregationMode;
+	protected DateAggregationMode resolvedDateAggregationMode;
 
-	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, ConceptQueryPlan.DateAggregationMode dateAggregationMode) {
+	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, DateAggregationMode dateAggregationMode) {
 		if(queries == null) {
 			throw new IllegalArgumentException("No sub query list provided.");
 		}
@@ -58,7 +54,7 @@ public class ArrayConceptQuery extends IQuery {
 	}
 	
 	public ArrayConceptQuery( List<ConceptQuery> queries) {
-		this(queries, ConceptQueryPlan.DateAggregationMode.NONE);
+		this(queries, DateAggregationMode.NONE);
 	}
 
 	@Override
@@ -71,7 +67,7 @@ public class ArrayConceptQuery extends IQuery {
 
 		if (resolvedDateAggregationMode == null) {
 			log.trace("No date aggregation mode was availiable. Falling back to NONE");
-			resolvedDateAggregationMode = ConceptQueryPlan.DateAggregationMode.NONE;
+			resolvedDateAggregationMode = DateAggregationMode.NONE;
 
 		}
 		childQueries.forEach(c -> c.resolve(context.withDateAggregationMode(resolvedDateAggregationMode)));
@@ -80,7 +76,7 @@ public class ArrayConceptQuery extends IQuery {
 	@Override
 	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
-		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(!Objects.equals(resolvedDateAggregationMode, ConceptQueryPlan.DateAggregationMode.NONE));
+		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(!Objects.equals(resolvedDateAggregationMode, DateAggregationMode.NONE));
 		aq.addChildPlans(childQueries, context);
 		return aq;
 	}
@@ -102,7 +98,7 @@ public class ArrayConceptQuery extends IQuery {
 			infos.subList(lastIndex, infos.size()).removeAll(List.of(dateInfo));
 		}
 
-		if(!Objects.equals(getResolvedDateAggregationMode(), ConceptQueryPlan.DateAggregationMode.NONE)){
+		if(!Objects.equals(getResolvedDateAggregationMode(), DateAggregationMode.NONE)){
 			// Add one DateInfo for the whole Query
 			collector.getInfos().add(0, dateInfo);
 		}

@@ -15,13 +15,9 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -53,9 +49,9 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
-		query.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.MERGE));
-		features.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
-		outcomes.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
+		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
+		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
+		outcomes.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 	
 	@Override

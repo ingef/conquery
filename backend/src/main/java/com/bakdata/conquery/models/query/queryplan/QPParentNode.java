@@ -30,7 +30,7 @@ public abstract class QPParentNode extends QPNode {
 	protected List<QPNode> currentTableChildren;
 
 
-	public QPParentNode(List<QPNode> children, ConceptQueryPlan.DateAggregationAction action) {
+	public QPParentNode(List<QPNode> children, DateAggregationAction action) {
 		if(children == null || children.isEmpty()) {
 			throw new IllegalArgumentException("A ParentAggregator needs at least one child.");
 		}

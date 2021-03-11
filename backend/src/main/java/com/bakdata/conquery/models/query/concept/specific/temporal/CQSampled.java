@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -13,8 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Set;
 
 /**
  * This class represents a wrapper around any type of {@link CQElement} but also
@@ -41,7 +40,7 @@ public class CQSampled {
 	 * @return a new SampledNode
 	 */
 	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
-		ConceptQueryPlan subPlan = new ConceptQueryPlan(ConceptQueryPlan.DateAggregationMode.MERGE);
+		ConceptQueryPlan subPlan = new ConceptQueryPlan(DateAggregationMode.MERGE);
 		subPlan.setChild(child.createQueryPlan(ctx, subPlan));
 		// Since we create the plan manually we have to register the lower date aggregators manually.
 		// Such an aggregator exists because it was enforced in CQAbstractTemporalQuery::resolve on the child.

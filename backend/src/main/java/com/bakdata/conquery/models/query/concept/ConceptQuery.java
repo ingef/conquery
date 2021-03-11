@@ -5,10 +5,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.google.common.base.Preconditions;
@@ -32,13 +29,13 @@ public class ConceptQuery extends IQuery {
 	@NotNull
 	protected CQElement root;
 
-	protected ConceptQueryPlan.DateAggregationMode dateAggregationMode;
+	protected DateAggregationMode dateAggregationMode;
 
 
 	@InternalOnly
-	protected ConceptQueryPlan.DateAggregationMode resolvedDateAggregationMode;
+	protected DateAggregationMode resolvedDateAggregationMode;
 
-	public ConceptQuery(CQElement root, ConceptQueryPlan.DateAggregationMode dateAggregationMode) {
+	public ConceptQuery(CQElement root, DateAggregationMode dateAggregationMode) {
 		this.root = root;
 		this.dateAggregationMode = dateAggregationMode;
 	}
@@ -70,7 +67,7 @@ public class ConceptQuery extends IQuery {
 
 		if (resolvedDateAggregationMode == null) {
 			log.trace("No date aggregation mode was availiable. Falling back to MERGE");
-			resolvedDateAggregationMode = ConceptQueryPlan.DateAggregationMode.MERGE;
+			resolvedDateAggregationMode = DateAggregationMode.MERGE;
 
 		}
 
@@ -80,7 +77,7 @@ public class ConceptQuery extends IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		Preconditions.checkNotNull(resolvedDateAggregationMode);
-		if(!Objects.equals(resolvedDateAggregationMode, ConceptQueryPlan.DateAggregationMode.NONE)) {
+		if(!Objects.equals(resolvedDateAggregationMode, DateAggregationMode.NONE)) {
 			collector.add(ConqueryConstants.DATES_INFO);
 		}
 		root.collectResultInfos(collector);

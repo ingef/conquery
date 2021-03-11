@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -18,12 +17,12 @@ import com.bakdata.conquery.models.forms.export.RelExportGenerator;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -79,7 +78,7 @@ public class RelativeMode extends Mode {
 		resolvedFeatures = AbsExportGenerator.createSubQuery(features);
 		resolvedOutcomes = AbsExportGenerator.createSubQuery(outcomes);
 		// Resolve all
-		resolvedFeatures.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
-		resolvedOutcomes.resolve(context.withDateAggregationMode(ConceptQueryPlan.DateAggregationMode.NONE));
+		resolvedFeatures.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
+		resolvedOutcomes.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 }

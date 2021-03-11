@@ -2,10 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.DateAggregator;
-import com.bakdata.conquery.models.query.queryplan.QPChainNode;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.*;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.NonNull;
@@ -18,7 +15,7 @@ public class NegatingNode extends QPChainNode {
 
 	private final DateAggregator dateAggregator;
 
-	public NegatingNode(@NonNull QPNode child, ConceptQueryPlan.DateAggregationAction dateAction) {
+	public NegatingNode(@NonNull QPNode child, DateAggregationAction dateAction) {
 		super(child);
 		if (dateAction != null) {
 			this.dateAggregator = new DateAggregator(dateAction);
