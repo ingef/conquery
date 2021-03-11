@@ -22,6 +22,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 /**
@@ -36,10 +37,11 @@ import javax.validation.constraints.NotEmpty;
 @Slf4j
 public class ArrayConceptQuery extends IQuery {
 
-	@NotEmpty
+	@NotEmpty @Valid
 	private List<ConceptQuery> childQueries = new ArrayList<>();
-	@NotNull
-	protected DateAggregationMode dateAggregationMode;
+
+	@NotNull @NonNull
+	protected DateAggregationMode dateAggregationMode = DateAggregationMode.NONE;
 
 
 	@InternalOnly
@@ -64,19 +66,13 @@ public class ArrayConceptQuery extends IQuery {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
-
-		if (resolvedDateAggregationMode == null) {
-			log.trace("No date aggregation mode was availiable. Falling back to NONE");
-			resolvedDateAggregationMode = DateAggregationMode.NONE;
-
-		}
 		childQueries.forEach(c -> c.resolve(context.withDateAggregationMode(resolvedDateAggregationMode)));
 	}
 
 	@Override
 	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
-		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(!Objects.equals(resolvedDateAggregationMode, DateAggregationMode.NONE));
+		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode));
 		aq.addChildPlans(childQueries, context);
 		return aq;
 	}
@@ -98,7 +94,7 @@ public class ArrayConceptQuery extends IQuery {
 			infos.subList(lastIndex, infos.size()).removeAll(List.of(dateInfo));
 		}
 
-		if(!Objects.equals(getResolvedDateAggregationMode(), DateAggregationMode.NONE)){
+		if(!DateAggregationMode.NONE.equals(getResolvedDateAggregationMode())){
 			// Add one DateInfo for the whole Query
 			collector.getInfos().add(0, dateInfo);
 		}

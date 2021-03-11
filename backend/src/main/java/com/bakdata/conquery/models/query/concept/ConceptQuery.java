@@ -29,7 +29,8 @@ public class ConceptQuery extends IQuery {
 	@NotNull
 	protected CQElement root;
 
-	protected DateAggregationMode dateAggregationMode;
+	@NotNull @NotNull
+	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
 
 
 	@InternalOnly
@@ -64,13 +65,6 @@ public class ConceptQuery extends IQuery {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
-
-		if (resolvedDateAggregationMode == null) {
-			log.trace("No date aggregation mode was availiable. Falling back to MERGE");
-			resolvedDateAggregationMode = DateAggregationMode.MERGE;
-
-		}
-
 		root.resolve(context.withDateAggregationMode(resolvedDateAggregationMode));
 	}
 
