@@ -406,6 +406,7 @@ Supported Fields:
 ### CONCEPT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/specific/CQConcept.java#L58)</sup></sub></sup>
 
 
+
 <details><summary>Details</summary><p>
 
 Java Type: `com.bakdata.conquery.models.query.concept.specific.CQConcept`
