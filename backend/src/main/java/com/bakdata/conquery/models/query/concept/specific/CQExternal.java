@@ -55,10 +55,7 @@ public class CQExternal extends CQElement {
 		if (valuesResolved == null) {
 			throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 		}
-
-		SpecialDateUnion dateAggregator = new SpecialDateUnion();
-		plan.getDateAggregator().register(Set.of(dateAggregator));
-		return new ExternalNode(context.getStorage().getDataset().getAllIdsTableId(), valuesResolved, dateAggregator);
+		return new ExternalNode(context.getStorage().getDataset().getAllIdsTableId(), valuesResolved);
 	}
 
 

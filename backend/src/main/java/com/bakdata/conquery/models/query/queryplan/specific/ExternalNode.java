@@ -20,15 +20,14 @@ import java.util.Set;
 public class ExternalNode extends QPNode {
 
 	private final TableId tableId;
-	private SpecialDateUnion dateUnion;
+	private SpecialDateUnion dateUnion = new SpecialDateUnion();
 
 	@Getter @NotEmpty @NonNull
 	private final Map<Integer, CDateSet> includedEntities;
 
 	private CDateSet contained;
 
-	public ExternalNode(TableId tableId, Map<Integer, CDateSet> includedEntities, SpecialDateUnion dateUnion) {
-		this.dateUnion = dateUnion;
+	public ExternalNode(TableId tableId, Map<Integer, CDateSet> includedEntities) {
 		this.includedEntities = includedEntities;
 		this.tableId = tableId;
 	}
@@ -41,7 +40,9 @@ public class ExternalNode extends QPNode {
 	
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		return new ExternalNode(tableId, includedEntities, ctx.clone(dateUnion));
+		ExternalNode node = new ExternalNode(tableId, includedEntities);
+		node.dateUnion = ctx.clone(dateUnion);
+		return node;
 	}
 	
 	@Override
