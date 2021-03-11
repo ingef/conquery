@@ -15,11 +15,9 @@ import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Valid;
@@ -30,17 +28,17 @@ import javax.validation.constraints.NotEmpty;
  * and whose results are merged. If a SpecialDateUnion is required, the result will hold
  * the union of all dates from the separate queries.
  */
-@NoArgsConstructor
 @Getter
 @Setter
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@JsonCreator))
 public class ArrayConceptQuery extends IQuery {
 
 	@NotEmpty @Valid
 	private List<ConceptQuery> childQueries = new ArrayList<>();
 
-	@NotNull @NonNull
+	@NotNull
 	protected DateAggregationMode dateAggregationMode = DateAggregationMode.NONE;
 
 

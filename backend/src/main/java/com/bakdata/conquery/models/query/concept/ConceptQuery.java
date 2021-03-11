@@ -8,8 +8,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,13 +26,14 @@ import java.util.function.Consumer;
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@JsonCreator))
 public class ConceptQuery extends IQuery {
 
 	@Valid
 	@NotNull
 	protected CQElement root;
 
-	@NotNull @NotNull
+	@NotNull
 	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
 
 
