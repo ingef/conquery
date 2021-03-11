@@ -49,22 +49,22 @@
                 {
                   "type": "CONCEPT",
                   "ids": [
-                    "tree.a"
+                    "abc-concept.a"
                   ],
                   "tables": [
                     {
-                      "id": "tree.connector"
+                      "id": "abc-concept.connector"
                     }
                   ]
                 },
                 {
                   "type": "CONCEPT",
                   "ids": [
-                    "tree.b"
+                    "abc-concept.b"
                   ],
                   "tables": [
                     {
-                      "id": "tree.connector"
+                      "id": "abc-concept.connector"
                     }
                   ]
                 }
