@@ -41,17 +41,17 @@ public class ConceptQuery extends IQuery {
 	protected DateAggregationMode resolvedDateAggregationMode;
 
 	public ConceptQuery(CQElement root, DateAggregationMode dateAggregationMode) {
-		this.root = root;
+		this(root);
 		this.dateAggregationMode = dateAggregationMode;
 	}
 
 	public ConceptQuery(CQElement root) {
-		this(root, null);
+		this.root = root;
 	}
 
 	@Override
 	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
-		ConceptQueryPlan qp = new ConceptQueryPlan(resolvedDateAggregationMode);
+		ConceptQueryPlan qp = new ConceptQueryPlan(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode));
 		qp.setChild(root.createQueryPlan(context, qp));
 		qp.getDateAggregator().register(qp.getChild().getDateAggregators());
 		return qp;
@@ -75,7 +75,7 @@ public class ConceptQuery extends IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		Preconditions.checkNotNull(resolvedDateAggregationMode);
-		if(!Objects.equals(resolvedDateAggregationMode, DateAggregationMode.NONE)) {
+		if(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode)) {
 			collector.add(ConqueryConstants.DATES_INFO);
 		}
 		root.collectResultInfos(collector);

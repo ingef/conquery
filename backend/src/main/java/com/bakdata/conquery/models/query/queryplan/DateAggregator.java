@@ -19,7 +19,7 @@ public class DateAggregator implements Aggregator<CDateSet> {
     private Set<Aggregator<CDateSet>> siblings = new HashSet<>();
 
     /**
-     * Register {@link DateAggregator}s from lower levels for the final result generation.
+     * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
      */
     public void register(Collection<Aggregator<CDateSet>> siblings) {
         this.siblings.addAll(siblings);
@@ -27,7 +27,7 @@ public class DateAggregator implements Aggregator<CDateSet> {
 
     @Override
     public void acceptEvent(Bucket bucket, int event) {
-        throw new UnsupportedOperationException("This Aggregator uses the result of its siblings and does not accepts events");
+        throw new UnsupportedOperationException("This Aggregator uses the result of its siblings and does not accept events");
     }
 
     @Override

@@ -1,22 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
@@ -44,7 +27,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.OpenEventDateAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
@@ -60,6 +42,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
@@ -164,13 +154,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			Column validityDateColumn = selectValidityDateColumn(table);
 
 			if(aggregateEventDates){
-				if (validityDateColumn != null) {
-					aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
-				}
-				else {
-					// If there is no validity date for this table we assume that the "events" are always valid
-					aggregators.add(new OpenEventDateAggregator());
-				}
+				aggregators.add(new EventDateUnionAggregator(Set.of(table.getResolvedConnector().getTable().getId())));
 			}
 
 			concept.getConcept();

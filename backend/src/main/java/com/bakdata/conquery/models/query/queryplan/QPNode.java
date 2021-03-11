@@ -48,5 +48,10 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 		return this.getClass().getSimpleName();
 	}
 
+	/**
+	 * Retrieves all generated date Aggregator from the lower level of the tree.
+	 * This is builds a parallel tree to the actual query tree to generate the dates column in the final result.
+	 * The aggregator are registered in the date aggregator of the upper level (see @{@link DateAggregator#register(Collection)})
+	 */
 	public abstract Collection<Aggregator<CDateSet>> getDateAggregators();
 }

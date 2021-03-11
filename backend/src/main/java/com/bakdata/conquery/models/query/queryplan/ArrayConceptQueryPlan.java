@@ -89,7 +89,8 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
 		CDateSet dateSet = CDateSet.create();
-		int resultInsertIdx = generateDateAggregation ? 1 : 0;
+		final int  resultOffset = generateDateAggregation ? 1 : 0;
+		int resultInsertIdx = resultOffset;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {
 			SinglelineEntityResult result = child.execute(ctx, entity);
@@ -99,8 +100,8 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 				final Object[] applied = ResultModifier.existAggValuesSetterFor(child.getAggregators(), OptionalInt.of(0)).apply(new Object[child.getAggregatorSize()]);
 
 				// applied[0] is the child-queries DateUnion, which we don't copy.
-				int copyLength = applied.length - (generateDateAggregation ? 1 : 0);
-				System.arraycopy(applied, generateDateAggregation ? 1 : 0, resultValues, resultInsertIdx, copyLength);
+				int copyLength = applied.length - resultOffset;
+				System.arraycopy(applied, resultOffset, resultValues, resultInsertIdx, copyLength);
 
 				// Advance pointer for the result insertion by the number of currently handled
 				// aggregators.

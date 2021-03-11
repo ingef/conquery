@@ -40,7 +40,7 @@ public class CQSampled {
 	 * @return a new SampledNode
 	 */
 	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
-		ConceptQueryPlan subPlan = new ConceptQueryPlan(DateAggregationMode.MERGE);
+		ConceptQueryPlan subPlan = new ConceptQueryPlan(true);
 		subPlan.setChild(child.createQueryPlan(ctx, subPlan));
 		// Since we create the plan manually we have to register the lower date aggregators manually.
 		// Such an aggregator exists because it was enforced in CQAbstractTemporalQuery::resolve on the child.

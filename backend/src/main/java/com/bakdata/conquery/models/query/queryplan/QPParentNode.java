@@ -29,6 +29,9 @@ public abstract class QPParentNode extends QPNode {
 
 	protected List<QPNode> currentTableChildren;
 
+	// Just for debugging
+	private DateAggregationAction action;
+
 
 	public QPParentNode(List<QPNode> children, DateAggregationAction action) {
 		if(children == null || children.isEmpty()) {
@@ -47,6 +50,8 @@ public abstract class QPParentNode extends QPNode {
 					.toImmutableListMultimap(Pair::getLeft, Pair::getRight)
 				);
 
+		// Save action for debugging
+		this.action = action;
 		if(action != null) {
 			this.dateAggregator = new DateAggregator(action);
 

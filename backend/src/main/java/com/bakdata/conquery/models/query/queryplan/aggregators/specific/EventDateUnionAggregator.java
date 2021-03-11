@@ -36,8 +36,8 @@ public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		validityDateColumn = Objects.requireNonNull(ctx.getValidityDateColumn());
-		if (!validityDateColumn.getType().isDateCompatible()) {
+		validityDateColumn = ctx.getValidityDateColumn();
+		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 		
@@ -57,6 +57,11 @@ public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
+		if(validityDateColumn == null) {
+			set.addAll(dateRestriction);
+			return;
+		}
+
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}

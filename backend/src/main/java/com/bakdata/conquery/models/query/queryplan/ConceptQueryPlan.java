@@ -35,8 +35,8 @@ public class ConceptQueryPlan implements QueryPlan {
 	private Entity entity;
 	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
-	public ConceptQueryPlan(DateAggregationMode dateAggregationMode) {
-		if (!Objects.equals(dateAggregationMode,DateAggregationMode.NONE)){
+	public ConceptQueryPlan(boolean generateDateAggregator) {
+		if (generateDateAggregator){
 			aggregators.add(dateAggregator);
 		}
 	}
@@ -45,7 +45,8 @@ public class ConceptQueryPlan implements QueryPlan {
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
 
-		ConceptQueryPlan clone = new ConceptQueryPlan(DateAggregationMode.NONE);
+		// We set the date aggregator if needed by manually in the following for loop
+		ConceptQueryPlan clone = new ConceptQueryPlan(false);
 		clone.setChild(ctx.clone(child));
 
 		for (Aggregator<?> agg : aggregators) {
