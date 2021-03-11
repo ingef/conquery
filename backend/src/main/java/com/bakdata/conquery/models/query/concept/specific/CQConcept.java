@@ -122,6 +122,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return elements.get(0).getConcept();
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to the Concept.")
 	public boolean isAllSelectsForConcept() {
 		final Concept<?> concept = getConcept();
@@ -134,6 +135,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return true;
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "Not all elements belong to the same Concept.")
 	public boolean isAllElementsForConcept() {
 		final Concept<?> concept = getConcept();

@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -38,22 +39,25 @@ public class CQTable {
 
 	private ValidityDateContainer dateColumn;
 
+	@JsonIgnore
 	@ValidationMethod(message = "Connector does not belong to Concept.")
 	public boolean isConnectorForConcept() {
 		return connector.getConcept().equals(concept.getConcept());
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "ValidityDate does not belong to Connector.")
 	public boolean isValidityDateForConnector() {
 		return dateColumn == null || dateColumn.getValue().getConnector().equals(getConnector().getId());
 	}
 
-
+	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to Connector.")
 	public boolean isAllSelectsForConnector() {
 		return selects.stream().allMatch(select -> select.getHolder().equals(connector));
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "Not all Filters belong to Connector.")
 	public boolean isAllFiltersForConnector() {
 		return filters.stream().allMatch(filter -> filter.getFilter().getConnector().equals(connector));
