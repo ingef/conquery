@@ -126,8 +126,7 @@ public class SecondaryIdQuery extends IQuery {
 	private Column findSecondaryIdColumn(Table table) {
 
 		for (Column col : table.getColumns()) {
-			//TODO somehow these are equal by Id but not the same object (in tests)
-			if (col.getSecondaryId() == null || !secondaryId.getId().equals(col.getSecondaryId().getId())) {
+			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
 				continue;
 			}
 
