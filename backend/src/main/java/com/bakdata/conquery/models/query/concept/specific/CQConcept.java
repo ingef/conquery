@@ -50,13 +50,11 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter
@@ -80,7 +78,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, Default
 	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
-	private boolean excludeFromSecondaryIdQuery = true;
+	private boolean excludeFromSecondaryIdQuery = false;
 
 	@Override
 	public String getLabel(Locale cfg) {
