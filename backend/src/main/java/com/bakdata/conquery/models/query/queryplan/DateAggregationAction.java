@@ -41,7 +41,8 @@ public enum DateAggregationAction {
 
             // Intersect
             while (it.hasNext()) {
-                intersection.retainAll(it.next());
+                final CDateSet next = it.next();
+                intersection.retainAll(next);
             }
             return intersection;
         }

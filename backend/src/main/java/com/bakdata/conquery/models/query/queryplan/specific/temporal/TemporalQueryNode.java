@@ -144,7 +144,6 @@ public class TemporalQueryNode extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		// Todo Check if this is right
 		return Set.of(dateUnion);
 	}
 

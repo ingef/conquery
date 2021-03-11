@@ -6,7 +6,7 @@
     },
     "form": {
         "type": "EXPORT_FORM",
-        "queryGroup": ".00000000-0000-0000-0000-000000000001",
+        "queryGroup": "00000000-0000-0000-0000-000000000001",
         "resolution": "QUARTERS",
         "timeMode": {
             "value": "ENTITY_DATE",
@@ -14,13 +14,13 @@
             "features": [
                 {
                     "ids": [
-                        ".alter"
+                        "alter"
                     ],
                     "type": "CONCEPT",
                     "label": "Alter",
                     "tables": [
                         {
-                            "id": ".alter.alter",
+                            "id": "alter.alter",
                             "filters": []
                         }
                     ]
@@ -49,22 +49,22 @@
                 {
                   "type": "CONCEPT",
                   "ids": [
-                    ".tree.a"
+                    "tree.a"
                   ],
                   "tables": [
                     {
-                      "id": ".tree.connector"
+                      "id": "tree.connector"
                     }
                   ]
                 },
                 {
                   "type": "CONCEPT",
                   "ids": [
-                    ".tree.b"
+                    "tree.b"
                   ],
                   "tables": [
                     {
-                      "id": ".tree.connector"
+                      "id": "tree.connector"
                     }
                   ]
                 }
