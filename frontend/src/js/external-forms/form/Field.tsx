@@ -222,14 +222,14 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             enableDropFile: true,
             disallowMultipleColumns: !field.isTwoDimensional,
             isSingle: field.isSingle,
-            blacklistedTables: field.blacklistedConnectors,
-            whitelistedTables: field.whitelistedConnectors,
+            blocklistedTables: field.blocklistedConnectors,
+            allowlistedTables: field.allowlistedConnectors,
             defaults: field.defaults,
             isValidConcept: (item: Object) =>
               !nodeIsInvalid(
                 item,
-                field.blacklistedConceptIds,
-                field.whitelistedConceptIds
+                field.blocklistedConceptIds,
+                field.allowlistedConceptIds
               ),
             // What follows is VERY custom
             // Concept Group supports rendering a prefix field
@@ -240,7 +240,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               ? {
                   concepts: [],
                   connector: "OR",
-                  type: field.rowPrefixField.apiType,
                   [field.rowPrefixField.name]:
                     field.rowPrefixField.defaultValue,
                 }

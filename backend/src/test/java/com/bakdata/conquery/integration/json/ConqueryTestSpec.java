@@ -10,16 +10,22 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +39,10 @@ public abstract class ConqueryTestSpec {
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
 
 	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
+
+	public void overrideConfig(ConqueryConfig config){
+
+	}
 
 	@Override
 	public String toString() {
@@ -54,9 +64,10 @@ public abstract class ConqueryTestSpec {
 	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectInto(
 			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
-					Jackson.MAPPER.copy()
+					Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
 			)
 		);
+
 		T result = mapper.readerFor(expectedType).readValue(node);
 
 		if (modifierBeforeValidation != null) {
@@ -70,7 +81,7 @@ public abstract class ConqueryTestSpec {
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectInto(
 			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
-				Jackson.MAPPER.copy()
+				Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
 			)
 		);
 		List<T> result = new ArrayList<>(node.size());
@@ -101,5 +112,23 @@ public abstract class ConqueryTestSpec {
 			ValidatorHelper.failOnError(log, support.getValidator().validate(value));
 		}
 		return result;
+	}
+
+
+	/**
+	 * Replaces occurrences of the string "${dataset}" with the id of the current dataset of the {@link StandaloneSupport}.
+	 */
+	@RequiredArgsConstructor
+	private static class DatasetPlaceHolderFiller extends DeserializationProblemHandler {
+		private final static String DATASET_PLACEHOLDER = "${dataset}";
+
+		private final StandaloneSupport support;
+
+		@Override
+		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) throws IOException {
+			IId.Parser parser = IId.<IId<Identifiable<?>>>createParser((Class) targetType);
+			String replaced = valueToConvert.replace(DATASET_PLACEHOLDER, support.getDataset().getId().toString());
+			return parser.parse(replaced);
+		}
 	}
 }

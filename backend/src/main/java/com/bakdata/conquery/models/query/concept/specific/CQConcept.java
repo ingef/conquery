@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
@@ -24,6 +25,7 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -46,8 +48,11 @@ import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,8 +68,15 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
 
-	@Valid @NotEmpty
-	private List<ConceptElementId<?>> ids = Collections.emptyList();
+	/**
+	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
+	 */
+	public static final String FIELDNAME_IDS = "ids";
+
+	@JsonProperty(FIELDNAME_IDS)
+	@Valid @NotEmpty @NsIdRefCollection
+	private List<ConceptElement<?>> elements = Collections.emptyList();
+
 	@Valid @NotEmpty @JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
@@ -76,12 +88,38 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	private boolean excludeFromSecondaryIdQuery = false;
 
 	@Override
+	public String getLabel(Locale cfg) {
+		final String label = super.getLabel(cfg);
+		if(!Strings.isNullOrEmpty(label)) {
+			return label;
+		}
+
+		if(elements.isEmpty()){
+			return null;
+		}
+
+		final StringBuilder builder = new StringBuilder();
+
+		builder.append(getConcept().getLabel());
+
+		builder.append(" - ");
+
+		for (ConceptElement<?> id : elements) {
+			builder.append(id.getLabel()).append("+");
+		}
+
+		builder.deleteCharAt(builder.length() - 1);
+
+
+		return builder.toString();
+	}
+
+	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
 		List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
 
-		Concept<?> concept = concepts[0].getConcept();
+		Concept<?> concept = getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable table : tables) {
@@ -144,22 +182,22 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 			tableNodes.add(
 				new ConceptNode(
-					concepts,
-					calculateBitMask(concepts),
-					table,
-					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-					new ValidityDateNode(
+						elements,
+						CBlock.calculateBitMask(elements),
+						table,
+						// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
+						new ValidityDateNode(
 						selectValidityDateColumn(table),
 						filtersNode
 					),
-					// if the node is excluded, don't pass it into the Node.
+						// if the node is excluded, don't pass it into the Node.
 					excludeFromSecondaryIdQuery ? null : selectedSecondaryId
 				)
 			);
 		}
 
 		if(tableNodes.isEmpty()){
-			throw new IllegalStateException(String.format("Unable to resolve any connector for query `%s`", getLabel()));
+			throw new IllegalStateException(String.format("Unable to resolve any connector for Query[%s]", this));
 		}
 
 		final QPNode outNode = OrNode.of(tableNodes);
@@ -175,20 +213,15 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return outNode;
 	}
 
-	private long calculateBitMask(ConceptElement<?>[] concepts) {
-		long mask = 0;
-		for(ConceptElement<?> concept : concepts) {
-			mask |= concept.calculateBitMask();
-		}
-		return mask;
+	@JsonIgnore
+	private Concept<?> getConcept() {
+		return elements.get(0).getConcept();
 	}
 
 	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return
-				ids
-					.stream()
-					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-					.toArray(ConceptElement[]::new);
+		return ids.stream()
+				  .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+				  .toArray(ConceptElement[]::new);
 	}
 
 	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
@@ -229,14 +262,15 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	public void collectResultInfos(ResultInfoCollector collector) {
 		selects.forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		for (CQTable table : tables) {
-			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
+			table.getSelects()
+				 .forEach(sel -> collector.add(new SelectResultInfo(sel, this)));
 		}
 	}
 
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		checkNotNull(namespacedIds);
-		namespacedIds.addAll(ids);
+		elements.forEach(ce -> namespacedIds.add(ce.getId()));
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 	}

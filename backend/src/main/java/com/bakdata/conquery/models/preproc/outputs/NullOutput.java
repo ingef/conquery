@@ -3,11 +3,12 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Output a null value.
@@ -17,6 +18,14 @@ import lombok.Data;
 public class NullOutput extends OutputDescription {
 	
 	private static final long serialVersionUID = 1L;
+
+	@Override
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(inputType.name())
+					   .toHashCode();
+	}
 
 	@NotNull
 	private MajorTypeId inputType;

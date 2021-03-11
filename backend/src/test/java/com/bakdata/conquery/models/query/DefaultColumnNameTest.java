@@ -6,13 +6,15 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.conditions.EqualCondition;
@@ -21,10 +23,7 @@ import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -32,12 +31,9 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import javax.validation.Validator;
 
 public class DefaultColumnNameTest {
 	private final static DatasetRegistry DATASET_REGISTRY = mock(DatasetRegistry.class);
@@ -45,7 +41,7 @@ public class DefaultColumnNameTest {
 	private final static Validator VALIDATOR = Validators.newValidator();
 	
 	private final static Function<TestConcept,Select> FIRST_CONCEPT_SELECT_EXTRACTOR = (concept) -> concept.getSelects().get(0);
-	private final static Function<TestConcept,Select> FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR = (concept) -> concept.getConnectors().get(0).getSelects().get(0);
+	private final static Function<TestConcept,Select> FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR = (concept) -> concept.getConnectors().get(0).getSelects().get(0);
 	
 	private static Stream<Arguments> provideCombinations() {
 		return Stream.of(
@@ -63,54 +59,54 @@ public class DefaultColumnNameTest {
 			Arguments.of(
 				TestConcept.create(1, FIRST_CONCEPT_SELECT_EXTRACTOR, 1),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			// ConceptSelect with CQLabel, multiple Ids
 			Arguments.of(
 				TestConcept.create(1, FIRST_CONCEPT_SELECT_EXTRACTOR, 3),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			
 			// ConnectorSelect, without CQLabel, one Id, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				false,
 				"TestConceptLabel - ID_0 - TestSelectLabel"),
 			// ConnectorSelect without CQLabel, multiple Ids, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				false,
 				"TestConceptLabel - ID_0+ID_1+ID_2 - TestSelectLabel"),
 			// ConnectorSelect with CQLabel, one Id, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			// ConnectorSelect with CQLabel, multiple Ids, one Connector
 			Arguments.of(
-				TestConcept.create(1, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
-				"TestConceptLabel - TestCQLabel - TestSelectLabel"),
+				"TestCQLabel - TestSelectLabel"),
 			
 			// ConnectorSelect, without CQLabel, one Id, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				false,
 				"TestConceptLabel - ID_0 - TestConnectorLabel_0 TestSelectLabel"),
 			// ConnectorSelect without CQLabel, multiple Ids, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				false,
 				"TestConceptLabel - ID_0+ID_1+ID_2 - TestConnectorLabel_0 TestSelectLabel"),
 			// ConnectorSelect with CQLabel, one Id, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 1),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 1),
 				true,
-				"TestConceptLabel - TestCQLabel - TestConnectorLabel_0 TestSelectLabel"),
+				"TestCQLabel - TestConnectorLabel_0 TestSelectLabel"),
 			// ConnectorSelect with CQLabel, multiple Ids, multiple Connectors
 			Arguments.of(
-				TestConcept.create(3, FIRST_CONNCETOR_FIRST_SELECT_EXTRACTOR, 3),
+				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
-				"TestConceptLabel - TestCQLabel - TestConnectorLabel_0 TestSelectLabel")
+				"TestCQLabel - TestConnectorLabel_0 TestSelectLabel")
 			);
 	}
 	
@@ -140,10 +136,9 @@ public class DefaultColumnNameTest {
 			}
 
 
-			cqConcept.setIds(
+			cqConcept.setElements(
 					concept.getChildren().stream()
-							.map(ConceptTreeChild::getId)
-							.sorted((id1, id2) -> id1.toString().compareTo(id2.toString()))
+							.sorted(Comparator.comparing(ctc -> ctc.getId().toString()))
 							.collect(Collectors.toList())
 			);
 

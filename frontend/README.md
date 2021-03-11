@@ -2,10 +2,11 @@
 
 ## Technologies
 
-- ES6
+- create-react-app
+- typescript
 - react / redux
-- webpack
 - simple express.js server for a mock api
+- keycloak server for authentication, local setup using docker-compose
 
 ## Run (production)
 
@@ -17,7 +18,7 @@
 
 **Linux / OS X**
 
-```
+```bash
 ./scripts/start_production.sh
 ```
 
@@ -27,41 +28,34 @@ Commands analogoues to `start_production.sh` script.
 
 ### Using node / express
 
-
-```
+```bash
 yarn
-yarn run build
+yarn build
 PORT=8000 yarn run start-production
 ```
 
-## Available Environment Variables
-
-````js
-NODE_ENV: "development" | "production"; // Create a production build and disable debuggers when set to production   
-REACT_APP_API_URL?: string; // Set the backend URL
-REACT_APP_DISABLE_LOGIN?: boolean; // Disable forced login page
-REACT_APP_LANG?: "de" | "en"; // Select language for Frontend
-PORT?: string; // Port on which to start the frontend
-````
-
-
-## Install & start (development)
+## Setup development
 
 **Requirements**
 
-- `node` 10 (LTS)
+- `node` >= 14
 - `yarn`
 
-**Install**
+**Install and start**
+
+_Setup environment variables_
 
 ```bash
-$ yarn
+cp .env.example .env
 ```
 
-**Start**
+adjust the `.env` file if necessary.
+
+_Start the server_
 
 ```bash
-$ yarn start
+yarn
+yarn start
 ```
 
 **Mock API**
@@ -106,4 +100,3 @@ Migration to TypeScript is in progress.
 
 - We're using MultiBackend to support Drag and Drop for touch and html5.
 - To render a Drag and Drop preview on mobile, we'll have to calculate `width` and `height` of the drag source.
-

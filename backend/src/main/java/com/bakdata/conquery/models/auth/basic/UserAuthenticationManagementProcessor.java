@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.auth.basic;
 import java.util.Objects;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;

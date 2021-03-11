@@ -3,11 +3,12 @@ package com.bakdata.conquery.models.events.stores.root;
 import java.time.LocalDate;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.events.MajorTypeId;
 
 /**
  * {@link ColumnStore} for {@link CDate#ofLocalDate(LocalDate)} values.
  *
- *  * See also {@link com.bakdata.conquery.models.events.parser.MajorTypeId#DATE} and {@link com.bakdata.conquery.models.events.parser.specific.DateParser}.
+ *  * See also {@link MajorTypeId#DATE} and {@link com.bakdata.conquery.models.preproc.parser.specific.DateParser}.
  */
 public interface DateStore extends ColumnStore {
 
@@ -16,6 +17,6 @@ public interface DateStore extends ColumnStore {
 
 	@Override
 	default Object createScriptValue(int event) {
-		return CDate.toLocalDate(getDate(event));
+		return getDate(event);
 	}
 }

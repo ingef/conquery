@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -49,17 +48,11 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			storage.addUser(user);
 			// override permission object, because it might have changed by the subject
 			// owning the permission
-			permission = mandator.addPermission(storage, permission);
+			mandator.addPermission(storage, permission);
 			user.addRole(storage, mandator);
 
 
-			final UriBuilder root = UriBuilder.fromPath("admin")
-											  .host("localhost")
-											  .scheme("http")
-											  .port(conquery.getAdminPort());
-
-
-			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(root, RoleUIResource.class, "getRole")
+			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
 				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 	
 			Response response = conquery

@@ -21,7 +21,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -265,7 +265,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry) {
+	protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg) {
 		sb
 			.append(getSubmittedForm().getLocalizedTypeLabel())
 			.append(" ")

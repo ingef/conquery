@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -32,6 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
+
+	@Override
+	public void overrideConfig(ConqueryConfig config) {
+		config.setStorage(new NonPersistentStoreFactory());
+	}
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
@@ -58,15 +65,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		//check result info size
 		ResultInfoCollector resultInfos = managed.collectResultInfos();
+
 		assertThat(
-				managed
-						.fetchContainedEntityResult()
-						.flatMap(ContainedEntityResult::streamValues)
+				managed.fetchContainedEntityResult()
+					   .flatMap(ContainedEntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
-				.allSatisfy(v ->
-									assertThat(v).hasSameSizeAs(resultInfos.getInfos())
-				);
+				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
 
 		PrintSettings
 				PRINT_SETTINGS =

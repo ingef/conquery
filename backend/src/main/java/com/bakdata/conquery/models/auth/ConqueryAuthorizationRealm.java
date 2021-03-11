@@ -1,11 +1,8 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +12,12 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.authz.permission.PermissionResolver;
+import org.apache.shiro.authz.permission.RolePermissionResolver;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.CollectionUtils;
+import org.apache.shiro.util.StringUtils;
 
 /**
  * This realms only provides authorization information for a given {@link UserId}.
@@ -117,6 +118,19 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 			objectPermissions = Sets.union(objectPermissions, (Set<Permission>)permissions);
 		}
 		
+	}
+
+	// We override this to work only on SetViews and allocate new sets
+	@Override
+	protected Collection<Permission> getPermissions(AuthorizationInfo info) {
+		// The AuthorizationInfo must be a ConqueryAuthorizationInfo and should only hold ObjectPermissions
+		Collection<Permission> perms = info.getObjectPermissions();
+
+		if (perms.isEmpty()) {
+			return Collections.emptySet();
+		} else {
+			return perms;
+		}
 	}
 
 }

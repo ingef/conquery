@@ -13,14 +13,14 @@
             "child": {
                 "type": "CONCEPT",
                 "ids": [
-                    "${dataset}.test_tree.test_child1"
+                    "test_tree.test_child1"
                 ],
                 "tables": [
                     {
-                        "id": "${dataset}.test_tree.test_column",
+                        "id": "test_tree.test_column",
                         "filters": [],
                         "selects": [
-                            "${dataset}.test_tree.test_column.test_select"
+                            "test_tree.test_column.test_select"
                         ]
                     }
                 ]

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import lombok.Builder;

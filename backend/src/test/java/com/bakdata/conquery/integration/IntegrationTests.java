@@ -2,13 +2,12 @@ package com.bakdata.conquery.integration;
 
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -16,26 +15,49 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
+import com.bakdata.conquery.integration.tests.RestartTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.util.io.Cloner;
+import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import io.github.classgraph.Resource;
-import lombok.RequiredArgsConstructor;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@Slf4j @RequiredArgsConstructor
+@Slf4j
 public class IntegrationTests {
-
+	private static final ObjectWriter CONFIG_WRITER = Jackson.MAPPER.writerFor(ConqueryConfig.class);
+	private static final Map<String, TestConquery> reusedInstances = new HashMap<>();
 	
 	private final String defaultTestRoot;
 	private final String defaultTestRootPackage;
-	
-	@RegisterExtension
-	public static final TestConquery CONQUERY = new TestConquery();
+	@Getter
+	private final File workDir;
+	@Getter @RegisterExtension
+	public static TestConqueryConfig DEFAULT_CONFIG = new TestConqueryConfig();
+	private final String defaultConfigString;
+
+	@SneakyThrows(IOException.class)
+	public IntegrationTests(String defaultTestRoot, String defaultTestRootPackage) {
+		this.defaultTestRoot = defaultTestRoot;
+		this.defaultTestRootPackage = defaultTestRootPackage;
+		this.workDir = Files.createTempDirectory("conqueryIntegrationTest").toFile();
+		TestConquery.configurePathsAndLogging(DEFAULT_CONFIG, this.workDir);
+		defaultConfigString = CONFIG_WRITER.writeValueAsString(DEFAULT_CONFIG);
+	}
 
 	public List<DynamicNode> jsonTests() {
 		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
@@ -60,7 +82,8 @@ public class IntegrationTests {
 			.map(this::collectTests)
 			.collect(Collectors.toList());
 	}
-	
+
+	@SneakyThrows
 	public Stream<DynamicNode> programmaticTests() {
 		List<Class<?>> programmatic = CPSTypeIdResolver
 			.SCAN_RESULT
@@ -78,20 +101,23 @@ public class IntegrationTests {
 					throw new RuntimeException(e);
 				}
 			})
-			.map(c->
-				DynamicTest.dynamicTest(
-					c.getClass().getSimpleName(),
-					//classpath URI
-					URI.create("classpath:/"+c.getClass().getName().replace('.', '/')+".java"),
-					new IntegrationTest.Wrapper(c.getClass().getSimpleName(), CONQUERY, c)
-				)
-			);
+			.map(this::createDynamicProgrammaticTestNode);
+	}
+
+	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test) {
+		TestConquery conquery = getCachedConqueryInstance(workDir, getConfigOverride(test));
+		return DynamicTest.dynamicTest(
+				test.getClass().getSimpleName(),
+				//classpath URI
+				URI.create("classpath:/"+test.getClass().getName().replace('.', '/')+".java"),
+				new IntegrationTest.Wrapper(test.getClass().getSimpleName(), conquery, test)
+		);
 	}
 
 	private DynamicNode collectTests(ResourceTree currentDir) {
 
 		if(currentDir.getValue() != null) {
-			return readTest(currentDir.getValue(), currentDir.getName());
+			return readTest(currentDir.getValue(), currentDir.getName(), this);
 		}
 
 		List<DynamicNode> list = new ArrayList<>();
@@ -109,23 +135,22 @@ public class IntegrationTests {
 		);
 	}
 
-	private static DynamicTest readTest(Resource resource, String name) {
+	private static DynamicTest readTest(Resource resource, String name, IntegrationTests integrationTests) {
 		try(InputStream in = resource.open()) {
-			JsonNode node = Jackson.MAPPER.readTree(in);
-			
-			
-			if(node.get("label") != null)
-				name = node.get("label").asText();
-			
-			
-			
+			JsonIntegrationTest test = new JsonIntegrationTest(in);
+			ConqueryConfig conf = getConfigOverride(test);
+
+			name = test.getTestSpec().getLabel();
+
+			TestConquery conquery = getCachedConqueryInstance(integrationTests.getWorkDir(), conf);
+
 			return DynamicTest.dynamicTest(
-				name,
-				URI.create("classpath:/"+resource.getPath()),
-				new IntegrationTest.Wrapper(
 					name,
-					CONQUERY,
-					new JsonIntegrationTest(node))
+					URI.create("classpath:/" + resource.getPath()),
+					new IntegrationTest.Wrapper(
+							name,
+							conquery,
+							test)
 			);
 		}
 		catch(Exception e) {
@@ -136,6 +161,44 @@ public class IntegrationTests {
 					throw e;
 				}
 			);
+		}
+	}
+
+	@NotNull
+	private static ConqueryConfig getConfigOverride(IntegrationTest test) {
+		ConqueryConfig conf = Cloner.clone(DEFAULT_CONFIG, Map.of());
+		test.overrideConfig(conf);
+		return conf;
+	}
+
+	@SneakyThrows
+	private static synchronized TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf) {
+		// This should be fast enough and a stable comparison
+		String confString = CONFIG_WRITER.writeValueAsString(conf);
+		if(!reusedInstances.containsKey(confString)){
+			// For the overriden config we must override the ports so there are no clashes
+			// We do it here so the config "hash" is not influenced by the port settings
+			TestConquery.configureRandomPorts(conf);
+			log.trace("Creating a new test conquery instance for test {}", conf);
+			TestConquery conquery = new TestConquery(workDir, conf);
+			reusedInstances.put(confString, conquery);
+			conquery.beforeAll();
+		}
+		TestConquery conquery = reusedInstances.get(confString);
+		return conquery;
+	}
+
+	@EqualsAndHashCode(callSuper = true)
+	public static class TestConqueryConfig extends ConqueryConfig  implements Extension, BeforeAllCallback {
+
+		@Override
+		public void beforeAll(ExtensionContext context) throws Exception {
+
+			context
+					.getTestInstance()
+					.filter(ConfigOverride.class::isInstance)
+					.map(ConfigOverride.class::cast)
+					.ifPresent(co -> co.override(this));
 		}
 	}
 }

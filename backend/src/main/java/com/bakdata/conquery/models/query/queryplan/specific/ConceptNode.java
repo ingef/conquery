@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -21,7 +22,7 @@ import lombok.Getter;
 @Getter
 public class ConceptNode extends QPChainNode {
 
-	private final ConceptElement<?>[] concepts;
+	private final List<ConceptElement<?>> concepts;
 	private final long requiredBits;
 	private final CQTable table;
 	private final SecondaryIdDescriptionId selectedSecondaryId;
@@ -30,7 +31,7 @@ public class ConceptNode extends QPChainNode {
 	private CBlock currentRow = null;
 
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescriptionId selectedSecondaryId) {
+	public ConceptNode(List<ConceptElement<?>> concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescriptionId selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
 		this.requiredBits = requiredBits;
@@ -74,11 +75,9 @@ public class ConceptNode extends QPChainNode {
 			return false;
 		}
 
-		CBlock row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 
-		long bits = row.getIncludedConcepts().get(entity.getId());
-
-		if((bits & requiredBits) != 0L || requiredBits == 0L) {
+		if(cBlock.isConceptIncluded(entity.getId(), requiredBits)) {
 			return super.isOfInterest(bucket);
 		}
 		return false;
@@ -91,21 +90,22 @@ public class ConceptNode extends QPChainNode {
 		}
 
 		//check concepts
-		int[] mostSpecificChildren;
-		if (currentRow.getMostSpecificChildren() != null
-			&& ((mostSpecificChildren = currentRow.getMostSpecificChildren()[event]) != null)) {
-
-			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
-				if (ce.matchesPrefix(mostSpecificChildren)) {
-					getChild().acceptEvent(bucket, event);
-				}
-			}
-		}
-		else {
-			for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
+		int[] mostSpecificChildren = currentRow.getEventMostSpecificChild(event);
+		if (mostSpecificChildren == null) {
+			for (ConceptElement ce : concepts) {
+				// having no specific child set maps directly to root.
+				// This means we likely have a VirtualConcept
 				if (ce.getConcept() == ce) {
 					getChild().acceptEvent(bucket, event);
 				}
+			}
+			return;
+		}
+
+		for (ConceptElement<?> ce : concepts) {
+			//see #177  we could improve this by building a a prefix tree over concepts.prefix
+			if (ce.matchesPrefix(mostSpecificChildren)) {
+				getChild().acceptEvent(bucket, event);
 			}
 		}
 	}

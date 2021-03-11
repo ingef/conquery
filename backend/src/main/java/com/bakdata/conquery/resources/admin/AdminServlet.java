@@ -68,13 +68,14 @@ public class AdminServlet {
 		jerseyConfig.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
 
 		adminProcessor = new AdminProcessor(
-			manager.getConfig(),
-			manager.getStorage(),
-			manager.getDatasetRegistry(),
-			manager.getJobManager(),
-			manager.getMaintenanceService(),
-			manager.getValidator(),
-			manager.getConfig().getCluster().getEntityBucketSize()
+				manager.getConfig(),
+				manager.getStorage(),
+				manager.getDatasetRegistry(),
+				manager.getJobManager(),
+				manager.getMaintenanceService(),
+				manager.getValidator(),
+				manager.getConfig().getCluster().getEntityBucketSize(),
+				manager.isUseNameForStoragePrefix() ? manager.getName() : ""
 		);
 
 		// inject required services
@@ -118,6 +119,7 @@ public class AdminServlet {
 			.register(new MultiPartFeature())
 			.register(manager.getAuthController().getAuthenticationFilter())
 			.register(IdParamConverter.Provider.INSTANCE)
-			.register(AuthCookieFilter.class);
+			.register(AuthCookieFilter.class)
+			.register(manager.getAuthController().getAuthenticationFilter());
 	}
 }

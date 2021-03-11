@@ -11,13 +11,14 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.IdLabel;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.execution.Labelable;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -47,7 +48,7 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
+public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
 	protected DatasetId dataset;
 	@NotEmpty
@@ -150,11 +151,12 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		/* Calculate which groups can see this query.
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
-		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
+
+		List<GroupId> permittedGroups = new ArrayList<>();
 		for(Group group : storage.getAllGroups()) {
 			for(Permission perm : group.getPermissions()) {
 				if(perm.implies(FormConfigPermission.onInstance(Ability.READ, this.getId()))) {
-					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+					permittedGroups.add(group.getId());
 					continue;
 				}
 			}
@@ -211,7 +213,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		/**
 		 * The groups this config is shared with.
 		 */
-		private Collection<IdLabel<GroupId>> groups;
+		private Collection<GroupId> groups;
 
 		private JsonNode values;
 	}

@@ -77,9 +77,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 		if (!isStarted()) {
 			throw new IllegalStateException("You need to start the Progress Reporter before you can add subjobs");
 		}
-		if (innerProgress + reservedForChildren + steps > max) {
-			throw new IllegalArgumentException("Progress + Steps is bigger than the Maximum Progress");
-		}
+
 		reservedForChildren += steps;
 
 		ProgressReporterImpl childPr = new ProgressReporterImpl();
@@ -96,7 +94,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 
 	@Override
 	public void report(int steps) {
-		if (innerProgress + reservedForChildren + steps > max) {
+		if (innerProgress + steps > max) {
 			log.warn("Progress({}) + ChildProgressReserve({}) + Steps({}) is bigger than the maximum Progress({}). There might be to many reports in the code.", innerProgress, reservedForChildren, steps, max);
 			return;
 		}
@@ -131,8 +129,8 @@ public class ProgressReporterImpl implements ProgressReporter {
 				log.warn("One or more Children are not done yet");
 			}
 		}
-		
-		if(getAbsoluteProgress()<max) {
+
+		if (getAbsoluteProgress() < getAbsoluteMax()) {
 			log.trace("Done was called before all steps were been reported. There might be missing reporting steps in the code.");
 		}
 

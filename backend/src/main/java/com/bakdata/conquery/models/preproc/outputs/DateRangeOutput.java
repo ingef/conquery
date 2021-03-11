@@ -6,14 +6,15 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateFormats;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.ToString;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
@@ -23,8 +24,6 @@ import lombok.ToString;
 @CPSType(id = "DATE_RANGE", base = OutputDescription.class)
 public class DateRangeOutput extends OutputDescription {
 
-	private static final long serialVersionUID = 1L;
-
 	@NotNull
 	private String startColumn, endColumn;
 
@@ -32,6 +31,16 @@ public class DateRangeOutput extends OutputDescription {
 	 * Parse null values as open date-range if true.
 	 */
 	public boolean allowOpen = false;
+
+	@Override
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(startColumn)
+					   .append(endColumn)
+					   .append(allowOpen)
+					   .toHashCode();
+	}
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {

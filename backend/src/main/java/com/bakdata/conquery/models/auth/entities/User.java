@@ -7,13 +7,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -64,6 +66,10 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	@Override
 	public boolean isPermittedAll(Collection<Permission> permissions) {
 		return SecurityUtils.getSecurityManager().isPermittedAll(getPrincipals(), permissions);
+	}
+
+	public boolean isOwner(@NonNull Owned owned) {
+		return getId().equals(owned.getOwner());
 	}
 	
 	@Override

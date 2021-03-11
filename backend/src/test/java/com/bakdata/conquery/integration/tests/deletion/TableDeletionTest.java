@@ -12,8 +12,8 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -47,7 +47,6 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		final TableId tableId = TableId.Parser.INSTANCE.parse(dataset.getName(), "test_table2");
 
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
@@ -65,6 +64,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
+
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		final int nImports = namespace.getStorage().getAllImports().size();
 
@@ -95,7 +96,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Delete the import.
@@ -155,7 +156,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after deletion");
 
 			// Issue a query and asseert that it has less content.
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -215,16 +216,17 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
+			testConquery.shutdown(conquery);
 
 			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 			testConquery.getDropwizard().after();
 			//restart
-			testConquery.beforeAll(testConquery.getBeforeAllContext());
+			testConquery.beforeAll();
 
 			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
 
@@ -250,7 +252,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 			}
 		}
 	}

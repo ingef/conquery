@@ -11,17 +11,14 @@ import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -45,7 +42,6 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
@@ -64,6 +60,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 		}
 
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		final int nImports = namespace.getStorage().getAllImports().size();
 
@@ -94,7 +91,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Delete Dataset.
@@ -163,14 +160,12 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			}
 
 
-			// It's not exactly possible to issue a query for a non-existant dataset, so we assert that resolving the concept fails.
-			Namespace finalNamespace = namespace;
+			// It's not exactly possible to issue a query for a non-existant dataset, so we assert that parsing the fails.
 			assertThatThrownBy(() -> {
-				final String src = Jackson.MAPPER.writeValueAsString(query);
-				final IQuery iQuery = Jackson.MAPPER.readerFor(IQuery.class).<IQuery>readValue(src);
-
-				CQConcept.resolveConcepts(((CQConcept) ((ConceptQuery) iQuery).getRoot()).getIds(), finalNamespace.getStorage().getCentralRegistry());
+				IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 			}).isNotNull();
+
+			IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED);
 		}
 
 
@@ -226,16 +221,17 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 		}
 
 
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
+			testConquery.shutdown(conquery);
 			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 			testConquery.getDropwizard().after();
 			//restart
-			testConquery.beforeAll(testConquery.getBeforeAllContext());
+			testConquery.beforeAll();
 			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
 
 			log.info("Checking state after re-start");
@@ -259,7 +255,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 		}
 	}
 }

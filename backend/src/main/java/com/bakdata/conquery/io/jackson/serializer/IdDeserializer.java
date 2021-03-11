@@ -42,7 +42,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 				}
 				return idParser.parse(text);
 			} catch(Exception e) {
-				throw new IllegalArgumentException("Could not parse an "+idClass.getSimpleName()+" from "+text, e);
+				return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse an "+idClass.getSimpleName()+" from "+text);
 			}
 		}
 		return (ID) ctxt.handleUnexpectedToken(IId.class, parser.getCurrentToken(), parser, "name references should be strings");

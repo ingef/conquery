@@ -19,41 +19,41 @@ export const nodeHasActiveTableFilters = (node: ConceptQueryNodeType) => {
 export const nodeHasExludedTable = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;
 
-  return node.tables.some(table => table.exclude);
+  return node.tables.some((table) => table.exclude);
 };
 
 export function nodeIsInvalid(
   node: ConceptQueryNodeType,
-  blacklistedConceptIds?: string[],
-  whitelistedConceptIds?: string[]
+  blocklistedConceptIds?: string[],
+  allowlistedConceptIds?: string[]
 ) {
   return (
-    (!!whitelistedConceptIds &&
-      !nodeIsWhitelisted(node, whitelistedConceptIds)) ||
-    (!!blacklistedConceptIds && nodeIsBlacklisted(node, blacklistedConceptIds))
+    (!!allowlistedConceptIds &&
+      !nodeIsAllowlisted(node, allowlistedConceptIds)) ||
+    (!!blocklistedConceptIds && nodeIsBlocklisted(node, blocklistedConceptIds))
   );
 }
 
-export function nodeIsBlacklisted(
+export function nodeIsBlocklisted(
   node: ConceptQueryNodeType,
-  blacklistedConceptIds: string[]
+  blocklistedConceptIds: string[]
 ) {
   return (
     !!node.ids &&
-    blacklistedConceptIds.some(id =>
-      node.ids.some(conceptId => conceptId.indexOf(id.toLowerCase()) !== -1)
+    blocklistedConceptIds.some((id) =>
+      node.ids.some((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1)
     )
   );
 }
 
-export function nodeIsWhitelisted(
+export function nodeIsAllowlisted(
   node: ConceptQueryNodeType,
-  whitelistedConceptIds: string[]
+  allowlistedConceptIds: string[]
 ) {
   return (
     !!node.ids &&
-    whitelistedConceptIds.some(id =>
-      node.ids.every(conceptId => conceptId.indexOf(id.toLowerCase()) !== -1)
+    allowlistedConceptIds.some((id) =>
+      node.ids.every((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1)
     )
   );
 }

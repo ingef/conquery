@@ -9,29 +9,30 @@
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "AND",
+          "label" : "AND",
           "createExists": true,
           "children": [
             {
               "ids": [
-                "${dataset}.number.1"
+                "number.1"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "number.number_connector",
+                  "selects": "number.exists"
                 }
               ]
             },
             {
               "ids": [
-                "${dataset}.number.2"
+                "number.2"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "number.number_connector",
+                  "selects": "number.exists"
                 }
               ]
             }
@@ -42,29 +43,30 @@
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "OR",
+          "label" : "OR",
           "createExists": true,
           "children": [
             {
               "ids": [
-                "${dataset}.number.1"
+                "number.1"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "number.number_connector",
+                  "selects": "number.exists"
                 }
               ]
             },
             {
               "ids": [
-                "${dataset}.number.2"
+                "number.2"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "number.number_connector",
+                  "selects": "number.exists"
                 }
               ]
             }

@@ -3,21 +3,20 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parse column as type.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @ToString(of = {"inputColumn", "inputType"})
 @CPSType(id = "COPY", base = OutputDescription.class)
@@ -30,7 +29,15 @@ public class CopyOutput extends OutputDescription {
 		this.inputType = typeId;
 	}
 
-	private static final long serialVersionUID = 1L;
+
+	@Override
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(inputColumn)
+					   .append(inputType.name())
+					   .toHashCode();
+	}
 
 	@NotNull
 	private String inputColumn;

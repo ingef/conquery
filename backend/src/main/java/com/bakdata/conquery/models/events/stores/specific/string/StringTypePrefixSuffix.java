@@ -6,7 +6,7 @@ import java.util.Iterator;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;

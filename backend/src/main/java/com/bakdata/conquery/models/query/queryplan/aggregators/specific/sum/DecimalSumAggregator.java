@@ -45,6 +45,6 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.NUMERIC;
+		return ResultType.NumericT.INSTANCE;
 	}
 }

@@ -3,27 +3,29 @@ package com.bakdata.conquery.util.support;
 import java.io.Closeable;
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.dropwizard.testing.DropwizardTestSupport;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @RequiredArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 public class StandaloneSupport implements Closeable {
 
 	private final TestConquery testConquery;
@@ -44,19 +46,34 @@ public class StandaloneSupport implements Closeable {
 		testConquery.waitUntilWorkDone();
 	}
 
-	public void preprocessTmp() throws Exception {
-		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
-			Conquery.class,
-			config,
-			app ->  new PreprocessorCommand(MoreExecutors.newDirectExecutorService())
+	public void preprocessTmp(File tmpDir, List<File> descriptions) throws Exception {
+		final Environment env = testConquery.getDropwizard().getEnvironment();
+		final net.sourceforge.argparse4j.inf.Namespace namespace = new net.sourceforge.argparse4j.inf.Namespace(
+				Map.of(
+						"in", tmpDir,
+						"out", tmpDir,
+						"desc", descriptions,
+							// Both should be defaults but since were abusing Dropwizard a little, we have to set them manually.
+						"strict", true,
+						"fast-fail", true
+				)
 		);
-		prepro.before();
-		prepro.after();
+
+		// We use this to change the visibility of the run method, hence it cannot be instantiated.
+		new PreprocessorCommand(MoreExecutors.newDirectExecutorService()){
+			@Override
+			public void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig config) throws Exception {
+				super.run(environment, namespace, config);
+			}
+		}
+		.run(env, namespace, config);
 	}
 
 	@Override
 	public void close() {
-		testConquery.closeNamespace(getDataset().getId());
+		testConquery.removeSupportDataset(this);
+		testConquery.removeSupport(this);
+		testConquery.waitUntilWorkDone();
 	}
 
 	public Validator getValidator() {
@@ -74,9 +91,10 @@ public class StandaloneSupport implements Closeable {
 	public List<ShardNode> getShardNodes() {
 		return testConquery.getStandaloneCommand().getShardNodes();
 	}
-	
+
 	/**
 	 * Retrieves the port of the admin API.
+	 *
 	 * @return The port.
 	 */
 	public int getAdminPort() {
@@ -89,9 +107,24 @@ public class StandaloneSupport implements Closeable {
 
 	/**
 	 * Retrieves the port of the main API.
+	 *
 	 * @return The port.
 	 */
 	public int getLocalPort() {
 		return testConquery.getDropwizard().getLocalPort();
+	}
+
+	public UriBuilder defaultApiURIBuilder() {
+		return UriBuilder.fromPath("api")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(getLocalPort());
+	}
+
+	public UriBuilder defaultAdminURIBuilder() {
+		return UriBuilder.fromPath("admin")
+						 .host("localhost")
+						 .scheme("http")
+						 .port(getAdminPort());
 	}
 }

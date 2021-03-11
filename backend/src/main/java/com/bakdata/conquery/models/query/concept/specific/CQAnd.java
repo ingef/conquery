@@ -2,13 +2,15 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
+import c10n.C10N;
+import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -20,13 +22,15 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
+import com.bakdata.conquery.models.query.resultinfo.LocalizedSimpleResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "AND", base = CQElement.class)
 public class CQAnd extends CQElement implements ForcedExists{
+
 	@Getter
 	@Setter
 	@NotEmpty
@@ -74,8 +78,18 @@ public class CQAnd extends CQElement implements ForcedExists{
 		}
 
 		if(createExists){
-			collector.add(new SimpleResultInfo(Objects.requireNonNullElse(getLabel(), "AND"), ResultType.BOOLEAN));
+			collector.add(new LocalizedSimpleResultInfo(this::getLabel, ResultType.BooleanT.INSTANCE));
 		}
+	}
+
+	@Override
+	public String getLabel(Locale locale) {
+		String label = super.getLabel(locale);
+		if (label != null) {
+			return label;
+		}
+
+		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
 	}
 
 	@Override

@@ -1,15 +1,19 @@
 package com.bakdata.conquery.models;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import com.bakdata.conquery.apiv1.IdLabel;
+import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -23,7 +27,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -31,15 +35,18 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcess
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.util.NonPersistentMetaStorage;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 public class SerializationTests {
 
@@ -47,7 +54,7 @@ public class SerializationTests {
 	public void dataset() throws IOException, JSONException {
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
-		
+
 		SerializationTestUtil
 			.forType(Dataset.class)
 			.test(dataset);
@@ -76,7 +83,7 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException{
-		MetaStorage storage = new NonPersistentMetaStorage();
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), null);
 		User user = new User("user", "user");
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
@@ -97,7 +104,7 @@ public class SerializationTests {
 	
 	@Test
 	public void group() throws IOException, JSONException {
-		MetaStorage storage = new NonPersistentMetaStorage();
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), null);
 		Group group = new Group("group", "group");
 		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group
@@ -224,5 +231,21 @@ public class SerializationTests {
 		SerializationTestUtil
 			.forType(ConqueryError.class)
 			.test(error);
+	}
+
+	@Test
+	public void meInformation() throws IOException, JSONException {
+		User user = new User("name", "labe");
+
+		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
+				.userName(user.getLabel())
+				.hideLogoutButton(false)
+				.groups(List.of(new IdLabel(new GroupId("test_group"), "test_group_label")))
+				.datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FEDatasetAbility(true)))
+				.build();
+
+		SerializationTestUtil
+				.forType(MeProcessor.FEMeInformation.class)
+				.test(info);
 	}
 }
