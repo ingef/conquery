@@ -83,22 +83,23 @@ public class CQOr extends CQElement implements ForcedExists {
 	public void resolve(QueryResolveContext context) {
 		Preconditions.checkNotNull(context.getDateAggregationMode());
 
+		dateAction =  determineDateAction(context);
+
+		children.forEach(c -> c.resolve(context));
+	}
+
+	private DateAggregationAction determineDateAction(QueryResolveContext context) {
 		switch(context.getDateAggregationMode()) {
 			case NONE:
-				dateAction = DateAggregationAction.BLOCK;
-				break;
+				return DateAggregationAction.BLOCK;
 			case MERGE:
 			case LOGICAL:
-				dateAction = DateAggregationAction.MERGE;
-				break;
+				return DateAggregationAction.MERGE;
 			case INTERSECT:
-				dateAction = DateAggregationAction.INTERSECT;
-				break;
+				return DateAggregationAction.INTERSECT;
 			default:
 				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
 		}
-
-		children.forEach(c -> c.resolve(context));
 	}
 
 	@Override

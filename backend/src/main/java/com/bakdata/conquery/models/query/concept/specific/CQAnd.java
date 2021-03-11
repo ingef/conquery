@@ -24,10 +24,7 @@ import lombok.Setter;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 @CPSType(id = "AND", base = CQElement.class)
@@ -79,21 +76,22 @@ public class CQAnd extends CQElement implements ForcedExists{
 	public void resolve(QueryResolveContext context) {
 		Preconditions.checkNotNull(context.getDateAggregationMode());
 
+		dateAction = determineDateAction(context);
+		children.forEach(c->c.resolve(context));
+	}
+
+	private DateAggregationAction determineDateAction(QueryResolveContext context) {
 		switch(context.getDateAggregationMode()) {
 			case NONE:
-				dateAction = DateAggregationAction.BLOCK;
-				break;
+				return DateAggregationAction.BLOCK;
 			case MERGE:
-				dateAction = DateAggregationAction.MERGE;
-				break;
+				return DateAggregationAction.MERGE;
 			case LOGICAL:
 			case INTERSECT:
-				dateAction = DateAggregationAction.INTERSECT;
-				break;
+				return DateAggregationAction.INTERSECT;
 			default:
 				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
 		}
-		children.forEach(c->c.resolve(context));
 	}
 
 	@Override

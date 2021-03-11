@@ -42,21 +42,23 @@ public class CQNegation extends CQElement {
 	public void resolve(QueryResolveContext context) {
 		Preconditions.checkNotNull(context.getDateAggregationMode());
 
+		dateAction = determineDateAction(context);
+		child.resolve(context);
+	}
+
+	private DateAggregationAction determineDateAction(QueryResolveContext context) {
 		switch(context.getDateAggregationMode()) {
 			case MERGE:
 			case NONE:
 			case INTERSECT:
-				dateAction = DateAggregationAction.BLOCK;
-				break;
+				return DateAggregationAction.BLOCK;
 			case LOGICAL:
-				dateAction = DateAggregationAction.NEGATE;
-				break;
+				return DateAggregationAction.NEGATE;
 			default:
 				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
 		}
-		child.resolve(context);
 	}
-	
+
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		child.collectResultInfos(collector);
