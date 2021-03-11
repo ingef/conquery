@@ -9,7 +9,6 @@
         "number"
       ],
       "type": "CONCEPT",
-      "label": "vs",
       "tables": [
         {
           "id": "number.number_connector",
@@ -22,10 +21,10 @@
                 "max": 1
               }
             }
-          ],
-          "selects": "number.exists"
+          ]
         }
-      ]
+      ],
+      "selects": "number.exists"
     }
   },
   "concepts": [
