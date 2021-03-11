@@ -109,6 +109,7 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
 		query.visit(visitor);
 		outcomes.visit(visitor);
 		features.visit(visitor);
