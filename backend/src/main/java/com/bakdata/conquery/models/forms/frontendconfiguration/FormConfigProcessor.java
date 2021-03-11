@@ -78,7 +78,7 @@ public class FormConfigProcessor {
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
 				.filter(c -> dataset.equals(c.getDataset()))
 				.filter(c -> formTypesFinal.contains(c.getFormType()))
-				.filter(c -> user.getId().equals(c.getOwner()) || user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
+				.filter(c -> user.isOwner(c) || user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
 
 
 		return stream.map(c -> c.overview(storage, user));

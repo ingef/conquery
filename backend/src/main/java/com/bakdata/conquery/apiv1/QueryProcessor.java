@@ -125,13 +125,6 @@ public class QueryProcessor {
 				continue;
 			}
 
-			// Ensure that user is allowed to read all sub-queries of the actual query.
-
-			if (!translateable.collectRequiredQueries().stream()
-					.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
-				continue;
-			}
-
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
