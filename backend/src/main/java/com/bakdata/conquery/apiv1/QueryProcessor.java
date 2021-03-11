@@ -132,7 +132,6 @@ public class QueryProcessor {
 						mqTranslated =
 						ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
 
-				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}
 			catch (Exception e) {
 				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
