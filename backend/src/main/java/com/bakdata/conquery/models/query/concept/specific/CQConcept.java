@@ -20,15 +20,12 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -83,12 +80,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	private boolean excludeFromTimeAggregation = false;
 	private boolean excludeFromSecondaryIdQuery = true;
-
-	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return ids.stream()
-				  .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-				  .toArray(ConceptElement[]::new);
-	}
 
 	@Override
 	public String getLabel(Locale cfg) {
@@ -194,16 +185,13 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
-			concept.getConcept();
 			final QPNode filtersNode = concept.createConceptQuery(context, filters, aggregators);
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
 
-			final Connector connector = table.getConnector();
-
 			// Select if matching secondaryId available
 			final boolean hasSelectedSecondaryId =
-					Arrays.stream(connector.getTable().getColumns())
+					Arrays.stream(table.getConnector().getTable().getColumns())
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
 						  .map(SecondaryIdDescription::getId)

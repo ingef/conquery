@@ -82,6 +82,7 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
+		resolvedQuery.collectResultInfos(collector);
 	}
 
 	@Override
