@@ -24,7 +24,7 @@
                 ],
                 "tables": [
                     {
-                        "id": "test_tree.test_column",
+                        "id": "test_tree_dateless.test_column",
                         "filters": []
                     }
                 ]
