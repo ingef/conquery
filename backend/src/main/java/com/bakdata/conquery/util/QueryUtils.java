@@ -109,7 +109,7 @@ public class QueryUtils {
 		}
 
 		public Optional<ManagedExecutionId> getOnlyReused() {
-			if (containsOthersElements) {
+			if (containsOthersElements || reusedQuery == null) {
 				return Optional.empty();
 			}
 
