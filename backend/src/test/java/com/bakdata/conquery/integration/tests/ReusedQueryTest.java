@@ -56,7 +56,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		final SecondaryIdQuery query = (SecondaryIdQuery) IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
-		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE);
+		final ManagedExecutionId id = IntegrationUtils.assertQueryResult(conquery, query, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 		assertThat(id).isNotNull();
 
@@ -64,7 +64,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		{
 			final ConceptQuery reused = new ConceptQuery(new CQReusedQuery(id));
 
-			IntegrationUtils.assertQueryResult(conquery, reused, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, reused, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Reuse in SecondaryId
@@ -74,7 +74,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused.setSecondaryId(conquery.getNamespace().getStorage().getSecondaryIds().get(0));
 
-			IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Reuse Multiple times with different query types
@@ -84,14 +84,14 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused1.setSecondaryId(query.getSecondaryId());
 
-			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 4L, ExecutionState.DONE);
+			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			{
 				final SecondaryIdQuery reused2 = new SecondaryIdQuery();
 				reused2.setRoot(new CQReusedQuery(reused1Id));
 
 				reused2.setSecondaryId(query.getSecondaryId());
 
-				final ManagedExecutionId reused2Id = IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE);
+				final ManagedExecutionId reused2Id = IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 				assertThat(reused2Id)
 						.as("Query should be reused.")
@@ -100,7 +100,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				// Now we change to ConceptQuery
 				final ConceptQuery reused3 = new ConceptQuery(new CQReusedQuery(reused2Id));
 
-				IntegrationUtils.assertQueryResult(conquery, reused3, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery, reused3, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 
 			{
@@ -112,7 +112,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 											   .getStorage()
 											   .getSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored")));
 
-				final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, reusedDiffId, 2L, ExecutionState.DONE);
+				final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, reusedDiffId, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 				assertThat(executionId)
 						.as("Query should NOT be reused.")

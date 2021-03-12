@@ -1,16 +1,8 @@
 package com.bakdata.conquery.integration.tests;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.net.URI;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.core.UriBuilder;
-
-import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -24,13 +16,12 @@ import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.UnauthorizedException;
 
 @Slf4j
 public class ConceptPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
@@ -70,32 +61,22 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 
 		// Id of the lone concept that is used in the test.
 		ConceptId conceptId = conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId();
-		assertThatThrownBy(() -> {
-			executeAndWaitUntilFinish(processor, dataset, query, user, storage);
-		})
-		.isInstanceOf(UnauthorizedException.class)
-		.hasMessage(String.format("Subject does not have permission [%s]", ConceptPermission.onInstance(Ability.READ, conceptId)));
+
+		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 401);
 
 		// Add the necessary Permission
 		{
 			user.addPermission(storage, ConceptPermission.onInstance(Ability.READ, conceptId));			
 		}
-		
-		assertThatCode(() ->{			
-			executeAndWaitUntilFinish(processor, dataset, query, user, storage);
-		}).doesNotThrowAnyException();
-		
+
+		// Only assert permissions
+		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.DONE, user, 201);
+
 		conquery.waitUntilWorkDone();
 		// Clean up
 		{
 			storage.removeUser(user.getId());
 		}
-	}
-	
-	public static void executeAndWaitUntilFinish(QueryProcessor processor, Dataset dataset, QueryDescription query, User user, MetaStorage storage ) {
-		ExecutionStatus status = processor.postQuery(dataset, query, UriBuilder.fromUri(URI.create("http://localhost")), user);
-		Objects.requireNonNull(storage.getExecution(status.getId()), "Execution was not found in storage, even though it was startet")
-			.awaitDone(2, TimeUnit.MINUTES);
 	}
 
 }

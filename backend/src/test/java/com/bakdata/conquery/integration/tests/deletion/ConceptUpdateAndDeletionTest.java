@@ -105,7 +105,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			log.info("Executing query before deletion");
 
-			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Delete the Concept.
@@ -156,7 +156,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 			// Issue a query and assert that it is failing.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 201);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -201,7 +201,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after update");
 
 			// Assert that it now contains 2 instead of 1.
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
@@ -246,7 +246,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after restart.");
 				// Re-assert state.
-				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 		}
 	}
