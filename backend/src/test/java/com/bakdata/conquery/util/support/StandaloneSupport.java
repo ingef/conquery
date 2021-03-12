@@ -57,10 +57,7 @@ public class StandaloneSupport implements Closeable {
 				Map.of(
 						"in", tmpDir,
 						"out", tmpDir,
-						"desc", descriptions,
-							// Both should be defaults but since were abusing Dropwizard a little, we have to set them manually.
-						"strict", true,
-						"fast-fail", true
+						"desc", descriptions
 				)
 		);
 
