@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import c10n.C10N;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -28,7 +29,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 @CPSType(id = "AND", base = CQElement.class)
-public class CQAnd extends CQElement implements ForcedExists{
+public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable {
 
 	@Getter
 	@Setter
@@ -42,6 +43,11 @@ public class CQAnd extends CQElement implements ForcedExists{
 	@InternalOnly
 	@Getter @Setter
 	private DateAggregationAction dateAction;
+
+	@Override
+	public void setDefaultExists() {
+		createExists = true;
+	}
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {

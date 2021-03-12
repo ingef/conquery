@@ -32,6 +32,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @Builder(builderClassName = "ConceptManipulatorInternalBuilder", builderMethodName = "internalBuilder")
+@Deprecated
 public class FilteringConceptManipulator implements ConceptManipulator{
 
 	@Builder.Default
@@ -55,15 +56,15 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 		}
 
 		Set<ConceptSelectId> blockDefaultSelectIntersection = selectBlockList
-			.stream()
-			.distinct()
-			.filter(selectDefault::contains)
-			.collect(Collectors.toSet());
+																	  .stream()
+																	  .filter(selectDefault::contains)
+																	  .collect(Collectors.toSet());
+
 		if (!blockDefaultSelectIntersection.isEmpty()) {
 			throw new IllegalArgumentException(
 				String
 					.format(
-						"The list of default selects intersects with the blocklist. Intersecting Elements:\t",
+						"The list of default selects intersects with the blocklist. Intersecting Elements:\t%s",
 						blockDefaultSelectIntersection.toString()));
 		}
 
@@ -73,18 +74,17 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 		}
 
 		Set<ConnectorId> blockDefaultTableIntersection = tableDefault
-			.stream()
-			.map(CQTable::getConnector)
+																 .stream()
+																 .map(CQTable::getConnector)
 			.map(Connector::getId)
-			.distinct()
-			.filter(tableBlockList::contains)
-			.collect(Collectors.toSet());
+																 .filter(tableBlockList::contains)
+																 .collect(Collectors.toSet());
 
 		if (!blockDefaultTableIntersection.isEmpty()) {
 			throw new IllegalArgumentException(
 				String
 					.format(
-						"The list of default tables intersects with the blocklist. Intersecting Elements:\t",
+						"The list of default tables intersects with the blocklist. Intersecting Elements:\t%s",
 						blockDefaultTableIntersection.toString()));
 		}
 	}

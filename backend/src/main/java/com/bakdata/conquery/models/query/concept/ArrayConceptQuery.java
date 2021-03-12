@@ -2,26 +2,34 @@ package com.bakdata.conquery.models.query.concept;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.*;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 
 /**
  * Query type that combines a set of {@link ConceptQuery}s which are separately evaluated
@@ -45,6 +53,13 @@ public class ArrayConceptQuery extends IQuery {
 	@InternalOnly
 	protected DateAggregationMode resolvedDateAggregationMode;
 
+	public static ArrayConceptQuery createFromFeatures(List<CQElement> features) {
+		List<ConceptQuery> cqWraps = features.stream()
+											 .map(ConceptQuery::new)
+											 .collect(Collectors.toList());
+		return new ArrayConceptQuery(cqWraps);
+	}
+
 	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, @NonNull DateAggregationMode dateAggregationMode) {
 		if(queries == null) {
 			throw new IllegalArgumentException("No sub query list provided.");
@@ -52,7 +67,7 @@ public class ArrayConceptQuery extends IQuery {
 		this.childQueries = queries;
 		this.dateAggregationMode = dateAggregationMode;
 	}
-	
+
 	public ArrayConceptQuery( List<ConceptQuery> queries) {
 		this(queries, DateAggregationMode.NONE);
 	}

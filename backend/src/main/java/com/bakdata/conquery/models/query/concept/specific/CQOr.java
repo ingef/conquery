@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import c10n.C10N;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -36,7 +37,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @CPSType(id = "OR", base = CQElement.class)
-public class CQOr extends CQElement implements ForcedExists {
+public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable {
 	@Getter
 	@Setter
 	@NotEmpty
@@ -50,6 +51,11 @@ public class CQOr extends CQElement implements ForcedExists {
 	@InternalOnly
 	@Getter @Setter
 	private DateAggregationAction dateAction;
+
+	@Override
+	public void setDefaultExists() {
+		createExists = true;
+	}
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {

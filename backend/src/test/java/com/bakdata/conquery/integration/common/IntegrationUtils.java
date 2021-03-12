@@ -27,15 +27,17 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 @UtilityClass
+@Slf4j
 public class IntegrationUtils {
 
 
 	/**
 	 * Load the constellation of roles, users and permissions into the provided storage.
 	 */
-	public static void importPermissionConstellation(MetaStorage storage, Role[] roles,  RequiredUser[] rUsers) {
+	public static void importPermissionConstellation(MetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
 
 		for (Role role : roles) {
 			storage.addRole(role);
@@ -67,7 +69,6 @@ public class IntegrationUtils {
 	public static IQuery parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
 		return ConqueryTestSpec.parseSubTree(support, rawQuery, IQuery.class);
 	}
-	
 
 
 	public static OutputDescription copyOutput(RequiredColumn column) {
@@ -78,61 +79,6 @@ public class IntegrationUtils {
 		return out;
 	}
 
-	/**
-	 * Send a query onto the conquery instance and assert the result's size.
-	 * @return
-	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState expectedState) {
-		final URI postQueryURI = getPostQueryURI(conquery);
-
-		Response response = conquery.getClient()
-									.target(postQueryURI)
-									.request(MediaType.APPLICATION_JSON_TYPE)
-									.post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
-
-		if (response.getStatusInfo().getFamily().equals(Response.Status.Family.familyOf(400)) && expectedState.equals(ExecutionState.FAILED)) {
-			return null;
-		}
-
-		final JsonNode jsonNode = response.readEntity(JsonNode.class);
-
-		final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
-		String status = jsonNode.get(ExecutionStatus.Fields.status).asText();
-		long numberOfResults = 0;
-
-		// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
-
-		final URI queryStatusURI = getQueryStatusURI(conquery, id);
-
-		// We try at most 5 times, queryStatus waits for 10s, we therefore don't need to timeout here.
-		// Query getQueryStatus until it is no longer running.
-		for (int trial = 0; trial < 5; trial++) {
-
-			final JsonNode currentStatus =
-					conquery.getClient()
-							.target(queryStatusURI)
-							.request(MediaType.APPLICATION_JSON_TYPE)
-							.get(JsonNode.class);
-
-			status = currentStatus.get(ExecutionStatus.Fields.status).asText();
-			numberOfResults = currentStatus.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
-
-			if (!ExecutionState.RUNNING.name().equals(status)) {
-				break;
-			}
-		}
-
-		assertThat(status).isEqualTo(expectedState.name());
-
-		if (expectedState == ExecutionState.DONE) {
-			assertThat(numberOfResults)
-					.describedAs("Query results")
-					.isEqualTo(size);
-		}
-
-		return ManagedExecutionId.Parser.INSTANCE.parse(id);
-	}
-
 	private static URI getPostQueryURI(StandaloneSupport conquery) {
 		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "postQuery")
 							  .buildFromMap(Map.of(
@@ -140,11 +86,82 @@ public class IntegrationUtils {
 							  ));
 	}
 
+	private static JsonNode getRawExecutionStatus(String id, StandaloneSupport conquery, User user) {
+		final URI queryStatusURI = getQueryStatusURI(conquery, id);
+		// We try at most 5 times, queryStatus waits for 10s, we therefore don't need to timeout here.
+		// Query getQueryStatus until it is no longer running.
+		for (int trial = 0; trial < 5; trial++) {
+
+			JsonNode execStatusRaw =
+					conquery.getClient()
+							.target(queryStatusURI)
+							.request(MediaType.APPLICATION_JSON_TYPE)
+							.header("Authorization", "Bearer " + conquery.getAuthorizationController().getCentralTokenRealm().createTokenForUser(user.getId()))
+							.get(JsonNode.class);
+
+			String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
+
+			if (!ExecutionState.RUNNING.name().equals(status)) {
+				return execStatusRaw;
+			}
+		}
+
+		throw new IllegalStateException("Query was running too long.");
+	}
+
 	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
 		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
 							  .buildFromMap(Map.of(
 									  "query", id, "dataset", conquery.getDataset().getId()
 							  ));
+	}
+
+	/**
+	 * Send a query onto the conquery instance and assert the result's size.
+	 *
+	 * @return
+	 */
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, IQuery query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
+		final URI postQueryURI = getPostQueryURI(conquery);
+
+		final String userToken = conquery.getAuthorizationController()
+											.getCentralTokenRealm()
+											.createTokenForUser(user.getId());
+
+		Response response = conquery.getClient()
+									.target(postQueryURI)
+									.request(MediaType.APPLICATION_JSON_TYPE)
+									.header("Authorization", "Bearer " + userToken)
+									.post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getStatusCode())
+				.isEqualTo(expectedResponseCode);
+
+		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+			return null;
+		}
+
+		final JsonNode jsonNode = response.readEntity(JsonNode.class);
+
+		final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
+
+		// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
+
+		JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
+
+		String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
+		long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
+
+		assertThat(status).isEqualTo(expectedState.name());
+
+		if (expectedState == ExecutionState.DONE && expectedSize !=  -1) {
+			assertThat(numberOfResults)
+					.describedAs("Query results")
+					.isEqualTo(expectedSize);
+		}
+
+		return ManagedExecutionId.Parser.INSTANCE.parse(id);
 	}
 
 }
