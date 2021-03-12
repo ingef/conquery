@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import c10n.C10N;
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -29,7 +30,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "AND", base = CQElement.class)
-public class CQAnd extends CQElement implements DefaultSelectSettable {
+public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable {
 
 	@Getter
 	@Setter

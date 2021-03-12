@@ -12,7 +12,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
-import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -54,7 +53,7 @@ public class EntityDateMode extends Mode {
     @Override
     public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
         // Apply defaults to user concept
-        ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, datasets);
+
         return new EntityDateQuery(
 				getForm().getPrerequisite(),
 				ArrayConceptQuery.createFromFeatures(features),

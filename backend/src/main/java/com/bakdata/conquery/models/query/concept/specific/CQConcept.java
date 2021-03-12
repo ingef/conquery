@@ -10,12 +10,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -25,8 +27,6 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.forms.util.DefaultSelectConceptManipulator;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -59,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "CONCEPT", base = CQElement.class)
 @Slf4j
 @ToString
-public class CQConcept extends CQElement implements NamespacedIdHolding, DefaultSelectSettable {
+public class CQConcept extends CQElement implements NamespacedIdHolding, ExportForm.DefaultSelectSettable {
 
 	/**
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
@@ -279,6 +279,24 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, Default
 
 	@Override
 	public void setDefaultExists() {
-		DefaultSelectConceptManipulator.FillMethod.ADD_TO_COMPLETE_EMPTY.fill(this);
+		boolean allTablesEmpty = getTables().stream()
+										   .map(CQTable::getSelects)
+										   .anyMatch(Predicate.not(List::isEmpty));
+
+		if(!(getSelects().isEmpty() && allTablesEmpty)) {
+			// Don't fill if there are any selects on concept level or on any table level
+			return;
+		}
+
+		List<Select> cSelects = new ArrayList<>(getSelects());
+		cSelects.addAll(getConcept().getDefaultSelects());
+
+		setSelects(cSelects);
+
+		for (CQTable t : getTables()) {
+			List<Select> conSelects = new ArrayList<>(t.getSelects());
+			conSelects.addAll(t.getConnector().getDefaultSelects());
+			t.setSelects(conSelects);
+		}
 	}
 }

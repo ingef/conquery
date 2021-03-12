@@ -7,7 +7,6 @@ import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
-import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -33,8 +32,6 @@ public class RelExportGenerator {
 	}
 	
 	public static RelativeFormQuery generate(IQuery query, List<CQElement> features, List<CQElement> outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContext.CalendarUnit timeUnit, DatasetRegistry namespaces, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
-		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, namespaces);
-		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(outcomes, namespaces);
 
 		return new RelativeFormQuery(
 			query, 

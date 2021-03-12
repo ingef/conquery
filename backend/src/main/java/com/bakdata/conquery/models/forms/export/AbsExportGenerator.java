@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.specific.DefaultSelectSettable;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -29,8 +28,8 @@ public class AbsExportGenerator {
 
 		// Apply defaults to user concepts
 		for (CQElement feature : features) {
-			if(feature instanceof DefaultSelectSettable){
-				((DefaultSelectSettable) feature).setDefaultExists();
+			if(feature instanceof ExportForm.DefaultSelectSettable){
+				((ExportForm.DefaultSelectSettable) feature).setDefaultExists();
 			}
 		}
 

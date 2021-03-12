@@ -146,4 +146,11 @@ public class ExportForm implements Form, NamespacedIdHolding {
 			return new ResolutionAndAlignment(resolution, alignment);
 		}
 	}
+
+	/**
+	 * Classes that can be used as Features in ExportForm, having default-exists, are triggered this way.
+	 */
+	public static interface DefaultSelectSettable {
+		void setDefaultExists();
+	}
 }

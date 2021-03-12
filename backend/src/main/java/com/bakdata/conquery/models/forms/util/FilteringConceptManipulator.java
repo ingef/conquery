@@ -64,7 +64,7 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 			throw new IllegalArgumentException(
 				String
 					.format(
-						"The list of default selects intersects with the blocklist. Intersecting Elements:\t",
+						"The list of default selects intersects with the blocklist. Intersecting Elements:\t%s",
 						blockDefaultSelectIntersection.toString()));
 		}
 
@@ -84,7 +84,7 @@ public class FilteringConceptManipulator implements ConceptManipulator{
 			throw new IllegalArgumentException(
 				String
 					.format(
-						"The list of default tables intersects with the blocklist. Intersecting Elements:\t",
+						"The list of default tables intersects with the blocklist. Intersecting Elements:\t%s",
 						blockDefaultTableIntersection.toString()));
 		}
 	}
