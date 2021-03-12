@@ -24,7 +24,7 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 				concept.setSelects(concept.getConcept().getDefaultSelects());
 
 				for (CQTable t : concept.getTables()) {
-					t.setSelects(concept.getConcept().getConnector(t.getId()).getDefaultSelects());
+					t.setSelects(t.getConnector().getDefaultSelects());
 				}
 			}
 		},                // Overwrite all present selects with the default value.
@@ -41,10 +41,8 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 
 				for (CQTable t : concept.getTables()) {
 					List<Select> conSelects = new ArrayList<>(t.getSelects());
-					conSelects.addAll(concept.getConcept()
-											 .getConnector(t.getId()).getDefaultSelects());
+					conSelects.addAll(t.getConnector().getDefaultSelects());
 					t.setSelects(conSelects);
-
 				}
 			}
 		},

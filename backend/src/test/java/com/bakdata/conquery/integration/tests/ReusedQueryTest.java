@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -100,11 +101,13 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			// We select only a single event of the query by the exact filtering.
 			final CQConcept cqConcept = new CQConcept();
-			final Concept<?> concept = conquery.getNamespaceStorage().getConcept(new ConceptId(conquery.getDataset().getId(), "concept"));
+			final ConceptId conceptId = new ConceptId(conquery.getDataset().getId(), "concept");
+			final Concept<?> concept = conquery.getNamespaceStorage().getConcept(conceptId);
 			cqConcept.setElements(List.of(concept));
 			final CQTable cqTable = new CQTable();
 			cqTable.setConcept(cqConcept);
-			final Connector connector = concept.getConnectorByName("connector1");
+
+			final Connector connector = concept.getConnector(new ConnectorId(conceptId, "connector1"));
 			cqTable.setConnector(connector);
 			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(connector.getFilterByName("filter"), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 
@@ -116,7 +119,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			reused.setSecondaryId(query.getSecondaryId());
 
-			IntegrationUtils.assertQueryResult(conquery, reused, 1L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, reused, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Reuse Multiple times with different query types
