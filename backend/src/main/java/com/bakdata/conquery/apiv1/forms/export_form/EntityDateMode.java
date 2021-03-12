@@ -53,8 +53,10 @@ public class EntityDateMode extends Mode {
     private DateContext.Alignment alignmentHint = DateContext.Alignment.QUARTER;
 
     @Override
-    public void resolve(QueryResolveContext context) {        // Apply defaults to user concept
-        resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
+    public void resolve(QueryResolveContext context) {
+    	// Apply defaults to user concept
+        ExportForm.DefaultSelectSettable.enable(features);
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
         resolvedFeatures.resolve(context);
     }
 
