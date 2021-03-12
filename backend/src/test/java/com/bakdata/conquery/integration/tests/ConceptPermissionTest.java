@@ -1,7 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -62,7 +61,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		// Id of the lone concept that is used in the test.
 		ConceptId conceptId = conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId();
 
-		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 401);
+		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 403);
 
 		// Add the necessary Permission
 		{

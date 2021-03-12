@@ -138,6 +138,9 @@ public class IntegrationUtils {
 		assertThat(response.getStatusInfo().getStatusCode())
 				.isEqualTo(expectedResponseCode);
 
+		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+			return null;
+		}
 
 		final JsonNode jsonNode = response.readEntity(JsonNode.class);
 

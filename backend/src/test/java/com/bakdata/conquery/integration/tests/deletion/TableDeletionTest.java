@@ -156,7 +156,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after deletion");
 
 			// Issue a query and asseert that it has less content.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
 		}
 
 		conquery.waitUntilWorkDone();
