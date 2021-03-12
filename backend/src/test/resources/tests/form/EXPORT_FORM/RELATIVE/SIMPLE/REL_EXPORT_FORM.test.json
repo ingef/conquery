@@ -2,7 +2,7 @@
     "type": "FORM_TEST",
     "label": "REL-EXPORT-FORM Test",
     "expectedCsv": {
-        "results": "tests/form/RELATIVE/EXPORT_FORM/RELATIVE/expected.csv"
+        "results": "tests/form/EXPORT_FORM/RELATIVE/SIMPLE/expected.csv"
     },
     "form": {
         "type": "EXPORT_FORM",
@@ -56,7 +56,7 @@
             "/tests/form/shared/vers_tage_range.table.json"
         ],
         "previousQueryResults": [
-            "tests/form/RELATIVE/EXPORT_FORM/RELATIVE/query_results_1.csv"
+            "tests/form/EXPORT_FORM/RELATIVE/SIMPLE/query_results_1.csv"
         ]
     }
 }
