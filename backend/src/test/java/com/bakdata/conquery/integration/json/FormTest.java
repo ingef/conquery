@@ -116,9 +116,15 @@ public class FormTest extends ConqueryTestSpec {
 		DatasetRegistry namespaces = support.getNamespace().getNamespaces();
 		UserId userId = support.getTestUser().getId();
 		DatasetId dataset = support.getNamespace().getDataset().getId();
-		
+
+		assertThat(support.getValidator().validate(form))
+				.describedAs("Form Validation Errors")
+				.isEmpty();
+
 		log.info("{} FORM INIT", getLabel());
 		form.resolve(new QueryResolveContext(dataset, namespaces));
+
+
 		
 		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset, support.getConfig());
 

@@ -45,20 +45,18 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Represents the test instance of Conquery.
- *
  */
 @Slf4j
 @RequiredArgsConstructor
 public class TestConquery {
 
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
-
+	private final File tmpDir;
+	private final ConqueryConfig config;
 	@Getter
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
-	private final File tmpDir;
-	private final ConqueryConfig config;
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
@@ -72,77 +70,6 @@ public class TestConquery {
 	 */
 	@Getter
 	private ExtensionContext beforeAllContext;
-
-	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
-		try {
-			log.info("loading dataset");
-
-			return createSupport(datasetId, datasetId.getName());
-		}
-		catch (Exception e) {
-			return fail("Failed to open dataset " + datasetId, e);
-		}
-	}
-
-	public synchronized StandaloneSupport getSupport(String name) {
-		try {
-			log.info("Setting up dataset");
-			int count = NAME_COUNTS.merge(name, 0, (a, b) -> a + 1);
-			if (count > 0) {
-				name += "[" + count + "]";
-			}
-			DatasetId datasetId = new DatasetId(name);
-			standaloneCommand.getManager().getAdmin().getAdminProcessor().addDataset(name);
-			return createSupport(datasetId, name);
-		}
-		catch (Exception e) {
-			return fail("Failed to create a support for " + name, e);
-		}
-	}
-
-	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
-		DatasetRegistry datasets = standaloneCommand.getManager().getDatasetRegistry();
-		Namespace ns = datasets.get(datasetId);
-
-		assertThat(datasets.getShardNodes()).hasSize(2);
-
-		// make tmp subdir and change cfg accordingly
-		File localTmpDir = new File(tmpDir, "tmp_" + name);
-
-		localTmpDir.mkdir();
-
-		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
-
-		StandaloneSupport support = new StandaloneSupport(
-			this,
-			ns,
-			ns.getStorage().getDataset(),
-			localTmpDir,
-			localCfg,
-			standaloneCommand.getManager().getAdmin().getAdminProcessor(),
-			// Getting the User from AuthorizationConfig
-			standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
-
-		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getShardNodes().size());
-
-		support.waitUntilWorkDone();
-		openSupports.add(support);
-		return support;
-	}
-
-
-	@SneakyThrows
-	public synchronized void shutdown(StandaloneSupport support) {
-		log.info("Tearing down dataset");
-
-
-		DatasetId dataset = support.getDataset().getId();
-
-		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
-		standaloneCommand.getManager().getStorage().close();
-
-		openSupports.remove(support);
-	}
 
 	@SneakyThrows
 	public static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
@@ -165,9 +92,10 @@ public class TestConquery {
 
 		// set random open ports
 		for (ConnectorFactory con : CollectionUtils
-				.union(
-						((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
-						((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors())) {
+											.union(
+													((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
+													((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
+											)) {
 			try (ServerSocket s = new ServerSocket(0)) {
 				((HttpConnectorFactory) con).setPort(s.getLocalPort());
 			}
@@ -175,6 +103,81 @@ public class TestConquery {
 		try (ServerSocket s = new ServerSocket(0)) {
 			config.getCluster().setPort(s.getLocalPort());
 		}
+	}
+
+	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
+		try {
+			log.info("loading dataset");
+
+			return createSupport(datasetId, datasetId.getName());
+		}
+		catch (Exception e) {
+			return fail("Failed to open dataset " + datasetId, e);
+		}
+	}
+
+	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
+		DatasetRegistry datasets = standaloneCommand.getManager().getDatasetRegistry();
+		Namespace ns = datasets.get(datasetId);
+
+		assertThat(datasets.getShardNodes()).hasSize(2);
+
+		// make tmp subdir and change cfg accordingly
+		File localTmpDir = new File(tmpDir, "tmp_" + name);
+
+		localTmpDir.mkdir();
+
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
+
+		StandaloneSupport support = new StandaloneSupport(
+				this,
+				ns,
+				ns.getStorage().getDataset(),
+				localTmpDir,
+				localCfg,
+				standaloneCommand.getManager().getAdmin().getAdminProcessor(),
+				// Getting the User from AuthorizationConfig
+				standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser()
+		);
+
+		Wait.builder()
+			.total(Duration.ofSeconds(5))
+			.stepTime(Duration.ofMillis(5))
+			.build()
+			.until(() -> ns.getWorkers().size() == ns.getNamespaces().getShardNodes().size());
+
+		support.waitUntilWorkDone();
+		openSupports.add(support);
+		return support;
+	}
+
+	public synchronized StandaloneSupport getSupport(String name) {
+		try {
+			log.info("Setting up dataset");
+			int count = NAME_COUNTS.merge(name, 0, (a, b) -> a + 1);
+			if (count > 0) {
+				name += "[" + count + "]";
+			}
+			DatasetId datasetId = new DatasetId(name);
+			standaloneCommand.getManager().getAdmin().getAdminProcessor().addDataset(name);
+			return createSupport(datasetId, name);
+		}
+		catch (Exception e) {
+			return fail("Failed to create a support for " + name, e);
+		}
+	}
+
+	@SneakyThrows
+	public synchronized void shutdown(StandaloneSupport support) {
+		log.info("Tearing down dataset");
+
+
+		DatasetId dataset = support.getDataset().getId();
+
+		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
+		standaloneCommand.getManager().getStorage().close();
+
+		openSupports.remove(support);
 	}
 
 	public void beforeAll() throws Exception {
@@ -192,9 +195,9 @@ public class TestConquery {
 
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
-			.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
-			.withProperty(ClientProperties.READ_TIMEOUT, 10000)
-			.build("test client");
+						 .withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
+						 .withProperty(ClientProperties.READ_TIMEOUT, 10000)
+						 .build("test client");
 	}
 
 	public void afterAll() throws Exception {
@@ -204,58 +207,64 @@ public class TestConquery {
 	}
 
 	public void afterEach() throws Exception {
-		for (StandaloneSupport openSupport : openSupports ) {
+		for (StandaloneSupport openSupport : openSupports) {
 			log.info("Tearing down dataset");
-			DatasetId dataset = openSupport.getDataset().getId();
+			openSupport.close();
 			removeSupportDataset(openSupport);
 		}
 		openSupports.clear();
-	}
-
-	public void removeSupport(StandaloneSupport support) {
-		openSupports.remove(support);
-	}
-	
-
-
-
-	public void waitUntilWorkDone() {
-		log.info("Waiting for jobs to finish");
-		boolean busy;
-		//sample 10 times from the job queues to make sure we are done with everything
-		long started = System.nanoTime();
-		for(int i=0;i<10;i++) {
-			do {
-				busy = standaloneCommand.getManager().getJobManager().isSlowWorkerBusy();
-				busy |= standaloneCommand.getManager()
-										 .getStorage()
-										 .getAllExecutions()
-										 .stream()
-										 .map(ManagedExecution::getState)
-										 .anyMatch(ExecutionState.RUNNING::equals);
-
-				for (Namespace namespace : standaloneCommand.getManager().getDatasetRegistry().getDatasets()) {
-					busy |= namespace.getJobManager().isSlowWorkerBusy();
-				}
-
-				for (ShardNode slave : standaloneCommand.getShardNodes())
-					busy |= slave.isBusy();
-
-				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
-				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
-					log.warn("waiting for done work for a long time");
-					started = System.nanoTime();
-				}
-
-			} while(busy);
-		}
-		log.info("all jobs finished");
 	}
 
 	@SneakyThrows
 	public void removeSupportDataset(StandaloneSupport support) {
 		DatasetId datasetId = support.getDataset().getId();
 		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(datasetId);
+	}
+
+	public void removeSupport(StandaloneSupport support) {
+		openSupports.remove(support);
+	}
+
+	public void waitUntilWorkDone() {
+		log.info("Waiting for jobs to finish");
+		//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
+		final long started = System.nanoTime();
+		for (int i = 0; i < 5; i++) {
+			do {
+				Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MICROSECONDS);
+
+				if(!isBusy()) {
+					break;
+				}
+
+
+				if (Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
+					log.warn("waiting for done work for a long time");
+				}
+
+			} while (true);
+		}
+		log.trace("all jobs finished");
+	}
+
+	private boolean isBusy() {
+		boolean busy;
+		busy = standaloneCommand.getManager().getJobManager().isSlowWorkerBusy();
+		busy |= standaloneCommand.getManager()
+								 .getStorage()
+								 .getAllExecutions()
+								 .stream()
+								 .map(ManagedExecution::getState)
+								 .anyMatch(ExecutionState.RUNNING::equals);
+
+		for (Namespace namespace : standaloneCommand.getManager().getDatasetRegistry().getDatasets()) {
+			busy |= namespace.getJobManager().isSlowWorkerBusy();
+		}
+
+		for (ShardNode slave : standaloneCommand.getShardNodes()) {
+			busy |= slave.isBusy();
+		}
+		return busy;
 	}
 
 }

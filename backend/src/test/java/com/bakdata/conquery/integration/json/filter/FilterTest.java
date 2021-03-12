@@ -120,9 +120,8 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		CQTable cqTable = new CQTable();
 
-		cqTable.setResolvedConnector(connector);
 		cqTable.setFilters(Collections.singletonList(result));
-		cqTable.setId(connector.getId());
+		cqTable.setConnector(connector);
 
 		CQConcept cqConcept = new CQConcept();
 
@@ -149,7 +148,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset()), support.getNamespace());
+			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry()), support.getNamespace());
 		}
 	}
 }

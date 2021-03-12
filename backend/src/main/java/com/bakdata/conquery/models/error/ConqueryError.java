@@ -258,4 +258,16 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			super("The execution took too long to finish.");
 		}
 	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
+	public static class NoSecondaryIdSelectedError extends NoContextError {
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		public NoSecondaryIdSelectedError() {
+			super("No SecondaryId was selected");
+
+		}
+	}
 }

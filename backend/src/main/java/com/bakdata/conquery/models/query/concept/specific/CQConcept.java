@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,15 +20,12 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -50,14 +46,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
-import com.google.common.collect.MoreCollectors;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter
-@CPSType(id="CONCEPT", base=CQElement.class)
+@Getter
+@Setter
+@CPSType(id = "CONCEPT", base = CQElement.class)
 @Slf4j
 @ToString
 public class CQConcept extends CQElement implements NamespacedIdHolding {
@@ -66,13 +63,18 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
 	 */
 	@JsonProperty("ids")
-	@Valid @NotEmpty @NsIdRefCollection
+	@Valid
+	@NotEmpty
+	@NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
 
-	@Valid @NotEmpty @JsonManagedReference
+	@Valid
+	@NotEmpty
+	@JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
 
@@ -82,11 +84,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 	@Override
 	public String getLabel(Locale cfg) {
 		final String label = super.getLabel(cfg);
-		if(!Strings.isNullOrEmpty(label)) {
+		if (!Strings.isNullOrEmpty(label)) {
 			return label;
 		}
 
-		if(elements.isEmpty()){
+		if (elements.isEmpty()) {
 			return null;
 		}
 
@@ -106,6 +108,37 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		return builder.toString();
 	}
 
+	@JsonIgnore
+	public Concept<?> getConcept() {
+		return elements.get(0).getConcept();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Not all Selects belong to the Concept.")
+	public boolean isAllSelectsForConcept() {
+		final Concept<?> concept = getConcept();
+
+		if (!getSelects().stream().map(Select::getHolder).map(SelectHolder::findConcept).allMatch(concept::equals)) {
+			log.error("Not all selects belong to Concept[{}]", concept);
+			return false;
+		}
+
+		return true;
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Not all elements belong to the same Concept.")
+	public boolean isAllElementsForConcept() {
+		final Concept<?> concept = getConcept();
+
+		if (!getElements().stream().map(ConceptElement::getConcept).allMatch(concept::equals)) {
+			log.error("Not all elements belong to Concept[{}]", concept);
+			return false;
+		}
+
+		return true;
+	}
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
@@ -113,26 +146,16 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 		Concept<?> concept = getConcept();
 
-		final SecondaryIdDescriptionId secondaryId = context.getSelectedSecondaryId();
-
 		List<QPNode> tableNodes = new ArrayList<>();
-		for(CQTable table : tables) {
-			try {
-				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
-			}
-			catch (NoSuchElementException exc){
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), concept.getDataset(), exc);
-				continue;
-			}
-
+		for (CQTable table : tables) {
 			List<Select> resolvedSelects = table.getSelects();
 
 
 			List<FilterNode<?>> filters = new ArrayList<>(table.getFilters().size());
 			//add filter to children
-			for(FilterValue f : table.getFilters()) {
+			for (FilterValue f : table.getFilters()) {
 				FilterNode agg = f.getFilter().createAggregator(f.getValue());
-				if(agg != null) {
+				if (agg != null) {
 					filters.add(agg);
 				}
 			}
@@ -154,46 +177,39 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
 
-			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
+			if (!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(plan.getSpecialDateUnion());
 			}
 
-			concept.getConcept();
 			final QPNode filtersNode = concept.createConceptQuery(context, filters, aggregators);
 
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
-			
-			final Connector connector = table.getResolvedConnector();
 
-			// Select matching secondaryId if available
-			final SecondaryIdDescriptionId selectedSecondaryId =
-					Arrays.stream(connector.getTable().getColumns())
+			// Select if matching secondaryId available
+			final boolean hasSelectedSecondaryId =
+					Arrays.stream(table.getConnector().getTable().getColumns())
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
 						  .map(SecondaryIdDescription::getId)
-						  .filter(o -> {
-							  return Objects.equals(secondaryId, o);
-						  })
-						  .collect(MoreCollectors.toOptional())
-						  .orElse(null);
+						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
 
 			tableNodes.add(
-				new ConceptNode(
-						elements,
-						CBlock.calculateBitMask(elements),
-						table,
-						// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-						new ValidityDateNode(
-						selectValidityDateColumn(table),
-						filtersNode
-					),
-						// if the node is excluded, don't pass it into the Node.
-					excludeFromSecondaryIdQuery ? null : selectedSecondaryId
-				)
+					new ConceptNode(
+							elements,
+							CBlock.calculateBitMask(elements),
+							table,
+							// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
+							new ValidityDateNode(
+									selectValidityDateColumn(table),
+									filtersNode
+							),
+							// if the node is excluded, don't pass it into the Node.
+							!excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
+					)
 			);
 		}
 
-		if(tableNodes.isEmpty()){
+		if (tableNodes.isEmpty()) {
 			throw new IllegalStateException(String.format("Unable to resolve any connector for Query[%s]", this));
 		}
 
@@ -208,17 +224,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		}
 
 		return outNode;
-	}
-
-	@JsonIgnore
-	public Concept<?> getConcept() {
-		return elements.get(0).getConcept();
-	}
-
-	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return ids.stream()
-				  .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-				  .toArray(ConceptElement[]::new);
 	}
 
 	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<Select> select) {
@@ -236,13 +241,13 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	private Column selectValidityDateColumn(CQTable table) {
 		if (table.getDateColumn() != null) {
-			return table.getResolvedConnector()
+			return table.getConnector()
 						.getValidityDateColumn(table.getDateColumn().getValue());
 		}
 
 		//else use this first defined validity date column
-		if (!table.getResolvedConnector().getValidityDates().isEmpty()) {
-			return table.getResolvedConnector().getValidityDates().get(0).getColumn();
+		if (!table.getConnector().getValidityDates().isEmpty()) {
+			return table.getConnector().getValidityDates().get(0).getColumn();
 		}
 
 		return null;
@@ -262,11 +267,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 		checkNotNull(namespacedIds);
 		elements.forEach(ce -> namespacedIds.add(ce.getId()));
 		selects.forEach(select -> namespacedIds.add(select.getId()));
-		tables.forEach(table -> namespacedIds.add(table.getId()));
+		tables.forEach(table -> namespacedIds.add(table.getConnector().getId()));
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		// Do nothing
+
 	}
 }
