@@ -94,6 +94,9 @@ public class QueryUtils {
 			}
 
 			if (element instanceof CQReusedQuery) {
+				// We would have to reason way too much about the sent query so we just reexecute it.
+				containsOthersElements = containsOthersElements || ((CQReusedQuery) element).isExcludeFromSecondaryId();
+
 				if (reusedQuery == null) {
 					reusedQuery = (CQReusedQuery) element;
 				}
@@ -109,7 +112,7 @@ public class QueryUtils {
 		}
 
 		public Optional<ManagedExecutionId> getOnlyReused() {
-			if (containsOthersElements) {
+			if (containsOthersElements || reusedQuery == null) {
 				return Optional.empty();
 			}
 

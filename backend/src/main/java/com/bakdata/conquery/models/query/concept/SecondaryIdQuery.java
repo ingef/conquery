@@ -10,14 +10,15 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -43,7 +44,8 @@ public class SecondaryIdQuery extends IQuery {
 	@NotNull
 	private CQElement root;
 
-	@NsIdRef @NotNull
+	@NsIdRef
+	@NotNull
 	private SecondaryIdDescription secondaryId;
 
 	/**
@@ -52,11 +54,20 @@ public class SecondaryIdQuery extends IQuery {
 	@JsonIgnore
 	private ConceptQuery query;
 
+	@InternalOnly
+	@NsIdRefCollection
+	private Set<Column> withSecondaryId;
+
+	@InternalOnly
+	@NsIdRefCollection
+	private Set<Table> withoutSecondaryId;
+
 	@JsonProperty
-	public void setRoot(@NotNull CQElement root){
+	public void setRoot(@NotNull CQElement root) {
 		this.root = root;
 		this.query = new ConceptQuery(root);
 	}
+
 
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -65,8 +76,23 @@ public class SecondaryIdQuery extends IQuery {
 
 		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
 
-		Set<ColumnId> withSecondaryId = new HashSet<>();
-		Set<TableId> withoutSecondaryId = new HashSet<>();
+		return new SecondaryIdQueryPlan(queryPlan, secondaryId.getId(), withSecondaryId, withoutSecondaryId);
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		query.collectRequiredQueries(requiredQueries);
+	}
+
+	@Override
+	public void resolve(QueryResolveContext context) {
+		query.resolve(context);
+
+		withSecondaryId = new HashSet<>();
+		withoutSecondaryId = new HashSet<>();
+
+
+		//TODO FK: can we refactor this into methods of CQConcept?
 
 		// partition tables by their holding of the requested SecondaryId.
 		// This assumes that from the root, only ConceptNodes hold TableIds we are interested in.
@@ -78,24 +104,22 @@ public class SecondaryIdQuery extends IQuery {
 			final CQConcept concept = (CQConcept) queryElement;
 
 			for (CQTable connector : concept.getTables()) {
-				final Table table = connector.getResolvedConnector().getTable();
+				final Table table = connector.getConnector().getTable();
 				final Column secondaryIdColumn = findSecondaryIdColumn(table);
 
 				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryIdQuery()) {
-					withSecondaryId.add(secondaryIdColumn.getId());
+					withSecondaryId.add(secondaryIdColumn);
 				}
 				else {
-					withoutSecondaryId.add(table.getId());
+					withoutSecondaryId.add(table);
 				}
 			}
 		});
 
 		// If there are no tables with the secondaryId, we fail as that is user error.
 		if (withSecondaryId.isEmpty()) {
-			throw new IllegalArgumentException("No SecondaryIds found.");
+			throw new ConqueryError.NoSecondaryIdSelectedError();
 		}
-
-		return new SecondaryIdQueryPlan(queryPlan, secondaryId.getId(), withSecondaryId, withoutSecondaryId);
 	}
 
 	/**
@@ -105,7 +129,7 @@ public class SecondaryIdQuery extends IQuery {
 	private Column findSecondaryIdColumn(Table table) {
 
 		for (Column col : table.getColumns()) {
-			if (!secondaryId.equals(col.getSecondaryId())) {
+			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
 				continue;
 			}
 
@@ -113,16 +137,6 @@ public class SecondaryIdQuery extends IQuery {
 		}
 
 		return null;
-	}
-
-	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
-		query.collectRequiredQueries(requiredQueries);
-	}
-
-	@Override
-	public void resolve(QueryResolveContext context) {
-		query.resolve(context);
 	}
 
 	@Override

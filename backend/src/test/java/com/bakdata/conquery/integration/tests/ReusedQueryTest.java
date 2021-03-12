@@ -3,17 +3,28 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -72,9 +83,40 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			final SecondaryIdQuery reused = new SecondaryIdQuery();
 			reused.setRoot(new CQReusedQuery(id));
 
-			reused.setSecondaryId(conquery.getNamespace().getStorage().getSecondaryIds().get(0));
+			reused.setSecondaryId(query.getSecondaryId());
 
 			IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+		}
+
+		// Reuse in SecondaryId, but do exclude
+		{
+			final SecondaryIdQuery reused = new SecondaryIdQuery();
+
+			final CQAnd root = new CQAnd();
+			reused.setRoot(root);
+
+			final CQReusedQuery reuse = new CQReusedQuery(id);
+			reuse.setExcludeFromSecondaryId(true);
+
+			// We select only a single event of the query by the exact filtering.
+			final CQConcept cqConcept = new CQConcept();
+			final Concept<?> concept = conquery.getNamespaceStorage().getConcept(new ConceptId(conquery.getDataset().getId(), "concept"));
+			cqConcept.setElements(List.of(concept));
+			final CQTable cqTable = new CQTable();
+			cqTable.setConcept(cqConcept);
+			final Connector connector = concept.getConnectorByName("connector1");
+			cqTable.setConnector(connector);
+			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(connector.getFilterByName("filter"), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
+
+			cqConcept.setTables(List.of(cqTable));
+			cqConcept.setExcludeFromSecondaryIdQuery(false);
+
+
+			root.setChildren(List.of(reuse, cqConcept));
+
+			reused.setSecondaryId(query.getSecondaryId());
+
+			IntegrationUtils.assertQueryResult(conquery, reused, 1L, ExecutionState.DONE);
 		}
 
 		// Reuse Multiple times with different query types
@@ -109,8 +151,8 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				// ignored is a single global value and therefore the same as by-PID
 				reusedDiffId.setSecondaryId(conquery.getNamespace()
-											   .getStorage()
-											   .getSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored")));
+													.getStorage()
+													.getSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored")));
 
 				final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, reusedDiffId, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 
@@ -118,9 +160,8 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 						.as("Query should NOT be reused.")
 						.isNotEqualTo(reused1Id);
 			}
-
-
 		}
 
+		conquery.close();
 	}
 }

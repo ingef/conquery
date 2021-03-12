@@ -165,8 +165,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			// only import the deleted import/table
 			conquery.getDatasetsProcessor().addTable(test.getContent().getTables().stream()
-																				 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-																				 .map(requiredTable -> requiredTable.toTable(conquery.getDataset())).findFirst().get(), conquery.getNamespace());
+														 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+														 .map(requiredTable -> requiredTable.toTable(conquery.getDataset(), conquery.getNamespace().getStorage().getCentralRegistry())).findFirst().get(), conquery.getNamespace());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables().stream()
