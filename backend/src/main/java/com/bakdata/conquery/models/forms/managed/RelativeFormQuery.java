@@ -15,10 +15,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -52,17 +49,17 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
-		query.resolve(context);
-		features.resolve(context);
-		outcomes.resolve(context);
+		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
+		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
+		outcomes.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 	
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
+		return new RelativeFormQueryPlan(query.createQueryPlan(context),
 			// At the moment we do not use the dates of feature and outcome query
-			features.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			outcomes.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
+			features.createQueryPlan(context),
+			outcomes.createQueryPlan(context),
 			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 	}
 
@@ -75,15 +72,6 @@ public class RelativeFormQuery extends IQuery {
 	
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		ResultInfoCollector featureHeader = features.collectResultInfos();
-		ResultInfoCollector outcomeHeader = outcomes.collectResultInfos();
-		//remove SpecialDateUnion
-		featureHeader.getInfos().remove(0);
-		outcomeHeader.getInfos().remove(0);
-		//remove resolution info
-		featureHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
-		outcomeHeader.getInfos().remove(ConqueryConstants.RESOLUTION_INFO);
-
 		// resolution
 		collector.add(ConqueryConstants.RESOLUTION_INFO);
 		// index
@@ -91,8 +79,8 @@ public class RelativeFormQuery extends IQuery {
 		// event date
 		collector.add(ConqueryConstants.EVENT_DATE_INFO);
 
-		final List<ResultInfo> featureInfos = featureHeader.getInfos();
-		final List<ResultInfo> outcomeInfos = outcomeHeader.getInfos();
+		final List<ResultInfo> featureInfos = features.collectResultInfos().getInfos();
+		final List<ResultInfo> outcomeInfos = outcomes.collectResultInfos().getInfos();
 
 		//date ranges
 		if (!featureInfos.isEmpty()){

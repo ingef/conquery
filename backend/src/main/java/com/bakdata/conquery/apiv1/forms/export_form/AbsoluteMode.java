@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -48,6 +49,6 @@ public class AbsoluteMode extends Mode {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		// Resolve all
-		features.forEach(e -> e.resolve(context));
+		features.forEach(e -> e.resolve(context.withDateAggregationMode(DateAggregationMode.NONE)));
 	}
 }

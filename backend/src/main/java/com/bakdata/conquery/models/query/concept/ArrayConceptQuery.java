@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -8,11 +9,9 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -20,6 +19,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import groovyjarjarantlr4.v4.runtime.misc.NotNull;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * Query type that combines a set of {@link ConceptQuery}s which are separately evaluated
@@ -29,27 +35,46 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
+@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@JsonCreator))
 public class ArrayConceptQuery extends IQuery {
 
-	@NonNull
-	private final List<ConceptQuery> childQueries;
+	@NotEmpty @Valid
+	private List<ConceptQuery> childQueries = new ArrayList<>();
 
-	public static ArrayConceptQuery createFromFeatures(List<CQElement> features) {
-		List<ConceptQuery> cqWraps = features.stream()
-											 .map(ConceptQuery::new)
-											 .collect(Collectors.toList());
-		return new ArrayConceptQuery(cqWraps);
+	@NotNull
+	protected DateAggregationMode dateAggregationMode = DateAggregationMode.NONE;
+
+
+	@InternalOnly
+	protected DateAggregationMode resolvedDateAggregationMode;
+
+	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, @NonNull DateAggregationMode dateAggregationMode) {
+		if(queries == null) {
+			throw new IllegalArgumentException("No sub query list provided.");
+		}
+		this.childQueries = queries;
+		this.dateAggregationMode = dateAggregationMode;
+	}
+
+	public ArrayConceptQuery( List<ConceptQuery> queries) {
+		this(queries, DateAggregationMode.NONE);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		childQueries.forEach(c -> c.resolve(context));
+		resolvedDateAggregationMode = dateAggregationMode;
+		if(context.getDateAggregationMode() != null) {
+			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
+			resolvedDateAggregationMode = context.getDateAggregationMode();
+		}
+		childQueries.forEach(c -> c.resolve(context.withDateAggregationMode(resolvedDateAggregationMode)));
 	}
 
 	@Override
 	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
-		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(context);
+		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode));
 		aq.addChildPlans(childQueries, context);
 		return aq;
 	}
@@ -70,8 +95,11 @@ public class ArrayConceptQuery extends IQuery {
 			// Remove DateInfo from each childQuery			
 			infos.subList(lastIndex, infos.size()).removeAll(List.of(dateInfo));
 		}
-		// Add one DateInfo for the whole Query
-		collector.getInfos().add(0, dateInfo);
+
+		if(!DateAggregationMode.NONE.equals(getResolvedDateAggregationMode())){
+			// Add one DateInfo for the whole Query
+			collector.getInfos().add(0, dateInfo);
+		}
 	}
 
 	@Override

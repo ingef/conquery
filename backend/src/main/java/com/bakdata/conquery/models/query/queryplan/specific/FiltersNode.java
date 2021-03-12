@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -36,6 +36,10 @@ public class FiltersNode extends QPNode {
 	private List<EventFilterNode<?>> eventFilters;
 
 
+	@Setter(AccessLevel.PRIVATE)
+	private Set<Aggregator<CDateSet>> eventDateAggregators;
+
+
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
 		if(filters.isEmpty() && aggregators.isEmpty()) {
 			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
@@ -52,10 +56,18 @@ public class FiltersNode extends QPNode {
 			eventFilters.add((EventFilterNode<?>) filter);
 		}
 
+		Set<Aggregator<CDateSet>> eventDateAggregators = new HashSet<>();
+		for (Aggregator<?> aggregator: aggregators) {
+			if(aggregator instanceof EventDateUnionAggregator) {
+				eventDateAggregators.add((EventDateUnionAggregator) aggregator);
+			}
+		}
+
 		final FiltersNode filtersNode = new FiltersNode();
 		filtersNode.setAggregators(aggregators);
 		filtersNode.setFilters(filters);
 		filtersNode.setEventFilters(eventFilters);
+		filtersNode.setEventDateAggregators(eventDateAggregators);
 
 		return filtersNode;
 	}
@@ -99,7 +111,12 @@ public class FiltersNode extends QPNode {
 
 		return hit;
 	}
-	
+
+	@Override
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
+		return eventDateAggregators;
+	}
+
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
 		final FiltersNode clone = new FiltersNode();
