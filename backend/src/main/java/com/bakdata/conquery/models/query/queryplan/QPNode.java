@@ -1,12 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -44,4 +47,11 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 	public String toString() {
 		return this.getClass().getSimpleName();
 	}
+
+	/**
+	 * Retrieves all generated date Aggregator from the lower level of the tree.
+	 * This is builds a parallel tree to the actual query tree to generate the dates column in the final result.
+	 * The aggregator are registered in the date aggregator of the upper level (see @{@link DateAggregator#register(Collection)})
+	 */
+	public abstract Collection<Aggregator<CDateSet>> getDateAggregators();
 }

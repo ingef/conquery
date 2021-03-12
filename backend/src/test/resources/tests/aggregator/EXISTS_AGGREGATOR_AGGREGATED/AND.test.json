@@ -4,6 +4,7 @@
   "expectedCsv": "tests/aggregator/EXISTS_AGGREGATOR_AGGREGATED/expected.csv",
   "query": {
     "type": "ARRAY_CONCEPT_QUERY",
+    "dateAggregationMode": "MERGE",
     "childQueries": [
       {
         "type": "CONCEPT_QUERY",
@@ -19,10 +20,10 @@
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector",
-                  "selects": "number.exists"
+                  "id": "number.number_connector"
                 }
-              ]
+              ],
+              "selects": "number.exists"
             },
             {
               "ids": [
@@ -31,10 +32,10 @@
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector",
-                  "selects": "number.exists"
+                  "id": "number.number_connector"
                 }
-              ]
+              ],
+              "selects": "number.exists"
             }
           ]
         }
@@ -53,10 +54,10 @@
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector",
-                  "selects": "number.exists"
+                  "id": "number.number_connector"
                 }
-              ]
+              ],
+              "selects": "number.exists"
             },
             {
               "ids": [
@@ -65,10 +66,10 @@
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector",
-                  "selects": "number.exists"
+                  "id": "number.number_connector"
                 }
-              ]
+              ],
+              "selects": "number.exists"
             }
           ]
         }

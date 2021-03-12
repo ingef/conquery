@@ -99,7 +99,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		// init all subqueries
-		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, null));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}

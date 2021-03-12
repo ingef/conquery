@@ -3,7 +3,8 @@
     "label": "ARRAY_CONCEPT_QUERY Test",
     "expectedCsv": "tests/query/ARRAY_CONCEPT_QUERY/expected.csv",
     "query": {
-		"type": "ARRAY_CONCEPT_QUERY",
+        "type": "ARRAY_CONCEPT_QUERY",
+        "dateAggregationMode": "MERGE",
         "childQueries": [
             {
                 "type": "CONCEPT_QUERY",

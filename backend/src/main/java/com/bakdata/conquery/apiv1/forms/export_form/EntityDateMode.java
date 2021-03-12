@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
@@ -9,9 +10,11 @@ import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
@@ -36,6 +39,12 @@ public class EntityDateMode extends Mode {
     @NotEmpty
     private List<CQElement> features = ImmutableList.of();
 
+    @NotNull
+    private DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
+
+    @InternalOnly
+    private ArrayConceptQuery resolvedFeatures;
+
     @Override
     public void visit(Consumer<Visitable> visitor) {
         features.forEach(e -> visitor.accept(e));
@@ -45,20 +54,21 @@ public class EntityDateMode extends Mode {
     private DateContext.Alignment alignmentHint = DateContext.Alignment.QUARTER;
 
     @Override
-    public void resolve(QueryResolveContext context) {
-        // Resolve all
-        features.forEach(e -> e.resolve(context));
+    public void resolve(QueryResolveContext context) {        // Apply defaults to user concept
+        ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, context.getDatasetRegistry());
+        resolvedFeatures = AbsExportGenerator.createSubQuery(features);
+        resolvedFeatures.resolve(context);
     }
 
     @Override
     public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-        // Apply defaults to user concept
-        ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(features, datasets);
+
         return new EntityDateQuery(
                 getForm().getPrerequisite(),
-                AbsExportGenerator.createSubQuery(features),
+                resolvedFeatures,
                 ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
-                CDateRange.of(dateRange)
+                CDateRange.of(dateRange),
+                dateAggregationMode
         );
     }
 }
