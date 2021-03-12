@@ -41,15 +41,15 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
+		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getConnector().getId());
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable)
+		tableActive = table.getConnector().getTable().getId().equals(currentTable)
 					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
 		if(tableActive) {
-			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
+			super.nextTable(ctx.withConnector(table.getConnector()), currentTable);
 		}
 	}
 
@@ -64,7 +64,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getId());
+		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getConnector().getId());
 	}
 
 	@Override
@@ -121,6 +121,6 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		requiredTables.add(table.getResolvedConnector().getTable().getId());
+		requiredTables.add(table.getConnector().getTable().getId());
 	}
 }

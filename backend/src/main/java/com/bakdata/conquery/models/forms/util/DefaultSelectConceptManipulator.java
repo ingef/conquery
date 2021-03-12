@@ -47,7 +47,7 @@ public class DefaultSelectConceptManipulator implements ConceptManipulator {
 			// On connector level
 		Map<CQTable, List<Select>> tableSelects = new HashMap<>();
 		for (CQTable table : concept.getTables()) {
-			Connector connector = namespaces.resolve(table.getId());
+			Connector connector = table.getConnector();
 			tableSelects.put(table, connector.getSelects().stream().filter(Select::isDefault).collect(Collectors.toList()));
 		}
 		
