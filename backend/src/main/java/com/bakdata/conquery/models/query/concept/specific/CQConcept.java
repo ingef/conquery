@@ -271,6 +271,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		this.aggregateEventDates = !Objects.equals(context.getDateAggregationMode(), DateAggregationMode.NONE);
+		this.aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(context.getDateAggregationMode()));
 	}
 }
