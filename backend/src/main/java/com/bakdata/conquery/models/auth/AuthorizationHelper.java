@@ -9,12 +9,10 @@ import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.*;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -80,7 +78,7 @@ public class AuthorizationHelper {
 	 */
 	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> execution, @NonNull EnumSet<Ability> abilities) {
 
-		if(!execution.getOwner().equals(user.getId())) {
+		if(!user.isOwner(execution)) {
 			user.checkPermission(QueryPermission.onInstance(abilities, execution.getId()));
 		}
 	}
@@ -314,5 +312,11 @@ public class AuthorizationHelper {
 			}
 		}
 		return datasetAbilities;
+	}
+
+	public static void authorize(User user, FormConfig form, Ability ability) {
+		if(!user.isOwner(form)) {
+			user.checkPermission(FormConfigPermission.onInstance(Set.of(ability), form.getId()));
+		}
 	}
 }
