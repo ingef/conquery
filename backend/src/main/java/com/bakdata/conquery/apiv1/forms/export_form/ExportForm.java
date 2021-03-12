@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -151,6 +152,14 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	 * Classes that can be used as Features in ExportForm, having default-exists, are triggered this way.
 	 */
 	public static interface DefaultSelectSettable {
+		public static void enable(List<CQElement> features) {
+			for (CQElement feature : features) {
+				if(feature instanceof DefaultSelectSettable){
+					((DefaultSelectSettable) feature).setDefaultExists();
+				}
+			}
+		}
+
 		void setDefaultExists();
 	}
 }

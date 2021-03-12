@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -59,14 +58,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 @Getter
 @Setter
@@ -311,9 +302,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	public void setDefaultExists() {
 		boolean allTablesEmpty = getTables().stream()
 											.map(CQTable::getSelects)
-											.anyMatch(Predicate.not(List::isEmpty));
+											.allMatch(List::isEmpty);
 
-		if(!(getSelects().isEmpty() && allTablesEmpty)) {
+		if (!(getSelects().isEmpty() && (tables.isEmpty() || allTablesEmpty))) {
 			// Don't fill if there are any selects on concept level or on any table level
 			return;
 		}

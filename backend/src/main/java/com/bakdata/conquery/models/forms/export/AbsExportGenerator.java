@@ -27,11 +27,7 @@ public class AbsExportGenerator {
 	public static AbsoluteFormQuery generate(List<CQElement> features, IQuery queryGroup, Range<LocalDate> dateRange, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 
 		// Apply defaults to user concepts
-		for (CQElement feature : features) {
-			if(feature instanceof ExportForm.DefaultSelectSettable){
-				((ExportForm.DefaultSelectSettable) feature).setDefaultExists();
-			}
-		}
+		ExportForm.DefaultSelectSettable.enable(features);
 
 
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
@@ -43,4 +39,6 @@ public class AbsExportGenerator {
 
 		return query;
 	}
+
+
 }
