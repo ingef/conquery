@@ -91,6 +91,9 @@ public class SecondaryIdQuery extends IQuery {
 		withSecondaryId = new HashSet<>();
 		withoutSecondaryId = new HashSet<>();
 
+
+		//TODO FK: can we refactor this into methods of CQConcept?
+
 		// partition tables by their holding of the requested SecondaryId.
 		// This assumes that from the root, only ConceptNodes hold TableIds we are interested in.
 		query.visit(queryElement -> {

@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,6 +20,7 @@ public class RequiredColumn {
 	@NotNull
 	private MajorTypeId type;
 	private String sharedDictionary;
+	@NotEmpty
 	private String secondaryId;
 
 	public Column toColumn(Table table, CentralRegistry storage) {
@@ -30,7 +30,7 @@ public class RequiredColumn {
 		col.setSharedDictionary(sharedDictionary);
 		col.setTable(table);
 
-		if (!Strings.isNullOrEmpty(secondaryId)) {
+		if (secondaryId != null) {
 			final SecondaryIdDescription description = storage.resolve(new SecondaryIdDescriptionId(table.getDataset().getId(), secondaryId));
 
 			col.setSecondaryId(description);

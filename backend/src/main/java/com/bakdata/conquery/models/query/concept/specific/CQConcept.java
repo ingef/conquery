@@ -148,10 +148,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding {
 
 		List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
-			if (table.getConnector() == null) {
-				continue;
-			}
-
 			List<Select> resolvedSelects = table.getSelects();
 
 
