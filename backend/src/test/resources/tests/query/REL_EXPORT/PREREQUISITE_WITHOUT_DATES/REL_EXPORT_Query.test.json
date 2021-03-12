@@ -24,7 +24,7 @@
                 ],
                 "tables": [
                     {
-                        "id": "concept_dateless.connector"
+                        "id": "concept_dateless.connector",
                         "filters": []
                     }
                 ]
