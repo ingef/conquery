@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import lombok.Getter;
 import lombok.Setter;
+import org.assertj.core.util.Strings;
 
 @Getter
 @Setter
@@ -20,7 +21,7 @@ public class RequiredColumn {
 	@NotNull
 	private MajorTypeId type;
 	private String sharedDictionary;
-	@NotEmpty
+
 	private String secondaryId;
 
 	public Column toColumn(Table table, CentralRegistry storage) {
@@ -30,7 +31,7 @@ public class RequiredColumn {
 		col.setSharedDictionary(sharedDictionary);
 		col.setTable(table);
 
-		if (secondaryId != null) {
+		if (!Strings.isNullOrEmpty(secondaryId)) {
 			final SecondaryIdDescription description = storage.resolve(new SecondaryIdDescriptionId(table.getDataset().getId(), secondaryId));
 
 			col.setSecondaryId(description);
