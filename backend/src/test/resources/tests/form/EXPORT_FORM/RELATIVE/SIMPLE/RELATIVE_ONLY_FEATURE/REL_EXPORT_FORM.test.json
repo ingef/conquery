@@ -13,24 +13,19 @@
             "indexSelector": "EARLIEST",
             "timeUnit" : "QUARTERS",
             "features": [
-                {
-                    "type": "OR",
-                    "children": [
-                        {
-                            "ids": [
-                                "alter"
-                            ],
-                            "type": "CONCEPT",
-                            "label": "Alter",
-                            "tables": [
-                                {
-                                    "id": "alter.alter",
-                                    "filters": []
-                                }
-                            ]
-                        }
-                    ]
-                }
+              {
+                "ids": [
+                  "alter"
+                ],
+                "type": "CONCEPT",
+                "label": "Alter",
+                "tables": [
+                  {
+                    "id": "alter.alter",
+                    "filters": []
+                  }
+                ]
+              }
             ],
             "timeCountBefore" : 4,
             "indexPlacement" : "BEFORE"
