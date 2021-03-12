@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -70,7 +72,7 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset) {
+	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
 		NamespacedIdCollector nsIdCollector = QueryUtils.getVisitor(visitors, QueryUtils.NamespacedIdCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, QueryUtils.ExternalIdChecker.class);
 		if(nsIdCollector == null) {
@@ -88,6 +90,10 @@ public interface QueryDescription extends Visitable {
 		
 		// Generate permissions for reused queries
 		for (ManagedExecutionId requiredQueryId : collectRequiredQueries()) {
+			ManagedExecution<?> execution = storage.getExecution(requiredQueryId);
+			if (execution != null && user.getId().equals(execution.getOwner())) {
+				continue;
+			}
 			requiredPermissions.add(QueryPermission.onInstance(Ability.READ, requiredQueryId));
 		}
 		
