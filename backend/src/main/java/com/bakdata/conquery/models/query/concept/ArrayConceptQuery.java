@@ -45,7 +45,7 @@ public class ArrayConceptQuery extends IQuery {
 	@InternalOnly
 	protected DateAggregationMode resolvedDateAggregationMode;
 
-	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, DateAggregationMode dateAggregationMode) {
+	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, @NonNull DateAggregationMode dateAggregationMode) {
 		if(queries == null) {
 			throw new IllegalArgumentException("No sub query list provided.");
 		}

@@ -11,6 +11,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This aggregator builds a tree of other DateAggregator which is partly parallel to the actual query plan.
+ * The aggregator at the top level replaces the previous implementation of the special date union and adds more
+ * flexibility through different {@link DateAggregationAction}s.
+ */
 @RequiredArgsConstructor
 public class DateAggregator implements Aggregator<CDateSet> {
 

@@ -23,7 +23,7 @@ public class AndNode extends QPParentNode {
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		Pair<List<QPNode>, ListMultimap<TableId, QPNode>> fields = createClonedFields(ctx);
-		return new AndNode(fields.getLeft(), fields.getRight(), getDateAggregator() != null ? ctx.clone(getDateAggregator()): null);
+		return new AndNode(fields.getLeft(), fields.getRight(), ctx.clone(getDateAggregator()));
 	}
 
 	@Override

@@ -6,15 +6,22 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- *
+ * The action that is used in certain nodes of the query plan to combine {@link CDateSet}s collected from lower
+ * levels of the query plan.
  */
 public enum DateAggregationAction {
+    /**
+     * Not propagate dates from lower levels to higher.
+     */
     BLOCK() {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {
             return CDateSet.create();
         }
     },
+    /**
+     * Merge all collected dates from a lower level into a union.
+     */
     MERGE() {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {
@@ -23,6 +30,9 @@ public enum DateAggregationAction {
             return combined;
         }
     },
+    /**
+     * Intersect all collected date sets from lower level with each other.
+     */
     INTERSECT() {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {
@@ -47,6 +57,9 @@ public enum DateAggregationAction {
             return intersection;
         }
     },
+    /**
+     * Build the negative of the the union of all collected dates
+     */
     NEGATE() {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {

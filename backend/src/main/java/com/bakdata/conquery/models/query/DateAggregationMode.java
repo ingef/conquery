@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.query;
 
 /**
  * Determines how the dates of hit events are aggregated for a representation as a column the resulting table.
+ * This mode causes a specific {@link com.bakdata.conquery.models.query.queryplan.DateAggregationAction} to be set
+ * in certain query nodes that influence the date aggregation (see {@link com.bakdata.conquery.models.query.concept.specific.CQOr} and {@link com.bakdata.conquery.models.query.queryplan.specific.OrNode} and others).
  */
 public enum DateAggregationMode {
     /**
