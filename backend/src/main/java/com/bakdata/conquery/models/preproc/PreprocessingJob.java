@@ -33,7 +33,8 @@ public class PreprocessingJob implements Serializable {
 			return preprocessedOut.resolve(descriptor.getName() + EXTENSION_PREPROCESSED).toFile();
 		}
 
-		return preprocessedOut.resolve(descriptor.getName() + "." + tag.get() + EXTENSION_PREPROCESSED).toFile();
+		// With tag, name is overwritten to tag
+		return preprocessedOut.resolve(descriptor.getTable() + "." + tag.get() + EXTENSION_PREPROCESSED).toFile();
 	}
 
 	public long estimateTotalCsvSizeBytes() {
