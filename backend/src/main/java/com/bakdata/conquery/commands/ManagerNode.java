@@ -116,6 +116,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Initialization of internationalization
 		I18n.init();
 
+		authController = new AuthorizationController(storage, config.getAuthorization());
+		environment.lifecycle().manage(authController);
+
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
 
@@ -137,9 +140,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
 
-		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
-		authController.init(this);
-		environment.lifecycle().manage(authController);
+		authController.externalInit(this, config.getAuthentication());
 
 
 		// Register default components for the admin interface

@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Strings;
 import lombok.Getter;
 import lombok.NonNull;
@@ -21,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
-import org.apache.shiro.authz.Permission;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
@@ -46,37 +44,43 @@ public final class AuthorizationController implements Managed{
 	@NonNull
 	private final AuthorizationConfig authorizationConfig;
 	@NonNull
-	private final List<AuthenticationConfig> authenticationConfigs;
-	@NonNull
-	@Getter
 	private final MetaStorage storage;
+	@Getter
+	private final ConqueryTokenRealm centralTokenRealm;
+	@Getter
+	private final List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
+	@Getter
+	private final DefaultAuthFilter authenticationFilter;
+	@Getter
+	private final List<Realm> realms = new ArrayList<>();
 
-	@Getter
-	private ConqueryTokenRealm centralTokenRealm;
-	@Getter
-	private List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
-	@Getter
-	private DefaultAuthFilter authenticationFilter;
-	@Getter
-	private List<Realm> realms = new ArrayList<>();
+	private final DefaultSecurityManager securityManager;
 
-	private DefaultSecurityManager securityManager;
-	
-	public void init(ManagerNode manager) {
+	public AuthorizationController(MetaStorage storage, AuthorizationConfig authorizationConfig) {
+		this.storage = storage;
+		this.authorizationConfig = authorizationConfig;
 		// Create Jersey filter for authentication. The filter is registered here for the api and the but can be used by
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
-		manager.getAdmin().getJerseyConfig().register(authenticationFilter);
-		manager.getEnvironment().jersey().register(authenticationFilter);
+
 
 		// Add the central authentication realm
 		centralTokenRealm = new ConqueryTokenRealm(storage);
 		authenticationRealms.add(centralTokenRealm);
 		realms.add(centralTokenRealm);
-		
+
 		// Add the central authorization realm
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);
+		securityManager = new DefaultSecurityManager(realms);
+		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
+		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
+	}
+	
+	public void externalInit(ManagerNode manager, List<AuthenticationConfig> authenticationConfigs) {
+		manager.getAdmin().getJerseyConfig().register(authenticationFilter);
+		manager.getEnvironment().jersey().register(authenticationFilter);
+
 
 		// Init authentication realms provided by the config.
 		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
@@ -87,11 +91,9 @@ public final class AuthorizationController implements Managed{
 
 		// Register all realms in Shiro
 		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
-		securityManager = new DefaultSecurityManager(realms);
-		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
-		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
-		
-		registerShiro();
+		securityManager.setRealms(realms);
+
+		registerStaticSecurityManager();
 	}
 
 	@Override
@@ -110,7 +112,7 @@ public final class AuthorizationController implements Managed{
 	/**
 	 * @implNote public for test purposes only
 	 */
-	public void registerShiro() {
+	public void registerStaticSecurityManager() {
 		if (securityManager == null) {
 			throw new IllegalStateException("The AuthorizationController was not initialized. Call init() instead");
 		}

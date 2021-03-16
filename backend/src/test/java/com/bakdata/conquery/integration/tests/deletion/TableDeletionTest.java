@@ -96,7 +96,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Delete the import.
@@ -156,7 +156,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after deletion");
 
 			// Issue a query and asseert that it has less content.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -165,8 +165,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			// only import the deleted import/table
 			conquery.getDatasetsProcessor().addTable(test.getContent().getTables().stream()
-																				 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-																				 .map(requiredTable -> requiredTable.toTable(conquery.getDataset())).findFirst().get(), conquery.getNamespace());
+														 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+														 .map(requiredTable -> requiredTable.toTable(conquery.getDataset(), conquery.getNamespace().getStorage().getCentralRegistry())).findFirst().get(), conquery.getNamespace());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables().stream()
@@ -216,7 +216,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
@@ -252,7 +252,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
+				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 		}
 	}

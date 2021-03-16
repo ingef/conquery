@@ -55,6 +55,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@NotNull @Getter @Setter @JsonManagedReference @Valid
 	private List<Select> selects = new ArrayList<>();
 
+	public List<Select> getDefaultSelects() {
+		return getSelects()
+						.stream().filter(Select::isDefault)
+						.collect(Collectors.toList());
+	}
+
 	@Override
 	public Concept<?> findConcept() {
 		return concept;
@@ -181,7 +187,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	/**
 	 * @param cBlock
 	 * @param bucket
-	 * @param imp
 	 */
 	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket);
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -39,6 +40,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -97,7 +99,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		// init all subqueries
-		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry));
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, null));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}
@@ -193,7 +195,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		}
 		return result;
 	}
-	
+
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+		submittedForm.visit(visitor);
+	}
+
 	@Data
 	@CPSType(id = "FORM_SHARD_RESULT", base = ShardResult.class)
 	@EqualsAndHashCode(callSuper = true)
@@ -226,7 +233,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 	
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, ExecutionStatus.Full status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if(subQueries == null) {

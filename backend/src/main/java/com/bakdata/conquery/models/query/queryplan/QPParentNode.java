@@ -1,16 +1,13 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -20,16 +17,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.*;
+import java.util.Map.Entry;
+
 @Getter @Setter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class QPParentNode extends QPNode {
 
 	private final List<QPNode> children;
 	private final ListMultimap<TableId, QPNode> childMap;
+	protected final DateAggregator dateAggregator;
 
 	protected List<QPNode> currentTableChildren;
 
-	public QPParentNode(List<QPNode> children) {
+	// Just for debugging
+	private DateAggregationAction action;
+
+
+	public QPParentNode(List<QPNode> children, DateAggregationAction action) {
+		Preconditions.checkNotNull(action);
 		if(children == null || children.isEmpty()) {
 			throw new IllegalArgumentException("A ParentAggregator needs at least one child.");
 		}
@@ -45,6 +51,14 @@ public abstract class QPParentNode extends QPNode {
 				.collect(ImmutableListMultimap
 					.toImmutableListMultimap(Pair::getLeft, Pair::getRight)
 				);
+
+		// Save action for debugging
+		this.action = action;
+		this.dateAggregator = new DateAggregator(action);
+
+		for (QPNode child : children) {
+			this.dateAggregator.register(child.getDateAggregators());
+		}
 	}
 
 	@Override
@@ -123,5 +137,13 @@ public abstract class QPParentNode extends QPNode {
 			((List<QPNode>)e.getValue()).replaceAll(ctx::clone);
 		}
 		return Pair.of(clones, cloneMap);
+	}
+
+	@Override
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
+		if(dateAggregator != null) {
+			return Set.of(dateAggregator);
+		}
+		return Collections.emptySet();
 	}
 }

@@ -18,7 +18,7 @@ public class QueryTranslator {
 	public <T extends IQuery> T replaceDataset(DatasetRegistry namespaces, T element, DatasetId target) {
 		if(element instanceof ConceptQuery) {
 			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target);
-			return (T) new ConceptQuery(root);
+			return (T) new ConceptQuery(root, ((ConceptQuery) element).getDateAggregationMode());
 		}
 		throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
 	}

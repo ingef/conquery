@@ -6,6 +6,8 @@ import java.util.Map;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -41,8 +43,8 @@ public interface Form extends QueryDescription {
 	}
 		
 	@Override
-	public default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset) {
-		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset);
+	public default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
+		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset, storage, user);
 		// Check if user is allowed to create this form
 		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));
 	}

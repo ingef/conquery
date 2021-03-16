@@ -4,12 +4,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.function.Executable;
-
-import java.util.HashMap;
 
 public interface IntegrationTest {
 
@@ -28,7 +25,7 @@ public interface IntegrationTest {
 		public void execute(String name, TestConquery testConquery) throws Exception {
 			try(StandaloneSupport conquery = testConquery.getSupport(name)) {
 				// Because Shiro works with a static Security manager
-				testConquery.getStandaloneCommand().getManager().getAuthController().registerShiro();
+				testConquery.getStandaloneCommand().getManager().getAuthController().registerStaticSecurityManager();
 
 				execute(conquery);
 			}
@@ -55,6 +52,9 @@ public interface IntegrationTest {
 				ConqueryMDC.setLocation(name);
 				log.info("FAILED integration test "+name, e);
 				throw e;
+			}
+			finally {
+				testConquery.afterEach();
 			}
 			ConqueryMDC.setLocation(name);
 			log.info("SUCCESS integration test {}", name);

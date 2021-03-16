@@ -543,31 +543,29 @@ const FormConceptGroup = (props: PropsType) => {
             {props.renderRowPrefix
               ? props.renderRowPrefix(props.input, row, i)
               : null}
-            {false && // TODO: TEMPORARILY DISABLED, UNTIL FEATURE IS COORDINATED
-              !props.renderRowPrefix &&
-              row.concepts.length > 1 && (
-                <Row>
-                  <SxDescription>
-                    {T.translate("externalForms.common.connectedWith")}:
-                  </SxDescription>
-                  <ToggleButton
-                    input={{
-                      value: props.input.value[i].connector,
-                      onChange: (value) => {
-                        props.input.onChange(
-                          setValueProperties(props.input.value, i, {
-                            connector: value,
-                          })
-                        );
-                      },
-                    }}
-                    options={[
-                      { value: "OR", label: T.translate("common.or") },
-                      { value: "AND", label: T.translate("common.and") },
-                    ]}
-                  />
-                </Row>
-              )}
+            {!props.renderRowPrefix && row.concepts.length > 1 && (
+              <Row>
+                <SxDescription>
+                  {T.translate("externalForms.common.connectedWith")}:
+                </SxDescription>
+                <ToggleButton
+                  input={{
+                    value: props.input.value[i].connector,
+                    onChange: (value) => {
+                      props.input.onChange(
+                        setValueProperties(props.input.value, i, {
+                          connector: value,
+                        })
+                      );
+                    },
+                  }}
+                  options={[
+                    { value: "OR", label: T.translate("common.or") },
+                    { value: "AND", label: T.translate("common.and") },
+                  ]}
+                />
+              </Row>
+            )}
             <DynamicInputGroup
               key={i}
               limit={props.isSingle ? 1 : 0}

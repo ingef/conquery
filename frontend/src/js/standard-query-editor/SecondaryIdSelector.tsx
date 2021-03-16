@@ -48,14 +48,16 @@ const SecondaryIdSelector: FC = () => {
   const availableSecondaryIds = Array.from(
     new Set(
       query.flatMap((group) =>
-        group.elements
-          .filter((el): el is ConceptQueryNodeType => !el.isPreviousQuery)
-          .flatMap((el) =>
-            el.tables
+        group.elements.flatMap((el) => {
+          if (el.isPreviousQuery) {
+            return el.availableSecondaryIds || [];
+          } else {
+            return el.tables
               .filter((table) => !table.exclude)
               .flatMap((table) => table.supportedSecondaryIds)
-              .filter(exists)
-          )
+              .filter(exists);
+          }
+        })
       )
     )
   )

@@ -101,7 +101,7 @@ export const useExpandPreviousQuery = () => {
   const dispatch = useDispatch();
   const loadPreviousQuery = useLoadPreviousQuery();
 
-  return (
+  return async (
     datasetId: DatasetIdT,
     rootConcepts: TreesT,
     query: PreviousQueryQueryNodeType
@@ -117,9 +117,15 @@ export const useExpandPreviousQuery = () => {
       payload: { rootConcepts, query },
     });
 
-    for (const queryId of nestedPreviousQueryIds) {
-      loadPreviousQuery(datasetId, queryId);
-    }
+    await Promise.all(
+      nestedPreviousQueryIds.map((queryId) =>
+        loadPreviousQuery(datasetId, queryId)
+      )
+    );
+
+    dispatch(
+      setSelectedSecondaryId(query.secondaryId ? query.secondaryId : null)
+    );
   };
 };
 

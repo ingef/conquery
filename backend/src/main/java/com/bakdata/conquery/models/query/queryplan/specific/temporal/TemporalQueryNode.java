@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
+import java.util.Collection;
 import java.util.OptionalInt;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
@@ -105,7 +107,7 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	/**
-	 * Retrieves the {@link ConceptQueryPlan#getSpecialDateUnion()} ()} time of {@link #reference} and {@link #preceding}.
+	 * Retrieves the {@link ConceptQueryPlan#getDateAggregator()} time of {@link #reference} and {@link #preceding}.
 	 * Then tests whether they match the specific criteria for inclusion.
 	 * If the criteria are met, the matching {@link CDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
 	 *
@@ -117,9 +119,9 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
+		CDateSet referenceDurations = CDateSet.create(getReference().getChild().getDateAggregator().getAggregationResult());
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
+		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getDateAggregator().getAggregationResult());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
@@ -138,6 +140,11 @@ public class TemporalQueryNode extends QPNode {
 		}
 
 		return false;
+	}
+
+	@Override
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
+		return Set.of(dateUnion);
 	}
 
 	@Override
