@@ -4,12 +4,14 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
 
+@Slf4j
 @RequiredArgsConstructor
 public class UserIdTokenExtractor implements DefaultAuthFilter.TokenExtractor {
 
@@ -39,16 +41,19 @@ public class UserIdTokenExtractor implements DefaultAuthFilter.TokenExtractor {
 
 		UserId userId = null;
 
-		if (StringUtils.isNotEmpty(uid)) {
-			try {
-				userId = UserId.Parser.INSTANCE.parse(uid);
-				return new DevelopmentToken(userId, uid);
-			} catch (Exception e) {
-				// do default
-			}
+		if (StringUtils.isEmpty(uid)) {
+			// If nothing was found execute the request as the default user
+			userId = defaultUser.getId();
+			return new DevelopmentToken(userId, uid);
 		}
-		// If nothing was found execute the request as the default user
-		userId = defaultUser.getId();
-		return new DevelopmentToken(userId, uid);
+
+		try {
+			userId = UserId.Parser.INSTANCE.parse(uid);
+			log.trace("Parsed UserId: {}", userId);
+			return new DevelopmentToken(userId, uid);
+		} catch (Exception e) {
+			log.trace("Unable to extract a valid user id.");
+			return null;
+		}
 	}
 }
