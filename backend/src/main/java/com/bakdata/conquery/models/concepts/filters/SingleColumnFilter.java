@@ -30,7 +30,7 @@ public abstract class SingleColumnFilter<FE_TYPE> extends Filter<FE_TYPE> {
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match.")
+	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
 		final boolean acceptable = getAcceptedColumnTypes().contains(getColumn().getType());
 
