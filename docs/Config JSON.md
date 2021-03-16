@@ -69,7 +69,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L28) | jwk | `JWK` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L28-L31) | jwk | `JWK` | `null` |  | The public key information that is used to validate signed JWT. It can be retrieved from the IDP. | 
 </p></details>
 
 ### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L22)</sup></sub></sup>
@@ -89,8 +89,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L36-L38) | storeName | `String` | `"authenticationStore"` |  | The name of the folder the store lives in. | 
 </p></details>
 
-### OIDC_AUTHORIZATION_CODE_FLOW<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/codeflow/OIDCAuthorizationCodeFlowRealmFactory.java#L12)</sup></sub></sup>
-
+### OIDC_AUTHORIZATION_CODE_FLOW<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/codeflow/OIDCAuthorizationCodeFlowRealmFactory.java#L12-L14)</sup></sub></sup>
+Factory for a simple realm that just forwards tokens to the IDP for verification.
 
 <details><summary>Details</summary><p>
 
@@ -100,7 +100,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/codeflow/OIDCAuthorizationCodeFlowRealmFactory.java#L16) | client | `IntrospectionDelegatingRealmFactory` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/codeflow/OIDCAuthorizationCodeFlowRealmFactory.java#L19) | client | `IntrospectionDelegatingRealmFactory` | `null` |  |  | 
 </p></details>
 
 ### OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/passwordflow/OIDCResourceOwnerPasswordCredentialRealmFactory.java#L15-L17)</sup></sub></sup>
