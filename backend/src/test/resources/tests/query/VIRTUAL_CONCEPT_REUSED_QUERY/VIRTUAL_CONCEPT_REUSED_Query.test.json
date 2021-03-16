@@ -39,7 +39,7 @@
   "concepts": [
     {
       "label": "test_concept",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "connectors": [
         {
           "label": "test_connector",

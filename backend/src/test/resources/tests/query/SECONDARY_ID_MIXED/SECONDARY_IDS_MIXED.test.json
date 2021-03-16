@@ -44,7 +44,7 @@
   "concepts": [
     {
       "name": "concept",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "connectors": [
         {
           "label": "connector1",

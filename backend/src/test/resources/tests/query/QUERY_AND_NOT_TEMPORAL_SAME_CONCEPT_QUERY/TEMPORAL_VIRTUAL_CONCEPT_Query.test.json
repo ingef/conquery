@@ -58,7 +58,7 @@
   "concepts": [
     {
       "label": "Geschlecht SELECT",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "connectors": [
         {
           "label": "geschlecht_connector",

@@ -49,7 +49,7 @@
    "concepts":[  
       {  
          "label":"alter",
-         "type":"VIRTUAL",
+         "type":"TREE",
          "connectors":[  
             {  
                "label":"alterxy",

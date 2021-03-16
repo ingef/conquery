@@ -34,7 +34,7 @@
       "label": "Datum",
       "column": "table.datum"
     },
-    "filter": {
+    "filters": {
       "column": "table.nr",
       "distinct": "true",
       "distinctByColumn": [

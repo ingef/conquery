@@ -36,7 +36,7 @@
    "concepts":[  
       {  
          "label":"kg_tage_duration_sum",
-         "type":"VIRTUAL",
+         "type":"TREE",
          "connectors":[  
             {  
                "label":"kg_tage_connector",

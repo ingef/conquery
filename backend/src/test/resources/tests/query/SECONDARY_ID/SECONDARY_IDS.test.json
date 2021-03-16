@@ -50,7 +50,7 @@
   "concepts": [
     {
       "label": "number",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "connectors": [
         {
           "label": "number_connector",

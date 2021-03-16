@@ -57,7 +57,7 @@
   "concepts": [
     {
       "label": "number",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "selects": {
         "type": "EXISTS",
         "name": "exists"

@@ -57,7 +57,7 @@
     "concepts": [
         {
             "label": "select",
-            "type": "VIRTUAL",
+            "type": "TREE",
             "connectors": [
                 {
                     "label": "connector",
