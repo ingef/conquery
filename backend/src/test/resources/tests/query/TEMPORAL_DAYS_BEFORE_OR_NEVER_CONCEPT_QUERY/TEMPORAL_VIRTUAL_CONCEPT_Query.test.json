@@ -65,7 +65,7 @@
             "label": "datum",
             "column": "table1.datum"
           },
-          "filter": {
+          "filters": {
             "label": "geschlecht",
             "column": "table1.geschlecht",
             "type": "SINGLE_SELECT"

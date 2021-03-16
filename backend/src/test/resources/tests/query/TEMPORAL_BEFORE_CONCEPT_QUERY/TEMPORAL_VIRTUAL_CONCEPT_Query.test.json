@@ -62,7 +62,7 @@
             "label": "datum",
             "column": "table.datum"
           },
-          "filter": {
+          "filters": {
             "name": "filter",
             "column": "table.value",
             "type": "SINGLE_SELECT"

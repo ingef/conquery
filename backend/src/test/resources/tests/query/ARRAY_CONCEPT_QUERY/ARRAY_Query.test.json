@@ -66,7 +66,7 @@
                         "label": "datum",
                         "column": "table1.datum"
 					},
-					"filter": {
+					"filters": {
 						"label": "geschlecht",
 						"type": "COUNT",
 						"column": "table1.geschlecht",
