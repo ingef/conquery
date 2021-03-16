@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @RequiredArgsConstructor
 @Slf4j
-public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
+public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
 
 	/**
 	 * user given mapping from the values in the CSVs to shown labels

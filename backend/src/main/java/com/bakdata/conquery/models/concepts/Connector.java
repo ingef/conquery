@@ -108,6 +108,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 					   .orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "Not all Filters are for Connector's table.")
 	public boolean isFiltersForTable() {
 		boolean valid = true;
@@ -126,12 +127,13 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return valid;
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")
 	public boolean isUniqueFilterNames() {
 		boolean valid = true;
 
 		for (Entry<String> e : collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
-			if (e.getCount() == 0) {
+			if (e.getCount() == 1) {
 				continue;
 			}
 
@@ -142,6 +144,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return valid;
 	}
 
+	@JsonIgnore
 	@ValidationMethod(message = "Not all validity dates are Date-compatible.")
 	public boolean isValidValidityDates() {
 		if (validityDates == null) {
@@ -159,6 +162,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return passed;
 	}
 
+	@JsonIgnore
 	@ValidationMethod
 	public boolean isValidityDatesForTable() {
 		if (validityDates == null) {
