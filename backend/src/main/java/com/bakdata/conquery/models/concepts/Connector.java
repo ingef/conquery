@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import javax.validation.ConstraintValidatorContext;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -19,8 +18,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
-import com.bakdata.conquery.models.exceptions.validators.DetailedValid.ValidationMethod2;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -32,53 +29,65 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A connector represents the connection between a column and a concept.
  */
-@Getter @Setter @DetailedValid
+@Getter
+@Setter
+@Valid
+@Slf4j
 public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};
 	private static final long serialVersionUID = 1L;
 
-	@NotNull @JsonManagedReference
+	@NotNull
+	@JsonManagedReference
 	private List<ValidityDate> validityDates = new ArrayList<>();
 	@JsonBackReference
 	private Concept<?> concept;
-	@JsonIgnore @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
+	@JsonIgnore
+	@Getter(AccessLevel.NONE)
+	@Setter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
-	@NotNull @Getter @Setter @JsonManagedReference @Valid
+	@NotNull
+	@Getter
+	@Setter
+	@JsonManagedReference
+	@Valid
 	private List<Select> selects = new ArrayList<>();
 
 	public List<Select> getDefaultSelects() {
 		return getSelects()
-						.stream().filter(Select::isDefault)
-						.collect(Collectors.toList());
+					   .stream().filter(Select::isDefault)
+					   .collect(Collectors.toList());
 	}
 
 	@Override
 	public Concept<?> findConcept() {
 		return concept;
 	}
-	
+
 	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
 	public void setSelectableDates(List<Column> cols) {
 		this.setValidityDates(
 				cols
-				.stream()
-				.map(c -> {
-					ValidityDate sd = new ValidityDate();
-					sd.setColumn(c);
-					sd.setName(c.getName());
-					sd.setConnector(this);
-					return sd;
-				})
-				.collect(Collectors.toList())
+						.stream()
+						.map(c -> {
+							ValidityDate sd = new ValidityDate();
+							sd.setColumn(c);
+							sd.setName(c.getName());
+							sd.setConnector(this);
+							return sd;
+						})
+						.collect(Collectors.toList())
 		);
 	}
 
@@ -92,76 +101,96 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@JsonIgnore
 	public Column getSelectableDate(String name) {
 		return validityDates
-						.stream()
-						.filter(vd -> vd.getName().equals(name))
-						.map(ValidityDate::getColumn)
-						.findAny()
-						.orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
+					   .stream()
+					   .filter(vd -> vd.getName().equals(name))
+					   .map(ValidityDate::getColumn)
+					   .findAny()
+					   .orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
 	}
 
-	@ValidationMethod2
-	public boolean validateFilters(ConstraintValidatorContext context) {
-		boolean passed = true;
+	@ValidationMethod(message = "Not all Filters are for Connector's table.")
+	public boolean isFiltersForTable() {
+		boolean valid = true;
 
-		for(Filter<?> f:collectAllFilters()) {
-			for(Column c:f.getRequiredColumns()) {
-				if (c != null && c.getTable() != getTable()) {
-					context
-						.buildConstraintViolationWithTemplate("The filter "+f.getId()+" must be of the same table as its connector "+this.getId()+".\t Filter's table: "+ c.getTable().getId()+"\t Connector's table: "+ this.getTable().getId())
-						.addConstraintViolation();
-					passed = false;
+		for (Filter<?> filter : collectAllFilters()) {
+			for (Column column : filter.getRequiredColumns()) {
+				if (column == null || column.getTable() == getTable()) {
+					continue;
 				}
+
+				log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", filter.getId(), column.getTable().getId(), getId(), getTable().getId());
+				valid = false;
 			}
 		}
 
-		for(Entry<String> e:collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
-			if(e.getCount()>1) {
-				passed = false;
-				context
-					.buildConstraintViolationWithTemplate("The filter name "+e.getElement()+" is used "+e.getCount()+" time in "+this.getId())
-					.addConstraintViolation();
+		return valid;
+	}
+
+	@ValidationMethod(message = "Filter names are not unique.")
+	public boolean isUniqueFilterNames() {
+		boolean valid = true;
+
+		for (Entry<String> e : collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
+			if (e.getCount() == 0) {
+				continue;
 			}
+
+			valid = false;
+			log.error("Multiple Filters with name `{}` for Connector[{}]", e.getElement(), getId());
 		}
 
+		return valid;
+	}
+
+	@ValidationMethod(message = "Not all validity dates are Date-compatible.")
+	public boolean isValidValidityDates() {
+		if (validityDates == null) {
+			return true;
+		}
+		boolean passed = true;
+		for (ValidityDate date : validityDates) {
+			if (date.getColumn().getType().isDateCompatible()) {
+				continue;
+			}
+
+			passed = false;
+			log.error("ValidityDate-Column[{}] for Connector[{}] is not of type DATE or DATERANGE", date.getColumn().getId(), getId());
+		}
 		return passed;
 	}
 
-	@ValidationMethod2
-	public boolean validateSelectableDates(ConstraintValidatorContext context) {
+	@ValidationMethod
+	public boolean isValidityDatesForTable() {
 		if (validityDates == null) {
 			return true;
 		}
 		boolean passed = true;
 		for (ValidityDate sd : validityDates) {
 			Column col = sd.getColumn();
-			if (!col.getType().isDateCompatible()) {
-				passed = false;
-				context
-					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" of the connector "+this.getId()+" is not of type DATE or DATERANGE")
-					.addConstraintViolation();
-			}
+
 			if (!col.getTable().equals(getTable())) {
 				passed = false;
-				context
-					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" is not of the same table as its connector "+this.getId()+".\t Validity date's column: "+ col.getTable().getId()+"\t Connector's table: "+ this.getTable().getId())
-					.addConstraintViolation();
+				log.error("ValidityDate[{}](Column = `{}`) does not belong to Connector[{}]#Table[{}]", sd.getId(), col.getId(), getId(), getTable().getId());
 			}
 		}
 		return passed;
 	}
 
 	public Filter<?> getFilterByName(String name) {
-		return collectAllFilters().stream().filter(f->name.equals(f.getName())).findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
+		return collectAllFilters().stream()
+								  .filter(f -> name.equals(f.getName()))
+								  .findAny()
+								  .orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
 	}
 
 	@JsonIgnore
 	public abstract List<Filter<?>> collectAllFilters();
 
 	public <T extends Filter> T getFilter(FilterId id) {
-		if(allFiltersMap==null) {
+		if (allFiltersMap == null) {
 			allFiltersMap = new IdMap<>(collectAllFilters());
 		}
-		return (T)allFiltersMap.getOrFail(id);
+		return (T) allFiltersMap.getOrFail(id);
 	}
 
 	public Column getValidityDateColumn(ValidityDateId id) {
@@ -175,7 +204,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public synchronized void addImport(Import imp) {
-		for(Filter<?> f : collectAllFilters()) {
+		for (Filter<?> f : collectAllFilters()) {
 			f.addImport(imp);
 		}
 	}
