@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth;
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.*;
@@ -68,6 +69,7 @@ public final class AuthorizationController implements Managed{
 		centralTokenRealm = new ConqueryTokenRealm(storage);
 		authenticationRealms.add(centralTokenRealm);
 		realms.add(centralTokenRealm);
+		authenticationFilter.registerTokenExtractor(JWTokenHandler::extractToken);
 
 		// Add the central authorization realm
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
@@ -75,6 +77,8 @@ public final class AuthorizationController implements Managed{
 		securityManager = new DefaultSecurityManager(realms);
 		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
 		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
+
+		registerStaticSecurityManager();
 	}
 	
 	public void externalInit(ManagerNode manager, List<AuthenticationConfig> authenticationConfigs) {
@@ -92,8 +96,6 @@ public final class AuthorizationController implements Managed{
 		// Register all realms in Shiro
 		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
 		securityManager.setRealms(realms);
-
-		registerStaticSecurityManager();
 	}
 
 	@Override
@@ -127,7 +129,7 @@ public final class AuthorizationController implements Managed{
 	 * @param storage
 	 *            A storage, where the handler might add a new users.
 	 */
-	private static void initializeAuthConstellation(AuthorizationConfig config, List<Realm> realms, MetaStorage storage) {
+	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
 		for (ProtoUser pUser : config.getInitialUsers()) {
 			pUser.registerForAuthorization(storage, true);
 			for (Realm realm : realms) {

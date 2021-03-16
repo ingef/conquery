@@ -116,9 +116,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Initialization of internationalization
 		I18n.init();
 
-		authController = new AuthorizationController(storage, config.getAuthorization());
-		environment.lifecycle().manage(authController);
-
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
 
@@ -133,6 +130,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		loadNamespaces();
 
 		loadMetaStorage();
+
+		authController = new AuthorizationController(storage, config.getAuthorization());
+		environment.lifecycle().manage(authController);
 
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
