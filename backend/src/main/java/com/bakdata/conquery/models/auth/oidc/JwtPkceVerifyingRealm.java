@@ -22,7 +22,10 @@ import org.keycloak.representations.JsonWebToken;
 
 import java.security.PublicKey;
 
-
+/**
+ * This realm uses the configured public key to verify the signature of a provided JWT and extracts informations about
+ * the authenticated user from it.
+ */
 @Slf4j
 public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 

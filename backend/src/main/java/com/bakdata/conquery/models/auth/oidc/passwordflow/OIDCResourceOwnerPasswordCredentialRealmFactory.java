@@ -29,22 +29,22 @@ public class OIDCResourceOwnerPasswordCredentialRealmFactory implements Authenti
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
 
 		// Register processor that does the actual exchange of user credentials for an access token
-		TokenProcessor tokenProcessor = new TokenProcessor(client);
+		IdpDelegatingAccessTokenCreator idpDelegatingAccessTokenCreator = new IdpDelegatingAccessTokenCreator(client);
 
 		// Register resources for users to exchange username and password for an access token
-		registerAdminUnprotectedAuthenticationResources(managerNode.getUnprotectedAuthAdmin(),tokenProcessor);
-		registerApiUnprotectedAuthenticationResources(managerNode.getUnprotectedAuthApi(),tokenProcessor);
+		registerAdminUnprotectedAuthenticationResources(managerNode.getUnprotectedAuthAdmin(), idpDelegatingAccessTokenCreator);
+		registerApiUnprotectedAuthenticationResources(managerNode.getUnprotectedAuthApi(), idpDelegatingAccessTokenCreator);
 
 		return client.createRealm(managerNode);
 	}
 
-	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, TokenProcessor tokenProcessor) {
-		jerseyConfig.register(new TokenResource(tokenProcessor));
+	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, IdpDelegatingAccessTokenCreator idpDelegatingAccessTokenCreator) {
+		jerseyConfig.register(new TokenResource(idpDelegatingAccessTokenCreator));
 		jerseyConfig.register(LoginResource.class);
 	}
 
-	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, TokenProcessor tokenProcessor) {
-		jerseyConfig.register(new TokenResource(tokenProcessor));
+	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, IdpDelegatingAccessTokenCreator idpDelegatingAccessTokenCreator) {
+		jerseyConfig.register(new TokenResource(idpDelegatingAccessTokenCreator));
 	}
 
 }

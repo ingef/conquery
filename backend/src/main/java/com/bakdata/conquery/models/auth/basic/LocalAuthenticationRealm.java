@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  * through specific endpoints that are registerd by this realm.
  */
 @Slf4j
-public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, UsernamePasswordChecker {
+public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AccessTokenCreator {
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
@@ -114,7 +114,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// FOR USERNAME/PASSWORD
 
-	public String checkCredentialsAndCreateJWT(String username, char[] password) {
+	public String createAccessToken(String username, char[] password) {
 		// Check the password which is afterwards cleared
 		if (!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
 			throw new AuthenticationException("Provided username or password was not valid.");

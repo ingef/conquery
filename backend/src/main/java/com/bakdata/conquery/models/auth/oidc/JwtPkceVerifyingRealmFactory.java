@@ -25,6 +25,10 @@ import java.security.PublicKey;
 @Data
 public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
 
+    /**
+     * The public key information that is used to validate signed JWT.
+     * It can be retrieved from the IDP.
+     */
     private JWK jwk;
 
     public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {

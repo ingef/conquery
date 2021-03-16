@@ -1,8 +1,7 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
-import com.bakdata.conquery.models.auth.basic.UsernamePasswordChecker;
+import com.bakdata.conquery.models.auth.basic.AccessTokenCreator;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
-import com.bakdata.conquery.models.auth.oidc.OIDCAuthenticationConfig;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
@@ -19,20 +18,20 @@ import java.net.URI;
 @Slf4j
 @Getter
 @Setter
-public class TokenProcessor<C extends OIDCAuthenticationConfig> implements UsernamePasswordChecker {
+public class IdpDelegatingAccessTokenCreator implements AccessTokenCreator {
 
 	private static final String GROUPS_CLAIM = "groups";
 
 	private final IntrospectionDelegatingRealmFactory authProviderConf;
 
 
-	public TokenProcessor(IntrospectionDelegatingRealmFactory authProviderConf) {
+	public IdpDelegatingAccessTokenCreator(IntrospectionDelegatingRealmFactory authProviderConf) {
 		this.authProviderConf = authProviderConf;
 	}
 
 	@Override
 	@SneakyThrows
-	public String checkCredentialsAndCreateJWT(String username, char[] password) {
+	public String createAccessToken(String username, char[] password) {
 		
 		Secret passwordSecret = new Secret(new String(password));
 

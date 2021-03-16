@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.auth;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
-import com.bakdata.conquery.models.auth.oidc.passwordflow.TokenProcessor;
+import com.bakdata.conquery.models.auth.oidc.passwordflow.IdpDelegatingAccessTokenCreator;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import io.dropwizard.validation.BaseValidator;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import static org.mockserver.model.Parameter.param;
 import static org.mockserver.model.ParameterBody.params;
 
 @Slf4j
-public class TokenProcessorTest {
+public class IdpDelegatingAccessTokenCreatorTest {
 
 	private static final OIDCMockServer OIDC_SERVER =  new OIDCMockServer();
 	private static final IntrospectionDelegatingRealmFactory CONFIG = new IntrospectionDelegatingRealmFactory();
@@ -37,7 +37,7 @@ public class TokenProcessorTest {
 	private static final String USER_1_PASSWORD = "test_password1";
 	private static final String USER_1_TOKEN = JWT.create().withClaim("name", USER_1_NAME).sign(Algorithm.HMAC256("secret"));
 
-	private static TokenProcessor tokenProcessor;
+	private static IdpDelegatingAccessTokenCreator idpDelegatingAccessTokenCreator;
 
 
 	@BeforeAll
@@ -46,7 +46,7 @@ public class TokenProcessorTest {
 
 		initRealmConfig();
 
-		tokenProcessor = new TokenProcessor(CONFIG);
+		idpDelegatingAccessTokenCreator = new IdpDelegatingAccessTokenCreator(CONFIG);
 	}
 
 
@@ -88,7 +88,7 @@ public class TokenProcessorTest {
 
 	@Test
 	public void vaildUsernamePassword() {
-		String jwt = tokenProcessor.checkCredentialsAndCreateJWT(USER_1_NAME, USER_1_PASSWORD.toCharArray());
+		String jwt = idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, USER_1_PASSWORD.toCharArray());
 
 		assertThat(jwt).isEqualTo(USER_1_TOKEN);
 	}
@@ -97,7 +97,7 @@ public class TokenProcessorTest {
 	public void invaildUsernamePassword() {
 		log.info("This test will print an Error below.");
 		assertThatThrownBy(
-				() -> tokenProcessor.checkCredentialsAndCreateJWT(USER_1_NAME, "bad_password".toCharArray()))
+				() -> idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, "bad_password".toCharArray()))
 				.isInstanceOf(IllegalStateException.class);
 	}
 

@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 
+/**
+ * Bridge class for realms that authenticate users by submitting their token to the IDP for introspection.
+ */
 @Slf4j
 public class IntrospectionDelegatingRealmFactory extends Configuration {
 
