@@ -429,7 +429,7 @@ public class ImportJob extends Job {
 
 				log.debug("Decided for {}", newType);
 
-				mapping.applyToStore(stringStore, newType, stringStore.getLines());
+				mapping.applyToStore(stringStore, newType);
 
 				stringStore.setIndexStore(newType);
 			}finally {

@@ -60,8 +60,8 @@ public class DictionaryMapping {
 	/**
 	 * Mutably applies mapping to store.
 	 */
-	public void applyToStore(StringStore from, IntegerStore to, long rows) {
-		for (int event = 0; event < rows; event++) {
+	public void applyToStore(StringStore from, IntegerStore to) {
+		for (int event = 0; event < from.getLines(); event++) {
 			if (!from.has(event)) {
 				to.setNull(event);
 				continue;
