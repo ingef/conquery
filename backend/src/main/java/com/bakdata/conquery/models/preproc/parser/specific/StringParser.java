@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
@@ -81,8 +82,6 @@ public class StringParser extends Parser<Integer, StringStore> {
 	@Override
 	protected StringStore decideType() {
 
-		strings.values().removeIf(id -> !registered.contains(id));
-
 		//check if a singleton type is enough
 		if (strings.isEmpty()) {
 			return EmptyStore.INSTANCE;
@@ -132,11 +131,17 @@ public class StringParser extends Parser<Integer, StringStore> {
 		);
 
 		StringStore result = guess.getType();
+
+		if(result instanceof StringTypeEncoded){
+
+		}
+
 		//wrap in prefix suffix
 		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
 			result = new StringTypePrefixSuffix(result, prefix, suffix);
-
 		}
+
+
 
 		return result;
 	}
