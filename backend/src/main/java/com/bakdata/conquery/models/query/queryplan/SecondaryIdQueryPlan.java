@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -15,6 +17,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 public class SecondaryIdQueryPlan implements QueryPlan {
 
+	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	private final ConceptQueryPlan query;
 	private final SecondaryIdDescriptionId secondaryId;
 
@@ -196,5 +200,23 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return query.isOfInterest(entity);
+	}
+
+	@Override
+	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+		if(!query.isAggregateValidityDates()) {
+			return;
+		}
+
+
+		for(Object[] resultLine : result.listResultLines()) {
+			Object dates = resultLine[VALIDITY_DATE_POSITION];
+
+			if(dates == null) {
+				continue;
+			}
+
+			dateSet.addAll((CDateSet) dates);
+		}
 	}
 }

@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
@@ -54,9 +55,12 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		if (preResult.isFailed() || !preResult.isContained()) {
 			return preResult;
 		}
+
 		int size = calculateCompleteLength();
-		SinglelineContainedEntityResult contained = (SinglelineContainedEntityResult) preResult;
-		CDateSet dateSet = (CDateSet) contained.getValues()[0];
+		ContainedEntityResult contained = preResult.asContained();
+		CDateSet dateSet = CDateSet.create();
+		// Gather all validity dates from prerequisite
+		query.collectValidityDate(contained, dateSet);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
@@ -256,5 +260,26 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity) || outcomePlan.isOfInterest(entity);
+	}
+
+	@Override
+	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+		for(Object[] resultLine : result.listResultLines()) {
+			int featureDateRangePosition = getFeatureDateRangePosition();
+			if(featureDateRangePosition >= 0) {
+				Object date = resultLine[featureDateRangePosition];
+				if(date != null){
+					dateSet.add((CDateRange) date);
+				}
+			}
+
+			int outcomeDateRangePosition = getOutcomeDateRangePosition();
+			if(outcomeDateRangePosition >= 0) {
+				Object date = resultLine[outcomeDateRangePosition];
+				if(date != null){
+					dateSet.add((CDateRange) date);
+				}
+			}
+		}
 	}
 }

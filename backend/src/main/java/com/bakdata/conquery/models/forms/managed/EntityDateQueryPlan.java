@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 
 import javax.validation.Valid;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Implementation of the QueryPlan for an {@link EntityDateQuery}.
@@ -37,6 +39,8 @@ public class EntityDateQueryPlan implements QueryPlan {
     private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
     private final CDateRange dateRange;
 
+    private BiConsumer<ContainedEntityResult, CDateSet> validityDateCollector;
+
     @Override
     public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
         // Execute the prerequisite query
@@ -45,32 +49,29 @@ public class EntityDateQueryPlan implements QueryPlan {
             return preResult;
         }
         final List<Object[]> resultLines = new ArrayList<>();
-        // It might be a multi line result, so iterate over every result
-        for (Object[] line : preResult.asContained().listResultLines()) {
 
-            // Transform the date set of a result line back to the actual result line
-            CDateSet entityDate = (CDateSet) line[0];
-            entityDate.retainAll(dateRange);
+        CDateSet entityDate = CDateSet.create();
+        query.collectValidityDate(preResult.asContained(), entityDate);
 
-            // Generate DateContexts in the provided resolutions
-            List<DateContext> contexts = new ArrayList<>();
-            for (CDateRange range : entityDate.asRanges()) {
-                contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
-            }
-
-            FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
-            // We assume the date set to be in the first column, this might be wrong
-            EntityResult result = resolutionQuery.execute(ctx, entity);
-
-            if (result.isFailed() || !result.isContained()) {
-                continue;
-            }
-
-            ContainedEntityResult contained = result.asContained();
-
-            resultLines.addAll(contained.listResultLines());
-
+        // Generate DateContexts in the provided resolutions
+        List<DateContext> contexts = new ArrayList<>();
+        for (CDateRange range : entityDate.asRanges()) {
+            contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
         }
+
+        FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
+        validityDateCollector = resolutionQuery::collectValidityDate;
+
+        EntityResult result = resolutionQuery.execute(ctx, entity);
+
+        if (result.isFailed() || !result.isContained()) {
+            return result;
+        }
+
+        ContainedEntityResult contained = result.asContained();
+
+        resultLines.addAll(contained.listResultLines());
+
         return new MultilineContainedEntityResult(entity.getId(), resultLines);
     }
 
@@ -87,5 +88,11 @@ public class EntityDateQueryPlan implements QueryPlan {
     @Override
     public boolean isOfInterest(Entity entity) {
         return query.isOfInterest(entity);
+    }
+
+    @Override
+    public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+        Preconditions.checkNotNull(validityDateCollector, "The query was not executed and no validity date collector set");
+        validityDateCollector.accept(result,dateSet);
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -13,6 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
@@ -95,7 +97,7 @@ public class FormQueryPlan implements QueryPlan {
 		return features.getAggregators();
 	}
 	
-	private Object[] addConstants(Object[] values, DateContext dateContext) {		
+	private Object[] addConstants(Object[] values, DateContext dateContext) {
 		Object[] result = new Object[values.length + constantCount];
 		System.arraycopy(values, 0, result, constantCount, values.length);
 		
@@ -112,21 +114,43 @@ public class FormQueryPlan implements QueryPlan {
 			result[2] = dateContext.getEventDate().toEpochDay();
 		}
 		//add date range at [2] or [3]
-		result[constantCount-1] = dateContext.getDateRange();
+		result[getDateRangePosition()] = dateContext.getDateRange();
 		
 		return result;
 	}
 
+	private int getDateRangePosition() {
+		return constantCount-1;
+	}
+
 	@Override
 	public FormQueryPlan clone(CloneContext ctx) {
-		return new FormQueryPlan(dateContexts, features);
+		return new FormQueryPlan(dateContexts, features.clone(ctx));
 	}
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return features.isOfInterest(entity);
 	}
-	
+
+	@Override
+	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+
+		int dateRangePosition = getDateRangePosition();
+		if(dateRangePosition < 0) {
+			return;
+		}
+		for(Object[] resultLine : result.listResultLines()) {
+			Object dates = resultLine[dateRangePosition];
+
+			if(dates == null) {
+				continue;
+			}
+
+			dateSet.add((CDateRange) dates);
+		}
+	}
+
 	public int columnCount() {
 		return constantCount + features.getAggregatorSize();
 	}
