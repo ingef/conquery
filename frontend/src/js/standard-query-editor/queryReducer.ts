@@ -548,7 +548,7 @@ const expandNode = (rootConcepts, node) => {
   switch (node.type) {
     case "OR":
       return {
-        ...node,
+        type: "OR",
         elements: node.children.map((c) => expandNode(rootConcepts, c)),
       };
     case "SAVED_QUERY":
@@ -602,7 +602,7 @@ const expandNode = (rootConcepts, node) => {
 // a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (state: StandardQueryStateT, action: any) => {
+const expandPreviousQuery = (action: any) => {
   const { rootConcepts, query } = action.payload;
 
   return query.root.children.map((child) => expandNode(rootConcepts, child));
@@ -963,7 +963,7 @@ const query = (
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
       return resetGroupDates(state, action);
     case EXPAND_PREVIOUS_QUERY:
-      return expandPreviousQuery(state, action);
+      return expandPreviousQuery(action);
     case LOAD_PREVIOUS_QUERY_START:
       return loadPreviousQueryStart(state, action);
     case LOAD_PREVIOUS_QUERY_SUCCESS:

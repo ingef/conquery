@@ -25,10 +25,7 @@ import { FormConfigDragItem } from "./form-configs/FormConfig";
 import { loadExternalFormValues, setExternalForm } from "./actions";
 import FaIcon from "../icon/FaIcon";
 import { useLoadFormConfigs } from "./form-configs/selectors";
-
-interface PropsT {
-  datasetId: string;
-}
+import { useDatasetId } from "../dataset/selectors";
 
 const Root = styled("div")`
   display: flex;
@@ -78,8 +75,9 @@ const hasChanged = (a: any, b: any) => {
   return JSON.stringify(a) !== JSON.stringify(b);
 };
 
-const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
+const FormConfigSaver: React.FC = () => {
   const dispatch = useDispatch();
+  const datasetId = useDatasetId();
   const [editing, setEditing] = useState<boolean>(false);
   const [formConfigId, setFormConfigId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState<boolean>(true);
@@ -127,6 +125,8 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   }, [formValues, previousFormValues]);
 
   async function onSubmit() {
+    if (!datasetId) return;
+
     setIsSaving(true);
     try {
       if (formConfigId) {
@@ -155,6 +155,8 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   }
 
   async function onLoad(dragItem: FormConfigDragItem) {
+    if (!datasetId) return;
+
     setIsLoading(true);
     setIsDirty(false);
     try {

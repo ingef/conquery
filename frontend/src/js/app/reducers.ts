@@ -29,7 +29,9 @@ import uploadQueryResults, {
 } from "../previous-queries/upload/reducer";
 import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
 import preview, { PreviewStateT } from "../preview/reducer";
-import queryUploadConceptListModal from "../query-upload-concept-list-modal/reducer";
+import queryUploadConceptListModal, {
+  QueryUploadConceptListModalStateT,
+} from "../query-upload-concept-list-modal/reducer";
 import uploadConceptListModal, {
   UploadConceptListModalStateT,
 } from "../upload-concept-list-modal/reducer";
@@ -58,6 +60,7 @@ export type StateT = {
   tooltip: TooltipStateT;
   panes: PanesStateT;
   uploadConceptListModal: UploadConceptListModalStateT;
+  queryUploadConceptListModal: QueryUploadConceptListModalStateT;
   uploadQueryResults: UploadQueryResultsStateT;
   user: UserStateT;
   queryEditor: StandardQueryEditorStateT;
@@ -79,6 +82,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     conceptTrees,
     conceptTreesOpen,
     uploadConceptListModal,
+    queryUploadConceptListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
     queryGroupModal,
     datasets,
@@ -90,7 +94,6 @@ const buildAppReducer = (tabs: TabT[]) => {
     uploadQueryResults,
     snackMessage,
     preview,
-    queryUploadConceptListModal,
     user,
     formConfigs,
     formConfigsSearch,

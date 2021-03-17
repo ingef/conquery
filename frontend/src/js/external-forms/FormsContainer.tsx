@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 
-import type { DatasetIdT } from "../api/types";
 import Form from "./form/Form";
 
 import { selectFormConfig } from "./stateSelectors";
@@ -10,17 +9,13 @@ import { useSelector } from "react-redux";
 import { StateT } from "app-types";
 import FormConfigSaver from "./FormConfigSaver";
 
-interface PropsT {
-  datasetId: DatasetIdT;
-}
-
 const Root = styled("div")`
   flex-grow: 1;
   overflow-y: auto;
   padding: 0 20px 20px 10px;
 `;
 
-const FormsContainer: FC<PropsT> = ({ datasetId }) => {
+const FormsContainer: FC = () => {
   const formConfig = useSelector<StateT, FormType | null>((state) =>
     selectFormConfig(state)
   );
@@ -29,8 +24,8 @@ const FormsContainer: FC<PropsT> = ({ datasetId }) => {
     <Root>
       {!!formConfig && (
         <>
-          <FormConfigSaver activeFormType datasetId={datasetId} />
-          <Form config={formConfig} selectedDatasetId={datasetId} />
+          <FormConfigSaver />
+          <Form config={formConfig} />
         </>
       )}
     </Root>
