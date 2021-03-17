@@ -5,11 +5,13 @@ import java.util.EnumSet;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NonNull;
@@ -19,10 +21,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
+@Setter
+@Getter
 public abstract class SingleColumnSelect extends Select {
 
-	@Getter
-	@Setter
+	@JsonProperty
+	private Connector connector;
+
 	@NsIdRef
 	@NotNull
 	@NonNull
@@ -32,8 +37,6 @@ public abstract class SingleColumnSelect extends Select {
 	 * Indicates if the values in the specified column belong to a categorical set
 	 * (bounded number of values).
 	 */
-	@Getter
-	@Setter
 	private boolean categorical = false;
 
 	@JsonIgnore
@@ -43,22 +46,36 @@ public abstract class SingleColumnSelect extends Select {
 
 	@Override
 	public ResultType getResultType() {
-		if(categorical) {
+		if (categorical) {
 			return ResultType.CategoricalT.INSTANCE;
 		}
-		
+
 		return super.getResultType();
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
+	@ValidationMethod(message = "Column does not match required Type.")
 	public boolean isValidColumnType() {
-		final boolean acceptable = getAcceptedColumnTypes().contains(getColumn().getType());
 
-		if (!acceptable) {
-			log.error("Column[{}] is of Type[{}]. Not one of [{}]", column.getId(), column.getType(), getAcceptedColumnTypes());
+		if (getAcceptedColumnTypes().contains(this.getColumn().getType())) {
+			return true;
 		}
 
-		return acceptable;
+		log.error("Column[{}] is of Type[{}]. Not one of [{}]", column.getId(), column.getType(), getAcceptedColumnTypes());
+
+		return false;
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns is not for Connectors' Table.")
+	public boolean isForConnectorTable() {
+
+		if (getColumn().getTable().equals(getConnector().getTable())) {
+			return true;
+		}
+
+		log.error("Column[{}] ist not for Table[{}]", column.getId(), getConnector().getTable());
+
+		return false;
 	}
 }

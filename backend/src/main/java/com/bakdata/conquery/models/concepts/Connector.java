@@ -49,12 +49,16 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	@NotNull
 	@JsonManagedReference
+	@Valid
 	private List<ValidityDate> validityDates = new ArrayList<>();
+
 	@JsonBackReference
 	private Concept<?> concept;
+
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
 	@Setter(AccessLevel.NONE)
+	@Valid
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
 	@NotNull
@@ -108,24 +112,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 					   .orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
 	}
 
-	@JsonIgnore
-	@ValidationMethod(message = "Not all Filters are for Connector's table.")
-	public boolean isFiltersForTable() {
-		boolean valid = true;
 
-		for (Filter<?> filter : collectAllFilters()) {
-			for (Column column : filter.getRequiredColumns()) {
-				if (column == null || column.getTable() == getTable()) {
-					continue;
-				}
-
-				log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", filter.getId(), column.getTable().getId(), getId(), getTable().getId());
-				valid = false;
-			}
-		}
-
-		return valid;
-	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")
@@ -144,41 +131,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return valid;
 	}
 
-	@JsonIgnore
-	@ValidationMethod(message = "Not all validity dates are Date-compatible.")
-	public boolean isValidValidityDates() {
-		if (validityDates == null) {
-			return true;
-		}
-		boolean passed = true;
-		for (ValidityDate date : validityDates) {
-			if (date.getColumn().getType().isDateCompatible()) {
-				continue;
-			}
 
-			passed = false;
-			log.error("ValidityDate-Column[{}] for Connector[{}] is not of type DATE or DATERANGE", date.getColumn().getId(), getId());
-		}
-		return passed;
-	}
-
-	@JsonIgnore
-	@ValidationMethod
-	public boolean isValidityDatesForTable() {
-		if (validityDates == null) {
-			return true;
-		}
-		boolean passed = true;
-		for (ValidityDate sd : validityDates) {
-			Column col = sd.getColumn();
-
-			if (!col.getTable().equals(getTable())) {
-				passed = false;
-				log.error("ValidityDate[{}](Column = `{}`) does not belong to Connector[{}]#Table[{}]", sd.getId(), col.getId(), getId(), getTable().getId());
-			}
-		}
-		return passed;
-	}
 
 	public Filter<?> getFilterByName(String name) {
 		return collectAllFilters().stream()
