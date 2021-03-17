@@ -543,7 +543,7 @@ const FormConceptGroup = (props: PropsType) => {
             {props.renderRowPrefix
               ? props.renderRowPrefix(props.input, row, i)
               : null}
-            {!props.renderRowPrefix && row.concepts.length > 1 && (
+            {row.concepts.length > 1 && (
               <Row>
                 <SxDescription>
                   {T.translate("externalForms.common.connectedWith")}:
