@@ -39,7 +39,7 @@ public class DefaultLabelTest {
 
 	private static final TreeConcept CONCEPT = new TreeConcept() {
 		{
-			setDataset(DATASET.getId());
+			setDataset(DATASET);
 			setName("defaultconcept");
 			setLabel("Default Concept");
 		}

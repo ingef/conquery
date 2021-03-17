@@ -23,8 +23,8 @@ import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
@@ -150,7 +150,11 @@ public class DefaultColumnNameTest {
 	
 	private static class TestConcept extends TreeConcept {
 
-		private static final DatasetId DATASET = new DatasetId("test");
+		private static final Dataset DATASET = new Dataset(){
+			{
+				setName("test");
+			}
+		};
 		private final Function<TestConcept,Select> selectExtractor;
 		
 		private TestConcept(Function<TestConcept,Select> selectExtractor) {

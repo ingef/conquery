@@ -3,6 +3,7 @@ package com.bakdata.conquery.models;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -13,7 +14,6 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -45,8 +45,6 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 public class SerializationTests {
 
@@ -131,7 +129,7 @@ public class SerializationTests {
 		dataset.setName("datasetName");
 		
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset.getId());
+		concept.setDataset(dataset);
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
 		

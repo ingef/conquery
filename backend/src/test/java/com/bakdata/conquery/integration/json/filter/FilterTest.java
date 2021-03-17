@@ -94,7 +94,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept = new VirtualConcept();
 		concept.setLabel("concept");
 
-		concept.setDataset(support.getDataset().getId());
+		concept.setDataset(support.getDataset());
 
 		rawConnector.put("name", "connector");
 		rawConnector.put("table", "table");

@@ -3,20 +3,19 @@ package com.bakdata.conquery.models.concepts;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -36,20 +35,21 @@ import lombok.ToString;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @ToString(of = {"name", "connectors"})
+@Getter
+@Setter
 public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> {
 
-	@Getter
-	@Setter
+	/**
+	 * Display Concept for users.
+	 */
 	private boolean hidden = false;
+
 	@JsonManagedReference
 	@Valid
-	@Getter
-	@Setter
 	private List<CONNECTOR> connectors = Collections.emptyList();
-	@NotNull
-	@Getter
-	@Setter
-	private DatasetId dataset;
+
+	@NsIdRef
+	private Dataset dataset;
 
 	public List<Select> getDefaultSelects() {
 		return getSelects()
@@ -78,7 +78,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	@Override
 	public ConceptId createId() {
-		return new ConceptId(Objects.requireNonNull(dataset), getName());
+		return new ConceptId(dataset.getId(), getName());
 	}
 
 	public int countElements() {
