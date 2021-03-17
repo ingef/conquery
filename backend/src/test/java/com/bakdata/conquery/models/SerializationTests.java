@@ -132,15 +132,26 @@ public class SerializationTests {
 		concept.setDataset(dataset);
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
-		
+
+		Table table = new Table();
+
 		Column column = new Column();
 		column.setLabel("colLabel");
 		column.setName("colName");
-		column.setPosition(2);
-		column.setType(MajorTypeId.DATE);
-		
-		Table table = new Table();
-		table.setColumns(new Column[]{column});
+		column.setPosition(0);
+		column.setType(MajorTypeId.STRING);
+		column.setTable(table);
+
+		Column dateColumn = new Column();
+		dateColumn.setLabel("colLabel2");
+		dateColumn.setName("colName2");
+		dateColumn.setPosition(1);
+		dateColumn.setType(MajorTypeId.DATE);
+		dateColumn.setTable(table);
+
+
+
+		table.setColumns(new Column[]{column, dateColumn});
 		table.setDataset(dataset);
 		table.setLabel("tableLabel");
 		table.setName("tableName");
@@ -152,11 +163,11 @@ public class SerializationTests {
 		connector.setLabel("connLabel");
 		connector.setName("connName");
 		connector.setColumn(column);
-		
+
 		concept.setConnectors(List.of(connector));
 		
 		ValidityDate valDate = new ValidityDate();
-		valDate.setColumn(column);
+		valDate.setColumn(dateColumn);
 		valDate.setConnector(connector);
 		valDate.setLabel("valLabel");
 		valDate.setName("valName");
@@ -167,6 +178,7 @@ public class SerializationTests {
 		registry.register(dataset);
 		registry.register(concept);
 		registry.register(column);
+		registry.register(dateColumn);
 		registry.register(table);
 		registry.register(connector);
 		registry.register(valDate);
