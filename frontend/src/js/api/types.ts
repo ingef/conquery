@@ -255,6 +255,7 @@ export type ColumnDescriptionKind =
   | "NUMERIC"
   | "DATE"
   | "DATE_RANGE"
+  | "LIST[DATE_RANGE]"
   | "BOOLEAN"
   | "CATEGORICAL"
   | "RESOLUTION";
