@@ -30,14 +30,11 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntIterable;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntLists;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
@@ -64,10 +61,6 @@ public class Preprocessed {
 	 */
 	private final IntList rowEntities = new IntArrayList();
 
-	/**
-	 * Global Set of all processed entities (not necessarily all output entities, as they may have null values)
-	 */
-	private final IntSet entities = new IntOpenHashSet();
 
 	private long rows = 0;
 
@@ -133,6 +126,7 @@ public class Preprocessed {
 	 * Calculate beginning and length of entities in output data.
 	 */
 	private void calculateEntitySpans(Int2IntMap entityStart, Int2IntMap entityLength) {
+
 		// Count the number of events for the entity
 		for (int entity : rowEntities) {
 			final int curr = entityLength.getOrDefault(entity, 0);
@@ -142,7 +136,7 @@ public class Preprocessed {
 		// Lay out the entities in order, adding their length.
 		int outIndex = 0;
 
-		for (int entity : entities) {
+		for (int entity : entityStart.keySet()) {
 			entityStart.put(entity, outIndex);
 
 			outIndex += entityLength.get(entity);
@@ -157,6 +151,8 @@ public class Preprocessed {
 		Map<String, ColumnStore> columnStores = Arrays.stream(columns)
 													  .parallel()
 													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
+
+		final IntSet entities = entityStart.keySet();
 
 		// This object can be huge!
 		Int2ObjectMap<IntList>  entityEvents = new Int2ObjectOpenHashMap<>(entities.size());
@@ -255,7 +251,6 @@ public class Preprocessed {
 
 	public synchronized int addPrimary(int primary) {
 		primaryColumn.addLine(primary);
-		entities.add(primary);
 		return primary;
 	}
 
@@ -277,27 +272,4 @@ public class Preprocessed {
 		//update stats
 		rows++;
 	}
-
-	/**
-	 * Offset encoded positions, in the assumption that entity values are stored close to each other.
-	 */
-	@RequiredArgsConstructor
-	private static class EntityPositions implements IntIterable {
-		private final IntList offsets = new IntArrayList();
-
-		public void add(int event) {
-			offsets.add(event);
-		}
-
-		public int length() {
-			return offsets.size();
-		}
-
-		@Override
-		public IntIterator iterator() {
-			return offsets.iterator();
-		}
-	}
-
-
 }

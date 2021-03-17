@@ -61,13 +61,20 @@ public class DictionaryMapping {
 	 * Mutably applies mapping to store.
 	 */
 	public void applyToStore(StringStore from, IntegerStore to, long rows) {
-		for (int row = 0; row < rows; row++) {
-			if (!from.has(row)) {
-				to.setNull(row);
+		for (int event = 0; event < rows; event++) {
+			if (!from.has(event)) {
+				to.setNull(event);
 				continue;
 			}
 
-			to.setInteger(row, source2Target(from.getString(row)));
+			final int string = from.getString(event);
+
+			if (string >= source2TargetMap.length) {
+				log.error("Event[{}]=`{}` is not in source.", event, string);
+			}
+			else {
+				to.setInteger(event, source2Target(string));
+			}
 		}
 	}
 
