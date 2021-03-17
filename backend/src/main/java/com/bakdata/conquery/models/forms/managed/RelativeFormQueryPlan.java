@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import lombok.Getter;
@@ -60,7 +59,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		ContainedEntityResult contained = preResult.asContained();
 		CDateSet dateSet = CDateSet.create();
 		// Gather all validity dates from prerequisite
-		query.collectValidityDate(contained, dateSet);
+		query.collectValidityDates(contained, dateSet);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
@@ -263,7 +262,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
 		for(Object[] resultLine : result.listResultLines()) {
 			int featureDateRangePosition = getFeatureDateRangePosition();
 			if(featureDateRangePosition >= 0) {

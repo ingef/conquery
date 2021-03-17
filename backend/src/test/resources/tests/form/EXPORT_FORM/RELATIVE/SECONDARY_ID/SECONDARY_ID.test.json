@@ -40,12 +40,7 @@
     ],
     "content": {
         "secondaryIds": [
-            {
-                "name": "secondary"
-            },
-            {
-                "name": "ignored"
-            }
+            "tests/form/shared/secondary.sid.json"
         ],
         "tables": [
             "/tests/form/shared/vers_stamm.table.json",

@@ -187,7 +187,7 @@ public class ConceptQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
 		if(!isAggregateValidityDates()) {
 			// The date aggregator was not added to the plan, so we don't collect a validity date
 			return;

@@ -1,13 +1,8 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.List;
-
-import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -44,7 +39,7 @@ public class AbsoluteFormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
-		subPlan.collectValidityDate(result, dateSet);
+	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+		subPlan.collectValidityDates(result, dateSet);
 	}
 }

@@ -1,10 +1,7 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -18,12 +15,7 @@ import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -37,7 +29,7 @@ public class EntityDateQueryPlan implements QueryPlan {
     private final QueryPlan query;
     private final ArrayConceptQueryPlan features;
     private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
-    private final CDateRange dateRange;
+    private final CDateRange dateRestriction;
 
     private BiConsumer<ContainedEntityResult, CDateSet> validityDateCollector;
 
@@ -51,7 +43,8 @@ public class EntityDateQueryPlan implements QueryPlan {
         final List<Object[]> resultLines = new ArrayList<>();
 
         CDateSet entityDate = CDateSet.create();
-        query.collectValidityDate(preResult.asContained(), entityDate);
+        query.collectValidityDates(preResult.asContained(), entityDate);
+        entityDate.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions
         List<DateContext> contexts = new ArrayList<>();
@@ -60,7 +53,7 @@ public class EntityDateQueryPlan implements QueryPlan {
         }
 
         FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
-        validityDateCollector = resolutionQuery::collectValidityDate;
+        validityDateCollector = resolutionQuery::collectValidityDates;
 
         EntityResult result = resolutionQuery.execute(ctx, entity);
 
@@ -81,7 +74,7 @@ public class EntityDateQueryPlan implements QueryPlan {
                 query.clone(ctx),
                 features.clone(ctx),
                 resolutionsAndAlignments,
-                dateRange
+                dateRestriction
         );
     }
 
@@ -91,7 +84,7 @@ public class EntityDateQueryPlan implements QueryPlan {
     }
 
     @Override
-    public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+    public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
         Preconditions.checkNotNull(validityDateCollector, "The query was not executed and no validity date collector set");
         validityDateCollector.accept(result,dateSet);
     }

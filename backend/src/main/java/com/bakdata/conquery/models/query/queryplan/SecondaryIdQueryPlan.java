@@ -203,7 +203,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
 		if(!query.isAggregateValidityDates()) {
 			return;
 		}

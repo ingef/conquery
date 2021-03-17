@@ -134,7 +134,7 @@ public class FormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDate(ContainedEntityResult result, CDateSet dateSet) {
+	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
 
 		int dateRangePosition = getDateRangePosition();
 		if(dateRangePosition < 0) {
