@@ -32,8 +32,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntLists;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -136,10 +134,9 @@ public class Preprocessed {
 		// Lay out the entities in order, adding their length.
 		int outIndex = 0;
 
-		for (int entity : entityStart.keySet()) {
-			entityStart.put(entity, outIndex);
-
-			outIndex += entityLength.get(entity);
+		for (Int2IntMap.Entry entry : entityLength.int2IntEntrySet()) {
+			entityStart.put(entry.getIntKey(), outIndex);
+			outIndex += entry.getIntValue();
 		}
 	}
 
@@ -152,10 +149,8 @@ public class Preprocessed {
 													  .parallel()
 													  .collect(Collectors.toMap(PPColumn::getName, PPColumn::findBestType));
 
-		final IntSet entities = entityStart.keySet();
-
 		// This object can be huge!
-		Int2ObjectMap<IntList>  entityEvents = new Int2ObjectOpenHashMap<>(entities.size());
+		Int2ObjectMap<IntList> entityEvents = new Int2ObjectOpenHashMap<>(entityStart.size());
 
 		for (int pos = 0, size = rowEntities.size(); pos < size; pos++) {
 			int entity = rowEntities.getInt(pos);
@@ -169,23 +164,24 @@ public class Preprocessed {
 
 			final ColumnStore store = columnStores.get(ppColumn.getName());
 
-			entities.intStream()
-					.forEach((int entity) -> {
-						int outIndex = entityStart.get(entity);
+			entityStart.int2IntEntrySet()
+					   .forEach(entry -> {
+						   final int entity = entry.getIntKey();
+						   int outIndex = entry.getIntValue();
 
-						final IntList events = entityEvents.getOrDefault(entity, IntLists.emptyList());
+						   final IntList events = entityEvents.getOrDefault(entity, IntLists.emptyList());
 
-						for (int inIndex : events) {
-							if (columnValues.isNull(inIndex)) {
-								store.setNull(outIndex);
-							}
-							else {
-								final Object raw = columnValues.get(inIndex);
-								ppColumn.getParser().setValue(store, outIndex, raw);
-							}
-							outIndex++;
-						}
-					});
+						   for (int inIndex : events) {
+							   if (columnValues.isNull(inIndex)) {
+								   store.setNull(outIndex);
+							   }
+							   else {
+								   final Object raw = columnValues.get(inIndex);
+								   ppColumn.getParser().setValue(store, outIndex, raw);
+							   }
+							   outIndex++;
+						   }
+					   });
 		}
 		return columnStores;
 	}
@@ -261,7 +257,7 @@ public class Preprocessed {
 		for (int col = 0; col < outRow.length; col++) {
 			final int idx = values[col].add(outRow[col]);
 
-			if(event != idx){
+			if (event != idx) {
 				throw new IllegalStateException("Columns are not aligned");
 			}
 
