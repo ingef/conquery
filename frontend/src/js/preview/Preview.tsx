@@ -68,7 +68,7 @@ const List = styled("div")`
 export type ColumnDescriptionType = ColumnDescriptionKind | "OTHER";
 
 const SUPPORTED_COLUMN_DESCRIPTION_KINDS = new Set<ColumnDescriptionKind>([
-  "ID",
+  "BOOLEAN",
   "INTEGER",
   "NUMERIC",
   "MONEY",
