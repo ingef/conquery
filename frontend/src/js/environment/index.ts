@@ -10,7 +10,7 @@ export interface Environment {
     t: TFunction,
     code: string,
     context?: Record<string, string>
-  ) => string;
+  ) => string | undefined;
 }
 
 let environment: Environment | null = null;
@@ -31,5 +31,5 @@ export const getExternalSupportedErrorMessage = (
   context?: Record<string, string>
 ) =>
   environment && environment.getExternalSupportedErrorMessage
-    ? environment.getExternalSupportedErrorMessage(t, code, context) || null
-    : null;
+    ? environment.getExternalSupportedErrorMessage(t, code, context)
+    : undefined;

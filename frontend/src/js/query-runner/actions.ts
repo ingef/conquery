@@ -30,7 +30,7 @@ import {
 } from "./actionTypes";
 import { useDispatch } from "react-redux";
 import { TFunction, useTranslation } from "react-i18next";
-import { getErrorMessage } from "../api/errorCodes";
+import { getExternalSupportedErrorMessage } from "js/environment";
 
 /*
   This implements a polling mechanism,
@@ -149,7 +149,9 @@ const getQueryErrorMessage = ({
   }
 
   return (
-    (error && error.code && getErrorMessage(t, error.code, error.context)) ||
+    (error &&
+      error.code &&
+      getExternalSupportedErrorMessage(t, error.code, error.context)) ||
     t("queryRunner.queryFailed")
   );
 };
