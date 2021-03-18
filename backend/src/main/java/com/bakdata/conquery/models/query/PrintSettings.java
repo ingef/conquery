@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 @Getter @ToString(onlyExplicitlyIncluded = true)
 public class PrintSettings implements SelectNameExtractor {
@@ -40,19 +41,19 @@ public class PrintSettings implements SelectNameExtractor {
 	private final DatasetRegistry datasetRegistry;
 	
 	@NonNull
-	private final BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer;
+	private final Function<SelectResultInfo, String> columnNamer;
 
 	private final String listElementDelimiter = ", ";
 	private final String listElementEscaper = "\\";
 	private final String listPrefix = "{";
 	private final String listPostfix = "}";
 
-	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer) {		
+	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, Function<SelectResultInfo, String> columnNamer) {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
 		this.datasetRegistry = datasetRegistry;
 
-		this.columnNamer = Objects.requireNonNullElse(columnNamer, this::defaultColumnName);
+		this.columnNamer = Objects.requireNonNullElse(columnNamer, this::userColumnName);
 
 		this.integerFormat = NUMBER_FORMAT.apply(locale);
 		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
@@ -72,14 +73,26 @@ public class PrintSettings implements SelectNameExtractor {
 			// Should never be reached
 			throw new IllegalStateException("No column namer was supplied");
 		}
-		return columnNamer.apply(columnInfo, datasetRegistry);
+		return columnNamer.apply(columnInfo);
 	}
 
 
-	private String defaultColumnName(SelectResultInfo columnInfo, DatasetRegistry datasetRegistry) {
+	private String userColumnName(SelectResultInfo columnInfo) {
 		StringBuilder sb = new StringBuilder();
 		String cqLabel = columnInfo.getCqConcept().getLabel(getLocale());
 
+		return getColumnName(columnInfo, sb, cqLabel);
+	}
+
+	public String defaultColumnName(SelectResultInfo columnInfo) {
+		StringBuilder sb = new StringBuilder();
+		String cqLabel = columnInfo.getCqConcept().getDefaultLabel();
+
+		return getColumnName(columnInfo, sb, cqLabel);
+	}
+
+	@NotNull
+	private String getColumnName(SelectResultInfo columnInfo, StringBuilder sb, String cqLabel) {
 		if (cqLabel != null) {
 			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
@@ -87,7 +100,7 @@ public class PrintSettings implements SelectNameExtractor {
 		}
 		if (columnInfo.getSelect().getHolder() instanceof Connector && columnInfo.getSelect().getHolder().findConcept().getConnectors().size() > 1) {
 			// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
-			sb.append(((Connector)columnInfo.getSelect().getHolder()).getLabel());
+			sb.append(((Connector) columnInfo.getSelect().getHolder()).getLabel());
 			sb.append(' ');
 		}
 		sb.append(columnInfo.getSelect().getLabel());
