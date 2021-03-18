@@ -104,6 +104,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	}
 
 	@Nullable
+	@JsonIgnore
 	public String getDefaultLabel() {
 		if (elements.isEmpty()) {
 			return null;

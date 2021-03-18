@@ -79,9 +79,9 @@ public class PrintSettings implements SelectNameExtractor {
 
 	private String userColumnName(SelectResultInfo columnInfo) {
 		StringBuilder sb = new StringBuilder();
-		String cqLabel = columnInfo.getCqConcept().getLabel(getLocale());
+		String label = columnInfo.getCqConcept().getLabel(getLocale());
 
-		return getColumnName(columnInfo, sb, cqLabel);
+		return getColumnName(columnInfo, sb, label);
 	}
 
 	public String defaultColumnName(SelectResultInfo columnInfo) {
