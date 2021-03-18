@@ -31,7 +31,9 @@ import lombok.Setter;
 @CPSType(id = "ENTITY_DATE", base = Mode.class)
 public class EntityDateMode extends Mode {
 
-    @NotNull
+    /**
+     * Optional DateRestriction
+     */
     @Valid
     private Range<LocalDate> dateRange;
 
@@ -62,12 +64,13 @@ public class EntityDateMode extends Mode {
 
     @Override
     public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+        CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
         return new EntityDateQuery(
                 getForm().getPrerequisite(),
                 resolvedFeatures,
                 ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
-                CDateRange.of(dateRange),
+                dateRestriction,
                 dateAggregationMode
         );
     }

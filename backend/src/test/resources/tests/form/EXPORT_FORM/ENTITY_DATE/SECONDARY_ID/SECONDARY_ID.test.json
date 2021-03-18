@@ -1,19 +1,15 @@
 {
     "type": "FORM_TEST",
-    "label": "REL-EXPORT-FORM SECONDARY_ID",
+    "label": "ENTITY-DATE-EXPORT-FORM SECONDARY_ID",
     "expectedCsv": {
-        "results": "/tests/form/EXPORT_FORM/RELATIVE/SECONDARY_ID/expected.csv"
+        "results": "/tests/form/EXPORT_FORM/ENTITY_DATE/SECONDARY_ID/expected.csv"
     },
     "form": {
         "type": "EXPORT_FORM",
         "queryGroup": "00000000-0000-0000-0000-000000000001",
         "resolution": "QUARTERS",
         "timeMode": {
-            "value": "RELATIVE",
-            "indexSelector": "EARLIEST",
-            "timeUnit" : "QUARTERS",
-            "indexPlacement" : "BEFORE",
-            "timeCountBefore" : 4,
+            "value": "ENTITY_DATE",
             "features": [
                 {
                     "ids": [
