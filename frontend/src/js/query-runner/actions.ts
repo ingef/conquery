@@ -1,3 +1,6 @@
+import { useDispatch } from "react-redux";
+import { TFunction, useTranslation } from "react-i18next";
+
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
 import {
@@ -28,9 +31,7 @@ import {
   QUERY_RESULT_ERROR,
   QUERY_RESULT_SUCCESS,
 } from "./actionTypes";
-import { useDispatch } from "react-redux";
-import { TFunction, useTranslation } from "react-i18next";
-import { getExternalSupportedErrorMessage } from "js/environment";
+import { getExternalSupportedErrorMessage } from "../environment";
 
 /*
   This implements a polling mechanism,
