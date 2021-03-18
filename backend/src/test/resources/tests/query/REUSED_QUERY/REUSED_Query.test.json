@@ -6,8 +6,7 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "query": "00000000-0000-0000-0000-000000000001",
-      "type": "SAVED_QUERY",
-      "excludeFromSecondaryId" : false
+      "type": "SAVED_QUERY"
     }
   },
   "concepts": [
