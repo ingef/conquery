@@ -318,8 +318,8 @@ export interface GetStoredQueryResponseT {
 export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
 export interface PostConceptResolveResponseT {
-  resolvedConcepts?: string[];
-  unknownCodes?: string[]; // TODO: Use "unknownConcepts"
+  resolvedConcepts?: ConceptIdT[];
+  unknownCodes?: ConceptIdT[]; // TODO: Use "unknownConcepts"
 }
 
 export interface PostFilterResolveResponseT {

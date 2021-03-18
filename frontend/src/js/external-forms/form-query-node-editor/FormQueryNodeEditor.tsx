@@ -23,7 +23,6 @@ export type PropsType = {
   fieldName: string;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
-  datasetId: number;
   onCloseModal: Function;
   onUpdateLabel: Function;
   onToggleTable: Function;

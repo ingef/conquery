@@ -102,14 +102,12 @@ function getErrorForField(field: FormFieldType, value: any) {
 
 type ConfiguredFormPropsType = {
   config: FormType;
-  selectedDatasetId: DatasetIdT;
 };
 
 type PropsType = {
   onSubmit: Function;
   getFieldValue: (fieldName: string) => any;
   availableDatasets: SelectOptionT[];
-  selectedDatasetId: DatasetIdT;
 };
 
 // This is the generic form component that receives a form config
@@ -121,12 +119,7 @@ type PropsType = {
 //
 // The form works with `redux-form``
 const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
-  const Form = ({
-    onSubmit,
-    getFieldValue,
-    availableDatasets,
-    selectedDatasetId,
-  }: PropsType) => {
+  const Form = ({ onSubmit, getFieldValue, availableDatasets }: PropsType) => {
     const locale = getLocale();
 
     return (
@@ -141,7 +134,6 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
               formType={config.type}
               getFieldValue={getFieldValue}
               field={field}
-              selectedDatasetId={selectedDatasetId}
               availableDatasets={availableDatasets}
               locale={locale}
             />

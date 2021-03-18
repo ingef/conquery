@@ -56,17 +56,10 @@ interface PropsT {
   getFieldValue: (fieldName: string) => any;
   locale: "de" | "en";
   availableDatasets: SelectOptionT;
-  selectedDatasetId: DatasetIdT;
 }
 
 const Field = ({ field, ...commonProps }: PropsT) => {
-  const {
-    formType,
-    locale,
-    availableDatasets,
-    selectedDatasetId,
-    getFieldValue,
-  } = commonProps;
+  const { formType, locale, availableDatasets, getFieldValue } = commonProps;
 
   switch (field.type) {
     case "HEADLINE":
@@ -217,7 +210,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             attributeDropzoneText: field.conceptColumnDropzoneLabel
               ? field.conceptColumnDropzoneLabel[locale]
               : T.translate("externalForms.default.conceptDropzoneLabel"),
-            datasetId: selectedDatasetId,
             formType,
             enableDropFile: true,
             disallowMultipleColumns: !field.isTwoDimensional,

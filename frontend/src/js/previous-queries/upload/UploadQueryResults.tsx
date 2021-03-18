@@ -41,8 +41,10 @@ const UploadQueryResults = ({ datasetId }: PropsT) => {
 
   const startExternalQuery = useStartQuery("external");
 
-  const onCloseModal = () =>
-    dispatch([closeUploadModal(), queryResultReset("external")]);
+  const onCloseModal = () => {
+    dispatch(closeUploadModal());
+    dispatch(queryResultReset("external"));
+  };
   const onUpload = (query: any) => {
     if (datasetId) {
       startExternalQuery(datasetId, query);
