@@ -24,24 +24,25 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @CPSType(id = "SAVED_QUERY", base = CQElement.class)
-@RequiredArgsConstructor
-@AllArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter @Setter
 public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
+
+	public CQReusedQuery(ManagedExecutionId query){
+		this.query = query;
+	}
 
 	@NotNull
 	@Valid
-	private final ManagedExecutionId query;
+	private ManagedExecutionId query;
 	@InternalOnly
 	private IQuery resolvedQuery;
 
-	@Setter
 	private boolean excludeFromSecondaryId = false;
 
 	@Override
