@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { useSelector, useDispatch } from "react-redux";
 import Hotkeys from "react-hot-keys";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
 
@@ -150,6 +150,7 @@ function getMinMaxDates(
 const Preview: React.FC = () => {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const onClose = () => dispatch(closePreview());
 
@@ -214,9 +215,9 @@ const Preview: React.FC = () => {
         minDate={min}
         maxDate={max}
       />
-      <StatsHeadline>{T.translate("preview.previewHeadline")}</StatsHeadline>
+      <StatsHeadline>{t("preview.previewHeadline")}</StatsHeadline>
       <StatsSubline>
-        {T.translate("preview.previewSubline", { count: RENDER_ROWS_LIMIT })}
+        {t("preview.previewSubline", { count: RENDER_ROWS_LIMIT })}
       </StatsSubline>
       <CSVFrame>
         <ScrollWrap>

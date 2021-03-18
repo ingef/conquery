@@ -1,18 +1,16 @@
-import { getExternalSupportedErrorCodes } from "../environment";
+import { TFunction } from "react-i18next";
+import { getExternalSupportedErrorMessage } from "../environment";
 
-export type SupportedErrorCodesT =
-  | "EXAMPLE_ERROR"
-  | "EXAMPLE_ERROR_INTERPOLATED";
-
-const SUPPORTED_ERROR_CODES = new Map<SupportedErrorCodesT, string>([
-  ["EXAMPLE_ERROR", "errorCodes.EXAMPLE_ERROR"],
-  ["EXAMPLE_ERROR_INTERPOLATED", "errorCodes.EXAMPLE_ERROR_INTERPOLATED"],
-]);
-
-export function getErrorCodeMessageKey(
-  code: SupportedErrorCodesT
+export function getErrorMessage(
+  t: TFunction,
+  code: string,
+  context?: Record<string, string>
 ): string | null {
-  const externalErrorCodes = getExternalSupportedErrorCodes();
+  const externalErrorMessage = getExternalSupportedErrorMessage(
+    t,
+    code,
+    context
+  );
 
-  return externalErrorCodes[code] || SUPPORTED_ERROR_CODES.get(code) || null;
+  return externalErrorMessage || null;
 }

@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import styled from "@emotion/styled";
 import { useSelector, useDispatch } from "react-redux";
@@ -13,22 +13,23 @@ const SxSmallTabNavigation = styled(SmallTabNavigation)`
 `;
 
 const PreviousQueriesFilter: FC = () => {
+  const { t } = useTranslation();
   const OPTIONS = [
     {
       value: "all",
-      label: T.translate("previousQueriesFilter.all") as string,
+      label: t("previousQueriesFilter.all") as string,
     },
     {
       value: "own",
-      label: T.translate("previousQueriesFilter.own") as string,
+      label: t("previousQueriesFilter.own") as string,
     },
     {
       value: "system",
-      label: T.translate("previousQueriesFilter.system") as string,
+      label: t("previousQueriesFilter.system") as string,
     },
     {
       value: "shared",
-      label: T.translate("previousQueriesFilter.shared") as string,
+      label: t("previousQueriesFilter.shared") as string,
     },
   ];
 

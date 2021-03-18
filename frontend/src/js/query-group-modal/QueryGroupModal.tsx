@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
 
 import InputDateRange from "../form-components/InputDateRange";
@@ -38,6 +38,8 @@ type PropsType = {
 };
 
 const QueryGroupModal = (props: PropsType) => {
+  const { t } = useTranslation();
+
   if (!props.group) return null;
 
   const { dateRange } = props.group;
@@ -52,7 +54,7 @@ const QueryGroupModal = (props: PropsType) => {
     <Modal
       onClose={props.onClose}
       doneButton
-      headline={T.translate("queryGroupModal.explanation")}
+      headline={t("queryGroupModal.explanation")}
     >
       <Elements>
         {props.group.elements.reduce(
@@ -65,7 +67,7 @@ const QueryGroupModal = (props: PropsType) => {
           ],
           [
             <HeadlinePart key={-1}>
-              {T.translate("queryGroupModal.headlineStart")}
+              {t("queryGroupModal.headlineStart")}
             </HeadlinePart>,
           ]
         )}
@@ -73,12 +75,12 @@ const QueryGroupModal = (props: PropsType) => {
       <InputDateRange
         large
         inline
-        label={T.translate("queryGroupModal.dateRange")}
+        label={t("queryGroupModal.dateRange")}
         labelSuffix={
           <>
             {hasActiveDate && (
               <ResetAll bare onClick={props.onResetAllDates} icon="undo">
-                {T.translate("queryNodeEditor.reset")}
+                {t("queryNodeEditor.reset")}
               </ResetAll>
             )}
           </>

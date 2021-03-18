@@ -8,6 +8,7 @@ import {
 } from "../api/api";
 import type {
   DatasetIdT,
+  ErrorResponseT,
   GetQueryErrorResponseT,
   GetQueryResponseDoneT,
   QueryIdT,
@@ -28,6 +29,8 @@ import {
   QUERY_RESULT_SUCCESS,
 } from "./actionTypes";
 import { useDispatch } from "react-redux";
+import { TFunction, useTranslation } from "react-i18next";
+import { getErrorMessage } from "js/api/errorCodes";
 
 /*
   This implements a polling mechanism,
@@ -132,7 +135,27 @@ export const queryResultReset = (queryType: QueryTypeT) => ({
   payload: { queryType },
 });
 
+const getQueryErrorMessage = ({
+  t,
+  status,
+  error,
+}: {
+  t: TFunction;
+  status: "CANCELED" | "FAILED";
+  error: ErrorResponseT | null;
+}): string => {
+  if (status === "CANCELED") {
+    return t("queryRunner.queryCanceled");
+  }
+
+  return (
+    (error && error.code && getErrorMessage(t, error.code, error.context)) ||
+    t("queryRunner.queryFailed")
+  );
+};
+
 const queryResultError = (
+  t: TFunction,
   queryType: QueryTypeT,
   e: GetQueryErrorResponseT | Error
 ) => {
@@ -141,7 +164,7 @@ const queryResultError = (
 
   // TODO: Refactor and get rid of defaultError, it's too generic
   return defaultError(QUERY_RESULT_ERROR, e, {
-    error: e.error,
+    error: getQueryErrorMessage({ t, status: e.status, error: e.error }),
     queryType,
   });
 };
@@ -152,6 +175,7 @@ const queryResultSuccess = (
 ) => defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId, queryType });
 
 const useQueryResult = (queryType: QueryTypeT) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
   const loadPreviousQueries = useLoadPreviousQueries();
@@ -172,7 +196,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
           loadPreviousQueries(datasetId);
         } else if (r.status === "CANCELED") {
         } else if (r.status === "FAILED") {
-          dispatch(queryResultError(queryType, r));
+          dispatch(queryResultError(t, queryType, r));
         } else {
           // Try again after a short time:
           //   Use the "long polling" strategy, where we assume that the
@@ -186,7 +210,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
           );
         }
       },
-      (e: Error) => dispatch(queryResultError(queryType, e))
+      (e: Error) => dispatch(queryResultError(t, queryType, e))
     );
   };
 

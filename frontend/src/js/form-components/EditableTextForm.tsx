@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useRef } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import PrimaryButton from "../button/PrimaryButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
@@ -39,6 +39,7 @@ const EditableTextForm: React.FC<PropsT> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState<string>(text);
   const [textSelected, setTextSelected] = useState<boolean>(false);
   const ref = useRef(null);
@@ -69,7 +70,7 @@ const EditableTextForm: React.FC<PropsT> = ({
       />
       {!saveOnClickoutside && (
         <SxPrimaryButton type="submit" small disabled={loading}>
-          {T.translate("common.save")}
+          {t("common.save")}
         </SxPrimaryButton>
       )}
     </Form>

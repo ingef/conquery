@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { StateT } from "app-types";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -22,6 +22,7 @@ const Root = styled("div")`
 `;
 
 const UploadQueryResults = ({ datasetId }: PropsT) => {
+  const { t } = useTranslation();
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
     (state) => state.uploadQueryResults.queryRunner
   );
@@ -54,7 +55,7 @@ const UploadQueryResults = ({ datasetId }: PropsT) => {
   return (
     <Root>
       <IconButton frame icon="upload" onClick={onOpenModal}>
-        {T.translate("uploadQueryResults.uploadResults")}
+        {t("uploadQueryResults.uploadResults")}
       </IconButton>
       {isModalOpen && (
         <UploadQueryResultsModal

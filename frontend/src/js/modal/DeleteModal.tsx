@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import Modal from "./Modal";
 import PrimaryButton from "../button/PrimaryButton";
@@ -25,13 +25,13 @@ interface PropsType {
 }
 
 const DeleteModal = ({ headline, onClose, onDelete }: PropsType) => {
+  const { t } = useTranslation();
+
   return (
     <Modal onClose={onClose} headline={headline}>
       <Root>
-        <Btn onClick={onClose}>{T.translate("common.cancel")}</Btn>
-        <PrimaryBtn onClick={onDelete}>
-          {T.translate("common.delete")}
-        </PrimaryBtn>
+        <Btn onClick={onClose}>{t("common.cancel")}</Btn>
+        <PrimaryBtn onClick={onDelete}>{t("common.delete")}</PrimaryBtn>
       </Root>
     </Modal>
   );

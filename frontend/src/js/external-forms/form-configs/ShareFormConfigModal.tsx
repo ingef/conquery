@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import T from "i18n-react";
 import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
@@ -16,6 +15,7 @@ import { patchFormConfigSuccess } from "./actions";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import { exists } from "../../common/helpers/exists";
 import { useLoadFormConfig } from "./selectors";
+import { useTranslation } from "react-i18next";
 
 const Buttons = styled("div")`
   text-align: center;
@@ -68,6 +68,7 @@ const ShareFormConfigModal = ({
   onClose,
   onShareSuccess,
 }: PropsT) => {
+  const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId
   );
@@ -138,28 +139,25 @@ const ShareFormConfigModal = ({
 
       onShareSuccess();
     } catch (e) {
-      dispatch(setMessage("previousQuery.shareError"));
+      dispatch(setMessage(t("previousQuery.shareError")));
     }
   }
 
   return (
-    <Modal
-      onClose={onClose}
-      headline={T.translate("sharePreviousQueryModal.headline")}
-    >
+    <Modal onClose={onClose} headline={t("sharePreviousQueryModal.headline")}>
       <QueryName>{formConfig.label}</QueryName>
       <SxInputMultiSelect
         input={{ value: userGroupsValue, onChange: onSetUserGroupsValue }}
-        label={T.translate("sharePreviousQueryModal.groupsLabel")}
+        label={t("sharePreviousQueryModal.groupsLabel")}
         options={userGroupOptions}
         closeMenuOnSelect
       />
       <Buttons>
-        <Btn onClick={onClose}>{T.translate("common.cancel")}</Btn>
+        <Btn onClick={onClose}>{t("common.cancel")}</Btn>
         <PrimaryBtn onClick={onShareClicked}>
           {formConfig.shared && userGroupsValue.length === 0
-            ? T.translate("sharePreviousQueryModal.unshare")
-            : T.translate("common.share")}
+            ? t("sharePreviousQueryModal.unshare")
+            : t("common.share")}
         </PrimaryBtn>
       </Buttons>
     </Modal>

@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import BasicButton from "../button/BasicButton";
 import FaIcon from "../icon/FaIcon";
@@ -59,11 +59,10 @@ const QueryRunnerButton = ({
   onClick,
   isStartStopLoading,
   isQueryRunning,
-  disabled
+  disabled,
 }: PropsType) => {
-  const label = isQueryRunning
-    ? T.translate("queryRunner.stop")
-    : T.translate("queryRunner.start");
+  const { t } = useTranslation();
+  const label = isQueryRunning ? t("queryRunner.stop") : t("queryRunner.start");
 
   const icon = getIcon(isStartStopLoading, isQueryRunning);
 

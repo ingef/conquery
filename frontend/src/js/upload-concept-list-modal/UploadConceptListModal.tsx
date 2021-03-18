@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import type { StateT } from "app-types";
 
 import Modal from "../modal/Modal";
@@ -70,6 +70,7 @@ interface ConceptRootNodeByKey {
 }
 
 const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
+  const { t } = useTranslation();
   const {
     filename,
     conceptCodesFromFile,
@@ -122,11 +123,11 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     <Modal
       closeIcon
       onClose={onClose}
-      headline={T.translate("uploadConceptListModal.headline")}
+      headline={t("uploadConceptListModal.headline")}
     >
       <Root>
         <InputSelect
-          label={T.translate("uploadConceptListModal.selectConceptRootNode")}
+          label={t("uploadConceptListModal.selectConceptRootNode")}
           input={{
             value: selectedConceptRootNode,
             onChange: (value) =>
@@ -143,7 +144,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
         />
         {!!resolved && !hasResolvedItems && !hasUnresolvedItems && (
           <Section>
-            <Msg>{T.translate("uploadConceptListModal.nothingResolved")}</Msg>
+            <Msg>{t("uploadConceptListModal.nothingResolved")}</Msg>
           </Section>
         )}
         {(!!error ||
@@ -153,7 +154,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
             {error && (
               <p>
                 <ErrorIcon icon="exclamation-circle" />
-                {T.translate("uploadConceptListModal.error")}
+                {t("uploadConceptListModal.error")}
               </p>
             )}
             {loading && <CenteredIcon icon="spinner" />}
@@ -163,13 +164,13 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                   <form onSubmit={onSubmit}>
                     <Msg>
                       <SuccessIcon icon="check-circle" />
-                      {T.translate("uploadConceptListModal.resolvedCodes", {
-                        context: resolvedItemsCount,
+                      {t("uploadConceptListModal.resolvedCodes", {
+                        count: resolvedItemsCount,
                       })}
                     </Msg>
                     <MsgRow>
                       <InputText
-                        label={T.translate("uploadConceptListModal.label")}
+                        label={t("uploadConceptListModal.label")}
                         fullWidth
                         inputProps={{
                           autoFocus: true,
@@ -180,7 +181,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                         }}
                       />
                       <SxPrimaryButton type="submit">
-                        {T.translate("uploadConceptListModal.insertNode")}
+                        {t("uploadConceptListModal.insertNode")}
                       </SxPrimaryButton>
                     </MsgRow>
                   </form>
@@ -190,7 +191,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                     <Msg>
                       <ErrorIcon icon="exclamation-circle" />
                       <span>
-                        {T.translate("uploadConceptListModal.unknownCodes", {
+                        {t("uploadConceptListModal.unknownCodes", {
                           context: unresolvedItemsCount,
                         })}
                       </span>

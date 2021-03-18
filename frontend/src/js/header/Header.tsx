@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
@@ -67,6 +67,7 @@ const SxLogoutButton = styled(LogoutButton)`
 `;
 
 const Header: FC = () => {
+  const { t } = useTranslation();
   const version = useSelector<StateT, string>(
     (state) => state.startup.config.version
   );
@@ -78,7 +79,7 @@ const Header: FC = () => {
       <OverflowHidden>
         <Logo title={version} />
         <Spacer />
-        <Headline>{T.translate("headline")}</Headline>
+        <Headline>{t("headline")}</Headline>
       </OverflowHidden>
       <Right>
         <DatasetSelector />
