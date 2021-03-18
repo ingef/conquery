@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import { useTranslation } from "react-i18next";
 
-import T from "i18n-react";
 import { useDrag } from "react-dnd";
 import { useSelector, useDispatch } from "react-redux";
 import { parseISO } from "date-fns";
@@ -20,7 +20,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import EditableText from "../../form-components/EditableText";
 import EditableTags from "../../form-components/EditableTags";
 
-import { formatDateDistance } from "../../common/helpers";
+import { useFormatDateDistance } from "../../common/helpers";
 import { FormConfigT } from "./reducer";
 import { usePatchFormConfig } from "../../api/api";
 import FormConfigTags from "./FormConfigTags";
@@ -123,11 +123,14 @@ const FormConfig: React.FC<PropsT> = ({
   onIndicateDeletion,
   onIndicateShare,
 }) => {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement | null>(null);
   const formLabel = useFormLabelByType(config.formType);
   const availableTags = useSelector<StateT, string[]>(
     (state) => state.formConfigs.tags
   );
+
+  const formatDateDistance = useFormatDateDistance();
 
   const createdAt = config.createdAt
     ? formatDateDistance(parseISO(config.createdAt), new Date(), true)
@@ -153,7 +156,7 @@ const FormConfig: React.FC<PropsT> = ({
       label?: string;
       tags?: string[];
     },
-    errorMessageKey: string
+    errorMessage: string
   ) => {
     setIsLoading(true);
     try {
@@ -161,19 +164,19 @@ const FormConfig: React.FC<PropsT> = ({
 
       dispatch(patchFormConfigSuccess(config.id, attributes));
     } catch (e) {
-      dispatch(setMessage(errorMessageKey));
+      dispatch(setMessage(errorMessage));
     }
     setIsLoading(false);
   };
 
   const onRenameFormConfig = async (label: string) => {
-    await onPatchFormConfig({ label }, "formConfig.renameError");
+    await onPatchFormConfig({ label }, t("formConfig.renameError"));
 
     setIsEditingLabel(false);
   };
 
   const onRetagFormConfig = async (tags: string[]) => {
-    await onPatchFormConfig({ tags }, "formConfig.retagError");
+    await onPatchFormConfig({ tags }, t("formConfig.retagError"));
 
     setIsEditingTags(false);
   };
@@ -211,7 +214,7 @@ const FormConfig: React.FC<PropsT> = ({
           {formLabel}
           {config.own && config.shared && (
             <SharedIndicator onClick={onIndicateShare}>
-              {T.translate("common.shared")}
+              {t("common.shared")}
             </SharedIndicator>
           )}
           <TopRight>
@@ -219,7 +222,7 @@ const FormConfig: React.FC<PropsT> = ({
             {mayEdit &&
               !isEditingTags &&
               (!config.tags || config.tags.length === 0) && (
-                <StyledWithTooltip text={T.translate("common.addTag")}>
+                <StyledWithTooltip text={t("common.addTag")}>
                   <IconButton
                     icon="tags"
                     bare
@@ -228,7 +231,7 @@ const FormConfig: React.FC<PropsT> = ({
                 </StyledWithTooltip>
               )}
             {config.own && !config.shared && (
-              <StyledWithTooltip text={T.translate("common.share")}>
+              <StyledWithTooltip text={t("common.share")}>
                 <IconButton icon="upload" bare onClick={onIndicateShare} />
               </StyledWithTooltip>
             )}
@@ -236,7 +239,7 @@ const FormConfig: React.FC<PropsT> = ({
               <StyledFaIcon icon="spinner" />
             ) : (
               config.own && (
-                <StyledWithTooltip text={T.translate("common.delete")}>
+                <StyledWithTooltip text={t("common.delete")}>
                   <IconButton icon="times" bare onClick={onIndicateDeletion} />
                 </StyledWithTooltip>
               )

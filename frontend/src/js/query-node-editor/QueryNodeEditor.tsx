@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { useDispatch } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import Hotkeys from "react-hot-keys";
 
 import type { QueryNodeType } from "../standard-query-editor/types";
@@ -61,7 +61,7 @@ interface QueryNodeEditorState {
   onReset: Function;
 }
 
-export interface PropsType {
+export interface QueryNodeEditorPropsT {
   name: string;
   editorState: QueryNodeEditorState;
   node: QueryNodeType;
@@ -89,7 +89,8 @@ export interface PropsType {
   onSetDateColumn: Function;
 }
 
-const QueryNodeEditorComponent = (props: PropsType) => {
+const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
+  const { t } = useTranslation();
   const { node, editorState } = props;
 
   function close() {
@@ -115,9 +116,9 @@ const QueryNodeEditorComponent = (props: PropsType) => {
         {!editorState.detailsViewActive && selectedTable != null && (
           <TableView {...props} />
         )}
-        <SxWithTooltip text={T.translate("common.closeEsc")}>
+        <SxWithTooltip text={t("common.closeEsc")}>
           <CloseButton small onClick={close}>
-            {T.translate("common.done")}
+            {t("common.done")}
           </CloseButton>
         </SxWithTooltip>
       </Wrapper>
@@ -125,7 +126,7 @@ const QueryNodeEditorComponent = (props: PropsType) => {
   );
 };
 
-const QueryNodeEditor = (props: PropsType) => {
+const QueryNodeEditor = (props: QueryNodeEditorPropsT) => {
   const dispatch = useDispatch();
 
   const {

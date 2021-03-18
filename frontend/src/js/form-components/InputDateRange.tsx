@@ -2,7 +2,7 @@ import React, { FC, ReactNode } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import type { WrappedFieldProps } from "redux-form";
 
 import {
@@ -58,6 +58,8 @@ function getDisplayDate(what, value, displayDateFormat) {
 }
 
 const InputDateRange: FC<PropsT> = (props) => {
+  const { t } = useTranslation();
+
   const onSetDate = (date) => {
     props.input.onChange(date);
   };
@@ -105,7 +107,7 @@ const InputDateRange: FC<PropsT> = (props) => {
   } = props;
 
   // To display the date depending on the locale
-  const displayDateFormat = T.translate("inputDateRange.dateFormat");
+  const displayDateFormat = t("inputDateRange.dateFormat");
 
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
@@ -115,14 +117,12 @@ const InputDateRange: FC<PropsT> = (props) => {
       {label && (
         <StyledLabel large={large}>
           {label}
-          <InfoTooltip
-            text={T.translate("inputDateRange.tooltip.possiblePattern")}
-          />
+          <InfoTooltip text={t("inputDateRange.tooltip.possiblePattern")} />
           {labelSuffix && labelSuffix}
         </StyledLabel>
       )}
       <Pickers inline={inline} center={center}>
-        <StyledLabeled label={T.translate("inputDateRange.from")}>
+        <StyledLabeled label={t("inputDateRange.from")}>
           <BaseInput
             inputType="text"
             value={min}
@@ -132,7 +132,7 @@ const InputDateRange: FC<PropsT> = (props) => {
             inputProps={{ autoFocus: true }}
           />
         </StyledLabeled>
-        <StyledLabeled label={T.translate("inputDateRange.to")}>
+        <StyledLabeled label={t("inputDateRange.to")}>
           <BaseInput
             inputType="text"
             value={max}

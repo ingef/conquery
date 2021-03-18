@@ -1,5 +1,5 @@
 import React from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import DeleteModal from "../../modal/DeleteModal";
 import { useDeleteFormConfig } from "../../api/api";
@@ -19,6 +19,7 @@ const DeleteFormConfigModal = ({
   onClose,
   onDeleteSuccess,
 }: PropsType) => {
+  const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId
   );
@@ -33,14 +34,14 @@ const DeleteFormConfigModal = ({
 
       onDeleteSuccess();
     } catch (e) {
-      dispatch(setMessage("formConfig.deleteError"));
+      dispatch(setMessage(t("formConfig.deleteError")));
     }
   }
 
   return (
     <DeleteModal
       onClose={onClose}
-      headline={T.translate("deleteFormConfigModal.areYouSure")}
+      headline={t("deleteFormConfigModal.areYouSure")}
       onDelete={onDeleteFormConfig}
     />
   );

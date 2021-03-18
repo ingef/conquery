@@ -1,5 +1,3 @@
-import T from "i18n-react";
-
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
@@ -124,7 +122,12 @@ const setGroupProperties = (node, andIdx, properties) => {
   ];
 };
 
-const setElementProperties = (node, andIdx, orIdx, properties) => {
+const setElementProperties = (
+  node: StandardQueryStateT,
+  andIdx: number,
+  orIdx: number,
+  properties: Partial<QueryNodeType>
+) => {
   const groupProperties = {
     elements: [
       ...node[andIdx].elements.slice(0, orIdx),
@@ -577,7 +580,7 @@ const expandNode = (rootConcepts, node) => {
       if (!lookupResult)
         return {
           ...node,
-          error: T.translate("queryEditor.couldNotExpandNode"),
+          error: t("queryEditor.couldNotExpandNode"),
         };
 
       const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
@@ -780,7 +783,7 @@ const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
 
 const selectNodeForEditing = (
   state: StandardQueryStateT,
-  { payload: { andIdx, orIdx } }
+  { payload: { andIdx, orIdx } }: any
 ) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 };

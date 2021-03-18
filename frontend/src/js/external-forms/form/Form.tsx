@@ -2,9 +2,8 @@ import React from "react";
 import { reduxForm, formValueSelector } from "redux-form";
 import { connect } from "react-redux";
 
-import { getLocale } from "../../localization";
 import type { SelectOptionT } from "../../api/types";
-import type { DatasetIdT } from "../../api/types";
+import { useActiveLang } from "../../localization/useActiveLang";
 
 import {
   validateRequired,
@@ -23,6 +22,7 @@ import type {
 } from "../config-types";
 
 import Field from "./Field";
+import { TFunction, useTranslation } from "react-i18next";
 
 const DEFAULT_VALUE_BY_TYPE = {
   STRING: "",
@@ -81,10 +81,10 @@ function getInitialValue(field: FormFieldType) {
   return field.defaultValue || DEFAULT_VALUE_BY_TYPE[field.type];
 }
 
-function getErrorForField(field: FormFieldType, value: any) {
+function getErrorForField(t: TFunction, field: FormFieldType, value: any) {
   const defaultValidation = DEFAULT_VALIDATION_BY_TYPE[field.type];
 
-  let error = defaultValidation ? defaultValidation(value) : null;
+  let error = defaultValidation ? defaultValidation(t, value) : null;
 
   if (!!field.validations && field.validations.length > 0) {
     for (let validation of field.validations) {
@@ -92,7 +92,7 @@ function getErrorForField(field: FormFieldType, value: any) {
 
       if (validateFn) {
         // If not, someone must have configured an unsupported validation
-        error = error || validateFn(value);
+        error = error || validateFn(t, value);
       }
     }
   }
@@ -119,12 +119,14 @@ type PropsType = {
 //
 // The form works with `redux-form``
 const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
+  const { t } = useTranslation();
+
   const Form = ({ onSubmit, getFieldValue, availableDatasets }: PropsType) => {
-    const locale = getLocale();
+    const activeLang = useActiveLang();
 
     return (
       <form>
-        <FormsHeader headline={config.headline[locale]} />
+        <FormsHeader headline={config.headline[activeLang]} />
         {config.fields.map((field, i) => {
           const key = isFormField(field) ? field.name : field.type + i;
 
@@ -135,7 +137,7 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
               getFieldValue={getFieldValue}
               field={field}
               availableDatasets={availableDatasets}
-              locale={locale}
+              locale={activeLang}
             />
           );
         })}
@@ -170,7 +172,7 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
         //
         // => Otherwise, we'd have to check which tab is selected here,
         //    and which errors to add
-        const error = getErrorForField(field, values[name]);
+        const error = getErrorForField(t, field, values[name]);
 
         if (error) {
           errors[name] = error;

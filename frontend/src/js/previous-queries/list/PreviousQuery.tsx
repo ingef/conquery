@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { parseISO } from "date-fns";
 
 import ErrorMessage from "../../error-message/ErrorMessage";
@@ -24,7 +24,7 @@ import {
 } from "./actions";
 
 import PreviousQueryTags from "./PreviousQueryTags";
-import { formatDateDistance } from "../../common/helpers";
+import { useFormatDateDistance } from "../../common/helpers";
 import { PreviousQueryT } from "./reducer";
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
 import type { DatasetIdT, SecondaryId } from "../../api/types";
@@ -104,6 +104,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     { query, datasetId, onIndicateDeletion, onIndicateShare },
     ref
   ) {
+    const { t } = useTranslation();
     const availableTags = useSelector<StateT, string[]>(
       (state) => state.previousQueries.tags
     );
@@ -111,6 +112,8 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
       (state) => state.conceptTrees.secondaryIds
     );
+
+    const formatDateDistance = useFormatDateDistance();
 
     const dispatch = useDispatch();
     const renamePreviousQuery = useRenamePreviousQuery();
@@ -136,8 +139,8 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       : onIndicateDeletion;
 
     const peopleFound = isEmpty(query.numberOfResults)
-      ? T.translate("previousQuery.notExecuted")
-      : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
+      ? t("previousQuery.notExecuted")
+      : `${query.numberOfResults} ${t("previousQueries.results")}`;
     const executedAt = formatDateDistance(
       parseISO(query.createdAt),
       new Date(),
@@ -160,7 +163,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
         <TopInfos>
           <div>
             {!!query.resultUrl ? (
-              <WithTooltip text={T.translate("previousQuery.downloadResults")}>
+              <WithTooltip text={t("previousQuery.downloadResults")}>
                 <DownloadButton tight bare url={query.resultUrl}>
                   {peopleFound}
                 </DownloadButton>
@@ -170,7 +173,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             )}
             {query.own && isShared && (
               <SharedIndicator onClick={onIndicateShare}>
-                {T.translate("common.shared")}
+                {t("common.shared")}
               </SharedIndicator>
             )}
             <TopRight>
@@ -178,7 +181,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
               {mayEditQuery &&
                 !query.editingTags &&
                 (!query.tags || query.tags.length === 0) && (
-                  <StyledWithTooltip text={T.translate("common.addTag")}>
+                  <StyledWithTooltip text={t("common.addTag")}>
                     <IconButton
                       icon="tags"
                       bare
@@ -188,15 +191,13 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                 )}
               {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
                 <StyledWithTooltip
-                  text={`${T.translate("queryEditor.secondaryId")}: ${
-                    secondaryId.label
-                  }`}
+                  text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
                 >
                   <IconButton icon="microscope" bare onClick={() => {}} />
                 </StyledWithTooltip>
               )}
               {query.own && !isShared && (
-                <StyledWithTooltip text={T.translate("common.share")}>
+                <StyledWithTooltip text={t("common.share")}>
                   <IconButton icon="upload" bare onClick={onIndicateShare} />
                 </StyledWithTooltip>
               )}
@@ -204,7 +205,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                 <StyledFaIcon icon="spinner" />
               ) : (
                 query.own && (
-                  <StyledWithTooltip text={T.translate("common.delete")}>
+                  <StyledWithTooltip text={t("common.delete")}>
                     <IconButton icon="times" bare onClick={onDeleteClick} />
                   </StyledWithTooltip>
                 )

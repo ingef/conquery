@@ -1,6 +1,5 @@
 import React, { FC, useState, useEffect } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
 import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
 
@@ -18,6 +17,7 @@ import { searchTrees, clearSearchQuery, toggleShowMismatches } from "./actions";
 
 import type { SearchT, TreesT } from "./reducer";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   position: relative;
@@ -103,6 +103,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
   );
 
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const onSearch = (datasetId: DatasetIdT, trees: TreesT, query: string) => {
     if (query.length > 1) dispatch(searchTrees(datasetId, trees, query));
@@ -120,7 +121,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
         <SxConceptTreeOpenButtons />
         <InputContainer>
           <StyledBaseInput
-            placeholder={T.translate("conceptTreeList.searchPlaceholder")}
+            placeholder={t("conceptTreeList.searchPlaceholder")}
             value={localQuery || ""}
             onChange={(value) => {
               if (isEmpty(value)) onClearQuery();
@@ -154,7 +155,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
         search.resultCount >= 0 && (
           <Row>
             <TinyText>
-              {T.translate("search.resultLabel", {
+              {t("search.resultLabel", {
                 totalResults: search.resultCount,
                 duration: (search.duration / 1000.0).toFixed(2),
               })}
@@ -162,13 +163,13 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
             <div>
               <Displaying>
                 {showMismatches
-                  ? T.translate("conceptTreeList.showingMismatches")
-                  : T.translate("conceptTreeList.showingMatchesOnly")}
+                  ? t("conceptTreeList.showingMismatches")
+                  : t("conceptTreeList.showingMatchesOnly")}
               </Displaying>
               <StyledButton tiny onClick={onToggleShowMismatches}>
                 {showMismatches
-                  ? T.translate("conceptTreeList.showMatchesOnly")
-                  : T.translate("conceptTreeList.showMismatches")}
+                  ? t("conceptTreeList.showMatchesOnly")
+                  : t("conceptTreeList.showMismatches")}
               </StyledButton>
             </div>
           </Row>

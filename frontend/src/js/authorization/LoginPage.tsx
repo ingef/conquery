@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import T from "i18n-react";
 import styled from "@emotion/styled";
 
 import InputText from "../form-components/InputText";
@@ -9,6 +8,7 @@ import { storeAuthToken } from "./helper";
 import ErrorMessage from "../error-message/ErrorMessage";
 import { usePostLogin } from "../api/api";
 import { useHistory } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   display: flex;
@@ -79,8 +79,9 @@ const LoginPage = () => {
   const [error, setError] = useState(false);
   const history = useHistory();
   const postLogin = usePostLogin();
+  const { t } = useTranslation();
 
-  async function onSubmit(e) {
+  async function onSubmit(e: any) {
     e.preventDefault();
 
     setLoading(true);
@@ -105,12 +106,12 @@ const LoginPage = () => {
     <Root>
       <Wrap>
         <Logo />
-        <Headline>{T.translate("login.headline")}</Headline>
-        {!!error && <SxErrorMessage message={T.translate("login.error")} />}
+        <Headline>{t("login.headline")}</Headline>
+        {!!error && <SxErrorMessage message={t("login.error")} />}
         <Form onSubmit={onSubmit}>
           <SxInputText
             inputType="text"
-            label={T.translate("login.username")}
+            label={t("login.username")}
             large
             input={{
               value: user,
@@ -122,7 +123,7 @@ const LoginPage = () => {
           />
           <SxInputText
             inputType="password"
-            label={T.translate("login.password")}
+            label={t("login.password")}
             large
             input={{
               value: password,
@@ -134,7 +135,7 @@ const LoginPage = () => {
           />
           <SxPrimaryButton disabled={!user || !password} large type="submit">
             <SxFaIcon large white icon={loading ? "spinner" : "check"} />
-            {T.translate("login.submit")}
+            {t("login.submit")}
           </SxPrimaryButton>
         </Form>
       </Wrap>

@@ -1,4 +1,5 @@
 import { combineReducers } from "redux";
+
 import type { TabT } from "../pane/types";
 
 import StandardQueryEditorTab from "./StandardQueryEditorTab";
@@ -21,7 +22,7 @@ export interface StandardQueryEditorStateT {
 
 const Tab: TabT = {
   key: "queryEditor",
-  label: "rightPane.queryEditor",
+  labelKey: "rightPane.queryEditor",
   reducer: combineReducers({
     query: queryReducer,
     selectedSecondaryId: selectedSecondaryIdsReducer,

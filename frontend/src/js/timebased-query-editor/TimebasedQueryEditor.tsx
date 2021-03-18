@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 
@@ -15,7 +15,7 @@ import {
   setTimebasedIndexResult,
   setTimebasedConditionMinDays,
   setTimebasedConditionMaxDays,
-  setTimebasedConditionMinDaysOrNoEvent
+  setTimebasedConditionMinDaysOrNoEvent,
 } from "./actions";
 
 import TimebasedCondition from "./TimebasedCondition";
@@ -51,6 +51,8 @@ type PropsType = {
 };
 
 const TimebasedQueryEditor = (props: PropsType) => {
+  const { t } = useTranslation();
+
   return (
     <Root>
       {props.query.conditions.map((condition, idx) => (
@@ -64,7 +66,7 @@ const TimebasedQueryEditor = (props: PropsType) => {
             onRemoveTimebasedNode={(resultIdx, moved) => {
               props.onRemoveTimebasedNode(idx, resultIdx, moved);
             }}
-            onSetOperator={value =>
+            onSetOperator={(value) =>
               props.onSetTimebasedConditionOperator(idx, value)
             }
             onDropTimebasedNode={(resultIdx, node, moved) => {
@@ -74,34 +76,34 @@ const TimebasedQueryEditor = (props: PropsType) => {
               props.onSetTimebasedNodeTimestamp(idx, resultIdx, timestamp);
             }}
             onSetTimebasedIndexResult={props.onSetTimebasedIndexResult}
-            onSetTimebasedConditionMinDays={days => {
+            onSetTimebasedConditionMinDays={(days) => {
               props.onSetTimebasedConditionMinDays(idx, days);
             }}
-            onSetTimebasedConditionMaxDays={days => {
+            onSetTimebasedConditionMaxDays={(days) => {
               props.onSetTimebasedConditionMaxDays(idx, days);
             }}
-            onSetTimebasedConditionMinDaysOrNoEvent={days => {
+            onSetTimebasedConditionMinDaysOrNoEvent={(days) => {
               props.onSetTimebasedConditionMinDaysOrNoEvent(idx, days);
             }}
           />
 
-          <Connector>{T.translate("common.and")}</Connector>
+          <Connector>{t("common.and")}</Connector>
         </div>
       ))}
       <AddBtn icon="plus" onClick={props.onAddTimebasedCondition}>
-        {T.translate("timebasedQueryEditor.addCondition")}
+        {t("timebasedQueryEditor.addCondition")}
       </AddBtn>
     </Root>
   );
 };
 
-const mapStateToProps = state => ({
-  query: state.timebasedQueryEditor.timebasedQuery
+const mapStateToProps = (state) => ({
+  query: state.timebasedQueryEditor.timebasedQuery,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   onAddTimebasedCondition: () => dispatch(addTimebasedCondition()),
-  onRemoveTimebasedCondition: idx => dispatch(removeTimebasedCondition(idx)),
+  onRemoveTimebasedCondition: (idx) => dispatch(removeTimebasedCondition(idx)),
   onSetTimebasedConditionOperator: (idx, value) =>
     dispatch(setTimebasedConditionOperator(idx, value)),
   onDropTimebasedNode: (conditionIdx, resultIdx, node, moved) =>
@@ -110,14 +112,14 @@ const mapDispatchToProps = dispatch => ({
     dispatch(setTimebasedNodeTimestamp(conditionIdx, resultIdx, timestamp)),
   onRemoveTimebasedNode: (conditionIdx, resultIdx, moved) =>
     dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved)),
-  onSetTimebasedIndexResult: indexResult =>
+  onSetTimebasedIndexResult: (indexResult) =>
     dispatch(setTimebasedIndexResult(indexResult)),
   onSetTimebasedConditionMinDays: (conditionIdx, days) =>
     dispatch(setTimebasedConditionMinDays(conditionIdx, days)),
   onSetTimebasedConditionMaxDays: (conditionIdx, days) =>
     dispatch(setTimebasedConditionMaxDays(conditionIdx, days)),
   onSetTimebasedConditionMinDaysOrNoEvent: (conditionIdx, days) =>
-    dispatch(setTimebasedConditionMinDaysOrNoEvent(conditionIdx, days))
+    dispatch(setTimebasedConditionMinDaysOrNoEvent(conditionIdx, days)),
 });
 
 export default connect(

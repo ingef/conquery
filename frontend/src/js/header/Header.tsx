@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
@@ -91,6 +91,7 @@ const useVersion = () => {
 };
 
 const Header: FC = () => {
+  const { t } = useTranslation();
   const {
     backendVersion,
     frontendDateTimeStamp,
@@ -112,7 +113,7 @@ const Header: FC = () => {
       <OverflowHidden>
         <Logo title={versionString} onClick={copyVersionToClipboard} />
         <Spacer />
-        <Headline>{T.translate("headline")}</Headline>
+        <Headline>{t("headline")}</Headline>
       </OverflowHidden>
       <Right>
         <DatasetSelector />

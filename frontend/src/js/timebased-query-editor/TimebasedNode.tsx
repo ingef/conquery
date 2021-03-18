@@ -1,5 +1,5 @@
 import React, { useRef, FC } from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 import { useDrag } from "react-dnd";
 
@@ -62,6 +62,7 @@ const TimebasedNode: FC<PropsT> = ({
   conditionIdx,
   resultIdx,
 }) => {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement | null>(null);
   const item = {
     conditionIdx,
@@ -84,15 +85,15 @@ const TimebasedNode: FC<PropsT> = ({
       activeValue={node.timestamp}
       options={[
         {
-          label: T.translate("timebasedQueryEditor.timestampFirst"),
+          label: t("timebasedQueryEditor.timestampFirst"),
           value: EARLIEST,
         },
         {
-          label: T.translate("timebasedQueryEditor.timestampRandom"),
+          label: t("timebasedQueryEditor.timestampRandom"),
           value: RANDOM,
         },
         {
-          label: T.translate("timebasedQueryEditor.timestampLast"),
+          label: t("timebasedQueryEditor.timestampLast"),
           value: LATEST,
         },
       ]}
@@ -110,7 +111,7 @@ const TimebasedNode: FC<PropsT> = ({
         <div className="timebased-node__content">
           <div className="timebased-node__timestamp">
             <p className="timebased-node__timestamp__title">
-              {T.translate("timebasedQueryEditor.timestamp")}
+              {t("timebasedQueryEditor.timestamp")}
             </p>
             {toggleButton}
           </div>
@@ -135,7 +136,7 @@ const TimebasedNode: FC<PropsT> = ({
 //   disabled={isIndexResultDisabled}
 //   onClick={onSetTimebasedIndexResult}
 // >
-//   {T.translate("timebasedQueryEditor.timestampResultsFrom")}
+//   {t("timebasedQueryEditor.timestampResultsFrom")}
 // </button>
 
 export default TimebasedNode;

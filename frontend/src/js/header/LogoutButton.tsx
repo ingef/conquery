@@ -1,12 +1,13 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { useHistory } from "react-router-dom";
+import { useKeycloak } from "@react-keycloak/web";
+import { useTranslation } from "react-i18next";
+
 import IconButton from "../button/IconButton";
 import { deleteStoredAuthToken } from "../authorization/helper";
 import WithTooltip from "../tooltip/WithTooltip";
-import { T } from "../localization";
-import { useHistory } from "react-router-dom";
 import { isIDPEnabled } from "../environment";
-import { useKeycloak } from "@react-keycloak/web";
 
 const SxIconButton = styled(IconButton)`
   padding: 10px 6px;
@@ -17,6 +18,7 @@ interface PropsT {
 }
 
 const LogoutButton: FC<PropsT> = ({ className }) => {
+  const { t } = useTranslation();
   const history = useHistory();
   const { keycloak } = useKeycloak();
   const goToLogin = () => history.push("/login");
@@ -39,7 +41,7 @@ const LogoutButton: FC<PropsT> = ({ className }) => {
   };
 
   return (
-    <WithTooltip className={className} text={T.translate("common.logout")}>
+    <WithTooltip className={className} text={t("common.logout")}>
       <SxIconButton frame icon="sign-out-alt" onClick={onLogout} />
     </WithTooltip>
   );

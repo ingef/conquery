@@ -4,7 +4,6 @@
 
 import { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
-import { SupportedErrorCodesT } from "./errorCodes";
 
 export type DatasetIdT = string;
 export interface DatasetT {
@@ -282,7 +281,7 @@ export interface GetQueryErrorResponseT {
 
 export interface ErrorResponseT {
   id?: string;
-  code: SupportedErrorCodesT; // To translate to localized messages
+  code: string; // To translate to localized messages
   message?: string; // For developers / debugging only
   context?: Record<string, string>; // More information to maybe display in translated messages
 }

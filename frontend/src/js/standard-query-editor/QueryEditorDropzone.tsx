@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
@@ -93,6 +93,8 @@ const QueryEditorDropzone: FC<PropsT> = ({
   onDropFile,
   onDropNode,
 }) => {
+  const { t } = useTranslation();
+
   const onDrop = (_: any, monitor: DropTargetMonitor) => {
     const item = monitor.getItem();
 
@@ -119,24 +121,22 @@ const QueryEditorDropzone: FC<PropsT> = ({
         <>
           {isInitial && (
             <TextInitial>
-              <h2>{T.translate("dropzone.explanation")}</h2>
+              <h2>{t("dropzone.explanation")}</h2>
               <Row>
                 <ArrowRight icon="arrow-right" />
                 <div>
-                  <p>{T.translate("dropzone.drop")}</p>
+                  <p>{t("dropzone.drop")}</p>
                   <ul>
-                    <li>{T.translate("dropzone.aConcept")}</li>
-                    <li>{T.translate("dropzone.aQuery")}</li>
-                    <li>{T.translate("dropzone.aConceptList")}</li>
+                    <li>{t("dropzone.aConcept")}</li>
+                    <li>{t("dropzone.aQuery")}</li>
+                    <li>{t("dropzone.aConceptList")}</li>
                   </ul>
-                  <p>{T.translate("dropzone.intoThisArea")}</p>
+                  <p>{t("dropzone.intoThisArea")}</p>
                 </div>
               </Row>
             </TextInitial>
           )}
-          {!isInitial && (
-            <Text>{T.translate("dropzone.dragElementPlease")}</Text>
-          )}
+          {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
         </>
       )}
     </SxDropzoneWithFileInput>

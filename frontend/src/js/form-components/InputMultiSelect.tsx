@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { components } from "react-select";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
@@ -99,6 +99,8 @@ const isFilterSuggestion = (
 };
 
 const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
+  const { t } = useTranslation();
+
   const allowDropFile = props.allowDropFile && !!props.onDropFile;
 
   const hasTooManyValues =
@@ -119,7 +121,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
         <Row>
           <InfoText>
             {!!props.options ? props.options.length : 0}{" "}
-            {T.translate("inputMultiSelect.options")}
+            {t("inputMultiSelect.options")}
           </InfoText>
           <TransparentButton
             tiny
@@ -132,7 +134,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
               ownProps.setValue(visibleOptions);
             }}
           >
-            {T.translate("inputMultiSelect.insertAll")}
+            {t("inputMultiSelect.insertAll")}
           </TransparentButton>
         </Row>
         <components.MenuList {...ownProps}>{children}</components.MenuList>
@@ -157,10 +159,10 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       closeMenuOnSelect={!!props.closeMenuOnSelect}
       placeholder={
         allowDropFile
-          ? T.translate("reactSelect.dndPlaceholder")
-          : T.translate("reactSelect.placeholder")
+          ? t("reactSelect.dndPlaceholder")
+          : t("reactSelect.placeholder")
       }
-      noOptionsMessage={() => T.translate("reactSelect.noResults")}
+      noOptionsMessage={() => t("reactSelect.noResults")}
       onChange={props.input.onChange}
       onInputChange={
         props.onInputChange || // To allow for async option loading
@@ -169,7 +171,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
         }
       }
       formatCreateLabel={(inputValue: string) =>
-        T.translate("common.create") + `: "${inputValue}"`
+        t("common.create") + `: "${inputValue}"`
       }
       formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
         optionValue && templateValues ? (

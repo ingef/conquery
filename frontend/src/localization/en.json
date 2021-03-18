@@ -3,7 +3,7 @@
   "headline": "Queries and Analyses",
   "errorCodes": {
     "EXAMPLE_ERROR": "This is an example error",
-    "EXAMPLE_ERROR_INTERPOLATED": "This is a {adjective} example error"
+    "EXAMPLE_ERROR_INTERPOLATED": "This is a {{adjective}} example error"
   },
   "leftPane": {
     "conceptTrees": "Concepts",
@@ -17,8 +17,8 @@
   },
   "conceptTreeList": {
     "loading": "Loading concept trees",
-    "loadingTree": "Loading concept: {tree}",
-    "error": "Could not load concept: {tree}.",
+    "loadingTree": "Loading concept: {{tree}}",
+    "error": "Could not load concept: {{tree}}.",
     "noTrees": "Could not load concepts.",
     "noTreesExplanation": "Probably due to a network issue. Please try to refresh.",
     "openAll": "Open all",
@@ -93,7 +93,7 @@
     "selectAFilter": "Select a filter to see its description here.",
     "dropConcept": "Drop another concept here",
     "includeSubnodes": "Include subordinate concepts",
-    "tooManyValues": "{count} values selected",
+    "tooManyValues": "{{count}} values selected",
     "filters": "Filters",
     "selects": "More values",
     "nodeNotFound": "Concept not found",
@@ -145,10 +145,8 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "More information on a concept ...",
-    "entriesFound": {
-      "1": "entry",
-      "_": "entries"
-    },
+    "entriesFound": "entry",
+    "entriesFound_plural": "entries",
     "date": {
       "daterange": "Date range",
       "from": "From",
@@ -162,8 +160,8 @@
     "dndPlaceholder": "Choose or drop file ...",
     "backspaceToRemove": "Press Backspace to remove",
     "noResults": "No values found",
-    "createTag": "Create tag: {label}",
-    "searchFor": "Search for: {label}",
+    "createTag": "Create tag: {{label}}",
+    "searchFor": "Search for: {{label}}",
     "clearAll": "Clear all",
     "clearValue": "Clear value"
   },
@@ -316,14 +314,10 @@
     "selectConceptRootNode": "Choose a concept tree root",
     "insertNode": "Insert now",
     "result": "Result",
-    "resolvedCodes": {
-      "1": "1 value resolved.",
-      "_": "{context} values resolved."
-    },
-    "unknownCodes": {
-      "1": "1 value not resolved",
-      "_": "{context} values not resolved"
-    },
+    "resolvedCodes": "1 value resolved.",
+    "resolvedCodes_plural": "{{count}} values resolved.",
+    "unknownCodes": "1 value not resolved",
+    "unknownCodes_plural": "{{count}} values not resolved",
     "error": "An error occurred when resolving the values.",
     "nothingResolved": "No concept resolved."
   },
@@ -342,13 +336,13 @@
   },
   "search": {
     "placeholder": "Search ...",
-    "resultLabel": "{totalResults} results ({duration} s)"
+    "resultLabel": "{{totalResults}} results ({{duration}} s)"
   },
   "preview": {
     "preview": "Preview",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",
-    "previewSubline": "Preview of the first {count} lines",
+    "previewSubline": "Preview of the first {{count}} lines",
     "statisticsHeadline": "Statistics per column",
     "statisticsSubline": "Based on the full results. Missing number values interpreted as 0.",
     "total": "Total rows",

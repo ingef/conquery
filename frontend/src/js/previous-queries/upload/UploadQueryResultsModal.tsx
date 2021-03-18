@@ -1,6 +1,6 @@
-import * as React from "react";
+import React, { FC, useState } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import InfoTooltip from "../../tooltip/InfoTooltip";
 
@@ -55,14 +55,15 @@ interface PropsT {
   onUpload: (query: ExternalQueryT) => void;
 }
 
-const UploadQueryResultsModal: React.FC<PropsT> = ({
+const UploadQueryResultsModal: FC<PropsT> = ({
   loading,
   success,
   error,
   onClose,
   onUpload,
 }) => {
-  const [file, setFile] = React.useState<File | null>(null);
+  const { t } = useTranslation();
+  const [file, setFile] = useState<File | null>(null);
 
   function onDrop(_: any, monitor: DropTargetMonitor) {
     const item = monitor.getItem();
@@ -78,10 +79,8 @@ const UploadQueryResultsModal: React.FC<PropsT> = ({
       closeIcon
       headline={
         <>
-          {T.translate("uploadQueryResultsModal.headline")}
-          <InfoTooltip
-            text={T.translate("uploadQueryResultsModal.formatInfo.text")}
-          />
+          {t("uploadQueryResultsModal.headline")}
+          <InfoTooltip text={t("uploadQueryResultsModal.formatInfo.text")} />
         </>
       }
     >
@@ -90,7 +89,7 @@ const UploadQueryResultsModal: React.FC<PropsT> = ({
           <Success>
             <StyledFaIcon icon="check-circle" />
             <SuccessMsg>
-              {T.translate("uploadQueryResultsModal.uploadSucceeded")}
+              {t("uploadQueryResultsModal.uploadSucceeded")}
             </SuccessMsg>
           </Success>
         ) : (
@@ -105,18 +104,16 @@ const UploadQueryResultsModal: React.FC<PropsT> = ({
             )}
             {!file && (
               <SxDropzoneWithFileInput onDrop={onDrop} onSelectFile={setFile}>
-                {() => T.translate("uploadQueryResultsModal.dropzone")}
+                {() => t("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>
             )}
             {error && (
               <Error>
                 <ErrorMessage
-                  message={T.translate("uploadQueryResultsModal.uploadFailed")}
+                  message={t("uploadQueryResultsModal.uploadFailed")}
                 />
                 <ErrorMessageSub
-                  message={T.translate(
-                    "uploadQueryResultsModal.uploadFailedSub"
-                  )}
+                  message={t("uploadQueryResultsModal.uploadFailedSub")}
                 />
               </Error>
             )}

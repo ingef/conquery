@@ -1,7 +1,5 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
-import type { TabType } from "./reducer";
 
 const Root = styled("div")`
   margin-bottom: 10px;
@@ -42,24 +40,26 @@ const Headline = styled("h2")<{ active: boolean }>`
 
 interface PropsT {
   onClickTab: (tab: string) => void;
-  activeTab: string;
-  tabs: TabType[];
+  activeTab: string | null;
+  tabs: { key: string; label: string }[];
 }
 
-const TabNavigation: React.FC<PropsT> = (props) => {
+const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
   return (
     <Root>
-      {Object.values(props.tabs).map(({ label, key }) => (
-        <Headline
-          key={key}
-          active={props.activeTab === key}
-          onClick={() => {
-            if (key !== props.activeTab) props.onClickTab(key);
-          }}
-        >
-          {T.translate(label)}
-        </Headline>
-      ))}
+      {tabs.map(({ key, label }) => {
+        return (
+          <Headline
+            key={key}
+            active={activeTab === key}
+            onClick={() => {
+              if (key !== activeTab) onClickTab(key);
+            }}
+          >
+            {label}
+          </Headline>
+        );
+      })}
     </Root>
   );
 };

@@ -1,9 +1,10 @@
-import { initTables } from "./transformers";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+
+import { initTables } from "./transformers";
 import { FormContextStateT } from "./reducer";
-import { getLocale } from "../localization";
 import { Form } from "./config-types";
+import { useActiveLang } from "../localization/useActiveLang";
 
 const selectFormField = (state, formName, fieldName) => {
   if (
@@ -92,11 +93,13 @@ export const selectFormConfig = (state: StateT): Form | null => {
   return (activeFormType && availableForms[activeFormType]) || null;
 };
 
-export const selectActiveFormName = (state: StateT): string => {
-  const formConfig = selectFormConfig(state);
-  const locale = getLocale();
+export const useSelectActiveFormName = (): string => {
+  const formConfig = useSelector<StateT, Form | null>((state) =>
+    selectFormConfig(state)
+  );
+  const activeLang = useActiveLang();
 
-  return (formConfig && formConfig.title[locale]) || "";
+  return (formConfig && formConfig.title[activeLang]) || "";
 };
 
 export const selectReduxFormState = (state: StateT) =>
@@ -162,9 +165,9 @@ export const useFormLabelByType = (formType: string) => {
   const availableForms = useSelector<StateT, { [formName: string]: Form }>(
     (state) => selectAvailableForms(state)
   );
-  const locale = getLocale();
+  const activeLang = useActiveLang();
 
   return availableForms[formType]
-    ? availableForms[formType].title[locale]
+    ? availableForms[formType].title[activeLang]
     : formType;
 };
