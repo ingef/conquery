@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+import preval from "preval.macro";
 
 import { useHideLogoutButton } from "../user/selectors";
 import DatasetSelector from "../dataset/DatasetSelector";
@@ -66,18 +67,51 @@ const SxLogoutButton = styled(LogoutButton)`
   margin-left: 5px;
 `;
 
-const Header: FC = () => {
-  const { t } = useTranslation();
-  const version = useSelector<StateT, string>(
+const useVersion = () => {
+  const backendVersion = useSelector<StateT, string>(
     (state) => state.startup.config.version
   );
 
+  const frontendDateTimeStamp = preval`module.exports = new Date().toISOString();`;
+  const frontendGitCommit = preval`
+    const { execSync } = require('child_process');
+    module.exports = execSync('git rev-parse --short HEAD').toString();
+  `;
+  const frontendGitTag = preval`
+    const { execSync } = require('child_process');
+    module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
+  `;
+
+  return {
+    backendVersion,
+    frontendGitCommit,
+    frontendDateTimeStamp,
+    frontendGitTag,
+  };
+};
+
+const Header: FC = () => {
+  const { t } = useTranslation();
+  const {
+    backendVersion,
+    frontendDateTimeStamp,
+    frontendGitTag,
+    frontendGitCommit,
+  } = useVersion();
   const hideLogoutButton = useHideLogoutButton();
+
+  const versionString = `BE: ${backendVersion}, FE: ${frontendGitTag} ${frontendGitCommit} ${frontendDateTimeStamp}`;
+
+  const copyVersionToClipboard = () => {
+    navigator.clipboard.writeText(
+      `${backendVersion} ${frontendGitTag} ${frontendGitCommit}`
+    );
+  };
 
   return (
     <Root>
       <OverflowHidden>
-        <Logo title={version} />
+        <Logo title={versionString} onClick={copyVersionToClipboard} />
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>

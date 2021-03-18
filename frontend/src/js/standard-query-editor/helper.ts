@@ -1,6 +1,6 @@
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 
-import type { QueryNodeType } from "./types";
+import type { ConceptQueryNodeType, QueryNodeType } from "./types";
 
 export function getRootNodeLabel(node: QueryNodeType) {
   if (!node.ids || !node.tree) return null;
@@ -12,4 +12,14 @@ export function getRootNodeLabel(node: QueryNodeType) {
   const root = getConceptById(node.tree);
 
   return !!root ? root.label : null;
+}
+
+export function isLabelPristine(node: ConceptQueryNodeType) {
+  if (node.ids.length === 0) {
+    return false;
+  }
+
+  const storedConcept = getConceptById(node.ids[0]);
+
+  return !!storedConcept && storedConcept.label === node.label;
 }
