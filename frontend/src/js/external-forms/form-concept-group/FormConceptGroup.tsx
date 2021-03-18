@@ -52,7 +52,6 @@ import { Description } from "../form-components/Description";
 interface PropsType extends WrappedFieldProps {
   fieldName: string;
   label: string;
-  datasetId: string;
   onDropFilterFile: Function;
   newValue?: Object;
   isSingle?: boolean;
@@ -543,7 +542,7 @@ const FormConceptGroup = (props: PropsType) => {
             {props.renderRowPrefix
               ? props.renderRowPrefix(props.input, row, i)
               : null}
-            {!props.renderRowPrefix && row.concepts.length > 1 && (
+            {row.concepts.length > 1 && (
               <Row>
                 <SxDescription>
                   {T.translate("externalForms.common.connectedWith")}:
@@ -670,7 +669,6 @@ const FormConceptGroup = (props: PropsType) => {
       )}
       {isModalOpen && (
         <UploadConceptListModal
-          selectedDatasetId={props.datasetId}
           onAccept={onAcceptUploadConceptListModal}
           onClose={onCloseModal}
         />
@@ -678,7 +676,6 @@ const FormConceptGroup = (props: PropsType) => {
       <FormQueryNodeEditor
         formType={props.formType}
         fieldName={props.input.name}
-        datasetId={props.datasetId}
         blocklistedTables={props.blocklistedTables}
         allowlistedTables={props.allowlistedTables}
         onCloseModal={(valueIdx, conceptIdx) =>

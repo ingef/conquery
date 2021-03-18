@@ -18,7 +18,7 @@ interface PropsT {
   tooltip?: string;
   input: {
     clearable?: boolean;
-    defaultValue: string | null;
+    defaultValue?: string | null;
     value: string | null;
     onChange: (value: string | null) => void;
   };

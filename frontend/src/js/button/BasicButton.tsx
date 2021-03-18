@@ -1,7 +1,7 @@
-import React from "react";
+import React, { ButtonHTMLAttributes } from "react";
 import styled from "@emotion/styled";
 
-interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
+interface PropsT extends ButtonHTMLAttributes<HTMLButtonElement> {
   bare?: boolean;
   tiny?: boolean;
   small?: boolean;

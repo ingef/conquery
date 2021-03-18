@@ -248,14 +248,14 @@ export interface PostQueriesResponseT {
 }
 
 export type ColumnDescriptionKind =
-  | "ID"
+  | "BOOLEAN"
   | "STRING"
   | "INTEGER"
   | "MONEY"
   | "NUMERIC"
   | "DATE"
   | "DATE_RANGE"
-  | "BOOLEAN"
+  | "LIST[DATE_RANGE]"
   | "CATEGORICAL"
   | "RESOLUTION";
 
@@ -318,8 +318,8 @@ export interface GetStoredQueryResponseT {
 export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
 export interface PostConceptResolveResponseT {
-  resolvedConcepts?: string[];
-  unknownCodes?: string[]; // TODO: Use "unknownConcepts"
+  resolvedConcepts?: ConceptIdT[];
+  unknownCodes?: ConceptIdT[]; // TODO: Use "unknownConcepts"
 }
 
 export interface PostFilterResolveResponseT {
