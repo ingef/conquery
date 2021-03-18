@@ -13,12 +13,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -52,9 +54,24 @@ public class AdminTablesResource extends HAdmin {
 		}
 	}
 
+	/**
+	 * Try to delete a table and all it's imports. Fails if it still has dependencies (unless force is used).
+	 * @param force Force deletion of dependent concepts.
+	 * @return List of dependent concepts.
+	 */
 	@DELETE
-	public void remove() {
-		processor.deleteTable(tableId);
+	public Response remove(@PathParam("force") boolean force) {
+		final List<ConceptId> dependents = processor.deleteTable(tableId, force);
+
+		if (!force && !dependents.isEmpty()) {
+			return Response.status(Status.BAD_REQUEST)
+						   .entity(dependents)
+						   .build();
+		}
+
+		return Response.ok()
+				.entity(dependents)
+				.build();
 	}
 
 	@GET

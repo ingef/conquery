@@ -113,7 +113,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			conquery.getNamespace().getStorage().getTables().stream()
 					.map(Table::getId)
-					.forEach(conquery.getDatasetsProcessor()::deleteTable);
+					.forEach(tableId -> conquery.getDatasetsProcessor().deleteTable(tableId, false));
 
 			conquery.waitUntilWorkDone();
 

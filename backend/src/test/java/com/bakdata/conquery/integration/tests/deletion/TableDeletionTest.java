@@ -105,7 +105,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
-			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteTable(tableId))
+			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteTable(tableId, false))
 					.isInstanceOf(IllegalArgumentException.class);
 
 			conquery.getDatasetsProcessor().deleteConcept(conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId());
@@ -113,7 +113,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
 
-			conquery.getDatasetsProcessor().deleteTable(tableId);
+			conquery.getDatasetsProcessor().deleteTable(tableId, false);
 
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
