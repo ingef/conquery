@@ -49,8 +49,8 @@ const FormsTab = (props: TabPropsType) => {
   return (
     <>
       <FormsNavigation />
-      <FormsContainer datasetId={props.selectedDatasetId} />
-      <FormsQueryRunner datasetId={props.selectedDatasetId} />
+      <FormsContainer />
+      <FormsQueryRunner />
     </>
   );
 };

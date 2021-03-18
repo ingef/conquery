@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 
 import Modal from "../modal/Modal";
@@ -28,11 +28,13 @@ const ExpandPreviousQueryModal: FC<Props> = ({
   onAccept,
   className,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Modal
       className={className}
       onClose={onClose}
-      headline={T.translate("expandPreviousQueryModal.headline")}
+      headline={t("expandPreviousQueryModal.headline")}
     >
       <form
         onSubmit={(e) => {
@@ -40,15 +42,13 @@ const ExpandPreviousQueryModal: FC<Props> = ({
           onAccept();
         }}
       >
-        <Description>
-          {T.translate("expandPreviousQueryModal.description")}
-        </Description>
+        <Description>{t("expandPreviousQueryModal.description")}</Description>
         <Buttons>
           <TransparentButton onClick={onClose} type="button">
-            {T.translate("common.cancel")}
+            {t("common.cancel")}
           </TransparentButton>
           <PrimaryButton autoFocus onClick={onAccept} type="submit">
-            {T.translate("expandPreviousQueryModal.submit")}
+            {t("expandPreviousQueryModal.submit")}
           </PrimaryButton>
         </Buttons>
       </form>

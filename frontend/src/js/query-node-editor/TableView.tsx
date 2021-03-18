@@ -1,12 +1,12 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import TableFilters from "./TableFilters";
 import TableSelects from "./TableSelects";
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
-import type { PropsType } from "./QueryNodeEditor";
+import type { QueryNodeEditorPropsT } from "./QueryNodeEditor";
 
 const Column = styled("div")`
   display: flex;
@@ -19,19 +19,21 @@ const MaximizedCell = styled(ContentCell)`
   padding-bottom: 30px;
 `;
 
-const TableView = (props: PropsType) => {
-  const {
-    node,
-    editorState,
-    datasetId,
+const TableView: FC<QueryNodeEditorPropsT> = ({
+  node,
+  editorState,
+  datasetId,
+  suggestions,
+  currencyConfig,
 
-    onSelectTableSelects,
-    onSetDateColumn,
+  onSelectTableSelects,
+  onSetDateColumn,
 
-    onSetFilterValue,
-    onSwitchFilterMode,
-    onLoadFilterSuggestions,
-  } = props;
+  onSetFilterValue,
+  onSwitchFilterMode,
+  onLoadFilterSuggestions,
+}) => {
+  const { t } = useTranslation();
 
   const table = node.tables[editorState.selectedInputTableIdx];
 
@@ -43,7 +45,7 @@ const TableView = (props: PropsType) => {
   return (
     <Column>
       {displaySelects && (
-        <ContentCell headline={T.translate("queryNodeEditor.selects")}>
+        <ContentCell headline={t("queryNodeEditor.selects")}>
           <TableSelects
             selects={table.selects}
             onSelectTableSelects={(value) =>
@@ -53,9 +55,7 @@ const TableView = (props: PropsType) => {
         </ContentCell>
       )}
       {displayDateColumnOptions && (
-        <ContentCell
-          headline={T.translate("queryNodeEditor.selectValidityDate")}
-        >
+        <ContentCell headline={t("queryNodeEditor.selectValidityDate")}>
           <DateColumnSelect
             dateColumn={table.dateColumn}
             onSelectDateColumn={(value) =>
@@ -65,7 +65,7 @@ const TableView = (props: PropsType) => {
         </ContentCell>
       )}
       {displayFilters && (
-        <MaximizedCell headline={T.translate("queryNodeEditor.filters")}>
+        <MaximizedCell headline={t("queryNodeEditor.filters")}>
           <TableFilters
             key={editorState.selectedInputTableIdx}
             filters={table.filters}
@@ -100,11 +100,10 @@ const TableView = (props: PropsType) => {
               )
             }
             suggestions={
-              !!props.suggestions &&
-              props.suggestions[editorState.selectedInputTableIdx]
+              !!suggestions && suggestions[editorState.selectedInputTableIdx]
             }
             onShowDescription={editorState.onShowDescription}
-            currencyConfig={props.currencyConfig}
+            currencyConfig={currencyConfig}
           />
         </MaximizedCell>
       )}

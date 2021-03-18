@@ -25,6 +25,7 @@ import { exists } from "../common/helpers/exists";
 import { useDispatch, useSelector } from "react-redux";
 import { useGetDatasets } from "../api/api";
 import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
 export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
 export const loadDatasetsError = (err: any) =>
@@ -34,6 +35,7 @@ export const loadDatasetsSuccess = (res: any) =>
 
 // Done at the very beginning on loading the site
 export const useLoadDatasets = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const getDatasets = useGetDatasets();
   const loadTrees = useLoadTrees();
@@ -56,7 +58,7 @@ export const useLoadDatasets = () => {
 
       return loadTrees(defaultId);
     } catch (e) {
-      dispatch(setMessage("datasetSelector.error"));
+      dispatch(setMessage(t("datasetSelector.error")));
       dispatch(loadDatasetsError(e));
     }
   };

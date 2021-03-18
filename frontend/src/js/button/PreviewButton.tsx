@@ -1,6 +1,5 @@
 import React, { FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import T from "i18n-react";
 
 import { getStoredAuthToken } from "../authorization/helper";
 import { openPreview } from "../preview/actions";
@@ -8,6 +7,7 @@ import { openPreview } from "../preview/actions";
 import IconButton from "./IconButton";
 import { StateT } from "app-types";
 import type { ColumnDescription } from "../api/types";
+import { useTranslation } from "react-i18next";
 
 interface PropsT {
   columns: ColumnDescription[];
@@ -25,6 +25,7 @@ const PreviewButton: FC<PropsT> = ({
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.preview.isLoading
   );
+  const { t } = useTranslation();
 
   const dispatch = useDispatch();
   const onOpenPreview = (url: string) => dispatch(openPreview(url, columns));
@@ -39,7 +40,7 @@ const PreviewButton: FC<PropsT> = ({
       onClick={() => onOpenPreview(href)}
       {...restProps}
     >
-      {T.translate("preview.preview")}
+      {t("preview.preview")}
     </IconButton>
   );
 };

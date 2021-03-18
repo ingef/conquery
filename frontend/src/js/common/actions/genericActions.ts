@@ -1,4 +1,4 @@
-export interface ActionT {
+interface ActionT {
   type: string;
   error?: boolean;
   payload?: {

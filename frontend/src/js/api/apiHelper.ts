@@ -17,6 +17,7 @@ import type {
   SelectedDateColumnT,
 } from "../standard-query-editor/types";
 import { isEmpty } from "../common/helpers";
+import { isLabelPristine } from "../standard-query-editor/helper";
 
 export const transformFilterValueToApi = (filter: any) => {
   const { value, mode } = filter;
@@ -130,7 +131,7 @@ const createQueryConcept = (concept: any) =>
 const createConcept = (concept: any) => ({
   type: "CONCEPT",
   ids: concept.ids,
-  label: concept.label,
+  label: isLabelPristine(concept) ? undefined : concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
   excludeFromSecondaryIdQuery: concept.excludeFromSecondaryIdQuery,
   tables: transformTablesToApi(concept.tables),

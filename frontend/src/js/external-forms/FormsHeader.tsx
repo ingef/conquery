@@ -2,11 +2,11 @@ import React from "react";
 import styled from "@emotion/styled";
 import { reset } from "redux-form";
 
-import { T } from "../localization";
 import IconButton from "../button/IconButton";
 import { useDispatch, useSelector } from "react-redux";
 import { selectActiveFormType } from "./stateSelectors";
 import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   display: flex;
@@ -17,6 +17,7 @@ const Root = styled("div")`
 `;
 
 const FormsHeader: React.FC = () => {
+  const { t } = useTranslation();
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state)
   );
@@ -35,9 +36,9 @@ const FormsHeader: React.FC = () => {
         regular
         icon="trash-alt"
         onClick={() => onClear(activeFormType)}
-        title={T.translate("externalForms.common.clear")}
+        title={t("externalForms.common.clear")}
       >
-        {T.translate("externalForms.common.clear")}
+        {t("externalForms.common.clear")}
       </IconButton>
     </Root>
   );
