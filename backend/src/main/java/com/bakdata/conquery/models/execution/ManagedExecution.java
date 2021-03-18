@@ -212,9 +212,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@TestOnly
 	public void awaitDone(int time, TimeUnit unit) {
-		if (state == ExecutionState.RUNNING || state == ExecutionState.NEW) {
-			Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		if (state == ExecutionState.DONE || state == ExecutionState.CANCELED || state == ExecutionState.FAILED ){
+			return;
 		}
+		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 	}
 
 	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
