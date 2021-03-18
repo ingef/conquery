@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import FaIcon from "../icon/FaIcon";
-import { PostFilterResolveResponseT } from "js/api/types";
+import type { PostFilterResolveResponseT } from "../api/types";
 
 const Root = styled("div")`
   padding: 0 0 10px;

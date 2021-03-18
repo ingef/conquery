@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { nodeHasActiveFilters } from "../model/node";
 
 import IconButton from "../button/IconButton";
-import { ConceptQueryNodeType } from "js/standard-query-editor/types";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 const Container = styled("div")`
   text-transform: uppercase;
