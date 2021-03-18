@@ -248,14 +248,14 @@ export interface PostQueriesResponseT {
 }
 
 export type ColumnDescriptionKind =
-  | "ID"
+  | "BOOLEAN"
   | "STRING"
   | "INTEGER"
   | "MONEY"
   | "NUMERIC"
   | "DATE"
   | "DATE_RANGE"
-  | "BOOLEAN"
+  | "LIST[DATE_RANGE]"
   | "CATEGORICAL"
   | "RESOLUTION";
 
