@@ -109,7 +109,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		builder.append(getConcept().getLabel());
 
 
-		final String elements = this.elements.stream().filter(Predicate.not(getConcept()::equals)).map(ConceptElement::toString).collect(Collectors.joining("+"));
+		final String elements = this.elements.stream().filter(Predicate.not(getConcept()::equals)).map(ConceptElement::getLabel).collect(Collectors.joining("+"));
 
 		if(!elements.isEmpty()){
 			builder.append(" - ");
