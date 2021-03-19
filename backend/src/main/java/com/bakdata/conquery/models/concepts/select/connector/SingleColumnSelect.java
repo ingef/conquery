@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
@@ -24,9 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Getter
 public abstract class SingleColumnSelect extends Select {
-
-	@JsonProperty
-	private Connector connector;
 
 	@NsIdRef
 	@NotNull
@@ -70,11 +68,11 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Columns is not for Connectors' Table.")
 	public boolean isForConnectorTable() {
 
-		if (getColumn().getTable().equals(getConnector().getTable())) {
+		if (getColumn().getTable().equals(((Connector) getHolder()).getTable())) {
 			return true;
 		}
 
-		log.error("Column[{}] ist not for Table[{}]", column.getId(), getConnector().getTable());
+		log.error("Column[{}] ist not for Table[{}]", column.getId(), ((Connector) getHolder()).getTable());
 
 		return false;
 	}
