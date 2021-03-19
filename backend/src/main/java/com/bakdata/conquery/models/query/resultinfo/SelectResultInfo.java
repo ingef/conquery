@@ -32,11 +32,12 @@ public class SelectResultInfo extends ResultInfo {
 	@Override
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
 		return ColumnDescriptor.builder()
-							   .label(getUniqueName(settings))
-							   .userConceptLabel(cqConcept.getLabel(settings.getLocale()))
-							   .type(getType().typeInfo())
-							   .selectId(select.getId())
-							   .build();
+				.label(getUniqueName(settings))
+				.defaultLabel(settings.defaultColumnName(this))
+				.userConceptLabel(cqConcept.getLabel(settings.getLocale()))
+				.type(getType().typeInfo())
+				.selectId(select.getId())
+				.build();
 	}
 
 	@Override

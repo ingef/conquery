@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -140,6 +141,15 @@ public class QueryProcessor {
 				return null;
 			}
 		}
+
+		FullExecutionStatus status = getStatus(execution, urlb, user);
+
+		ExecutionState state = status.getStatus();
+		if (state.equals(ExecutionState.DONE) || state.equals(ExecutionState.RUNNING)){
+			log.trace("The execution({}) was already started and its state is: {}", execution.getId(), state);
+			return status;
+		}
+
 
 		log.trace("Re-executing Query {}", executionId);
 
