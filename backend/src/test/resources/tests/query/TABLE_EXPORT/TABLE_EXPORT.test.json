@@ -64,7 +64,7 @@
   "concepts": [
     {
       "label": "number",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "connectors": [
         {
           "label": "number_connector",
@@ -73,7 +73,7 @@
             "label": "datum",
             "column": "vers_stamm.datum"
           },
-          "filter": {
+          "filters": {
             "label": "value",
             "description": "xy",
             "column": "vers_stamm.value",
@@ -87,7 +87,7 @@
             "label": "datum",
             "column": "vers_stamm2.datum"
           },
-          "filter": {
+          "filters": {
             "label": "value",
             "description": "xy",
             "column": "vers_stamm2.value",

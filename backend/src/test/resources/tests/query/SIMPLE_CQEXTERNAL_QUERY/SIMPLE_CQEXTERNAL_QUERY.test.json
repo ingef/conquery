@@ -19,7 +19,7 @@
     "concepts": [
         {
             "label": "test_tree",
-            "type":"VIRTUAL",
+            "type":"TREE",
             "connectors": {
               "label": "tree_label",
               "name": "test_concept",
