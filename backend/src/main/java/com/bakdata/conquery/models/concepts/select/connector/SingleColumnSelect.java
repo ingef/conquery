@@ -37,6 +37,9 @@ public abstract class SingleColumnSelect extends Select {
 	 */
 	private boolean categorical = false;
 
+	/**
+	 * Overwritten for classes that have specializations.
+	 */
 	@JsonIgnore
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.allOf(MajorTypeId.class);
