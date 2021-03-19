@@ -101,7 +101,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	protected transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
-	private final transient CountDownLatch execution = new CountDownLatch(1);
+	private transient CountDownLatch execution;
 	@JsonIgnore
 	private transient LocalDateTime startTime;
 	@JsonIgnore
@@ -120,7 +120,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Executed right before execution submission.
 	 */
 	public void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
-		synchronized (execution) {
+		synchronized (this) {
 			if(initialized) {
 				log.trace("Execution {} was already initialized", getId());
 				return;
@@ -168,9 +168,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	public void start() {
-		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-		startTime = LocalDateTime.now();
-		state = ExecutionState.RUNNING;
+		synchronized (this) {
+			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
+			startTime = LocalDateTime.now();
+			state = ExecutionState.RUNNING;
+			execution = new CountDownLatch(1);
+		}
 	}
 
 	protected void finish(MetaStorage storage, ExecutionState executionState) {
@@ -178,7 +181,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			log.error("Query[{}] was never run.", getId());			
 		}
 
-		synchronized (execution) {
+		synchronized (this) {
 			finishTime = LocalDateTime.now();
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
