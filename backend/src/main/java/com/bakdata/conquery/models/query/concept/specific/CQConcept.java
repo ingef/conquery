@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -107,14 +108,13 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 
 		builder.append(getConcept().getLabel());
 
-		builder.append(" - ");
 
-		for (ConceptElement<?> id : elements) {
-			builder.append(id.getLabel()).append("+");
+		final String elements = this.elements.stream().filter(Predicate.not(getConcept()::equals)).map(ConceptElement::toString).collect(Collectors.joining("+"));
+
+		if(!elements.isEmpty()){
+			builder.append(" - ");
+			builder.append(elements);
 		}
-
-		builder.deleteCharAt(builder.length() - 1);
-
 
 		return builder.toString();
 	}
