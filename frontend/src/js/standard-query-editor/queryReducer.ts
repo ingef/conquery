@@ -1,5 +1,3 @@
-import T from "i18n-react";
-
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
@@ -124,7 +122,12 @@ const setGroupProperties = (node, andIdx, properties) => {
   ];
 };
 
-const setElementProperties = (node, andIdx, orIdx, properties) => {
+const setElementProperties = (
+  node: StandardQueryStateT,
+  andIdx: number,
+  orIdx: number,
+  properties: Partial<QueryNodeType>
+) => {
   const groupProperties = {
     elements: [
       ...node[andIdx].elements.slice(0, orIdx),
@@ -548,7 +551,7 @@ const expandNode = (rootConcepts, node) => {
   switch (node.type) {
     case "OR":
       return {
-        ...node,
+        type: "OR",
         elements: node.children.map((c) => expandNode(rootConcepts, c)),
       };
     case "SAVED_QUERY":
@@ -577,7 +580,7 @@ const expandNode = (rootConcepts, node) => {
       if (!lookupResult)
         return {
           ...node,
-          error: T.translate("queryEditor.couldNotExpandNode"),
+          error: t("queryEditor.couldNotExpandNode"),
         };
 
       const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
@@ -602,7 +605,7 @@ const expandNode = (rootConcepts, node) => {
 // a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (state: StandardQueryStateT, action: any) => {
+const expandPreviousQuery = (action: any) => {
   const { rootConcepts, query } = action.payload;
 
   return query.root.children.map((child) => expandNode(rootConcepts, child));
@@ -780,7 +783,7 @@ const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
 
 const selectNodeForEditing = (
   state: StandardQueryStateT,
-  { payload: { andIdx, orIdx } }
+  { payload: { andIdx, orIdx } }: any
 ) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 };
@@ -963,7 +966,7 @@ const query = (
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
       return resetGroupDates(state, action);
     case EXPAND_PREVIOUS_QUERY:
-      return expandPreviousQuery(state, action);
+      return expandPreviousQuery(action);
     case LOAD_PREVIOUS_QUERY_START:
       return loadPreviousQueryStart(state, action);
     case LOAD_PREVIOUS_QUERY_SUCCESS:

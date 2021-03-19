@@ -1,6 +1,6 @@
 import React, { FC, useRef } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { NativeTypes } from "react-dnd-html5-backend";
 
 import Dropzone, { ChildArgs } from "./Dropzone";
@@ -60,6 +60,7 @@ const DropzoneWithFileInput: FC<PropsT> = ({
   children,
   ...props
 }) => {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const dropTypes = [...(acceptedDropTypes || []), NativeTypes.FILE];
@@ -84,7 +85,7 @@ const DropzoneWithFileInput: FC<PropsT> = ({
         <>
           {showFileSelectButton && (
             <TopRight onClick={onOpenFileDialog}>
-              {T.translate("inputMultiSelect.openFileDialog")}
+              {t("inputMultiSelect.openFileDialog")}
             </TopRight>
           )}
           <FileInput

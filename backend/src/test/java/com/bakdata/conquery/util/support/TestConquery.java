@@ -228,10 +228,10 @@ public class TestConquery {
 	public void waitUntilWorkDone() {
 		log.info("Waiting for jobs to finish");
 		//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
-		final long started = System.nanoTime();
+		long started = System.nanoTime();
 		for (int i = 0; i < 5; i++) {
 			do {
-				Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MICROSECONDS);
+				Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MILLISECONDS);
 
 				if(!isBusy()) {
 					break;
@@ -239,6 +239,7 @@ public class TestConquery {
 
 
 				if (Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
+					started = System.nanoTime();
 					log.warn("waiting for done work for a long time");
 				}
 

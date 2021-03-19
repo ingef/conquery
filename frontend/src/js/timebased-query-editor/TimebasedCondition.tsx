@@ -1,5 +1,5 @@
 import React from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 
 import {
@@ -7,7 +7,7 @@ import {
   BEFORE_OR_SAME,
   DAYS_BEFORE,
   SAME,
-  DAYS_OR_NO_EVENT_BEFORE
+  DAYS_OR_NO_EVENT_BEFORE,
 } from "../common/constants/timebasedQueryOperatorTypes";
 import { isEmpty } from "../common/helpers";
 
@@ -89,6 +89,8 @@ type PropsType = {
 };
 
 const TimebasedCondition = (props: PropsType) => {
+  const { t } = useTranslation();
+
   const minDays = !isEmpty(props.condition.minDays)
     ? props.condition.minDays
     : "";
@@ -99,7 +101,7 @@ const TimebasedCondition = (props: PropsType) => {
     ? props.condition.minDaysOrNoEvent
     : "";
 
-  const createTimebasedResult = idx => {
+  const createTimebasedResult = (idx) => {
     return props.condition[`result${idx}`] ? (
       <TimebasedNode
         node={props.condition[`result${idx}`]}
@@ -108,7 +110,7 @@ const TimebasedCondition = (props: PropsType) => {
         isIndexResult={props.condition[`result${idx}`].id === props.indexResult}
         position={idx === 0 ? "left" : "right"}
         onRemove={() => props.onRemoveTimebasedNode(idx, false)}
-        onSetTimebasedNodeTimestamp={timestamp => {
+        onSetTimebasedNodeTimestamp={(timestamp) => {
           props.onSetTimebasedNodeTimestamp(idx, timestamp);
         }}
         onSetTimebasedIndexResult={() => {
@@ -145,27 +147,25 @@ const TimebasedCondition = (props: PropsType) => {
               activeValue={props.condition.operator}
               options={[
                 {
-                  label: T.translate("timebasedQueryEditor.opBefore"),
-                  value: BEFORE
+                  label: t("timebasedQueryEditor.opBefore"),
+                  value: BEFORE,
                 },
                 {
-                  label: T.translate("timebasedQueryEditor.opBeforeOrSame"),
-                  value: BEFORE_OR_SAME
+                  label: t("timebasedQueryEditor.opBeforeOrSame"),
+                  value: BEFORE_OR_SAME,
                 },
                 {
-                  label: T.translate("timebasedQueryEditor.opDays"),
-                  value: DAYS_BEFORE
+                  label: t("timebasedQueryEditor.opDays"),
+                  value: DAYS_BEFORE,
                 },
                 {
-                  label: T.translate("timebasedQueryEditor.opSame"),
-                  value: SAME
+                  label: t("timebasedQueryEditor.opSame"),
+                  value: SAME,
                 },
                 {
-                  label: T.translate(
-                    "timebasedQueryEditor.opDaysOrNoEventBefore"
-                  ),
-                  value: DAYS_OR_NO_EVENT_BEFORE
-                }
+                  label: t("timebasedQueryEditor.opDaysOrNoEventBefore"),
+                  value: DAYS_OR_NO_EVENT_BEFORE,
+                },
               ]}
             />
           </Operator>

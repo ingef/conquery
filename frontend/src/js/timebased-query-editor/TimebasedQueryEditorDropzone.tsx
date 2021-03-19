@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import { PREVIOUS_QUERY, TIMEBASED_NODE } from "../common/constants/dndTypes";
 import Dropzone from "../form-components/Dropzone";
@@ -23,8 +23,9 @@ const DROP_TYPES = [PREVIOUS_QUERY, TIMEBASED_NODE];
 
 const TimebasedQueryEditorDropzone = ({
   onRemoveTimebasedNode,
-  onDropNode
+  onDropNode,
 }: PropsType) => {
+  const { t } = useTranslation();
   const onDrop = (props, monitor) => {
     const item = monitor.getItem();
 
@@ -42,15 +43,15 @@ const TimebasedQueryEditorDropzone = ({
 
   return (
     <StyledDropzone acceptedDropTypes={DROP_TYPES} onDrop={onDrop}>
-      {() => T.translate("dropzone.dragQuery")}
+      {() => t("dropzone.dragQuery")}
     </StyledDropzone>
   );
 };
 
 export default connect(
   () => ({}),
-  dispatch => ({
+  (dispatch) => ({
     onRemoveTimebasedNode: (conditionIdx, resultIdx, moved) =>
-      dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved))
+      dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved)),
   })
 )(TimebasedQueryEditorDropzone);

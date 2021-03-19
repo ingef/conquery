@@ -1,10 +1,16 @@
+import { TFunction } from "react-i18next";
+
 export interface Environment {
   basename: string;
   apiUrl: string;
   isProduction: boolean;
   disableLogin: boolean;
   enableIDP: boolean;
-  externalSupportedErrorCodes?: { [k: string]: string };
+  getExternalSupportedErrorMessage?: (
+    t: TFunction,
+    code: string,
+    context?: Record<string, string>
+  ) => string | undefined;
 }
 
 let environment: Environment | null = null;
@@ -19,5 +25,11 @@ export const isProduction = () =>
   environment ? environment.isProduction : true;
 export const isLoginDisabled = () => !!environment && environment.disableLogin;
 export const isIDPEnabled = () => !!environment && environment.enableIDP;
-export const getExternalSupportedErrorCodes = () =>
-  environment ? environment.externalSupportedErrorCodes || {} : {};
+export const getExternalSupportedErrorMessage = (
+  t: TFunction,
+  code: string,
+  context?: Record<string, string>
+) =>
+  environment && environment.getExternalSupportedErrorMessage
+    ? environment.getExternalSupportedErrorMessage(t, code, context)
+    : undefined;

@@ -1,4 +1,3 @@
-import { Action } from "redux";
 import { createActionTypes } from "./actionTypes";
 
 export interface QueryNodeEditorStateT {

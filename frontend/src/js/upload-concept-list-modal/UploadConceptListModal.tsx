@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
-import T from "i18n-react";
+import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import type { StateT } from "app-types";
 
 import Modal from "../modal/Modal";
 import InputSelect from "../form-components/InputSelect";
@@ -10,11 +11,11 @@ import ScrollableList from "../scrollable-list/ScrollableList";
 import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";
 
-import type { StateT } from "../app/reducers";
-import type { DatasetIdT } from "../api/types";
+import type { ConceptIdT, ConceptT } from "../api/types";
 import type { TreesT } from "../concept-trees/reducer";
 
 import { useSelectConceptRootNodeAndResolveCodes } from "./actions";
+import { UploadConceptListModalStateT } from "./reducer";
 
 const Root = styled("div")`
   padding: 0 0 10px;
@@ -55,40 +56,45 @@ const SxPrimaryButton = styled(PrimaryButton)`
 `;
 
 interface PropsT {
-  loading: boolean;
-  filename: string;
-  availableConceptRootNodes: Object[];
-  selectedConceptRootNode: string;
-  selectedDatasetId: DatasetIdT;
-  conceptCodesFromFile: string[];
-  resolved: Object;
-  rootConcepts: TreesT;
-  resolvedItemsCount: number;
-  unresolvedItemsCount: number;
-  error: Object;
-
-  // This really comes from outside container, and depends on the context
-  // in which this modal is opened. (query editor / statistic form field)
-  onAccept: Function;
-  onClose: Function;
+  onAccept: (
+    label: string,
+    rootConcepts: TreesT,
+    resolvedConcepts: ConceptIdT[]
+  ) => void;
+  onClose: () => void;
 }
 
-const UploadConceptListModal = ({
-  availableConceptRootNodes,
-  selectedConceptRootNode,
-  selectedDatasetId,
-  loading,
-  conceptCodesFromFile,
-  resolved,
-  resolvedItemsCount,
-  unresolvedItemsCount,
-  error,
-  filename,
-  rootConcepts,
+interface ConceptRootNodeByKey {
+  key: string;
+  value: ConceptT;
+}
 
-  onAccept,
-  onClose,
-}: PropsT) => {
+const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
+  const { t } = useTranslation();
+  const {
+    filename,
+    conceptCodesFromFile,
+    selectedConceptRootNode,
+    loading,
+    resolved,
+    error,
+  } = useSelector<StateT, UploadConceptListModalStateT>(
+    (state) => state.uploadConceptListModal
+  );
+
+  const availableConceptRootNodes = useSelector<StateT, ConceptRootNodeByKey[]>(
+    (state) => selectAvailableConceptRootNodes(state)
+  );
+  const rootConcepts = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees
+  );
+  const resolvedItemsCount = useSelector<StateT, number>((state) =>
+    selectResolvedItemsCount(state)
+  );
+  const unresolvedItemsCount = useSelector<StateT, number>((state) =>
+    selectUnresolvedItemsCount(state)
+  );
+
   const [label, setLabel] = useState(filename);
 
   useEffect(() => {
@@ -107,7 +113,9 @@ const UploadConceptListModal = ({
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    onAccept(label, rootConcepts, resolved.resolvedConcepts);
+    if (label && resolved.resolvedConcepts) {
+      onAccept(label, rootConcepts, resolved.resolvedConcepts);
+    }
     onClose();
   };
 
@@ -115,19 +123,15 @@ const UploadConceptListModal = ({
     <Modal
       closeIcon
       onClose={onClose}
-      headline={T.translate("uploadConceptListModal.headline")}
+      headline={t("uploadConceptListModal.headline")}
     >
       <Root>
         <InputSelect
-          label={T.translate("uploadConceptListModal.selectConceptRootNode")}
+          label={t("uploadConceptListModal.selectConceptRootNode")}
           input={{
             value: selectedConceptRootNode,
             onChange: (value) =>
-              selectConceptRootNodeAndResolveCode(
-                selectedDatasetId,
-                value,
-                conceptCodesFromFile
-              ),
+              selectConceptRootNodeAndResolveCode(value, conceptCodesFromFile),
           }}
           options={availableConceptRootNodes.map((x) => ({
             value: x.key,
@@ -140,7 +144,7 @@ const UploadConceptListModal = ({
         />
         {!!resolved && !hasResolvedItems && !hasUnresolvedItems && (
           <Section>
-            <Msg>{T.translate("uploadConceptListModal.nothingResolved")}</Msg>
+            <Msg>{t("uploadConceptListModal.nothingResolved")}</Msg>
           </Section>
         )}
         {(!!error ||
@@ -150,7 +154,7 @@ const UploadConceptListModal = ({
             {error && (
               <p>
                 <ErrorIcon icon="exclamation-circle" />
-                {T.translate("uploadConceptListModal.error")}
+                {t("uploadConceptListModal.error")}
               </p>
             )}
             {loading && <CenteredIcon icon="spinner" />}
@@ -160,13 +164,13 @@ const UploadConceptListModal = ({
                   <form onSubmit={onSubmit}>
                     <Msg>
                       <SuccessIcon icon="check-circle" />
-                      {T.translate("uploadConceptListModal.resolvedCodes", {
-                        context: resolvedItemsCount,
+                      {t("uploadConceptListModal.resolvedCodes", {
+                        count: resolvedItemsCount,
                       })}
                     </Msg>
                     <MsgRow>
                       <InputText
-                        label={T.translate("uploadConceptListModal.label")}
+                        label={t("uploadConceptListModal.label")}
                         fullWidth
                         inputProps={{
                           autoFocus: true,
@@ -177,7 +181,7 @@ const UploadConceptListModal = ({
                         }}
                       />
                       <SxPrimaryButton type="submit">
-                        {T.translate("uploadConceptListModal.insertNode")}
+                        {t("uploadConceptListModal.insertNode")}
                       </SxPrimaryButton>
                     </MsgRow>
                   </form>
@@ -187,7 +191,7 @@ const UploadConceptListModal = ({
                     <Msg>
                       <ErrorIcon icon="exclamation-circle" />
                       <span>
-                        {T.translate("uploadConceptListModal.unknownCodes", {
+                        {t("uploadConceptListModal.unknownCodes", {
                           context: unresolvedItemsCount,
                         })}
                       </span>
@@ -229,7 +233,7 @@ const selectResolvedItemsCount = (state: StateT) => {
 const selectAvailableConceptRootNodes = (state: StateT) => {
   const { trees } = state.conceptTrees;
 
-  if (!trees) return null;
+  if (!trees) return [];
 
   return Object.entries(trees)
     .map(([key, value]) => ({ key, value }))
@@ -239,17 +243,4 @@ const selectAvailableConceptRootNodes = (state: StateT) => {
     );
 };
 
-const mapStateToProps = (state: StateT) => ({
-  filename: state.uploadConceptListModal.filename,
-  conceptCodesFromFile: state.uploadConceptListModal.conceptCodesFromFile,
-  availableConceptRootNodes: selectAvailableConceptRootNodes(state),
-  selectedConceptRootNode: state.uploadConceptListModal.selectedConceptRootNode,
-  loading: state.uploadConceptListModal.loading,
-  resolved: state.uploadConceptListModal.resolved,
-  resolvedItemsCount: selectResolvedItemsCount(state),
-  unresolvedItemsCount: selectUnresolvedItemsCount(state),
-  rootConcepts: state.conceptTrees.trees,
-  error: state.uploadConceptListModal.error,
-});
-
-export default connect(mapStateToProps)(UploadConceptListModal);
+export default UploadConceptListModal;

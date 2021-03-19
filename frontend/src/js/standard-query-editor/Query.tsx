@@ -2,7 +2,7 @@ import React, { FC, useState } from "react";
 import styled from "@emotion/styled";
 
 import { useDispatch, useSelector } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import type { DatasetIdT } from "../api/types";
 import { exists } from "../common/helpers/exists";
@@ -65,6 +65,7 @@ interface PropsT {
 }
 
 const Query: FC<PropsT> = ({ selectedDatasetId }) => {
+  const { t } = useTranslation();
   const query = useSelector<StateT, StandardQueryType>(
     (state) => state.queryEditor.query
   );
@@ -159,7 +160,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
                 }
               />,
               <QueryGroupConnector key={`${andIdx}.and`}>
-                {T.translate("common.and")}
+                {t("common.and")}
               </QueryGroupConnector>,
             ])}
             <QueryEditorDropzone

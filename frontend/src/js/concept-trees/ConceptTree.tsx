@@ -1,6 +1,5 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
 import FaIcon from "../icon/FaIcon";
@@ -9,6 +8,7 @@ import IconButton from "../button/IconButton";
 import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
+import { useTranslation } from "react-i18next";
 
 interface PropsT {
   id: ConceptIdT;
@@ -55,6 +55,8 @@ const ConceptTree: FC<PropsT> = ({
   search,
   onLoadTree,
 }) => {
+  const { t } = useTranslation();
+
   if (loading)
     return (
       <LoadingTree style={{ paddingLeft: 24 + depth * 15 }}>
@@ -68,7 +70,7 @@ const ConceptTree: FC<PropsT> = ({
     return (
       <ErrorMessage style={{ paddingLeft: 12 + depth * 15 }}>
         <ReloadButton red icon="redo" onClick={() => onLoadTree(treeId)} />
-        {T.translate("conceptTreeList.error", { tree: label })}
+        {t("conceptTreeList.error", { tree: label })}
       </ErrorMessage>
     );
   else if (tree)

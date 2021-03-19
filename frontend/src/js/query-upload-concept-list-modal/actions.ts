@@ -25,7 +25,8 @@ const closeModal = () => ({
 });
 
 export const closeQueryUploadConceptListModal = () => (dispatch) => {
-  return dispatch([closeModal(), resetUploadConceptListModal()]);
+  dispatch(closeModal());
+  dispatch(resetUploadConceptListModal());
 };
 
 export const acceptQueryUploadConceptListModal = (

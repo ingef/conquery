@@ -4,7 +4,6 @@
 
 import { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
-import { SupportedErrorCodesT } from "./errorCodes";
 
 export type DatasetIdT = string;
 export interface DatasetT {
@@ -248,14 +247,14 @@ export interface PostQueriesResponseT {
 }
 
 export type ColumnDescriptionKind =
-  | "ID"
+  | "BOOLEAN"
   | "STRING"
   | "INTEGER"
   | "MONEY"
   | "NUMERIC"
   | "DATE"
   | "DATE_RANGE"
-  | "BOOLEAN"
+  | "LIST[DATE_RANGE]"
   | "CATEGORICAL"
   | "RESOLUTION";
 
@@ -282,7 +281,7 @@ export interface GetQueryErrorResponseT {
 
 export interface ErrorResponseT {
   id?: string;
-  code: SupportedErrorCodesT; // To translate to localized messages
+  code: string; // To translate to localized messages
   message?: string; // For developers / debugging only
   context?: Record<string, string>; // More information to maybe display in translated messages
 }
@@ -318,8 +317,8 @@ export interface GetStoredQueryResponseT {
 export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
 export interface PostConceptResolveResponseT {
-  resolvedConcepts?: string[];
-  unknownCodes?: string[]; // TODO: Use "unknownConcepts"
+  resolvedConcepts?: ConceptIdT[];
+  unknownCodes?: ConceptIdT[]; // TODO: Use "unknownConcepts"
 }
 
 export interface PostFilterResolveResponseT {

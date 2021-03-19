@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 import FaIcon from "../icon/FaIcon";
@@ -50,6 +50,8 @@ const CrossedOut = styled.div`
 `;
 
 const QueryNodeActions: FC<PropsT> = (props) => {
+  const { t } = useTranslation();
+
   return (
     <Actions>
       <StyledIconButton
@@ -60,7 +62,7 @@ const QueryNodeActions: FC<PropsT> = (props) => {
         }}
       />
       {props.excludeTimestamps && (
-        <WithTooltip text={T.translate("queryNodeEditor.excludingTimestamps")}>
+        <WithTooltip text={t("queryNodeEditor.excludingTimestamps")}>
           <StyledIconButton
             red
             regular
@@ -73,12 +75,12 @@ const QueryNodeActions: FC<PropsT> = (props) => {
         </WithTooltip>
       )}
       {!props.error && !!props.previousQueryLoading && (
-        <WithTooltip text={T.translate("queryEditor.loadingPreviousQuery")}>
+        <WithTooltip text={t("queryEditor.loadingPreviousQuery")}>
           <StyledFaIcon icon="spinner" />
         </WithTooltip>
       )}
       {!props.error && props.isExpandable && !props.previousQueryLoading && (
-        <WithTooltip text={T.translate("queryEditor.expand")}>
+        <WithTooltip text={t("queryEditor.expand")}>
           <StyledIconButton
             icon="expand-arrows-alt"
             onClick={(e) => {
@@ -92,8 +94,8 @@ const QueryNodeActions: FC<PropsT> = (props) => {
         <WithTooltip
           text={
             props.excludeFromSecondaryIdQuery
-              ? T.translate("queryNodeEditor.excludingFromSecondaryIdQuery")
-              : T.translate("queryEditor.hasSecondaryId")
+              ? t("queryNodeEditor.excludingFromSecondaryIdQuery")
+              : t("queryEditor.hasSecondaryId")
           }
         >
           <RelativeContainer>

@@ -10,6 +10,7 @@ import type { DatasetIdT } from "../api/types";
 import type { QueryRunnerStateT } from "../query-runner/reducer";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
 import type { StandardQueryStateT } from "./queryReducer";
+import { useTranslation } from "react-i18next";
 
 function validateQueryStartStop({ startQuery, stopQuery }: QueryRunnerStateT) {
   return !startQuery.loading && !stopQuery.loading;
@@ -19,14 +20,16 @@ function validateDataset(datasetId: DatasetIdT) {
   return datasetId !== null;
 }
 
-function getButtonTooltipKey(hasQueryValidDates: boolean) {
+function useButtonTooltip(hasQueryValidDates: boolean) {
+  const { t } = useTranslation();
+
   if (!hasQueryValidDates) {
-    return "queryRunner.errorDates";
+    return t("queryRunner.errorDates");
   }
 
   // Potentially add further validation and more detailed messages
 
-  return null;
+  return undefined;
 }
 
 interface PropsT {
@@ -51,6 +54,8 @@ const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const isQueryValid = validateQueryLength(query) && hasQueryValidDates;
   const isQueryNotStartedOrStopped = validateQueryStartStop(queryRunner);
 
+  const buttonTooltip = useButtonTooltip(hasQueryValidDates);
+
   const startStandardQuery = useStartQuery("standard");
   const stopStandardQuery = useStopQuery("standard");
 
@@ -67,7 +72,7 @@ const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
   return (
     <QueryRunner
       queryRunner={queryRunner}
-      buttonTooltipKey={getButtonTooltipKey(hasQueryValidDates)}
+      buttonTooltip={buttonTooltip}
       isButtonEnabled={
         isDatasetValid && isQueryValid && isQueryNotStartedOrStopped
       }
