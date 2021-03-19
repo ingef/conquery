@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
@@ -49,6 +48,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	private Object2IntMap<String> strings = new Object2IntOpenHashMap<>();
 
+	//TODO FK: this field is not used at the moment, but we want to use it to prune unused values, this would mean cleaning up strings and allowing Dictionary to set a specific valuie, not just setting it.
 	private IntSet registered = new IntOpenHashSet();
 
 	private List<byte[]> decoded;
@@ -114,6 +114,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 		decode();
 
 		// Try all guesses and select the least memory intensive one.
+		//TODO FK: Simplify this, the guessers do a lot of weird lazy computation but implicit.
 		Guess guess = Stream.of(
 				new TrieTypeGuesser(this),
 				new MapTypeGuesser(this),
@@ -122,7 +123,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 							.map(StringTypeGuesser::createGuess)
 							.filter(Objects::nonNull)
 							.min(Comparator.naturalOrder())
-							.get();
+							.orElseThrow();
 
 		log.debug(
 				"\tUsing {}(est. {})",
@@ -132,16 +133,11 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 		StringStore result = guess.getType();
 
-		if(result instanceof StringTypeEncoded){
-
-		}
 
 		//wrap in prefix suffix
 		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
 			result = new StringTypePrefixSuffix(result, prefix, suffix);
 		}
-
-
 
 		return result;
 	}

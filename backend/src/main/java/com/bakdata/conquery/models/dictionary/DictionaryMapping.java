@@ -69,12 +69,7 @@ public class DictionaryMapping {
 
 			final int string = from.getString(event);
 
-			if (string >= source2TargetMap.length) {
-				log.error("Event[{}]=`{}` is not in source.", event, string);
-			}
-			else {
-				to.setInteger(event, source2Target(string));
-			}
+			to.setInteger(event, source2Target(string));
 		}
 	}
 
