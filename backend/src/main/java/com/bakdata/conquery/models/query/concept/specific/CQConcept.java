@@ -96,7 +96,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	public String getLabel(Locale cfg) {
 		final String label = super.getLabel(cfg);
 		if (!Strings.isNullOrEmpty(label)) {
-			return label;
+			return getConcept().getLabel() + " - " + label;
 		}
 
 		if (elements.isEmpty()) {
@@ -189,7 +189,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 
 			Column validityDateColumn = selectValidityDateColumn(table);
 
-			if(aggregateEventDates){
+			if (aggregateEventDates) {
 				aggregators.add(new EventDateUnionAggregator(Set.of(table.getConnector().getTable().getId())));
 			}
 
