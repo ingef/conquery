@@ -1,9 +1,9 @@
 import type {
   PreviousQueryQueryNodeType,
   QueryNodeType,
-  StandardQueryType,
 } from "../standard-query-editor/types";
 import { TIMEBASED_OPERATOR_TYPES } from "../common/constants/timebasedQueryOperatorTypes";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
 function isTimebasedQuery(node: PreviousQueryQueryNodeType) {
   const queryString = JSON.stringify(node.query);
@@ -30,7 +30,7 @@ export function isQueryExpandable(node: QueryNodeType) {
 
 // Validation
 
-export function validateQueryLength(query: StandardQueryType) {
+export function validateQueryLength(query: StandardQueryStateT) {
   return query.length > 0;
 }
 
@@ -42,6 +42,6 @@ function groupHasValidDates(group) {
   return !group.exclude && group.elements.some(elementHasValidDates);
 }
 
-export function validateQueryDates(query: StandardQueryType) {
+export function validateQueryDates(query: StandardQueryStateT) {
   return !query || query.length === 0 || query.some(groupHasValidDates);
 }

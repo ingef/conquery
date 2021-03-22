@@ -25,6 +25,7 @@ const StyledInputText = styled(InputText)`
   }
 `;
 
+export type ModeT = "range" | "exact";
 interface PropsType extends WrappedFieldProps {
   inputType: string;
   valueType?: string;
@@ -38,7 +39,7 @@ interface PropsType extends WrappedFieldProps {
   mode: "range" | "exact";
   stepSize?: number;
   placeholder: string;
-  onSwitchMode: Function;
+  onSwitchMode: (mode: ModeT) => void;
   tooltip?: string;
   pattern?: string;
   input: {

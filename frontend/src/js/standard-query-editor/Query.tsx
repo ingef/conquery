@@ -24,7 +24,6 @@ import {
 } from "./actions";
 
 import type {
-  StandardQueryType,
   DraggedNodeType,
   DraggedQueryType,
   PreviousQueryQueryNodeType,
@@ -37,6 +36,7 @@ import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryHeader from "./QueryHeader";
 import QueryFooter from "./QueryFooter";
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
+import type { StandardQueryStateT } from "./queryReducer";
 
 const Container = styled("div")`
   height: 100%;
@@ -66,7 +66,7 @@ interface PropsT {
 
 const Query: FC<PropsT> = ({ selectedDatasetId }) => {
   const { t } = useTranslation();
-  const query = useSelector<StateT, StandardQueryType>(
+  const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
   const isEmptyQuery = useSelector<StateT, boolean>(

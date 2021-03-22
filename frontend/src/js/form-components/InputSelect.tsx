@@ -51,7 +51,7 @@ const InputSelect = ({
         </>
       }
     >
-      <ReactSelect
+      <ReactSelect<false>
         highlightChanged
         name="form-field"
         small={small}

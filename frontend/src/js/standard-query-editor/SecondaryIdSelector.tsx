@@ -7,11 +7,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { exists } from "../common/helpers/exists";
 import ToggleButton from "../form-components/ToggleButton";
 
-import { ConceptQueryNodeType, StandardQueryType } from "./types";
 import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 import { setSelectedSecondaryId } from "./actions";
 import { SecondaryId } from "../api/types";
 import FaIcon from "../icon/FaIcon";
+import type { StandardQueryStateT } from "./queryReducer";
 
 const Headline = styled.h3<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
@@ -30,7 +30,7 @@ const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
 
 const SecondaryIdSelector: FC = () => {
   const { t } = useTranslation();
-  const query = useSelector<StateT, StandardQueryType>(
+  const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
 
