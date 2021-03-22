@@ -477,6 +477,11 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
                 ? filter.options.find((op) => op.value === val)
                 : val
             ),
+            defaultValue: filterModeWithValue.value.filter((val) => {
+              if (!filter.options) return false;
+              return !exists(filter.options.find((opt) => opt.value === val));
+            }),
+            type: filter.type,
           }
         : filterModeWithValue;
 
