@@ -1,4 +1,4 @@
-import React, { T, useRef } from "react";
+import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 import { DropTarget } from "react-dnd";
@@ -24,7 +24,7 @@ const FileInput = styled("input")`
 const TopRight = styled("p")`
   margin: 0;
   font-size: ${({ theme }) => theme.font.tiny};
-  color: ${({ theme }) => theme.font.gray};
+  color: ${({ theme }) => theme.col.gray};
   position: absolute;
   top: -15px;
   right: 0;
