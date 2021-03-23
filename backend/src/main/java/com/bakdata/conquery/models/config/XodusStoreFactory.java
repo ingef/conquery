@@ -309,7 +309,8 @@ public class XodusStoreFactory implements StoreFactory {
      * Returns this.directory if the list is empty.
      */
     private File getStorageDir(List<String> pathName) {
-        return getDirectory().resolve(pathName.stream().collect(Collectors.joining("/"))).toFile();
+		//TODO FK: this is a hotfix to ensure we never produce absolute paths. pathName can contain empty strings.
+		return getDirectory().resolve(String.join("./", pathName)).toFile();
     }
 
     private Environment findEnvironment(@NonNull File path) {
