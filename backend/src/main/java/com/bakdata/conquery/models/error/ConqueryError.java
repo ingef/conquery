@@ -1,13 +1,5 @@
 package com.bakdata.conquery.models.error;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.DateContext;
@@ -23,6 +15,13 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.Flat3Map;
 import org.apache.commons.text.StringSubstitutor;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Base class for errors that are thrown within Conquery and can be serialized
@@ -256,6 +255,18 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 		public ExecutionProcessingTimeoutError() {
 			super("The execution took too long to finish.");
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
+	public static class NoSecondaryIdSelectedError extends NoContextError {
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		public NoSecondaryIdSelectedError() {
+			super("No SecondaryId was selected");
+
 		}
 	}
 }

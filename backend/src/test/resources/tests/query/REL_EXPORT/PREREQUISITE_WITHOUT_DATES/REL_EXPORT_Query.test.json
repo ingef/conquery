@@ -20,12 +20,11 @@
             "root": {
                 "type": "CONCEPT",
                 "ids": [
-                    "test_tree_dateless.test_child1"
+                    "concept_dateless.child1"
                 ],
                 "tables": [
                     {
-                        "id": "test_tree.test_column",
-                        "filters": []
+                        "id": "concept_dateless.connector"
                     }
                 ]
             }
@@ -37,15 +36,14 @@
                 "root": {
                     "type": "CONCEPT",
                     "ids": [
-                        "test_tree.test_child1"
+                        "concept.child1"
                     ],
                     "selects": [
-                        "test_tree.exists"
+                        "concept.exists"
                     ],
                     "tables": [
                         {
-                            "id": "test_tree.test_column",
-                            "filters": []
+                            "id": "concept.connector"
                         }
                     ]
                 }
@@ -58,15 +56,14 @@
                 "root": {
                     "type": "CONCEPT",
                     "ids": [
-                        "test_tree.test_child1"
+                        "concept.child1"
                     ],
                     "selects": [
-                        "test_tree.exists"
+                        "concept.exists"
                     ],
                     "tables": [
                         {
-                            "id": "test_tree.test_column",
-                            "filters": []
+                            "id": "concept.connector"
                         }
                     ]
                 }
@@ -80,15 +77,14 @@
     },
     "concepts": [
         {
-            "label": "test_tree",
+            "name": "concept",
             "type": "TREE",
             "connectors": {
-                "label": "tree_label",
-                "name": "test_column",
-                "column": "test_table.test_column",
+                "name": "connector",
+                "column": "table.column",
                 "validityDates": {
                     "label": "datum",
-                    "column": "test_table.datum"
+                    "column": "table.datum"
                 }
             },
             "selects": [
@@ -99,7 +95,7 @@
             ],
             "children": [
                 {
-                    "label": "test_child1",
+                    "label": "child1",
                     "description": " ",
                     "condition": {
                         "type": "PREFIX_LIST",
@@ -108,7 +104,7 @@
                     "children": []
                 },
                 {
-                    "label": "test_child2",
+                    "label": "child2",
                     "description": " ",
                     "condition": {
                         "type": "PREFIX_LIST",
@@ -119,12 +115,11 @@
             ]
         },
         {
-            "label": "test_tree_dateless",
+            "label": "concept_dateless",
             "type": "TREE",
             "connectors": {
-                "label": "tree_label",
-                "name": "test_column",
-                "column": "test_table.test_column"
+                "name": "connector",
+                "column": "table.column"
             },
             "selects": [
                 {
@@ -134,7 +129,7 @@
             ],
             "children": [
                 {
-                    "label": "test_child1",
+                    "label": "child1",
                     "description": " ",
                     "condition": {
                         "type": "PREFIX_LIST",
@@ -143,7 +138,7 @@
                     "children": []
                 },
                 {
-                    "label": "test_child2",
+                    "label": "child2",
                     "description": " ",
                     "condition": {
                         "type": "PREFIX_LIST",
@@ -158,7 +153,7 @@
         "tables": [
             {
                 "csv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/content.csv",
-                "name": "test_table",
+                "name": "table",
                 "primaryColumn": {
                     "name": "pid",
                     "type": "STRING"
@@ -169,7 +164,7 @@
                         "type": "DATE"
                     },
                     {
-                        "name": "test_column",
+                        "name": "column",
                         "type": "STRING"
                     }
                 ]

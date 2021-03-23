@@ -10,12 +10,18 @@ import {
   CONCEPT_TREE_NODE,
   QUERY_NODE,
   PREVIOUS_QUERY,
+  PREVIOUS_SECONDARY_ID_QUERY,
 } from "../common/constants/dndTypes";
 import type { QueryIdT } from "../api/types";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 import { DropTargetMonitor } from "react-dnd";
 
-const DROP_TYPES = [CONCEPT_TREE_NODE, QUERY_NODE, PREVIOUS_QUERY];
+const DROP_TYPES = [
+  CONCEPT_TREE_NODE,
+  QUERY_NODE,
+  PREVIOUS_QUERY,
+  PREVIOUS_SECONDARY_ID_QUERY,
+];
 
 const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
   isInitial?: boolean;

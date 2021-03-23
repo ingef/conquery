@@ -29,7 +29,7 @@ import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -69,7 +69,7 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public ExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws SQLException {
+	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws SQLException {
 		authorize(user, datasetId, Ability.READ);
 
 		return processor.cancel(
@@ -80,14 +80,17 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
+	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req)
+			throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 		authorize(user, query, Ability.READ);
 		query.awaitDone(10, TimeUnit.SECONDS);
+
 		return processor.getStatus(
-			query,
-			RequestAwareUriBuilder.fromRequest(req),
-			user);
+				query,
+				RequestAwareUriBuilder.fromRequest(req),
+				user
+		);
 	}
 }

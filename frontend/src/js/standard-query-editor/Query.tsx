@@ -1,10 +1,11 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import styled from "@emotion/styled";
 
 import { useDispatch, useSelector } from "react-redux";
 import T from "i18n-react";
 
 import type { DatasetIdT } from "../api/types";
+import { exists } from "../common/helpers/exists";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
@@ -35,6 +36,7 @@ import { TreesT } from "../concept-trees/reducer";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryHeader from "./QueryHeader";
 import QueryFooter from "./QueryFooter";
+import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
 
 const Container = styled("div")`
   height: 100%;
@@ -100,14 +102,28 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
     dispatch(selectNodeForEditing(andIdx, orIdx));
   const onQueryGroupModalSetNode = (andIdx: number) =>
     dispatch(queryGroupModalSetNode(andIdx));
-
-  const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) =>
-    expandPreviousQuery(selectedDatasetId, rootConcepts, q);
   const onLoadPreviousQuery = (queryId: PreviousQueryIdT) =>
     loadPreviousQuery(selectedDatasetId, queryId);
 
+  const [
+    queryToExpand,
+    setQueryToExpand,
+  ] = useState<PreviousQueryQueryNodeType | null>(null);
+
+  const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) =>
+    setQueryToExpand(q);
+
   return (
     <Container>
+      {exists(queryToExpand) && (
+        <ExpandPreviousQueryModal
+          onClose={() => setQueryToExpand(null)}
+          onAccept={() => {
+            expandPreviousQuery(selectedDatasetId, rootConcepts, queryToExpand);
+            setQueryToExpand(null);
+          }}
+        />
+      )}
       {isEmptyQuery ? (
         <QueryEditorDropzone
           isInitial

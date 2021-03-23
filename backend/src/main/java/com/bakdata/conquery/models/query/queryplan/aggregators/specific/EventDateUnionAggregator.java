@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<Collection<CDateRange>> {
+public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 
 	private final Set<TableId> requiredTables;
 	private Column validityDateColumn;
@@ -36,8 +36,8 @@ public class EventDateUnionAggregator implements Aggregator<Collection<CDateRang
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		validityDateColumn = Objects.requireNonNull(ctx.getValidityDateColumn());
-		if (!validityDateColumn.getType().isDateCompatible()) {
+		validityDateColumn = ctx.getValidityDateColumn();
+		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 		
@@ -46,17 +46,22 @@ public class EventDateUnionAggregator implements Aggregator<Collection<CDateRang
 	}
 
 	@Override
-	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
+	public Aggregator<CDateSet> doClone(CloneContext ctx) {
 		return new EventDateUnionAggregator(requiredTables);
 	}
 
 	@Override
-	public Collection<CDateRange> getAggregationResult() {
-		return set.asRanges();
+	public CDateSet getAggregationResult() {
+		return set;
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
+		if(validityDateColumn == null) {
+			set.addAll(dateRestriction);
+			return;
+		}
+
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}

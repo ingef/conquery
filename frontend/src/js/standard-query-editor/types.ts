@@ -79,6 +79,10 @@ export interface DraggedQueryType {
   isPreviousQuery: boolean; // true
 
   canExpand?: boolean;
+
+  secondaryId?: string | null;
+  availableSecondaryIds?: string[];
+  excludeFromSecondaryIdQuery?: boolean;
 }
 
 // A Query Node that is being dragged from the tree or within the standard editor.
@@ -127,6 +131,7 @@ export interface ConceptQueryNodeType {
 export interface PreviousQueryQueryNodeType {
   label: string;
   excludeTimestamps?: boolean;
+  excludeFromSecondaryIdQuery?: boolean;
   loading?: boolean;
   error?: string;
 
@@ -136,6 +141,9 @@ export interface PreviousQueryQueryNodeType {
   isPreviousQuery: true;
   canExpand?: boolean;
   isEditing?: boolean;
+
+  secondaryId?: string | null;
+  availableSecondaryIds?: string[];
 }
 
 export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;

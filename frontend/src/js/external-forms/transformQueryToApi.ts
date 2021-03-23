@@ -2,11 +2,15 @@ import { transformElementsToApi } from "../api/apiHelper";
 import { Form } from "./config-types";
 
 function transformElementGroupsToApi(elementGroups) {
-  return elementGroups.map(({ concepts, connector, ...rest }) => ({
-    type: connector,
-    children: transformElementsToApi(concepts),
-    ...rest,
-  }));
+  return elementGroups.map(({ concepts, connector, ...rest }) =>
+    concepts.length > 1
+      ? {
+          type: connector,
+          children: transformElementsToApi(concepts),
+          ...rest,
+        }
+      : { ...transformElementsToApi(concepts)[0], ...rest }
+  );
 }
 
 function transformFieldToApi(fieldConfig, form) {

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import java.util.function.Consumer;
 
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -35,8 +36,8 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
-		index.resolve(context);
-		preceding.resolve(context);
+		index.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
+		preceding.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 	}
 	
 	@Override

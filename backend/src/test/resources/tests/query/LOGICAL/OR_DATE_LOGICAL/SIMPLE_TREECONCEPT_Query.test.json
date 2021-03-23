@@ -1,0 +1,91 @@
+{
+  "type": "QUERY_TEST",
+  "label": "OR DATE LOGIC Test",
+  "expectedCsv": "tests/query/LOGICAL/OR_DATE_LOGICAL/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "dateAggregationMode" : "LOGICAL",
+    "root": {
+      "type": "OR",
+      "createExists": true,
+      "children": [
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.a"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.b"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column",
+        "validityDates": {
+          "name": "datum",
+          "column": "table.datum"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/LOGICAL/OR_DATE_LOGICAL/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

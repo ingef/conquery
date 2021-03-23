@@ -423,17 +423,17 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 			return Collections.emptyList();
 		}
 
+		// If dateRange is shorter than a quarter, only add that first quarter.
+		if(QuarterUtils.getFirstDayOfQuarter(getMin()).isEqual( QuarterUtils.getFirstDayOfQuarter(getMax()))){
+			return List.of(this);
+		}
 		List<CDateRange> ranges = new ArrayList<>();
-		
+
 		// First quarter begins with this range
 		CDateRange start = CDateRange.of(getMin(), QuarterUtils.getLastDayOfQuarter(getMin()));
 		CDateRange end = CDateRange.of(QuarterUtils.getFirstDayOfQuarter(getMax()), getMax());
-		ranges.add(start);
 
-		// If dateRange is shorter than a quarter, only add that first quarter.
-		if(QuarterUtils.getFirstDayOfQuarter(getMin()).isEqual( QuarterUtils.getFirstDayOfQuarter(getMax()))){
-			return ranges;
-		}
+		ranges.add(start);
 
 		LocalDate nextQuarterDate = this.getMin().plus(1, IsoFields.QUARTER_YEARS);
 		while(nextQuarterDate.isBefore(end.getMin())) {

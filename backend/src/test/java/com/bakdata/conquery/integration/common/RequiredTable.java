@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -35,11 +36,12 @@ public class RequiredTable {
 	@Valid
 	private RequiredColumn[] columns;
 
-	public Table toTable(Dataset dataset) {
+	public Table toTable(Dataset dataset, CentralRegistry centralRegistry) {
 		Table table = new Table();
 		table.setDataset(dataset);
 		table.setName(name);
-		table.setColumns(Arrays.stream(columns).map(col -> col.toColumn(table)).toArray(Column[]::new));
+		table.setColumns(Arrays.stream(columns)
+							   .map(col -> col.toColumn(table, centralRegistry)).toArray(Column[]::new));
 		return table;
 	}
 	

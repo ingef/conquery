@@ -48,6 +48,10 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		IQuery query = getQuery();
 
+		assertThat(standaloneSupport.getValidator().validate(query))
+				.describedAs("Query Validation Errors")
+				.isEmpty();
+
 		log.info("{} QUERY INIT", getLabel());
 
 		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, dataset, standaloneSupport.getConfig());

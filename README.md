@@ -20,13 +20,7 @@ Conquery supplies a powerful interface to group event types in a hierarchical *c
 
 This repository includes the Conquery frontend along with a non-functional backend. It provides a set of example concept trees to demonstrate the capabilities of the UI: The example's use case is to search for groups of actors who appeared in movies of the same genre or received the same award.
 
-The demo can be started using the following commands, provided that node.js (version 8.x LTS) and yarn are already installed:
-
-```sh
-cd frontend/
-yarn install
-yarn start
-```
+Check the README in `/frontend` for details.
 
 ## Acknowledgements
 

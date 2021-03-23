@@ -235,7 +235,7 @@ public class FormConfigTest {
 
 		@Override
 		public void visit(Consumer<Visitable> visitor) {
-
+			visitor.accept(this);
 		}
 	}
 	

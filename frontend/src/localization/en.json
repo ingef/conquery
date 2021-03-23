@@ -57,6 +57,11 @@
     "secondaryIdStandard": "Standard",
     "hasSecondaryId": "Analysis layer active"
   },
+  "expandPreviousQueryModal": {
+    "headline": "Are you sure to expand the query?",
+    "description": "When you click expand, all concepts within the editor will be replaced by the content from within the expanded query.",
+    "submit": "Expand"
+  },
   "dropzone": {
     "dragElementPlease": "Add an element",
     "dragQuery": "Add a query",

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -39,8 +40,11 @@ public class CQSampled {
 	 * @return a new SampledNode
 	 */
 	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
-		ConceptQueryPlan subPlan = new ConceptQueryPlan(ctx);
+		ConceptQueryPlan subPlan = new ConceptQueryPlan(true);
 		subPlan.setChild(child.createQueryPlan(ctx, subPlan));
+		// Since we create the plan manually we have to register the lower date aggregators manually.
+		// Such an aggregator exists because it was enforced in CQAbstractTemporalQuery::resolve on the child.
+		subPlan.getDateAggregator().register(subPlan.getChild().getDateAggregators());
 		return new SampledNode(subPlan, sampler);
 	}
 
@@ -48,6 +52,7 @@ public class CQSampled {
 	 * @see CQElement#resolve(QueryResolveContext)
 	 */
 	public void resolve(QueryResolveContext context) {
+
 		child.resolve(context);
 	}
 }
