@@ -120,7 +120,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			fail(storage, result.getError().get());
 		}
 
-		synchronized (getExecution()) {
+		synchronized (this) {
 			executingThreads--;
 			results.addAll(result.getResults());
 			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
@@ -139,7 +139,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public void start() {
 		super.start();
-		synchronized (getExecution()) {
+		synchronized (this) {
 			executingThreads = involvedWorkers;
 		}
 
