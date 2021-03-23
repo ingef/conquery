@@ -5,8 +5,11 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.SameTemporalMatcher;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
+
+import java.util.Set;
 
 /**
  * Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} at the same time as the events of {@code index}. And the time where this has happened.
@@ -20,12 +23,14 @@ public class CQSameTemporalQuery extends CQAbstractTemporalQuery {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext ctx, ConceptQueryPlan plan) {
-		ctx = ctx.withGenerateSpecialDateUnion(true);
+		SpecialDateUnion dateAggregator = new SpecialDateUnion();
+		plan.getDateAggregator().register(Set.of(dateAggregator));
+
 		return new TemporalQueryNode(
 				index.createQueryPlan(ctx, plan),
 				preceding.createQueryPlan(ctx, plan),
 				new SameTemporalMatcher(),
-				plan.getSpecialDateUnion()
+				dateAggregator
 		);
 	}
 }

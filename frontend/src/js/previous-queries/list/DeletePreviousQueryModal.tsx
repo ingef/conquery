@@ -15,7 +15,7 @@ const DeletePreviousQueryModal = ({
   onClose,
   onDeleteSuccess,
 }: PropsType) => {
-  const { onDeletePreviousQuery } = useDeletePreviousQuery(
+  const onDeletePreviousQuery = useDeletePreviousQuery(
     previousQueryId,
     onDeleteSuccess
   );

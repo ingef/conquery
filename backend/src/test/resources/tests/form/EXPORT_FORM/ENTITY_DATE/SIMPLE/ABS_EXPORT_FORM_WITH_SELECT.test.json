@@ -6,24 +6,24 @@
     },
     "form": {
         "type": "EXPORT_FORM",
-        "queryGroup": ".00000000-0000-0000-0000-000000000001",
+        "queryGroup": "00000000-0000-0000-0000-000000000001",
         "resolution": "QUARTERS",
         "timeMode": {
             "value": "ENTITY_DATE",
             "features": [
                 {
                     "ids": [
-                        ".two_connector"
+                        "two_connector"
                     ],
                     "type": "CONCEPT",
                     "label": "explicitly set select",
                     "tables": [
                         {
-                            "id": ".two_connector.table1",
-                            "selects": ".two_connector.table1.liste_geburtsdatum"
+                            "id": "two_connector.table1",
+                            "selects": "two_connector.table1.liste_geburtsdatum"
                         },                        
                         {
-                            "id": ".two_connector.table2"
+                            "id": "two_connector.table2"
                         }
                     ]
                 }

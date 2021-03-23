@@ -1,19 +1,14 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
@@ -22,6 +17,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.*;
 
 @Getter
 @Setter
@@ -34,25 +31,21 @@ public class ConceptQueryPlan implements QueryPlan {
 	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
 	private QPNode child;
 	@ToString.Exclude
-	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
-	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
+	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
-	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
-		if (generateSpecialDateUnion) {
-			aggregators.add(specialDateUnion);
+	public ConceptQueryPlan(boolean generateDateAggregator) {
+		if (generateDateAggregator){
+			aggregators.add(dateAggregator);
 		}
-	}
-
-	public ConceptQueryPlan(QueryPlanContext ctx) {
-		this(ctx.isGenerateSpecialDateUnion());
 	}
 
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
 
+		// We set the date aggregator if needed by manually in the following for loop
 		ConceptQueryPlan clone = new ConceptQueryPlan(false);
 		clone.setChild(ctx.clone(child));
 
@@ -60,7 +53,7 @@ public class ConceptQueryPlan implements QueryPlan {
 			clone.aggregators.add(ctx.clone(agg));
 		}
 
-		clone.specialDateUnion = ctx.clone(specialDateUnion);
+		clone.dateAggregator = ctx.clone(dateAggregator);
 		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
@@ -197,4 +190,6 @@ public class ConceptQueryPlan implements QueryPlan {
 	public Set<TableId> collectRequiredTables() {
 		return child.collectRequiredTables();
 	}
+
+
 }

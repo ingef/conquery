@@ -16,10 +16,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -43,23 +40,21 @@ public class AbsoluteFormQuery extends IQuery {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);
-		features.resolve(context);
+		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 
 	@Override
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
-			query.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
+			query.createQueryPlan(context),
 			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-			features.createQueryPlan(context.withGenerateSpecialDateUnion(false))
+			features.createQueryPlan(context)
 		);
 	}
 	
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		features.collectResultInfos(collector);
-		//remove SpecialDateUnion
-		collector.getInfos().remove(0);
 
 		collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
 		collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
@@ -68,6 +63,7 @@ public class AbsoluteFormQuery extends IQuery {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
 		query.visit(visitor);
 		features.visit(visitor);
 	}

@@ -61,7 +61,7 @@ const StandardQueryNodeEditor = (props: PropsT) => {
       editorState={editorState}
       showTables={showTables}
       isExcludeTimestampsPossible={true}
-      isExcludeFromSecondaryIdQueryPossible={!!node && !node.isPreviousQuery}
+      isExcludeFromSecondaryIdQueryPossible={true}
       currencyConfig={currencyConfig}
       onLoadFilterSuggestions={onLoadFilterSuggestions}
       onCloseModal={() => dispatch(deselectNode())}

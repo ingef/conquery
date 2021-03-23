@@ -10,7 +10,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -21,6 +23,7 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -28,11 +31,15 @@ import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.experimental.UtilityClass;
@@ -42,7 +49,7 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 @UtilityClass
 public class LoadingUtil {
-	
+
 	public static void importPreviousQueries(StandaloneSupport support, RequiredData content) throws IOException {
 		importPreviousQueries(support, content, support.getTestUser());
 	}
@@ -66,6 +73,20 @@ public class LoadingUtil {
 			}
 		}
 
+		for (JsonNode queryNode : content.getPreviousQueries()) {
+			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectInto(Jackson.MAPPER);
+			mapper = support.getDataset().injectInto(mapper);
+			IQuery query = mapper.readerFor(IQuery.class).readValue(queryNode);
+			UUID queryId = new UUID(0L, id++);
+
+			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),query, queryId, user.getId(), support.getNamespace().getDataset().getId());
+			user.addPermission(support.getMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+
+			if (managed.getState() == ExecutionState.FAILED) {
+				fail("Query failed");
+			}
+		}
+
 		// wait only if we actually did anything
 		if (!content.getPreviousQueryResults().isEmpty()) {
 			support.waitUntilWorkDone();
@@ -76,7 +97,7 @@ public class LoadingUtil {
 		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset()), support.getNamespace());
+			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry()), support.getNamespace());
 		}
 	}
 	
@@ -164,9 +185,17 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
-		for (RequiredSecondaryId secondaryId : secondaryIds) {
-			support.getDatasetsProcessor().addSecondaryId(support.getNamespace(), secondaryId.toSecondaryId());
+	public static Map<String, SecondaryIdDescription> importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
+		Map<String, SecondaryIdDescription> out = new HashMap<>();
+
+		for (RequiredSecondaryId required : secondaryIds) {
+			final SecondaryIdDescription description = required.toSecondaryId();
+			support.getDatasetsProcessor()
+				   .addSecondaryId(support.getNamespace(), description);
+
+			out.put(description.getName(), description);
 		}
+
+		return out;
 	}
 }

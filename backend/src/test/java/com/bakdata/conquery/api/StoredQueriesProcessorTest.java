@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -152,7 +153,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId) {
-		ExecutionStatus.Overview status = new ExecutionStatus.Overview();
+		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
 		status.setTags(new String[0]);
 		status.setLabel(id.getExecution().toString());

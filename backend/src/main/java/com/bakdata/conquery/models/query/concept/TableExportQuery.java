@@ -68,7 +68,7 @@ public class TableExportQuery extends IQuery {
 		for (CQUnfilteredTable table : tables) {
 			try {
 				Concept<?> concept = context.getCentralRegistry().resolve(table.getId().getConcept());
-				Connector connector = concept.getConnectorByName(table.getId().getConnector());
+				Connector connector = concept.getConnector(table.getId());
 				final Column validityDateColumn;
 
 				// if no dateColumn is provided, we use the default instead which is always the first one.
@@ -120,7 +120,7 @@ public class TableExportQuery extends IQuery {
 		for (CQUnfilteredTable table : tables) {
 			try {
 				Concept<?> concept = context.getNamespace().getStorage().getCentralRegistry().resolve(table.getId().getConcept());
-				Connector connector = concept.getConnectorByName(table.getId().getConnector());
+				Connector connector = concept.getConnector(table.getId());
 
 				for (Column col : connector.getTable().getColumns()) {
 					resolvedHeader.add(col);

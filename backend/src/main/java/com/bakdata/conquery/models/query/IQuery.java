@@ -2,24 +2,21 @@ package com.bakdata.conquery.models.query;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.QueryUtils;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
-import com.google.common.collect.MoreCollectors;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
@@ -52,19 +49,11 @@ public abstract class IQuery implements QueryDescription {
 	}
 
 	/**
-	 * Tries to extract the {@link DatasetId} from the submitted query.
-	 * If none could be extracted the alternative dataset is chosen.
-	 * When more than one {@link DatasetId} is found an {@link IllegalArgumentException} is thrown.
+	 * Method that returns only the parts of the query to reusable by others. This allows switching between different implementations of {@link IQuery} between reuse.
 	 */
-	private static DatasetId getDataset(IQuery query, DatasetId alternativeDataset) {
-		NamespacedIdCollector collector = new QueryUtils.NamespacedIdCollector();
-		query.visit(collector);
-		// A query of this type is only allowed to reference a single dataset as it is executed in a single namespace of that dataset.
-		Optional<DatasetId> datasetOp = collector.getIds().stream().map(NamespacedId::getDataset).distinct().collect(MoreCollectors.toOptional());
-		// Some submitted queries do not have a dataset reference included (e.g. queries consisting solely of CQExternal, CQReusedQuery),
-		// than the dataset is chosen under which the query was submitted
-		DatasetId dataset = datasetOp.orElse(alternativeDataset);
-		return dataset;
+	@JsonIgnore
+	public CQElement getReusableComponents() {
+		throw new IllegalArgumentException(String.format("Query of Type[%s] cannot be reused", getClass()));
 	}
 
 	/**

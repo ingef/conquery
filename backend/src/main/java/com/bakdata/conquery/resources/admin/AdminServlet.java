@@ -75,7 +75,7 @@ public class AdminServlet {
 				manager.getMaintenanceService(),
 				manager.getValidator(),
 				manager.getConfig().getCluster().getEntityBucketSize(),
-				manager.isUseNameForStoragePrefix() ? manager.getName() : ""
+				manager.isUseNameForStoragePrefix() ? manager.getName() : null
 		);
 
 		// inject required services

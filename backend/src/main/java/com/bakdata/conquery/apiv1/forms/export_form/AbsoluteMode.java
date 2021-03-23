@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -34,7 +35,7 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		features.forEach(e -> visitor.accept(e));
+		features.forEach(visitor::accept);
 	}
 
 	@NotNull
@@ -42,12 +43,12 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(datasets, this, userId, submittedDataset, getAlignmentHint());
+		return AbsExportGenerator.generate(this);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
 		// Resolve all
-		features.forEach(e -> e.resolve(context));
+		features.forEach(e -> e.resolve(context.withDateAggregationMode(DateAggregationMode.NONE)));
 	}
 }

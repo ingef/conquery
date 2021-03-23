@@ -11,12 +11,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Validator;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 public class MetaStorage implements ConqueryStorage{
 
     private IdentifiableStore<ManagedExecution<?>> executions;
@@ -106,6 +108,7 @@ public class MetaStorage implements ConqueryStorage{
     }
 
     public void removeUser(UserId userId) {
+    	log.info("Remove User = {}", userId);
         authUser.remove(userId);
     }
 

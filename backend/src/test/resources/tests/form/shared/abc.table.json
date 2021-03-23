@@ -1,0 +1,18 @@
+{
+    "csv": "tests/form/shared/abc.csv",
+    "name": "table",
+    "primaryColumn": {
+      "name": "pid",
+      "type": "STRING"
+    },
+    "columns": [
+      {
+        "name": "datum",
+        "type": "DATE"
+      },
+      {
+        "name": "column",
+        "type": "STRING"
+      }
+    ]
+  }

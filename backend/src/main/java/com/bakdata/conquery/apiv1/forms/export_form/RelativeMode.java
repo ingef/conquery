@@ -5,18 +5,20 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -42,6 +44,13 @@ public class RelativeMode extends Mode {
 
 	private List<CQElement> outcomes = Collections.emptyList();
 
+
+	@InternalOnly
+	private ArrayConceptQuery resolvedFeatures;
+
+	@InternalOnly
+	private ArrayConceptQuery resolvedOutcomes;
+
 	@ValidationMethod
 	boolean isWithFeatureOrOutcomes(){
 		// Its allowed to have one of them emtpy
@@ -61,8 +70,13 @@ public class RelativeMode extends Mode {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+		ExportForm.DefaultSelectSettable.enable(features);
+		ExportForm.DefaultSelectSettable.enable(outcomes);
+
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
+		resolvedOutcomes = ArrayConceptQuery.createFromFeatures(outcomes);
 		// Resolve all
-		features.forEach(e -> e.resolve(context));
-		outcomes.forEach(e -> e.resolve(context));
+		resolvedFeatures.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
+		resolvedOutcomes.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 }

@@ -308,9 +308,13 @@ export interface GetStoredQueryResponseT {
   status: "DONE" | "NEW"; // TODO: Remove. Not used here
   groups?: UserGroupIdT[];
   canExpand?: boolean;
+  availableSecondaryIds?: string[];
 }
 
 // TODO: This actually returns a lot of unused fields, see above
+// TODO: But actually, it's not correct, because some fields are not
+//       returned on the LIST response, which ARE returned in the
+//       single result response
 export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
 export interface PostConceptResolveResponseT {

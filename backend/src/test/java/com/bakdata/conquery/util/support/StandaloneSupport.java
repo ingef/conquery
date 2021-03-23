@@ -13,6 +13,7 @@ import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -41,6 +42,10 @@ public class StandaloneSupport implements Closeable {
 	private final AdminProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
+
+	public AuthorizationController getAuthorizationController() {
+		return testConquery.getStandaloneCommand().getManager().getAuthController();
+	}
 
 	public void waitUntilWorkDone() {
 		testConquery.waitUntilWorkDone();
