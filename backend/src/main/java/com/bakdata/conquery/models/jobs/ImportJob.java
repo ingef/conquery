@@ -319,10 +319,8 @@ public class ImportJob extends Job {
 		log.info("Importing Dictionaries ({})", dicts);
 
 		for (Column column : columns) {
-			//if the column uses a shared dictionary we have to merge the existing dictionary into that
 
 			if (column.getType() != MajorTypeId.STRING) {
-				subJob.report(1);
 				continue;
 			}
 
@@ -330,22 +328,23 @@ public class ImportJob extends Job {
 			// but could also be an error :/ Most likely the former
 			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
 				log.trace("No Dictionary for {}", column);
-				subJob.report(1);
 				continue;
 			}
+
 
 			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
 			if (column.getSharedDictionary() != null) {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
 				final Dictionary dictionary = dicts.get(column.getName());
 
-				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(),  sharedDictionaryId);
+				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryId);
 
 				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
 
 				out.put(column.getName(), mapping);
 
 				subJob.report(1);
+
 				continue;
 			}
 
@@ -364,8 +363,9 @@ public class ImportJob extends Job {
 			catch (Exception e) {
 				throw new RuntimeException("Failed to store dictionary " + dict, e);
 			}
-
-			subJob.report(1);
+			finally {
+				subJob.report(1);
+			}
 		}
 
 		subJob.done();
