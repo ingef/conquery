@@ -24,7 +24,7 @@ import {
   toggleSecondaryIdExclude,
   useLoadFilterSuggestions,
 } from "./actions";
-import { QueryNodeType } from "./types";
+import { StandardQueryNodeT } from "./types";
 import type { StandardQueryStateT } from "./queryReducer";
 
 interface PropsT {
@@ -33,11 +33,14 @@ interface PropsT {
 
 const findNodeBeingEdited = (query: StandardQueryStateT) =>
   query
-    .reduce<QueryNodeType[]>((acc, group) => [...acc, ...group.elements], [])
+    .reduce<StandardQueryNodeT[]>(
+      (acc, group) => [...acc, ...group.elements],
+      []
+    )
     .find((element) => element.isEditing);
 
 const StandardQueryNodeEditor = (props: PropsT) => {
-  const node = useSelector<StateT, QueryNodeType | undefined>((state) =>
+  const node = useSelector<StateT, StandardQueryNodeT | undefined>((state) =>
     findNodeBeingEdited(state.queryEditor.query)
   );
   const showTables =

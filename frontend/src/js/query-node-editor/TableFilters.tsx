@@ -27,7 +27,7 @@ interface PropsT {
   className?: string;
   context: FiltersContextT;
   filters: FilterWithValueType[] | null;
-  excludeTable: boolean;
+  excludeTable?: boolean;
   onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
   onSetFilterValue: Function;
   onLoadFilterSuggestions: (
@@ -35,7 +35,7 @@ interface PropsT {
     filterId: FilterIdT,
     prefix: string
   ) => void;
-  onShowDescription: Function;
+  onShowDescription: (filterIdx: number) => void;
   suggestions: Object | null;
   currencyConfig: CurrencyConfigT;
 }

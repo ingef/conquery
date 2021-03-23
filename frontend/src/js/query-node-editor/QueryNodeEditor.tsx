@@ -4,11 +4,12 @@ import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import Hotkeys from "react-hot-keys";
 
-import type { QueryNodeType } from "../standard-query-editor/types";
+import type { StandardQueryNodeT } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
-import { DatasetIdT } from "../api/types";
+import { CurrencyConfigT, DatasetIdT } from "../api/types";
 import type { ModeT } from "../form-components/InputRange";
 import BasicButton from "../button/BasicButton";
+import { isConceptQueryNode } from "../model/query";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
@@ -63,7 +64,7 @@ interface QueryNodeEditorState {
 export interface QueryNodeEditorPropsT {
   name: string;
   editorState: QueryNodeEditorState;
-  node: QueryNodeType;
+  node: StandardQueryNodeT;
   showTables: boolean;
   isExcludeTimestampsPossible: boolean;
   isExcludeFromSecondaryIdQueryPossible: boolean;
@@ -71,6 +72,7 @@ export interface QueryNodeEditorPropsT {
   suggestions: Object | null;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
+  currencyConfig: CurrencyConfigT;
 
   onCloseModal: Function;
   onUpdateLabel: Function;
@@ -92,9 +94,28 @@ export interface QueryNodeEditorPropsT {
   onSetDateColumn: Function;
 }
 
-const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
+const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
-  const { node, editorState } = props;
+  const dispatch = useDispatch();
+
+  const {
+    setDetailsViewActive,
+    toggleEditLabel,
+    setInputTableViewActive,
+    setFocusedInput,
+    reset,
+  } = createQueryNodeEditorActions(props.name);
+
+  const editorState = {
+    ...(props.editorState || {}),
+    onSelectDetailsView: () => dispatch(setDetailsViewActive()),
+    onToggleEditLabel: () => dispatch(toggleEditLabel()),
+    onSelectInputTableView: (tableIdx: number) =>
+      dispatch(setInputTableViewActive(tableIdx)),
+    onShowDescription: (filterIdx: number) =>
+      dispatch(setFocusedInput(filterIdx)),
+    onReset: () => dispatch(reset()),
+  };
 
   function close() {
     if (!node) return;
@@ -106,7 +127,7 @@ const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
   if (!node) return null;
 
   const selectedTable =
-    !node.isPreviousQuery && editorState.selectedInputTableIdx != null
+    isConceptQueryNode(node) && editorState.selectedInputTableIdx != null
       ? node.tables[editorState.selectedInputTableIdx]
       : null;
 
@@ -114,11 +135,22 @@ const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
     <Root>
       <Wrapper>
         <Hotkeys keyName="escape" onKeyDown={close} />
-        <MenuColumn {...props} />
-        {editorState.detailsViewActive && <NodeDetailsView {...props} />}
-        {!editorState.detailsViewActive && selectedTable != null && (
-          <TableView {...props} />
+        <MenuColumn node={node} {...props} />
+        {editorState.detailsViewActive && (
+          <NodeDetailsView node={node} {...props} />
         )}
+        {isConceptQueryNode(node) &&
+          !editorState.detailsViewActive &&
+          selectedTable != null && (
+            <TableView
+              {...props}
+              onShowDescription={editorState.onShowDescription}
+              datasetId={props.datasetId}
+              currencyConfig={props.currencyConfig}
+              node={node}
+              selectedInputTableIdx={editorState.selectedInputTableIdx}
+            />
+          )}
         <SxWithTooltip text={t("common.closeEsc")}>
           <CloseButton small onClick={close}>
             {t("common.done")}
@@ -126,34 +158,6 @@ const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
         </SxWithTooltip>
       </Wrapper>
     </Root>
-  );
-};
-
-const QueryNodeEditor = (props: QueryNodeEditorPropsT) => {
-  const dispatch = useDispatch();
-
-  const {
-    setDetailsViewActive,
-    toggleEditLabel,
-    setInputTableViewActive,
-    setFocusedInput,
-    reset,
-  } = createQueryNodeEditorActions(props.name);
-
-  return (
-    <QueryNodeEditorComponent
-      {...props}
-      editorState={{
-        ...(props.editorState || {}),
-        onSelectDetailsView: () => dispatch(setDetailsViewActive()),
-        onToggleEditLabel: () => dispatch(toggleEditLabel()),
-        onSelectInputTableView: (tableIdx: number) =>
-          dispatch(setInputTableViewActive(tableIdx)),
-        onShowDescription: (filterIdx: number) =>
-          dispatch(setFocusedInput(filterIdx)),
-        onReset: () => dispatch(reset()),
-      }}
-    />
   );
 };
 

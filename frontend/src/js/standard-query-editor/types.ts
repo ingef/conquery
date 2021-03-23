@@ -153,10 +153,12 @@ export interface PreviousQueryQueryNodeType {
   availableSecondaryIds?: string[];
 }
 
-export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;
+export type StandardQueryNodeT =
+  | ConceptQueryNodeType
+  | PreviousQueryQueryNodeType;
 
 export interface QueryGroupType {
-  elements: QueryNodeType[];
+  elements: StandardQueryNodeT[];
   dateRange?: DateRangeT;
   exclude?: boolean;
 }

@@ -6,7 +6,8 @@ import TableFilters from "./TableFilters";
 import TableSelects from "./TableSelects";
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
-import type { QueryNodeEditorPropsT } from "./QueryNodeEditor";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import type { CurrencyConfigT, DatasetIdT } from "../api/types";
 
 const Column = styled("div")`
   display: flex;
@@ -19,12 +20,31 @@ const MaximizedCell = styled(ContentCell)`
   padding-bottom: 30px;
 `;
 
-const TableView: FC<QueryNodeEditorPropsT> = ({
+interface PropsT {
+  node: ConceptQueryNodeType;
+  selectedInputTableIdx: number;
+  onShowDescription: (filterIdx: number) => void;
+  datasetId: DatasetIdT;
+  currencyConfig: CurrencyConfigT;
+
+  suggestions;
+
+  onSelectTableSelects;
+  onSetDateColumn;
+
+  onSetFilterValue;
+  onSwitchFilterMode;
+  onLoadFilterSuggestions;
+}
+
+const TableView: FC<PropsT> = ({
   node,
-  editorState,
+  selectedInputTableIdx,
+  onShowDescription,
   datasetId,
-  suggestions,
   currencyConfig,
+
+  suggestions,
 
   onSelectTableSelects,
   onSetDateColumn,
@@ -35,7 +55,7 @@ const TableView: FC<QueryNodeEditorPropsT> = ({
 }) => {
   const { t } = useTranslation();
 
-  const table = node.tables[editorState.selectedInputTableIdx];
+  const table = node.tables[selectedInputTableIdx];
 
   const displaySelects = !!table.selects && table.selects.length > 0;
   const displayDateColumnOptions =
@@ -46,12 +66,15 @@ const TableView: FC<QueryNodeEditorPropsT> = ({
     <Column>
       {displaySelects && (
         <ContentCell headline={t("queryNodeEditor.selects")}>
-          <TableSelects
-            selects={table.selects}
-            onSelectTableSelects={(value) =>
-              onSelectTableSelects(editorState.selectedInputTableIdx, value)
-            }
-          />
+          {table.selects && table.selects.length > 0 && (
+            <TableSelects
+              selects={table.selects}
+              onSelectTableSelects={(value) =>
+                onSelectTableSelects(selectedInputTableIdx, value)
+              }
+              excludeTable={table.exclude}
+            />
+          )}
         </ContentCell>
       )}
       {displayDateColumnOptions && (
@@ -59,7 +82,7 @@ const TableView: FC<QueryNodeEditorPropsT> = ({
           <DateColumnSelect
             dateColumn={table.dateColumn}
             onSelectDateColumn={(value) =>
-              onSetDateColumn(editorState.selectedInputTableIdx, value)
+              onSetDateColumn(selectedInputTableIdx, value)
             }
           />
         </ContentCell>
@@ -67,26 +90,19 @@ const TableView: FC<QueryNodeEditorPropsT> = ({
       {displayFilters && (
         <MaximizedCell headline={t("queryNodeEditor.filters")}>
           <TableFilters
-            key={editorState.selectedInputTableIdx}
+            key={selectedInputTableIdx}
             filters={table.filters}
+            excludeTable={table.exclude}
             context={{
               datasetId,
               treeId: node.tree,
               tableId: table.id,
             }}
             onSetFilterValue={(filterIdx: number, value: unknown) =>
-              onSetFilterValue(
-                editorState.selectedInputTableIdx,
-                filterIdx,
-                value
-              )
+              onSetFilterValue(selectedInputTableIdx, filterIdx, value)
             }
             onSwitchFilterMode={(filterIdx, mode) =>
-              onSwitchFilterMode(
-                editorState.selectedInputTableIdx,
-                filterIdx,
-                mode
-              )
+              onSwitchFilterMode(selectedInputTableIdx, filterIdx, mode)
             }
             onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
               onLoadFilterSuggestions(
@@ -95,14 +111,12 @@ const TableView: FC<QueryNodeEditorPropsT> = ({
                 table.id,
                 filterId,
                 prefix,
-                editorState.selectedInputTableIdx,
+                selectedInputTableIdx,
                 filterIdx
               )
             }
-            suggestions={
-              !!suggestions && suggestions[editorState.selectedInputTableIdx]
-            }
-            onShowDescription={editorState.onShowDescription}
+            suggestions={!!suggestions && suggestions[selectedInputTableIdx]}
+            onShowDescription={onShowDescription}
             currencyConfig={currencyConfig}
           />
         </MaximizedCell>
