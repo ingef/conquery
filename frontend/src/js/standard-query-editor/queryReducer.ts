@@ -16,7 +16,6 @@ import type {
   FilterConfigT,
   RangeFilterValueT,
   FilterIdT,
-  MultiSelectFilterValueT,
 } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
@@ -467,7 +466,7 @@ const isMultiSelectFilterConfig = (
   filter: FilterConfigT
 ): filter is {
   filter: FilterIdT;
-  value: MultiSelectFilterValueT;
+  value: FilterIdT[];
   type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
 } =>
   (filter.type === "MULTI_SELECT" || filter.type === "BIG_MULTI_SELECT") &&
