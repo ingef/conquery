@@ -60,14 +60,16 @@ public class DictionaryMapping {
 	/**
 	 * Mutably applies mapping to store.
 	 */
-	public void applyToStore(StringStore from, IntegerStore to, long rows) {
-		for (int row = 0; row < rows; row++) {
-			if (!from.has(row)) {
-				to.setNull(row);
+	public void applyToStore(StringStore from, IntegerStore to) {
+		for (int event = 0; event < from.getLines(); event++) {
+			if (!from.has(event)) {
+				to.setNull(event);
 				continue;
 			}
 
-			to.setInteger(row, source2Target(from.getString(row)));
+			final int string = from.getString(event);
+
+			to.setInteger(event, source2Target(string));
 		}
 	}
 
