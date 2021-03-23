@@ -1,6 +1,6 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { sortSelects } from "../model/select";
@@ -8,7 +8,7 @@ import { sortSelects } from "../model/select";
 import InputMultiSelect from "../form-components/InputMultiSelect";
 import InputCheckbox from "../form-components/InputCheckbox";
 
-import type { PropsType } from "./QueryNodeEditor";
+import type { QueryNodeEditorPropsT } from "./QueryNodeEditor";
 
 import ConceptEntry from "./ConceptEntry";
 import ConceptDropzone from "./ConceptDropzone";
@@ -24,18 +24,17 @@ const RowHeading = styled("h5")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-const NodeDetailsView = (props: PropsType) => {
-  const {
-    node,
-    onSelectSelects,
-    isExcludeTimestampsPossible,
-    isExcludeFromSecondaryIdQueryPossible,
-    onToggleTimestamps,
-    onToggleSecondaryIdExclude,
-    onDropConcept,
-    onRemoveConcept,
-  } = props;
-
+const NodeDetailsView: FC<QueryNodeEditorPropsT> = ({
+  node,
+  onSelectSelects,
+  isExcludeTimestampsPossible,
+  isExcludeFromSecondaryIdQueryPossible,
+  onToggleTimestamps,
+  onToggleSecondaryIdExclude,
+  onDropConcept,
+  onRemoveConcept,
+}) => {
+  const { t } = useTranslation();
   const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
 
   return (
@@ -43,7 +42,7 @@ const NodeDetailsView = (props: PropsType) => {
       {isExcludeTimestampsPossible && (
         <Row>
           <InputCheckbox
-            label={T.translate("queryNodeEditor.excludeTimestamps")}
+            label={t("queryNodeEditor.excludeTimestamps")}
             input={{
               value: node.excludeTimestamps,
               onChange: () => onToggleTimestamps(),
@@ -54,7 +53,7 @@ const NodeDetailsView = (props: PropsType) => {
       {isExcludeFromSecondaryIdQueryPossible && (
         <Row>
           <InputCheckbox
-            label={T.translate("queryNodeEditor.excludeFromSecondaryIdQuery")}
+            label={t("queryNodeEditor.excludeFromSecondaryIdQuery")}
             input={{
               value: node.excludeFromSecondaryIdQuery,
               onChange: () => onToggleSecondaryIdExclude(),
@@ -64,7 +63,7 @@ const NodeDetailsView = (props: PropsType) => {
       )}
       {node.selects && (
         <Row>
-          <RowHeading>{T.translate("queryNodeEditor.selects")}</RowHeading>
+          <RowHeading>{t("queryNodeEditor.selects")}</RowHeading>
           <InputMultiSelect
             input={{
               onChange: onSelectSelects,

@@ -1,20 +1,21 @@
-import React from "react";
-import T from "i18n-react";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import DeleteModal from "../../modal/DeleteModal";
 import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
-interface PropsType {
+interface PropsT {
   previousQueryId: string;
   onClose: () => void;
   onDeleteSuccess: () => void;
 }
 
-const DeletePreviousQueryModal = ({
+const DeletePreviousQueryModal: FC<PropsT> = ({
   previousQueryId,
   onClose,
   onDeleteSuccess,
-}: PropsType) => {
+}) => {
+  const { t } = useTranslation();
   const onDeletePreviousQuery = useDeletePreviousQuery(
     previousQueryId,
     onDeleteSuccess
@@ -23,7 +24,7 @@ const DeletePreviousQueryModal = ({
   return (
     <DeleteModal
       onClose={onClose}
-      headline={T.translate("deletePreviousQueryModal.areYouSure")}
+      headline={t("deletePreviousQueryModal.areYouSure")}
       onDelete={onDeletePreviousQuery}
     />
   );

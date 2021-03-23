@@ -1,6 +1,10 @@
 import React, { FC, useEffect, useState } from "react";
 
-import type { FilterIdT, SelectOptionT } from "../api/types";
+import type {
+  FilterIdT,
+  PostFilterResolveResponseT,
+  SelectOptionT,
+} from "../api/types";
 
 import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
 import InputMultiSelect, {
@@ -47,10 +51,12 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   onLoad,
   isLoading,
 }) => {
-  const [resolved, setResolved] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
+    null
+  );
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const postFilterValuesResolve = usePostFilterValuesResolve();
 
   const previousDefaultValue = usePrevious(input.defaultValue);
@@ -73,7 +79,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
       );
 
       setResolved(r);
-      setIsModalOpen(r.unknownCodes && r.unknownCodes.length > 0);
+      setIsModalOpen(!!r.unknownCodes && r.unknownCodes.length > 0);
 
       if (
         r.resolvedFilter &&

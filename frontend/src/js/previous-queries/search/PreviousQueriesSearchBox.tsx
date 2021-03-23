@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 
 import ReactSelect from "../../form-components/ReactSelect";
@@ -14,6 +14,7 @@ const Root = styled("div")`
 `;
 
 const PreviousQueriesSearchBox: React.FC = () => {
+  const { t } = useTranslation();
   const search = useSelector<StateT, string[]>(
     (state) => state.previousQueriesSearch
   );
@@ -37,10 +38,10 @@ const PreviousQueriesSearchBox: React.FC = () => {
         onChange={(values) =>
           onSearch(values ? values.map((v) => v.value) : [])
         }
-        placeholder={T.translate("reactSelect.searchPlaceholder")}
-        noOptionsMessage={() => T.translate("reactSelect.noResults")}
+        placeholder={t("reactSelect.searchPlaceholder")}
+        noOptionsMessage={() => t("reactSelect.noResults")}
         formatCreateLabel={(inputValue) =>
-          T.translate("common.create") + `: "${inputValue}"`
+          t("common.create") + `: "${inputValue}"`
         }
       />
     </Root>

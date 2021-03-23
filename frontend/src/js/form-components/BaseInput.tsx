@@ -1,6 +1,6 @@
 import * as React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 
@@ -57,6 +57,7 @@ interface PropsT {
 }
 
 const BaseInput = (props: PropsT) => {
+  const { t } = useTranslation();
   const inputProps = props.inputProps || {};
   const { pattern } = props.inputProps || {};
 
@@ -119,8 +120,8 @@ const BaseInput = (props: PropsT) => {
           icon="times"
           tabIndex="-1"
           large={props.large}
-          title={T.translate("common.clearValue")}
-          ariaLabel={T.translate("common.clearValue")}
+          title={t("common.clearValue")}
+          ariaLabel={t("common.clearValue")}
           onClick={() => props.onChange(null)}
         />
       )}

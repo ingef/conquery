@@ -1,6 +1,6 @@
-import * as React from "react";
+import React, { useState, useEffect, FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import { parseCSV } from "../../file/csv";
 
@@ -10,18 +10,6 @@ import FaIcon from "../../icon/FaIcon";
 
 import ReactSelect from "../../form-components/ReactSelect";
 import InputSelect from "../../form-components/InputSelect";
-
-export interface ExternalQueryT {
-  format: string[];
-  values: string[][];
-}
-
-type PropsT = {
-  file: File;
-  loading: boolean;
-  onReset: () => void;
-  onUpload: (query: ExternalQueryT) => void;
-};
 
 const Row = styled("div")`
   display: flex;
@@ -75,11 +63,24 @@ const SxInputSelect = styled(InputSelect)`
   margin-left: 15px;
 `;
 
-export default ({ file, loading, onUpload, onReset }: PropsT) => {
-  const [csv, setCSV] = React.useState([]);
-  const [delimiter, setDelimiter] = React.useState(";");
-  const [csvHeader, setCSVHeader] = React.useState([]);
-  const [csvLoading, setCSVLoading] = React.useState(false);
+export interface ExternalQueryT {
+  format: string[];
+  values: string[][];
+}
+
+interface PropsT {
+  file: File;
+  loading: boolean;
+  onReset: () => void;
+  onUpload: (query: ExternalQueryT) => void;
+}
+
+const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
+  const { t } = useTranslation();
+  const [csv, setCSV] = useState([]);
+  const [delimiter, setDelimiter] = useState(";");
+  const [csvHeader, setCSVHeader] = useState([]);
+  const [csvLoading, setCSVLoading] = useState(false);
 
   // Theoretically possible in the backend:
   // ID (some string)
@@ -90,20 +91,20 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
   // DATE_SET (a set of date ranges),
   // IGNORE (ignore this column);
   const SELECT_OPTIONS = [
-    { label: T.translate("csvColumnPicker.id"), value: "ID" },
-    { label: T.translate("csvColumnPicker.dateSet"), value: "DATE_SET" },
-    { label: T.translate("csvColumnPicker.startDate"), value: "START_DATE" },
-    { label: T.translate("csvColumnPicker.endDate"), value: "END_DATE" },
-    { label: T.translate("csvColumnPicker.ignore"), value: "IGNORE" },
+    { label: t("csvColumnPicker.id"), value: "ID" },
+    { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
+    { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
+    { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
+    { label: t("csvColumnPicker.ignore"), value: "IGNORE" },
   ];
 
   const DELIMITER_OPTIONS = [
-    { label: T.translate("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
-    { label: T.translate("csvColumnPicker.comma") + " ( , )", value: "," },
-    { label: T.translate("csvColumnPicker.colon") + " ( : )", value: ":" },
+    { label: t("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
+    { label: t("csvColumnPicker.comma") + " ( , )", value: "," },
+    { label: t("csvColumnPicker.colon") + " ( : )", value: ":" },
   ];
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function parse(f, d) {
       try {
         setCSVLoading(true);
@@ -152,7 +153,7 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
         </Grow>
         {csv.length > 0 && (
           <SxInputSelect
-            label={T.translate("csvColumnPicker.delimiter")}
+            label={t("csvColumnPicker.delimiter")}
             input={{
               onChange: setDelimiter,
               value: delimiter,
@@ -166,7 +167,7 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
         <thead>
           {csvLoading && (
             <tr>
-              <th>{T.translate("csvColumnPicker.loading")}</th>
+              <th>{t("csvColumnPicker.loading")}</th>
             </tr>
           )}
           {csv.length > 0 &&
@@ -222,8 +223,10 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
         onClick={uploadQuery}
       >
         {loading && <FaIcon white icon="spinner" />}{" "}
-        {T.translate("uploadQueryResultsModal.upload")}
+        {t("uploadQueryResultsModal.upload")}
       </PrimaryButton>
     </div>
   );
 };
+
+export default CSVColumnPicker;

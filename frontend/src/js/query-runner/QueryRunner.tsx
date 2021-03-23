@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import Hotkeys from "react-hot-keys";
-import T from "i18n-react";
 
 import Preview from "../preview/Preview";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -11,15 +10,6 @@ import QueryRunningSpinner from "./QueryRunningSpinner";
 import QueryRunnerInfo from "./QueryRunnerInfo";
 import QueryRunnerButton from "./QueryRunnerButton";
 import type { QueryRunnerStateT } from "./reducer";
-
-interface PropsT {
-  queryRunner?: QueryRunnerStateT;
-  isQueryRunning: boolean;
-  isButtonEnabled: boolean;
-  buttonTooltipKey?: string | null;
-  startQuery: () => void;
-  stopQuery: () => void;
-}
 
 const Root = styled("div")`
   flex-shrink: 0;
@@ -45,11 +35,20 @@ const LoadingGroup = styled("div")`
   justify-content: flex-end;
 `;
 
+interface PropsT {
+  queryRunner?: QueryRunnerStateT;
+  isQueryRunning: boolean;
+  isButtonEnabled: boolean;
+  buttonTooltip?: string;
+  startQuery: () => void;
+  stopQuery: () => void;
+}
+
 const QueryRunner: FC<PropsT> = ({
   queryRunner,
   startQuery,
   stopQuery,
-  buttonTooltipKey,
+  buttonTooltip,
   isQueryRunning,
   isButtonEnabled,
 }) => {
@@ -69,9 +68,7 @@ const QueryRunner: FC<PropsT> = ({
       />
       <Preview />
       <Left>
-        <WithTooltip
-          text={buttonTooltipKey ? T.translate(buttonTooltipKey) : null}
-        >
+        <WithTooltip text={buttonTooltip}>
           <QueryRunnerButton
             onClick={btnAction}
             isStartStopLoading={isStartStopLoading}

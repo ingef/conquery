@@ -1,6 +1,6 @@
 import React, { useRef, FC, ReactNode } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import Hotkeys from "react-hot-keys";
 
 import FaIcon from "../icon/FaIcon";
@@ -75,6 +75,8 @@ const Modal: FC<PropsT> = ({
   closeIcon,
   onClose,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Root className={className}>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
@@ -82,16 +84,16 @@ const Modal: FC<PropsT> = ({
         <TopRow>
           <Headline>{headline}</Headline>
           {closeIcon && (
-            <WithTooltip text={T.translate("common.closeEsc")}>
+            <WithTooltip text={t("common.closeEsc")}>
               <TransparentButton small onClick={onClose}>
                 <FaIcon icon="times" />
               </TransparentButton>
             </WithTooltip>
           )}
           {doneButton && (
-            <WithTooltip text={T.translate("common.closeEsc")}>
+            <WithTooltip text={t("common.closeEsc")}>
               <TransparentButton small onClick={onClose}>
-                {T.translate("common.done")}
+                {t("common.done")}
               </TransparentButton>
             </WithTooltip>
           )}

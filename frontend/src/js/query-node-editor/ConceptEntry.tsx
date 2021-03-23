@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import IconButton from "../button/IconButton";
@@ -41,11 +41,13 @@ const SxIconButton = styled(IconButton)`
 
 const ConceptEntry = AdditionalInfoHoverable(
   ({ node, conceptId, canRemoveConcepts, onRemoveConcept }) => {
+    const { t } = useTranslation();
+
     return (
       <Concept>
         <ConceptContainer>
           {!node ? (
-            <NotFound>{T.translate("queryNodeEditor.nodeNotFound")}</NotFound>
+            <NotFound>{t("queryNodeEditor.nodeNotFound")}</NotFound>
           ) : (
             <>
               <ConceptEntryHeadline>{node.label}</ConceptEntryHeadline>

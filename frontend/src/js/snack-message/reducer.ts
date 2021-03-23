@@ -1,11 +1,11 @@
 import { SET_MESSAGE, RESET_MESSAGE } from "./actionTypes";
 
 export interface SnackMessageStateT {
-  messageKey: string | null;
+  message: string | null;
 }
 
 const initialState: SnackMessageStateT = {
-  messageKey: null,
+  message: null,
 };
 
 export default (
@@ -14,7 +14,7 @@ export default (
 ): SnackMessageStateT => {
   switch (action.type) {
     case SET_MESSAGE:
-      return { ...state, messageKey: action.payload.messageKey };
+      return { ...state, message: action.payload.message };
     case RESET_MESSAGE:
       return initialState;
     default:

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
 import Markdown from "react-markdown/with-html";
 
@@ -14,7 +14,7 @@ import type { SearchT } from "../concept-trees/reducer";
 import ActivateTooltip from "./ActivateTooltip";
 import {
   toggleDisplayTooltip as toggleTooltip,
-  toggleAdditionalInfos as toggleInfos
+  toggleAdditionalInfos as toggleInfos,
 } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
@@ -144,13 +144,14 @@ type PropsType = {
 };
 
 const Tooltip = (props: PropsType) => {
+  const { t } = useTranslation();
   if (!props.displayTooltip) return <ActivateTooltip />;
 
   const {
     additionalInfos,
     toggleAdditionalInfos,
     onToggleDisplayTooltip,
-    onToggleAdditionalInfos
+    onToggleAdditionalInfos,
   } = props;
 
   const {
@@ -159,10 +160,10 @@ const Tooltip = (props: PropsType) => {
     isFolder,
     infos,
     matchingEntries,
-    dateRange
+    dateRange,
   } = additionalInfos;
 
-  const searchHighlight = text => {
+  const searchHighlight = (text) => {
     return (
       <Highlighter
         searchWords={props.search.words || []}
@@ -173,7 +174,7 @@ const Tooltip = (props: PropsType) => {
   };
 
   const renderers = {
-    text: ({ value, children, nodeKey }) => searchHighlight(value)
+    text: ({ value, children, nodeKey }) => searchHighlight(value),
   };
 
   return (
@@ -184,7 +185,7 @@ const Tooltip = (props: PropsType) => {
         onClick={onToggleDisplayTooltip}
         icon="angle-left"
       />
-      <Header>{T.translate("tooltip.headline")}</Header>
+      <Header>{t("tooltip.headline")}</Header>
       <Content>
         <TooltipEntries
           matchingEntries={matchingEntries}
@@ -194,9 +195,7 @@ const Tooltip = (props: PropsType) => {
           <PinnedLabel>
             <TypeIcon icon={isFolder ? "folder" : "minus"} />
             <Label>
-              {label
-                ? searchHighlight(label)
-                : T.translate("tooltip.placeholder")}
+              {label ? searchHighlight(label) : t("tooltip.placeholder")}
             </Label>
             {toggleAdditionalInfos && (
               <TackIconButton
@@ -229,18 +228,18 @@ const Tooltip = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
     additionalInfos: state.tooltip.additionalInfos,
     displayTooltip: state.tooltip.displayTooltip,
     toggleAdditionalInfos: state.tooltip.toggleAdditionalInfos,
-    search: state.conceptTrees.search
+    search: state.conceptTrees.search,
   };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onToggleDisplayTooltip: () => dispatch(toggleTooltip()),
-  onToggleAdditionalInfos: () => dispatch(toggleInfos())
+  onToggleAdditionalInfos: () => dispatch(toggleInfos()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Tooltip);
